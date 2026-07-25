@@ -176,7 +176,7 @@ function renderLmsWeekManager(resourceKey) {
     const token = toDomToken(resourceKey);
     const inputId = `lms-week-manager-input-${token}`;
     return upgradeLmsLegacyMarkup(`
-        <div class="lux-soft-chrome lux-panel lms-route-panel lms-week-manager-shell">
+        <div class="lms-route-panel lms-week-manager-shell">
             <div class="lms-route-card-head lms-week-manager-shell-head">
                 <div>
                     <div class="lms-route-card-title"><i class="fas fa-calendar-week"></i> Manage Weeks</div>

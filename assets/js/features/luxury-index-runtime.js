@@ -357,7 +357,7 @@ return {
     ].join(',');
 
     const LUX_LEGACY_VISUAL_VALUE_PATTERN = /(var\(--kiu|#fff|#ffffff|#f8f9fa|#f8fafc|#f1f5f9|#eef2ff|#eff6ff|#e2e8f0|#cbd5e1|#94a3b8|#64748b|#475569|#334155|#1e3a8a|#2563eb|#3b82f6|#10b981|#168b66|#dc2626|white|black|rgba?\([^)]*(255|248|245|37|59|92|220|38|130|139)[^)]*\))/i;
-    const LUX_LEGACY_SURFACE_CLASS_PATTERN = /\b(content-box|surface-card|page-card|section-card|panel-card|kiu-card|dashboard-card|tabs-container|modal-content|page-hero|accordion-item|filter-shell|library-catalog-card|library-filter-shell|pv-(left|right|meta|stat)|sch-(sidebar|main|modal|grid-wrap|toolbar|day-col|time-col)|admin-card)\b/i;
+    const LUX_LEGACY_SURFACE_CLASS_PATTERN = /\b(content-box|surface-card|page-card|section-card|panel-card|kiu-card|dashboard-card|tabs-container|modal-content|page-hero|accordion-item|filter-shell|library-catalog-filters-panel|admin-library-catalog-card|pv-(left|right|meta|stat)|sch-(sidebar|main|modal|grid-wrap|toolbar|day-col|time-col)|admin-card)\b/i;
     const LUX_LEGACY_PILL_CLASS_PATTERN = /\b(pill|badge|chip|tag|status)\b/i;
     const LUX_LEGACY_TAB_CLASS_PATTERN = /\b(tab|reg-tab|pv-tab|nav-item)\b/i;
     const LUX_LEGACY_BUTTON_CLASS_PATTERN = /\b(sch-btn|pv-action-btn|lux-primary-btn|lux-secondary-btn|lux-ghost-btn)\b/i;

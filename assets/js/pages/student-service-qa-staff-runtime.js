@@ -289,11 +289,11 @@
         function renderStudentServiceStaffQaFeedMarkup(ui, filteredQuestions, selectedQuestion) {
             return `
                 <section class="student-service-zone student-service-zone-find">
-                    <div class="student-service-zone-head">
+                    <div class="lux-panel-head">
                         <div>
                             <div class="student-service-kicker">Public Q&A feed</div>
-                            <div class="student-service-zone-title">Search, open, and answer on the same thread cards.</div>
-                            <div class="student-service-zone-copy">No split detail pane here. Open one thread and moderate or reply inline.</div>
+                            <div class="lux-panel-title">Search, open, and answer on the same thread cards.</div>
+                            <div class="lux-panel-copy">No split detail pane here. Open one thread and moderate or reply inline.</div>
                         </div>
                         <span class="student-service-panel-chip">${filteredQuestions.length} question${filteredQuestions.length === 1 ? '' : 's'}</span>
                     </div>

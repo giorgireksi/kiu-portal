@@ -1,5 +1,7 @@
 # Design system convergence plan
 
+> **Status (2026-07):** Shared SSOT + bare `lux-full-paint` is live. Content dual-write on bare portals is paused; see [`visual-ssot.md`](visual-ssot.md). This plan is historical context — prefer visual-ssot / css-handoff for day-to-day edits.
+
 **Goal:** One visual design (materials + controls + shell patterns) across portal routes, with **less CSS shipped and less total CSS**, without big-bang rewrites.
 
 **Not the goal:** One 100k shared stylesheet. Peels alone. Deleting social/LMS domain structure.

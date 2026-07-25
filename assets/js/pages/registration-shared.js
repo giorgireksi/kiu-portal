@@ -368,7 +368,7 @@ function openLuxuryConfirmModal(config = {}) {
 
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
-    closeButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn';
+    closeButton.className = 'lux-ghost-btn social-neo-dialog-close-btn';
     closeButton.setAttribute('aria-label', 'Close');
     const closeIcon = document.createElement('i');
     closeIcon.className = 'fas fa-times';
@@ -388,12 +388,12 @@ function openLuxuryConfirmModal(config = {}) {
 
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
-    cancelButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn';
+    cancelButton.className = 'lux-ghost-btn social-neo-dialog-cancel-btn';
     cancelButton.textContent = 'Cancel';
 
     const confirmButton = document.createElement('button');
     confirmButton.type = 'button';
-    confirmButton.className = `social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn${danger ? ' social-neo-dialog-submit-btn--danger' : ''}`;
+    confirmButton.className = `lux-primary-btn social-neo-dialog-submit-btn${danger ? ' social-neo-dialog-submit-btn--danger' : ''}`;
     confirmButton.textContent = confirmLabel;
 
     footer.append(cancelButton, confirmButton);
@@ -488,7 +488,7 @@ function openAdminRegManageModal({
 
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
-    closeButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn';
+    closeButton.className = 'lux-ghost-btn social-neo-dialog-close-btn';
     closeButton.setAttribute('aria-label', 'Close');
     const closeIcon = document.createElement('i');
     closeIcon.className = 'fas fa-times';
@@ -503,7 +503,7 @@ function openAdminRegManageModal({
 
     const editButton = document.createElement('button');
     editButton.type = 'button';
-    editButton.className = 'social-neo-btn social-neo-btn-ghost admin-reg-manage-modal-action';
+    editButton.className = 'lux-ghost-btn admin-reg-manage-modal-action';
     const editIcon = document.createElement('i');
     editIcon.className = 'fas fa-edit';
     editIcon.setAttribute('aria-hidden', 'true');
@@ -517,7 +517,7 @@ function openAdminRegManageModal({
 
     const deleteButton = document.createElement('button');
     deleteButton.type = 'button';
-    deleteButton.className = 'social-neo-btn social-neo-btn-ghost admin-reg-manage-modal-action admin-reg-manage-modal-action--danger';
+    deleteButton.className = 'lux-ghost-btn admin-reg-manage-modal-action admin-reg-manage-modal-action--danger';
     const deleteIcon = document.createElement('i');
     deleteIcon.className = 'fas fa-trash';
     deleteIcon.setAttribute('aria-hidden', 'true');
@@ -536,7 +536,7 @@ function openAdminRegManageModal({
     footer.className = 'social-neo-form-actions social-neo-dialog-actions';
     const dismissButton = document.createElement('button');
     dismissButton.type = 'button';
-    dismissButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn';
+    dismissButton.className = 'lux-ghost-btn social-neo-dialog-cancel-btn';
     dismissButton.textContent = 'Close';
     footer.appendChild(dismissButton);
 
@@ -684,7 +684,7 @@ function openStructuredFormModal(config) {
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
     closeButton.id = 'kiu-structured-form-close';
-    closeButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn';
+    closeButton.className = 'lux-ghost-btn social-neo-dialog-close-btn';
     closeButton.setAttribute('aria-label', 'Close');
     const closeIcon = document.createElement('i');
     closeIcon.className = 'fas fa-times';
@@ -706,12 +706,12 @@ function openStructuredFormModal(config) {
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
     cancelButton.id = 'kiu-structured-form-cancel';
-    cancelButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn';
+    cancelButton.className = 'lux-ghost-btn social-neo-dialog-cancel-btn';
     cancelButton.textContent = 'Cancel';
 
     const submitButton = document.createElement('button');
     submitButton.type = 'submit';
-    submitButton.className = 'social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn';
+    submitButton.className = 'lux-primary-btn social-neo-dialog-submit-btn';
     submitButton.textContent = config.submitLabel || 'Save';
 
     footer.append(cancelButton, submitButton);

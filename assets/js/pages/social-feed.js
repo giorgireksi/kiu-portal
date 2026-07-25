@@ -559,7 +559,7 @@ function __kiuFeedExpose(map) {
         /* ── Assemble the feed panel layout ── */
         return `
             <div class="social-neo-feed-shell">
-                <section class="lux-soft-chrome lux-panel social-neo-card sn-mat-soft social-neo-feed-header-card">
+                <section class="social-neo-card sn-mat-soft social-neo-feed-header-card">
                     ${renderFeedHero(runtime, homeFilter, feedHeroMetrics, focusOptions, feedScopeId)}
                     <div class="social-neo-feed-header-divider" aria-hidden="true"></div>
                     ${composerMarkup}

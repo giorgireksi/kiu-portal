@@ -292,10 +292,10 @@
         ` : '';
         return `
             <div class="student-service-ticket-conversation-header">
-                <div class="student-service-zone-head student-service-ticket-conversation-head">
+                <div class="lux-panel-head student-service-ticket-conversation-head">
                     <div>
                         <div class="student-service-kicker">${kicker}</div>
-                        <div class="student-service-zone-title">${ssEscape(ticket.title)}</div>
+                        <div class="lux-panel-title">${ssEscape(ticket.title)}</div>
                     </div>
                     <div class="student-service-ticket-conversation-head-actions">
                         ${renderStudentServiceStatusBadge(ticket.status, {
@@ -441,10 +441,10 @@
         return `
             <div class="student-service-ticket-conversation student-service-ticket-conversation-placeholder is-inline" data-student-service-ticket-conversation="1">
                 <div class="student-service-ticket-conversation-header">
-                    <div class="student-service-zone-head student-service-ticket-conversation-head">
+                    <div class="lux-panel-head student-service-ticket-conversation-head">
                         <div>
                             <div class="student-service-kicker">Conversation</div>
-                            <div class="student-service-zone-title">${ssEscape(title)}</div>
+                            <div class="lux-panel-title">${ssEscape(title)}</div>
                         </div>
                     </div>
                 </div>
@@ -504,10 +504,10 @@
         }
         return `
             <section class="student-service-zone student-service-zone-find student-service-zone-inbox">
-                <div class="student-service-zone-head">
+                <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker">Inbox</div>
-                        <div class="student-service-zone-title">Your conversations with Student Service</div>
+                        <div class="lux-panel-title">Your conversations with Student Service</div>
                     </div>
                     <span class="student-service-panel-chip">${ticketFeed.length} conversation${ticketFeed.length === 1 ? '' : 's'}</span>
                 </div>
@@ -651,10 +651,10 @@
         const previewBody = selectedArticle.content || '';
         return `
             <div class="student-service-ticket-detail student-service-article-preview" data-student-service-hub-preview="1">
-                <div class="student-service-zone-head student-service-find-preview-head">
+                <div class="lux-panel-head student-service-find-preview-head">
                     <div>
                         <div class="student-service-kicker">Selected guidance</div>
-                        <div class="student-service-zone-title student-service-find-preview-title">${ssEscape(previewTitle)}</div>
+                        <div class="lux-panel-title student-service-find-preview-title">${ssEscape(previewTitle)}</div>
                     </div>
                 </div>
                 <div class="student-service-ticket-detail-meta">
@@ -715,13 +715,13 @@
             : '';
         return `
             <section class="student-service-zone student-service-zone-act">
-                <div class="student-service-zone-head">
+                <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker">Contact Student Service</div>
-                        <div class="student-service-zone-title">Start a clear private request in one pass.</div>
-                        <div class="student-service-zone-copy">This lane is for personal follow-up, office guidance, and cases that should not be public.</div>
+                        <div class="lux-panel-title">Start a clear private request in one pass.</div>
+                        <div class="lux-panel-copy">This lane is for personal follow-up, office guidance, and cases that should not be public.</div>
                     </div>
-                    <div class="student-service-zone-head-actions">
+                    <div class="lux-panel-head-actions">
                         <button type="button" class="student-service-mini-action lux-secondary-btn student-service-guidance-open-btn" data-student-service-open-guidance-modal="true" aria-haspopup="dialog"><i class="fas fa-book-open"></i> Browse rules & guidance</button>
                     </div>
                 </div>
@@ -781,11 +781,11 @@
     function renderStudentServiceResponderSummaryMarkup(visibleArticles, filteredArticles) {
         return `
             <section class="student-service-zone student-service-zone-ops">
-                <div class="student-service-zone-head">
+                <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker">Student Service</div>
-                        <div class="student-service-zone-title">Official guidance and private-case boundaries.</div>
-                        <div class="student-service-zone-copy">Professors and TAs should answer reusable academic questions in the Q&A lane. Private student cases, finance, and identity-sensitive follow-up stay with Student Service.</div>
+                        <div class="lux-panel-title">Official guidance and private-case boundaries.</div>
+                        <div class="lux-panel-copy">Professors and TAs should answer reusable academic questions in the Q&A lane. Private student cases, finance, and identity-sensitive follow-up stay with Student Service.</div>
                     </div>
                     <button type="button" class="student-service-mini-action" data-student-service-lane="qa"><i class="fas fa-comments"></i> Open Q&A lane</button>
                 </div>
@@ -802,10 +802,10 @@
     function renderStudentServiceResponderListMarkup(ui, filteredArticles, selectedArticle) {
         return `
             <section class="student-service-zone">
-                <div class="student-service-zone-head">
+                <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker">Rules & guidance</div>
-                        <div class="student-service-zone-title">Review reusable guidance before responding publicly.</div>
+                        <div class="lux-panel-title">Review reusable guidance before responding publicly.</div>
                     </div>
                 </div>
                 <div class="student-service-staff-search">
@@ -836,10 +836,10 @@
         return `
             <section class="student-service-zone">
                 <div class="student-service-ticket-detail">
-                    <div class="student-service-zone-head">
+                    <div class="lux-panel-head">
                         <div>
                             <div class="student-service-kicker">Selected guidance</div>
-                            <div class="student-service-zone-title">${ssEscape(selectedArticle?.title || 'Select an article to review')}</div>
+                            <div class="lux-panel-title">${ssEscape(selectedArticle?.title || 'Select an article to review')}</div>
                         </div>
                     </div>
                     ${selectedArticle ? `
@@ -975,17 +975,17 @@
                </div>`
             : '';
         const zoneHeadActionsMarkup = deskModeSwitchMarkup || articleActionsMarkup
-            ? `<div class="student-service-zone-head-actions">
+            ? `<div class="lux-panel-head-actions">
                 ${deskModeSwitchMarkup}
                 ${articleActionsMarkup}
             </div>`
             : '';
         return `
             <section class="student-service-zone">
-                <div class="student-service-zone-head">
+                <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker">${panel === 'articles' ? 'Knowledge base' : panel === 'qa' ? 'Public Q&A' : 'Inbox'}</div>
-                        <div class="student-service-zone-title">${panel === 'articles' ? 'Publish reusable guidance' : panel === 'qa' ? 'Moderate and answer public questions' : 'Work the next useful ticket'}</div>
+                        <div class="lux-panel-title">${panel === 'articles' ? 'Publish reusable guidance' : panel === 'qa' ? 'Moderate and answer public questions' : 'Work the next useful ticket'}</div>
                     </div>
                     ${zoneHeadActionsMarkup}
                 </div>
@@ -1065,10 +1065,10 @@
                     ${renderStudentServiceQuestionDetail(selectedQuestion, { mode: 'staff' })}
                 ` : `
                     <div class="student-service-ticket-detail">
-                        <div class="student-service-zone-head">
+                        <div class="lux-panel-head">
                             <div>
                                 <div class="student-service-kicker">Knowledge editor</div>
-                                <div class="student-service-zone-title">${ssEscape(editorArticle?.title || 'Create a new article')}</div>
+                                <div class="lux-panel-title">${ssEscape(editorArticle?.title || 'Create a new article')}</div>
                             </div>
                         </div>
                         <div class="student-service-ticket-detail-meta">

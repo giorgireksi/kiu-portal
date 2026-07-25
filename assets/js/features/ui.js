@@ -66,6 +66,9 @@ const INDEX_SYLLABUS_FILE_ROWS = [
     'Introduction to Probability and Statistics_Spring 2026.pdf'
 ];
 
+const LUX_MODAL_CLOSE_MS = 180;
+let luxModalCloseTimer = 0;
+
 function ensureModalOverlayBindings() {
     ensureLuxModalsCss();
     const overlay = document.getElementById('modal-overlay');
@@ -245,6 +248,8 @@ function openModal_ensureCss(type, title, body) {
     }
 
     if (!opened) return;
+    window.clearTimeout(luxModalCloseTimer);
+    overlay.classList.remove('is-closing');
     overlay.hidden = false;
     overlay.classList.add('active');
     if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
@@ -268,9 +273,15 @@ function closeAllModals(event) {
 
     if (!shouldClose) return;
 
+    if (overlay.classList.contains('is-closing')) return;
     overlay.classList.remove('active');
-    overlay.hidden = true;
-    document.querySelectorAll('#modal-overlay .modal-content').forEach((el) => setModalVisibility(el, false));
+    overlay.classList.add('is-closing');
+    window.clearTimeout(luxModalCloseTimer);
+    luxModalCloseTimer = window.setTimeout(() => {
+        overlay.classList.remove('is-closing');
+        overlay.hidden = true;
+        document.querySelectorAll('#modal-overlay .modal-content').forEach((el) => setModalVisibility(el, false));
+    }, LUX_MODAL_CLOSE_MS);
 }
 
 function showProgramCourses() {

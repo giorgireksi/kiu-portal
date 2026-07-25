@@ -313,7 +313,7 @@
             const canRemove = isOwn || isModerator;
             const canMarkFound = isOwn && item.status === 'lost';
             return `
-                <article class="lux-soft-chrome lux-panel social-neo-card social-neo-entity-card social-neo-lf-card">
+                <article class="social-neo-card social-neo-entity-card social-neo-lf-card">
                     <div class="social-neo-inline social-neo-inline-between-start-wrap social-neo-lf-card-head">
                         <div class="social-neo-person social-neo-person-start-gap-12 social-neo-lf-card-person">
                             ${avatar(author, 'social-neo-avatar-sm')}

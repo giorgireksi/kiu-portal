@@ -17,9 +17,6 @@ export const RETIRED_LMS_ROUTE_CSS = [
     'timetable-route.css'
 ];
 
-/** @deprecated use RETIRED_LMS_ROUTE_CSS */
-export const LMS_ROUTE_CSS_CACHE = 'purged';
-
 /**
  * Shared-paint contract: lms.html must NOT link retired route skins;
  * body keeps lux-page-bare + lux-full-paint (shared chrome paint).

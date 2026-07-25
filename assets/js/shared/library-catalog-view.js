@@ -16,7 +16,7 @@
 
     const READONLY_SHELL_MARKUP = `
         <div class="library-catalog-workspace" data-library-catalog-shell="1">
-            <section class="lux-panel library-catalog-filters-panel">
+            <section class="library-catalog-filters-panel">
                 <div class="lux-card-head">
                     <div>
                         <div class="lux-card-title">Browse Catalog</div>

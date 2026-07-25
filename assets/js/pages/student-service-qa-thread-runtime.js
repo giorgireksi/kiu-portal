@@ -310,15 +310,15 @@ function renderStudentServiceStudentQaFeedMarkup(ui, filteredQuestions, selected
 
         <section class="student-service-zone student-service-zone-find">
 
-            <div class="student-service-zone-head">
+            <div class="lux-panel-head">
 
                 <div>
 
                     <div class="student-service-kicker">Campus feed</div>
 
-                    <div class="student-service-zone-title">Search first, then open the thread that fits your question.</div>
+                    <div class="lux-panel-title">Search first, then open the thread that fits your question.</div>
 
-                    <div class="student-service-zone-copy">Questions stay in one central feed, and each thread expands inline instead of opening a separate detail pane.</div>
+                    <div class="lux-panel-copy">Questions stay in one central feed, and each thread expands inline instead of opening a separate detail pane.</div>
 
                 </div>
 

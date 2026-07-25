@@ -13,8 +13,8 @@ describe('home dashboard shell hover lift', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         expect(tokens).toContain('--home-fade-shadow-hover:');
         expect(tokens).toContain('--home-chip-hover-lift: -3px');
-        expect(tokens).toMatch(/body\.lux-route-home[\s\S]*--home-fade-shadow-hover:/);
-        expect(tokens).toMatch(/body\.lux-light-mode\.lux-route-home[\s\S]*--home-fade-shadow-hover:/);
+        expect(tokens).toMatch(/body\.lux-full-paint[\s\S]*--home-fade-shadow-hover:/);
+        expect(tokens).toMatch(/body\.lux-light-mode\.lux-full-paint[\s\S]*--home-fade-shadow-hover:/);
     });
 
     it('does not lift removed grid-widget frost hosts on hover', () => {
@@ -27,7 +27,7 @@ describe('home dashboard shell hover lift', () => {
 
     it('lifts only bordered soft-chrome chips inside widgets', () => {
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
-        const role = readSource('assets/css/index-home-role.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(render).not.toContain('home-hover-shell');
         expect(render).toMatch(/lux-list-row lux-soft-chrome home-hover-chip/);
         expect(render).toMatch(/lux-stat lux-soft-chrome home-hover-chip/);
@@ -45,31 +45,30 @@ describe('home dashboard shell hover lift', () => {
         expect(render).not.toMatch(/lux-widget-minimized-icon home-hover-chip/);
         expect(render).not.toMatch(/lux-widget-minimized-copy home-hover-chip/);
         expect(render).not.toMatch(/lux-admin-op-head home-hover-chip/);
-        expect(role).not.toMatch(/\.home-hover-shell:hover[\s\S]*translate3d\(0,\s*-3px,\s*0\)/);
-        expect(role).toMatch(/\.lux-soft-chrome\.home-hover-chip:hover[\s\S]*var\(--home-chip-hover-lift/);
-        expect(role).not.toMatch(/home-hover-chip:hover:not\(:has\(/);
-        expect(role).toMatch(/\.lux-soft-chrome\.home-hover-chip[\s\S]*contain:\s*paint/);
-        expect(role).toMatch(/\.lux-soft-chrome\.home-hover-chip::after/);
-        expect(role).not.toMatch(/home-hover-chip[\s\S]*filter:\s*brightness/);
-        expect(role).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.lux-soft-chrome\.home-hover-chip::after[\s\S]*display:\s*none/);
+        expect(fouc).not.toMatch(/\.home-hover-shell:hover[\s\S]*translate3d\(0,\s*-3px,\s*0\)/);
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*var\(--home-chip-hover-lift/);
+        expect(fouc).not.toMatch(/home-hover-chip:hover:not\(:has\(/);
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*contain:\s*paint/);
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*::after/);
+        expect(fouc).not.toMatch(/home-hover-chip[\s\S]*filter:\s*brightness/);
+        expect(fouc).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.home-hover-chip[\s\S]*display:\s*none/);
     });
 
     it('disables hover lift under reduced motion and at 0% transparency', () => {
-        const role = readSource('assets/css/index-home-role.css');
-        expect(role).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.lux-soft-chrome\.home-hover-chip[\s\S]*transform:\s*none/);
-        expect(role).toMatch(/html\[data-lux-transparency="0"\][\s\S]*\.lux-soft-chrome\.home-hover-chip:hover[\s\S]*transform:\s*none/);
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.home-hover-chip[\s\S]*transform:\s*none/);
+        expect(fouc).toMatch(/html\[data-lux-transparency="0"\][\s\S]*\.home-hover-chip[\s\S]*transform:\s*none/);
     });
 
     it('merges home sections into one frost shell without customize chrome', () => {
         const role = readSource('assets/css/index-home-role.css');
         const layout = readSource('assets/css/index-home-layout.css');
         const shell = readSource('assets/js/features/home-dashboard/shell.js');
-        expect(role).toContain('dashboard-hover-lift');
         expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome/);
-        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}background-image:\s*var\(--home-desk-glass-surface\)/);
-        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}var\(--home-desk-glass-fill/);
+        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}background-image:\s*var\(--lux-panel-surface\)/);
+        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}var\(--lux-panel-fill/);
         expect(role).toMatch(
-            /\.lux-home-merged\.lux-soft-chrome[\s\S]{0,800}backdrop-filter:\s*var\(--home-desk-glass-blur/
+            /\.lux-home-merged\.lux-soft-chrome[\s\S]{0,800}backdrop-filter:\s*var\(--lux-panel-blur-filter/
         );
         expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
         expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*--home-chip-surface-fill/);
@@ -80,6 +79,8 @@ describe('home dashboard shell hover lift', () => {
         expect(layout).toContain('.lux-home-band--split');
         expect(layout).toMatch(/\.lux-home-merged[\s\S]*gap:\s*0/);
         expect(shell).toContain('lux-home-merged');
+        expect(shell).toMatch(/lux-home-merged lux-soft-chrome/);
+        expect(shell).not.toContain('data-lux-glass-root="1"');
         expect(shell).toContain('lux-home-band');
         expect(shell).not.toContain('Customize dashboard');
         expect(shell).not.toContain('lux-grid-widget');
@@ -89,13 +90,17 @@ describe('home dashboard shell hover lift', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         const primer = readSource('assets/js/theme-primer.js');
         expect(tokens).toContain('--home-chip-glass-fill');
-        expect(tokens).toContain('--home-desk-glass-surface');
-        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-desk-glass-fill:\s*rgba\(8,\s*12,\s*21,\s*1\)/);
-        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-desk-glass-surface:[\s\S]*ellipse 42% 28% at 82% 14%/);
-        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-desk-glass-surface:[\s\S]*\* 0\.45\)/);
-        expect(tokens).toContain('--home-desk-glass-blur: blur(calc(8px * var(--lux-glass-blur-quality-mult, 1)));');
-        expect(tokens).not.toMatch(/--home-desk-glass-blur:[^;]*saturate/);
-        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-chip-glass-fill:\s*var\(--home-glass-fill\)/);
+        expect(tokens).toContain('--lux-panel-host-border');
+        expect(tokens).toContain('--lux-panel-host-shadow');
+        expect(tokens).toContain('--lux-panel-surface');
+        expect(tokens).toContain('--lux-panel-blur-filter');
+        expect(tokens).not.toContain('--home-desk-glass-surface');
+        expect(tokens).not.toContain('--home-desk-glass-blur');
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-full-paint[\s\S]*--lux-panel-fill:\s*rgba\(8,\s*12,\s*21,\s*1\)/);
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-full-paint[\s\S]*--lux-panel-surface:[\s\S]*ellipse 42% 28% at 82% 14%/);
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-full-paint[\s\S]*--lux-panel-surface:[\s\S]*\* 0\.45\)/);
+        expect(tokens).toContain('--lux-panel-blur-filter: blur(calc(8px * var(--lux-glass-blur-quality-mult, 1)));');
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-full-paint[\s\S]*--home-chip-glass-fill:\s*var\(--home-glass-fill\)/);
         expect(primer).toContain("'.lux-soft-chrome:not(.lux-home-merged)'");
         expect(primer).not.toMatch(/getHighTransparencySurfaceSelectors[\s\S]*'\.lux-soft-chrome',/);
     });

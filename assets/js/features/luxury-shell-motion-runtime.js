@@ -7,10 +7,15 @@
 
     const MOTION_CLASS = 'lux-shell-chrome-motion';
     const HOVER_BUSY_MS = 280;
+    /* Longest chrome motion is 420ms; anything still held after this is a lost
+     * end* pairing, and holding it would freeze the render governor (and with it
+     * every deferred transparency/blur refresh) for the rest of the session. */
+    const MOTION_WATCHDOG_MS = 1200;
 
     let motionRefCount = 0;
     let motionDeadline = 0;
     let motionTimer = null;
+    let motionWatchdogTimer = null;
     let bound = false;
     let hoverBusyUntil = 0;
     let hoverBusyTimer = null;
@@ -77,6 +82,18 @@
         }
     }
 
+    function armMotionWatchdog() {
+        if (motionWatchdogTimer) window.clearTimeout(motionWatchdogTimer);
+        motionWatchdogTimer = window.setTimeout(() => {
+            motionWatchdogTimer = null;
+            if (motionRefCount === 0 && performance.now() >= motionDeadline) return;
+            motionRefCount = 0;
+            motionDeadline = 0;
+            syncMotionClass();
+            refreshTransparencyAfterMotion();
+        }, MOTION_WATCHDOG_MS);
+    }
+
     function beginShellChromeMotion(ms = 180, reason = 'motion') {
         void reason;
         const duration = Math.max(0, Number(ms) || 0);
@@ -85,6 +102,7 @@
             motionDeadline = Math.max(motionDeadline, performance.now() + duration);
             scheduleMotionDeadlineCheck();
         }
+        armMotionWatchdog();
         syncMotionClass();
     }
 
@@ -186,8 +204,12 @@
 
         document.addEventListener('transitionrun', onShellTransformTransitionRun);
         document.addEventListener('transitionend', onShellTransformTransitionEnd);
+        document.addEventListener('transitioncancel', onShellTransformTransitionEnd);
         document.addEventListener('animationstart', onNavEnterAnimationStart, true);
         document.addEventListener('animationend', onNavEnterAnimationEnd, true);
+        // Re-rendered nav items cancel luxShellNavEnter mid-flight; without this the
+        // matching endShellChromeMotion never runs and the governor stays busy forever.
+        document.addEventListener('animationcancel', onNavEnterAnimationEnd, true);
         // Hover lifts: do not toggle MOTION_CLASS (keeps blur). Only busy-flag particles.
         document.addEventListener('pointerover', onShellChromePointerOver, true);
         document.addEventListener('pointermove', onShellChromePointerMove, { capture: true, passive: true });

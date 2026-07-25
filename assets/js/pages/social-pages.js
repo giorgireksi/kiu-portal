@@ -120,7 +120,7 @@
             },
         ];
         return `
-            <section class="lux-soft-chrome lux-panel social-neo-card social-neo-pages-hero">
+            <section class="social-neo-card social-neo-pages-hero">
                 <div class="social-neo-pages-hero-header">
                     <div class="social-neo-pages-hero-head">
                         <div class="social-neo-pages-hero-actions">
@@ -198,7 +198,7 @@
         const canPost = Boolean(page?.isManager || page?.isFollowing);
         if (!canPost) {
             return `
-                <article class="lux-soft-chrome lux-panel social-neo-card social-neo-page-compose-block">
+                <article class="social-neo-card social-neo-page-compose-block">
                     <div class="social-neo-section-head">
                         <div>
                             <strong>Join the conversation</strong>
@@ -216,7 +216,7 @@
             ? 'Post as the page officially or open a community thread.'
             : 'Followers can publish community posts to this page feed.';
         return `
-            <article class="lux-soft-chrome lux-panel social-neo-card social-neo-page-compose-block social-neo-page-compose-cta">
+            <article class="social-neo-card social-neo-page-compose-block social-neo-page-compose-cta">
                 <div class="social-neo-section-head">
                     <div>
                         <strong>${escape(title)}</strong>
@@ -312,7 +312,7 @@
             const pinnedCount = Array.isArray(page?.pinnedPostIds) ? page.pinnedPostIds.length : 0;
             const aboutText = pageAboutText(page);
             return `
-                <article class="lux-soft-chrome lux-panel social-neo-card social-neo-page-card social-neo-page-card-rich">
+                <article class="social-neo-card social-neo-page-card social-neo-page-card-rich">
                     <div class="social-neo-page-card-cover">
                         ${coverSrc ? `<img src="${escape(coverSrc)}" alt="${escape(text(page?.name || 'Page'))} cover">` : `<div class="social-neo-page-card-cover-fallback"></div>`}
                     </div>
@@ -370,7 +370,7 @@
             const editMode = Boolean(runtime.ui?.pageProfileEditMode && page?.isManager);
             if (editMode) {
                 return `
-                    <form class="lux-soft-chrome lux-panel social-neo-card social-neo-page-about-card social-neo-stack" data-form="update-page-profile" data-page-id="${escape(text(page?.id))}">
+                    <form class="social-neo-card social-neo-page-about-card social-neo-stack" data-form="update-page-profile" data-page-id="${escape(text(page?.id))}">
                         <div class="social-neo-section-head">
                             <div>
                                 <strong>Edit page profile</strong>
@@ -407,7 +407,7 @@
             const aboutText = pageAboutText(page);
             return `
                 <div class="social-neo-page-profile-layout">
-                    <article class="lux-soft-chrome lux-panel social-neo-card social-neo-page-about-card">
+                    <article class="social-neo-card social-neo-page-about-card">
                         <div class="social-neo-section-head">
                             <div>
                                 <strong>About ${escape(text(page?.name || 'this page'))}</strong>
@@ -426,7 +426,7 @@
                             <article class="social-neo-entity-card"><div><strong>Location</strong><span>${escape(text(page?.location || 'No location listed.'))}</span></div></article>
                         </div>
                     </article>
-                    <article class="lux-soft-chrome lux-panel social-neo-card social-neo-page-about-card social-neo-page-people-card">
+                    <article class="social-neo-card social-neo-page-about-card social-neo-page-people-card">
                         <div class="social-neo-section-head">
                             <div>
                                 <strong>People on this page</strong>
@@ -452,7 +452,7 @@
             const actionHref = normalizeLink(page?.actionUrl || page?.website || '');
             return `
                 <section class="social-neo-pages-shell">
-                    <article class="lux-soft-chrome lux-panel social-neo-card social-neo-page-profile">
+                    <article class="social-neo-card social-neo-page-profile">
                         <div class="social-neo-page-cover">
                             ${coverSrc ? `<img src="${escape(coverSrc)}" alt="${escape(text(page?.name || 'Page'))} cover">` : '<div class="social-neo-page-card-cover-fallback"></div>'}
                             <button class="social-neo-btn social-neo-btn-ghost social-neo-page-profile-back" type="button" data-action="page-profile-back">
@@ -800,7 +800,7 @@
             const followerCount = page?.followerCount || pageFollowerIdsFor(page).length || 0;
             const filterChip = (value, label) => `<button class="social-neo-pill social-neo-page-members-filter ${membersFilter === value ? 'is-active' : ''}" type="button" data-action="page-members-filter" data-filter="${escape(value)}">${escape(label)}</button>`;
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="lux-soft-chrome lux-panel social-neo-card social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--panel social-neo-dialog-card--lms-create social-neo-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="social-neo-card social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--panel social-neo-dialog-card--lms-create social-neo-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-neo-dialog-head social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Page</span>

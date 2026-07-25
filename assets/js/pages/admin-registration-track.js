@@ -352,7 +352,7 @@ function convertTrackTabForStudent(trackObj) {
 
 function buildAdminRegManageGearMarkup(attrs) {
     return `
-        <button type="button" class="admin-reg-manage-gear-btn admin-reg-icon-action" ${attrs} aria-label="Manage">
+        <button type="button" class="lux-icon-btn admin-reg-manage-gear-btn" ${attrs} aria-label="Manage">
             <i class="fas fa-cog" aria-hidden="true"></i>
         </button>
     `;
@@ -496,7 +496,7 @@ function renderAdminRegTabBar(activeTab) {
         if (tab.builtin) {
             return `
                 <button
-                    class="admin-reg-tab${activeClass}"
+                    class="admin-reg-tab lux-secondary-btn${activeClass}"
                     type="button"
                     data-admin-reg-tab="${escapeHtml(tab.id)}"
                     data-admin-tools-reg-tab="${escapeHtml(tab.id)}"
@@ -508,7 +508,7 @@ function renderAdminRegTabBar(activeTab) {
         }
         return `
             <button
-                class="admin-reg-tab${activeClass}"
+                class="admin-reg-tab lux-secondary-btn${activeClass}"
                 type="button"
                 data-admin-reg-tab="${escapeHtml(tab.id)}"
                 data-admin-tools-reg-tab="${escapeHtml(tab.id)}"
@@ -679,13 +679,13 @@ function renderAdminRegTrackTab(container, tabConfig) {
             <button type="button" data-admin-reg-add-program="1" data-admin-reg-tab="${escapeHtml(tabId)}" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
         <div class="admin-reg-program-layout admin-reg-program-layout--wide">
-            <div class="admin-reg-program-list-shell">
+            <div class="admin-reg-program-list-shell lux-soft-chrome">
                 <div class="admin-reg-program-list-head">
                     <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">${escapeHtml(tabConfig.programsLabel)}</div>
                     <span class="admin-reg-program-list-count">${programs.length}</span>
                 </div>
                 <div data-preserve-scroll-key="${escapeHtml(tabConfig.scrollKey)}" class="admin-reg-program-list">
-                    ${programs.length === 0 ? `<div class="admin-reg-program-list-placeholder">No programs yet</div>` : programs.map((program) => {
+                    ${programs.length === 0 ? `<div class="admin-reg-program-list-placeholder lux-empty-state">No programs yet</div>` : programs.map((program) => {
                         const checkedAttr = program === selectedProgram ? 'checked' : '';
                         return `
                             <div class="admin-reg-program-option admin-reg-program-option--wide${program === selectedProgram ? ' is-active' : ''}">

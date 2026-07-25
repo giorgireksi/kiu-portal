@@ -28,17 +28,18 @@ So: **shell/panel glass across portal = simple.** “The whole product UI with o
 | Look single source of truth | `assets/css/lux-tokens.css` → `--lux-panel-*`, `--lux-elev-*` |
 | Shared primitives | `.lux-panel-pro`, `.lux-focus-panel`, `.lux-soft-chrome` |
 
-**In scope:** all non-auth portal routes (timetable, LMS, social, staff, news, admin-*, gradebook, …).  
-**Exception:** home dashboard atmosphere (`lux-fouc-ht` + `index-home-*`). Auth shells later.
+**In scope:** all non-auth portal routes (timetable, LMS, social, staff, news, admin-*, gradebook, home desk, …).  
+**Outer host SSOT:** denser desk glass under `--lux-panel-fill` / `--lux-panel-surface` / `--lux-panel-blur-filter` / `--lux-panel-host-border` / `--lux-panel-host-shadow` (FOUC + bare page-shell + home desk). Soft-chrome = matte chips only. Auth shells later.  
+**One outer host per page:** never paint both `.lux-page-shell` and nested `.lux-panel` with blur (admin-tools demotes the shell; home uses merged desk).
 
 
 ## Token map (change look once)
 
 | Want | Edit in `lux-tokens.css` |
 |------|--------------------------|
-| Panel glass fill | `--lux-panel-surface`, `-soft` |
-| HT flat fill | `--lux-panel-ht-surface` |
-| Border / blur / elev | `--lux-panel-border*`, `-blur-filter`, `--lux-elev-*` |
+| Panel glass fill | `--lux-panel-fill`, `--lux-panel-surface`, `-soft` (soft = chips) |
+| Outer host blur | `--lux-panel-blur-filter` (denser 0.55× desk; redesign here) |
+| Outer host rim / glow | `--lux-panel-host-border`, `--lux-panel-host-shadow` |
 | Control chips | `--lux-panel-control`, `-control-soft` |
 | Primary button | `--lux-panel-cta-primary`, `-cta-mix`, `-cta-accent` |
 | Success / danger / warn btn | `--lux-panel-cta-success`, `-danger`, `-danger-strong`, `-warn` |
@@ -111,7 +112,8 @@ Owned: LMS · staff · students-admin · news · study-card · programs · chanc
 | Parallel glass dialects | **Collapsed** (LMS glass-fill/pro, warmglass, create modals, aorders modal, staff page) |
 | Shell chrome (sidebar/topbar/blur) | **Phase C** — panel tokens + responsive blur knobs |
 | `check:panels` in `npm run check` | **Done** (snowflakes + fade→panel alias guard) |
-| Home full unify | Optional exception (`--home-fade-*` / P3) |
+| Home desk outer glass | **Done** — home consumes `--lux-panel-*` / host rim tokens directly |
+| Home chip / fade atmosphere | Optional (`--home-fade-*` / soft-chrome) |
 | `.lux-panel-pro` on all markup | Optional when touching pages |
 | Elev snowflake migration | Gradual (ratchet baseline down only) |
 | Fail CI on raw gradient count | **No** — audit is evidence only |
@@ -123,7 +125,7 @@ Owned: LMS · staff · students-admin · news · study-card · programs · chanc
 | **P0** | Full panel recipe still hardcoded | Keep at **0**; fix immediately if it reappears |
 | **P1** | Shell/hero/card-like + often `!important` | **0** — keep at zero; any new P1 is a regression |
 | **P2** | Decorative / partial gradients | ~600 left (mostly unique one-offs: social brand, calendar markers, home glows); optional when editing a file |
-| **P3** | Home dashboard | Permanent exception unless product unifies home |
+| **P3** | Home chip/fade atmosphere | Optional; outer glass is panel SSOT |
 
 ### Smoke checklist (after token or panel CSS edits)
 
@@ -144,7 +146,7 @@ npm run audit:panels
 # → docs/panel-override-audit.md
 ```
 
-**Honesty:** token aliases green ≠ zero gradients. Panel glass is SSOT; accents, layout, and home still differ. See [panel-override-audit.md](./panel-override-audit.md).
+**Honesty:** token aliases green ≠ zero gradients. Outer host glass is panel SSOT (former desk); accents, layout, and soft-chrome chips still differ. See [panel-override-audit.md](./panel-override-audit.md).
 
 
 ## Freeze (phase A) — no new glass dialects

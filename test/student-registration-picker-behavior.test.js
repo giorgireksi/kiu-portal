@@ -11,7 +11,7 @@ describe('student registration picker behavior', () => {
         const html = readSource('registration.html');
         const studentRegistration = readSource('assets/js/pages/student-registration.js');
 
-        expect(html).toContain('student-registration.js?v=20260608-regfix1');
+        expect(html).toContain('student-registration.js?v=20260724-peelfix1');
         expect(html).toContain('registration-enrollment.js?v=20260608-regfix1');
         expect(studentRegistration).toContain("const REGISTRATION_PICKER_BUILD = '20260608-regfix1'");
         expect(studentRegistration).toContain('window.REGISTRATION_PICKER_BUILD = REGISTRATION_PICKER_BUILD');
@@ -55,7 +55,7 @@ describe('student registration picker behavior', () => {
         const primer = readSource('assets/js/theme-primer.js');
 
         expect(app).toContain('REGISTRATION_PICKER_ASSET_TOKEN');
-        expect(app).toContain("const PORTAL_CACHE_RESET_VERSION = '20260714-homeglass2'");
+        expect(app).toContain("const PORTAL_CACHE_RESET_VERSION = '20260723-adaptive1'");
         expect(primer).toContain("var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1'");
         expect(app).toContain('function normalizeRuntimeScriptKey(src)');
         expect(app).toContain('function removeRuntimeScriptsWithPath(pathname)');

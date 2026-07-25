@@ -1,5 +1,7 @@
 # Dead code cleanup rules
 
+> **Historical note (2026-07):** Bare dual-write paint was stripped; post-strip keep-lists / purged `*-route.css` readers / spent wire scripts are cleaned separately. Live stack SSOT: [`visual-ssot.md`](visual-ssot.md). Do not resurrect dedicated route glass skins.
+
 Phased hygiene for the portal monorepo. Prefer surgical deletes with evidence over mass rewrites.
 
 ## When to delete

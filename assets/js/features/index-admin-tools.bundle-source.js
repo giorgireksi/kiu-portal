@@ -57,50 +57,50 @@
         if (!shell.dataset.rendered) {
             shell.innerHTML = `
                 <div class="lux-admin-tools-page">
-                    <section class="lux-panel lux-admin-tools-curriculum-panel" id="lux-admin-curriculum-deck">
+                    <section class="lux-panel lux-admin-tools-curriculum-panel lux-soft-chrome" id="lux-admin-curriculum-deck" data-lux-glass-root="1">
                         <div class="lux-card-head lux-admin-tools-curriculum-panel-head">
                             <div class="lux-card-title">Curriculum Library</div>
                         </div>
 
-                        <div class="lux-admin-curriculum-control-band">
+                        <div class="lux-admin-curriculum-control-band lux-soft-chrome">
                             <label class="lux-program-field lux-admin-curriculum-select-wrap">
                                 <span>Semester filter</span>
-                                <select id="filter-curriculum-semester" name="filter_curriculum_semester" data-curriculum-semester-filter="1">
+                                <select class="lux-control" id="filter-curriculum-semester" name="filter_curriculum_semester" data-curriculum-semester-filter="1">
                                     <option value="all">All Semesters</option>
                                 </select>
                             </label>
                             <div class="lux-program-field lux-admin-curriculum-search-wrap">
                                 <span>Search subjects</span>
                                 <i class="fas fa-search"></i>
-                                <input id="admin-curriculum-search" name="admin_curriculum_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search subject code, title, prerequisite..." value="" data-curriculum-search="1">
+                                <input class="lux-control" id="admin-curriculum-search" name="admin_curriculum_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search subject code, title, prerequisite..." value="" data-curriculum-search="1">
                             </div>
                         </div>
 
                         <div class="lux-admin-curriculum-ops-panel">
                             <div class="lux-admin-curriculum-ops-grid" id="curriculum-ops-grid">
-                                <article class="lux-admin-curriculum-ops-tile">
-                                    <span>Total credits</span>
+                                <article class="lux-stat lux-soft-chrome home-hover-chip">
                                     <strong id="curriculum-ops-total-ects">0</strong>
+                                    <span>Total credits</span>
                                     <em id="curriculum-ops-total-ects-note">ECTS in program</em>
                                 </article>
-                                <article class="lux-admin-curriculum-ops-tile">
-                                    <span>Visible credits</span>
+                                <article class="lux-stat lux-soft-chrome home-hover-chip">
                                     <strong id="curriculum-ops-visible-ects">0</strong>
+                                    <span>Visible credits</span>
                                     <em id="curriculum-ops-visible-ects-note">Current filter</em>
                                 </article>
-                                <article class="lux-admin-curriculum-ops-tile">
-                                    <span>Modules</span>
+                                <article class="lux-stat lux-soft-chrome home-hover-chip">
                                     <strong id="curriculum-ops-modules">0</strong>
+                                    <span>Modules</span>
                                     <em id="curriculum-ops-modules-note">Curriculum blocks</em>
                                 </article>
-                                <article class="lux-admin-curriculum-ops-tile">
-                                    <span>Prerequisites</span>
+                                <article class="lux-stat lux-soft-chrome home-hover-chip">
                                     <strong id="curriculum-ops-prerequisites">0</strong>
+                                    <span>Prerequisites</span>
                                     <em id="curriculum-ops-prerequisites-note">Subjects with requirements</em>
                                 </article>
-                                <article class="lux-admin-curriculum-ops-tile">
-                                    <span>Module load</span>
+                                <article class="lux-stat lux-soft-chrome home-hover-chip">
                                     <strong id="curriculum-ops-module-load">--</strong>
+                                    <span>Module load</span>
                                     <em id="curriculum-ops-module-load-note">Selected module capacity</em>
                                 </article>
                             </div>
@@ -118,7 +118,7 @@
                                     <strong class="social-neo-dialog-title"><i class="fas fa-book-open" aria-hidden="true"></i> <span id="subject-builder-modal-title">Add Subject</span></strong>
                                     <span class="social-neo-dialog-subtitle registration-structured-modal-subtitle">Create a new course for the active faculty.</span>
                                 </div>
-                                <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" data-subject-builder-modal-close="1" aria-label="Close"><i class="fas fa-times"></i></button>
+                                <button type="button" class="lux-ghost-btn social-neo-dialog-close-btn" data-subject-builder-modal-close="1" aria-label="Close"><i class="fas fa-times"></i></button>
                             </div>
                             <div id="curriculum-subject-builder-card" class="lux-scrollbar lux-admin-tools-builder-body social-neo-dialog-body social-neo-dialog-body--event-create">
                                 <div class="social-neo-dialog-preview" data-builder-section="target">
@@ -145,8 +145,8 @@
                                     <div class="lux-admin-tools-semester-head social-neo-inline social-neo-events-toggle-row">
                                         <p class="lux-admin-tools-semester-hint" id="new-subject-semester-mode-hint" aria-live="polite">One semester — each selection replaces the current choice.</p>
                                         <div class="lux-semester-mode-segment social-neo-segmented-control" role="group" aria-label="Semester selection mode">
-                                            <button type="button" class="lux-semester-mode-segment__btn social-neo-btn social-neo-btn-ghost social-neo-btn-sm is-active" id="new-subject-semester-mode-single" data-semester-mode="replace" aria-pressed="true">Single</button>
-                                            <button type="button" class="lux-semester-mode-segment__btn social-neo-btn social-neo-btn-ghost social-neo-btn-sm" id="new-subject-semester-mode-multiple" data-semester-mode="add" aria-pressed="false">Multiple</button>
+                                            <button type="button" class="lux-semester-mode-segment__btn lux-ghost-btn is-active" id="new-subject-semester-mode-single" data-semester-mode="replace" aria-pressed="true">Single</button>
+                                            <button type="button" class="lux-semester-mode-segment__btn lux-ghost-btn" id="new-subject-semester-mode-multiple" data-semester-mode="add" aria-pressed="false">Multiple</button>
                                         </div>
                                     </div>
                                     <div class="social-neo-dialog-field lux-semester-picker-field lux-picker-field lux-universal-picker-field lux-admin-tools-semester-field" id="new-subject-semester-picker">
@@ -192,12 +192,12 @@
                                 </div>
                             </div>
                             <div class="social-neo-form-actions social-neo-dialog-actions lux-admin-tools-submit-row">
-                                <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-subject-builder-modal-close="1">Cancel</button>
-                                <button type="button" class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" id="save-curriculum-subject-btn" data-admin-tools-save-subject="1"><i class="fas fa-plus"></i> Save Subject</button>
+                                <button type="button" class="lux-ghost-btn social-neo-dialog-cancel-btn" data-subject-builder-modal-close="1">Cancel</button>
+                                <button type="button" class="lux-primary-btn social-neo-dialog-submit-btn" id="save-curriculum-subject-btn" data-admin-tools-save-subject="1"><i class="fas fa-plus"></i> Save Subject</button>
                             </div>
                         </form>
                     </div>
-                    <section class="lux-panel lux-admin-tools-registration-panel">
+                    <section class="lux-panel lux-admin-tools-registration-panel lux-soft-chrome" data-lux-glass-root="1">
                         <div class="lux-card-head lux-actions-between lux-admin-tools-registration-panel-head">
                             <div class="lux-card-title">Registration Setup</div>
                             <div class="lux-admin-tools-registration-head-actions" data-admin-reg-panel-head-actions hidden></div>

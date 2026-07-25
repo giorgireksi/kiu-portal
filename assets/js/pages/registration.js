@@ -547,41 +547,41 @@ function openEditStaffModal(memberId, memberType) {
         : '<div class="lux-empty-state admin-edit-staff-empty"><i class="fas fa-calendar-plus"></i><strong>No schedule rows yet</strong><span>Add a lecture or seminar row for this staff member.</span></div>';
 
     const modalHtml = `
-    <div id="edit-staff-modal-bg" data-edit-staff-overlay="1" class="admin-edit-staff-overlay">
-        <div class="admin-edit-staff-card">
-            <div class="admin-edit-staff-head">
-                <div>
-                    <div class="admin-edit-staff-title">Edit Staff Member</div>
-                    <div class="admin-edit-staff-subtitle">${escapeHtml(member.name || member.nameEn || memberId)} / ${escapeHtml(facultyLabel)}</div>
+    <div id="edit-staff-modal-bg" data-edit-staff-overlay="1" class="registration-structured-modal-backdrop" data-lux-transparency-exempt="1" role="dialog" aria-modal="true">
+        <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create admin-edit-staff-card" data-lux-transparency-exempt="1" data-lux-glass-root="1">
+            <div class="social-neo-section-head social-neo-dialog-head admin-edit-staff-head">
+                <div class="social-neo-dialog-heading">
+                    <strong class="social-neo-dialog-title admin-edit-staff-title">Edit Staff Member</strong>
+                    <span class="social-neo-dialog-subtitle admin-edit-staff-subtitle">${escapeHtml(member.name || member.nameEn || memberId)} / ${escapeHtml(facultyLabel)}</span>
                 </div>
-                <button type="button" data-edit-staff-action="close" class="admin-edit-staff-btn is-neutral"><i class="fas fa-times"></i> Close</button>
+                <button type="button" data-edit-staff-action="close" class="lux-ghost-btn social-neo-dialog-close-btn" aria-label="Close"><i class="fas fa-times"></i></button>
             </div>
-            <div class="admin-edit-staff-form" id="edit-staff-form" data-member-id="${escapeHtml(memberId)}" data-member-type="${escapeHtml(memberType)}" data-fac="${escapeHtml(fac)}">
+            <div class="admin-edit-staff-form social-neo-dialog-body social-neo-dialog-body--event-create lux-scrollbar" id="edit-staff-form" data-member-id="${escapeHtml(memberId)}" data-member-type="${escapeHtml(memberType)}" data-fac="${escapeHtml(fac)}">
                 <div class="admin-edit-staff-section-title"><i class="fas fa-user admin-edit-staff-section-icon"></i>Personal Information</div>
                 <div class="admin-edit-staff-grid-2">
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Name (Georgian)</label><input id="es-name" value="${escapeHtml(member.name || '')}" class="admin-edit-staff-control"></div>
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Name (English)</label><input id="es-name-en" value="${escapeHtml(member.nameEn || '')}" class="admin-edit-staff-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Name (Georgian)</label><input id="es-name" value="${escapeHtml(member.name || '')}" class="admin-edit-staff-control lux-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Name (English)</label><input id="es-name-en" value="${escapeHtml(member.nameEn || '')}" class="admin-edit-staff-control lux-control"></div>
                 </div>
                 <div class="admin-edit-staff-grid-3 is-tight">
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Rank</label><select id="es-rank" class="admin-edit-staff-control"><option ${member.title === 'Professor' ? 'selected' : ''}>Professor</option><option ${member.title === 'Associate Professor' ? 'selected' : ''}>Associate Professor</option><option ${member.title === 'Lecturer' ? 'selected' : ''}>Lecturer</option><option ${member.title === 'Visiting Professor' ? 'selected' : ''}>Visiting Professor</option><option ${member.title === 'Teaching Assistant' ? 'selected' : ''}>Teaching Assistant</option></select></div>
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Office</label><input id="es-office" value="${escapeHtml(member.office || '')}" class="admin-edit-staff-control"></div>
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Since (Year)</label><input id="es-joinyear" type="number" value="${escapeHtml(String(member.joinYear || 2024))}" class="admin-edit-staff-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Rank</label><select id="es-rank" class="admin-edit-staff-control lux-control"><option ${member.title === 'Professor' ? 'selected' : ''}>Professor</option><option ${member.title === 'Associate Professor' ? 'selected' : ''}>Associate Professor</option><option ${member.title === 'Lecturer' ? 'selected' : ''}>Lecturer</option><option ${member.title === 'Visiting Professor' ? 'selected' : ''}>Visiting Professor</option><option ${member.title === 'Teaching Assistant' ? 'selected' : ''}>Teaching Assistant</option></select></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Office</label><input id="es-office" value="${escapeHtml(member.office || '')}" class="admin-edit-staff-control lux-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Since (Year)</label><input id="es-joinyear" type="number" value="${escapeHtml(String(member.joinYear || 2024))}" class="admin-edit-staff-control lux-control"></div>
                 </div>
                 <div class="admin-edit-staff-grid-3 is-spacious">
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Email</label><input id="es-email" value="${escapeHtml(member.email || '')}" class="admin-edit-staff-control"></div>
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Phone</label><input id="es-phone" value="${escapeHtml(member.phone || '')}" class="admin-edit-staff-control"></div>
-                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Max Teaching Hours</label><input id="es-maxhours" type="number" value="${escapeHtml(String(member.maxHours || 12))}" class="admin-edit-staff-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Email</label><input id="es-email" value="${escapeHtml(member.email || '')}" class="admin-edit-staff-control lux-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Phone</label><input id="es-phone" value="${escapeHtml(member.phone || '')}" class="admin-edit-staff-control lux-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Max Teaching Hours</label><input id="es-maxhours" type="number" value="${escapeHtml(String(member.maxHours || 12))}" class="admin-edit-staff-control lux-control"></div>
                 </div>
                 <div class="admin-edit-staff-schedule-head">
                     <div class="admin-edit-staff-section-title"><i class="fas fa-calendar-alt admin-edit-staff-schedule-icon"></i>Teaching Schedule</div>
-                    <button type="button" data-edit-staff-action="add-row" class="admin-edit-staff-btn is-compact"><i class="fas fa-plus"></i> Add Row</button>
+                    <button type="button" data-edit-staff-action="add-row" class="lux-secondary-btn"><i class="fas fa-plus"></i> Add Row</button>
                 </div>
                 <div id="edit-sched-rows" class="admin-edit-staff-rows">${rowsHtml}</div>
-                <div class="admin-edit-staff-footer">
-                    <button type="button" data-edit-staff-action="delete" class="admin-edit-staff-btn is-danger"><i class="fas fa-trash"></i> Remove Staff</button>
+                <div class="admin-edit-staff-footer social-neo-dialog-actions">
+                    <button type="button" data-edit-staff-action="delete" class="lux-ghost-btn admin-reg-manage-modal-action--danger"><i class="fas fa-trash"></i> Remove Staff</button>
                     <div class="admin-edit-staff-actions">
-                        <button type="button" data-edit-staff-action="close" class="admin-edit-staff-btn is-neutral">Cancel</button>
-                        <button type="button" data-edit-staff-action="save" class="admin-edit-staff-btn is-primary"><i class="fas fa-save"></i> Save Changes</button>
+                        <button type="button" data-edit-staff-action="close" class="lux-ghost-btn">Cancel</button>
+                        <button type="button" data-edit-staff-action="save" class="lux-primary-btn"><i class="fas fa-save"></i> Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -640,7 +640,7 @@ function renderEditStaffScheduleRow(session = {}, index = 0) {
         <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Time</label><input type="time" value="${escapeHtml(session.time || '09:00')}" class="es-time admin-edit-staff-row-control"></div>
         <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Duration</label><select class="es-dur admin-edit-staff-row-control"><option value="50min" ${session.duration === '50min' ? 'selected' : ''}>50min</option><option value="80min" ${session.duration === '80min' ? 'selected' : ''}>80min</option><option value="110min" ${(session.duration || '110min') === '110min' ? 'selected' : ''}>110min</option><option value="170min" ${session.duration === '170min' ? 'selected' : ''}>170min</option></select></div>
         <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Seats</label><input type="number" min="1" value="${escapeHtml(String(getRegistrationGroupCapacity(session, getSuggestedSessionSeatCapacity(session.courseId, sessionType))))}" class="es-capacity admin-edit-staff-row-control"></div>
-        <div class="admin-edit-staff-row-action"><button type="button" data-edit-staff-action="remove-row" class="admin-edit-staff-row-remove"><i class="fas fa-trash-alt"></i></button></div>
+        <div class="admin-edit-staff-row-action"><button type="button" data-edit-staff-action="remove-row" class="lux-icon-btn admin-edit-staff-row-remove" aria-label="Remove row"><i class="fas fa-trash-alt"></i></button></div>
     </div>`;
 }
 
@@ -943,6 +943,7 @@ function renderSelectedCoursesTab() {
 }
 
 const MAX_SEMESTER_DROPDOWN = 12;
+window.MAX_SEMESTER_DROPDOWN = MAX_SEMESTER_DROPDOWN;
 const CUSTOM_SEMESTER_OPTION = '__custom_semester__';
 
 const normalizeSemesterList = window.normalizeSemesterList;
@@ -1076,7 +1077,7 @@ function populateAntiReqDropdown() {
                 : '<span class="registration-antireq-empty">No anti-requisites selected</span>'}
         </div>
         <div class="registration-antireq-toolbar">
-            <button type="button" data-antireq-action="clear" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm registration-antireq-clear-btn">Clear all</button>
+            <button type="button" data-antireq-action="clear" class="lux-ghost-btn registration-antireq-clear-btn">Clear all</button>
         </div>
         <div class="registration-antireq-options lux-admin-tools-antireq-options">
             ${subjects.length === 0
@@ -1451,10 +1452,10 @@ function ensureCurriculumLibraryWorkspaceShell(root) {
     root.dataset.curriculumWorkspaceShell = '1';
     root.setAttribute('data-lux-transparency-exempt', '1');
     root.innerHTML = `
-        <div class="lux-program-shell lux-admin-curriculum-shell lux-admin-tools-index-panel-shell">
+        <div class="lux-program-shell lux-admin-curriculum-shell">
             <div class="lux-program-grid lux-admin-curriculum-grid">
-                <section id="curriculum-module-rail-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--module-rail lux-admin-tools-index-subpanel"></section>
-                <section id="curriculum-subject-panel-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--subject-panel lux-admin-tools-index-subpanel"></section>
+                <section id="curriculum-module-rail-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--module-rail"></section>
+                <section id="curriculum-subject-panel-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--subject-panel"></section>
             </div>
         </div>
     `;
@@ -1465,11 +1466,8 @@ function refreshCurriculumLibraryPresentation() {
     if (workspaceRoot) {
         workspaceRoot.setAttribute('data-lux-transparency-exempt', '1');
     }
-    document.querySelectorAll(
-        '#curriculum-module-rail-region, #curriculum-subject-panel-region, .lux-admin-curriculum-control-band, .lux-admin-curriculum-ops-panel'
-    ).forEach((node) => {
-        node.classList.add('lux-admin-tools-index-subpanel');
-    });
+    // Subpanel stamp removed — alignment.js owns flat nested chrome.
+    // No class additions here to avoid race conditions with the alignment cleanup.
 }
 
 function renderCurriculumModuleRailRegion(context) {
@@ -1543,9 +1541,10 @@ function renderCurriculumSubjectPanelRegion(context) {
             ` : `
                 <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--panel curriculum-library-empty-state">
                     <i class="fas fa-layer-group"></i>
-                    <strong class="lux-empty-state__title">Select or create a module</strong>
-                    <span class="lux-empty-state__copy">Choose a module from the list or create one now to start organizing subjects.</span>
-                    <button type="button" class="lux-primary-btn curriculum-library-empty-state-action" data-curriculum-add-module="1"><i class="fas fa-plus"></i> Create Module</button>
+                    <strong class="lux-empty-state__title">${(context.modules && context.modules.length) ? 'Select a module' : 'Create a module in the list'}</strong>
+                    <span class="lux-empty-state__copy">${(context.modules && context.modules.length)
+                        ? 'Choose a module from the list to start organizing subjects.'
+                        : 'Use Create Module in the modules list to start organizing subjects.'}</span>
                 </div>
             `}
         </div>
@@ -1605,8 +1604,8 @@ function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFi
                         ${hasPrerequisite ? 'Requires' : 'Open'}
                     </span>
                     <div class="lux-subject-row__actions curriculum-library-subject-actions" role="group" aria-label="Subject actions">
-                        <button type="button" class="curriculum-library-subject-action-btn admin-reg-icon-action" data-curriculum-edit-subject="${escapeHtml(subject.id)}" aria-label="Edit ${escapeHtml(subject.id)}"><i class="fas fa-pen" aria-hidden="true"></i></button>
-                        <button type="button" class="curriculum-library-subject-action-btn admin-reg-icon-action admin-reg-icon-action--danger" data-curriculum-delete-subject="${escapeHtml(subject.id)}" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
+                        <button type="button" class="lux-icon-btn curriculum-library-subject-action-btn" data-curriculum-edit-subject="${escapeHtml(subject.id)}" aria-label="Edit ${escapeHtml(subject.id)}"><i class="fas fa-pen" aria-hidden="true"></i></button>
+                        <button type="button" class="lux-icon-btn curriculum-library-subject-action-btn curriculum-library-btn--danger" data-curriculum-delete-subject="${escapeHtml(subject.id)}" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
                     </div>
                 </div>
             </article>
@@ -1671,7 +1670,7 @@ function renderCurriculumTable() {
                     <td>${escapeHtml(formatSubjectSemestersLabel(normalizeSubjectSemesters(subject)))}</td>
                     <td>${escapeHtml(subject.cond || 'None')}</td>
                     <td>${escapeHtml(subject.antireq || 'None')}</td>
-                    <td><button type="button" data-curriculum-delete-subject="${escapeHtml(subject.id)}" class="curriculum-library-subject-action-btn admin-reg-icon-action admin-reg-icon-action--danger curriculum-library-table-delete-btn" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></td>
+                    <td><button type="button" data-curriculum-delete-subject="${escapeHtml(subject.id)}" class="lux-icon-btn curriculum-library-subject-action-btn curriculum-library-btn--danger curriculum-library-table-delete-btn" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></td>
                 </tr>
             `).join('');
     }

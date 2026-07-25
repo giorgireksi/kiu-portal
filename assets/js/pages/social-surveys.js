@@ -327,7 +327,7 @@
         return `
             <div class="social-neo-surveys-take-shell">
                 <button class="social-survey-back social-survey-mono" type="button" data-action="survey-take-close">&larr; Back to Surveys</button>
-                <header class="lux-soft-chrome lux-panel social-neo-card social-neo-survey-take-hero">
+                <header class="social-neo-card social-neo-survey-take-hero">
                     <div class="social-neo-section-head">
                         <div>
                             <strong>${escape(text(survey.title))}</strong>
@@ -338,7 +338,7 @@
                 </header>
                 <form class="social-neo-stack" data-form="survey-response" data-survey-id="${escape(text(survey.id))}">
                     ${questions.map((question, index) => `
-                        <section class="lux-soft-chrome lux-panel social-neo-card social-neo-survey-take-card" data-question-id="${escape(text(question.id))}" style="--survey-stagger: ${index}">
+                        <section class="social-neo-card social-neo-survey-take-card" data-question-id="${escape(text(question.id))}" style="--survey-stagger: ${index}">
                             <div class="social-neo-survey-take-card-head">
                                 <span class="social-neo-survey-take-card-index">Question ${index + 1} of ${questions.length}</span>
                                 <span class="social-neo-label">${escape(text(question.prompt))}${question.required === false ? '' : ' *'}</span>
@@ -528,7 +528,7 @@
 
         return `
             <div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="lux-soft-chrome lux-panel social-neo-card social-neo-dialog-card social-neo-dialog-card--lms-create social-neo-dialog-card--survey-create social-neo-dialog-card--survey-results social-neo-surveys-results-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="social-neo-card social-neo-dialog-card social-neo-dialog-card--lms-create social-neo-dialog-card--survey-create social-neo-dialog-card--survey-results social-neo-surveys-results-dialog" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-neo-dialog-head social-neo-surveys-hero-head social-neo-surveys-results-dialog-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker"><i class="fas fa-chart-column" aria-hidden="true"></i> Survey results</span>
@@ -580,7 +580,7 @@
         const hasResponded = Boolean(survey.viewerHasResponded);
         const canViewResults = Boolean(survey.viewerCanViewResults);
         return `
-            <article class="lux-soft-chrome lux-panel social-neo-card social-neo-entity-card social-neo-survey-card" data-survey-id="${escape(text(survey.id))}">
+            <article class="social-neo-card social-neo-entity-card social-neo-survey-card" data-survey-id="${escape(text(survey.id))}">
                 <div class="social-neo-inline social-neo-inline-between-start-wrap social-neo-survey-card-head">
                     <div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-survey-card-title-row">
@@ -862,7 +862,7 @@
         const isStaff = ['professor', 'ta', 'admin', 'student_service'].includes(userRole);
         if (isOfficial && !isStaff) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="lux-soft-chrome lux-panel social-neo-card social-neo-surveys-hero social-neo-surveys-create-hero social-neo-dialog-card--survey-create" data-lux-transparency-exempt="1">
+                <div class="social-neo-card social-neo-surveys-hero social-neo-surveys-create-hero social-neo-dialog-card--survey-create" data-lux-transparency-exempt="1">
                     <div class="social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Official surveys</span>

@@ -423,7 +423,7 @@
             }
             ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
             return `
-                <section class="lux-soft-chrome lux-panel social-neo-card">
+                <section class="social-neo-card">
                     <div class="social-neo-empty-hero">
                         <i class="fas fa-diagram-project"></i>
                         <strong>Loading Projects</strong>
@@ -734,7 +734,7 @@
             }
             ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
             return `
-                <section class="lux-soft-chrome lux-panel social-neo-card">
+                <section class="social-neo-card">
                     <div class="social-neo-empty-hero">
                         <i class="fas fa-briefcase"></i>
                         <strong>Loading Portfolio</strong>
@@ -749,7 +749,7 @@
             }
             ensureSocialProfileModule().then(() => queueDeferredModuleRender('profile-module')).catch(() => null);
             return `
-                <div class="lux-soft-chrome lux-panel social-neo-card">
+                <div class="social-neo-card">
                     <div class="social-neo-empty">Loading profile...</div>
                 </div>
             `;
@@ -786,7 +786,7 @@
             return `
                 <div class="social-neo-shell-drawer-backdrop" data-action="shell-drawer-close"></div>
                 <aside class="social-neo-shell-drawer" aria-label="Social navigation drawer">
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-neo-shell-drawer-profile social-neo-shell-drawer-profile-card">
+                    <section class="social-neo-card social-neo-shell-drawer-profile social-neo-shell-drawer-profile-card">
                         <div class="social-neo-shell-drawer-head">
                             <button class="social-neo-person social-neo-clickable social-neo-person-start-gap-12 social-neo-shell-drawer-profile-chip" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}">
                                 ${avatar(user)}
@@ -802,7 +802,7 @@
                             <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-drawer-action-btn" type="button" data-action="panel-messages"><i class="fas fa-paper-plane"></i> Messages</button>
                         </div>
                     </section>
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-neo-shell-drawer-nav-card">
+                    <section class="social-neo-card social-neo-shell-drawer-nav-card">
                         <div class="social-neo-sidebar-nav social-neo-shell-drawer-nav">
                             ${panels.map((panel) => `
                                 <button class="social-neo-side-link social-neo-shell-drawer-nav-btn ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">

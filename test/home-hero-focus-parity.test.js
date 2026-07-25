@@ -46,8 +46,9 @@ describe('home hero focus LMS parity', () => {
         expect(homeCss).toMatch(
             /body\.lux-unified-shell:not\(\.lux-route-students-admin\) #page-home #lux-home-shell[\s\S]*?\.lux-soft-chrome/
         );
-        expect(homeCss).toContain('--home-desk-glass-surface');
+        expect(homeCss).toContain('--lux-panel-surface');
         expect(homeCss).not.toContain('var(--lux-home-panel-fill');
+        expect(homeCss).not.toContain('--home-desk-glass-surface');
     });
 
     it('styles focus panel with LMS soft-chrome material (no nested mega-glass)', () => {
@@ -57,8 +58,8 @@ describe('home hero focus LMS parity', () => {
         expect(homeCss).toContain('.lux-home-merged :is(');
         expect(homeCss).toContain('.lms-hero-focus');
         expect(tokens).toContain('--home-fade-blur');
-        // Legacy grid uses single host blur; merged desk uses --home-desk-glass-blur.
-        expect(homeCss).toMatch(/backdrop-filter:\s*var\(--home-desk-glass-blur/);
+        // Legacy grid / merged desk: single host blur via panel SSOT.
+        expect(homeCss).toMatch(/backdrop-filter:\s*var\(--lux-panel-blur-filter/);
         expect(homeCss).toMatch(
             /html\[data-lux-transparency="0"\] body\.lux-unified-shell[\s\S]{0,1200}backdrop-filter:\s*none !important/
         );
@@ -98,9 +99,9 @@ describe('home hero focus LMS parity', () => {
     it('shields home hero shells via merged desk and surface chips without second frost', () => {
         const css = readHomeDashboardCss();
         expect(css).toContain('.lux-home-merged.lux-soft-chrome');
-        expect(css).toContain('--home-desk-glass-surface');
+        expect(css).toContain('--lux-panel-surface');
         expect(css).not.toContain('.lms-hero-v2');
-        expect(css).toMatch(/backdrop-filter:\s*var\(--home-desk-glass-blur/);
+        expect(css).toMatch(/backdrop-filter:\s*var\(--lux-panel-blur-filter/);
         expect(css).toContain('.lux-home-merged :is(');
         expect(css).toContain('.lms-hero-focus');
         expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
@@ -128,17 +129,16 @@ describe('home hero focus LMS parity', () => {
         expect(css).toContain('.lux-pill');
         expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-list-row\.lux-soft-chrome[\s\S]*var\(--lux-soft-chrome-surface/);
         expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-list-row\.lux-soft-chrome[\s\S]*--home-chip-surface-fill/);
-        expect(transparency).toContain('Soft-chrome / focus-panel / liquid glass CTAs');
         expect(transparency).toContain("el.classList.contains('lux-soft-chrome')");
+        expect(transparency).toContain('shouldKeepHomeFadeCssBackground');
     });
 
 
     it('dashboard action buttons share primary framed capsule look', () => {
         const css = readHomeDashboardCss();
-        expect(css).toContain('var(--lux-btn-well)');
-        expect(css).toContain('var(--lux-btn-border-solid');
-        expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?:is\(\.lux-primary-btn, \.lux-secondary-btn, \.lux-admin-op-btn/);
-        expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-ghost-btn[\s\S]*?var\(--lux-btn-ghost-well/);
+        const controls = readSource('assets/css/lux-controls.css');
+        expect(controls).toContain('var(--lux-btn-well)');
+        expect(controls).toContain('var(--lux-btn-border-solid');
         expect(css).toContain('.lux-admin-op-btn');
         expect(css).not.toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-ghost-btn[\s\S]*?var\(--lux-btn-frame-metal/);
     });
@@ -146,14 +146,15 @@ describe('home hero focus LMS parity', () => {
 
     it('dashboard alert panels use soft-chrome material (not green wash)', () => {
         const css = readHomeDashboardCss();
+        const primitives = readSource('assets/css/lux-layout-primitives.css');
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
         expect(render).toContain('lux-panel lux-soft-chrome lux-alert');
         expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-alert(?:\.lux-soft-chrome|\s*\{)/);
         expect(css).toContain('var(--lux-soft-chrome-surface');
-        // tone on icon, not full green gradient wash
-        expect(css).toMatch(/\.lux-alert(?:\.is-green|:is\([^)]*is-green[^)]*\))[\s\S]{0,120}\.lux-alert-icon/);
-        expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-alert\.is-green\s*\{/);
-        expect(css).toMatch(/\.lux-alert(?:\.is-green|:is\([^)]*is-green[^)]*\))[\s\S]{0,400}background-image:\s*none(?:\s*!important)?/);
+        // tone on icon, not full green gradient wash (shared primitives)
+        expect(primitives).toMatch(/\.lux-alert(?:\.is-green|:is\([^)]*is-green[^)]*\))[\s\S]{0,120}\.lux-alert-icon|\.lux-alert:is\([\s\S]*is-green[\s\S]*\) \.lux-alert-icon/);
+        expect(primitives).toContain('.lux-alert.is-green');
+        expect(primitives).toMatch(/\.lux-alert:is\([\s\S]*is-green[\s\S]*\)[\s\S]{0,200}background-image:\s*none/);
     });
 
 
@@ -168,7 +169,7 @@ describe('home hero focus LMS parity', () => {
         const layout = readSource('assets/css/index-home-layout.css');
         expect(widgets).toContain('.lux-builder-card');
         expect(widgets).not.toMatch(/\.lux-grid-widget\s*>\s*\.lux-grid-widget-body/);
-        expect(widgets).toMatch(/\.lux-builder-card \.lux-list \{ flex: 0 1 auto; min-height: 0; overflow: visible; \}/);
+        expect(widgets).toMatch(/\.lux-builder-card \.lux-list\s*\{[\s\S]*?flex:\s*0 1 auto;[\s\S]*?min-height:\s*0;[\s\S]*?overflow:\s*visible/);
         expect(layout).not.toContain('Dashboard orbital gem scrollbar');
     });
 
@@ -192,7 +193,7 @@ describe('home hero focus LMS parity', () => {
     it('does not ship lazy editor CSS with the static home entry', () => {
         const css = readHomeDashboardCss();
         expect(css).toContain('var(--lux-soft-chrome-surface');
-        expect(css).toMatch(/backdrop-filter:\s*var\(--home-desk-glass-blur/);
+        expect(css).toMatch(/backdrop-filter:\s*var\(--lux-panel-blur-filter/);
         expect(existsSync(join(process.cwd(), 'assets/css/index-home-editor.css'))).toBe(false);
     });
 });

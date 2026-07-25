@@ -1,7 +1,7 @@
-/* READABILITY: index-only FOUC/HT + atmosphere. Panel glass→lux-tokens §3 paint.
- * §1 pending/HT · §2 light HT · §3 dashboard atmosphere */
+/* READABILITY: FOUC/HT + atmosphere for lux-full-paint portals (dashboard + bare).
+ * Panel glass→lux-tokens §3 paint. §1 pending/HT · §2 light HT · §3 dashboard atmosphere */
 /* ── §1 pending/HT overrides ── */
-/* lux-fouc-ht.css — index FOUC/HT + dashboard atmosphere (performance glass knobs → lux-tokens.css (paint section)) */
+/* lux-fouc-ht.css — shared FOUC/HT + atmosphere on full-paint portals (performance glass knobs → lux-tokens.css) */
 html.lux-transparency-pending body:not(.lux-light-mode) :is( .lux-card, .lux-panel, .lux-subcard, .lux-page-shell, .lux-dashboard-section, .lux-stat, .lux-hero, .lux-grid-widget, .lux-builder-card, .page-hero ) {
   background: var(--lux-panel-surface, linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))));
   background-image: none;
@@ -207,6 +207,18 @@ body[data-lux-background-mode='peak'] #lux-bg-overlay, body[data-lux-background-
 body.lux-light-mode[data-lux-background-mode='peak'] #lux-bg-overlay, body.lux-light-mode[data-lux-background-mode='layered'] #lux-bg-overlay, body.lux-light-mode[data-lux-background-mode='orbit'] #lux-bg-overlay, body.lux-light-mode[data-lux-background-mode='corners'] #lux-bg-overlay, body.lux-light-mode:not([data-lux-background-mode]) #lux-bg-overlay {
   background: radial-gradient(circle at 16% 14%, rgba(var(--lux-bg-glow-rgb), 0.12), transparent 24%), radial-gradient(circle at 82% 20%, rgba(var(--lux-accent-rgb), 0.09), transparent 22%), linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(239, 235, 228, 0.08));
 }
+/* Animation presentation — shared on all full-paint portals (was home-only). */
+body[data-lux-background-animation="off"] #lux-bg-canvas,
+body[data-lux-background-animation="off"] #lux-bg-overlay {
+  opacity: 0;
+  pointer-events: none !important;
+}
+html body[data-lux-background-animation="on"] #lux-bg-canvas { opacity: 1; filter: none; }
+html body[data-lux-background-animation="on"] #lux-bg-overlay {
+  opacity: 0;
+  background: transparent;
+  pointer-events: none !important;
+}
 .lux-user-menu {
   position: absolute;
   top: calc(100% + 10px);
@@ -290,8 +302,33 @@ body.lux-light-mode .lux-user-menu button::before {
 body.lux-light-mode .lux-user-menu {
   background: linear-gradient(180deg, rgba(252, 249, 245, 0.98), rgba(241, 235, 226, 0.98));
 }
-body.lux-light-mode .lux-pill, body.lux-light-mode .lux-stat, body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lux-light-mode .lux-user-chip, body.lux-light-mode .lux-icon-btn, body.lux-light-mode .lux-quick-btn, body.lux-light-mode .lux-strip-card, body.lux-light-mode .lux-hero-side, body.lux-light-mode .lux-utility-item {
+body.lux-light-mode .lux-pill, body.lux-light-mode .lux-stat, body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lux-light-mode .lux-user-chip, body.lux-light-mode .lux-quick-btn, body.lux-light-mode .lux-strip-card, body.lux-light-mode .lux-hero-side, body.lux-light-mode .lux-utility-item {
   background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha)));
+}
+/* Topbar CTAs match lux-ghost-btn color-fade wells (not FOUC chip wash / secondary soft) */
+body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-picker-btn, .lux-icon-btn, .lux-sidebar-toggle-btn, .lux-topbar-editor-btn) {
+  background: var(--lux-btn-ghost-well, var(--lux-btn-well));
+  background-origin: padding-box;
+  background-clip: padding-box;
+  border-width: var(--lux-btn-frame-width, 3.5px);
+  border-style: solid;
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
+  box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow));
+  color: var(--lux-btn-ghost-label, var(--lux-btn-label, #f7fbff));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-picker-btn, .lux-icon-btn, .lux-sidebar-toggle-btn, .lux-topbar-editor-btn):is(:hover, .is-active, [aria-expanded="true"], :focus-visible) {
+  background: var(--lux-btn-ghost-well-hover, var(--lux-btn-well-hover, var(--lux-btn-ghost-well, var(--lux-btn-well))));
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  box-shadow: var(--lux-btn-ghost-shadow-hover, var(--lux-btn-frame-shadow-hover));
+  color: var(--lux-btn-ghost-label, var(--lux-btn-label, #f7fbff));
+}
+body.lux-full-paint.lux-unified-shell.lux-light-mode #lux-topbar :is(.lux-picker-btn, .lux-icon-btn, .lux-sidebar-toggle-btn, .lux-topbar-editor-btn),
+html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-picker-btn, .lux-icon-btn, .lux-sidebar-toggle-btn, .lux-topbar-editor-btn) {
+  color: var(--lux-btn-ghost-label, var(--lux-text, #1d2633));
+  text-shadow: none;
 }
 .lux-utility-panel {
   position: absolute;
@@ -351,13 +388,111 @@ body.lux-light-mode .lux-pill, body.lux-light-mode .lux-stat, body.lux-light-mod
   }
 }
 .lux-hero { min-height: 240px; padding: 26px; }
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) :is(.page-hero, .lux-panel, .lux-alert) {
-  background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha)));
-  border: 1px solid var(--lux-border);
-  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.03);
-  backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
+/* Outer glass host SSOT — denser desk panel tokens (redesign via lux-tokens). */
+body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert) {
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  border-radius: var(--lux-panel-radius, 22px);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
 }
+
+/* Global soft-chrome inner surface paint — accent fill, glow border, elevation
+ * Applies to inner chips/shells inside panels (not outer glass hosts like .lux-panel/.lux-alert).
+ * Admin-tools: .lux-section-card is layout-only under the outer glass host (no second paint). */
+body.lux-unified-shell:not(.lux-route-admin-tools) :is(
+  .lux-soft-chrome:not(.lux-panel):not(.lux-alert):not(.lux-hero):not(.lux-page-shell):not(.lux-home-merged),
+  .lux-section-card
+),
+body.lux-route-admin-tools.lux-unified-shell .lux-soft-chrome:not(.lux-panel):not(.lux-alert):not(.lux-hero):not(.lux-page-shell):not(.lux-home-merged) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid color-mix(
+    in srgb,
+    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.75)) 42%,
+    var(--lux-soft-chrome-border)
+  );
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.40)),
+    0 0 12px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.22)),
+    var(--lux-soft-chrome-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+/* Global luxury hover motion & ambient radial glow for leaf panels, cards, tiles, and chips.
+ * IMPORTANT: Exclude structural containers that hold popups — the hover transform
+ * creates a stacking context that traps absolutely-positioned child panels.
+ * Excluded: .lux-topbar-shell, .lux-page-shell, .lux-sidebar-nav, .lux-alert,
+ *           .lux-admin-curriculum-control-band (holds picker dropdowns),
+ *           admin-tools .lux-section-card (nested under glass host). */
+body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card),
+body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card) {
+  position: relative;
+  isolation: isolate;
+  contain: paint;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+}
+
+body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card)::after,
+body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card) > *,
+body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card) > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover,
+  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover::after,
+  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover::after {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card),
+  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card) {
+    transition: border-color 0.15s ease;
+  }
+  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card)::after,
+  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card)::after {
+    display: none;
+  }
+  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover,
+  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover {
+    transform: none;
+  }
+}
+
+html[data-lux-transparency="0"] body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover,
+html[data-lux-transparency="0"] body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover {
+  transform: none;
+  box-shadow: none;
+}
+
 body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lux-light-mode .lux-control-btn {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(245, 236, 225, 0.52));
   border-color: rgba(86, 62, 36, 0.12);

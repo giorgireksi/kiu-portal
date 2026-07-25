@@ -24,7 +24,7 @@ Machine SSOT (JS): [`tools/findability-manifest.json`](../tools/findability-mani
 | <a id="css-messenger"></a>`css.messenger` | Messenger / notif / call layout | `assets/css/layout-portal.css` | lazy `messenger.js` → `ensureLayoutPortalCss` |
 | <a id="css-droplist"></a>`css.droplist` | Picker droplist paint | `assets/css/lux-droplist.css` | lazy `ensureLuxDroplistCss` |
 | <a id="css-home"></a>`css.home-dashboard` | Home layout / widgets / role | `assets/css/index-home-layout.css`, `assets/css/index-home-widgets.css`, `assets/css/index-home-role.css` | eager `index.html` (+ lazy editor) |
-| <a id="css-fouc"></a>`css.home-fouc-ht` | Home FOUC / HT atmosphere | `assets/css/lux-fouc-ht.css` | eager `index.html` only |
+| <a id="css-fouc"></a>`css.home-fouc-ht` | Shared FOUC / HT atmosphere | `assets/css/lux-fouc-ht.css` | eager on all `lux-full-paint` portals |
 
 ## social
 

@@ -9,7 +9,6 @@ function readSource(relativePath) {
 describe('planner legacy delegation regressions', () => {
     it('keeps legacy scheduler and broad-calendar interactions on delegated hooks', () => {
         const plannerSource = readSource('assets/js/pages/planner.js');
-        const routeCss = readSource('assets/css/admin-scheduler-route.css');
 
         expect(plannerSource).toContain('function bindPlannerLegacyDelegates()');
         expect(plannerSource).not.toContain('function ensurePlannerLegacyInteractiveStyles()');
@@ -53,26 +52,6 @@ describe('planner legacy delegation regressions', () => {
         expect(plannerSource).not.toContain('class="calendar-event-card" data-scheduler-edit="1" data-scheduler-course="${escapeHtml(si.courseId)}" data-scheduler-group="${escapeHtml(si.id)}" style="position: absolute;');
         expect(plannerSource).not.toContain('<div style="font-weight: 700; color: #201f1e; font-size: 11px;');
         expect(plannerSource).not.toContain('style="top: ${topPx}px; height: ${heightPx - 8}px;"');
-        expect(routeCss).toContain('.sch-palette-group {');
-        expect(routeCss).toContain('.sch-palette-item {');
-        expect(routeCss).toContain('.sch-palette-item.is-selected {');
-        expect(routeCss).toContain('.sch-palette-empty {');
-        expect(routeCss).toContain('.sch-palette-tone-cs {');
-        expect(routeCss).toContain('.lux-calendar-event.lux-calendar-event--academic {');
-        expect(routeCss).toContain('.lux-calendar-event.lux-calendar-event--deadline {');
-        expect(routeCss).toContain('.sch-board-shell {');
-        expect(routeCss).toContain('.sch-board-header {');
-        expect(routeCss).toContain('.sch-board-time-slot {');
-        expect(routeCss).toContain('.sch-board-lane.is-divider {');
-        expect(routeCss).toContain('.sch-grid-slot {');
-        expect(routeCss).toContain('.sch-event-card {');
-        expect(routeCss).toContain('.sch-event-card.is-cs {');
-        expect(routeCss).toContain('top: var(--sch-event-top, 0px);');
-        expect(routeCss).toContain('height: var(--sch-event-height, 0px);');
-        expect(routeCss).toContain('.sch-event-draft-badge {');
-        expect(routeCss).toContain('.sch-event-card-utility--delete {');
-        expect(routeCss).toContain('.grid-slot-interactive:hover {');
-        expect(routeCss).toContain('.calendar-event-card:hover {');
         expect(plannerSource).toContain('data-bc-nav="-1"');
         expect(plannerSource).toContain('data-bc-year="${y}"');
         expect(plannerSource).toContain('data-bc-date="${dateStr}"');

@@ -84,7 +84,7 @@ describe('global interaction performance guardrails', () => {
 
     expect(transparency).toContain('const transparencySignature = [');
     expect(transparency).toContain('el.dataset.luxTransparencySignature === transparencySignature');
-    expect(transparency).toContain('Early signature skip');
+    expect(transparency).toContain('LUX_TRANSPARENCY_SURFACE_CACHE.signature === signature');
     expect(transparency).toContain('el.dataset.luxTransparencySignature = transparencySignature;');
   });
 
@@ -546,7 +546,7 @@ describe('global interaction performance guardrails', () => {
 
     expect(transparency).toContain('__luxTransparencyBootRefreshScheduled');
     expect(transparency).toContain('function scheduleLuxuryTransparencyBootRefresh');
-    expect(transparency).toContain('Early signature skip');
+    expect(transparency).toContain('LUX_TRANSPARENCY_SURFACE_CACHE.signature === signature');
     expect(transparency).toContain('const force = options?.force === true');
     expect(visualRuntime).toContain('function pauseLuxuryVisualObservers()');
     expect(visualRuntime).toContain('function resumeLuxuryVisualObservers()');
@@ -804,7 +804,9 @@ describe('global interaction performance guardrails', () => {
     expect(transparency).toContain('isHomeLegacyGridInnerPanel');
     const bareLite = readSource('assets/css/lux-page-bare-lite.css');
     expect(bareLite).toContain('body.lux-page-bare .lux-page-shell');
-    expect(bareLite).not.toMatch(/backdrop-filter:\s*none/);
+    // Global bare blur kill forbidden; scoped admin-tools page-shell demotion is OK.
+    expect(bareLite).not.toMatch(/body\.lux-page-bare\s*\{[^}]*backdrop-filter:\s*none/);
+    expect(bareLite).toContain('body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell');
     expect(bareLite).not.toMatch(/backdrop-filter:\s*var\(--lux-panel-blur-filter/);
     expect(shellCss).toMatch(/body\.lux-page-bare \.lux-page-shell[\s\S]*backdrop-filter:\s*var\(--lux-panel-blur-filter/);
     expect(shellCss).not.toMatch(/body\.lux-page-bare \.lux-page-shell :is\(\.page-hero, \.lux-panel, \.lux-alert\)[\s\S]*backdrop-filter:\s*none/);
@@ -823,8 +825,8 @@ describe('global interaction performance guardrails', () => {
     expect(indexRuntime).toContain('requestIdleCallback');
     expect(indexRuntime).toContain('#lux-home-shell .lux-home-grid');
     expect(indexRuntime).toContain('#page-admin-scheduler .sch-grid-shell');
-    expect(foucCss).toMatch(/\[data-lux-offscreen="1"\][\s\S]*backdrop-filter:\s*none !important/);
-    expect(foucCss).not.toMatch(/\[data-lux-offscreen="1"\][\s\S]*box-shadow:\s*none/);
+    expect(foucCss).toMatch(/\[data-lux-offscreen="1"\]\s*\{\s*backdrop-filter:\s*none !important/);
+    expect(foucCss).not.toMatch(/\[data-lux-offscreen="1"\]\s*\{[^}]*box-shadow:\s*none/);
     expect(foucCss).toMatch(/html\.lux-high-transparency[\s\S]*\.lux-home-merged\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);
     expect(shellCss).toMatch(
         /body\.lux-full-paint\.lux-unified-shell #lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?backdrop-filter:\s*none/

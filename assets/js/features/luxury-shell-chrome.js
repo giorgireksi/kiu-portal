@@ -1,4 +1,4 @@
-/* Luxury shell chrome runtime extracted from index-luxury.js. */
+
 
 function getLuxurySharedConfig() {
     return window.__KIU_LUXURY_SHARED || {};
@@ -192,10 +192,7 @@ function focusFirstInteractive(root, preferredSelector = '') {
     if (!root || typeof root.querySelector !== 'function') return;
     const selectors = [
         preferredSelector,
-        'button:not([disabled])',
-        '[href]',
-        'input:not([disabled])',
-        'select:not([disabled])',
+        'button:not([disabled])', '[href]', 'input:not([disabled])', 'select:not([disabled])',
         'textarea:not([disabled])',
         '[tabindex]:not([tabindex="-1"])'
     ].filter(Boolean);
@@ -261,59 +258,9 @@ function renderTopbarUtilityPanels(currentUser) {
     const notificationRows = notifications.items.slice(0, 5);
     const chatRows = messenger.recent.slice(0, 5);
 
-    notificationPanel.innerHTML = `
-        <div class="lux-utility-head">
-            <div>
-                <strong>Notifications</strong>
-                <span>${notifications.unread > 0 ? `${notifications.unread} unread` : 'Everything reviewed'}</span>
-            </div>
-            <button class="lux-ghost-btn" type="button" data-utility-action="open-notifications">Open full view</button>
-        </div>
-        <div class="lux-utility-list">
-            ${notificationRows.length ? notificationRows.map((item, index) => `
-                <button class="lux-utility-item" type="button" data-notification-key="${escapeHtml(`${item.source || 'school'}:${item.id || index}`)}" data-route-page="${escapeHtml(item.routePage || 'social')}">
-                    <div class="lux-utility-item-icon"><i class="${escapeHtml(item.source === 'social' ? 'fas fa-comments' : 'far fa-bell')}"></i></div>
-                    <div class="lux-utility-item-copy">
-                        <strong>${escapeHtml(typeof cleanupUiText === 'function' ? cleanupUiText(item.title || item.type || 'Notification', 'Notification') : (item.title || 'Notification'))}</strong>
-                        <span>${escapeHtml(typeof cleanupUiText === 'function' ? cleanupUiText(item.text || 'New portal activity.', 'New portal activity.') : (item.text || 'New portal activity.'))}</span>
-                    </div>
-                    <em>${escapeHtml(typeof formatRelativeTime === 'function' ? formatRelativeTime(item.createdAt || item.updatedAt) : '')}</em>
-                </button>
-            `).join('') : `
-                <div class="lux-utility-empty">
-                    <strong>No new notifications</strong>
-                    <span>Campus alerts, academic updates, and social notifications will appear here.</span>
-                </div>
-            `}
-        </div>
-    `;
+    notificationPanel.innerHTML = `<div class="lux-utility-head"><div><strong>Notifications</strong><span>${notifications.unread > 0 ? `${notifications.unread} unread` : 'Everything reviewed'}</span></div><button class="lux-ghost-btn" type="button" data-utility-action="open-notifications">Open full view</button></div><div class="lux-utility-list">${notificationRows.length ? notificationRows.map((item, index) => `<button class="lux-utility-item" type="button" data-notification-key="${escapeHtml(`${item.source || 'school'}:${item.id || index}`)}" data-route-page="${escapeHtml(item.routePage || 'social')}"><div class="lux-utility-item-icon"><i class="${escapeHtml(item.source === 'social' ? 'fas fa-comments' : 'far fa-bell')}"></i></div><div class="lux-utility-item-copy"><strong>${escapeHtml(typeof cleanupUiText === 'function' ? cleanupUiText(item.title || item.type || 'Notification', 'Notification') : (item.title || 'Notification'))}</strong><span>${escapeHtml(typeof cleanupUiText === 'function' ? cleanupUiText(item.text || 'New portal activity.', 'New portal activity.') : (item.text || 'New portal activity.'))}</span></div><em>${escapeHtml(typeof formatRelativeTime === 'function' ? formatRelativeTime(item.createdAt || item.updatedAt) : '')}</em></button>`).join('') : `<div class="lux-utility-empty"><strong>No new notifications</strong><span>Campus alerts, academic updates, and social notifications will appear here.</span></div>`}</div>`;
 
-    chatPanel.innerHTML = `
-        <div class="lux-utility-head">
-            <div>
-                <strong>Messenger</strong>
-                <span>${messenger.unread > 0 ? `${messenger.unread} unread` : 'No unread chats'}</span>
-            </div>
-            <button class="lux-ghost-btn" type="button" data-utility-action="open-messenger">Open full view</button>
-        </div>
-        <div class="lux-utility-list">
-            ${chatRows.length ? chatRows.map((chat) => `
-                <button class="lux-utility-item" type="button" data-chat-id="${escapeHtml(chat.id)}">
-                    <div class="lux-utility-item-icon"><i class="fas fa-comments"></i></div>
-                    <div class="lux-utility-item-copy">
-                        <strong>${escapeHtml(chat.title)}</strong>
-                        <span>${escapeHtml(chat.preview)}</span>
-                    </div>
-                    <em>${chat.unread > 0 ? `${chat.unread}` : escapeHtml(chat.when || '')}</em>
-                </button>
-            `).join('') : `
-                <div class="lux-utility-empty">
-                    <strong>No active chats</strong>
-                    <span>Recent conversations and unread chat messages will appear here.</span>
-                </div>
-            `}
-        </div>
-    `;
+    chatPanel.innerHTML = `<div class="lux-utility-head"><div><strong>Messenger</strong><span>${messenger.unread > 0 ? `${messenger.unread} unread` : 'No unread chats'}</span></div><button class="lux-ghost-btn" type="button" data-utility-action="open-messenger">Open full view</button></div><div class="lux-utility-list">${chatRows.length ? chatRows.map((chat) => `<button class="lux-utility-item" type="button" data-chat-id="${escapeHtml(chat.id)}"><div class="lux-utility-item-icon"><i class="fas fa-comments"></i></div><div class="lux-utility-item-copy"><strong>${escapeHtml(chat.title)}</strong><span>${escapeHtml(chat.preview)}</span></div><em>${chat.unread > 0 ? `${chat.unread}` : escapeHtml(chat.when || '')}</em></button>`).join('') : `<div class="lux-utility-empty"><strong>No active chats</strong><span>Recent conversations and unread chat messages will appear here.</span></div>`}</div>`;
 
     notificationPanel.querySelectorAll('[data-utility-action="open-notifications"]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -472,8 +419,9 @@ function renderNav() {
 }
 
 window.renderNav = renderNav;
-// populateRoleSwitcher / syncTopbar / syncChromeBottom come from luxury-shell-topbar-runtime.js
+
 window.seedRolePickerLabel = seedRolePickerLabel;
+window.getRoleLabels = getRoleLabels;
 window.resolveRolePickerLabel = resolveRolePickerLabel;
 
 function getFallbackNavGroups(role) {
@@ -500,7 +448,6 @@ function getFallbackNavGroups(role) {
         }
     ];
 }
-
 
 function collectShellPerimeterPoints(rect, perSide = 6) {
     const { left, top, width, height } = rect;
@@ -665,7 +612,6 @@ function ensureLuxDroplistCss() {
     document.head.appendChild(link);
 }
 
-/** Idle warmup: CSS (+ closed studio DOM) so first open skips network/parse/build. */
 function warmLuxuryPopupSurfaces() {
     if (typeof document === 'undefined' || window.__kiuLuxuryPopupSurfacesWarmed) return;
     window.__kiuLuxuryPopupSurfacesWarmed = true;
@@ -675,7 +621,7 @@ function warmLuxuryPopupSurfaces() {
         if (document.getElementById('lux-palette-btn')) {
             ensureStudio();
         }
-    } catch (_) { /* ignore */ }
+    } catch (_) {  }
 }
 
 function scheduleLuxuryPopupSurfaceWarmup() {
@@ -705,113 +651,7 @@ function ensureStudio() {
     backdrop.id = 'lux-studio-backdrop';
     backdrop.className = 'lux-studio-backdrop';
     backdrop.setAttribute('data-lux-transparency-exempt', '1');
-    backdrop.innerHTML = `
-        <div class="lux-studio-panel" role="dialog" aria-label="Luxury theme studio" data-lux-transparency-exempt="1">
-            <div class="lux-studio-head">
-                <div class="lux-studio-heading">
-                    <div class="lux-studio-title"><i class="fas fa-palette" aria-hidden="true"></i> Color & Motion Studio</div>
-                    <div class="lux-studio-sub">Tune the portal palette and choose the 3D background mood.</div>
-                </div>
-                <button class="lux-studio-close" id="lux-studio-close" type="button" aria-label="Close studio"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="lux-studio-body">
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Curated Palettes</div>
-                    <div class="lux-palette-grid" id="lux-palette-grid"></div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Interface Mode</div>
-                    <div class="lux-mode-row">
-                        <button class="lux-mode-btn" id="lux-mode-dark" type="button"><i class="fas fa-moon"></i> Dark</button>
-                        <button class="lux-mode-btn" id="lux-mode-light" type="button"><i class="fas fa-sun"></i> Light</button>
-                    </div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Panel Transparency</div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-layer-group"></i> Opacity Level</span>
-                            <span class="lux-transparency-value" id="lux-transparency-value">13%</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-transparency-slider" min="0" max="100" value="13">
-                        <div class="lux-transparency-meta">
-                            <span><i class="fas fa-eye"></i> Full Transparent (0%)</span>
-                            <span><i class="fas fa-eye-slash"></i> Solid (100%)</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Glass Blur</div>
-                    <div class="lux-control-grid" id="lux-glass-blur-quality-grid"></div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Panel Color Glow</div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-sun"></i> Glow Density</span>
-                            <span class="lux-transparency-value" id="lux-glow-strength-value">50%</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-glow-strength-slider" min="0" max="100" value="50">
-                        <div class="lux-transparency-meta">
-                            <span><i class="fas fa-moon"></i> None (0%)</span>
-                            <span><i class="fas fa-bolt"></i> Max (100%)</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="lux-studio-section lux-bg-mode-section">
-                    <div class="lux-studio-label">3D Background</div>
-                    <div class="lux-bg-mode-grid" id="lux-bg-mode-grid"></div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Background Animation</div>
-                    <div class="lux-mode-row">
-                        <button class="lux-mode-btn" id="lux-bg-animation-on" type="button"><i class="fas fa-play"></i> On</button>
-                        <button class="lux-mode-btn" id="lux-bg-animation-off" type="button"><i class="fas fa-pause"></i> Off</button>
-                    </div>
-                </div>
-                <div class="lux-studio-section lux-static-bg-section" id="lux-static-bg-section" hidden>
-                    <div class="lux-studio-label">Static Background</div>
-                    <div class="lux-mode-row">
-                        <button class="lux-mode-btn" id="lux-static-bg-colored" type="button" data-static-bg-fill="colored"><i class="fas fa-palette"></i> Colored</button>
-                        <button class="lux-mode-btn" id="lux-static-bg-dark" type="button" data-static-bg-fill="dark"><i class="fas fa-moon"></i> Full Dark</button>
-                        <button class="lux-mode-btn" id="lux-static-bg-white" type="button" data-static-bg-fill="white"><i class="fas fa-sun"></i> White</button>
-                    </div>
-                </div>
-
-                <div class="lux-studio-section lux-bg-gallery-section" id="lux-bg-gallery-section" hidden>
-                    <div class="lux-studio-label">Background Gallery</div>
-                    <div class="lux-mode-row">
-                        <button class="lux-mode-btn" id="lux-bg-gallery-open-images" type="button"><i class="fas fa-image"></i> Images</button>
-                        <button class="lux-mode-btn" id="lux-bg-gallery-open-videos" type="button"><i class="fas fa-video"></i> Videos</button>
-                    </div>
-                    <button class="lux-control-btn" id="lux-bg-gallery-clear" type="button"><strong>Clear gallery</strong><span>Return to colored static fill.</span></button>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Default & Reset</div>
-                    <div class="lux-reset-grid">
-                        <button class="lux-control-btn" id="lux-reset-visuals" type="button"><strong>Reset visual settings</strong><span>Theme, palette, particles, and opacity.</span></button>
-                        <button class="lux-control-btn" id="lux-reset-current-layout" type="button"><strong>Reset current role layout</strong><span>Restore the active dashboard to its KIU default.</span></button>
-                        <button class="lux-control-btn" id="lux-reset-all-layouts" type="button"><strong>Reset all role layouts</strong><span>Clear every saved dashboard arrangement for this user.</span></button>
-                        <button class="lux-control-btn" id="lux-reset-home-defaults" type="button"><strong>Reset home to KIU defaults</strong><span>Reset both layouts and visual settings without touching portal data.</span></button>
-                    </div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Custom Accent Mix</div>
-                    <div class="lux-mix-label">Color A <div id="lux-swatch-a" class="lux-mix-swatch"></div></div>
-                    <div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hA" min="0" max="360" value="30"><div class="lux-range-value" id="lux-hA-value">30 deg</div></div>
-                    <div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sA" min="0" max="100" value="72"><div class="lux-range-value" id="lux-sA-value">72%</div></div>
-                    <div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lA" min="20" max="80" value="48"><div class="lux-range-value" id="lux-lA-value">48%</div></div>
-                    <div class="lux-mix-label">Color B <div id="lux-swatch-b" class="lux-mix-swatch"></div></div>
-                    <div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hB" min="0" max="360" value="45"><div class="lux-range-value" id="lux-hB-value">45 deg</div></div>
-                    <div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sB" min="0" max="100" value="80"><div class="lux-range-value" id="lux-sB-value">80%</div></div>
-                    <div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lB" min="20" max="80" value="58"><div class="lux-range-value" id="lux-lB-value">58%</div></div>
-                    <div class="lux-range-row"><div class="lux-range-text">Mix</div><input type="range" class="lux-range" id="lux-mix-ratio" min="0" max="100" value="50"><div class="lux-range-value" id="lux-mix-value">50%</div></div>
-                    <div class="lux-mix-preview" id="lux-mix-preview"><div class="lux-mix-preview-label" id="lux-mix-preview-label">hsl(37, 76%, 53%)</div></div>
-                    <button class="lux-apply-btn" id="lux-apply-mix" type="button">Apply Custom Mix</button>
-                </div>
-            </div>
-        </div>
-    `;
+    backdrop.innerHTML = `<div class="lux-studio-panel" role="dialog" aria-label="Luxury theme studio" data-lux-transparency-exempt="1"><div class="lux-studio-head"><div class="lux-studio-heading"><div class="lux-studio-title"><i class="fas fa-palette" aria-hidden="true"></i> Color & Motion Studio</div><div class="lux-studio-sub">Tune the portal palette and choose the 3D background mood.</div></div><button class="lux-studio-close" id="lux-studio-close" type="button" aria-label="Close studio"><i class="fas fa-times"></i></button></div><div class="lux-studio-body"><div class="lux-studio-section"><div class="lux-studio-label">Curated Palettes</div><div class="lux-palette-grid" id="lux-palette-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Interface Mode</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-mode-dark" type="button"><i class="fas fa-moon"></i> Dark</button><button class="lux-mode-btn" id="lux-mode-light" type="button"><i class="fas fa-sun"></i> Light</button></div></div><div class="lux-studio-section"><div class="lux-studio-label">Panel Transparency</div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-layer-group"></i> Opacity Level</span><span class="lux-transparency-value" id="lux-transparency-value">13%</span></div><input type="range" class="lux-range" id="lux-transparency-slider" min="0" max="100" value="13"><div class="lux-transparency-meta"><span><i class="fas fa-eye"></i> Full Transparent (0%)</span><span><i class="fas fa-eye-slash"></i> Solid (100%)</span></div></div></div><div class="lux-studio-section"><div class="lux-studio-label">Glass Blur</div><div class="lux-control-grid" id="lux-glass-blur-quality-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Panel Color Glow</div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-sun"></i> Glow Density</span><span class="lux-transparency-value" id="lux-glow-strength-value">50%</span></div><input type="range" class="lux-range" id="lux-glow-strength-slider" min="0" max="100" value="50"><div class="lux-transparency-meta"><span><i class="fas fa-moon"></i> None (0%)</span><span><i class="fas fa-bolt"></i> Max (100%)</span></div></div></div><div class="lux-studio-section lux-bg-mode-section"><div class="lux-studio-label">3D Background</div><div class="lux-bg-mode-grid" id="lux-bg-mode-grid"></div></div><div class="lux-studio-section"><div class="lux-studio-label">Background Animation</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-bg-animation-on" type="button"><i class="fas fa-play"></i> On</button><button class="lux-mode-btn" id="lux-bg-animation-off" type="button"><i class="fas fa-pause"></i> Off</button></div></div><div class="lux-studio-section lux-static-bg-section" id="lux-static-bg-section" hidden><div class="lux-studio-label">Static Background</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-static-bg-colored" type="button" data-static-bg-fill="colored"><i class="fas fa-palette"></i> Colored</button><button class="lux-mode-btn" id="lux-static-bg-dark" type="button" data-static-bg-fill="dark"><i class="fas fa-moon"></i> Full Dark</button><button class="lux-mode-btn" id="lux-static-bg-white" type="button" data-static-bg-fill="white"><i class="fas fa-sun"></i> White</button></div></div><div class="lux-studio-section lux-bg-gallery-section" id="lux-bg-gallery-section" hidden><div class="lux-studio-label">Background Gallery</div><div class="lux-mode-row"><button class="lux-mode-btn" id="lux-bg-gallery-open-images" type="button"><i class="fas fa-image"></i> Images</button><button class="lux-mode-btn" id="lux-bg-gallery-open-videos" type="button"><i class="fas fa-video"></i> Videos</button></div><button class="lux-control-btn" id="lux-bg-gallery-clear" type="button"><strong>Clear gallery</strong><span>Return to colored static fill.</span></button></div><div class="lux-studio-section"><div class="lux-studio-label">Default & Reset</div><div class="lux-reset-grid"><button class="lux-control-btn" id="lux-reset-visuals" type="button"><strong>Reset visual settings</strong><span>Theme, palette, particles, and opacity.</span></button><button class="lux-control-btn" id="lux-reset-current-layout" type="button"><strong>Reset current role layout</strong><span>Restore the active dashboard to its KIU default.</span></button><button class="lux-control-btn" id="lux-reset-all-layouts" type="button"><strong>Reset all role layouts</strong><span>Clear every saved dashboard arrangement for this user.</span></button><button class="lux-control-btn" id="lux-reset-home-defaults" type="button"><strong>Reset home to KIU defaults</strong><span>Reset both layouts and visual settings without touching portal data.</span></button></div></div><div class="lux-studio-section"><div class="lux-studio-label">Custom Accent Mix</div><div class="lux-mix-label">Color A <div id="lux-swatch-a" class="lux-mix-swatch"></div></div><div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hA" min="0" max="360" value="30"><div class="lux-range-value" id="lux-hA-value">30 deg</div></div><div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sA" min="0" max="100" value="72"><div class="lux-range-value" id="lux-sA-value">72%</div></div><div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lA" min="20" max="80" value="48"><div class="lux-range-value" id="lux-lA-value">48%</div></div><div class="lux-mix-label">Color B <div id="lux-swatch-b" class="lux-mix-swatch"></div></div><div class="lux-range-row"><div class="lux-range-text">Hue</div><input type="range" class="lux-range" id="lux-hB" min="0" max="360" value="45"><div class="lux-range-value" id="lux-hB-value">45 deg</div></div><div class="lux-range-row"><div class="lux-range-text">Saturation</div><input type="range" class="lux-range" id="lux-sB" min="0" max="100" value="80"><div class="lux-range-value" id="lux-sB-value">80%</div></div><div class="lux-range-row"><div class="lux-range-text">Lightness</div><input type="range" class="lux-range" id="lux-lB" min="20" max="80" value="58"><div class="lux-range-value" id="lux-lB-value">58%</div></div><div class="lux-range-row"><div class="lux-range-text">Mix</div><input type="range" class="lux-range" id="lux-mix-ratio" min="0" max="100" value="50"><div class="lux-range-value" id="lux-mix-value">50%</div></div><div class="lux-mix-preview" id="lux-mix-preview"><div class="lux-mix-preview-label" id="lux-mix-preview-label">hsl(37, 76%, 53%)</div></div><button class="lux-apply-btn" id="lux-apply-mix" type="button">Apply Custom Mix</button></div></div></div>`;
     document.body.appendChild(backdrop);
     ensureBgModeParamsPopup();
     if (typeof writeStudioMixerInputs === 'function' && typeof getStudioMixerState === 'function') {
@@ -959,7 +799,7 @@ function ensureStudio() {
         glowStrengthSlider.addEventListener('change', (e) => {
             const value = parseInt(e.target.value, 10);
             markGlowSliderDrag(false);
-            // Flush any pending live frame so the last drag tick is not dropped.
+
             if (glowLiveRaf) {
                 cancelAnimationFrame(glowLiveRaf);
                 glowLiveRaf = 0;
@@ -1040,7 +880,7 @@ function ensureStudio() {
         item.appendChild(settingsBtn);
         document.getElementById('lux-bg-mode-grid')?.appendChild(item);
     });
-    // Mount params popup shell first so particle/fog controls exist for binding below.
+
     ensureBgModeParamsPopup();
     bindFogStudioControls();
     const particleMotionSlider = document.getElementById('lux-particle-motion-slider');
@@ -1164,12 +1004,9 @@ function updateStudioPreview() {
         previewLabel.style.color = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) > 140 ? 'rgba(0,0,0,0.72)' : 'rgba(255,255,255,0.92)';
     }
     const bindings = {
-        'lux-hA-value': `${mixerState.hA} deg`,
-        'lux-sA-value': `${mixerState.sA}%`,
-        'lux-lA-value': `${mixerState.lA}%`,
-        'lux-hB-value': `${mixerState.hB} deg`,
-        'lux-sB-value': `${mixerState.sB}%`,
-        'lux-lB-value': `${mixerState.lB}%`,
+        'lux-hA-value': `${mixerState.hA} deg`, 'lux-sA-value': `${mixerState.sA}%`,
+        'lux-lA-value': `${mixerState.lA}%`, 'lux-hB-value': `${mixerState.hB} deg`,
+        'lux-sB-value': `${mixerState.sB}%`, 'lux-lB-value': `${mixerState.lB}%`,
         'lux-mix-value': `${Math.round(mixerState.ratio)}%`
     };
     Object.entries(bindings).forEach(([id, value]) => {
@@ -1370,115 +1207,7 @@ function ensureBgModeParamsPopup() {
     backdrop.className = 'lux-bg-mode-params-backdrop';
     backdrop.setAttribute('data-lux-transparency-exempt', '1');
     backdrop.dataset.fogParamsVersion = FOG_PARAMS_TEMPLATE_VERSION;
-    backdrop.innerHTML = `
-        <div class="lux-bg-mode-params-dialog" role="dialog" aria-modal="true" aria-labelledby="lux-bg-params-title" data-lux-transparency-exempt="1">
-            <div class="lux-bg-mode-params-head">
-                <div>
-                    <div class="lux-bg-mode-params-title" id="lux-bg-params-title">Background Parameters</div>
-                    <div class="lux-bg-mode-params-sub" id="lux-bg-params-sub">Tune motion, density, and quality for this background.</div>
-                </div>
-                <button class="lux-bg-mode-params-close" id="lux-bg-params-close" type="button" aria-label="Close parameters"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="lux-bg-mode-params-body" id="lux-bg-params-body"></div>
-            <div id="lux-bg-mode-panels-store" hidden>
-                <section id="lux-bg-settings-panel-particle"
-                         class="lux-bg-mode-panel"
-                         data-bg-mode-panel="peak layered orbit corners"
-                         hidden>
-                    <p class="lux-bg-mode-panel-copy" id="lux-bg-panel-particle-copy">Ridged particle terrain waves.</p>
-                    <p class="lux-bg-mode-panel-hint">Motion and density apply to all particle backgrounds.</p>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-wind"></i> Motion</span>
-                            <span class="lux-transparency-value" id="lux-particle-motion-value">100</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-particle-motion-slider" min="0" max="120" value="100">
-                    </div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-braille"></i> Density</span>
-                            <span class="lux-transparency-value" id="lux-particle-density-value">100</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-particle-density-slider" min="35" max="100" value="100">
-                    </div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-cubes"></i> Amount</span>
-                            <span class="lux-transparency-value" id="lux-particle-amount-value">100</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-particle-amount-slider" min="50" max="150" value="100">
-                    </div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-adjust"></i> Sharpness</span>
-                            <span class="lux-transparency-value" id="lux-particle-sharpness-value">50</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-particle-sharpness-slider" min="0" max="100" value="50">
-                    </div>
-                    <div class="lux-bg-mode-panel-subsection">
-                        <div class="lux-studio-label lux-studio-label--compact">Background Quality</div>
-                        <div class="lux-control-grid" id="lux-particle-quality-grid"></div>
-                    </div>
-                </section>
-                <section id="lux-bg-settings-panel-fog"
-                         class="lux-bg-mode-panel"
-                         data-bg-mode-panel="fog"
-                         hidden>
-                    <p class="lux-bg-mode-panel-copy">Fog colors and motion are independent from interface mode and particle controls.</p>
-                    <div class="lux-bg-mode-panel-subsection" id="lux-fog-profiles-section">
-                        <div class="lux-fog-profile-bank-head">
-                            <div class="lux-studio-label lux-studio-label--compact" id="lux-fog-profile-bank-label">Saved Profiles · Dark</div>
-                            <div class="lux-fog-profile-bank-switch" role="group" aria-label="Fog profile bank">
-                                <button type="button" class="lux-fog-profile-bank-btn is-active" data-fog-profile-bank="dark" data-lux-skip-modern-button="true" aria-pressed="true">Dark</button>
-                                <button type="button" class="lux-fog-profile-bank-btn" data-fog-profile-bank="light" data-lux-skip-modern-button="true" aria-pressed="false">Light</button>
-                            </div>
-                        </div>
-                        <div class="lux-fog-profile-list-shell">
-                            <div class="lux-fog-profile-list" id="lux-fog-profile-list" role="list"></div>
-                            <p class="lux-fog-profile-empty" id="lux-fog-profile-empty" hidden>No saved profiles yet.</p>
-                        </div>
-                        <div class="lux-fog-profile-edit-bar" id="lux-fog-profile-edit-bar" hidden>
-                            <div class="lux-fog-profile-edit-copy">Editing <strong id="lux-fog-profile-edit-label"></strong></div>
-                            <div class="lux-fog-profile-edit-actions">
-                                <button type="button" class="lux-fog-profile-action-btn" id="lux-fog-profile-save-edit" data-fog-profile-save-edit data-lux-skip-modern-button="true" aria-label="Save profile changes"><i class="fas fa-check"></i><span>Save changes</span></button>
-                                <button type="button" class="lux-fog-profile-action-btn" id="lux-fog-profile-discard-edit" data-fog-profile-discard-edit data-lux-skip-modern-button="true" aria-label="Discard profile changes"><i class="fas fa-undo"></i><span>Discard</span></button>
-                            </div>
-                        </div>
-                        <div class="lux-fog-profile-add-row">
-                            <input type="text" id="lux-fog-profile-name-input" class="lux-modern-field" placeholder="Profile name" maxlength="48" aria-label="New fog profile name">
-                            <button type="button" class="lux-control-btn lux-fog-profile-btn" id="lux-fog-profile-add" data-fog-profile-add data-lux-skip-modern-button="true" aria-label="Save current fog settings as profile"><i class="fas fa-plus"></i><span>Save current</span></button>
-                        </div>
-                    </div>
-                    <div class="lux-fog-color-grid" id="lux-fog-color-grid"></div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-water"></i> Blur</span>
-                            <span class="lux-transparency-value" id="lux-fog-blur-value">0.60</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-fog-blur-slider" min="0" max="1" step="0.01" value="0.6">
-                    </div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-wind"></i> Speed</span>
-                            <span class="lux-transparency-value" id="lux-fog-speed-value">1.00</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-fog-speed-slider" min="0" max="3" step="0.05" value="1">
-                    </div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-search-plus"></i> Zoom</span>
-                            <span class="lux-transparency-value" id="lux-fog-zoom-value">1.00</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-fog-zoom-slider" min="0.2" max="4" step="0.05" value="1">
-                    </div>
-                    <div class="lux-bg-mode-panel-subsection">
-                        <div class="lux-studio-label lux-studio-label--compact">Background Quality</div>
-                        <div class="lux-control-grid" id="lux-fog-quality-grid"></div>
-                    </div>
-                </section>
-            </div>
-        </div>
-    `;
+    backdrop.innerHTML = `<div class="lux-bg-mode-params-dialog" role="dialog" aria-modal="true" aria-labelledby="lux-bg-params-title" data-lux-transparency-exempt="1"><div class="lux-bg-mode-params-head"><div><div class="lux-bg-mode-params-title" id="lux-bg-params-title">Background Parameters</div><div class="lux-bg-mode-params-sub" id="lux-bg-params-sub">Tune motion, density, and quality for this background.</div></div><button class="lux-bg-mode-params-close" id="lux-bg-params-close" type="button" aria-label="Close parameters"><i class="fas fa-times"></i></button></div><div class="lux-bg-mode-params-body" id="lux-bg-params-body"></div><div id="lux-bg-mode-panels-store" hidden><section id="lux-bg-settings-panel-particle" class="lux-bg-mode-panel" data-bg-mode-panel="peak layered orbit corners" hidden><p class="lux-bg-mode-panel-copy" id="lux-bg-panel-particle-copy">Ridged particle terrain waves.</p><p class="lux-bg-mode-panel-hint">Motion and density apply to all particle backgrounds.</p><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-wind"></i> Motion</span><span class="lux-transparency-value" id="lux-particle-motion-value">100</span></div><input type="range" class="lux-range" id="lux-particle-motion-slider" min="0" max="120" value="100"></div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-braille"></i> Density</span><span class="lux-transparency-value" id="lux-particle-density-value">100</span></div><input type="range" class="lux-range" id="lux-particle-density-slider" min="35" max="100" value="100"></div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-cubes"></i> Amount</span><span class="lux-transparency-value" id="lux-particle-amount-value">100</span></div><input type="range" class="lux-range" id="lux-particle-amount-slider" min="50" max="150" value="100"></div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-adjust"></i> Sharpness</span><span class="lux-transparency-value" id="lux-particle-sharpness-value">50</span></div><input type="range" class="lux-range" id="lux-particle-sharpness-slider" min="0" max="100" value="50"></div><div class="lux-bg-mode-panel-subsection"><div class="lux-studio-label lux-studio-label--compact">Background Quality</div><div class="lux-control-grid" id="lux-particle-quality-grid"></div></div></section><section id="lux-bg-settings-panel-fog" class="lux-bg-mode-panel" data-bg-mode-panel="fog" hidden><p class="lux-bg-mode-panel-copy">Fog colors and motion are independent from interface mode and particle controls.</p><div class="lux-bg-mode-panel-subsection" id="lux-fog-profiles-section"><div class="lux-fog-profile-bank-head"><div class="lux-studio-label lux-studio-label--compact" id="lux-fog-profile-bank-label">Saved Profiles · Dark</div><div class="lux-fog-profile-bank-switch" role="group" aria-label="Fog profile bank"><button type="button" class="lux-fog-profile-bank-btn is-active" data-fog-profile-bank="dark" data-lux-skip-modern-button="true" aria-pressed="true">Dark</button><button type="button" class="lux-fog-profile-bank-btn" data-fog-profile-bank="light" data-lux-skip-modern-button="true" aria-pressed="false">Light</button></div></div><div class="lux-fog-profile-list-shell"><div class="lux-fog-profile-list" id="lux-fog-profile-list" role="list"></div><p class="lux-fog-profile-empty" id="lux-fog-profile-empty" hidden>No saved profiles yet.</p></div><div class="lux-fog-profile-edit-bar" id="lux-fog-profile-edit-bar" hidden><div class="lux-fog-profile-edit-copy">Editing <strong id="lux-fog-profile-edit-label"></strong></div><div class="lux-fog-profile-edit-actions"><button type="button" class="lux-fog-profile-action-btn" id="lux-fog-profile-save-edit" data-fog-profile-save-edit data-lux-skip-modern-button="true" aria-label="Save profile changes"><i class="fas fa-check"></i><span>Save changes</span></button><button type="button" class="lux-fog-profile-action-btn" id="lux-fog-profile-discard-edit" data-fog-profile-discard-edit data-lux-skip-modern-button="true" aria-label="Discard profile changes"><i class="fas fa-undo"></i><span>Discard</span></button></div></div><div class="lux-fog-profile-add-row"><input type="text" id="lux-fog-profile-name-input" class="lux-modern-field" placeholder="Profile name" maxlength="48" aria-label="New fog profile name"><button type="button" class="lux-control-btn lux-fog-profile-btn" id="lux-fog-profile-add" data-fog-profile-add data-lux-skip-modern-button="true" aria-label="Save current fog settings as profile"><i class="fas fa-plus"></i><span>Save current</span></button></div></div><div class="lux-fog-color-grid" id="lux-fog-color-grid"></div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-water"></i> Blur</span><span class="lux-transparency-value" id="lux-fog-blur-value">0.60</span></div><input type="range" class="lux-range" id="lux-fog-blur-slider" min="0" max="1" step="0.01" value="0.6"></div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-wind"></i> Speed</span><span class="lux-transparency-value" id="lux-fog-speed-value">1.00</span></div><input type="range" class="lux-range" id="lux-fog-speed-slider" min="0" max="3" step="0.05" value="1"></div><div class="lux-transparency-control"><div class="lux-transparency-header"><span class="lux-transparency-label"><i class="fas fa-search-plus"></i> Zoom</span><span class="lux-transparency-value" id="lux-fog-zoom-value">1.00</span></div><input type="range" class="lux-range" id="lux-fog-zoom-slider" min="0.2" max="4" step="0.05" value="1"></div><div class="lux-bg-mode-panel-subsection"><div class="lux-studio-label lux-studio-label--compact">Background Quality</div><div class="lux-control-grid" id="lux-fog-quality-grid"></div></div></section></div></div>`;
     document.body.appendChild(backdrop);
     backdrop.addEventListener('click', (event) => {
         if (event.target === backdrop) closeBgModeParamsPopup();
@@ -1665,7 +1394,7 @@ function toggleStudio() {
             el.style.removeProperty('-webkit-backdrop-filter');
             delete el.dataset.luxTransparencySignature;
         });
-        // Correct chip/slider state on first paint; defer focus + gallery off the open frame.
+
         syncStudioUi();
         updateStudioPreview();
         const finishOpen = () => {
@@ -1987,8 +1716,8 @@ function resolvePreferredSidebarCollapsed() {
         const saved = localStorage.getItem('kiuLuxurySidebarCollapsed');
         if (saved === '1') return true;
         if (saved === '0') return false;
-    } catch (_) { /* ignore */ }
-    // Default expanded so left nav is available on every unified-shell route.
+    } catch (_) {  }
+
     return false;
 }
 

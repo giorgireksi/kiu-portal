@@ -480,12 +480,12 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
     min-height: 42px;
     padding: 0 16px;
     gap: 8px;
-    color: var(--lux-btn-label, #f7fbff);
+    color: var(--lux-btn-ghost-label, var(--lux-btn-label, #f7fbff));
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
-    background: var(--lux-btn-well-soft, var(--lux-btn-well));
+    background: var(--lux-btn-ghost-well, var(--lux-btn-well));
     background-origin: padding-box;
     background-clip: padding-box;
-    box-shadow: var(--lux-btn-frame-shadow);
+    box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     transition: transform 0.18s ease;
@@ -515,9 +515,9 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
   .lux-sidebar-toggle-btn > *, .lux-topbar-editor-btn > * { position: relative; z-index: 1; }
   .lux-sidebar-toggle-btn:hover, .lux-sidebar-toggle-btn:focus-visible, .lux-topbar-editor-btn:hover, .lux-topbar-editor-btn:focus-visible {
     transform: translateY(-1px);
-    color: var(--lux-btn-label, #f7fbff);
-    box-shadow: var(--lux-btn-frame-shadow-hover);
-    background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft, var(--lux-btn-well)));
+    color: var(--lux-btn-ghost-label, var(--lux-btn-label, #f7fbff));
+    box-shadow: var(--lux-btn-ghost-shadow-hover, var(--lux-btn-frame-shadow-hover));
+    background: var(--lux-btn-ghost-well-hover, var(--lux-btn-well-hover, var(--lux-btn-ghost-well, var(--lux-btn-well))));
   }
   .lux-sidebar-toggle-btn:hover::before, .lux-sidebar-toggle-btn:focus-visible::before, .lux-topbar-editor-btn:hover::before, .lux-topbar-editor-btn:focus-visible::before {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.07) 28%, transparent 48%);
@@ -527,8 +527,8 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
     transform: translateX(130%) skewX(-14deg);
     opacity: 1;
   }
-  .lux-sidebar-toggle-btn.is-active { box-shadow: var(--lux-btn-frame-shadow), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent); }
-  /* Framed CTA family: pickers + icon buttons share well + fade + sheen */
+  .lux-sidebar-toggle-btn.is-active { box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow)), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent); }
+  /* Framed CTA family: pickers + icon buttons share ghost well + fade + sheen */
   .lux-picker-btn, .lux-icon-btn {
     position: relative;
     isolation: isolate;
@@ -545,13 +545,13 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
     border-width: var(--lux-btn-frame-width, 3.5px);
     border-style: solid;
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
-    background: var(--lux-btn-well-soft, var(--lux-btn-well));
+    background: var(--lux-btn-ghost-well, var(--lux-btn-well));
     background-origin: padding-box;
     background-clip: padding-box;
-    box-shadow: var(--lux-btn-frame-shadow);
+    box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    color: var(--lux-text);
+    color: var(--lux-btn-ghost-label, var(--lux-text));
   }
   .lux-picker-btn::before, .lux-icon-btn::before {
     content: '';
@@ -578,8 +578,8 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
   .lux-picker-btn:hover, .lux-picker-btn.is-active, .lux-picker-btn[aria-expanded="true"], .lux-picker-btn:focus-visible {
     transform: translateY(-1px);
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
-    box-shadow: var(--lux-btn-frame-shadow-hover);
-    background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft, var(--lux-btn-well)));
+    box-shadow: var(--lux-btn-ghost-shadow-hover, var(--lux-btn-frame-shadow-hover));
+    background: var(--lux-btn-ghost-well-hover, var(--lux-btn-well-hover, var(--lux-btn-ghost-well, var(--lux-btn-well))));
   }
   .lux-picker-btn:hover::before, .lux-picker-btn.is-active::before, .lux-picker-btn[aria-expanded="true"]::before, .lux-picker-btn:focus-visible::before,
   .lux-icon-btn:hover::before, .lux-icon-btn:focus-visible::before, .lux-icon-btn.is-active::before {
@@ -592,7 +592,7 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
     opacity: 1;
   }
   .lux-picker-caption { color: var(--lux-text-soft, var(--lux-text-muted)); }
-  .lux-picker-btn strong { color: var(--lux-text); }
+  .lux-picker-btn strong { color: var(--lux-btn-ghost-label, var(--lux-text)); }
   .lux-picker-btn i { color: var(--lux-text-muted); }
   .lux-icon-btn {
     width: 44px;
@@ -601,20 +601,20 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
     border-width: var(--lux-btn-frame-width, 3.5px);
     border-style: solid;
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
-    background: var(--lux-btn-well-soft, var(--lux-btn-well));
+    background: var(--lux-btn-ghost-well, var(--lux-btn-well));
     background-origin: padding-box;
     background-clip: padding-box;
-    color: var(--lux-text-muted);
-    box-shadow: var(--lux-btn-frame-shadow);
+    color: var(--lux-btn-ghost-label, var(--lux-text-muted));
+    box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
   .lux-icon-btn:hover, .lux-icon-btn:focus-visible, .lux-icon-btn.is-active {
-    color: var(--lux-text);
+    color: var(--lux-btn-ghost-label, var(--lux-text));
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
     transform: translateY(-1px);
-    box-shadow: var(--lux-btn-frame-shadow-hover);
-    background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft, var(--lux-btn-well)));
+    box-shadow: var(--lux-btn-ghost-shadow-hover, var(--lux-btn-frame-shadow-hover));
+    background: var(--lux-btn-ghost-well-hover, var(--lux-btn-well-hover, var(--lux-btn-ghost-well, var(--lux-btn-well))));
   }
   .lux-icon-badge:not(.is-zero) {
     background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
@@ -708,34 +708,34 @@ body.lux-full-paint.lux-unified-shell {
     border-width: var(--lux-btn-frame-width, 3.5px);
     border-style: solid;
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
-    background: var(--lux-btn-well-soft, var(--lux-btn-well));
+    background: var(--lux-btn-ghost-well, var(--lux-btn-well));
     background-origin: padding-box;
     background-clip: padding-box;
-    box-shadow: var(--lux-btn-frame-shadow);
+    box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
   #lux-topbar .lux-picker-btn {
     min-height: 48px;
-    color: var(--lux-text);
+    color: var(--lux-btn-ghost-label, var(--lux-text));
   }
   #lux-topbar .lux-picker-btn:hover, #lux-topbar .lux-picker-btn.is-active, #lux-topbar .lux-picker-btn[aria-expanded="true"] {
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
-    box-shadow: var(--lux-btn-frame-shadow-hover);
-    background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft, var(--lux-btn-well)));
+    box-shadow: var(--lux-btn-ghost-shadow-hover, var(--lux-btn-frame-shadow-hover));
+    background: var(--lux-btn-ghost-well-hover, var(--lux-btn-well-hover, var(--lux-btn-ghost-well, var(--lux-btn-well))));
   }
-  #lux-topbar .lux-picker-btn strong { color: var(--lux-text); }
+  #lux-topbar .lux-picker-btn strong { color: var(--lux-btn-ghost-label, var(--lux-text)); }
   #lux-topbar .lux-picker-caption { color: var(--lux-text-muted); }
   #lux-topbar .lux-icon-btn {
     width: 44px;
     height: 44px;
-    color: var(--lux-text-muted);
+    color: var(--lux-btn-ghost-label, var(--lux-text-muted));
   }
   #lux-topbar .lux-icon-btn:hover, #lux-topbar .lux-icon-btn.is-active {
-    color: var(--lux-text);
+    color: var(--lux-btn-ghost-label, var(--lux-text));
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
-    box-shadow: var(--lux-btn-frame-shadow-hover);
-    background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft, var(--lux-btn-well)));
+    box-shadow: var(--lux-btn-ghost-shadow-hover, var(--lux-btn-frame-shadow-hover));
+    background: var(--lux-btn-ghost-well-hover, var(--lux-btn-well-hover, var(--lux-btn-ghost-well, var(--lux-btn-well))));
   }
   #lux-topbar .lux-user-chip,
   #lux-user-chip {
@@ -750,18 +750,18 @@ body.lux-full-paint.lux-unified-shell {
     border-color: var(--lux-btn-border-solid, var(--lux-accent));
     min-height: 42px;
     padding: 0 16px;
-    color: var(--lux-btn-label, #f7fbff);
+    color: var(--lux-btn-ghost-label, var(--lux-btn-label, #f7fbff));
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
-    background: var(--lux-btn-well-soft, var(--lux-btn-well));
-    background-image: var(--lux-btn-well-soft, var(--lux-btn-well));
+    background: var(--lux-btn-ghost-well, var(--lux-btn-well));
+    background-image: var(--lux-btn-ghost-well, var(--lux-btn-well));
     background-origin: padding-box;
     background-clip: padding-box;
-    box-shadow: var(--lux-btn-frame-shadow);
+    box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
   #lux-topbar .lux-sidebar-toggle-btn:hover, #lux-topbar .lux-topbar-editor-btn:hover {
-    color: var(--lux-btn-label, #f7fbff);
+    color: var(--lux-btn-ghost-label, var(--lux-btn-label, #f7fbff));
   }
   #lux-topbar .lux-breadcrumb {
     background: transparent;
@@ -928,12 +928,14 @@ body.lux-full-paint {
 }
 /* ── §4 bare-portal chrome helpers + focus-within ── */
 body.lux-page-bare .lux-page-shell {
-  background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
-  border: 1px solid var(--lux-panel-border-soft, var(--lux-panel-border));
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
   border-radius: var(--lux-panel-radius, 22px);
-  box-shadow: var(--lux-elev-2);
-  backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
 }
 body.lux-page-bare .page-hero { display: grid; gap: 12px; padding: 12px 0; }
 body.lux-page-bare .page-hero p { color: var(--lux-text-muted, rgba(248, 250, 252, 0.65)); line-height: 1.5; margin: 0; }

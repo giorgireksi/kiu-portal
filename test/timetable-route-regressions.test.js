@@ -28,7 +28,7 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('<style>');
         expect(html).not.toContain('timetable-route.css');
         expect(html).toContain('lux-page-bare');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260723-palette-persist1-persist1');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260724-fullpaint-reveal1');
         expect(html).toMatch(/lux-shell\.css/);
         expect(html).toMatch(/lux-page-bare-lite\.css/);
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);

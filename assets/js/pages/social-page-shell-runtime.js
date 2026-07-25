@@ -113,7 +113,7 @@
                     <span>Nav</span>
                 </button>
                 <aside class="social-neo-workspace-nav" aria-label="Social Workspace navigation" ${collapsed ? 'hidden' : ''}>
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-neo-workspace-nav-card">
+                    <section class="social-neo-card social-neo-workspace-nav-card">
                         <div class="social-neo-section-head social-neo-rail-head">
                             <div class="social-neo-rail-head-copy">
                                 <strong class="social-neo-rail-title">Social Workspace</strong>

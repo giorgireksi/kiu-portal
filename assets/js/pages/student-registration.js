@@ -74,6 +74,7 @@ function invalidateStudentRegistrationViewCache() {
         studentRegistrationViewCache[key] = null;
     });
 }
+window.invalidateStudentRegistrationViewCache = invalidateStudentRegistrationViewCache;
 
 function countAdminRegistrationModulesForFaculty(faculty) {
     const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
@@ -976,39 +977,6 @@ function toggleStudentTrackGroup(groupId) {
         icon.classList.toggle('fa-chevron-right', !hidden);
     }
 }
-
-const canonicalCourseKey = window.canonicalCourseKey;
-const normalizeSubjectTitleKey = window.normalizeSubjectTitleKey;
-const getAllCurriculumSubjects = window.getAllCurriculumSubjects;
-const findCurriculumSubjectByIdOrTitle = window.findCurriculumSubjectByIdOrTitle;
-const getEquivalentCurriculumSubjectIds = window.getEquivalentCurriculumSubjectIds;
-const findAvailableGroupForAssignedSubject = window.findAvailableGroupForAssignedSubject;
-const parseRequiredCourseIds = window.parseRequiredCourseIds;
-const getCourseByIdForRegistration = window.getCourseByIdForRegistration;
-const resolveSubjectIdFromRosterId = window.resolveSubjectIdFromRosterId;
-const getRegisteredOrPassedCourses = window.getRegisteredOrPassedCourses;
-const getCurrentStudentSemesterNumber = window.getCurrentStudentSemesterNumber;
-const evaluateStudentCourseEligibility = window.evaluateStudentCourseEligibility;
-const parseEctsProgress = window.parseEctsProgress;
-const formatEctsProgress = window.formatEctsProgress;
-const closeStructuredFormModal = window.closeStructuredFormModal;
-const escapeHtml = window.escapeHtml;
-const jsQuote = window.jsQuote;
-const toPositiveInt = window.toPositiveInt;
-const buildStructuredFormFieldNode = window.buildStructuredFormFieldNode;
-const openStructuredFormModal = window.openStructuredFormModal;
-const getStudentRegistrationGradebookCriterionMeta = window.getStudentRegistrationGradebookCriterionMeta;
-const normalizeStudentRegistrationAssessmentNumber = window.normalizeStudentRegistrationAssessmentNumber;
-const sortStudentRegistrationAssessmentEntries = window.sortStudentRegistrationAssessmentEntries;
-const aggregateStudentRegistrationAssessmentEntries = window.aggregateStudentRegistrationAssessmentEntries;
-const ensureStudentRegistrationGradeRecordHistories = window.ensureStudentRegistrationGradeRecordHistories;
-const getStudentRegistrationAssessmentDisplayValue = window.getStudentRegistrationAssessmentDisplayValue;
-const getStudentEffectiveFinalRetakeScore = window.getStudentEffectiveFinalRetakeScore;
-const getGradebookWeightProfile = window.getGradebookWeightProfile;
-const getGradeRecordCombinedKiuPassScore = window.getGradeRecordCombinedKiuPassScore;
-const isGradeRecordPassedByKiuRule = window.isGradeRecordPassedByKiuRule;
-const getStudentPassedCourseSet = window.getStudentPassedCourseSet;
-const getStudentCompletedEctsForCourseIds = window.getStudentCompletedEctsForCourseIds;
 
 function getStudentCompletedEctsTotal(studentId, preferredFaculty = null) {
     const courseMap = new Map();

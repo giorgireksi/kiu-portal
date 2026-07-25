@@ -38,46 +38,68 @@ function reconcileAdminRegistrationCmsAfterIdentityChange(faculty) {
     }
 }
 
-window.persistRegistrationCmsGlobalsToFaculty = persistRegistrationCmsGlobalsToFaculty;
-window.flushAdminRegistrationStateSave = flushAdminRegistrationStateSave;
-window.queueAdminRegistrationStateSave = queueAdminRegistrationStateSave;
-window.getAdminCmsWriteFaculty = getAdminCmsWriteFaculty;
 window.flushAdminToolsWorkspaceBeforeIdentityChange = flushAdminToolsWorkspaceBeforeIdentityChange;
 window.reconcileAdminRegistrationCmsAfterIdentityChange = reconcileAdminRegistrationCmsAfterIdentityChange;
 
 // Ensure authentication is enforced on page load
 document.addEventListener('DOMContentLoaded', () => {
-    refreshSemesterDropdowns();
-    ensureSubjectSemesterParityHint();
+    if (typeof refreshSemesterDropdowns === 'function') {
+        refreshSemesterDropdowns();
+    }
+    if (typeof ensureSubjectSemesterParityHint === 'function') {
+        ensureSubjectSemesterParityHint();
+    }
 
     if (typeof requireAuth === 'function') {
         requireAuth();
     }
 
-    bindAdminRegistrationCmsDelegates();
+    if (typeof bindAdminRegistrationCmsDelegates === 'function') {
+        bindAdminRegistrationCmsDelegates();
+    }
     
     // Initialize Admin Registration CMS if on the right page
-    if (document.getElementById('admin-reg-content-container')) {
-        ensureAdminRegistrationCmsDefaults(getAdminRegistrationFaculty());
-        bindFacultyRegistrationCmsData(getAdminRegistrationFaculty());
-        bootAdminRegistrationCms('prog');
+    if (document.getElementById('admin-reg-content-container') && typeof getAdminRegistrationFaculty === 'function') {
+        if (typeof ensureAdminRegistrationCmsDefaults === 'function') {
+            ensureAdminRegistrationCmsDefaults(getAdminRegistrationFaculty());
+        }
+        if (typeof bindFacultyRegistrationCmsData === 'function') {
+            bindFacultyRegistrationCmsData(getAdminRegistrationFaculty());
+        }
+        if (typeof bootAdminRegistrationCms === 'function') {
+            bootAdminRegistrationCms('prog');
+        }
     }
 
     // Initialize Student Registration if on the right page
     if (document.getElementById('student-reg-content-container')) {
-        renderStudentRegStructures('prog');
-        updateEctsProgress();
+        if (typeof renderStudentRegStructures === 'function') {
+            renderStudentRegStructures('prog');
+        }
+        if (typeof updateEctsProgress === 'function') {
+            updateEctsProgress();
+        }
     }
 });
 
 window.addEventListener('load', () => {
-    bindAdminRegistrationCmsDelegates();
+    if (typeof bindAdminRegistrationCmsDelegates === 'function') {
+        bindAdminRegistrationCmsDelegates();
+    }
     const adminCms = document.getElementById('admin-reg-content-container');
-    if (adminCms && !hasVisibleAdminRegistrationCmsContent(adminCms)) {
+    if (adminCms && typeof hasVisibleAdminRegistrationCmsContent === 'function' && !hasVisibleAdminRegistrationCmsContent(adminCms)) {
         try {
-            ensureAdminRegistrationCmsDefaults(getAdminRegistrationFaculty());
-            bindFacultyRegistrationCmsData(getAdminRegistrationFaculty());
-            bootAdminRegistrationCms(adminRegActiveTab || 'prog');
+            if (typeof getAdminRegistrationFaculty === 'function') {
+                if (typeof ensureAdminRegistrationCmsDefaults === 'function') {
+                    ensureAdminRegistrationCmsDefaults(getAdminRegistrationFaculty());
+                }
+                if (typeof bindFacultyRegistrationCmsData === 'function') {
+                    bindFacultyRegistrationCmsData(getAdminRegistrationFaculty());
+                }
+                if (typeof bootAdminRegistrationCms === 'function') {
+                    bootAdminRegistrationCms(typeof adminRegActiveTab !== 'undefined' ? adminRegActiveTab || 'prog' : 'prog');
+                }
+            }
         } catch (err) {
             console.error('Admin CMS load fallback failed:', err);
         }

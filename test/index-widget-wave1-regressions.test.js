@@ -68,25 +68,23 @@ describe('index widget wave 1 regressions', () => {
   it('keeps registration widgets aligned to consolidated studio panel', () => {
     const source = readSource('registration.html');
 
-    expect(source).toContain('registration-studio-head');
-    expect(source).toContain('class="registration-hero-copy lux-hero-main"');
-    expect(source).toMatch(/class="registration-hero-aside lux-hero-side(?: lux-focus-panel)?"/);
-    expect(source).toContain('registration-focus-card registration-summary-card registration-summary-card--hero');
-    expect(source).toContain('lux-hero-side-head');
-    expect(source).toContain('class="registration-command-band"');
-    expect(source).toContain('class="registration-metrics-band lux-strip-grid lux-strip-grid--adaptive"');
+    expect(source).toContain('registration-hero-shell');
+    expect(source).toContain('class="lux-timetable-hero-main lux-hero-main registration-hero-copy"');
+    expect(source).toMatch(/class="lux-timetable-hero-focus lux-hero-side registration-hero-aside(?: lux-focus-panel)?"/);
+    expect(source).toContain('registration-command-band');
+    expect(source).toContain('registration-metrics-band lux-strip-grid lux-strip-grid--adaptive');
     expect(source).toContain('registration-insight-card registration-summary-card registration-summary-card--hold');
-    expect(source).toContain('lux-soft-chrome');
+    expect(source).not.toContain('lux-soft-chrome');
     expect(source).not.toContain('registration-hero-focus-grid');
     expect(source).not.toContain('registration-mini-metric');
     expect(source).not.toContain('registration-insight-grid');
   });
 
   it('keeps profile-view stat widgets aligned to index strip cards', () => {
-    const source = readSource('profile-view.html');
+    const source = readSource('assets/js/pages/profile-view-page.js');
 
-    expect(source).toContain('class="lux-strip-grid lux-strip-grid--adaptive pv-stat-grid pv-stat-grid--overview"');
-    expect(source).toContain('class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
+    expect(source).toContain('class="pv-metric-card"');
+    expect(source).not.toContain('lux-soft-chrome');
   });
 
   it('keeps personal-data hero and summary widgets aligned to index hero-side and strip cards', () => {

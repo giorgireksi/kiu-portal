@@ -61,11 +61,11 @@ describe('lux picker compact options', () => {
 
     it('ships compact picker option heights and flex layout tokens', () => {
         const controls = readSource('assets/css/lux-controls.css');
-        const schedulerRoute = readSource('assets/css/admin-scheduler-route.css');
+        const droplist = readSource('assets/css/lux-droplist.css');
 
         expect(controls).toContain('--lux-picker-option-height: 44px');
         expect(controls).toContain('--lux-droplist-option-height: 44px');
         expect(controls).toMatch(/\n\.lux-picker-option\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;/);
-        expect(schedulerRoute).toContain('.lux-droplist-panel');
+        expect(droplist).toContain('.lux-droplist-panel');
     });
 });

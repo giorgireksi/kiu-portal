@@ -9,6 +9,9 @@
         const d = deps;
         void d;
         /* Non-strict factory body: free vars resolve to window globals at call time. */
+        const MAX_SEMESTER_DROPDOWN = typeof window.MAX_SEMESTER_DROPDOWN === 'number' ? window.MAX_SEMESTER_DROPDOWN : 12;
+        window.MAX_SEMESTER_DROPDOWN = MAX_SEMESTER_DROPDOWN;
+        const CUSTOM_SEMESTER_OPTION = '__custom_semester__';
 
 function normalizeSemesterList(value) {
     const source = Array.isArray(value) ? value : [value];

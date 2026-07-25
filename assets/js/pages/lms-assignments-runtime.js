@@ -2,7 +2,7 @@
 
 function buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelId) {
     return `
-        <div class="lux-soft-chrome lux-panel lms-route-panel">
+        <div class="lms-route-panel">
             <div class="lms-route-card-head lms-route-card-head-mb-16">
                 <div>
                     <div class="lms-route-card-title"><i class="fas fa-square-plus"></i> Create Homework</div>
@@ -59,20 +59,20 @@ function buildLmsAssignmentGradeModalBodyHtml({
 }) {
     return `
                 <div class="lms-route-card-grid lms-assignment-grade-summary-grid">
-                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
+                    <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
                         <div class="lms-route-kv-label">Student</div>
                         <div class="lms-route-card-title lms-route-card-title-15 lms-route-copy-mt-6">${escapeHtml(submission.studentName || studentId || 'Student')}</div>
                         <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-8">${joinLmsMeta([submissionStateLabel, formatLmsDateTime(submission.submittedAt)])}</div>
                         <div class="lms-route-pill lms-assignment-grade-summary-pill">${escapeHtml(statusLabel)}</div>
                     </div>
-                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
+                    <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
                         <div class="lms-route-kv-label">Assignment</div>
                         <div class="lms-route-card-title lms-route-card-title-15 lms-route-copy-mt-6">${escapeHtml(assignment.title || 'Homework')}</div>
                         <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-8">${joinLmsMeta([getLmsWeekLabel(assignment.weekLabel), assignment.lateAllowed ? 'Late submissions allowed' : 'Late submissions closed'])}</div>
                         <div class="lms-route-copy lms-route-copy-mt-8 lms-assignment-grade-review-note">${escapeHtml(reviewerMeta)}</div>
                     </div>
                 </div>
-                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-grade-response-card">
+                <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-response-card">
                     <div class="lms-route-card-head lms-route-card-head-mb-14">
                         <div>
                             <div class="lms-route-card-title lms-route-card-title-15">Student Response</div>
@@ -87,7 +87,7 @@ function buildLmsAssignmentGradeModalBodyHtml({
                         shellClass: 'lms-route-file-shell lms-route-actions-mt-12'
                     }) : '<div class="lms-route-file-shell lms-route-actions-mt-12 lms-assignment-grade-empty-shell"><div class="lms-route-kv-label">Submission file</div><div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-empty-copy">No submission file was uploaded for this review.</div></div>'}
                 </div>
-                <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact lms-assignment-grade-editor">
+                <div class="lms-route-panel lms-route-panel-compact lms-assignment-grade-editor">
                     <div class="lms-route-card-head lms-route-card-head-mb-16">
                         <div>
                             <div class="lms-route-card-title lms-route-card-title-15">Grade & Feedback</div>
@@ -136,7 +136,7 @@ function renderWorkspace(courseId) {
         ? buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelId)
         : '';
     const assignmentWeekBanner = `
-        <div class="lux-soft-chrome lux-panel lms-route-panel lms-assignment-banner">
+        <div class="lms-route-panel lms-assignment-banner">
             <div class="lms-route-card-head">
                 <div class="lms-route-inline lms-route-inline-gap-12 lms-route-inline-center">
                     <i class="fas fa-clipboard-list lms-route-icon-accent"></i>
@@ -181,12 +181,12 @@ function renderWorkspace(courseId) {
                 ${studentSubmission ? `
                     <div class="lms-assignment-submission-bar lms-route-actions-mt-10">${submissionStatus}${studentSubmission.file ? getStoredFileDownloadHtml(studentSubmission.file, 'Download my upload') : ''}</div>
                     <div class="lms-route-card-grid lms-assignment-student-detail-grid">
-                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-student-detail-card">
+                        <div class="lms-route-card lms-route-panel-compact lms-assignment-student-detail-card">
                             <div class="lms-route-kv-label">Submission state</div>
                             <div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-student-detail-copy">${escapeHtml(Number.isFinite(Number(studentSubmission.score)) ? 'Reviewed and saved' : (String(studentSubmission.status || '').trim().toLowerCase() === 'resubmitted' ? 'Resubmitted and waiting for review' : 'Submitted and waiting for review'))}</div>
                             <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${escapeHtml(studentSubmission.submittedAt ? formatLmsDateTime(studentSubmission.submittedAt) : 'Submission time unavailable')}</div>
                         </div>
-                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-student-detail-card">
+                        <div class="lms-route-card lms-route-panel-compact lms-assignment-student-detail-card">
                             <div class="lms-route-kv-label">Review detail</div>
                             <div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-student-detail-copy">${escapeHtml(Number.isFinite(Number(studentSubmission.score)) ? `Reviewed by ${studentSubmission.gradedBy || 'Staff'}` : 'Grade and feedback will appear here after course staff review.')}</div>
                             <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${escapeHtml(studentSubmission.gradedAt ? formatLmsDateTime(studentSubmission.gradedAt) : 'No review saved yet')}</div>
@@ -203,12 +203,12 @@ function renderWorkspace(courseId) {
                 </div>
                 ${submissionEntries.length ? `
                     <div class="lms-route-card-grid lms-assignment-review-summary-grid">
-                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-review-summary-card">
+                        <div class="lms-route-card lms-route-panel-compact lms-assignment-review-summary-card">
                             <div class="lms-route-kv-label">Pending review</div>
                             <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(pendingSubmissionCount))}</div>
                             <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">Need score or feedback from course staff.</div>
                         </div>
-                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-review-summary-card">
+                        <div class="lms-route-card lms-route-panel-compact lms-assignment-review-summary-card">
                             <div class="lms-route-kv-label">Already graded</div>
                             <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(gradedSubmissionCount))}</div>
                             <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">Saved reviews stay visible inside this LMS group only.</div>
@@ -226,19 +226,19 @@ function renderWorkspace(courseId) {
                             const reviewTimestamp = entry.gradedAt ? formatLmsDateTime(entry.gradedAt) : '';
                             const reviewActor = entry.gradedBy || '';
                             return `
-                            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-submission-card">
+                            <div class="lms-route-card lms-route-panel-compact lms-assignment-submission-card">
                                 <div class="lms-route-inline lms-route-inline-between lms-route-inline-gap-10 lms-route-inline-center">
                                     <div class="lms-route-card-title lms-route-card-title-14">${escapeHtml(entry.studentName || entry.studentId || 'Student')}</div>
                                     <div class="lms-route-meta lms-route-meta-11">${escapeHtml(formatLmsDateTime(entry.submittedAt))}</div>
                                 </div>
                                 ${entry.text ? `<div class="lms-route-copy lms-route-copy-mt-8 lms-route-copy-prewrap">${escapeHtml(entry.text)}</div>` : ''}
                                 <div class="lms-route-card-grid lms-assignment-submission-detail-grid">
-                                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-submission-detail-card">
+                                    <div class="lms-route-card lms-route-panel-compact lms-assignment-submission-detail-card">
                                         <div class="lms-route-kv-label">Submission state</div>
                                         <div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-submission-detail-copy">${escapeHtml(submissionStateLabel)}</div>
                                         <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${escapeHtml(submissionTimestamp)}</div>
                                     </div>
-                                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-submission-detail-card">
+                                    <div class="lms-route-card lms-route-panel-compact lms-assignment-submission-detail-card">
                                         <div class="lms-route-kv-label">Review detail</div>
                                         <div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-submission-detail-copy">${escapeHtml(Number.isFinite(Number(entry.score)) ? `Reviewed by ${reviewActor || 'Staff'}` : 'Waiting for course staff review.')}</div>
                                         <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${escapeHtml(reviewTimestamp || 'No score saved yet')}</div>
@@ -262,11 +262,11 @@ function renderWorkspace(courseId) {
                             </div>
                         `;}).join('')}
                     </div>
-                ` : `<div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-assignment-review-empty-shell"><div class="lms-route-kv-label">Review queue</div><div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-empty-copy">No student submissions have been received for this homework yet.</div></div>`}
+                ` : `<div class="lms-route-card lms-route-panel-compact lms-assignment-review-empty-shell"><div class="lms-route-kv-label">Review queue</div><div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-empty-copy">No student submissions have been received for this homework yet.</div></div>`}
             </div>
         ` : '';
         return `
-            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-card-stack lms-assignment-card">
+            <div class="lms-route-card lms-route-card-stack lms-assignment-card">
                 <div class="lms-route-card-head lms-assignment-card-head">
                     <div>
                         <div class="lms-route-card-title">${escapeHtml(assignment.title)}</div>

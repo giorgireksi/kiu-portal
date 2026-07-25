@@ -14,7 +14,7 @@
 
 | Surface | Eager CSS |
 |---------|-----------|
-| **Bare portals** | fonts → tokens → focus-panel → controls → shell → bare-lite → mobile-shell-core (+ modals on hub pages) |
+| **Bare portals** | fonts → tokens → focus-panel → controls → shell → **FOUC** → bare-lite → mobile-shell-core (+ modals on hub pages) |
 | **Dashboard** (`index.html`) | shared + `lux-fouc-ht` + `index-home-{layout,widgets,role}` (+ lazy editor; conditional `mobile-shell.css`) |
 | **Auth / redirect** | thin — see visual-ssot |
 
@@ -29,7 +29,8 @@
 | Hub modal warmglass | `lux-modals.css` | READABILITY header |
 | Messenger / notif / call | `layout-portal.css` | lazy — `ensureLayoutPortalCss()` |
 | Droplist | `lux-droplist.css` | lazy — `ensureLuxDroplistCss()` |
-| Home widgets / FOUC | `index-home-*.css`, `lux-fouc-ht.css` | index only |
+| FOUC / HT / atmosphere | `lux-fouc-ht.css` | shared on all `lux-full-paint` portals |
+| Home widgets | `index-home-*.css` | index only |
 
 ## Header dialect
 

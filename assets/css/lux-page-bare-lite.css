@@ -17,7 +17,6 @@ body.lux-page-bare .lux-page-copy, body.lux-page-bare .lux-page-kicker {
   line-height: 1.5;
   margin: 0;
 }
-body.lux-page-bare .lux-stack { display: grid; gap: 12px; }
 body.lux-page-bare .lux-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 body.lux-page-bare .lux-field { display: grid; gap: 6px; min-width: 0; }
 body.lux-page-bare .lux-field label, body.lux-page-bare .lux-overline {
@@ -56,3 +55,234 @@ body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: gr
 @media (max-width: 920px) {
   body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Admin-tools layout (paint → lux-fouc-ht / lux-controls) ── */
+
+/* Page-shell is a layout wrapper — inner .lux-panel sections are the glass hosts */
+body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Section hosts: spacing only (outer paint → FOUC panel SSOT). */
+#lux-admin-tools-shell .lux-panel {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* Head titles and kickers */
+#lux-admin-tools-shell .lux-card-title,
+#lux-admin-tools-shell .admin-reg-program-head-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--lux-text, #f8fafc);
+  letter-spacing: -0.015em;
+}
+#lux-admin-tools-shell .lux-section-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+
+/* Ops panel spacing and grid — tiles use shared .lux-stat.lux-soft-chrome */
+#lux-admin-tools-shell .lux-admin-curriculum-ops-panel { margin: 0 0 14px; }
+#lux-admin-tools-shell .lux-admin-curriculum-ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+#lux-admin-tools-shell .lux-admin-curriculum-ops-grid .lux-stat em {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Control band layout */
+#lux-admin-tools-shell .lux-admin-curriculum-control-band {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+}
+#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field > span {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+
+/* Search icon layout; field paint comes from shared .lux-control. */
+#lux-admin-tools-shell .lux-admin-curriculum-search-wrap { position: relative; }
+#lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1;
+  pointer-events: none;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.55));
+  font-size: 13px;
+}
+#lux-admin-tools-shell #admin-curriculum-search {
+  padding-left: 36px;
+}
+
+/* Curriculum / program 2-column grids */
+#lux-admin-tools-shell .lux-admin-curriculum-grid,
+#lux-admin-tools-shell .lux-program-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+#lux-admin-tools-shell .lux-section-card {
+  padding: 16px;
+}
+
+/* Registration tab container */
+#lux-admin-tools-shell .lux-admin-tools-reg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+#lux-admin-tools-shell .admin-reg-tab-tray {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+/* Curriculum / registration head rows */
+#lux-admin-tools-shell :is(.curriculum-library-head, .curriculum-library-detail-head) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+#lux-admin-tools-shell .curriculum-library-detail-head {
+  align-items: flex-start;
+}
+#lux-admin-tools-shell .lux-card-head.lux-admin-tools-registration-panel-head {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+#lux-admin-tools-shell .lux-admin-tools-registration-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* Registration program workspace */
+#lux-admin-tools-shell .admin-reg-program-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+#lux-admin-tools-shell .admin-reg-program-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+#lux-admin-tools-shell .admin-reg-program-layout--wide {
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 18px;
+}
+#lux-admin-tools-shell .admin-reg-program-list-shell {
+  padding: 16px;
+}
+#lux-admin-tools-shell .admin-reg-program-list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+#lux-admin-tools-shell .admin-reg-program-list-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+#lux-admin-tools-shell .admin-reg-program-list-count {
+  font-size: 11px;
+  color: var(--lux-accent, #0b84ff);
+  font-weight: 800;
+}
+#lux-admin-tools-shell .admin-reg-program-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 4px;
+}
+#lux-admin-tools-shell .admin-reg-program-list-placeholder {
+  padding: 20px;
+}
+
+/* Sleek danger ghost buttons */
+#lux-admin-tools-shell :is(.admin-reg-program-pane-btn--danger, .admin-reg-program-subject-btn--danger, .admin-reg-track-group-btn--danger):hover {
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+}
+
+/* Quick match subject pills in modals */
+.admin-reg-subject-quick-match {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+  color: var(--lux-text, #f8fafc);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.admin-reg-subject-quick-match:hover {
+  transform: translateY(-1px);
+  border-color: var(--lux-accent, #0b84ff);
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.55));
+}
+
+/* Light mode icon alignment; shared .lux-control owns field colors. */
+body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i {
+  color: var(--lux-text-muted, rgba(30, 41, 59, 0.45));
+}
+
+@media (max-width: 980px) {
+  #lux-admin-tools-shell .lux-admin-curriculum-grid,
+  #lux-admin-tools-shell .lux-program-grid,
+  #lux-admin-tools-shell .admin-reg-program-layout,
+  #lux-admin-tools-shell .admin-reg-program-layout--wide {
+    grid-template-columns: 1fr;
+  }
+}
+

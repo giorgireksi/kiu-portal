@@ -199,7 +199,7 @@ function ensureNewsModalShells() {
         publisher.className = 'modal-overlay newsx-modal-overlay';
         publisher.setAttribute('aria-hidden', 'true');
         publisher.innerHTML = `
-            <div id="newsx-publisher-modal" class="modal-content lux-panel newsx-publisher-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-publisher-title" data-lux-transparency-exempt="1">
+            <div id="newsx-publisher-modal" class="modal-content newsx-publisher-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-publisher-title" data-lux-transparency-exempt="1">
                 <div id="newsx-publisher-panel"></div>
             </div>
         `;
@@ -211,7 +211,7 @@ function ensureNewsModalShells() {
         sections.className = 'modal-overlay newsx-modal-overlay';
         sections.setAttribute('aria-hidden', 'true');
         sections.innerHTML = `
-            <div id="newsx-sections-modal" class="modal-content lux-panel newsx-sections-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-sections-title" data-lux-transparency-exempt="1">
+            <div id="newsx-sections-modal" class="modal-content newsx-sections-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-sections-title" data-lux-transparency-exempt="1">
                 <div id="newsx-sections-panel"></div>
             </div>
         `;

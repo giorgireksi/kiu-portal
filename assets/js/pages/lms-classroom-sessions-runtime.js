@@ -128,7 +128,7 @@ function renderLmsNextSessionHtml(model, variant = 'hero') {
             return `<span class="lms-next-session-inline is-empty"><i class="far fa-clock"></i> ${escapeHtml(emptyCopy)}</span>`;
         }
         return `
-            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card is-empty">
+            <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card is-empty">
                 <div class="lms-route-field-label">Next session</div>
                 <strong>${escapeHtml(emptyCopy)}</strong>
             </div>
@@ -146,7 +146,7 @@ function renderLmsNextSessionHtml(model, variant = 'hero') {
         return `<span class="lms-next-session-inline"><i class="far fa-clock"></i> Next session · <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(model.day || 'Day TBD')} ${escapeHtml(model.time || 'TBD')}</span>`;
     }
     return `
-        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card">
+        <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card">
             <div class="lms-route-field-label">Next session</div>
             <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span>
             <strong>${escapeHtml(dayLine)}</strong>

@@ -52,16 +52,19 @@ describe('admin registration manage modal', () => {
         expect(shared).toContain('function closeAdminRegManageModal');
         expect(shared).toContain('function runRegistrationRemoveConfirmation');
         expect(shared).toContain('function buildAdminRegProgramRemoveVerification');
-        expect(shared).toContain("window.openAdminRegManageModal = openAdminRegManageModal");
-        expect(shared).toContain("window.runRegistrationRemoveConfirmation = runRegistrationRemoveConfirmation");
-        expect(shared).toContain("window.buildAdminRegProgramRemoveVerification = buildAdminRegProgramRemoveVerification");
+        expect(shared).toContain('__kiuRegSharedExpose({');
+        expect(shared).toMatch(/openAdminRegManageModal,/);
+        expect(shared).toMatch(/runRegistrationRemoveConfirmation,/);
+        expect(shared).toMatch(/buildAdminRegProgramRemoveVerification,/);
         expect(shared).toContain("modal.id = 'kiu-admin-reg-manage-modal'");
         expect(shared).toContain('admin-reg-manage-modal-actions');
     });
 
     it('uses gear manage triggers instead of overflow menus in track source', () => {
         const track = readSource('assets/js/pages/admin-registration-track.js');
-        const css = readSource('assets/css/admin-tools-luxury.css');
+        const shared = readSource('assets/js/pages/registration-shared.js');
+        const modals = readSource('assets/css/lux-modals.css');
+        const controls = readSource('assets/css/lux-controls.css');
 
         expect(track).toContain('function buildAdminRegManageGearMarkup');
         expect(track).toContain('data-admin-reg-manage-program=');
@@ -72,10 +75,16 @@ describe('admin registration manage modal', () => {
         expect(track).not.toContain('admin-reg-overflow-menu');
         expect(track).not.toContain('buildAdminRegOverflowMenuMarkup');
         expect(track).not.toContain('data-admin-reg-overflow-menu');
-        expect(css).toContain('.admin-reg-manage-gear-btn');
-        expect(css).toContain('#kiu-admin-reg-manage-modal');
-        expect(css).toContain('#kiu-admin-reg-manage-modal.registration-structured-modal-backdrop');
-        expect(css).toContain('#kiu-admin-reg-manage-modal .registration-structured-modal-card');
+        expect(track).toContain('lux-icon-btn admin-reg-manage-gear-btn');
+        expect(track).not.toContain('admin-reg-icon-action');
+        expect(shared).toContain("modal.id = 'kiu-admin-reg-manage-modal'");
+        expect(shared).toContain('admin-reg-manage-modal-actions');
+        expect(shared).toContain('lux-ghost-btn admin-reg-manage-modal-action');
+        expect(shared).toContain('admin-reg-manage-modal-action--danger');
+        expect(modals).toContain('registration-structured-modal-backdrop');
+        expect(modals).toContain('social-neo-dialog-card--lms-create');
+        expect(controls).toContain('.lux-icon-btn');
+        expect(existsSync(join(process.cwd(), 'assets/css', 'admin-tools-luxury.css'))).toBe(false);
     });
 
     it('exposes tab manage popup helpers in track source', () => {

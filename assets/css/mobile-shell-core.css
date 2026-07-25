@@ -40,6 +40,10 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
   .portal-notif-fab-stack, .portal-msg-fab-stack { display: none; }
   .page-section { max-width: none; width: 100%; margin: 0; }
 }
+@media (max-width: 900px) {
+  #lux-topbar .lux-picker-caption { display: none; }
+  #lux-topbar .lux-user-chip-copy { display: none; }
+}
 /* ── §3 ≤768 refinements ── */
 @media (max-width: 768px) {
   #lux-shell {
@@ -205,6 +209,7 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     padding: 0 5px;
   }
   .portal-notif-fab-stack, .portal-msg-fab-stack { display: none; }
+  #lux-bg-canvas { opacity: 0.5; }
 }
 @media (max-width: 400px) {
   #lux-shell { width: 260px; }
@@ -213,6 +218,18 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
   .mobile-nav-btn { min-width: 48px; }
   .mobile-nav-btn i { font-size: 16px; }
   .mobile-nav-btn span { font-size: 8px; }
+  #lux-topbar .lux-sidebar-toggle-btn { min-width: 36px; width: 36px; min-height: 36px; }
+  #lux-topbar .lux-picker-btn { padding: 4px 6px; min-height: 32px; }
+  #lux-topbar .lux-picker-btn strong { font-size: 9px; max-width: 56px; }
+  #lux-topbar .lux-topbar-actions .lux-icon-btn { width: 32px; height: 32px; }
+  #lux-topbar .lux-breadcrumb { max-width: 100px; font-size: 11px; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  #lux-topbar .lux-sidebar-toggle-btn { min-height: 32px; min-width: 32px; }
+  #lux-topbar .lux-picker-btn { min-height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #lux-bg-canvas { display: none; }
 }
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 768px) {

@@ -49,12 +49,12 @@
                             <div class="lux-admin-op-actions">
                                 ${(group.buttons || []).map((button) => {
                                     if (button.type === 'provision') {
-                                        return `<button class="lux-admin-op-btn" type="button" data-admin-provision="${escapeHtml(button.role)}"><i class="${escapeHtml(button.icon || 'fas fa-plus')}"></i><span>${escapeHtml(button.label)}</span></button>`;
+                                        return `<button class="lux-admin-op-btn lux-secondary-btn" type="button" data-admin-provision="${escapeHtml(button.role)}"><i class="${escapeHtml(button.icon || 'fas fa-plus')}"></i><span>${escapeHtml(button.label)}</span></button>`;
                                     }
                                     if (button.type === 'focus') {
-                                        return `<button class="lux-admin-op-btn" type="button" data-admin-focus="${escapeHtml(button.focus)}"><i class="${escapeHtml(button.icon || 'fas fa-layer-group')}"></i><span>${escapeHtml(button.label)}</span></button>`;
+                                        return `<button class="lux-admin-op-btn lux-secondary-btn" type="button" data-admin-focus="${escapeHtml(button.focus)}"><i class="${escapeHtml(button.icon || 'fas fa-layer-group')}"></i><span>${escapeHtml(button.label)}</span></button>`;
                                     }
-                                    return `<button class="lux-admin-op-btn" type="button" data-nav-target="${escapeHtml(button.pageId)}"><i class="${escapeHtml(button.icon || 'fas fa-arrow-right')}"></i><span>${escapeHtml(button.label)}</span></button>`;
+                                    return `<button class="lux-admin-op-btn lux-secondary-btn" type="button" data-nav-target="${escapeHtml(button.pageId)}"><i class="${escapeHtml(button.icon || 'fas fa-arrow-right')}"></i><span>${escapeHtml(button.label)}</span></button>`;
                                 }).join('')}
                             </div>
                         </div>

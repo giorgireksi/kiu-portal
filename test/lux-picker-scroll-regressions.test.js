@@ -89,7 +89,9 @@ describe('lux picker scroll regressions', () => {
         expect(registration).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
         expect(scheduler).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CSS_CACHE_BUST}`);
         expect(scheduler).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
-        expect(scheduler).toContain(`assets/js/features/luxury-shell-picker-runtime.js?v=${LUX_DROPLIST_CACHE_BUST}`);
+        // picker-runtime carries its own bust (closePickerPanels suppress-leak fix) and
+        // moves independently of the shared chrome/droplist bundle.
+        expect(scheduler).toContain('assets/js/features/luxury-shell-picker-runtime.js?v=20260725-glassblur1');
     });
 
     it('routes library catalog filters through the universal picker contract', () => {

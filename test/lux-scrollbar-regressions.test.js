@@ -9,13 +9,16 @@ function readSource(relativePath) {
 }
 
 describe('lux scrollbar regressions', () => {
-    it('ships global scrollbar tokens and shell nav scrollbar (primitives retired)', () => {
+    it('ships shared layout primitives, scrollbar tokens, and shell nav scrollbar', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         const shell = readSource('assets/css/lux-shell.css');
         const controls = readSource('assets/css/lux-controls.css');
 
-        // Orphan lux-layout-primitives.css removed from live tree
-        expect(existsSync(join(process.cwd(), 'assets/css/lux-layout-primitives.css'))).toBe(false);
+        const primitives = readSource('assets/css/lux-layout-primitives.css');
+        expect(existsSync(join(process.cwd(), 'assets/css/lux-layout-primitives.css'))).toBe(true);
+        expect(primitives).toContain('.lux-stat-row');
+        expect(primitives).toContain('.lux-list-row');
+        expect(primitives).toContain('.lux-alert');
 
         expect(tokens).toContain('--lux-scrollbar-thumb');
         expect(tokens).toContain('--lux-scrollbar-thumb-hover');

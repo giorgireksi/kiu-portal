@@ -149,8 +149,8 @@
         root.innerHTML = `
             <div class="lux-program-shell">
                 <div class="lux-program-grid">
-                    <section id="programs-module-rail-region" class="surface-card lux-panel lux-program-shell-section lux-program-shell-section--module-rail" data-programs-panel-shell="1"></section>
-                    <section id="programs-subject-panel-region" class="surface-card lux-panel lux-program-shell-section lux-program-shell-section--subject-panel" data-programs-panel-shell="1"></section>
+                    <section id="programs-module-rail-region" class="surface-card lux-program-shell-section lux-program-shell-section--module-rail" data-programs-panel-shell="1"></section>
+                    <section id="programs-subject-panel-region" class="surface-card lux-program-shell-section lux-program-shell-section--subject-panel" data-programs-panel-shell="1"></section>
                 </div>
             </div>
         `;

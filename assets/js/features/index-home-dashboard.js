@@ -1,8 +1,8 @@
 (function registerLuxuryHomeDashboardChunk() {
     if (typeof window.__kiuRegisterLuxuryHomeChunkUrl === 'function') {
-        window.__kiuRegisterLuxuryHomeChunkUrl('assets/js/features/index-home-dashboard.plain.js?v=20260723-deadcode2');
+        window.__kiuRegisterLuxuryHomeChunkUrl('assets/js/features/index-home-dashboard.plain.js?v=20260725-panelrevert1');
         return;
     }
     // Fallback if runtime not ready yet: store URL for later ensure.
-    window.__kiuLuxuryHomeChunkUrl = 'assets/js/features/index-home-dashboard.plain.js?v=20260723-deadcode2';
+    window.__kiuLuxuryHomeChunkUrl = 'assets/js/features/index-home-dashboard.plain.js?v=20260725-panelrevert1';
 })();

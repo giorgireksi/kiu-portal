@@ -40,17 +40,18 @@ describe('admin tools interaction safety', () => {
         expect(shellChrome).toContain("navRoot.dataset.renderSignature = '';");
         expect(shellChrome).toContain('if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;');
 
-        expect(alignment).toContain('function getAlignmentSignature(page)');
-        expect(alignment).toContain('if (page.dataset.adminToolsIndexSignature !== signature) {');
-        expect(alignment).toContain('page.dataset.adminToolsIndexSignature = getAlignmentSignature(page);');
         expect(alignment).toContain("document.getElementById('lux-admin-tools-shell')");
-        expect(alignment).toContain('observer.observe(observerRoot, { childList: true, subtree: true });');
+        expect(alignment).toContain('new MutationObserver(queueSync)');
+        expect(alignment).toContain("observe(root, { childList: true, subtree: true })");
+        expect(alignment).toContain("remove('lux-admin-tools-index-panel')");
+        expect(alignment).toContain('clearPresentationalInlineStyle');
+        expect(alignment).toContain("getElementById('lux-admin-tools-index-hero')?.remove()");
+        expect(alignment).toContain("getElementById('lux-admin-tools-index-strip')?.remove()");
+        expect(alignment).not.toContain('function getAlignmentSignature');
         expect(alignment).not.toContain('function getStripMarkup');
         expect(alignment).not.toContain('function renderStrip');
+        expect(alignment).not.toContain('function renderHero');
+        expect(alignment).not.toContain('Four linked control zones');
         expect(alignment).not.toContain('lux-admin-tools-index-summary');
-        expect(alignment).not.toContain('lux-strip-grid lux-strip-grid--adaptive lux-admin-tools-index-strip');
-        expect(alignment).toContain('function removeLegacyStrip');
-        expect(alignment).toContain('getActiveRegistrationLane(page)');
-        expect(alignment).toContain('Four linked control zones');
     });
 });

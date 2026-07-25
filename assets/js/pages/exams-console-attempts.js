@@ -147,10 +147,10 @@
         return `
             <div class="ex2-two-col">
                 <section class="ex2-panel">
-                    <div class="ex2-panel-head">
+                    <div class="lux-panel-head">
                         <div>
-                            <h2 class="ex2-panel-title">Live Monitoring</h2>
-                            <p class="ex2-panel-copy">Track attendance, warnings, active computers, and submission state without leaving the exam board.</p>
+                            <h2 class="lux-panel-title">Live Monitoring</h2>
+                            <p class="lux-panel-copy">Track attendance, warnings, active computers, and submission state without leaving the exam board.</p>
                         </div>
                     </div>
                     <div class="ex2-list">
@@ -167,10 +167,10 @@
                 </section>
                 <section class="ex2-panel">
                     ${selectedSession ? `
-                        <div class="ex2-panel-head">
+                        <div class="lux-panel-head">
                             <div>
-                                <h2 class="ex2-panel-title">${escapeHtml(selectedSession.subjectName || selectedSession.title || 'Exam session')}</h2>
-                                <p class="ex2-panel-copy">${escapeHtml(getSessionRoomLabel(selectedSession))} Â· ${escapeHtml(getSessionObserverNames(selectedSession).join(', ') || 'Observers pending')}</p>
+                                <h2 class="lux-panel-title">${escapeHtml(selectedSession.subjectName || selectedSession.title || 'Exam session')}</h2>
+                                <p class="lux-panel-copy">${escapeHtml(getSessionRoomLabel(selectedSession))} Â· ${escapeHtml(getSessionObserverNames(selectedSession).join(', ') || 'Observers pending')}</p>
                             </div>
                             <button type="button" class="ex2-btn is-ghost" data-exam-call="refreshExamAttempts" data-exam-args='["${escapeHtml(selectedSession.id)}"]'><i class="fas fa-rotate"></i> Refresh</button>
                         </div>
@@ -203,10 +203,10 @@
         return `
             <div class="ex2-two-col">
                 <section class="ex2-panel">
-                    <div class="ex2-panel-head">
+                    <div class="lux-panel-head">
                         <div>
-                            <h2 class="ex2-panel-title">Results Queue</h2>
-                            <p class="ex2-panel-copy">Objective scores appear immediately. Manual answers stay here until staff finalizes grading.</p>
+                            <h2 class="lux-panel-title">Results Queue</h2>
+                            <p class="lux-panel-copy">Objective scores appear immediately. Manual answers stay here until staff finalizes grading.</p>
                         </div>
                     </div>
                     <div class="ex2-list">
@@ -223,10 +223,10 @@
                 </section>
                 <section class="ex2-panel">
                     ${selectedSession ? `
-                        <div class="ex2-panel-head">
+                        <div class="lux-panel-head">
                             <div>
-                                <h2 class="ex2-panel-title">${escapeHtml(selectedSession.subjectName || selectedSession.title || 'Results')}</h2>
-                                <p class="ex2-panel-copy">${escapeHtml(selectedSession.variantLabel || 'Variant')} Â· ${escapeHtml(getSessionObserverNames(selectedSession).join(', ') || 'Observers pending')}</p>
+                                <h2 class="lux-panel-title">${escapeHtml(selectedSession.subjectName || selectedSession.title || 'Results')}</h2>
+                                <p class="lux-panel-copy">${escapeHtml(selectedSession.variantLabel || 'Variant')} Â· ${escapeHtml(getSessionObserverNames(selectedSession).join(', ') || 'Observers pending')}</p>
                             </div>
                             <button type="button" class="ex2-btn is-ghost" data-exam-call="refreshExamAttempts" data-exam-args='["${escapeHtml(selectedSession.id)}"]'><i class="fas fa-rotate"></i> Refresh</button>
                         </div>

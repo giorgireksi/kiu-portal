@@ -599,7 +599,7 @@
                             <div class="student-service-qa-thread-modal-title-wrap">
                                 <div class="student-service-kicker">Q&A thread</div>
                                 <strong id="student-service-question-thread-modal-title">${ssEscape(question.title || 'Question thread')}</strong>
-                                <span class="student-service-zone-copy">${ssEscape(authorLabel)} · ${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
+                                <span class="lux-panel-copy">${ssEscape(authorLabel)} · ${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
                             </div>
                         </div>
                         <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-qa-thread-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-thread-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
@@ -967,7 +967,7 @@
                     <input id="student-service-question-anonymous" type="checkbox" ${draftQuestion.anonymousMode !== false ? 'checked' : ''} data-student-service-draft-question-field="anonymousMode">
                     Post anonymously to other students
                 </label>
-                <div class="student-service-zone-copy student-service-qa-helper-copy">
+                <div class="lux-panel-copy student-service-qa-helper-copy">
                     Student Service and authorized responders can still see the real author for moderation and follow-up.
                     ${draftQuestion.askMode === 'private' ? ' Private mode will create a direct Student Service ticket instead of a public post.' : ''}
                 </div>
@@ -1011,7 +1011,7 @@
                             <div class="student-service-qa-composer-modal-title">
                                 <div class="student-service-kicker">Ask question</div>
                                 <strong id="student-service-question-composer-modal-title">Post in the Q&A feed</strong>
-                                <span class="student-service-zone-copy">${ssEscape(prompt)}</span>
+                                <span class="lux-panel-copy">${ssEscape(prompt)}</span>
                             </div>
                         </div>
                         <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-qa-composer-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-composer-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>

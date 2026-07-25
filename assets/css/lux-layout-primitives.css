@@ -1,0 +1,239 @@
+/* Shared layout primitives extracted from the dashboard visual SSOT.
+ * Route sheets own composition; this file owns reusable widget and alert chrome. */
+
+.lux-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.lux-pill-row,
+.lux-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.lux-pill.lux-soft-chrome {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.lux-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  overflow: visible;
+}
+
+.lux-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+  font-family: 'Noto Sans Georgian', sans-serif;
+}
+
+.lux-stat strong {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--lux-text);
+}
+
+.lux-stat span {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+
+.lux-stat.lux-soft-chrome {
+  padding: 12px 14px 14px;
+  border-radius: 16px;
+  overflow: visible;
+}
+
+.lux-list {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lux-list-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lux-list-row > div {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 3px;
+  min-width: 0;
+}
+
+.lux-list-row strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+
+.lux-list-row span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+.lux-list-row.lux-soft-chrome {
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+}
+
+.lux-list-row.lux-soft-chrome:last-child { margin-bottom: 0; }
+
+.lux-list-row.lux-soft-chrome i {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--lux-accent) 28%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--lux-accent) 16%, transparent);
+  color: var(--lux-accent);
+}
+
+.lux-quick-grid { display: grid; gap: 12px; }
+
+.lux-quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lux-quick-btn.lux-soft-chrome { border-radius: 20px; }
+
+.lux-quick-top,
+.lux-quick-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lux-quick-top { justify-content: space-between; }
+.lux-quick-bottom { margin-top: auto; }
+
+.lux-quick-btn .icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--lux-accent) 28%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lux-accent) 16%, transparent);
+  color: var(--lux-accent);
+}
+
+.lux-quick-meter {
+  flex: 1 1 auto;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lux-quick-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lux-accent);
+}
+
+.lux-quick-meta-badge {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lux-alert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--lux-radius, 18px);
+  color: var(--lux-text);
+}
+
+.lux-alert:is(.is-green, .is-royal, .is-support, .is-warm) {
+  border-color: var(--lux-soft-chrome-border, var(--lux-panel-border-soft));
+  background: var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft));
+  background-image: none;
+  box-shadow: var(--lux-soft-chrome-shadow, var(--lux-panel-shadow-soft)), inset 3px 0 0 var(--_rail);
+}
+
+.lux-alert.is-green { --_rail: color-mix(in srgb, var(--lux-green) 70%, transparent); --_icon: var(--lux-green); --_icon-mix: 35%; }
+.lux-alert.is-warm { --_rail: color-mix(in srgb, var(--lux-accent) 65%, transparent); --_icon: var(--lux-accent); --_icon-mix: 35%; }
+.lux-alert.is-royal { --_rail: color-mix(in srgb, var(--lux-accent) 60%, transparent); --_icon: var(--lux-accent-2, var(--lux-accent)); --_icon-mix: 35%; }
+.lux-alert.is-support { --_rail: color-mix(in srgb, var(--lux-green) 55%, transparent); --_icon: var(--lux-green); --_icon-mix: 30%; }
+
+.lux-alert-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: 1px solid var(--lux-soft-chrome-border, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lux-soft-chrome-surface, transparent) 70%, transparent);
+}
+
+.lux-alert:is(.is-green, .is-warm, .is-royal, .is-support) .lux-alert-icon {
+  border-color: color-mix(in srgb, var(--_icon) var(--_icon-mix), var(--lux-soft-chrome-border, transparent));
+  background: color-mix(in srgb, var(--_icon) 12%, transparent);
+  color: var(--_icon);
+}
+
+.lux-alert-copy { min-width: 0; flex: 1 1 auto; }
+.lux-alert-copy strong { display: block; font-size: 14px; font-weight: 700; }
+.lux-alert-copy span { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: var(--lux-text-muted); }
+.lux-alert .lux-primary-btn { flex: 0 0 auto; margin-left: auto; }
+
+@media (max-width: 980px) {
+  .lux-stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .lux-stat-row { grid-template-columns: 1fr; }
+  .lux-alert { flex-wrap: wrap; }
+  .lux-alert .lux-primary-btn { width: 100%; margin-left: 0; }
+}

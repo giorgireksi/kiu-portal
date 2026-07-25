@@ -5,6 +5,13 @@
     if (window.__KIU_REGISTRATION_CURRICULUM_LOADED) return;
     window.__KIU_REGISTRATION_CURRICULUM_LOADED = true;
 
+    window.curriculumLibraryUiState = window.curriculumLibraryUiState || {
+        selectedModulesByFaculty: {},
+        searchQueryByFaculty: {},
+        searchDebounceTimer: null,
+        editingSubjectId: null
+    };
+
     window.__kiuCreateRegistrationCurriculumApi = function createKiuPeelApi(deps = {}) {
         const d = deps;
         void d;
@@ -189,26 +196,20 @@ function addSubjectToSystem() {
     closeCurriculumSubjectBuilderModal();
 }
 
-window.openCurriculumSubjectBuilderModal = openCurriculumSubjectBuilderModal;
-window.openCurriculumSubjectBuilderModalForEdit = openCurriculumSubjectBuilderModalForEdit;
-window.closeCurriculumSubjectBuilderModal = closeCurriculumSubjectBuilderModal;
-window.resetCurriculumSubjectBuilderForm = resetCurriculumSubjectBuilderForm;
-window.normalizeSubjectSemesters = normalizeSubjectSemesters;
-window.subjectMatchesSemesterFilter = subjectMatchesSemesterFilter;
-window.formatSubjectSemestersLabel = formatSubjectSemestersLabel;
-window.getBuilderSubjectSemesters = getBuilderSubjectSemesters;
-window.setBuilderSubjectSemesters = setBuilderSubjectSemesters;
-window.getSemesterParityDescriptionForSemesters = getSemesterParityDescriptionForSemesters;
-window.MAX_SEMESTER_DROPDOWN = MAX_SEMESTER_DROPDOWN;
-
 // Ensure registration state is correctly drawn when the app starts
 window.addEventListener('DOMContentLoaded', () => {
     if (!document.getElementById('page-registration')) return;
     // FIX: Removed forced dark mode override - respect user's saved theme preference.
     // FIX: Removed 500ms setTimeout - render immediately, then apply transparency.
-    initializeRegistrationShellInteractions();
-    refreshSemesterDropdowns();
-    refreshRegistrationUI();
+    if (typeof initializeRegistrationShellInteractions === 'function') {
+        initializeRegistrationShellInteractions();
+    }
+    if (typeof refreshSemesterDropdowns === 'function') {
+        refreshSemesterDropdowns();
+    }
+    if (typeof refreshRegistrationUI === 'function') {
+        refreshRegistrationUI();
+    }
 
     // CRITICAL: Re-apply transparency AFTER registration cards are rendered.
     if (typeof updateTransparency === 'function') {

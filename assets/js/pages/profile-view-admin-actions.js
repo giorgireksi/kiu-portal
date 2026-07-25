@@ -103,7 +103,7 @@ function generateTranscriptForUser(userId) {
     const transcriptAverage = (totalScore / transcriptData.length).toFixed(2);
     const transcriptDate = escapeProfileViewAdminHtml(new Date().toISOString().split('T')[0]);
     const transcriptStylesheetUrl = escapeProfileViewAdminHtml(
-        resolveProfileViewAdminAssetUrl('assets/css/profile-view-route.css?v=20260526-profileview-transcriptprint1')
+        resolveProfileViewAdminAssetUrl('assets/css/lux-tokens.css?v=20260723-chipsurf1')
     );
     const safeUserId = escapeProfileViewAdminHtml(userId);
     const safeStudentName = escapeProfileViewAdminHtml(studentName);

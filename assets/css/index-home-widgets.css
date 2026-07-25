@@ -1,122 +1,6 @@
-/* READABILITY: index-only widget frames/lists/alerts. Paint→tokens/soft-chrome.
- * SECTIONS: primitives | hero | grid-widget | builder | soft-chrome-chips | alerts
+/* READABILITY: index-only widget composition. Shared chrome→lux-layout-primitives.css.
+ * SECTIONS: embedded-grid | builder
  */
-/* --- primitives --- */
-#page-home #lux-home-shell {
-  .lux-stat-row {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-    overflow: visible;
-  }
-  .lux-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-    overflow: visible;
-    min-height: 0;
-    font-family: 'Noto Sans Georgian', system-ui, -apple-system, sans-serif;
-  }
-  .lux-stat strong {
-    display: block;
-    font-size: 1.35rem;
-    font-weight: 800;
-    line-height: 1.1;
-    color: var(--lux-text);
-  }
-  .lux-stat span {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--lux-text-muted);
-  }
-  .lux-list-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    min-width: 0;
-  }
-  .lux-list-row > div {
-    min-width: 0;
-    flex: 1 1 auto;
-    display: grid;
-    gap: 3px;
-  }
-  .lux-list-row strong { display: block; font-weight: 700; color: var(--lux-text); }
-  .lux-list-row span {
-    display: block;
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--lux-text-muted);
-  }
-  .lux-quick-grid, #page-home .lux-quick-grid--embedded { display: grid; gap: 12px; }
-  .lux-quick-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    text-align: left;
-    gap: 10px;
-    padding: 16px;
-    cursor: pointer;
-    min-width: 0;
-  }
-  .lux-quick-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-  }
-  .lux-quick-btn .icon {
-    width: 42px;
-    height: 42px;
-    display: grid;
-    place-items: center;
-    border-radius: 14px;
-    flex: 0 0 auto;
-    background: color-mix(in srgb, var(--lux-accent) 16%, transparent);
-    color: var(--lux-accent);
-    border: 1px solid color-mix(in srgb, var(--lux-accent) 28%, transparent);
-  }
-  .lux-quick-bottom {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: auto;
-  }
-  .lux-quick-meter {
-    flex: 1 1 auto;
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-  }
-  .lux-quick-meter > span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--lux-accent);
-  }
-  .lux-quick-meta-badge {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--lux-text-muted);
-    white-space: nowrap;
-  }
-}
-@media (max-width: 980px) {
-  #page-home #lux-home-shell {
-    .lux-stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-}
-@media (max-width: 560px) {
-  #page-home #lux-home-shell {
-    .lux-stat-row { grid-template-columns: 1fr; }
-  }
-}
 #page-home .lux-dashboard-section { padding: 18px; }
 .lux-quick-grid--embedded { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
 @media (max-width: 1200px) {
@@ -125,50 +9,13 @@
 @media (max-width: 980px) {
   #page-home .lux-quick-grid--embedded { grid-template-columns: 1fr; }
 }
-/* --- builder + soft-chrome-chips --- */
+/* --- builder --- */
 #page-home .lux-builder-card, #page-home .lux-builder-section, #page-home .lux-builder-hero {
   min-height: 100%;
   height: auto;
 }
-#page-home #lux-home-shell {
-  .lux-stat.lux-soft-chrome { border-radius: 16px; padding: 12px 14px 14px; overflow: visible; }
-  .lux-quick-btn.lux-soft-chrome { border-radius: 20px; }
-  .lux-list-row.lux-soft-chrome {
-    display: flex;
-    border-radius: 16px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  .lux-list-row.lux-soft-chrome:last-child { margin-bottom: 0; }
-  .lux-list-row.lux-soft-chrome i {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    background: color-mix(in srgb, var(--lux-accent) 16%, transparent);
-    color: var(--lux-accent);
-    border: 1px solid color-mix(in srgb, var(--lux-accent) 28%, transparent);
-  }
-}
-/* Grid-widget focus stacking — home-only (removed from shared lux-shell stack). */
-body.lux-full-paint #page-home #lux-home-shell :is(.lux-grid-widget, .lux-grid-widget-body):focus-within {
+#page-home #lux-home-shell .lux-builder-card .lux-list {
+  flex: 0 1 auto;
+  min-height: 0;
   overflow: visible;
-  contain: layout style;
-  z-index: 900;
-}
-/* --- list-alert recovery --- */
-#page-home #lux-home-shell {
-  .lux-builder-card .lux-list { flex: 0 1 auto; min-height: 0; overflow: visible; }
-  .lux-list { display: grid; gap: 8px; min-width: 0; }
-  .lux-list-row.lux-soft-chrome strong { font-size: 13px; font-weight: 700; color: var(--lux-text); }
-  .lux-list-row.lux-soft-chrome span {
-    margin-top: 3px;
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--lux-text-muted);
-  }
 }

@@ -415,6 +415,12 @@
   background-clip: padding-box;
   background-origin: padding-box;
 }
+.lux-secondary-btn:is(.active, .is-active, [aria-selected="true"], [aria-pressed="true"]) {
+  color: var(--lux-btn-label, #f7fbff);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well-hover, var(--lux-btn-well));
+  box-shadow: var(--lux-btn-frame-shadow-hover);
+}
 .lux-secondary-btn:hover::before, .lux-secondary-btn:focus-visible::before {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.07) 28%, transparent 48%);
 }
@@ -567,43 +573,7 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
   box-shadow: 0 10px 22px rgba(var(--lux-accent-rgb), 0.28);
 }
 .lux-icon-badge.is-zero { opacity: 0; transform: scale(0.8); pointer-events: none; }
-.admin-reg-tab {
-  position: relative;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(16, 32, 56, 0.08);
-  border-bottom: none;
-  border-radius: 18px;
-  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.74);
-  padding: 14px 22px;
-  transition: transform 0.18s ease;
-}
-.admin-reg-tab::after {
-  content: '';
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), transparent 62%);
-  opacity: 0.72;
-  pointer-events: none;
-  transition: opacity 0.18s ease;
-}
-.admin-reg-tab:hover {
-  transform: translateY(-3px);
-}
-.admin-reg-tab:hover::after {
-  opacity: 1;
-}
-.admin-reg-tab.active, .admin-reg-tab.is-active {
-  background: linear-gradient(135deg, #12345c 0%, #0b84ff 100%);
-  color: #ffffff;
-  font-weight: 800;
-  box-shadow: 0 18px 34px rgba(11, 132, 255, 0.22);
-  transform: translateY(-2px);
-}
-.admin-reg-tab.active::after, .admin-reg-tab.is-active::after {
-  opacity: 1;
-}
+
 .lux-picker-btn:hover, .lux-picker-btn.is-active {
   transform: translateY(-1px);
 }
@@ -657,4 +627,21 @@ body.lux-full-paint.lux-unified-shell .lux-ghost-btn {
   text-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+
+/* Shared dense CTA variant for high-frequency workspace actions. */
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+  min-height: 40px;
+  padding-inline: 16px;
+  border-radius: 12px;
+  border-width: 1px;
+  box-shadow: none;
+  text-shadow: none;
+}
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn)::before,
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn)::after {
+  display: none;
+}
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn):is(:hover, :focus-visible) {
+  box-shadow: var(--lux-elev-1, 0 8px 20px rgba(0, 0, 0, 0.14));
 }

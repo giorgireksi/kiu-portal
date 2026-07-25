@@ -1114,7 +1114,7 @@ function renderGradebookRosterSelection() {
     }
 
     const cards = groups.map(group => `
-        <div class="lux-soft-chrome lux-panel course-card lms-route-card lms-route-panel-compact gb-roster-card" data-gradebook-click="open-section" data-gradebook-course-id="${escapeHtml(String(group.courseId))}" data-gradebook-group-id="${escapeHtml(String(group.groupId))}" data-gradebook-title="${escapeHtml(`${group.subjectName} | ${group.groupName} | ${String(group.day || '').trim()} ${String(group.time || '').trim()}`)}">
+        <div class="course-card lms-route-card lms-route-panel-compact gb-roster-card" data-gradebook-click="open-section" data-gradebook-course-id="${escapeHtml(String(group.courseId))}" data-gradebook-group-id="${escapeHtml(String(group.groupId))}" data-gradebook-title="${escapeHtml(`${group.subjectName} | ${group.groupName} | ${String(group.day || '').trim()} ${String(group.time || '').trim()}`)}">
             <div class="gb-roster-card-hero">
                 <div class="gb-roster-card-head">
                     <div>

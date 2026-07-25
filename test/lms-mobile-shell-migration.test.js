@@ -81,8 +81,8 @@ describe('lms mobile shell migration', () => {
     expect(classificationScriptSource).toContain("'assets/css/lux-page-bare-lite.css'");
     expect(classificationScriptSource).not.toContain("'assets/css/lms-whiteboard-catalog.css'");
     expect(classificationScriptSource).toContain("mobileShell: 'shared-standalone'");
-    expect(classificationSource).toContain('| `lms.html` | `standard-shell` |');
-    expect(classificationSource).toContain('lux-page-bare.css');
+    expect(classificationSource).toContain('Stale table retired');
+    expect(classificationSource).toContain('lux-page-bare-lite');
     expect(classificationSource).not.toContain('lms-route-core.css');
     expect(classificationSource).not.toContain('lms-whiteboard-catalog.css');
   });

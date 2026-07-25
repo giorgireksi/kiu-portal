@@ -3,7 +3,7 @@
 ## Aim
 
 1. **Shared portal paint** — shell chrome, control sheen, panel tokens, focus structure on every portal page.
-2. **Index-only** — home widgets, FOUC atmosphere, mobile polish.
+2. **Index-only** — home widgets, index mobile polish (`mobile-shell.css`).
 3. Auth / redirects stay thin.
 
 ## Live design
@@ -39,6 +39,11 @@ Lazy: droplist, modals (where needed), layout-portal (messenger), lux-mobile-act
 | Messenger / notif / call UI | `layout-portal.css` | **Not** in HTML — `messenger.js` → `ensureLayoutPortalCss()` |
 | Droplist paint | `lux-droplist.css` | Lazy — `ensureLuxDroplistCss()` in shell chrome |
 | Home widgets | `index-home-*.css` | Index only |
+| Shell motion governor | `luxury-shell-motion-runtime.js` | Shared on all `lux-full-paint` portals with shell chrome (not home-only) |
+| Atmosphere on/off canvas | `lux-fouc-ht.css` | Shared presentation; home overlay wash polish stays in `index-home-layout` |
+| Mobile chrome densify | `mobile-shell-core.css` | Topbar/canvas mobile rules shared; home densify stays in `mobile-shell.css` |
+
+**Content dual-write:** paused on bare portals pending per-page redesign. Soft-chrome alone is matte; glass needs `lux-panel` / `page-hero` under `body.lux-unified-shell`. WORKS hubs keep dual-write: staff, students-admin, admin-tools, admin-orders. Auth/redirects remain thin.
 
 **Samples:** bare stack = `students-admin.html` (FOUC + modals + bare-lite, no layout-portal link); dashboard = `index.html` (FOUC + index-home-*).
 
@@ -92,4 +97,4 @@ Optional: merge `lux-focus-panel` into shell if desired. FOUC atmosphere is alre
 - **Helper:** [`test/helpers/bare-shell-css.js`](../test/helpers/bare-shell-css.js) — `readWarmglassCss()`, `readDroplistCss()`, `expectRetiredCss()`, `RETIRED_ROUTE_CSS`.
 - **No route paint:** `student-service` and `exams` have no dedicated route sheets; they use shared paint + bare-lite layout.
 - **Redirect / auth diet:** alias redirects = `lux-tokens` + `lux-controls` + `redirect-route` only; `lux-surfaces` = login + protected-launch only.
-- **Shared paint:** all portal pages link tokens-dashboard / focus / controls-paint / shell-paint; FOUC + home dashboard remain index-only.
+- **Shared paint:** all portal pages link tokens / focus / controls / shell / FOUC; home dashboard CSS remains index-only.

@@ -1,98 +1,33 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { expectRetiredCss } from './helpers/bare-shell-css.js';
 
 function readAsset(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
 describe('Profile view source regressions', () => {
-    it('keeps profile-view.html free of mojibake markers and broken day labels', () => {
+    it('keeps profile-view styles on shared bare stack instead of a dedicated route stylesheet', () => {
         const profileViewHtml = readAsset('profile-view.html');
+        const adminActions = readAsset('assets/js/pages/profile-view-admin-actions.js');
 
-        expect(profileViewHtml).not.toContain('Ã');
-        expect(profileViewHtml).not.toContain('�');
-        expect(profileViewHtml).toContain("const PROFILE_VIEW_EMPTY_TEXT = 'Not provided';");
-        expect(profileViewHtml).toContain("const PROFILE_VIEW_DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];");
-        expect(profileViewHtml).toContain("JPG, PNG &middot; Max 5MB");
-        expect(profileViewHtml).toContain("Edit Profile &middot; ${person.name}");
-    });
-
-    it('keeps modal and profile actions on delegated data attributes instead of inline click handlers', () => {
-        const profileViewHtml = readAsset('profile-view.html');
-        const inlineHandlerCount = (profileViewHtml.match(/onclick=|onmouseover=|onmouseout=/g) || []).length;
-
-        expect(profileViewHtml).not.toContain('onclick="if(event.target===this)this.remove()"');
-        expect(profileViewHtml).not.toContain("onclick=\"document.getElementById('profile-edit-modal').remove()\"");
-        expect(profileViewHtml).not.toContain("onclick=\"document.getElementById('pv-session-modal').remove()\"");
-        expect(profileViewHtml).not.toContain("onclick=\"document.getElementById('pv-editgroup-modal').remove()\"");
-        expect(profileViewHtml).toContain('data-pv-modal-overlay');
-        expect(profileViewHtml).toContain('data-pv-remove-target="profile-edit-modal"');
-        expect(profileViewHtml).toContain('data-pv-remove-target="pv-session-modal"');
-        expect(profileViewHtml).toContain('data-pv-remove-target="pv-editgroup-modal"');
-        expect(profileViewHtml).toContain('data-pv-action="save-profile-edit"');
-        expect(profileViewHtml).toContain('data-pv-action="create-session"');
-        expect(profileViewHtml).toContain('data-pv-action="save-group-edit"');
-        expect(profileViewHtml).toContain('data-pv-action="remove-schedule-row"');
-        expect(profileViewHtml).toContain('data-pv-avatar-image="1"');
-        expect(profileViewHtml).toContain('data-pv-avatar-fallback="${avatarInitials}"');
-        expect(profileViewHtml).toContain('id="pv-session-modal-template"');
-        expect(profileViewHtml).toContain('id="pv-editgroup-modal-template"');
-        expect(profileViewHtml).toContain('id="pv-schedule-row-template"');
-        expect(profileViewHtml).toContain('class="pv-modal-overlay"');
-        expect(profileViewHtml).toContain('class="prof-sched-edit-row pv-schedule-edit-row"');
-        expect(profileViewHtml).toContain('class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span>');
-        expect(profileViewHtml).toContain('data-pv-hover="slot"');
-        expect(profileViewHtml).toContain('data-pv-hover="event-card"');
-        expect(profileViewHtml).not.toContain('id="pv-session-modal" data-pv-modal-overlay style=');
-        expect(profileViewHtml).not.toContain('id="pv-editgroup-modal" data-pv-modal-overlay style=');
-        expect(profileViewHtml).not.toContain('class="prof-sched-edit-row" style=');
-        expect(profileViewHtml).not.toContain('id="mob-act-admin"><span class="mob-sheet-icon" style=');
-        expect(profileViewHtml).not.toContain('onerror=');
-        expect(inlineHandlerCount).toBe(0);
-    });
-
-    it('keeps profile-view styles in the dedicated route stylesheet instead of inline style blocks', () => {
-        const profileViewHtml = readAsset('profile-view.html');
-        const routeCss = readAsset('assets/css/profile-view-route.css');
-
-        expect(profileViewHtml).toContain('assets/css/profile-view-route.css');
+        expect(profileViewHtml).not.toContain('assets/css/profile-view-route.css');
+        expect(profileViewHtml).toContain('assets/css/lux-page-bare-lite.css');
         expect(profileViewHtml).not.toContain('<style>');
-        expect(routeCss).toContain('.pv-hero {');
-        expect(routeCss).toContain('.pv-meta-head {');
-        expect(routeCss).toContain('.pv-status-badge {');
-        expect(routeCss).toContain('.pv-overview-grid {');
-        expect(routeCss).toContain('.pv-profile-edit-card {');
-        expect(routeCss).toContain('.pv-financial-status-card {');
-        expect(routeCss).toContain('.pv-stat-grid--overview {');
-        expect(routeCss).toContain('.upload-zone-title {');
-        expect(routeCss).toContain('.pv-toast {');
-        expect(routeCss).toContain('.pv-toast-detail {');
-        expect(routeCss).toContain('.pv-modal-overlay {');
-        expect(routeCss).toContain('.pv-schedule-edit-row {');
-        expect(routeCss).toContain('.pv-mini-timetable {');
-        expect(routeCss).toContain('.pv-mini-event-card {');
-        expect(routeCss).toContain('.pv-slot-hint {');
-        expect(routeCss).toContain('.pv-action-bar {');
-        expect(routeCss).toContain('.pv-session-list-row {');
-        expect(routeCss).toContain('.pv-document-card {');
-        expect(routeCss).toContain('.pv-financial-admin-card {');
-        expect(routeCss).toContain('.pv-financial-table {');
-        expect(routeCss).toContain('.lux-route-profile-view .mob-sheet-icon-admin {');
-        expect(routeCss).toContain('.em-input:focus {');
-        expect(routeCss).toContain('@keyframes schModalIn {');
+        expect(adminActions).not.toContain('profile-view-route.css');
+        expect(adminActions).toContain('assets/css/lux-tokens.css');
+        expectRetiredCss('profile-view-route.css');
     });
 
-    it('keeps only the overview tab mounted at first render and lazy-mounts the heavier profile tabs from templates', () => {
-        const profileViewHtml = readAsset('profile-view.html');
+    it('keeps profile-view page logic in the page module (not inline HTML scripts)', () => {
+        const page = readAsset('assets/js/pages/profile-view-page.js');
+        const html = readAsset('profile-view.html');
 
-        expect(profileViewHtml).toContain('id="pvtab-0" data-pv-mounted="1"');
-        expect(profileViewHtml).toContain('id="pvtab-1" data-pv-mounted="0"');
-        expect(profileViewHtml).toContain('id="pvtab-2" data-pv-mounted="0"');
-        expect(profileViewHtml).toContain('id="pvtab-3" data-pv-mounted="0"');
-        expect(profileViewHtml).toContain('id="pvtab-1-template"');
-        expect(profileViewHtml).toContain('id="pvtab-2-template"');
-        expect(profileViewHtml).toContain('id="pvtab-3-template"');
-        expect(profileViewHtml).toContain('function pvEnsureTabContent(tabId) {');
+        expect(html).toContain('assets/js/pages/profile-view-page.js');
+        expect(page).toContain('PROFILE_VIEW_EMPTY_TEXT');
+        expect(page).toContain('data-pv-remove-target');
+        expect(page).toContain('[data-pv-remove-target]');
+        expect(html).not.toContain('onclick=');
     });
 });

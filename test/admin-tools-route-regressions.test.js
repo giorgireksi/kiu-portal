@@ -21,9 +21,113 @@ describe('admin tools route regressions.test', () => {
         expect(existsSync(join(process.cwd(), 'assets/css', 'admin-tools-luxury.css'))).toBe(false);
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('body.lux-page-bare');
-        expect(bare).not.toContain('backdrop-filter: none');
+        // Global bare blur kill forbidden; scoped admin-tools page-shell demotion is OK.
+        expect(bare).not.toMatch(/body\.lux-page-bare\s*\{[^}]*backdrop-filter:\s*none/);
+        expect(bare).toContain('body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell');
+        // Layout rules must be present
+        expect(bare).toContain('#admin-curriculum-search');
+        expect(bare).toContain('admin-reg-program-layout');
+        // No per-route visual overrides fighting global dashboard CTA buttons
+        expect(bare).not.toMatch(/--lux-btn-pill-radius/);
+        expect(bare).not.toMatch(/--lux-btn-frame-width/);
+        expect(bare).not.toContain('content: none');
         const shell = readSource('assets/css/lux-shell.css');
         expect(shell).toContain('body.lux-page-bare .lux-page-shell');
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');
+    });
+
+    it('keeps admin-tools glass on outer panels only; page-shell is a layout wrapper', () => {
+        const keep = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        const alignment = readSource('assets/js/pages/admin-tools-index-alignment.js');
+        const markup = readSource('assets/js/features/index-admin-tools.plain.js');
+        expect(keep).toContain("el.id === 'page-admin-tools' && el.classList.contains('lux-page-shell')");
+        expect(keep).toContain("el.getAttribute('data-lux-glass-root') === '1'");
+        expect(keep).not.toContain("el.classList.contains('lux-admin-tools-index-subpanel')");
+        expect(markup.match(/data-lux-glass-root="1"/g)).toHaveLength(3);
+        expect(markup).toMatch(/class="lux-control" id="admin-curriculum-search"/);
+        expect(markup).toMatch(/class="lux-control" id="filter-curriculum-semester"/);
+        expect(transparency).not.toContain("#lux-admin-tools-shell .admin-reg-tab");
+        expect(transparency).not.toContain("el.classList.contains('admin-reg-tab') && el.closest?.('#lux-admin-tools-shell')");
+        expect(transparency).toContain("!document.body.classList.contains('lux-route-admin-tools')");
+        expect(transparency).toContain("'[data-lux-glass-root=\"1\"]'");
+        expect(alignment).not.toContain("classList.add('lux-admin-tools-index-panel')");
+        expect(alignment).not.toContain("data-lux-index-glass-root', '1'");
+    });
+
+    it('registration.js does not add lux-admin-tools-index-subpanel', () => {
+        const reg = readSource('assets/js/pages/registration.js');
+        expect(reg).not.toMatch(/classList\.add\(['"]lux-admin-tools-index-subpanel['"]\)/);
+        expect(reg).not.toMatch(/class="[^"]*lux-admin-tools-index-subpanel/);
+    });
+
+    it('transparency.js has early-strip guard for admin-tools page-shell', () => {
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        expect(transparency).toContain("el.id === 'page-admin-tools'");
+        expect(transparency).toMatch(/lux-route-admin-tools[\s\S]*?el\.id === 'page-admin-tools'[\s\S]*?stripInlineGlassPaint/);
+    });
+
+    it('bare-lite has layout-only admin-tools rules — no visual overrides fighting global CSS', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        // Page-shell demotion still present (layout choice, not visual override)
+        expect(bare).toContain('body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell');
+        // Layout rules
+        expect(bare).toContain('admin-reg-program-layout');
+        expect(bare).toContain('lux-admin-curriculum-grid');
+        expect(bare).toContain('lux-admin-curriculum-search-wrap');
+        // Outer glass-roots use global FOUC panel SSOT (not bare-lite paint)
+        expect(bare).not.toContain('--home-desk-glass-surface');
+        expect(bare).not.toMatch(/#lux-admin-tools-shell \.lux-panel\s*\{[^}]*background:/);
+        expect(bare).not.toMatch(/data-lux-glass-root[\s\S]{0,80}--home-desk-glass/);
+        // No CTA flatten / sheen kill / token overrides — global dashboard CSS owns those
+        expect(bare).not.toMatch(/\.lux-primary-btn/);
+        expect(bare).not.toMatch(/\.lux-secondary-btn/);
+        expect(bare).not.toMatch(/\.lux-ghost-btn/);
+        expect(bare).not.toContain('--lux-btn-pill-radius');
+    });
+
+    it('admin-tools surface uses lux CTAs only — no orphan neo / edit-staff / icon-action', () => {
+        const files = [
+            'admin-tools.html',
+            'assets/js/features/index-admin-tools.plain.js',
+            'assets/js/features/index-admin-tools.bundle-source.js',
+            'assets/js/pages/registration-shared.js',
+            'assets/js/pages/registration.js',
+            'assets/js/pages/admin-registration-track.js',
+        ];
+        for (const rel of files) {
+            const source = readSource(rel);
+            expect(source, rel).not.toContain('social-neo-btn');
+            expect(source, rel).not.toContain('admin-edit-staff-btn');
+            expect(source, rel).not.toContain('admin-reg-icon-action');
+            expect(source, rel).not.toContain('kiu-btn');
+        }
+        const plain = readSource('assets/js/features/index-admin-tools.plain.js');
+        expect(plain).toContain('lux-primary-btn social-neo-dialog-submit-btn');
+        expect(plain).toContain('lux-ghost-btn social-neo-dialog-cancel-btn');
+        const shared = readSource('assets/js/pages/registration-shared.js');
+        expect(shared).toContain("className = 'lux-primary-btn social-neo-dialog-submit-btn'");
+        expect(shared).toContain("className = 'lux-ghost-btn social-neo-dialog-close-btn'");
+        const track = readSource('assets/js/pages/admin-registration-track.js');
+        expect(track).toContain('lux-icon-btn admin-reg-manage-gear-btn');
+    });
+
+    it('curriculum ops tiles and nested rails use shared shell primitives', () => {
+        const plain = readSource('assets/js/features/index-admin-tools.plain.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(plain).toContain('lux-stat lux-soft-chrome home-hover-chip');
+        expect(plain).toContain('lux-admin-tools-curriculum-panel lux-soft-chrome');
+        expect(plain).toContain('lux-admin-tools-registration-panel lux-soft-chrome');
+        expect(plain).not.toContain('lux-admin-curriculum-ops-tile');
+        expect(fouc).toContain('--lux-panel-blur-filter');
+        expect(fouc).toContain('body.lux-route-admin-tools.lux-unified-shell .lux-soft-chrome');
+        expect(fouc).toMatch(/lux-route-admin-tools[\s\S]*:is\(\.home-hover-chip, \.lux-card\)/);
+        expect(fouc).toMatch(
+            /body\.lux-unified-shell\s+:is\(\.page-hero,\s*\.lux-panel,\s*\.lux-alert\)[\s\S]{0,400}var\(--lux-panel-surface\)/
+        );
+        expect(fouc).not.toContain('lux-admin-curriculum-ops-tile');
+        expect(bare).not.toContain('--home-desk-glass-surface');
+        expect(bare).not.toContain('lux-admin-curriculum-ops-tile');
     });
 });

@@ -94,10 +94,3 @@ export function expectRetiredCss(basename) {
     expect(existsSync(join(process.cwd(), 'assets/css', basename))).toBe(false);
 }
 
-export function expectAllRetiredRouteCss() {
-    for (const name of RETIRED_ROUTE_CSS) {
-        expectRetiredCss(name);
-    }
-    expect(existsSync(join(process.cwd(), 'assets/css/_archive'))).toBe(false);
-}
-

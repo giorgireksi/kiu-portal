@@ -233,7 +233,7 @@
                     portfolioSaveStatus: runtime.ui?.portfolioSaveStatus || 'Changes autosave as you type.'
                 });
             }
-            return `<section class="lux-soft-chrome lux-panel social-neo-card"><div class="social-neo-empty">Portfolio editor is loading.</div></section>`;
+            return `<section class="social-neo-card"><div class="social-neo-empty">Portfolio editor is loading.</div></section>`;
         }
 
         function renderPortfolioEditorDialog() {
@@ -261,7 +261,7 @@
                 .slice(0, 3);
             if (!items.length && !isOwn) return '';
             return `
-                <section class="lux-soft-chrome lux-panel social-neo-card social-portfolio-profile-block">
+                <section class="social-neo-card social-portfolio-profile-block">
                     <div class="social-neo-section-head">
                         <div><strong>${isOwn ? 'Your portfolio' : 'Portfolio highlights'}</strong><span>${isOwn ? 'Showcase projects, research, design, and startup work inside campus social.' : 'Visible showcase entries from this profile.'}</span></div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap">

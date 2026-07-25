@@ -236,7 +236,7 @@
         `).join('');
 
         return `
-            <article class="lux-soft-chrome lux-panel social-neo-card social-neo-post-card social-photo-feed-card">
+            <article class="social-neo-card social-neo-post-card social-photo-feed-card">
                 <div class="social-neo-post-head social-photo-feed-head">
                     <button class="social-neo-post-author social-neo-clickable" type="button" data-action="photography-view-profile" data-user-id="${escape(text(author.id))}">
                         ${avatar(author)}
@@ -414,7 +414,7 @@
         return `
             <div class="social-photo-shell social-neo-community-panel social-photo-shell--my-profile">
                 <button class="social-photo-back social-photo-mono" type="button" data-action="photography-my-profile-close">&larr; Back to Exposé</button>
-                <header class="lux-soft-chrome lux-panel social-neo-card social-photo-my-header social-photo-my-hero">
+                <header class="social-neo-card social-photo-my-header social-photo-my-hero">
                     <div class="social-photo-my-head">
                         <span class="social-photo-my-avatar">${avatar(account, 'social-photo-my-avatar-img')}</span>
                         <div class="social-photo-my-info">
@@ -456,7 +456,7 @@
         return `
             <div class="social-photo-profile-shell">
                 <button class="social-photo-back social-photo-mono" type="button" data-action="photography-profile-back">&larr; Back</button>
-                <header class="lux-soft-chrome lux-panel social-neo-card social-photo-profile-hero">
+                <header class="social-neo-card social-photo-profile-hero">
                     <div class="social-photo-profile-head">
                         <span class="social-photo-profile-avatar">${avatar(account, 'social-photo-profile-avatar-img')}</span>
                         <div>

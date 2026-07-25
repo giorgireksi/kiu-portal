@@ -13,7 +13,7 @@
         void d;
 
 function ensureLmsStudentQuizFocusStyles() {
-    // Explicit owner: assets/css/lms-route.css
+    // Explicit owner: shared LMS glass via lux-tokens / lux-transparency (bare stack)
     return;
 }
 

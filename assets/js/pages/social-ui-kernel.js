@@ -22,7 +22,7 @@
                 </div>`;
         if (!wrap) return inner;
         return `
-            <section class="lux-soft-chrome lux-panel social-neo-card">
+            <section class="social-neo-card">
 ${inner}
             </section>`;
     }

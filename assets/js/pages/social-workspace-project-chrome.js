@@ -51,7 +51,7 @@
             ];
             const sectionsHtml = text(metrics.sectionsHtml || '');
             return `
-                <section class="lux-soft-chrome lux-panel social-neo-card social-neo-workspace-hero social-neo-community-panel social-neo-community-panel--workspace">
+                <section class="social-neo-card social-neo-workspace-hero social-neo-community-panel social-neo-community-panel--workspace">
                     <div class="social-neo-workspace-hero-head">
                         <div class="social-neo-workspace-hero-actions">
                             <button class="social-neo-btn social-neo-btn-primary social-neo-workspace-hero-create-btn" type="button" data-action="project-create-open">

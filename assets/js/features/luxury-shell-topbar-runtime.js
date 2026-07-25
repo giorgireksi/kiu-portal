@@ -32,9 +32,9 @@ function populateFacultySwitcher(options = {}) {
     } else {
         optionsList = defaultFaculties;
     }
-    const currentValue = getCurrentFacultyCode();
+    const currentValue = typeof getCurrentFacultyCode === 'function' ? getCurrentFacultyCode() : 'ECON';
     const selected = optionsList.find((opt) => opt.value === currentValue) || optionsList[0];
-    value.textContent = selected?.label || getFacultyName(currentValue);
+    value.textContent = selected?.label || (typeof getFacultyName === 'function' ? getFacultyName(currentValue) : currentValue);
     if (!panel && !options.ensurePanel) return;
     panel = panel || ensureShellPickerPanel('lux-faculty-picker-panel');
     if (!panel) return;
@@ -80,8 +80,12 @@ function populateRoleSwitcher(options = {}) {
     let panel = document.getElementById('lux-role-picker-panel');
     if (!button || !value) return;
     const roles = ['student', 'professor', 'ta', 'admin', 'student_service'];
-    const activeRole = getShellRole();
-    const roleLabels = getRoleLabels();
+    const activeRole = typeof getShellRole === 'function' ? getShellRole() : 'student';
+    const roleLabels = typeof getRoleLabels === 'function'
+        ? getRoleLabels()
+        : (typeof window.getRoleLabels === 'function'
+            ? window.getRoleLabels()
+            : { student: 'Student Portal', professor: 'Professor View', ta: 'TA View', admin: 'Admin View', student_service: 'Student Service View' });
     const authenticatedAdmin = (
         (typeof currentUser !== 'undefined' && String(currentUser?.role || '').trim().toLowerCase() === 'admin')
         || (typeof getCurrentUser === 'function' && String(getCurrentUser()?.role || '').trim().toLowerCase() === 'admin')
@@ -92,7 +96,12 @@ function populateRoleSwitcher(options = {}) {
     const staffUrl = typeof resolvePortalRouteUrl === 'function'
         ? resolvePortalRouteUrl('staff', 'admin')
         : 'staff.html';
-    value.textContent = resolveRolePickerLabel(activeRole);
+    const resolveRolePickerLabelSafe = (roleKey) => (
+        typeof resolveRolePickerLabel === 'function'
+            ? resolveRolePickerLabel(roleKey)
+            : (typeof window.resolveRolePickerLabel === 'function' ? window.resolveRolePickerLabel(roleKey) : (roleLabels[roleKey] || roleKey))
+    );
+    value.textContent = resolveRolePickerLabelSafe(activeRole);
     if (!panel && !options.ensurePanel) return;
     panel = panel || ensureShellPickerPanel('lux-role-picker-panel');
     if (!panel) return;
@@ -106,7 +115,7 @@ function populateRoleSwitcher(options = {}) {
             const personaHint = missingPersona
                 ? ` No account — create in Staff (${staffUrl}).`
                 : '';
-            const label = resolveRolePickerLabel(roleKey);
+            const label = resolveRolePickerLabelSafe(roleKey);
             const title = missingPersona ? `${label}${personaHint}` : label;
             return `
             <button class="lux-picker-option${roleKey === activeRole ? ' is-active' : ''}" type="button" data-role-option="${escapeHtml(roleKey)}" title="${escapeHtml(title)}">
@@ -239,7 +248,11 @@ function syncTopbar() {
     const activePageId = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
     const onHome = activePageId === 'home';
     const shellRole = typeof getShellRole === 'function' ? getShellRole(activePageId) : 'student';
-    const roleLabels = getRoleLabels();
+    const roleLabels = typeof getRoleLabels === 'function'
+        ? getRoleLabels()
+        : (typeof window.getRoleLabels === 'function'
+            ? window.getRoleLabels()
+            : { student: 'Student Portal', professor: 'Professor View', ta: 'TA View', admin: 'Admin View', student_service: 'Student Service View' });
     const effectiveRole = typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student';
     const currentFacultyCode = typeof getCurrentFacultyCode === 'function' ? getCurrentFacultyCode() : '';
     const resolvedUserName = typeof getUserName === 'function' ? getUserName() : 'Portal User';

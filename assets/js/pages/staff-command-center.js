@@ -488,7 +488,7 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="lux-panel staff-hub-info-card is-full lux-data-card">
+            <section class="lux-panel staff-hub-info-card is-full lux-data-card lux-soft-chrome">
                 <span>Admin actions</span>
                 <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced">
                     <button class="lux-secondary-btn" type="button" data-staff-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>

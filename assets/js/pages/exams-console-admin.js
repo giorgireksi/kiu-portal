@@ -251,10 +251,10 @@
 
         return `
             <section class="ex2-panel ex2-rq-console">
-                <div class="ex2-panel-head ex2-rq-console-head">
+                <div class="lux-panel-head ex2-rq-console-head">
                     <div>
-                        <h2 class="ex2-panel-title"><i class="fas fa-clipboard-check ex2-heading-icon"></i>Review Queue</h2>
-                        <p class="ex2-panel-copy">Triage quizzes submitted by teaching staff. Approve, return, or preview in place.</p>
+                        <h2 class="lux-panel-title"><i class="fas fa-clipboard-check ex2-heading-icon"></i>Review Queue</h2>
+                        <p class="lux-panel-copy">Triage quizzes submitted by teaching staff. Approve, return, or preview in place.</p>
                     </div>
                     <div class="ex2-rq-summary-chips">
                         <span class="ex2-status-dot is-submitted">${groups.awaiting.length} awaiting</span>
@@ -325,10 +325,10 @@
         return `
             <div class="ex2-two-col">
                 <section class="ex2-panel">
-                    <div class="ex2-panel-head">
+                    <div class="lux-panel-head">
                         <div>
-                            <h2 class="ex2-panel-title"><i class="fas fa-calendar-plus ex2-heading-icon"></i>Schedule Builder</h2>
-                            <p class="ex2-panel-copy">Select a template, set time and room, then pick student groups.</p>
+                            <h2 class="lux-panel-title"><i class="fas fa-calendar-plus ex2-heading-icon"></i>Schedule Builder</h2>
+                            <p class="lux-panel-copy">Select a template, set time and room, then pick student groups.</p>
                         </div>
                         <div class="ex2-inline-actions">
                             <button type="button" class="ex2-btn is-primary" data-exam-call="createLocalExamTestSession"><i class="fas fa-vial"></i> Create Test Session</button>
@@ -368,10 +368,10 @@
                     ${template && template.examType === 'digital' ? '<div class="ex2-digital-pin"><div class="ex2-digital-pin-label">Digital Exam PIN</div><div class="ex2-digital-pin-value">' + generateExamPIN(draft) + '</div></div>' : ''}
                 </section>
                 <section class="ex2-panel">
-                    <div class="ex2-panel-head">
+                    <div class="lux-panel-head">
                         <div>
-                            <h2 class="ex2-panel-title"><i class="fas fa-users-rectangle ex2-heading-icon"></i>Student Groups</h2>
-                            <p class="ex2-panel-copy">${template ? 'Cohorts for ' + escapeHtml(template.subjectName || template.subjectId) : 'Choose a template first.'}</p>
+                            <h2 class="lux-panel-title"><i class="fas fa-users-rectangle ex2-heading-icon"></i>Student Groups</h2>
+                            <p class="lux-panel-copy">${template ? 'Cohorts for ' + escapeHtml(template.subjectName || template.subjectId) : 'Choose a template first.'}</p>
                         </div>
                         ${template ? '<div class="ex2-inline-actions"><button type="button" class="ex2-btn is-ghost" data-exam-call="selectAllExamCohorts"><i class="fas fa-check-double"></i> All</button><button type="button" class="ex2-btn is-ghost" data-exam-call="clearExamCohorts"><i class="fas fa-eraser"></i> Clear</button></div>' : ''}
                     </div>
@@ -381,10 +381,10 @@
                 </section>
             </div>
             <section class="ex2-panel">
-                <div class="ex2-panel-head">
+                <div class="lux-panel-head">
                     <div>
-                        <h2 class="ex2-panel-title"><i class="fas fa-list-check ex2-heading-icon"></i>Scheduled Sessions</h2>
-                        <p class="ex2-panel-copy">Published sessions are visible to students on their timetable.</p>
+                        <h2 class="lux-panel-title"><i class="fas fa-list-check ex2-heading-icon"></i>Scheduled Sessions</h2>
+                        <p class="lux-panel-copy">Published sessions are visible to students on their timetable.</p>
                     </div>
                 </div>
                 ${todaySessions.length ? '<div class="ex2-timeline">' + todaySessions.map((session) => renderSessionBoardCard(session)).join('') + '</div>' : '<div class="ex2-empty-state ex2-schedule-sessions-empty"><i class="fas fa-calendar-xmark"></i><p class="ex2-empty-state-copy">No sessions scheduled yet.</p></div>'}

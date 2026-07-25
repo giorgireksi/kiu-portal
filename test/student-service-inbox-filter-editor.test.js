@@ -20,11 +20,26 @@ function readSource(relativePath) {
 }
 
 function ssvcSources() {
+    const peels = [
+        'assets/js/pages/student-service-page-runtime.js',
+        'assets/js/pages/student-service-inbox-runtime.js',
+        'assets/js/pages/student-service-ops-runtime.js',
+        'assets/js/pages/student-service-modules-runtime.js',
+        'assets/js/pages/student-service-bootstrap-runtime.js',
+        'assets/js/pages/student-service-chrome.js',
+        'assets/js/pages/student-service-events.js',
+        'assets/js/pages/student-service-tickets.js',
+        'assets/js/pages/student-service-attachments.js',
+        'assets/js/pages/student-service-qa.js',
+        'assets/js/pages/student-service-qa-staff-runtime.js',
+        'assets/js/pages/student-service-qa-thread-runtime.js'
+    ].map(readSource).join('\n');
     return {
         hub: readSource('assets/js/pages/student-service.js'),
         filters: readSource('assets/js/pages/student-service-filters.js'),
         service: readSource('assets/js/pages/student-service-service.js'),
-        both() { return this.hub + this.filters; }
+        peels,
+        both() { return this.hub + this.filters + this.peels; }
     };
 }
 
@@ -264,7 +279,6 @@ describe('student service inbox filter editor', () => {
     it('exposes staff inbox filter editor hooks in runtime sources', () => {
         const studentServiceJs = ssvcSources().both();
         const serviceJs = readSource('assets/js/pages/student-service-service.js');
-        const css = readSource('assets/css/student-service-route.css');
 
         expect(studentServiceJs).toContain("const STUDENT_SERVICE_INBOX_FILTER_PREFS_KEY = 'KIU_STUDENT_SERVICE_INBOX_FILTER_PREFS'");
         expect(studentServiceJs).toContain('STUDENT_SERVICE_API_PATHS.inboxFilterLayout()');
@@ -274,9 +288,6 @@ describe('student service inbox filter editor', () => {
         expect(studentServiceJs).toContain('data-student-service-edit-inbox-filters="true"');
         expect(studentServiceJs).not.toContain('data-student-service-toggle-advanced-filters');
         expect(serviceJs).toContain('renderStudentServiceInboxFiltersMarkup(ui, visibleTickets, currentUser)');
-
-        expect(css).toContain('.student-service-inbox-filter-editor-modal');
-        expect(css).toContain('.student-service-zone-head-actions');
     });
 
     it('delegates inbox filter editor interactions through document modal listener', () => {
@@ -386,20 +397,12 @@ describe('student service inbox filter editor', () => {
 
     it('matches LMS composer styling for inbox filter editor shell', () => {
         const studentServiceJs = ssvcSources().both();
-        const css = readSource('assets/css/student-service-route.css');
 
         expect(studentServiceJs).toContain('class="lux-control"');
         expect(studentServiceJs).toContain('syncStudentServiceInboxFilterEditorPickers(modalRoot)');
         expect(studentServiceJs).toContain('student-service-inbox-filter-editor-actions-copy');
         expect(studentServiceJs).toContain('student-service-inbox-filter-editor-actions-buttons');
         expect(studentServiceJs).toContain('data-student-service-dismiss-inbox-filter-editor-modal="true"');
-
-        expect(css).toContain('.student-service-inbox-filter-editor-modal');
-        expect(css).toContain('backdrop-filter: var(--ssvc-fade-blur)');
-        expect(css).toContain('.student-service-inbox-filter-editor-actions-copy');
-        expect(css).toContain('.student-service-inbox-filter-editor-actions-buttons');
-        expect(css).toContain('background: var(--ssvc-fade-surface-soft)');
-        expect(css).toContain('.student-service-inbox-filter-editor-accent');
     });
 });
 
@@ -486,7 +489,6 @@ describe('student service guidance modal', () => {
     it('structures guidance browser for popup with toolbar, list, and preview', () => {
         const serviceModule = readSource('assets/js/pages/student-service-service.js');
         const studentServiceJs = ssvcSources().both();
-        const css = readSource('assets/css/student-service-route.css');
 
         expect(serviceModule).toContain('renderStudentServiceGuidanceBrowserMarkup');
         expect(serviceModule).toContain('buildStudentServiceGuidanceBrowserContext');
@@ -514,10 +516,6 @@ describe('student service guidance modal', () => {
         expect(studentServiceJs).toContain('openStudentServiceGuidanceModal');
         expect(studentServiceJs).toContain('closeStudentServiceGuidanceModal');
         expect(studentServiceJs).toContain('window.openStudentServiceGuidanceModal = openStudentServiceGuidanceModal;');
-        expect(css).toContain('.student-service-guidance-modal');
-        expect(css).toContain('.student-service-student-grid--request-only');
-        expect(css).toContain('.student-service-guidance-browser');
-        expect(css).toContain('.student-service-guidance-workspace');
     });
 
     it('opens guidance in modal instead of inline find column', () => {

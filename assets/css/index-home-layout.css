@@ -10,13 +10,6 @@ body.lux-route-home {
 #page-home #lux-home-shell {
   &, * { box-sizing: border-box; }
   :where(h1, h2, h3, p) { margin: 0; }
-  .lux-kicker {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--lux-accent-2, var(--lux-accent));
-  }
   .page-hero-title {
     margin: 8px 0 0;
     font-size: clamp(28px, 3vw, 40px);
@@ -32,13 +25,6 @@ body.lux-route-home {
     line-height: 1.55;
     color: var(--lux-text-muted);
   }
-  .lux-pill-row, .lux-hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-    margin-top: 14px;
-  }
   .lux-hero-stage {
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.85fr);
@@ -46,15 +32,6 @@ body.lux-route-home {
     align-items: stretch;
   }
   .lux-hero-main { min-width: 0; }
-  /* Nested chips: soft-chrome surface inside merged desk; desk frosts in index-home-role.css */
-  .lux-list-row.lux-soft-chrome,
-  .lux-stat.lux-soft-chrome,
-  .lux-pill.lux-soft-chrome,
-  .lux-quick-btn.lux-soft-chrome,
-  .lux-admin-op-card.lux-soft-chrome {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
 }
 /* --- shell --- */
 #page-home.page-section {
@@ -194,18 +171,6 @@ body.lux-route-home {
     border: 0;
     box-shadow: none;
   }
-  .lux-pill.lux-soft-chrome {
-    border-radius: 999px;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    line-height: 1.2;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  /* --- a11y-utils --- */
 }
 body.lux-route-home > header, body.lux-route-home > #prof-nav, body.lux-route-home > #admin-nav {
   position: absolute !important;
@@ -230,16 +195,8 @@ body.lux-route-home .role-switcher {
   opacity: 0;
   pointer-events: none !important;
 }
-body.lux-route-home #lux-bg-overlay { opacity: var(--lux-overlay-opacity); background: radial-gradient(circle at 18% 12%, rgba(var(--lux-bg-glow-rgb), 0.22), transparent 28%), radial-gradient(circle at 82% 78%, rgba(var(--lux-bg-haze-rgb), 0.14), transparent 34%), linear-gradient(180deg, rgba(6, 8, 14, 0), rgba(6, 8, 14, 0.04)); }
-/* --- atmosphere --- */
-body.lux-route-home[data-lux-background-animation="off"] #lux-bg-canvas,
-body.lux-route-home[data-lux-background-animation="off"] #lux-bg-overlay {
-  opacity: 0;
-  pointer-events: none !important;
+body.lux-route-home:not([data-lux-background-animation="on"]) #lux-bg-overlay {
+  opacity: var(--lux-overlay-opacity);
+  background: radial-gradient(circle at 18% 12%, rgba(var(--lux-bg-glow-rgb), 0.22), transparent 28%), radial-gradient(circle at 82% 78%, rgba(var(--lux-bg-haze-rgb), 0.14), transparent 34%), linear-gradient(180deg, rgba(6, 8, 14, 0), rgba(6, 8, 14, 0.04));
 }
-body.lux-route-home[data-lux-background-animation="on"] #lux-bg-canvas { opacity: 1; filter: none; }
-body.lux-route-home[data-lux-background-animation="on"] #lux-bg-overlay {
-  opacity: 0;
-  background: transparent;
-  pointer-events: none !important;
-}
+/* Atmosphere on/off presentation lives in lux-fouc-ht.css (shared full-paint). */

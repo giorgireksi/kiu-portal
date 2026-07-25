@@ -1,198 +1,76 @@
-/* READABILITY: Luxury transparency / glass engine — route surfaces, tokens, chrome coupling.
- * Sections: Boot | Tokens | Surfaces | Route | Apply
- * See docs/human-maintainability.md (H2). */
-// --- READABILITY: Boot ---
-/* Luxury surface transparency engine (peeled from utilities.js).
-// --- READABILITY: Apply ---
- * Load immediately after assets/js/shared/utilities.js on every page that uses utilities.
- */
-/**
-// --- READABILITY: Surfaces ---
- * Update and apply panel transparency based on slider value
- * @param {string|number} value - Opacity percentage (0-100)
- */
+
+
+const DEFERRED_TRANSPARENCY_FLUSH_MS = 420;
+
 const LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS = [
     '.lux-modern-surface',
     '.lux-modern-table'
 ];
 
 const SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS = [
-    '.social-neo-card',
-    '.social-neo-alert',
-    '.social-neo-topbar-card',
-    '.social-neo-sidebar-card',
-    '.social-neo-post-card',
-    '.social-neo-composer-card',
-    '.social-neo-filter-card',
-    '.social-neo-story-card',
-    '.social-neo-community-panel',
-    '.social-neo-chat-item',
-    '.social-neo-directory-item',
-    '.social-neo-entity-card',
-    '.social-neo-event-card',
-    '.social-neo-message',
-    '.social-neo-empty',
-    '.social-neo-empty-hero',
-    '.social-neo-flash',
-    '.social-neo-comment-bubble',
-    '.social-neo-time-group',
-    '.social-neo-stat-grid > div',
-    '.social-neo-section-command',
-    '.social-neo-section-metric',
-    '.social-neo-section-task',
-    '.social-neo-events-hero',
-    '.social-neo-events-hero-stat',
-    '.social-neo-events-lane',
-    '.social-neo-events-banner',
-    '.social-neo-events-list-card',
-    '.social-neo-events-create-card',
-    '.social-neo-events-manage-card',
-    '.social-neo-events-manage-item',
-    '.social-neo-events-support-card',
-    '.social-neo-event-date-group',
-    '.social-neo-event-feature',
-    '.social-neo-event-feature-meta-item',
-    '.social-neo-group-card',
-    '.social-neo-group-create-block',
-    '.social-neo-group-create-picker',
-    '.social-neo-group-member-row',
-    '.social-neo-group-thread-panel',
-    '.social-neo-group-thread-section',
-    '.social-neo-pages-hero',
-    '.social-neo-pages-wizard',
-    '.social-neo-pages-wizard-step',
-    '.social-neo-page-card',
-    '.social-neo-page-card-rich',
-    '.social-neo-page-card-support',
-    '.social-neo-page-compose-block',
-    '.social-neo-page-profile',
-    '.social-neo-page-about-card',
-    '.social-neo-thread-head',
-    '.social-neo-thread-compose',
-    '.social-neo-thread-messages',
-    '.social-neo-thread-group-hero',
-    '.social-neo-call-card',
-    '.social-neo-call-stage',
-    '.social-neo-call-video',
-    '.social-neo-dialog-card',
-    '.social-neo-dialog-card--project-create',
-    '.social-neo-dialog-preview',
-    '.social-neo-toast',
-    '.social-neo-mobile-tabbar',
-    '.social-neo-mobile-tab',
-    '.social-neo-shell-drawer',
-    '.social-neo-shell-drawer-profile',
-    '.social-neo-shell-drawer-nav-card',
-    '.social-projects-hero',
-    '.social-projects-hero-rich',
-    '.social-project-create-card',
-    '.social-project-card',
-    '.social-project-metric-card',
-    '.social-project-detail-hero',
-    '.social-project-detail-hero-rich',
-    '.social-project-tab-shell',
-    '.social-project-inline-panel',
-    '.social-project-chart-card',
-    '.social-project-rich-panel',
-    '.social-project-deliverable-card',
-    '.social-project-checkin-card',
-    '.social-project-meeting-card',
-    '.social-project-mini-card',
-    '.social-project-ring-card',
-    '.social-project-activity-item',
-    '.social-project-milestone-item',
-    '.social-project-task-column',
-    '.social-project-task-card',
-    '.social-project-team-card',
-    '.social-portfolio-hero',
-    '.social-portfolio-toolbar',
-    '.social-portfolio-card',
-    '.social-portfolio-mini-card',
-    '.social-portfolio-stat-tile',
-    '.social-portfolio-compose-shell',
-    '.social-portfolio-compose-preview-card',
-    '.social-portfolio-audience-panel',
+    '.social-neo-card', '.social-neo-alert', '.social-neo-topbar-card', '.social-neo-sidebar-card',
+    '.social-neo-post-card', '.social-neo-composer-card', '.social-neo-filter-card', '.social-neo-story-card',
+    '.social-neo-community-panel', '.social-neo-chat-item', '.social-neo-directory-item', '.social-neo-entity-card',
+    '.social-neo-event-card', '.social-neo-message', '.social-neo-empty', '.social-neo-empty-hero', '.social-neo-flash',
+    '.social-neo-comment-bubble', '.social-neo-time-group', '.social-neo-stat-grid > div',
+    '.social-neo-section-command', '.social-neo-section-metric', '.social-neo-section-task', '.social-neo-events-hero',
+    '.social-neo-events-hero-stat', '.social-neo-events-lane', '.social-neo-events-banner',
+    '.social-neo-events-list-card', '.social-neo-events-create-card', '.social-neo-events-manage-card',
+    '.social-neo-events-manage-item', '.social-neo-events-support-card', '.social-neo-event-date-group',
+    '.social-neo-event-feature', '.social-neo-event-feature-meta-item', '.social-neo-group-card',
+    '.social-neo-group-create-block', '.social-neo-group-create-picker', '.social-neo-group-member-row',
+    '.social-neo-group-thread-panel', '.social-neo-group-thread-section', '.social-neo-pages-hero',
+    '.social-neo-pages-wizard', '.social-neo-pages-wizard-step', '.social-neo-page-card', '.social-neo-page-card-rich',
+    '.social-neo-page-card-support', '.social-neo-page-compose-block', '.social-neo-page-profile',
+    '.social-neo-page-about-card', '.social-neo-thread-head', '.social-neo-thread-compose',
+    '.social-neo-thread-messages', '.social-neo-thread-group-hero', '.social-neo-call-card', '.social-neo-call-stage',
+    '.social-neo-call-video', '.social-neo-dialog-card', '.social-neo-dialog-card--project-create',
+    '.social-neo-dialog-preview', '.social-neo-toast', '.social-neo-mobile-tabbar', '.social-neo-mobile-tab',
+    '.social-neo-shell-drawer', '.social-neo-shell-drawer-profile', '.social-neo-shell-drawer-nav-card',
+    '.social-projects-hero', '.social-projects-hero-rich', '.social-project-create-card', '.social-project-card',
+    '.social-project-metric-card', '.social-project-detail-hero', '.social-project-detail-hero-rich',
+    '.social-project-tab-shell', '.social-project-inline-panel', '.social-project-chart-card',
+    '.social-project-rich-panel', '.social-project-deliverable-card', '.social-project-checkin-card',
+    '.social-project-meeting-card', '.social-project-mini-card', '.social-project-ring-card',
+    '.social-project-activity-item', '.social-project-milestone-item', '.social-project-task-column',
+    '.social-project-task-card', '.social-project-team-card', '.social-portfolio-hero', '.social-portfolio-toolbar',
+    '.social-portfolio-card', '.social-portfolio-mini-card', '.social-portfolio-stat-tile',
+    '.social-portfolio-compose-shell', '.social-portfolio-compose-preview-card', '.social-portfolio-audience-panel',
     '.social-portfolio-link'
 ];
 const SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES = SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS
     .filter((selector) => selector.charAt(0) === '.' && !/[ >:+~#\[]/.test(selector))
     .map((selector) => selector.slice(1));
 const SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
-    'social-neo-chat-item',
-    'social-neo-directory-item',
-    'social-neo-entity-card',
-    'social-neo-event-card',
-    'social-neo-message',
-    'social-neo-comment-bubble',
-    'social-neo-time-group',
-    'social-neo-section-metric',
-    'social-neo-section-task',
-    'social-neo-events-hero-stat',
-    'social-neo-events-manage-item',
-    'social-neo-event-date-group',
-    'social-neo-event-feature-meta-item',
-    'social-neo-group-member-row',
-    'social-neo-pages-wizard-step',
-    'social-neo-page-card',
-    'social-project-metric-card',
-    'social-project-mini-card',
-    'social-project-activity-item',
-    'social-project-milestone-item',
-    'social-project-task-card',
-    'social-project-team-card',
-    'social-portfolio-mini-card',
-    'social-portfolio-stat-tile',
+    'social-neo-chat-item', 'social-neo-directory-item', 'social-neo-entity-card', 'social-neo-event-card',
+    'social-neo-message', 'social-neo-comment-bubble', 'social-neo-time-group', 'social-neo-section-metric',
+    'social-neo-section-task', 'social-neo-events-hero-stat', 'social-neo-events-manage-item',
+    'social-neo-event-date-group', 'social-neo-event-feature-meta-item', 'social-neo-group-member-row',
+    'social-neo-pages-wizard-step', 'social-neo-page-card', 'social-project-metric-card', 'social-project-mini-card',
+    'social-project-activity-item', 'social-project-milestone-item', 'social-project-task-card',
+    'social-project-team-card', 'social-portfolio-mini-card', 'social-portfolio-stat-tile',
     'social-portfolio-link'
 ];
 
 const STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
-    '.staff-hub-hero',
-    '.staff-hub-command-panel',
-    '.staff-hub-command-card',
-    '.staff-hub-focus-card',
-    '.staff-hub-mini-card',
-    '.staff-hub-metric-card',
-    '.staff-hub-controls',
-    '.staff-hub-directory-panel',
-    '.staff-hub-profile',
-    '.staff-hub-info-card',
-    '.staff-hub-warning',
-    '.staff-hub-modal',
+    '.staff-hub-hero', '.staff-hub-command-panel', '.staff-hub-command-card', '.staff-hub-focus-card',
+    '.staff-hub-mini-card', '.staff-hub-metric-card', '.staff-hub-controls', '.staff-hub-directory-panel',
+    '.staff-hub-profile', '.staff-hub-info-card', '.staff-hub-warning', '.staff-hub-modal',
     '.staff-hub-list-item'
 ];
 
 const STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
-    '.students-hub-hero',
-    '.students-hub-profile',
-    '.students-hub-profile-header',
-    '.students-hub-info-card',
-    '.students-hub-controls',
-    '.students-hub-directory-panel',
-    '.students-hub-list-item',
-    '.students-hub-modal',
+    '.students-hub-hero', '.students-hub-profile', '.students-hub-profile-header', '.students-hub-info-card',
+    '.students-hub-controls', '.students-hub-directory-panel', '.students-hub-list-item', '.students-hub-modal',
     '.students-hub-warning'
 ];
 
 const SOCIAL_BLUR_HOST_CLASSES = new Set([
-    'social-neo-card',
-    'social-neo-post-card',
-    'social-neo-topbar-card',
-    'social-neo-community-panel',
-    'social-neo-group-card',
-    'social-neo-group-thread-panel',
-    'social-neo-page-card-rich',
-    'social-neo-events-lane',
-    'social-neo-events-support-card',
-    'social-neo-event-feature',
-    'social-neo-dialog-card',
-    'social-neo-shell-drawer',
-    'social-neo-story-composer-card',
-    'social-neo-call-card',
-    'social-neo-empty',
-    'social-project-detail-hero-rich',
-    'social-project-tab-shell',
-    'social-project-rich-panel',
-    'social-project-card',
+    'social-neo-card', 'social-neo-post-card', 'social-neo-topbar-card', 'social-neo-community-panel',
+    'social-neo-group-card', 'social-neo-group-thread-panel', 'social-neo-page-card-rich', 'social-neo-events-lane',
+    'social-neo-events-support-card', 'social-neo-event-feature', 'social-neo-dialog-card', 'social-neo-shell-drawer',
+    'social-neo-story-composer-card', 'social-neo-call-card', 'social-neo-empty', 'social-project-detail-hero-rich',
+    'social-project-tab-shell', 'social-project-rich-panel', 'social-project-card',
     'social-portfolio-card'
 ]);
 
@@ -209,7 +87,7 @@ const shouldKeepFacultyGradebookFadeCssBackground = window.shouldKeepFacultyGrad
 const shouldKeepTimetableFadeCssBackground = window.shouldKeepTimetableFadeCssBackground;
 const shouldKeepExamPortalFadeCssBackground = window.shouldKeepExamPortalFadeCssBackground;
 const shouldKeepProfileViewFadeCssBackground = window.shouldKeepProfileViewFadeCssBackground;
-// --- READABILITY: Route ---
+
 const shouldKeepRouteFadeCssBackground = window.shouldKeepRouteFadeCssBackground;
 const shouldKeepPersonalDataFadeCssBackground = window.shouldKeepPersonalDataFadeCssBackground;
 const shouldKeepRegistrationFadeCssBackground = window.shouldKeepRegistrationFadeCssBackground;
@@ -227,41 +105,29 @@ const buildHomeStyleSurfaceBackground = window.buildHomeStyleSurfaceBackground;
 const buildLuxuryRoutePanelGradient = window.buildLuxuryRoutePanelGradient;
 
 const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [
-    '.lux-card', '.lux-panel', '.lux-person-card', '.lux-subcard',
-    '.lux-hero', '.lux-stack', '.lux-dashboard-section',
+    '.lux-card', '.lux-panel', '.lux-person-card', '.lux-subcard', '.lux-hero', '.lux-stack', '.lux-dashboard-section',
     '.lux-grid-widget', '.lux-home-card', '.lux-admin-ops-card',
     '.lux-builder-card', '.lux-builder-section', '.surface-card',
-    '.content-box', '.kiu-card', '.page-card', '.section-card',
-    '.panel-card', '.dashboard-card', '.tabs-container',
-    '.modal-content', '.page-hero', '.lux-person-head',
-    '.lux-inline-meta', '.lux-card-actions', '.lux-card-head',
-    '.lux-card-body', '.lux-panel-body',
-    '.lux-page-shell', '.lux-stat-card', '.lux-stat',
+    '.content-box', '.kiu-card', '.page-card', '.section-card', '.panel-card', '.dashboard-card', '.tabs-container',
+    '.modal-content', '.page-hero', '.lux-person-head', '.lux-inline-meta', '.lux-card-actions', '.lux-card-head',
+    '.lux-card-body', '.lux-panel-body', '.lux-page-shell', '.lux-stat-card', '.lux-stat',
     '.lux-page-kicker', '.lux-status-pill', '.lux-control',
     '.lux-faculty-command', '.lux-faculty-command-deck', '.lux-faculty-command-head', '.lux-faculty-command-grid',
     '.lux-faculty-insight', '.lux-faculty-insight-grid', '.lux-faculty-insight-label',
     '.lux-faculty-insight-value', '.lux-faculty-insight-list',
     '.lux-faculty-stage', '.lux-faculty-stage-head', '.lux-faculty-hero-focus',
     '.lux-faculty-hero-main', '.lux-faculty-hero-top', '.lux-faculty-filters',
-    '.lux-faculty-controls', '.lux-faculty-controls-row', '.lux-faculty-overview-row',
-    '.lux-faculty-filter-title',
+    '.lux-faculty-controls', '.lux-faculty-controls-row', '.lux-faculty-overview-row', '.lux-faculty-filter-title',
     '.lux-fg-control-band', '.lux-fg-filters', '.lux-fg-ops-panel', '.lux-fg-ops-grid',
     '.lux-fg-ops-tile', '.lux-fg-workspace', '.lux-fg-action-band', '.lux-fg-toolbar',
     '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
-    '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav',
-    '.schedule-overview-row', '.schedule-view-row',
-    '.lms-clean-stat', '.lms-clean-signal-panel', '.lms-clean-mini',
-    '.lms-clean-metric-card', '.lms-clean-subject-card',
+    '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav', '.schedule-overview-row', '.schedule-view-row',
     ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS,
     ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS
 ];
 const SHARED_TRANSPARENCY_OBSERVER_SELECTOR = SHARED_TRANSPARENCY_OBSERVER_SELECTORS.join(', ');
 const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [
-    '#lux-shell',
-    '#lux-topbar',
-    '#mobile-bottom-nav',
-    '#mobile-action-sheet',
-    '#modal-overlay',
+    '#lux-shell', '#lux-topbar', '#mobile-bottom-nav', '#mobile-action-sheet', '#modal-overlay',
     '.lux-picker-panel'
 ];
 
@@ -428,81 +294,25 @@ function getCachedTransparencySurfaceElements(selectorList, rootsOverride) {
 }
 
 const HIGH_TRANSPARENCY_TEXT_RESET_SELECTORS = [
-    '.lux-card-head',
-    '.lux-card-title',
-    '.lux-card-meta',
-    '.lux-builder-copy',
-    '.lux-card-body',
-    '.lux-panel-body',
-    '.lux-grid-widget-body',
-    '.lux-widget-container',
-    '.lux-inline-meta',
-    '.lux-card-actions',
-    '.lux-page-kicker',
-    '.lux-person-head',
-    '.lux-admin-ops-head',
-    '[class*="-head"]',
-    '[class*="-meta"]',
-    '[class*="-title"]',
-    '[class*="-copy"]',
-    '[class*="-label"]',
+    '.lux-card-head', '.lux-card-title', '.lux-card-meta', '.lux-builder-copy', '.lux-card-body', '.lux-panel-body',
+    '.lux-grid-widget-body', '.lux-widget-container', '.lux-inline-meta', '.lux-card-actions', '.lux-page-kicker',
+    '.lux-person-head', '.lux-admin-ops-head', '[class*="-head"]', '[class*="-meta"]', '[class*="-title"]',
+    '[class*="-copy"]', '[class*="-label"]',
     '[class*="-kicker"]'
 ];
 
 const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
-    '.lux-card',
-    '.lux-panel',
-    '.lux-subcard',
-    '.lux-hero',
-    '.lux-stat',
-    '.lux-stat-card',
-    '.lux-home-card',
-    '.lux-grid-widget',
-    '.lux-admin-ops-card',
-    '.lux-builder-card',
-    '.lux-builder-section',
-    '.lux-dashboard-section',
-    '.lux-page-shell',
-    '.surface-card',
-    '.content-box',
-    '.kiu-card',
-    '.page-card',
-    '.section-card',
-    '.panel-card',
-    '.dashboard-card',
-    '.tabs-container',
-    '.modal-content',
-    '.page-hero',
-    '.lux-modern-surface',
-    '.lux-modern-table',
-    '.lux-utility-panel',
-    '.lux-person-card',
-    '.lux-stack',
-    /* registration soft shells: owned by registration-route.css (skip high-trans flat wash) */
-    '#page-admin-scheduler .sch-rail-hero',
-    '#page-admin-scheduler .sch-rail-section',
-    '#page-admin-scheduler .sch-grid-shell',
-    '#page-admin-scheduler .sch-modal',
-    '#page-admin-scheduler .palette-card',
-    '#page-admin-scheduler .sch-stat-card',
-    '#page-admin-scheduler .sch-grid-tag',
-    '#page-admin-scheduler .sch-legend-pill',
-    '#page-admin-scheduler .sch-empty-state',
-    '#page-admin-scheduler .sch-grid-empty',
-    '.lms-clean-stat',
-    '.lms-clean-signal-panel',
-    '.lms-clean-mini',
-    '.lms-clean-metric-card',
-    '.lms-clean-subject-card',
-    '.lms-clean-empty',
-    '.lms-banner',
-    '.lux-lms-group-card',
-    '.lms-route-panel',
-        '.lms-route-hero',
-    '.lms-clean-hero',
-        '.portal-msg-page-top',
-    '.portal-msg-panel',
-    '.portal-msg-group-modal',
+    '.lux-card', '.lux-panel', '.lux-subcard', '.lux-hero', '.lux-stat', '.lux-stat-card', '.lux-home-card',
+    '.lux-grid-widget', '.lux-admin-ops-card', '.lux-builder-card', '.lux-builder-section', '.lux-dashboard-section',
+    '.lux-page-shell', '.surface-card', '.content-box', '.kiu-card', '.page-card', '.section-card', '.panel-card',
+    '.dashboard-card', '.tabs-container', '.modal-content', '.page-hero', '.lux-modern-surface', '.lux-modern-table',
+    '.lux-utility-panel', '.lux-person-card', '.lux-stack', '#page-admin-scheduler .sch-rail-hero',
+    
+    '#page-admin-scheduler .sch-rail-section', '#page-admin-scheduler .sch-grid-shell',
+    '#page-admin-scheduler .sch-modal', '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
+    '#page-admin-scheduler .sch-grid-tag', '#page-admin-scheduler .sch-legend-pill',
+    '#page-admin-scheduler .sch-empty-state', '#page-admin-scheduler .sch-grid-empty', '.lux-lms-group-card',
+    '.lms-route-panel', '.lms-route-hero', '.portal-msg-page-top', '.portal-msg-panel', '.portal-msg-group-modal',
     '.admin-hero',
     '.adlib-hero'
 ];
@@ -564,7 +374,7 @@ function resolveGlassBlurQualityKey() {
     try {
         const stored = String(localStorage.getItem('kiuLuxuryGlassBlurQuality') || '').trim().toLowerCase();
         if (stored === 'auto' || stored === 'high' || stored === 'balanced' || stored === 'performance') return stored;
-    } catch (_error) { /* ignore */ }
+    } catch (_error) {  }
     return 'auto';
 }
 
@@ -671,16 +481,14 @@ function updateTransparency(value, options = {}) {
     const percentage = clampLuxuryTransparencyPercentage(value);
     const forceRefresh = options?.force === true;
     const live = options?.live === true;
-    // Live drag never persists — commit happens on slider `change`.
+
     const shouldPersist = !live && options?.persist !== false;
 
-    // Update display
     const display = document.getElementById('transparency-display') || document.getElementById('lux-transparency-value');
     if (display) {
         display.textContent = `${percentage}%`;
     }
 
-    // Avoid writing the slider during live input (it already owns the value).
     if (!live) {
         const slider = document.getElementById('transparency-slider') || document.getElementById('lux-transparency-slider');
         if (slider) {
@@ -712,22 +520,19 @@ function updateTransparency(value, options = {}) {
 
     document.documentElement.classList.toggle('lux-fully-opaque', percentage >= 99);
 
-    // Live drag: root CSS tokens (+ primer if high-transparency threshold flips). No surface walk.
     if (live) {
         window.__currentTransparency = percentage;
         const wasHigh = document.documentElement.classList.contains('lux-high-transparency');
         if (transparencyModel.highTransparency !== wasHigh) {
-            // Rare threshold cross — apply primer below, then return before the surface walk.
+
         } else {
             applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage);
             return;
         }
     }
 
-    // CSS-ONLY FIX: Toggle lux-high-transparency class and injected primer CSS.
-    // At >= 80%, CSS rules suppress accent radial gradients on ALL surfaces.
     if (transparencyModel.highTransparency) {
-        // Update or create the primer style with current panel alpha
+
         var _isLight = isLightTheme;
         var _panelA = transparencyModel.panelAlpha;
         var _pa = _panelA.toFixed(3);
@@ -751,7 +556,7 @@ function updateTransparency(value, options = {}) {
             buildHighTransparencySurfaceCss(_bodySelector, _bg) +
             buildStudentsAdminHighTransparencyCss(_bodySelector, _isLight, _panelA) +
             buildHighTransparencyTextResetCss(_bodySelector);
-        // Dark/white static fills still need a flat ::before; colored keeps CSS glow radials.
+
         if (_animationsOff && (_staticFill === 'dark' || _staticFill === 'white')) {
             highTransparencyCss +=
                 'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + '::before{background:' + _bodyBg + '!important}';
@@ -783,13 +588,11 @@ function updateTransparency(value, options = {}) {
         }
     }
 
-    // After a live threshold flip, tokens are enough — commit path still restamps surfaces.
     if (live) {
         applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage);
         return;
     }
 
-// --- READABILITY: Tokens ---
     const glowPercent = typeof getGlowStrength === 'function' ? getGlowStrength() : 50;
     const glowConfig = typeof resolveGlowTokenConfig === 'function'
         ? resolveGlowTokenConfig(glowPercent)
@@ -848,9 +651,6 @@ function updateTransparency(value, options = {}) {
         return;
     }
 
-
-    // Calculate effects (remapped fill ratio: slider 0% = former 1% behavior)
-    // Floor keeps Glass Blur High/Balanced/Performance steps readable at low opacity.
     const glassBlurQuality = resolveGlassBlurQualityKey();
     const glassBlurMult = resolveGlassBlurQualityMultiplier(glassBlurQuality);
     const blurAmount = (2 + fillRatio * 22) * glassBlurMult;
@@ -860,16 +660,14 @@ function updateTransparency(value, options = {}) {
         '.registration-hero', '.registration-workspace', '.registration-insight-card',
         '.registration-focus-card', '.registration-state-card',
         '.registration-module-list-card', '.registration-module-pane-card',
-        '.registration-track-card', '.registration-footer-bar',
-        '.registration-mini-metric', '.registration-course-row',
+        '.registration-track-card', '.registration-footer-bar', '.registration-mini-metric', '.registration-course-row',
         '.registration-module-choice', '.registration-track-group'
     ];
     const registrationGlassClasses = [
         'registration-hero', 'registration-workspace', 'registration-insight-card',
         'registration-focus-card', 'registration-state-card',
         'registration-module-list-card', 'registration-module-pane-card',
-        'registration-track-card', 'registration-footer-bar',
-        'registration-mini-metric', 'registration-course-row',
+        'registration-track-card', 'registration-footer-bar', 'registration-mini-metric', 'registration-course-row',
         'registration-module-choice', 'registration-track-group'
     ];
     const schedulerGlassSelectors = [
@@ -879,25 +677,18 @@ function updateTransparency(value, options = {}) {
         '#page-admin-scheduler .sch-grid-tag', '#page-admin-scheduler .sch-legend-pill',
         '#page-admin-scheduler .sch-action-btn', '#page-admin-scheduler .sch-week-arrow',
         '#page-admin-scheduler .sch-empty-state', '#page-admin-scheduler .sch-grid-empty',
-        '#page-admin-scheduler .lux-strip-card',
-        '#page-admin-scheduler .sch-control-group select',
-        '#page-admin-scheduler .sch-board-toolbar-row select',
-        '#page-admin-scheduler .sch-search-shell input',
+        '#page-admin-scheduler .lux-strip-card', '#page-admin-scheduler .sch-control-group select',
+        '#page-admin-scheduler .sch-board-toolbar-row select', '#page-admin-scheduler .sch-search-shell input',
         '#page-admin-scheduler .sch-modal input',
         '#page-admin-scheduler .sch-modal select'
     ];
     const schedulerGlassClasses = [
-        'sch-rail-hero', 'sch-rail-section',
-        'sch-grid-shell', 'sch-modal',
-        'palette-card', 'sch-stat-card', 'sch-grid-tag', 'sch-legend-pill',
-        'sch-action-btn', 'sch-week-arrow',
+        'sch-rail-hero', 'sch-rail-section', 'sch-grid-shell', 'sch-modal',
+        'palette-card', 'sch-stat-card', 'sch-grid-tag', 'sch-legend-pill', 'sch-action-btn', 'sch-week-arrow',
         'sch-empty-state', 'sch-grid-empty', 'lux-strip-card'
     ];
     const lmsGlassSelectors = [
-        '.lms-clean-stat', '.lms-clean-signal-panel', '.lms-clean-mini',
-        '.lms-clean-metric-card', '.lms-clean-subject-card',
-        '.lms-clean-action-secondary', '.lms-clean-signal-pill',
-        '.lms-clean-empty', '.lms-banner', '.lux-lms-group-card',
+        '.lux-lms-group-card', '.lux-lms-subject-card', '.lms-route-panel', '.lms-route-card',
         '#lms-content-area .lms-quiz-builder .lms-quiz-studio-hero',
         '#lms-content-area .lms-quiz-builder .lms-quiz-studio-main-card',
         '#lms-content-area .lms-quiz-builder .lms-quiz-tool-panel',
@@ -908,10 +699,7 @@ function updateTransparency(value, options = {}) {
         '#lms-content-area .lms-quiz-builder .lms-quiz-question-editor-card'
     ];
     const lmsGlassClasses = [
-        'lms-clean-stat', 'lms-clean-signal-panel', 'lms-clean-mini',
-        'lms-clean-metric-card', 'lms-clean-subject-card',
-        'lms-clean-action-secondary', 'lms-clean-signal-pill',
-        'lms-clean-empty', 'lms-banner', 'lux-lms-group-card'
+        'lux-lms-group-card', 'lux-lms-subject-card', 'lms-route-panel', 'lms-route-card'
     ];
     const lmsQuizBuilderGlassClasses = [
         'lms-quiz-studio-hero', 'lms-quiz-studio-main-card', 'lms-quiz-tool-panel',
@@ -923,31 +711,14 @@ function updateTransparency(value, options = {}) {
     ];
     const isLmsRoute = document.body.classList.contains('lux-route-lms');
     const structuralClasses = [
-        'lux-card-head',
-        'lux-card-title',
-        'lux-card-meta',
-        'lux-builder-copy',
-        'lux-card-body',
-        'lux-panel-body',
-        'lux-grid-widget-body',
-        'lux-widget-container',
-        'lux-inline-meta',
-        'lux-card-actions',
-        'lux-page-kicker',
+        'lux-card-head', 'lux-card-title', 'lux-card-meta', 'lux-builder-copy', 'lux-card-body', 'lux-panel-body',
+        'lux-grid-widget-body', 'lux-widget-container', 'lux-inline-meta', 'lux-card-actions', 'lux-page-kicker',
         'lux-person-head',
         'lux-admin-ops-head'
     ];
     const TIMETABLE_GRID_CELL_CLASS_NAMES = [
-        'sch-header-row',
-        'sch-time-col',
-        'sch-time-labels',
-        'sch-day-col',
-        'sch-time-slot',
-        'sch-body',
-        'sch-lane',
-        'sch-slot-bg',
-        'sch-event',
-        'sch-day-lanes',
+        'sch-header-row', 'sch-time-col', 'sch-time-labels', 'sch-day-col', 'sch-time-slot', 'sch-body', 'sch-lane',
+        'sch-slot-bg', 'sch-event', 'sch-day-lanes',
         'schedule-grid-shell'
     ];
     const isTimetableGridCell = (el) => {
@@ -982,9 +753,7 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('admin-library-empty-cell')
         )) ||
         (document.body.classList.contains('lux-route-admin-orders') && (
-            // Keep only true layout/structural chrome transparent; panels, cards,
-            // controls and the studio modal are painted as glass by the engine
-            // so they match the admin-tools recipe exactly.
+
             el.classList.contains('admin-orders-studio-header') ||
             el.classList.contains('admin-orders-studio-body') ||
             el.classList.contains('admin-orders-studio-close') ||
@@ -1064,7 +833,7 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('schedule-chip') ||
             el.classList.contains('lux-status-pill')
         )) ||
-        /* Registration: same structural strip path as timetable (CSS --tt-fade-surface-soft owns fill) */
+        
         (document.body.classList.contains('lux-route-registration') && (
             el.classList.contains('lux-timetable-hero') ||
             el.classList.contains('lux-timetable-command') ||
@@ -1147,8 +916,7 @@ function updateTransparency(value, options = {}) {
         ))
     );
     const buildDynamicSurfaceBackground = (el, lightMode, amount) => {
-        // Home dashboard keeps amount-scaled recipe (exception).
-        // Outer freeform shells stay transparent; only inner panel/card/section/hero paint.
+
         const isHomeDashboardSurface = Boolean(el.matches?.(
             '#page-home #lux-home-shell .lux-home-grid > .lux-panel, ' +
             '#page-home #lux-home-shell .lux-home-grid > .lux-card, ' +
@@ -1158,11 +926,11 @@ function updateTransparency(value, options = {}) {
         if (isHomeDashboardSurface) {
             return buildHomeStyleSurfaceBackground(lightMode, amount);
         }
-        // CSS-owned route glass: do not invent inline paint
+
         if (shouldKeepRouteFadeCssBackground(el)) {
             return '';
         }
-        // Residual hosts still on the engine list (not yet keep-listed): shared panel tokens
+
         const softChrome = (
             el.classList.contains('lux-status-pill') ||
             el.classList.contains('lux-control') ||
@@ -1210,8 +978,6 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('study-card-term-row') ||
         el.classList.contains('personal-data-toolbar') ||
         el.classList.contains('profile-card') ||
-        el.classList.contains('personal-data-stats-card') ||
-        el.classList.contains('personal-data-facts-card') ||
         el.classList.contains('personal-data-record-card') ||
         el.classList.contains('personal-data-kpi-card') ||
         el.classList.contains('personal-data-mini') ||
@@ -1220,18 +986,14 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('lux-meta-pair-card') ||
         el.classList.contains('personal-data-hero-panel') ||
         el.classList.contains('newsx-panel') ||
-        el.classList.contains('newsx-hero') ||
         el.classList.contains('newsx-feed-card') ||
         el.classList.contains('newsx-filter') ||
         el.classList.contains('newsx-sidebar') ||
-        el.classList.contains('newsx-rail') ||
         el.classList.contains('newsx-section') ||
-        el.classList.contains('newsx-stat') ||
         el.classList.contains('newsx-private-item') ||
         el.classList.contains('newsx-check') ||
         el.classList.contains('newsx-account-card') ||
         el.classList.contains('newsx-section-btn') ||
-        el.classList.contains('newsx-pane-btn') ||
         el.classList.contains('student-service-canvas') ||
         el.classList.contains('student-service-zone') ||
         el.classList.contains('student-service-article-card') ||
@@ -1250,24 +1012,19 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('student-service-home-ticket') ||
         el.classList.contains('student-service-home-topic') ||
         el.classList.contains('student-service-lane-choice-card') ||
-        el.classList.contains('library-page-hero') ||
-        el.classList.contains('library-filter-shell') ||
-        el.classList.contains('library-catalog-card') ||
-        el.classList.contains('library-tabs') ||
-        el.classList.contains('library-picker-panel') ||
-        el.classList.contains('library-catalog-foot') ||
+        el.classList.contains('library-catalog-filters-panel') ||
+        el.classList.contains('admin-library-catalog-card') ||
+        el.classList.contains('admin-library-tabs') ||
+        el.classList.contains('admin-library-catalog-foot') ||
         el.classList.contains('alib-panel') ||
-        el.classList.contains('library-overview-card') ||
-        el.classList.contains('library-hero-metric') ||
-        el.classList.contains('library-hero-signal-card') ||
         el.classList.contains('admin-library-metric-card') ||
         el.classList.contains('admin-library-param-group') ||
         el.classList.contains('admin-library-chip') ||
         (document.body.classList.contains('lux-route-library') && (
             (el.classList.contains('lux-strip-card') && el.closest?.('#page-library')) ||
             (el.classList.contains('lux-hero-signal') && el.closest?.('#page-library')) ||
-            (el.classList.contains('lux-picker-btn') && el.closest?.('.library-filter-shell')) ||
-            (el.classList.contains('lux-control') && el.closest?.('.library-filter-shell'))
+            (el.classList.contains('lux-picker-btn') && el.closest?.('.library-catalog-filters-panel')) ||
+            (el.classList.contains('lux-control') && el.closest?.('.library-catalog-filters-panel'))
         )) ||
         el.classList.contains('ex2-hero') ||
         el.classList.contains('ex2-workspace-panel') ||
@@ -1294,29 +1051,9 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('ex2-auto-gen-box') ||
         el.classList.contains('ex2-qnav-bar') ||
         el.classList.contains('ex2-progress-step') ||
-        el.classList.contains('lux-admin-tools-hero') ||
         el.classList.contains('lux-admin-op-card') ||
         el.classList.contains('lux-admin-ops-panel') ||
-        el.classList.contains('lux-admin-provision-card') ||
-        el.classList.contains('lux-admin-tools-index-hero') ||
-        el.classList.contains('lux-admin-tools-index-panel') ||
-        el.classList.contains('lux-admin-tools-index-summary') ||
-        el.classList.contains('lux-admin-tools-index-command') ||
-        el.classList.contains('lux-admin-tools-index-command-card') ||
-        el.classList.contains('lux-admin-tools-index-subpanel') ||
-        (document.body.classList.contains('lux-route-admin-tools') && (
-            (el.classList.contains('lux-panel') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('lux-card') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('lux-subcard') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('lux-stat-card') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('lux-grid-widget') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('lux-strip-card') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('admin-reg-tab') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('lux-control') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.classList.contains('lux-picker-btn') && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.id === 'admin-reg-content-container' && el.closest?.('#lux-admin-tools-shell')) ||
-            (el.id === 'curriculum-library-modules-root' && el.closest?.('#lux-admin-tools-shell'))
-        )) ||
+        el.getAttribute('data-lux-glass-root') === '1' ||
         (document.body.classList.contains('lux-route-admin-orders') &&
             Boolean(el.closest?.('#admin-orders-root, #modal-studio')) && (
             el.classList.contains('orders-admin-shell') ||
@@ -1414,8 +1151,6 @@ function updateTransparency(value, options = {}) {
         (el.classList.contains('schedule-grid-shell') && el.dataset?.ttGrid === '1')
     );
 
-    // KEY FIX: Use CSS custom properties to override !important rules
-    // CSS variables can be set via JavaScript and will work with !important in CSS
     const blurPx = `${blurAmount}px`;
     const blurTargets = [document.documentElement, document.body].filter(Boolean);
     blurTargets.forEach((target) => {
@@ -1455,90 +1190,59 @@ function updateTransparency(value, options = {}) {
     }
     window.__luxLastAppliedTransparencySignature = transparencySignature;
 
-    // COMPREHENSIVE: Get ALL elements that could be widgets/panels/cards
-    // Use multiple selector strategies to catch everything
     const allSelectors = window.__luxTransparencyAllSelectors || (window.__luxTransparencyAllSelectors = [
-        // Luxury dashboard elements
-        '.lux-card', '.lux-panel', '.lux-dashboard-section', '.lux-hero',
-        '.lux-grid-widget', '.lux-home-card', '.lux-admin-ops-card',
-        '.lux-builder-card', '.lux-builder-section',
-        '.lux-page-shell', '.lux-stat-card', '.lux-stat',
 
-        // Generic surface/card elements
-        '.surface-card', '.content-box', '.kiu-card', '.page-card',
-        '.section-card', '.panel-card', '.dashboard-card',
-        '.tabs-container', '.modal-content', '.page-hero',
+        '.lux-card', '.lux-panel', '.lux-dashboard-section', '.lux-hero',
+        '.lux-grid-widget', '.lux-home-card', '.lux-admin-ops-card', '.lux-builder-card', '.lux-builder-section',
+        '.lux-page-shell', '.lux-stat-card', '.lux-stat', '.surface-card', '.content-box', '.kiu-card', '.page-card',
+
+        '.section-card', '.panel-card', '.dashboard-card', '.tabs-container', '.modal-content', '.page-hero',
         ...registrationGlassSelectors,
         ...schedulerGlassSelectors,
         ...lmsGlassSelectors,
 
-        // Programs page large surfaces
         '.lux-program-hero', '.lux-program-filter-shell', '.lux-program-stage',
-        '.lux-program-overview-card', '.lux-program-focus-panel',
-        '.lux-program-publish-pill', '.lux-program-metric',
-        '.lux-program-focus-stat', '.lux-program-semester-chip',
-        '.lux-module-option', '.lux-subject-row',
+        '.lux-program-overview-card', '.lux-program-focus-panel', '.lux-program-publish-pill', '.lux-program-metric',
+        '.lux-program-focus-stat', '.lux-program-semester-chip', '.lux-module-option', '.lux-subject-row',
 
-        // Profile view surfaces
         '#profile-view-root .pv-shell', '.pv-hero', '.pv-meta', '.pv-left', '.pv-right',
 
-        // Study Card surfaces
         '#study-card-container', '.study-card-semester-table', '.study-card-summary-stage',
         '.study-card-grade-circle', '.study-card-assessment-window__chip',
         '.study-card-assessment-window__card', '.study-card-assessment-pill',
-        '.study-card-term-header', '.study-card-term-row',
-                '#study-card-container .lux-strip-card',
+        '.study-card-term-header', '.study-card-term-row', '#study-card-container .lux-strip-card',
 
-        // Personal Data surfaces
-        '.personal-data-toolbar', '.profile-card', '.personal-data-stats-card',
-        '.personal-data-facts-card', '.personal-data-record-card',
+        '.personal-data-toolbar', '.profile-card', '.personal-data-record-card',
         '.personal-data-kpi-card', '.personal-data-mini', '.personal-data-record-item',
         '.personal-data-card-meta', '.lux-meta-pair-card', '.personal-data-hero-panel',
-        '#page-personal-data .lux-strip-card',
+        '#page-personal-data .lux-strip-card', '.newsx-panel', '.newsx-feed-card', '.newsx-filter',
 
-        // News workspace surfaces
-        '.newsx-panel', '.newsx-hero', '.newsx-feed-card', '.newsx-filter',
-        '.newsx-sidebar', '.newsx-rail', '.newsx-section', '.newsx-stat',
-        '.newsx-private-item', '.newsx-check', '.newsx-account-card',
-        '.newsx-section-btn', '.newsx-pane-btn',
+        '.newsx-sidebar', '.newsx-section', '.newsx-private-item', '.newsx-check', '.newsx-account-card',
+        '.newsx-section-btn', '.student-service-command-bar-shell', '.student-service-canvas', '.student-service-zone',
 
-        // Student Service large surfaces (CSS-owned via --ssvc-fade-*)
-        '.student-service-command-bar-shell',
-        '.student-service-canvas', '.student-service-zone',
-        '.student-service-article-card',
-        '.student-service-ticket-row',
+        '.student-service-article-card', '.student-service-ticket-row',
         '.student-service-lane-card', '.student-service-ticket-card',
         '.student-service-ops-card',         '.student-service-article-preview', '.student-service-ticket-stat',
         '.student-service-track-card', '.student-service-ops-ticket',
         '.student-service-ops-lane',         '.student-service-home-panel',
         '.student-service-home-card', '.student-service-home-ticket',
-        '.student-service-home-topic', '.student-service-lane-choice-card',
+        '.student-service-home-topic', '.student-service-lane-choice-card', '.social-neo-card',
 
-        // Social large surfaces
-        
-        '.social-neo-card',
         ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS,
 
-        // Staff command center surfaces
         ...STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS,
         '#staff-content .lux-card', '#staff-content .lux-person-card',
         '#staff-content .lux-subcard', '#staff-content .surface-card',
-        '#staff-content .content-box', '#staff-content .lux-strip-card',
-        '#staff-content .lux-data-card',
+        '#staff-content .content-box', '#staff-content .lux-strip-card', '#staff-content .lux-data-card',
 
-        // Students admin LMS surfaces
         ...STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS,
 
-        // Library large surfaces
-        '.library-page-hero', '.library-filter-shell', '.library-catalog-card',
-        '.library-tabs', '.library-picker-panel', '.library-catalog-foot',
-        '.alib-panel',
-        '#page-library .alib-panel', '#page-library .lux-strip-card', '.library-overview-card',
-        '.library-hero-metric', '.library-hero-signal-card',
-        '.admin-library-metric-card',         '.admin-library-param-group', '.admin-library-chip',
-        '.library-filter-shell .lux-picker-btn', '.library-filter-shell .lux-control',
+        '.library-catalog-filters-panel', '.admin-library-catalog-card',
+        '.admin-library-tabs', '.admin-library-catalog-foot', '.alib-panel',
+        '#page-library .alib-panel', '#page-library .lux-strip-card',
+        '.admin-library-metric-card', '.admin-library-param-group', '.admin-library-chip',
+        '.library-catalog-filters-panel .lux-picker-btn', '.library-catalog-filters-panel .lux-control',
 
-        // Exams large surfaces
         '.ex2-hero', '.ex2-workspace-panel', '.ex2-workspace-head', '.ex2-workspace-section',
         '.ex2-panel', '.ex2-toolbar', '.ex2-card',
         '.ex2-stat-card', '.ex2-stat-chip', '.ex2-cohort-card', '.ex2-session-card',
@@ -1548,33 +1252,12 @@ function updateTransparency(value, options = {}) {
         '.ex2-timeline-card', '.ex2-split-box', '.ex2-auto-gen-box',
         '.ex2-qnav-bar', '.ex2-progress-step', '.ex2-mini-grid > div',
 
-        // Admin Tools large surfaces
-        '.lux-admin-tools-hero', '.lux-admin-op-card', '.lux-admin-ops-panel',
-        '.lux-admin-provision-card', '.lux-admin-tools-index-hero',
-        '.lux-admin-tools-index-panel', '.lux-admin-tools-index-command',
-        '#lux-admin-tools-shell .lux-panel',
-        '#lux-admin-tools-shell .lux-card',
-        '#lux-admin-tools-shell .lux-subcard',
-        '#lux-admin-tools-shell .lux-stat-card',
-        '#lux-admin-tools-shell .lux-grid-widget',
-        '#lux-admin-tools-shell .lux-strip-card',
-        '#lux-admin-tools-shell .admin-reg-tab',
-        '#lux-admin-tools-shell .lux-control',
-        '#lux-admin-tools-shell .lux-picker-btn',
-        '#lux-admin-tools-shell #admin-reg-content-container',
-        '#lux-admin-tools-shell #curriculum-library-modules-root',
-        '.lux-admin-tools-index-summary', '.lux-admin-tools-index-command-card',
-        '.lux-admin-tools-index-subpanel',
+        '.lux-admin-op-card', '.lux-admin-ops-panel', '[data-lux-glass-root="1"]',
 
-        // Staff directory elements
-        '.lux-person-card', '.lux-subcard', '.lux-stack', '.lux-person-head',
-        '.lux-inline-meta', '.lux-card-actions',
+        '.lux-person-card', '.lux-subcard', '.lux-stack', '.lux-person-head', '.lux-inline-meta', '.lux-card-actions',
 
-        // Widget structural elements
-        '.lux-grid-widget-body', '.lux-widget-container',
-        '.lux-card-head', '.lux-card-body', '.lux-panel-body',
+        '.lux-grid-widget-body', '.lux-widget-container', '.lux-card-head', '.lux-card-body', '.lux-panel-body',
 
-        // Admin Orders specific elements
         '.lux-page-kicker', '.lux-status-pill',
         '#admin-orders-root .orders-admin-shell', '#admin-orders-root .orders-admin-hero',
         '#admin-orders-root .orders-admin-panel', '#admin-orders-root .orders-admin-hero-side',
@@ -1590,15 +1273,10 @@ function updateTransparency(value, options = {}) {
         '#modal-studio.admin-orders-studio', '#modal-studio .admin-orders-studio-card',
         '#modal-studio .admin-orders-palette-option', '#modal-studio .admin-orders-mode-btn',
         '#modal-studio .admin-orders-background-btn', '#modal-studio .admin-orders-apply-btn',
-        '#modal-studio .lux-control',
+        '#modal-studio .lux-control', '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
 
-        // Schedule/Timetable specific elements
-        '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
         '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav',
-        '.schedule-overview-row', '.schedule-view-row',
-
-        // Form controls that need transparency
-        '.lux-control',
+        '.schedule-overview-row', '.schedule-view-row', '.lux-control',
 
         ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS
     ]);
@@ -1606,7 +1284,7 @@ function updateTransparency(value, options = {}) {
     const surfaceElements = getCachedTransparencySurfaceElements(allSelectors, scopedRoots);
 
     surfaceElements.forEach(el => {
-        // Early signature skip — before layout/closest walks (same paint when unchanged).
+
         if (
             !forceRefresh &&
             fillRatio > 0 &&
@@ -1614,9 +1292,9 @@ function updateTransparency(value, options = {}) {
         ) {
             return;
         }
-        // Skip if element is hidden (no layout-forcing offsetParent probe)
+
         if (!el.isConnected || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.style.display === 'none') return;
-        // Studio owns fixed 50% glass in lux-studio.css — never engine-paint.
+
         if (
             el.id === 'lux-studio-backdrop' ||
             el.classList.contains('lux-studio-backdrop') ||
@@ -1653,33 +1331,25 @@ function updateTransparency(value, options = {}) {
             stripInlineGlassPaint(el, transparencySignature);
             return;
         }
+
+        if (
+            document.body.classList.contains('lux-route-admin-tools') &&
+            el.id === 'page-admin-tools' &&
+            el.classList.contains('lux-page-shell')
+        ) {
+            stripInlineGlassPaint(el, transparencySignature);
+            return;
+        }
         if (
             document.body.classList.contains('lux-route-admin-tools') &&
             Boolean(el.closest?.('#lux-admin-tools-shell')) &&
-            (
-                (el.closest?.('.lux-admin-tools-index-panel') && !el.classList.contains('lux-admin-tools-index-panel') && (
-                    el.classList.contains('lux-admin-tools-index-panel-shell') ||
-                    el.classList.contains('lux-admin-tools-index-subpanel') ||
-                    el.classList.contains('curriculum-library-module-option') ||
-                    el.id === 'curriculum-library-modules-root' ||
-                    el.id === 'admin-reg-content-container'
-                )) ||
-                (el.closest?.('.lux-curriculum-subject-card') && !el.classList.contains('lux-curriculum-subject-card')) ||
-                el.classList.contains('lux-curriculum-subject-card__head') ||
-                el.classList.contains('lux-curriculum-subject-card__body') ||
-                el.classList.contains('lux-curriculum-subject-card__footer') ||
-                el.classList.contains('lux-curriculum-subject-card__chips') ||
-                el.closest?.('.lux-curriculum-subject-card__chips') ||
-                el.classList.contains('curriculum-library-panel--detail') ||
-                el.classList.contains('curriculum-library-panel') ||
-                el.classList.contains('curriculum-library-row-list')
-            )
+            Boolean(el.closest?.('[data-lux-glass-root="1"]')) &&
+            el !== el.closest?.('[data-lux-glass-root="1"]')
         ) {
             stripInlineGlassPaint(el, transparencySignature);
             return;
         }
 
-        // Detect current mode
         const isLightMode = document.body.classList.contains('lux-light-mode');
 
         if (fillRatio > 0) {
@@ -1689,8 +1359,7 @@ function updateTransparency(value, options = {}) {
             }
             if (!forceRefresh && el.dataset.luxTransparencySignature === transparencySignature) return;
             if (isStructuralSurface(el)) {
-                /* Registration full-opacity override: force solid inline bg at >=99% so
-                   no canvas particles bleed through (cloned from timetable behaviour). */
+                
                 if (percentage >= 99 && document.body.classList.contains('lux-route-registration') && el.closest?.('#page-registration')) {
                     const isFocusPanel = el.classList.contains('lux-timetable-hero-focus') || el.classList.contains('registration-hero-aside');
                     var _solidBg = isFocusPanel
@@ -1713,7 +1382,7 @@ function updateTransparency(value, options = {}) {
                 el.dataset.luxTransparencySignature = transparencySignature;
                 return;
             }
-            // Registration full-opacity: solid base under panel tokens (particle bleed guard)
+
             if (percentage >= 99 && shouldKeepRegistrationFadeCssBackground(el) && el.closest?.('#page-registration')) {
                 const isFocusPanel = el.classList.contains('lux-timetable-hero-focus') || el.classList.contains('registration-hero-aside');
                 var _solidBg2 = isFocusPanel
@@ -1729,13 +1398,12 @@ function updateTransparency(value, options = {}) {
                 el.dataset.luxTransparencySignature = transparencySignature;
                 return;
             }
-            // Shell sidebar: CSS owns glass material + transparency tokens
+
             if (el.id === 'lux-shell') {
                 stripInlineGlassPaint(el, transparencySignature);
                 return;
             }
-            // Soft-chrome / focus-panel / liquid glass CTAs: CSS owns material + transparency tokens
-            // Topbar shell + controls always match builder-card soft-chrome (no engine glass).
+
             const isTopbarSoftChromeSurface = (
                 el.id === 'lux-topbar' ||
                 el.classList.contains('lux-topbar-shell') ||
@@ -1750,8 +1418,7 @@ function updateTransparency(value, options = {}) {
                     )
                 )
             );
-            // Home freeform shells: transparent frames only — never engine glass/blur.
-            // Bleed was outer lux-grid-widget glass taller than content-sized soft-chrome.
+
             const isHomeFreeformShell = (
                 document.body.classList.contains('lux-route-home') &&
                 (
@@ -1779,9 +1446,6 @@ function updateTransparency(value, options = {}) {
                 return;
             }
 
-            // Smart glass effect: preserve existing backgrounds.
-            // Only probe getComputedStyle when complex vs simple changes dyn-bg
-            // (registration/scheduler/LMS glass that are not already dynamic).
             const needsComplexProbe = !shouldKeepRouteFadeCssBackground(el) && (
                 registrationGlassClasses.some((className) => el.classList.contains(className))
                 || (
@@ -1803,17 +1467,9 @@ function updateTransparency(value, options = {}) {
             const isSocialRouteSurface = document.body.classList.contains('lux-route-social');
             const keepSocialFadeCss = shouldKeepSocialFadeCssBackground(el);
             const keepAdminLibraryFadeCss = shouldKeepAdminLibraryFadeCssBackground(el);
-            // Real social surfaces now frost like admin-tools; only layout
-            // wrappers (non-paint surfaces) keep blur suppressed.
-            // Single-wrapper frost (registration model) for routes whose glass
-            // uses the shared .lux-page-shell wrapper: blur ONLY that wrapper,
-            // suppress blur on inner panels. Registration blurs one wrapper and
-            // reads clean; timetable/LMS were ALSO blurring inner panels (e.g.
-            // the LMS hero) on top of the wrapper — a nested double-blur that
-            // looks heavier/different. Suppressing it makes them match
-            // registration: one clean frost, panels just tint the pre-blurred
-            // backdrop. Scoped to these routes so other pages are untouched.
+
             const isWrapperInnerPanel = document.body.classList.contains('lux-page-bare')
+                && !document.body.classList.contains('lux-route-admin-tools')
                 && Boolean(el.closest?.('.lux-page-shell'))
                 && !el.classList.contains('lux-page-shell');
             const isHomeLegacyGridInnerPanel = document.body.classList.contains('lux-route-home')
@@ -1832,12 +1488,10 @@ function updateTransparency(value, options = {}) {
                 : `blur(${blurAmount}px) saturate(${saturateAmount}%)`;
 
             if (hasComplexBackground) {
-                // For elements with CSS gradients: apply backdrop-filter AND override background with dynamic alpha
+
                 el.style.setProperty('backdrop-filter', backdropValue, 'important');
                 el.style.setProperty('-webkit-backdrop-filter', backdropValue, 'important');
 
-                // CRITICAL FIX: Override hardcoded gradient backgrounds with dynamic alpha
-                // This handles .lux-card and similar elements that use hardcoded alpha values
                 if (shouldApplyDynamicBackground(el) && !keepSocialFadeCss && !keepAdminLibraryFadeCss) {
                     {
                         const _dynBg = buildDynamicSurfaceBackground(el, isLightMode, surfaceFillAmount);
@@ -1845,7 +1499,7 @@ function updateTransparency(value, options = {}) {
                     }
                 }
             } else {
-                // For simple elements: apply blur only, let CSS handle backgrounds
+
                 el.style.setProperty('backdrop-filter', backdropValue, 'important');
                 el.style.setProperty('-webkit-backdrop-filter', backdropValue, 'important');
                 if (
@@ -1870,7 +1524,7 @@ function updateTransparency(value, options = {}) {
             }
             el.dataset.luxTransparencySignature = transparencySignature;
         } else {
-            // Remove transparency - clear inline styles to let CSS take over
+
             el.style.removeProperty('background-color');
             el.style.removeProperty('background');
             el.style.removeProperty('backdrop-filter');
@@ -1879,20 +1533,13 @@ function updateTransparency(value, options = {}) {
         }
     });
 
-    // Store current percentage for MutationObserver
     window.__currentTransparency = percentage;
 
-    // FOUC PREVENTION: Only remove the pending class if surfaces were actually styled.
-    // If no surfaces exist yet, keep the class — the MutationObserver will catch
-    // newly added surfaces and trigger updateTransparency() again.
     if (surfaceElements.length > 0) {
         document.documentElement.classList.remove('lux-transparency-pending');
     }
 }
 
-/**
- * Set up MutationObserver to apply transparency to dynamically added elements
- */
 function isLuxTransparencyExemptSubtree(node) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
     if (node.closest && node.closest('[data-lux-transparency-exempt="1"]')) return true;
@@ -1924,7 +1571,6 @@ function setupTransparencyObserver() {
             }
         }
 
-        // Re-apply transparency if new elements were added, but debounce the full pass.
         if (needsUpdate && transparency > 0) {
             const rootSig = buildTransparencyRootSignature();
             if (rootSig !== window.__luxTransparencyObserverRootSignature) {
@@ -1954,7 +1600,6 @@ function setupTransparencyObserver() {
         }
     });
 
-    // Start observing
     observer.observe(document.body, {
         childList: true,
         subtree: true
@@ -1963,10 +1608,6 @@ function setupTransparencyObserver() {
     window.__transparencyObserver = observer;
 }
 
-/**
- * Set panel transparency mode (legacy support)
- * @param {string} mode - 'on' or 'off'
- */
 function setTransparency(mode) {
     if (mode === 'on') {
         updateTransparency(13); // Default to 13%
@@ -1983,7 +1624,7 @@ function refreshLuxuryTransparencySurfaces(value, options = {}) {
     if (!scopedRoots.length) {
         resetTransparencySurfaceCache();
     }
-    // Only force-restamp when caller asks — default path keeps signatures so early-skip works.
+
     const force = options?.force === true;
     if (force) {
         collectTransparencySurfaceElements(['[data-lux-transparency-signature]'], scopedRoots).forEach((el) => {
@@ -2002,7 +1643,22 @@ function flushDeferredLuxTransparencyRefresh() {
     const pending = window.__luxDeferredTransparencyRefresh;
     if (!pending) return;
     window.__luxDeferredTransparencyRefresh = null;
+    window.clearTimeout(window.__luxDeferredTransparencyFlushTimer);
+    window.__luxDeferredTransparencyFlushTimer = null;
     queueLuxuryTransparencyRefresh(pending.value, pending.options);
+}
+
+/* Governor-busy deferral is a delay, never a drop: run the parked refresh directly
+ * (not via the queue) so a stuck-busy governor cannot swallow a visual change. */
+function armDeferredLuxTransparencyFlush() {
+    if (window.__luxDeferredTransparencyFlushTimer) return;
+    window.__luxDeferredTransparencyFlushTimer = window.setTimeout(() => {
+        window.__luxDeferredTransparencyFlushTimer = null;
+        const pending = window.__luxDeferredTransparencyRefresh;
+        if (!pending) return;
+        window.__luxDeferredTransparencyRefresh = null;
+        refreshLuxuryTransparencySurfaces(pending.value, pending.options);
+    }, DEFERRED_TRANSPARENCY_FLUSH_MS);
 }
 
 function queueLuxuryTransparencyRefresh(value, options = {}) {
@@ -2014,9 +1670,10 @@ function queueLuxuryTransparencyRefresh(value, options = {}) {
         && options?.tokensOnly !== true
     ) {
         window.__luxDeferredTransparencyRefresh = { value, options };
+        armDeferredLuxTransparencyFlush();
         return;
     }
-    // Mid-scroll restamps fight compositor; force:true (palette commit) still runs.
+
     if (window.__luxIsScrolling && options?.force !== true) {
         window.__luxPendingScrollTransparencyValue = value;
         window.__luxPendingScrollTransparencyFlush = true;
@@ -2046,7 +1703,6 @@ function queueLuxuryTransparencyRefresh(value, options = {}) {
     }, 0);
 }
 
-/** Flush deferred mid-scroll transparency once scrolling stops (called from scroll idle). */
 function flushLuxuryTransparencyAfterScroll() {
     if (window.__luxIsScrolling) return;
     if (!window.__luxPendingScrollTransparencyFlush) return;
@@ -2061,7 +1717,7 @@ function flushLuxuryTransparencyAfterScroll() {
 }
 
 function scheduleLuxuryTransparencyBootRefresh(value) {
-    // Once-per-boot: many callers share one immediate + one delayed settle pass.
+
     if (window.__luxTransparencyBootRefreshScheduled) {
         window.__luxTransparencyBootRefreshValue = value;
         return;
@@ -2083,12 +1739,12 @@ function scheduleLuxuryTransparencyBootRefresh(value) {
 function syncLuxuryOffscreenBackdrop(el) {
     if (!el?.dataset || el.dataset.luxObservedSurface !== '1') return;
     if (el.dataset.luxOffscreen === '1') {
-        // CSS [data-lux-offscreen="1"] already kills blur; keep inline none for stamped surfaces.
+
         el.style.setProperty('backdrop-filter', 'none', 'important');
         el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
         return;
     }
-    // Mid-scroll: only flip offscreen flag (caller); defer restamp until scroll idle.
+
     if (window.__luxIsScrolling) {
         window.__luxPendingScrollTransparencyFlush = true;
         if (!window.__luxPendingScrollTransparencyRoots) {
@@ -2119,8 +1775,6 @@ window.buildLuxuryTransparencyModel = buildLuxuryTransparencyModel;
 window.mapLuxuryTransparencyFillRatio = mapLuxuryTransparencyFillRatio;
 window.clampLuxuryTransparencyPercentage = clampLuxuryTransparencyPercentage;
 
-
-// If utilities already ran initPalette before this file loaded, restore surfaces now.
 (function bootLuxTransparencyIfNeeded() {
     try {
         if (typeof setupTransparencyObserver === 'function') setupTransparencyObserver();
@@ -2129,5 +1783,5 @@ window.clampLuxuryTransparencyPercentage = clampLuxuryTransparencyPercentage;
         if (pct > 0 && typeof scheduleLuxuryTransparencyBootRefresh === 'function') {
             scheduleLuxuryTransparencyBootRefresh(pct);
         }
-    } catch (e) { /* ignore */ }
+    } catch (e) {  }
 })();

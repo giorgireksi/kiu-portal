@@ -379,7 +379,7 @@
             '.lux-utility-panel',
             '.lux-person-card',
             '.lux-stack',
-            /* registration soft shells owned by registration-route.css — not flat wash */
+            /* registration soft shells owned by shared panel tokens / lux-controls — not flat wash */
             '.sch-sidebar',
             '.sch-main',
             '.sch-rail-hero',
@@ -766,7 +766,7 @@
         function tryRevealPageEarly() {
             var navRoot = document.getElementById('lux-nav');
             var body = document.body;
-            var canRevealFromNav = body && body.classList.contains('lux-route-home');
+            var canRevealFromNav = body && body.classList.contains('lux-full-paint');
             if (canRevealFromNav && navRoot && navRoot.children && navRoot.children.length > 0) {
                 forceRevealPage();
                 return;

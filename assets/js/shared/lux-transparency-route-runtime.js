@@ -43,16 +43,16 @@ function shouldKeepAdminLibraryFadeCssBackground(el) {
     if (!el?.classList) return false;
     if (!el.closest?.('#page-library') && !el.classList.contains('admin-library-modal')) return false;
     return (
-        el.classList.contains('lux-panel') ||
         el.classList.contains('lux-strip-card') ||
         el.classList.contains('admin-library-modal') ||
         el.classList.contains('lux-stat-card') ||
         el.classList.contains('lux-pill') ||
         el.classList.contains('admin-library-chip') ||
         el.classList.contains('admin-library-param-group') ||
-        el.classList.contains('library-catalog-card') ||
-        el.classList.contains('library-filter-shell') ||
-        el.classList.contains('library-page-hero') ||
+        el.classList.contains('library-catalog-filters-panel') ||
+        el.classList.contains('admin-library-catalog-card') ||
+        el.classList.contains('admin-library-tabs') ||
+        el.classList.contains('admin-library-catalog-foot') ||
         el.classList.contains('alib-panel') ||
         el.classList.contains('lux-control')
     );
@@ -63,15 +63,10 @@ function shouldKeepLibraryFadeCssBackground(el) {
     if (!el?.classList) return false;
     if (!el.closest?.('#page-library')) return false;
     return (
-        el.classList.contains('library-page-hero') ||
-        el.classList.contains('library-filter-shell') ||
-        el.classList.contains('library-catalog-card') ||
-        el.classList.contains('library-tabs') ||
-        el.classList.contains('library-picker-panel') ||
-        el.classList.contains('library-catalog-foot') ||
-        el.classList.contains('library-overview-card') ||
-        el.classList.contains('library-hero-metric') ||
-        el.classList.contains('library-hero-signal-card') ||
+        el.classList.contains('library-catalog-filters-panel') ||
+        el.classList.contains('admin-library-catalog-card') ||
+        el.classList.contains('admin-library-tabs') ||
+        el.classList.contains('admin-library-catalog-foot') ||
         el.classList.contains('lux-strip-card') ||
         el.classList.contains('lux-hero-signal') ||
         el.classList.contains('lux-picker-btn') ||
@@ -121,29 +116,11 @@ function shouldKeepExamsFadeCssBackground(el) {
 function shouldKeepAdminToolsFadeCssBackground(el) {
     if (!document.body.classList.contains('lux-route-admin-tools')) return false;
     if (!el?.classList) return false;
+    // Layout wrapper — CSS demotes it; engine must not re-frost with inline !important
+    if (el.id === 'page-admin-tools' && el.classList.contains('lux-page-shell')) return true;
     if (!el.closest?.('#lux-admin-tools-shell')) return false;
-    return (
-        el.classList.contains('lux-admin-tools-index-hero') ||
-        el.classList.contains('lux-admin-tools-index-panel') ||
-        el.classList.contains('lux-admin-tools-hero') ||
-        el.classList.contains('lux-admin-op-card') ||
-        el.classList.contains('lux-admin-ops-panel') ||
-        el.classList.contains('lux-admin-provision-card') ||
-        el.classList.contains('lux-admin-tools-index-summary') ||
-        el.classList.contains('lux-admin-tools-index-command') ||
-        el.classList.contains('lux-admin-tools-index-command-card') ||
-        el.classList.contains('lux-admin-tools-index-subpanel') ||
-        el.classList.contains('lux-panel') ||
-        el.classList.contains('lux-card') ||
-        el.classList.contains('lux-subcard') ||
-        el.classList.contains('lux-stat-card') ||
-        el.classList.contains('lux-grid-widget') ||
-        el.classList.contains('lux-strip-card') ||
-        el.classList.contains('lux-control') ||
-        el.classList.contains('lux-picker-btn') ||
-        el.id === 'admin-reg-content-container' ||
-        el.id === 'curriculum-library-modules-root'
-    );
+    // Outer glass roots only (one shared paint host per section)
+    return el.getAttribute('data-lux-glass-root') === '1';
 }
 
 function shouldKeepAdminOrdersFadeCssBackground(el) {
@@ -202,14 +179,6 @@ function shouldKeepFacultyGradebookFadeCssBackground(el) {
     if (!el?.classList) return false;
     if (!el.closest?.('.lux-faculty-gradebook-page, #page-faculty-gradebook')) return false;
     return (
-        el.classList.contains('lux-faculty-hero') ||
-        el.classList.contains('lux-faculty-command-deck') ||
-        el.classList.contains('lux-faculty-hero-focus') ||
-        el.classList.contains('lux-faculty-command') ||
-        el.classList.contains('lux-faculty-stage') ||
-        el.classList.contains('lux-faculty-insight') ||
-        el.classList.contains('lux-faculty-filters') ||
-        el.classList.contains('lux-faculty-controls') ||
         el.classList.contains('lux-fg-control-band') ||
         el.classList.contains('lux-fg-ops-panel') ||
         el.classList.contains('lux-fg-ops-tile') ||
@@ -217,7 +186,6 @@ function shouldKeepFacultyGradebookFadeCssBackground(el) {
         el.classList.contains('lux-status-pill') ||
         el.classList.contains('lux-primary-btn') ||
         el.classList.contains('lux-secondary-btn') ||
-        el.classList.contains('lux-card') ||
         el.classList.contains('lux-control') ||
         [...el.classList].some((className) => className.startsWith('gb-') || className.startsWith('lux-fg-'))
     );
@@ -261,8 +229,8 @@ function shouldKeepExamPortalFadeCssBackground(el) {
         el.classList.contains('lms-route-panel') ||
         el.classList.contains('lms-route-card') ||
         el.classList.contains('page-hero') ||
-        el.classList.contains('lux-card') ||
-        el.classList.contains('lux-panel') ||
+        el.classList.contains('exam-confirm-card') ||
+        el.classList.contains('exam-dashboard-shell') ||
         el.classList.contains('lux-control') ||
         el.classList.contains('lux-status-pill')
     );
@@ -356,20 +324,11 @@ function shouldKeepPersonalDataFadeCssBackground(el) {
         el.classList.contains('personal-data-identity-card') ||
         el.classList.contains('personal-data-merged') ||
         el.classList.contains('personal-data-kpi-card') ||
-        el.classList.contains('personal-data-stats-card') ||
-        el.classList.contains('personal-data-facts-card') ||
-        el.classList.contains('personal-data-record-card') ||
-        el.classList.contains('personal-data-hero-panel') ||
         el.classList.contains('lux-summary-surface') ||
         el.classList.contains('lux-data-card') ||
         el.classList.contains('lux-metric-card') ||
         el.classList.contains('lux-strip-card') ||
         el.classList.contains('lux-status-pill') ||
-        el.classList.contains('lux-modern-surface') ||
-        el.classList.contains('lux-modern-table') ||
-        el.classList.contains('personal-data-subjects-table') ||
-        el.classList.contains('personal-data-subjects-table-wrap') ||
-        el.classList.contains('lux-soft-chrome') ||
         el.classList.contains('lux-control') ||
         el.tagName === 'SELECT' ||
         el.tagName === 'TABLE' ||
@@ -414,7 +373,6 @@ function shouldKeepRegistrationFadeCssBackground(el) {
         el.classList.contains('registration-mini-metric') ||
         el.classList.contains('registration-structured-modal-card') ||
         el.classList.contains('registration-section-picker-dialog') ||
-        el.classList.contains('lux-soft-chrome') ||
         el.matches?.('.lms-hero-focus, .lux-focus-panel') ||
         el.classList.contains('lux-focus-panel') ||
         el.classList.contains('lux-timetable-hero') ||
@@ -448,24 +406,15 @@ function shouldKeepNewsFadeCssBackground(el) {
         el.classList.contains('newsx-feed-card') ||
         el.classList.contains('newsx-post-card--editorial') ||
         el.classList.contains('newsx-section-btn') ||
-        el.classList.contains('newsx-stat') ||
-        el.classList.contains('newsx-private-item') ||
-        el.classList.contains('newsx-account-card') ||
         el.classList.contains('newsx-check') ||
         el.classList.contains('newsx-empty') ||
         el.classList.contains('newsx-error') ||
-        el.classList.contains('newsx-hero') ||
         el.classList.contains('newsx-filter') ||
         el.classList.contains('newsx-sidebar') ||
-        el.classList.contains('newsx-rail') ||
-        el.classList.contains('newsx-section') ||
-        el.classList.contains('newsx-pane-btn') ||
+        el.classList.contains('newsx-header-bar') ||
         el.classList.contains('newsx-publisher-modal') ||
         el.classList.contains('newsx-confirm-modal') ||
         el.classList.contains('newsx-sections-modal') ||
-        el.classList.contains('lux-panel') ||
-        el.classList.contains('lux-modern-surface') ||
-        el.classList.contains('lux-soft-chrome') ||
         el.id === 'newsx-publisher-modal' ||
         el.id === 'newsx-confirm-modal' ||
         el.id === 'newsx-sections-modal'
@@ -491,18 +440,13 @@ function shouldKeepLmsFadeCssBackground(el) {
         el.classList.contains('lms-route-tab-strip') ||
         el.classList.contains('page-hero') ||
         el.classList.contains('lux-lms-hero') ||
-        el.classList.contains('lms-clean-hero') ||
         el.classList.contains('lms-hero-v2') ||
         el.classList.contains('lms-hero-focus') ||
         el.classList.contains('lux-focus-panel') ||
         el.classList.contains('lms-clean-subjects') ||
-        el.classList.contains('lms-clean-subject-card') ||
         el.classList.contains('lux-lms-subject-card') ||
         el.classList.contains('lux-lms-group-card') ||
         el.classList.contains('lms-route-empty') ||
-        el.classList.contains('lux-card') ||
-        el.classList.contains('lux-panel') ||
-        el.classList.contains('surface-card') ||
         el.classList.contains('lux-status-pill')
     );
 }

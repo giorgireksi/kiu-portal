@@ -78,6 +78,71 @@ describe('Phase A shared stack guard', () => {
         }
     });
 
+    it('full-paint pages with shell chrome also load shell motion runtime', () => {
+        for (const page of readdirSync(process.cwd()).filter((f) => f.endsWith('.html'))) {
+            const html = read(page);
+            if (!/\blux-full-paint\b/.test(html)) continue;
+            if (!html.includes('luxury-shell-chrome.js')) continue;
+            expect(html, page).toContain('luxury-shell-motion-runtime.js');
+            expect(
+                html.indexOf('luxury-shell-motion-runtime.js'),
+                `${page}: motion before index-luxury`
+            ).toBeLessThan(html.indexOf('index-luxury.js'));
+        }
+    });
+
+    it('shares atmosphere animation-on presentation in FOUC (not home-only)', () => {
+        const fouc = read('assets/css/lux-fouc-ht.css');
+        const layout = read('assets/css/index-home-layout.css');
+        expect(fouc).toContain('body[data-lux-background-animation="on"] #lux-bg-canvas');
+        expect(fouc).toContain('body[data-lux-background-animation="on"] #lux-bg-overlay');
+        expect(layout).not.toContain('body.lux-route-home[data-lux-background-animation="on"]');
+        expect(layout).toContain('body.lux-route-home:not([data-lux-background-animation="on"]) #lux-bg-overlay');
+    });
+
+    it('applies global denser panel FOUC to outer hosts (no route carveouts)', () => {
+        const fouc = read('assets/css/lux-fouc-ht.css');
+        const tokens = read('assets/css/lux-tokens.css');
+        expect(fouc).toMatch(/body\.lux-unified-shell\s+:is\(\.page-hero,\s*\.lux-panel,\s*\.lux-alert\)/);
+        expect(fouc).toContain('background-image: var(--lux-panel-surface)');
+        expect(fouc).toContain('--lux-panel-blur-filter');
+        expect(fouc).toContain('background-color: var(--lux-panel-fill');
+        expect(fouc).not.toMatch(/:not\(\.lux-route-students-admin\):not\(\.lux-route-staff\):not\(\.lux-route-profile-view\)\s+:is\(\.page-hero/);
+        expect(fouc).not.toMatch(
+            /:is\(\.page-hero,\s*\.lux-panel,\s*\.lux-alert\)[\s\S]{0,200}--lux-glass-tint-rgb/
+        );
+        expect(tokens).toContain('--lux-panel-fill');
+        expect(tokens).toContain('--lux-panel-host-border');
+        expect(tokens).toContain('--lux-panel-host-shadow');
+        expect(tokens).not.toContain('--home-desk-glass-surface');
+    });
+
+    it('keeps WORKS hub dual-write; cleaned portals stay free of soft-chrome clutter', () => {
+        expect(read('assets/js/pages/staff-command-center.js')).toMatch(/lux-soft-chrome/);
+        expect(read('assets/js/pages/students-command-center.js')).toMatch(/lux-soft-chrome/);
+        expect(read('assets/js/features/index-admin-tools.plain.js')).toMatch(/lux-soft-chrome/);
+        expect(read('assets/js/shared/orders-workspace.js')).toMatch(/lux-soft-chrome/);
+        const stripped = [
+            'student-service.html', 'admin-scheduler.html', 'timetable.html', 'registration.html',
+            'lms.html', 'library.html', 'admin-library.html', 'personal-data.html',
+            'faculty-gradebook.html', 'study-card.html', 'exam-portal.html', 'news.html',
+            'social.html', 'programs.html',
+            'assets/js/pages/student-service-chrome.js',
+            'assets/js/pages/exams-console-admin.js',
+            'assets/js/pages/news/news-feed-render.js',
+            'assets/js/pages/profile-view-page.js',
+            'assets/js/pages/exam-portal.js',
+            'assets/js/pages/lms-calls-runtime.js',
+            'assets/js/pages/social-feed.js',
+        ];
+        for (const file of stripped) {
+            expect(read(file), file).not.toMatch(/lux-soft-chrome/);
+        }
+        expect(read('student-service.html')).not.toMatch(/lux-page-shell/);
+        expect(read('assets/js/pages/exams-console-admin.js')).not.toMatch(/ex2-panel lux-panel-head/);
+        expect(read('assets/js/pages/student-service-service.js')).not.toMatch(/student-service-zone lux-panel-head/);
+    });
+
     it('archive route skins still not linked as live assets/css basenames', () => {
         for (const page of readdirSync(process.cwd()).filter((f) => f.endsWith('.html'))) {
             const html = read(page);

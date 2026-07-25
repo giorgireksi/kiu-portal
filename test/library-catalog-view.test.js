@@ -64,10 +64,12 @@ describe('library catalog view', () => {
         const html = readSource('library.html');
         const pageScript = readSource('assets/js/pages/library.js');
 
-        expect(html).toContain('assets/js/shared/library-catalog-view.js?v=20260714-libcleanup1');
-        expect(html).toMatch(/assets\/css\/library-catalog-shared\.css\?v=/);
-        expect(readSource('admin-library.html')).toContain('assets/js/shared/library-catalog-view.js?v=20260714-libcleanup1');
-        expect(readSource('admin-library.html')).toContain('assets/js/pages/admin-library.js?v=20260714-libcleanup1');
+        expect(html).toContain('assets/js/shared/library-catalog-view.js');
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).not.toContain('library-catalog-shared.css');
+        expect(html).not.toContain('library-route.css');
+        expect(readSource('admin-library.html')).toContain('assets/js/shared/library-catalog-view.js');
+        expect(readSource('admin-library.html')).toContain('assets/js/pages/admin-library.js');
         expect(pageScript).toContain('LibraryCatalogView.renderCatalogShell');
         expect(pageScript).toContain('LibraryCatalogView.bindCatalogInteractions({ mode: \'readonly\' })');
         expect(pageScript).toContain('LibraryCatalogView.renderCatalogTable({ mode: \'readonly\' })');

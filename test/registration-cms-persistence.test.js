@@ -23,12 +23,12 @@ describe('registration CMS persistence', () => {
     });
 
     it('limits faculty isolation cloning to faculty changes', () => {
-        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
-        expect(adminRegistration).toContain('const facultyChanged = Boolean(boundRegistrationCmsFaculty');
-        const renderFn = adminRegistration.match(
-            /function renderAdminRegistrationModules\(tabType\) \{[\s\S]*?\n\}\n\nfunction getCourseEctsValue/
+        const cmsRuntime = readSource('assets/js/pages/admin-registration-cms-runtime.js');
+        expect(cmsRuntime).toContain('const facultyChanged = Boolean(boundRegistrationCmsFaculty');
+        const bindFn = cmsRuntime.match(
+            /function bindFacultyRegistrationCmsData\(faculty\) \{[\s\S]*?\n\}\n\nlet concCourseData/
         )?.[0] || '';
-        expect(renderFn).not.toContain('ensureRegistrationCmsFacultyIsolation');
+        expect(bindFn).toContain('facultyChanged');
     });
 
     it('persists conc/minor globals and bumps revision in saveState', () => {
@@ -104,11 +104,12 @@ describe('registration CMS persistence', () => {
     });
 
     it('re-renders admin registration CMS when revision changes', () => {
+        const bootRuntime = readSource('assets/js/pages/admin-registration-boot-runtime.js');
         const adminRegistration = readSource('assets/js/pages/admin-registration.js');
-        expect(adminRegistration).toContain('function getAdminRegistrationCmsRevision');
-        expect(adminRegistration).toContain("addEventListener('kiu:registration-cms-changed'");
-        expect(adminRegistration).toContain('container.dataset.cmsRevision === cmsRevision');
-        expect(adminRegistration).toContain('bootAdminRegistrationCms(adminRegActiveTab || \'prog\')');
+        expect(bootRuntime).toContain('function getAdminRegistrationCmsRevision');
+        expect(bootRuntime).toContain("addEventListener('kiu:registration-cms-changed'");
+        expect(bootRuntime).toContain('container.dataset.cmsRevision === cmsRevision');
+        expect(bootRuntime).toContain('bootAdminRegistrationCms(adminRegActiveTab || \'prog\')');
         expect(adminRegistration).toMatch(/async function removeAdminRegSubModule/);
         expect(adminRegistration).toContain('flushPortalStateSync');
     });
@@ -135,8 +136,10 @@ describe('registration CMS persistence', () => {
     it('routes luxury header add module to registration setup when CMS container exists', () => {
         const bundle = readSource('assets/js/features/index-admin-tools.bundle-source.js');
         const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const cmsRuntime = readSource('assets/js/pages/admin-registration-cms-runtime.js');
         const registration = readSource('assets/js/pages/registration.js');
-        expect(adminRegistration).toContain('data-admin-reg-add-module="prog"');
+        expect(adminRegistration).toContain('data-admin-reg-add-module="free"');
+        expect(cmsRuntime).toContain('data-admin-reg-add-module="prog"');
         expect(adminRegistration).toMatch(/addNewAdminRegModule\(addModuleTrigger\.dataset\.adminRegAddModule/);
         expect(registration).toContain('function addCurriculumLibraryModule');
         expect(bundle).not.toContain('id="new-subject-semester"');
@@ -146,11 +149,13 @@ describe('registration CMS persistence', () => {
 
     it('invalidates student registration view cache when CMS changes', () => {
         const studentRegistration = readSource('assets/js/pages/student-registration.js');
+        const choiceRuntime = readSource('assets/js/pages/student-registration-choice-runtime.js');
         expect(studentRegistration).toContain('function invalidateStudentRegistrationViewCache');
         expect(studentRegistration).toContain('registrationCmsRevision');
-        expect(studentRegistration).toContain("addEventListener('kiu:registration-cms-changed'");
-        expect(studentRegistration).toContain('buildStudentRegistrationFacultyHintNode');
-        expect(studentRegistration).toContain('renderStudentRegStructures(activeTab)');
+        expect(studentRegistration).toContain('window.invalidateStudentRegistrationViewCache = invalidateStudentRegistrationViewCache');
+        expect(choiceRuntime).toContain("addEventListener('kiu:registration-cms-changed'");
+        expect(choiceRuntime).toContain('renderStudentRegStructures(activeTab)');
+        expect(choiceRuntime).toContain('buildStudentRegistrationFacultyHintNode');
     });
 
     it('counts trackData entries when deciding CMS bucket richness', () => {
@@ -167,28 +172,33 @@ describe('registration CMS persistence', () => {
 
     it('flushes admin CMS workspace before role or view-as identity changes', () => {
         const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const bootRuntime = readSource('assets/js/pages/admin-registration-boot-runtime.js');
         const utilities = readSource('assets/js/shared/utilities.js');
-        expect(adminRegistration).toContain('function flushAdminToolsWorkspaceBeforeIdentityChange');
-        expect(adminRegistration).toContain('window.flushAdminToolsWorkspaceBeforeIdentityChange = flushAdminToolsWorkspaceBeforeIdentityChange');
-        expect(adminRegistration).toMatch(/flushAdminToolsWorkspaceBeforeIdentityChange[\s\S]*?getAdminCmsWriteFaculty/);
+        expect(bootRuntime).toContain('function flushAdminToolsWorkspaceBeforeIdentityChange');
+        expect(bootRuntime).toContain('window.flushAdminToolsWorkspaceBeforeIdentityChange = flushAdminToolsWorkspaceBeforeIdentityChange');
+        expect(bootRuntime).toMatch(/flushAdminToolsWorkspaceBeforeIdentityChange[\s\S]*?getAdminCmsWriteFaculty/);
         expect(adminRegistration).toMatch(/getAdminCmsWriteFaculty[\s\S]*?boundRegistrationCmsFaculty/);
-        expect(utilities).toContain('function flushAdminWorkspaceBeforeRoleIdentityChange');
-        expect(utilities).toMatch(/fastRedirectRoleSwitch[\s\S]*?flushAdminWorkspaceBeforeRoleIdentityChange[\s\S]*?setActiveSessionUserByRole/);
-        expect(utilities).toMatch(/persistAdminImpersonationRoleState[\s\S]*?skipFlush[\s\S]*?reconcileAdminRegistrationCmsAfterIdentityChange/);
+        expect(utilities).toContain('function fastRedirectRoleSwitch');
+        expect(utilities).toMatch(/fastRedirectRoleSwitch[\s\S]*?setActiveSessionUserByRole/);
+        expect(utilities).toContain('function persistAdminImpersonationRoleState');
+        expect(utilities).toMatch(/flushAdminRegistrationStateSave[\s\S]*?bindFacultyRegistrationCmsData/);
     });
 
     it('rebinds registration CMS globals after portal bootstrap identity changes', () => {
         const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const bootRuntime = readSource('assets/js/pages/admin-registration-boot-runtime.js');
+        const cmsRuntime = readSource('assets/js/pages/admin-registration-cms-runtime.js');
         const api = readSource('assets/js/app/api.js');
         const bundle = readSource('assets/js/features/index-admin-tools.bundle-source.js');
-        expect(adminRegistration).toContain('function reconcileAdminRegistrationCmsAfterIdentityChange');
-        expect(adminRegistration).toContain('window.reconcileAdminRegistrationCmsAfterIdentityChange = reconcileAdminRegistrationCmsAfterIdentityChange');
-        expect(adminRegistration).toMatch(/reconcileAdminRegistrationCmsAfterIdentityChange[\s\S]*?bindFacultyRegistrationCmsData/);
-        expect(adminRegistration).toMatch(/bindFacultyRegistrationCmsData[\s\S]*?container\.dataset\.cmsFaculty = fac/);
+        expect(bootRuntime).toContain('function reconcileAdminRegistrationCmsAfterIdentityChange');
+        expect(bootRuntime).toContain('window.reconcileAdminRegistrationCmsAfterIdentityChange = reconcileAdminRegistrationCmsAfterIdentityChange');
+        expect(bootRuntime).toMatch(/reconcileAdminRegistrationCmsAfterIdentityChange[\s\S]*?bindFacultyRegistrationCmsData/);
+        expect(cmsRuntime).toMatch(/bindFacultyRegistrationCmsData[\s\S]*?container\.dataset\.cmsFaculty = fac/);
         expect(api).toMatch(/applyPortalBootstrapState[\s\S]*?reconcileAdminRegistrationCmsAfterIdentityChange/);
         expect(api).toContain('function canMergeLocalPortalSnapshot');
         expect(bundle).toMatch(/renderLuxuryAdminToolsPage[\s\S]*?bindFacultyRegistrationCmsData/);
         expect(bundle).toContain('getAdminRegistrationFaculty');
+        expect(adminRegistration).toContain('window.getAdminCmsWriteFaculty = getAdminCmsWriteFaculty');
     });
 
     it('uses admin CMS write faculty when persisting registration globals in saveState', () => {

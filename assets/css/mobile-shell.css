@@ -15,8 +15,6 @@
   #page-home #lux-home-shell .lux-hero p { font-size: 12px; }
   #page-home #lux-home-shell .lux-stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 100%; }
   #page-home #lux-home-shell .lux-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  #lux-topbar .lux-picker-caption { display: none; }
-  #lux-topbar .lux-user-chip-copy { display: none; }
 }
 @media (max-width: 768px) {
   #page-home #lux-home-shell .lux-card, #page-home #lux-home-shell .lux-panel, #page-home #lux-home-shell .content-box, #page-home #lux-home-shell .surface-card {
@@ -103,13 +101,8 @@
     font-size: 13px;
     border-radius: 12px;
   }
-  #lux-bg-canvas { opacity: 0.5; }
 }
 @media (max-width: 400px) {
-  #lux-topbar .lux-sidebar-toggle-btn { min-width: 36px; width: 36px; min-height: 36px; }
-  #lux-topbar .lux-picker-btn { padding: 4px 6px; min-height: 32px; }
-  #lux-topbar .lux-picker-btn strong { font-size: 9px; max-width: 56px; }
-  #lux-topbar .lux-topbar-actions .lux-icon-btn { width: 32px; height: 32px; }
   #page-home #lux-home-shell .lux-quick-grid { grid-template-columns: 1fr; }
   #page-home #lux-home-shell .lux-stat-row { grid-template-columns: 1fr; }
   #page-home #lux-home-shell .lux-hero h1 { font-size: 18px; }
@@ -119,12 +112,4 @@
   }
   #page-home #lux-home-shell .lux-hero { padding: 14px 12px; }
   #page-home #lux-home-shell .lux-card-body { padding: 12px; }
-  #lux-topbar .lux-breadcrumb { max-width: 100px; font-size: 11px; }
-}
-@media (max-height: 500px) and (orientation: landscape) {
-  #lux-topbar .lux-sidebar-toggle-btn { min-height: 32px; min-width: 32px; }
-  #lux-topbar .lux-picker-btn { min-height: 30px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  #lux-bg-canvas { display: none; }
 }

@@ -440,9 +440,16 @@ function applyLuxPickerPanelVariants(panel, button) {
 }
 
 function closePickerPanels(options = {}) {
+    const openPanels = Array.from(document.querySelectorAll('.lux-picker-panel.is-open'));
+    // Nothing to close: never arm the transparency suppress flag. Boot sync and the
+    // global document-click dismisser both call this with zero open panels; arming
+    // suppress here would swallow the very next queued transparency/blur refresh
+    // (e.g. a Glass Blur quality change) for LUX_PICKER_CLOSE_FALLBACK_MS.
+    if (!openPanels.length && !document.querySelector('.lux-picker-btn.is-active')) {
+        return Promise.resolve();
+    }
     window.__kiuSuppressLuxTransparencyRefresh = true;
     beginPickerChromeBusy();
-    const openPanels = Array.from(document.querySelectorAll('.lux-picker-panel.is-open'));
     const restoreTargetId = options.restoreFocus ? (openPanels[0]?.dataset.triggerId || '') : '';
     const closePromise = openPanels.length
         ? Promise.all(openPanels.map((panel) => closePickerPanel(panel, options)))

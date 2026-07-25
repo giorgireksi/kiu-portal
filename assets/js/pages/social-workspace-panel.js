@@ -261,7 +261,7 @@
                 if (activityCount > 0) wins.push(`${activityCount} events this week`);
                 if (overdueTasks === 0 && tasks.length > 0) wins.push('No overdue items');
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-health-card" data-health="${escape(level)}">
+                    <section class="social-neo-card social-project-health-card" data-health="${escape(level)}">
                         <div class="social-neo-section-head">
                             <div><strong>Project health</strong><span>Overall workspace status.</span></div>
                             <span class="social-project-health-badge" data-health="${escape(level)}"><i class="fas ${escape(icon)}"></i> ${escape(label)}</span>
@@ -288,7 +288,7 @@
                 const labelMap = { todo: 'To Do', 'in-progress': 'In Progress', blocked: 'Blocked', done: 'Done' };
                 const priorityIcon = { 'low': 'fa-arrow-down', 'medium': 'fa-minus', 'high': 'fa-arrow-up', 'urgent': 'fa-angles-up' };
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-my-tasks-card">
+                    <section class="social-neo-card social-project-my-tasks-card">
                         <div class="social-neo-section-head">
                             <div><strong>My tasks</strong><span>Your assigned work.</span></div>
                             <span class="social-neo-pill">${escape(String(myTasks.length))} open</span>
@@ -315,7 +315,7 @@
             const renderTeamRoster = (project, members) => {
                 const list = Array.isArray(members) ? members.slice(0, 6) : [];
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-roster-card">
+                    <section class="social-neo-card social-project-roster-card">
                         <div class="social-neo-section-head">
                             <div><strong>Team</strong><span>Members and roles.</span></div>
                             <span class="social-neo-pill">${escape(String(project?.memberCount || 0))} members</span>
@@ -381,7 +381,7 @@
             const renderActivityFeed = (project) => {
                 const items = Array.isArray(project?.activity) ? project.activity.slice(0, 5) : [];
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-feed-card">
+                    <section class="social-neo-card social-project-feed-card">
                         <div class="social-neo-section-head">
                             <div><strong>Recent activity</strong><span>Latest workspace changes.</span></div>
                             <span class="social-neo-pill">${escape(String(project?.activityCount || 0))} events</span>
@@ -440,7 +440,7 @@
                 const counts = project?.taskStatusCounts || {};
                 const total = Math.max(1, countNum(project?.taskCount));
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-chart-card">
+                    <section class="social-neo-card social-project-chart-card">
                         <div class="social-neo-section-head">
                             <div><strong>Task status distribution</strong><span>See where work is collecting across the board.</span></div>
                             <span class="social-neo-pill">${escape(String(project?.taskCount || 0))} tasks</span>
@@ -487,7 +487,7 @@
                 }).join('') : `<circle cx="80" cy="80" r="${radius}" fill="none" stroke="rgba(148,163,184,0.25)" stroke-width="20"></circle>`;
                 const completion = countNum(project?.taskCompletionPercent);
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-chart-card">
+                    <section class="social-neo-card social-project-chart-card">
                         <div class="social-neo-section-head">
                             <div><strong>Status distribution</strong><span>Share of tasks in each column.</span></div>
                             <span class="social-neo-pill">${escape(String(project?.taskCount || 0))} tasks</span>
@@ -515,7 +515,7 @@
                 const list = Array.isArray(project?.workloadByMember) ? project.workloadByMember.slice(0, 6) : [];
                 const maxHours = Math.max(1, ...list.map((entry) => Number(entry?.hours) || 0));
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-chart-card">
+                    <section class="social-neo-card social-project-chart-card">
                         <div class="social-neo-section-head">
                             <div><strong>Workload by member</strong><span>Open assigned work per teammate.</span></div>
                             <span class="social-neo-pill">${escape(String(list.length))} shown</span>
@@ -933,7 +933,7 @@
                 `;
                 if (compact) return stats;
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-task-stats-card">
+                    <section class="social-neo-card social-project-task-stats-card">
                         <div class="social-neo-section-head">
                             <div><strong>Task summary</strong><span>Total, overdue, and status counts.</span></div>
                             <span class="social-neo-pill">${escape(String(total))} tasks</span>
@@ -978,7 +978,7 @@
                         <div class="social-project-overview-slot social-project-ov-order-3">${renderTaskDependencyGraphPreview(activeProject, runtime)}</div>
                         <div class="social-project-overview-slot social-project-ov-order-6">${renderTaskStatusChart(activeProject)}</div>
                         <div class="social-project-overview-slot social-project-ov-order-11">
-                            <details class="lux-soft-chrome lux-panel social-neo-card social-project-rich-panel social-project-brief-card--trimmed social-project-overview-brief">
+                            <details class="social-neo-card social-project-rich-panel social-project-brief-card--trimmed social-project-overview-brief">
                                 <summary class="social-project-overview-brief-summary">
                                     <div class="social-neo-section-head">
                                         <div><strong>Workspace brief</strong><span>Project scope and advising.</span></div>
@@ -1609,7 +1609,7 @@
                 `;
                 const body = taskViewMode === 'list' ? listBody : (taskViewMode === 'graph' ? graphBody : deskBody);
                 return `
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-task-shell social-project-task-shell--roomy social-project-task-shell--desk" data-task-view="${escape(taskViewMode)}">
+                    <section class="social-neo-card social-project-task-shell social-project-task-shell--roomy social-project-task-shell--desk" data-task-view="${escape(taskViewMode)}">
                         <div class="social-project-task-shell-header social-project-task-shell-header--roomy">
                             <div class="social-project-task-shell-heading">
                                 <div class="spt-desk-shell-brand">
@@ -1638,7 +1638,7 @@
             };
 
             const renderProjectChatLoading = (title, copy) => `
-                <section class="lux-soft-chrome lux-panel social-neo-card social-project-workspace-chat social-project-workspace-chat--loading">
+                <section class="social-neo-card social-project-workspace-chat social-project-workspace-chat--loading">
                     <div class="social-neo-empty-hero">
                         <i class="fas fa-comments"></i>
                         <strong>${escape(title)}</strong>
@@ -1684,7 +1684,7 @@
                 return `<div class="social-project-workspace-chat">${window.renderMessagesThreadShell(chat)}</div>`;
             };
             const renderActivityTab = () => `
-                <section class="lux-soft-chrome lux-panel social-neo-card social-project-rich-panel">
+                <section class="social-neo-card social-project-rich-panel">
                     <div class="social-neo-section-head">
                         <div><strong>Workspace timeline</strong><span>Every material project update, from tasks to showcase publishing.</span></div>
                     </div>
@@ -1746,7 +1746,7 @@
             };
             return `
                 <div class="social-neo-stack social-projects-shell">
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-detail-hero social-project-detail-hero-rich">
+                    <section class="social-neo-card social-project-detail-hero social-project-detail-hero-rich">
                         <div class="social-project-detail-top">
                             <div class="social-project-detail-copy">
                                 <div class="social-neo-inline social-neo-inline-gap-10-wrap">
@@ -1795,7 +1795,7 @@
                             </article>
                         </div>
                     </section>
-                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-tab-shell">
+                    <section class="social-neo-card social-project-tab-shell">
                         <div class="social-project-tab-row social-project-tab-row-rich" role="tablist" aria-label="Project sections">
                             ${tabItems.map(([tabId]) => renderProjectTabPill(tabId)).join('')}
                         </div>

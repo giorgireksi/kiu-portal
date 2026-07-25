@@ -15,8 +15,8 @@ function extractFunctionBody(source, functionName) {
 
 describe('admin registration flicker prevention', () => {
     it('toggleAdminRegModule re-renders track panes without full module rebuild', () => {
-        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
-        const toggleFn = extractFunctionBody(adminRegistration, 'toggleAdminRegModule\\(moduleId\\)');
+        const cmsRuntime = readSource('assets/js/pages/admin-registration-cms-runtime.js');
+        const toggleFn = extractFunctionBody(cmsRuntime, 'toggleAdminRegModule\\(moduleId\\)');
 
         expect(toggleFn).toContain('resolveAdminRegTab(adminRegActiveTab)');
         expect(toggleFn).toContain('renderAdminRegTrackProgramPane(adminRegActiveTab, tabConfig)');
@@ -25,8 +25,8 @@ describe('admin registration flicker prevention', () => {
     });
 
     it('handleAdminRegistrationCmsChanged skips force when revision and faculty are unchanged', () => {
-        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
-        const handlerFn = extractFunctionBody(adminRegistration, 'handleAdminRegistrationCmsChanged\\(\\)');
+        const bootRuntime = readSource('assets/js/pages/admin-registration-boot-runtime.js');
+        const handlerFn = extractFunctionBody(bootRuntime, 'handleAdminRegistrationCmsChanged\\(\\)');
 
         expect(handlerFn).toContain('container.dataset.cmsRevision === cmsRevision');
         expect(handlerFn).toContain('container.dataset.cmsFaculty === faculty');
@@ -55,23 +55,28 @@ describe('admin registration flicker prevention', () => {
 
     it('registration container opts out of luxury transparency rewriting', () => {
         const track = readSource('assets/js/pages/admin-registration-track.js');
-        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const cmsRuntime = readSource('assets/js/pages/admin-registration-cms-runtime.js');
 
         expect(track).toContain("container.setAttribute('data-lux-transparency-exempt', '1')");
-        expect(adminRegistration).toContain("container.setAttribute('data-lux-transparency-exempt', '1')");
+        expect(cmsRuntime).toContain("container.setAttribute('data-lux-transparency-exempt', '1')");
     });
 
     it('admin registration gear manage modal markup exists', () => {
         const track = readSource('assets/js/pages/admin-registration-track.js');
         const shared = readSource('assets/js/pages/registration-shared.js');
-        const css = readSource('assets/css/admin-tools-luxury.css');
+        const modals = readSource('assets/css/lux-modals.css');
+        const controls = readSource('assets/css/lux-controls.css');
 
         expect(track).toContain('function buildAdminRegManageGearMarkup');
         expect(track).toContain('data-admin-reg-manage-program=');
         expect(track).toContain('function openAdminRegProgramManage');
         expect(track).not.toContain('admin-reg-overflow-menu');
+        expect(track).toContain('lux-icon-btn admin-reg-manage-gear-btn');
         expect(shared).toContain('function openAdminRegManageModal');
-        expect(css).toContain('.admin-reg-manage-gear-btn');
-        expect(css).toContain('#kiu-admin-reg-manage-modal .admin-reg-manage-modal-action--danger');
+        expect(shared).toContain('admin-reg-manage-modal-action--danger');
+        expect(shared).toContain('lux-ghost-btn');
+        expect(modals).toContain('registration-structured-modal-backdrop');
+        expect(controls).toContain('.lux-icon-btn');
+        expect(existsSync(join(process.cwd(), 'assets/css/admin-tools-luxury.css'))).toBe(false);
     });
 });

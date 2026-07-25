@@ -142,10 +142,10 @@ describe('student service attachments', () => {
     it('wires attachment pickers and galleries across student service composers', () => {
         const source = readSource('assets/js/pages/student-service.js')
             + readSource('assets/js/pages/student-service-attachments.js')
+            + readSource('assets/js/pages/student-service-ops-runtime.js')
             + readSource('assets/js/pages/student-service-tickets.js')
             + readSource('assets/js/pages/student-service-qa.js');
         const serviceSource = readSource('assets/js/pages/student-service-service.js');
-        const css = readSource('assets/css/student-service-route.css');
 
         expect(source).toContain('const STUDENT_SERVICE_MAX_ATTACHMENTS = 5');
         expect(source).toContain("renderStudentServiceAttachmentPickerMarkup('qa-question')");
@@ -158,8 +158,5 @@ describe('student service attachments', () => {
         expect(source).toContain('renderStudentServiceQuestionCardPreviewMarkup');
         expect(serviceSource).toContain('renderStudentServiceTicketNotesSidebar');
         expect(serviceSource).toContain('renderStudentServiceAttachmentGalleryMarkup(entry.attachments)');
-        expect(css).toContain('.student-service-attachment-toolbar');
-        expect(css).toContain('.student-service-attachment-gallery');
-        expect(css).toContain('.student-service-ticket-notes-sidebar');
     });
 });

@@ -38,9 +38,10 @@ function buildStudentRegistrationFacultyHintNode(activeFaculty, safeData) {
     return hint;
 }
 
-window.invalidateStudentRegistrationViewCache = invalidateStudentRegistrationViewCache;
 window.addEventListener('kiu:registration-cms-changed', () => {
-    invalidateStudentRegistrationViewCache();
+    if (typeof invalidateStudentRegistrationViewCache === 'function') {
+        invalidateStudentRegistrationViewCache();
+    }
     const container = document.getElementById('student-reg-content-container');
     if (!container) return;
     const faculty = getCurrentFaculty() || 'ECON';

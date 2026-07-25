@@ -95,7 +95,7 @@ function renderProgTab(container, modules, tabType) {
             <button type="button" data-admin-reg-add-module="prog" class="lux-primary-btn admin-reg-program-add-btn"><i class="fas fa-plus"></i> Add Module</button>
         </div>
         <div class="admin-reg-program-layout">
-            <div class="lux-surface admin-reg-program-list-shell">
+            <div class="lux-surface admin-reg-program-list-shell lux-soft-chrome">
                 <div class="admin-reg-program-list-head">
                     <div class="admin-reg-program-list-title">Modules</div>
                     <span class="admin-reg-program-list-count">${modules.length}</span>
@@ -524,13 +524,15 @@ if (KIU_STATE.adminProgramStructures) {
 if (KIU_STATE.registrationCMSByFaculty) {
     KIU_STATE.registrationCMSByFaculty = cloneJson(KIU_STATE.registrationCMSByFaculty);
 }
-bindFacultyRegistrationCmsData(getAdminRegistrationFaculty());
-
+// Defer bindFacultyRegistrationCmsData until host defines resolveRegistrationCmsFaculty
+// (admin-registration.js). Boot / renderAdminRegistrationModules bind after host loads.
 window.addEventListener('beforeunload', () => {
-    flushAdminRegistrationStateSave();
+    if (typeof flushAdminRegistrationStateSave === 'function') {
+        flushAdminRegistrationStateSave();
+    }
 });
 document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
+    if (document.visibilityState === 'hidden' && typeof flushAdminRegistrationStateSave === 'function') {
         flushAdminRegistrationStateSave();
     }
 });
@@ -555,13 +557,13 @@ function renderMinorTab(container, modules, tabType) {
             <button type="button" data-admin-reg-add-minor-program="1" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
         <div class="admin-reg-program-layout admin-reg-program-layout--wide">
-            <div class="admin-reg-program-list-shell">
+            <div class="admin-reg-program-list-shell lux-soft-chrome">
                 <div class="admin-reg-program-list-head">
                     <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">Minor Programs</div>
                     <span class="admin-reg-program-list-count">${minorPrograms.length}</span>
                 </div>
                 <div data-preserve-scroll-key="admin-reg-minor-programs" class="admin-reg-program-list">
-                    ${minorPrograms.length === 0 ? `<div class="admin-reg-program-list-placeholder">No minor programs yet</div>` : minorPrograms.map(program => {
+                    ${minorPrograms.length === 0 ? `<div class="admin-reg-program-list-placeholder lux-empty-state">No minor programs yet</div>` : minorPrograms.map(program => {
                         const checkedAttr = program === adminRegUiState.selectedMinorProgram ? 'checked' : '';
                         return `
                             <label class="admin-reg-program-option admin-reg-program-option--wide${program === adminRegUiState.selectedMinorProgram ? ' is-active' : ''}">

@@ -12,6 +12,11 @@
   align-items: center;
 }
 .modal-overlay.active { display: flex; }
+.modal-overlay.is-closing {
+  display: flex;
+  pointer-events: none;
+  animation: luxModalOverlayOut 180ms ease-in forwards;
+}
 .modal-content {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: var(--kiu-glass-blur);
@@ -45,6 +50,24 @@
 @keyframes modalSlideIn {
   from { transform: translateY(40px) scale(0.95); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes luxModalSlideOut {
+  from { transform: translateY(0) scale(1); opacity: 1; }
+  to { transform: translateY(18px) scale(0.96); opacity: 0; }
+}
+@keyframes luxModalOverlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.modal-overlay.is-closing .modal-content {
+  animation: luxModalSlideOut 180ms ease-in forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal-content,
+  .modal-overlay.is-closing,
+  .modal-overlay.is-closing .modal-content {
+    animation-duration: 0.01ms;
+  }
 }
 .modal-header {
   padding: 20px;

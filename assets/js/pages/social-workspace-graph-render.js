@@ -1427,7 +1427,7 @@
                     </div>`
                 : '<div class="social-neo-empty">No tasks yet. Open the Tasks tab to add work items.</div>';
             return `
-                <section class="lux-soft-chrome lux-panel social-neo-card social-project-chart-card social-project-graph-preview-card">
+                <section class="social-neo-card social-project-chart-card social-project-graph-preview-card">
                     <div class="social-neo-section-head">
                         <div>
                             <strong>Task map</strong>

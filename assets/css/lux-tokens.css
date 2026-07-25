@@ -75,7 +75,7 @@
   --lux-glass-highlight-alpha: 0.05;
   --lux-glass-blur: var(--lux-transparency-blur, 14px);
   --lux-glass-blur-quality-mult: 1;
-  --lux-panel-blur-filter: blur(var(--lux-glass-blur)) saturate(150%);
+  --lux-panel-blur-filter: blur(calc(var(--lux-transparency-blur, var(--lux-glass-blur, 14px)) * 0.55));
   --lux-grid-row-height: 28px;
   --lux-topbar-fill-alpha: 0.78;
   --lux-scrollbar-size: 7px;
@@ -187,11 +187,29 @@ html.lux-light-mode, body.lux-light-mode {
 }
 /* ── §3 shared panel / soft-chrome paint surfaces ── */
 :root {
-  /* Accent stops use --lux-panel-glow (studio Glow Density) so they stay visible at low opacity. */
+  /* Outer host SSOT = denser desk glass (redesign fill/surface/blur here). Soft stays for chips. */
+  --lux-panel-fill: color-mix(in srgb, rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)) 88%, transparent);
   --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.055)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.28)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
-  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 1)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-panel-glow, 0.22) * 0.65)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.40)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+  --lux-panel-surface:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.10)), transparent 34%),
+    radial-gradient(ellipse 42% 28% at 82% 14%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.42)), transparent 72%),
+    linear-gradient(145deg,
+      rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.45)),
+      rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)) 44%,
+      rgba(6, 9, 16, var(--lux-transparency-alpha, 0.70)) 100%
+    );
   --lux-panel-border-soft: rgba(var(--lux-accent-rgb), 0.12);
   --lux-panel-border: rgba(var(--lux-accent-rgb), 0.22);
+  /* Outer host rim/glow — redesign with fill/surface/blur; FOUC/shell/home consume these. */
+  --lux-panel-host-border: color-mix(
+    in srgb,
+    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)) 48%,
+    var(--lux-soft-chrome-border, var(--lux-panel-border))
+  );
+  --lux-panel-host-shadow:
+    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50)),
+    0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32)),
+    var(--lux-soft-chrome-shadow, var(--lux-elev-2));
   --lux-elev-2: 0 14px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --lux-elev-3: 0 24px 58px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
   --lux-panel-shadow-soft: var(--lux-elev-2);
@@ -249,10 +267,28 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-utility-alpha: 0.82;
 }
 html.lux-light-mode, body.lux-light-mode {
+  --lux-panel-fill: color-mix(in srgb, rgba(250, 246, 240, calc(var(--lux-transparency-alpha, 0.70) * 0.82)) 88%, transparent);
   --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.62)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.22)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.72)));
-  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.88)), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.30)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.70)));
+  --lux-panel-surface:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.35)), transparent 34%),
+    radial-gradient(ellipse 42% 28% at 82% 14%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.38)), transparent 72%),
+    radial-gradient(ellipse 36% 32% at 100% 50%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.35)), transparent 68%),
+    linear-gradient(145deg,
+      rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.40)),
+      rgba(250, 246, 240, var(--lux-transparency-alpha, 0.70)) 48%,
+      rgba(244, 238, 228, var(--lux-transparency-alpha, 0.70)) 100%
+    );
   --lux-panel-border-soft: rgba(var(--lux-accent-rgb), 0.11);
   --lux-panel-border: rgba(var(--lux-accent-rgb), 0.16);
+  --lux-panel-host-border: color-mix(
+    in srgb,
+    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)) 48%,
+    var(--lux-soft-chrome-border, var(--lux-panel-border))
+  );
+  --lux-panel-host-shadow:
+    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50)),
+    0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32)),
+    var(--lux-soft-chrome-shadow, var(--lux-elev-2));
   --lux-elev-2: 0 14px 30px rgba(107, 91, 62, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.62);
   --lux-elev-3: 0 22px 48px rgba(107, 91, 62, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.035);
 }
@@ -288,9 +324,9 @@ body.lux-full-paint {
   --home-chip-glass-fill: color-mix(in srgb, var(--home-glass-fill) 72%, transparent);
   /* Merged-desk inners: light tint + accent surface; desk keeps sole frost blur */
   --home-chip-surface-fill: color-mix(in srgb, var(--home-chip-fill) 58%, transparent);
-  /* Merged desk host — chip-like fade, tamed accent radial (no mega-wash) */
-  --home-desk-glass-fill: color-mix(in srgb, var(--home-glass-fill) 88%, transparent);
-  --home-desk-glass-surface:
+  /* Outer host SSOT under full-paint — denser desk */
+  --lux-panel-fill: color-mix(in srgb, var(--home-glass-fill) 88%, transparent);
+  --lux-panel-surface:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.10)), transparent 34%),
     radial-gradient(ellipse 42% 28% at 82% 14%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.42)), transparent 72%),
     linear-gradient(145deg,
@@ -298,7 +334,7 @@ body.lux-full-paint {
       rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)) 44%,
       rgba(6, 9, 16, var(--lux-transparency-alpha, 0.70)) 100%
     );
-  --home-desk-glass-blur: blur(calc(var(--lux-transparency-blur, 14px) * 0.55));
+  --lux-panel-blur-filter: blur(calc(var(--lux-transparency-blur, 14px) * 0.55));
   /* Frost follows Glass Blur quality via --lux-transparency-blur (engine SSOT). */
   --home-fade-blur: blur(var(--lux-transparency-blur, calc(var(--lux-transparency-alpha, 0.70) * 24px)))
     saturate(calc(100% + var(--lux-transparency-alpha, 0.70) * 25%));
@@ -341,8 +377,8 @@ html.lux-light-mode body.lux-full-paint, body.lux-light-mode.lux-full-paint {
   --lux-focus-fill: var(--home-fade-soft);
   --lux-focus-border: var(--home-fade-border-soft);
   --lux-focus-shadow: var(--home-fade-shadow-soft);
-  --home-desk-glass-fill: color-mix(in srgb, var(--home-glass-fill) 88%, transparent);
-  --home-desk-glass-surface:
+  --lux-panel-fill: color-mix(in srgb, var(--home-glass-fill) 88%, transparent);
+  --lux-panel-surface:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.35)), transparent 34%),
     radial-gradient(ellipse 42% 28% at 82% 14%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.38)), transparent 72%),
     radial-gradient(ellipse 36% 32% at 100% 50%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.35)), transparent 68%),
@@ -351,15 +387,15 @@ html.lux-light-mode body.lux-full-paint, body.lux-light-mode.lux-full-paint {
       rgba(250, 246, 240, var(--lux-transparency-alpha, 0.70)) 48%,
       rgba(244, 238, 228, var(--lux-transparency-alpha, 0.70)) 100%
     );
-  --home-desk-glass-blur: blur(calc(var(--lux-transparency-blur, 14px) * 0.55));
+  --lux-panel-blur-filter: blur(calc(var(--lux-transparency-blur, 14px) * 0.55));
 }
 /* 100%: dense glassmorph (keep gradient + blur + shadow — not flat matte). */
 html.lux-fully-opaque body.lux-full-paint {
   --home-glass-fill: rgba(8, 12, 21, 0.96);
   --home-chip-fill: rgba(12, 18, 28, 0.55);
   --home-chip-glass-fill: var(--home-glass-fill);
-  --home-desk-glass-fill: rgba(8, 12, 21, 1);
-  --home-desk-glass-surface:
+  --lux-panel-fill: rgba(8, 12, 21, 1);
+  --lux-panel-surface:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.08), transparent 34%),
     radial-gradient(ellipse 42% 28% at 82% 14%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.38)), transparent 72%),
     linear-gradient(145deg,
@@ -367,7 +403,7 @@ html.lux-fully-opaque body.lux-full-paint {
       rgba(8, 12, 21, 1) 44%,
       rgba(6, 9, 16, 1) 100%
     );
-  --home-desk-glass-blur: blur(calc(8px * var(--lux-glass-blur-quality-mult, 1)));
+  --lux-panel-blur-filter: blur(calc(8px * var(--lux-glass-blur-quality-mult, 1)));
   --home-fade-soft:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.08), transparent 34%),
     radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)), transparent 38%),
@@ -386,8 +422,8 @@ html.lux-light-mode.lux-fully-opaque body.lux-full-paint {
   --home-glass-fill: rgba(250, 246, 240, 0.96);
   --home-chip-fill: rgba(255, 255, 255, 0.62);
   --home-chip-glass-fill: var(--home-glass-fill);
-  --home-desk-glass-fill: rgba(250, 246, 240, 1);
-  --home-desk-glass-surface:
+  --lux-panel-fill: rgba(250, 246, 240, 1);
+  --lux-panel-surface:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.40), transparent 34%),
     radial-gradient(ellipse 42% 28% at 82% 14%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.34)), transparent 72%),
     radial-gradient(ellipse 36% 32% at 100% 50%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.30)), transparent 68%),
@@ -396,7 +432,7 @@ html.lux-light-mode.lux-fully-opaque body.lux-full-paint {
       rgba(250, 246, 240, 1) 48%,
       rgba(244, 238, 228, 1) 100%
     );
-  --home-desk-glass-blur: blur(calc(8px * var(--lux-glass-blur-quality-mult, 1)));
+  --lux-panel-blur-filter: blur(calc(8px * var(--lux-glass-blur-quality-mult, 1)));
   --home-fade-soft:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.40), transparent 34%),
     radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.80)), transparent 38%),

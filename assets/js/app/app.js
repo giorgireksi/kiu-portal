@@ -956,7 +956,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         return lmsRuntimeLoadPromise;
     };
 
-    const REGISTRATION_PICKER_ASSET_TOKEN = '20260608-regfix1';
+    const REGISTRATION_PICKER_ASSET_TOKEN = '20260725-legacycta1';
     const registrationRuntimeAsset = (path) => `${path}?v=${REGISTRATION_PICKER_ASSET_TOKEN}`;
     const REGISTRATION_RUNTIME_SCRIPTS = [
         registrationRuntimeAsset('assets/js/pages/registration-shared.js'),
@@ -964,26 +964,26 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         { src: 'assets/js/shared/curriculum-library-model.js?v=20260720-e5clm1', module: true },
         'assets/js/shared/curriculum-library-model-bridge.js?v=20260720-e5clm1',
         'assets/js/pages/registration-semester-runtime.js?v=20260720-regsem1',
-        'assets/js/pages/registration-curriculum-runtime.js?v=20260720-w18',
+        'assets/js/pages/registration-curriculum-runtime.js?v=20260724-peelfix2',
         registrationRuntimeAsset('assets/js/pages/registration.js'),
         registrationRuntimeAsset('assets/js/pages/curriculum-semester-picker.js'),
         'assets/js/pages/curriculum-library-scroll.js?v=20260606-scrollrail1',
         'assets/js/pages/student-registration-eligibility-runtime.js?v=20260608-regfix1',
-        'assets/js/pages/student-registration-choice-runtime.js?v=20260720-w18',
-        registrationRuntimeAsset('assets/js/pages/student-registration.js'),
-        'assets/js/pages/admin-registration-track.js?v=20260608-regfix1',
+        'assets/js/pages/student-registration-choice-runtime.js?v=20260724-peelfix1',
+        'assets/js/pages/student-registration.js?v=20260724-peelfix1',
+        'assets/js/pages/admin-registration-track.js?v=20260725-legacycta1',
         'assets/js/pages/admin-registration-seats-runtime.js?v=20260719-regseats1',
-        'assets/js/pages/admin-registration-cms-runtime.js?v=20260720-regcms1',
-        'assets/js/pages/admin-registration-boot-runtime.js?v=20260720-w18',
-        'assets/js/pages/admin-registration.js?v=20260720-regcms1'
+        'assets/js/pages/admin-registration-cms-runtime.js?v=20260724-peelfix2',
+        'assets/js/pages/admin-registration-boot-runtime.js?v=20260724-peelfix1',
+        'assets/js/pages/admin-registration.js?v=20260724-peelfix2'
     ];
     const REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS = [
         registrationRuntimeAsset('assets/js/pages/timetable-runtime.js'),
         registrationRuntimeAsset('assets/js/pages/registration-shared.js'),
         registrationRuntimeAsset('assets/js/pages/registration-enrollment.js'),
         registrationRuntimeAsset('assets/js/pages/student-registration-eligibility-runtime.js'),
-        'assets/js/pages/student-registration-choice-runtime.js?v=20260720-w18',
-        registrationRuntimeAsset('assets/js/pages/student-registration.js'),
+        'assets/js/pages/student-registration-choice-runtime.js?v=20260724-peelfix1',
+        'assets/js/pages/student-registration.js?v=20260724-peelfix1',
         registrationRuntimeAsset('assets/js/pages/registration-student-route.js')
     ];
     let registrationRuntimeLoadPromise = null;

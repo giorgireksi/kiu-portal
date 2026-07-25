@@ -801,7 +801,7 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
         contentArea.innerHTML = renderLmsRouteEmptyState('Monitoring locked', 'Only professor, TA, and admin roles can monitor protected quiz activity.', 'fa-user-lock');
         return;
     }
-    contentArea.innerHTML = `<div class="lux-soft-chrome lux-panel lms-route-panel"><div class="lms-route-copy">Loading protected quiz monitoring - </div></div>`;
+    contentArea.innerHTML = `<div class="lms-route-panel"><div class="lms-route-copy">Loading protected quiz monitoring - </div></div>`;
     let monitor = null;
     try {
         monitor = options.monitorOverride || await fetchProtectedQuizMonitor(context.resourceKey);
@@ -905,7 +905,7 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
             `;
         }).join('');
         return `
-            <section class="lux-soft-chrome lux-panel lms-route-panel lms-protected-monitor-shell">
+            <section class="lms-route-panel lms-protected-monitor-shell">
                 <div class="lms-route-card-head lms-protected-monitor-shell-head">
                     <div>
                         <div class="lms-route-card-title lms-protected-monitor-shell-title">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
@@ -925,7 +925,7 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
     }).join('') : renderLmsRouteEmptyState('No protected quizzes', 'Publish a quiz in this group first. Monitoring data will appear here after launch and proctor events start coming in.', 'fa-shield-halved');
     contentArea.innerHTML = `
         <div class="lms-route-stack">
-            <div class="lux-soft-chrome lux-panel lms-route-panel lms-protected-monitor-page-shell">
+            <div class="lms-route-panel lms-protected-monitor-page-shell">
                 <div class="lms-route-card-head lms-protected-monitor-page-head">
                     <div>
                         <div class="lms-route-eyebrow lms-protected-monitor-page-eyebrow">Monitoring</div>

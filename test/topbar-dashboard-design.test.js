@@ -24,10 +24,10 @@ describe('topbar matches dashboard design language', () => {
         expect(shell).toContain('var(--lux-btn-border-solid');
         expect(shell).toMatch(/\.lux-sidebar-toggle-btn, \.lux-topbar-editor-btn\s*\{[\s\S]*border-radius:\s*var\(--lux-btn-pill-radius/);
         expect(shell).toMatch(/\.lux-picker-btn\s*\{[\s\S]*border-radius:\s*var\(--lux-btn-pill-radius/);
-        expect(shell).toMatch(/\.lux-picker-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-well-soft/);
+        expect(shell).toMatch(/\.lux-picker-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-ghost-well/);
         expect(shell).toMatch(/\.lux-picker-btn::after[\s\S]*var\(--lux-btn-sheen\)/);
         expect(shell).toMatch(/\.lux-picker-btn:hover::after[\s\S]*translateX\(130%\)/);
-        expect(shell).toMatch(/\.lux-icon-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-well-soft/);
+        expect(shell).toMatch(/\.lux-icon-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-ghost-well/);
         expect(shell).toMatch(/\.lux-icon-btn::after[\s\S]*var\(--lux-btn-sheen\)/);
         expect(shell).toMatch(/\.lux-sidebar-toggle-btn, \.lux-topbar-editor-btn\s*\{[\s\S]*contain:\s*paint/);
         expect(shell).toMatch(/\.lux-picker-btn, \.lux-icon-btn\s*\{[\s\S]*contain:\s*paint/);
@@ -45,6 +45,13 @@ describe('topbar matches dashboard design language', () => {
         // Nested control blur strip only — topbar shell paint stays in lux-shell.css
         expect(controls).toMatch(/#lux-topbar \.lux-topbar-shell :is\(\.lux-picker-btn/);
         expect(controls).not.toMatch(/#lux-topbar \.lux-topbar-shell\s*\{/);
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toMatch(
+            /body\.lux-full-paint\.lux-unified-shell #lux-topbar :is\(\.lux-picker-btn, \.lux-icon-btn[\s\S]*?--lux-btn-ghost-well/
+        );
+        expect(fouc).not.toMatch(
+            /body\.lux-light-mode \.lux-icon-btn,/
+        );
     });
 
     it('dark CTA wells include accent color-fade radials', () => {
@@ -74,10 +81,13 @@ describe('topbar matches dashboard design language', () => {
         expect(homeIdx).toBeGreaterThan(shellIdx);
     });
 
-    it('dual-writes lux-soft-chrome on topbar shell and controls', () => {
+    it('dual-writes lux-soft-chrome on topbar shell only (controls stay framed CTAs)', () => {
         const js = readSource('assets/js/features/index-luxury.js');
         expect(js).toContain('lux-topbar-shell lux-soft-chrome lux-panel');
         expect(js).toContain('ensureTopbarSoftChrome');
+        expect(js).toContain("el.classList.remove('lux-soft-chrome')");
+        expect(js).not.toMatch(/lux-picker-btn lux-soft-chrome/);
+        expect(js).not.toMatch(/lux-icon-btn lux-soft-chrome/);
     });
 
     it('transparency engine CSS-owns topbar shell like soft-chrome', () => {

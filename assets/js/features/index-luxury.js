@@ -428,7 +428,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         const next = !document.body.classList.contains('lux-sidebar-collapsed');
         applySidebarState(next, { persist: true });
         // FIX: Do NOT call syncAll() or dispatch fake 'resize' events here.
-        // Sidebar toggle is a pure CSS transition handled by index-luxury.css transitions.
+        // Sidebar toggle is a pure CSS transition handled by lux-shell.css / index-home layout.
         // Dispatching a resize event tricks the app into rebuilding the DOM.
     }
     function pageLabel(pageId) {
@@ -1008,10 +1008,12 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             shell.style.removeProperty('backdrop-filter');
             shell.style.removeProperty('-webkit-backdrop-filter');
         }
+        // Topbar controls are framed CTAs (color-fade wells), not soft-chrome slabs.
         topbar.querySelectorAll('.lux-picker-btn, .lux-icon-btn').forEach((el) => {
-            el.classList.add('lux-soft-chrome');
+            el.classList.remove('lux-soft-chrome');
             el.style.removeProperty('background');
             el.style.removeProperty('background-color');
+            el.style.removeProperty('background-image');
             el.style.removeProperty('backdrop-filter');
             el.style.removeProperty('-webkit-backdrop-filter');
         });
@@ -1035,14 +1037,14 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                     <div class="lux-topbar-spacer"></div>
                     <div class="lux-topbar-actions">
                         <div class="lux-picker-wrap" data-picker-wrap="faculty">
-                            <button class="lux-picker-btn lux-soft-chrome" id="lux-faculty-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                            <button class="lux-picker-btn" id="lux-faculty-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
                                 <span class="lux-picker-caption">Faculty</span>
                                 <strong id="lux-faculty-picker-value">Faculty</strong>
                                 <i class="fas fa-chevron-down"></i>
                             </button>
                         </div>
                         <div class="lux-picker-wrap" data-picker-wrap="role">
-                            <button class="lux-picker-btn lux-soft-chrome" id="lux-role-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                            <button class="lux-picker-btn" id="lux-role-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
                                 <span class="lux-picker-caption">View</span>
                                 <strong id="lux-role-picker-value">Workspace</strong>
                                 <i class="fas fa-chevron-down"></i>
@@ -1052,17 +1054,17 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                             <i class="fas fa-sliders-h"></i>
                             <span id="lux-dashboard-edit-label">Customize</span>
                         </button>
-                        <button class="lux-icon-btn lux-soft-chrome" id="lux-palette-btn" type="button" title="Open colour and motion studio">
+                        <button class="lux-icon-btn" id="lux-palette-btn" type="button" title="Open colour and motion studio">
                             <i class="fas fa-palette"></i>
                         </button>
                         <div class="lux-utility-wrap">
-                            <button class="lux-icon-btn lux-soft-chrome" id="lux-notification-btn" type="button" title="Notifications">
+                            <button class="lux-icon-btn" id="lux-notification-btn" type="button" title="Notifications">
                                 <i class="far fa-bell"></i>
                                 <span class="lux-icon-badge" id="lux-notification-badge">0</span>
                             </button>
                         </div>
                         <div class="lux-utility-wrap">
-                            <button class="lux-icon-btn lux-soft-chrome" id="lux-chat-btn" type="button" title="Messenger">
+                            <button class="lux-icon-btn" id="lux-chat-btn" type="button" title="Messenger">
                                 <i class="fas fa-comments"></i>
                                 <span class="lux-icon-badge" id="lux-chat-badge">0</span>
                             </button>
@@ -1590,8 +1592,20 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         isIndexPortalShell: (...a) => (typeof isIndexPortalShell === 'function' ? isIndexPortalShell(...a) : false)
     };
     const __luxHomeShellApi = typeof window.__kiuCreateLuxuryIndexHomeShellApi === 'function'
-        ? window.__kiuCreateLuxuryIndexHomeShellApi(__luxHomeShellDeps) : null;
-    if (!__luxHomeShellApi) throw new Error('luxury-index-home-shell-runtime.js missing');
+        ? window.__kiuCreateLuxuryIndexHomeShellApi(__luxHomeShellDeps)
+        : {
+            // Bare portals omit the home-shell peel; index.html loads it for the dashboard route.
+            homeShellHasLoadingPlaceholder: () => false,
+            homeShellHasDashboardContent: () => false,
+            renderHomeShellRecoveryPanel: () => {},
+            __luxHomeRecoveryPanelContract: () => {},
+            renderHomeShell: () => {},
+            isLuxuryHomeRoute: () => false,
+            scheduleLuxuryHomeDashboardPreload: () => Promise.resolve(false),
+            decodeLuxuryHomeChunkSource: () => '',
+            scheduleLuxuryHomeDashboardChunkRetry: () => {},
+            ensureLuxuryHomeDashboardBundle: () => Promise.resolve(false)
+        };
     const { homeShellHasLoadingPlaceholder, homeShellHasDashboardContent, renderHomeShellRecoveryPanel, __luxHomeRecoveryPanelContract, renderHomeShell, isLuxuryHomeRoute, scheduleLuxuryHomeDashboardPreload, decodeLuxuryHomeChunkSource, scheduleLuxuryHomeDashboardChunkRetry, ensureLuxuryHomeDashboardBundle } = __luxHomeShellApi;
 
     __kiuLuxExpose({
