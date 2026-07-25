@@ -85,7 +85,7 @@ function renderLmsLivePodiumMarkup(session, resourceKey, options = {}) {
             closeAttr: closeAttr || 'data-lms-click="void(0)"',
             bodyHtml: podiumBody,
             actionsHtml: canManage
-                ? `<button type="button" class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" ${closeAttr}><i class="fas fa-xmark"></i> Close rankings</button>`
+                ? `<button type="button" class="lux-primary-btn lux-glass-dialog-submit-btn" ${closeAttr}><i class="fas fa-xmark"></i> Close rankings</button>`
                 : ''
         })
         : `<div class="lms-live-podium-content">${podiumBody}</div>`;
@@ -130,7 +130,11 @@ function unmountLmsLivePodiumOverlay() {
     if (typeof document === 'undefined') return;
     clearLmsLivePodiumAnimationTimers();
     const existing = document.getElementById('lms-live-podium-overlay');
-    if (existing) existing.remove();
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(existing, { instant: true });
+    } else {
+        existing?.remove();
+    }
     if (typeof window !== 'undefined') {
         window.__lmsLivePodiumMountedAt = '';
     }
@@ -161,6 +165,11 @@ function mountLmsLivePodiumOverlay(resourceKey) {
     }
     overlay.dataset.lmsPodiumRevealAt = revealAt;
     overlay.innerHTML = renderLmsLivePodiumMarkup(session, resourceKey, { skipAnimation: !shouldAnimate });
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
     if (shouldAnimate) {
         runLmsLivePodiumRevealAnimation(overlay);
         if (typeof window !== 'undefined') {

@@ -11,16 +11,17 @@ describe('LMS interaction UI regressions', () => {
     it('uses organized messenger layout and CSS-managed interaction transparency', () => {
         const html = readSource('lms.html');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
-        const utilitiesSource = readSource('assets/js/shared/utilities.js');
+        const utilitiesSource = readSource('assets/js/shared/lux-transparency.js');
 
         expectLmsRouteCssLinks(html);
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-interaction-messages-runtime.js')
         expect(html).not.toContain('assets/js/pages/lms-interaction-messages-runtime.js');
         expect(html).toContain('assets/js/pages/lms-classroom-tabs-runtime.js');
 
-        expect(classroomSource).toContain('lms-interaction-messenger__toolbar');
-        expect(classroomSource).toContain('lms-interaction-messenger__toolbar-modes');
+        expect(shellSource).toContain('lms-interaction-messenger__toolbar');
+        expect(shellSource).toContain('lms-interaction-messenger__toolbar-modes');
         expect(classroomSource).toContain('removeOrphanLmsInteractionMessengerSections');
         expect(classroomSource).toContain('lms-route-empty--interaction');
         expect(classroomSource).toContain('lms-interaction-empty-cta');
@@ -47,9 +48,8 @@ describe('LMS interaction UI regressions', () => {
         expect(modeSwitchBlock).not.toContain('lms-route-tab-strip');
 
         // LMS shell is CSS-owned (timetable model). Messenger chrome is not a force-keep host list.
-        expect(utilitiesSource).toContain('function shouldKeepLmsFadeCssBackground(el)');
-        expect(utilitiesSource).toContain("if (!el.closest?.('#page-lms')) return false;");
-        expect(utilitiesSource).toContain("el.classList.contains('lms-route-workspace-chrome')");
+        expect(utilitiesSource).toContain('function isCssOwnedSurface(el)');
+        expect(utilitiesSource).toContain('.lms-route-workspace-chrome');
         expect(utilitiesSource).not.toContain('lms-interaction-messenger');
         expect(utilitiesSource).not.toContain('lms-interaction-direct__rail');
     });

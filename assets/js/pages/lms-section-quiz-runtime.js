@@ -10,49 +10,15 @@
         void d;
         /* Non-strict factory body: free vars resolve to window globals at call time. */
 
-function renderLmsGlassDialogHead({
-    title = '',
-    icon = 'fa-layer-group',
-    subtitle = '',
-    headExtra = '',
-    closeLabel = 'Close',
-    closeAttr = 'data-lms-click="closeLmsQuizAccessDialog()"'
-} = {}) {
-    const subtitleHtml = subtitle
-        ? `<span class="social-neo-dialog-subtitle">${subtitle}</span>`
+function renderLmsGlassDialogHead(opts = {}) {
+    return typeof window.renderLuxGlassDialogHead === 'function'
+        ? window.renderLuxGlassDialogHead(opts)
         : '';
-    return `
-        <div class="social-neo-section-head social-neo-dialog-head">
-            <div class="social-neo-dialog-heading">
-                <strong class="social-neo-dialog-title"><i class="fas ${icon}" aria-hidden="true"></i> ${escapeHtml(title)}</strong>
-                ${subtitleHtml}
-            </div>
-            ${headExtra}
-            <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" aria-label="${escapeHtml(closeLabel)}" ${closeAttr}><i class="fas fa-times"></i></button>
-        </div>
-    `;
 }
-function renderLmsGlassDialogCard({
-    hookClass = '',
-    bodyClass = '',
-    headHtml = '',
-    bodyHtml = '',
-    actionsHtml = '',
-    title,
-    icon,
-    subtitle,
-    headExtra = '',
-    closeLabel,
-    closeAttr
-} = {}) {
-    const head = headHtml || renderLmsGlassDialogHead({ title, icon, subtitle, headExtra, closeLabel, closeAttr });
-    return `
-        <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--lms-create ${hookClass}" role="dialog" aria-modal="true" data-lux-transparency-exempt="1">
-            ${head}
-            <div class="social-neo-dialog-body ${bodyClass}">${bodyHtml}</div>
-            ${actionsHtml ? `<div class="social-neo-form-actions social-neo-dialog-actions">${actionsHtml}</div>` : ''}
-        </div>
-    `;
+function renderLmsGlassDialogCard(opts = {}) {
+    return typeof window.renderLuxGlassDialogCard === 'function'
+        ? window.renderLuxGlassDialogCard(opts)
+        : '';
 }
 window.renderLmsGlassDialogHead = renderLmsGlassDialogHead;
 window.renderLmsGlassDialogCard = renderLmsGlassDialogCard;

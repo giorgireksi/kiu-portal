@@ -488,7 +488,7 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="lux-panel staff-hub-info-card is-full lux-data-card lux-soft-chrome">
+            <section class="lux-panel staff-hub-info-card is-full lux-data-card" data-lux-glass-root="1">
                 <span>Admin actions</span>
                 <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced">
                     <button class="lux-secondary-btn" type="button" data-staff-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
@@ -534,7 +534,7 @@
                     ${tabs.map(([key, label]) => `<button class="staff-hub-tab lux-tab-btn staff-hub-profile-tab${activeTab === key ? ' is-active' : ''}" type="button" aria-pressed="${activeTab === key ? 'true' : 'false'}" data-staff-action="tab" data-staff-tab="${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('')}
                 </div>` : '';
         return `
-            <section class="lux-soft-chrome lux-panel staff-hub-profile">
+            <section class="lux-panel staff-hub-profile" data-lux-glass-root="1">
                 <div class="staff-hub-toolbar">
                     <button class="lux-secondary-btn" type="button" data-staff-action="back"><i class="fas fa-arrow-left"></i> Back to staff directory</button>
                     <div class="staff-hub-toolbar-actions">
@@ -643,14 +643,14 @@
         `;
 
         return `
-            <div class="lux-soft-chrome lux-panel staff-hub-shell">
+            <div class="lux-panel staff-hub-shell" data-lux-glass-root="1">
 
 
                 <section class="lux-soft-chrome staff-hub-controls staff-admin-controls staff-hub-controls--adaptive">
                     ${directoryControlsMarkup}
                 </section>
 
-                <section class="lux-soft-chrome lux-panel staff-hub-directory-panel">
+                <section class="lux-soft-chrome staff-hub-directory-panel">
                     <div class="staff-hub-directory-head">
                         <div>
                             <div class="staff-hub-overline">Staff directory</div>
@@ -772,6 +772,12 @@
                 </form>
             </div>
         `;
+        const hubBackdrop = root.querySelector('.staff-hub-modal-backdrop');
+        if (hubBackdrop && typeof window.openLuxHubModalBackdrop === 'function') {
+            window.openLuxHubModalBackdrop(hubBackdrop);
+        } else {
+            hubBackdrop?.classList.add('is-open');
+        }
         if (typeof window.enhanceUniversalPickers === 'function') {
             window.enhanceUniversalPickers(root);
         }
@@ -1132,6 +1138,11 @@
         state.editingId = null;
         state.modalRole = 'professor';
         state.modalStaffTypeId = 'professor';
+        const root = document.getElementById('staff-command-modal-root');
+        if (root && typeof window.closeLuxHubModalRoot === 'function') {
+            window.closeLuxHubModalRoot(root);
+            return;
+        }
         renderModal([], typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON');
     }
 

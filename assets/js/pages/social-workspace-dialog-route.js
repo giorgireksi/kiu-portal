@@ -236,23 +236,23 @@
                 const isOwner = text(projectItem.ownerUserId || '') === currentId;
                 const nextOwnerId = text(projectItem.nextOwnerUserId || '');
                 const nextOwner = nextOwnerId ? accountById(nextOwnerId) || { id: nextOwnerId } : null;
-                return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                    <form class="social-neo-dialog-card" data-form="dialog-project-leave" data-action="noop">
+                return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                    <form class="lux-glass-dialog-card" data-form="dialog-project-leave" data-action="noop">
                         ${neoHead('Leave workspace', 'This removes you from the team but keeps the workspace history, tasks, files, and chat intact.')}
-                        <div class="social-neo-dialog-preview">
-                            <strong class="social-neo-dialog-preview-title">${escape(text(projectItem.name || 'Project workspace'))}</strong>
+                        <div class="lux-glass-dialog-preview">
+                            <strong class="lux-glass-dialog-preview-title">${escape(text(projectItem.name || 'Project workspace'))}</strong>
                             <div class="social-neo-muted social-neo-muted-mt-6">${escape(`${projectItem.memberCount || 0} team members`)}</div>
                         </div>
-                        <div class="social-neo-dialog-preview ${isOwner ? 'social-neo-dialog-preview-danger' : ''}">
+                        <div class="lux-glass-dialog-preview ${isOwner ? 'lux-glass-dialog-preview-danger' : ''}">
                             ${isOwner
                                 ? (nextOwner
                                     ? `You own this workspace. If you leave now, ownership transfers to ${escape(displayName(nextOwner))} and the workspace stays active.`
                                     : 'You own this workspace. If you leave now, the workspace stays active but becomes ownerless until someone joins or is assigned later.')
                                 : 'Your membership will be removed, but chat history, tasks, and activity remain untouched.'}
                         </div>
-                        <label class="social-neo-item-line social-neo-dialog-checkbox-line">
+                        <label class="social-neo-item-line lux-glass-dialog-checkbox-line">
                             <input type="checkbox" name="confirmProjectLeave" value="yes">
-                            <span class="social-neo-dialog-checkbox-copy">I understand that I am leaving this workspace.</span>
+                            <span class="lux-glass-dialog-checkbox-copy">I understand that I am leaving this workspace.</span>
                         </label>
                         ${neoActions({ cancelLabel: 'Cancel', submitLabel: 'Leave workspace' })}
                         <input type="hidden" name="projectId" value="${escape(text(projectItem.id))}">

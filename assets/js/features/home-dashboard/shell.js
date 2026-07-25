@@ -70,7 +70,7 @@
                         ${copy ? `<p>${escapeHtml(copy)}</p>` : ''}
                     </div>
                 </div>
-                <div class="lux-home-merged lux-soft-chrome">
+                <div class="lux-home-merged lux-soft-chrome" data-lux-glass-root="1">
                     ${mergedContent}
                 </div>
             </div>

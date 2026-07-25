@@ -722,7 +722,7 @@ async function fastRedirectRoleSwitch(requestedRole) {
 
 if (typeof window.refreshSemesterDropdowns !== 'function') {
     window.refreshSemesterDropdowns = function refreshSemesterDropdownsFallback() {
-        const configs = [
+        const configs = window.SEMESTER_DROPDOWN_CONFIGS || [
             { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem' },
             { id: 'admin-active-semester', includeCustom: true, numberPrefix: 'Semester' },
             { id: 'admin-tt-semester', includeCustom: true, numberPrefix: 'Sem' },
@@ -732,8 +732,8 @@ if (typeof window.refreshSemesterDropdowns !== 'function') {
         ];
 
         if (typeof populateSemesterSelectOptions !== 'function') return;
-        configs.forEach(cfg => {
-            document.querySelectorAll(`#${cfg.id}`).forEach(selectEl => {
+        configs.forEach((cfg) => {
+            document.querySelectorAll(`#${cfg.id}`).forEach((selectEl) => {
                 populateSemesterSelectOptions(selectEl, cfg);
             });
         });
@@ -1329,6 +1329,168 @@ window.addEventListener('pageshow', function() {
         scheduleLuxuryTransparencyBootRefresh(_pct);
     }
 });
+
+// ============================================
+// Popup motion (glass overlays + hub modals)
+// ============================================
+
+if (typeof window.openLuxGlassDialogOverlay !== 'function') {
+    const LUX_POPUP_OPEN_MS = 240;
+    const LUX_POPUP_CLOSE_MS = 180;
+
+    window.LUX_POPUP_OPEN_MS = LUX_POPUP_OPEN_MS;
+    window.LUX_POPUP_CLOSE_MS = LUX_POPUP_CLOSE_MS;
+
+    function luxPopupScheduleOpen(callback) {
+        const tick = typeof window.requestAnimationFrame === 'function'
+            ? window.requestAnimationFrame.bind(window)
+            : (cb) => window.setTimeout(cb, 0);
+        tick(() => tick(callback));
+    }
+
+    window.openLuxGlassDialogOverlay = function openLuxGlassDialogOverlay(overlay) {
+        if (!overlay) return;
+        overlay.classList.remove('is-closing');
+        luxPopupScheduleOpen(() => overlay.classList.add('is-open'));
+    };
+
+        window.closeLuxGlassDialogOverlay = function closeLuxGlassDialogOverlay(overlay, options = {}) {
+            if (!overlay) return;
+            if (options.instant) {
+                overlay.remove();
+                options.onDone?.();
+                return;
+            }
+            if (overlay.classList.contains('is-closing')) return;
+            overlay.classList.remove('is-open');
+            overlay.classList.add('is-closing');
+
+            let finished = false;
+            const done = () => {
+                if (finished) return;
+                finished = true;
+                overlay.classList.remove('is-closing');
+                if (options.remove !== false) overlay.remove();
+                else overlay.hidden = true;
+                options.onDone?.();
+            };
+
+            const onEnd = (event) => {
+                if (event.target !== overlay && event.target !== overlay.firstElementChild) return;
+                done();
+            };
+
+            overlay.addEventListener('transitionend', onEnd);
+        window.setTimeout(() => {
+            overlay.removeEventListener('transitionend', onEnd);
+            done();
+        }, LUX_POPUP_CLOSE_MS + 50);
+        };
+
+    let luxPortalModalScrollLockCount = 0;
+
+    function luxPortalModalLockScroll() {
+        luxPortalModalScrollLockCount += 1;
+        if (luxPortalModalScrollLockCount === 1) {
+            document.body.dataset.luxPortalModalScrollLock = '1';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function luxPortalModalUnlockScroll() {
+        if (luxPortalModalScrollLockCount <= 0) return;
+        luxPortalModalScrollLockCount -= 1;
+        if (luxPortalModalScrollLockCount === 0) {
+            delete document.body.dataset.luxPortalModalScrollLock;
+            document.body.style.overflow = '';
+        }
+    }
+
+    window.openLuxPortalModal = function openLuxPortalModal(overlay, options = {}) {
+        if (!overlay) return;
+        const { scrollLock = true, focusSelector } = options;
+        overlay.hidden = false;
+        overlay.setAttribute('aria-hidden', 'false');
+        if (scrollLock) luxPortalModalLockScroll();
+        window.openLuxGlassDialogOverlay(overlay);
+        if (focusSelector) {
+            window.setTimeout(() => {
+                const focusTarget = overlay.querySelector(focusSelector);
+                if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+            }, 0);
+        }
+    };
+
+    window.closeLuxPortalModal = function closeLuxPortalModal(overlay, options = {}) {
+        if (!overlay) return;
+        const { remove = false, scrollLock = true, onDone } = options;
+        const finish = () => {
+            if (!remove) {
+                overlay.hidden = true;
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            if (scrollLock) luxPortalModalUnlockScroll();
+            onDone?.();
+        };
+        if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+            window.closeLuxGlassDialogOverlay(overlay, {
+                remove,
+                onDone: finish
+            });
+            return;
+        }
+        if (remove) overlay.remove();
+        else {
+            overlay.hidden = true;
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+        finish();
+    };
+
+    window.openLuxHubModalBackdrop = function openLuxHubModalBackdrop(backdrop) {
+        if (!backdrop) return;
+        backdrop.classList.remove('is-closing');
+        luxPopupScheduleOpen(() => backdrop.classList.add('is-open'));
+    };
+
+    window.closeLuxHubModalRoot = function closeLuxHubModalRoot(root, options = {}) {
+        if (!root) return;
+        const backdrop = root.querySelector('.students-hub-modal-backdrop, .staff-hub-modal-backdrop');
+        if (!backdrop) {
+            root.innerHTML = '';
+            root.hidden = true;
+            options.onDone?.();
+            return;
+        }
+        if (options.instant) {
+            root.innerHTML = '';
+            root.hidden = true;
+            options.onDone?.();
+            return;
+        }
+        if (backdrop.classList.contains('is-closing')) return;
+        backdrop.classList.remove('is-open');
+        backdrop.classList.add('is-closing');
+        let finished = false;
+        const done = () => {
+            if (finished) return;
+            finished = true;
+            backdrop.classList.remove('is-closing');
+            root.innerHTML = '';
+            root.hidden = true;
+            options.onDone?.();
+        };
+        const onEnd = (event) => {
+            if (event.target !== backdrop && event.target !== backdrop.firstElementChild) return;
+            done();
+        };
+        backdrop.addEventListener('transitionend', onEnd);
+        window.setTimeout(() => {
+            backdrop.removeEventListener('transitionend', onEnd);
+            done();
+        }, LUX_POPUP_CLOSE_MS + 50);
+    };
+}
 
 // ============================================
 // Colour & Motion Studio Functions

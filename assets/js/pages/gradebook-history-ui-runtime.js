@@ -104,7 +104,12 @@ function renderGradebookScoreHistoryPanel(options = {}) {
 
 function refreshGradebookAfterStaffScoreChange(options = {}) {
     if (options.closeScoreEditModal !== false) {
-        document.getElementById('gradebook-score-edit-modal')?.remove();
+        const overlay = document.getElementById('gradebook-score-edit-modal');
+        if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+            window.closeLuxGlassDialogOverlay(overlay);
+        } else {
+            overlay?.remove();
+        }
     }
     if (isFacultyStandaloneGradebookContext()) {
         loadFacultyGradebookAggregateRoster();

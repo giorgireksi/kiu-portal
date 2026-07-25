@@ -54,7 +54,7 @@
                 <section class="social-neo-card social-neo-workspace-hero social-neo-community-panel social-neo-community-panel--workspace">
                     <div class="social-neo-workspace-hero-head">
                         <div class="social-neo-workspace-hero-actions">
-                            <button class="social-neo-btn social-neo-btn-primary social-neo-workspace-hero-create-btn" type="button" data-action="project-create-open">
+                            <button class="lux-primary-btn social-neo-workspace-hero-create-btn" type="button" data-action="project-create-open">
                                 <i class="fas fa-plus"></i> Create workspace
                             </button>
                         </div>
@@ -142,13 +142,13 @@
                                     <span>${escape(accountSubtitle(account))}</span>
                                 </div>
                             </div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-creator-member-remove" data-user-id="${escape(text(memberId))}">
+                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-creator-member-remove" data-user-id="${escape(text(memberId))}">
                                 <i class="fas fa-xmark"></i> Remove
                             </button>
                         </div>
                     `;
                 }).join('')
-                : '<p class="social-neo-dialog-hint">No teammates selected yet.</p>';
+                : '<p class="lux-glass-dialog-hint">No teammates selected yet.</p>';
             const searchResultsMarkup = candidateAccounts.length
                 ? candidateAccounts.slice(0, 12).map((account) => `
                     <article class="social-neo-entity-card social-neo-group-creator-member">
@@ -159,12 +159,12 @@
                                 <span>${escape(accountSubtitle(account))}</span>
                             </div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="project-creator-member-add" data-user-id="${escape(text(account.id))}">
+                        <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="project-creator-member-add" data-user-id="${escape(text(account.id))}">
                             <i class="fas fa-user-plus"></i> Add
                         </button>
                     </article>
                 `).join('')
-                : `<p class="social-neo-dialog-hint">${memberSearch || facultyFilter !== 'all' ? 'No people match the current search or faculty filter.' : 'Start typing or choose a faculty to find teammates.'}</p>`;
+                : `<p class="lux-glass-dialog-hint">${memberSearch || facultyFilter !== 'all' ? 'No people match the current search or faculty filter.' : 'Start typing or choose a faculty to find teammates.'}</p>`;
             return {
                 ...ctx,
                 selectedMemberIds,
@@ -179,34 +179,34 @@
         function renderProjectCreateInviteSection(runtime, inviteContext) {
             const ctx = inviteContext || buildProjectCreateInviteContext(runtime);
             return `
-                <section class="social-neo-dialog-project-create-section social-neo-dialog-project-create-section--invite">
+                <section class="lux-glass-dialog-group-section lux-glass-dialog-group-section--invite">
                     ${neoSection('Seed the team', 'Optional. Invite collaborators before the workspace opens.')}
-                    <div class="social-neo-dialog-invite-toolbar">
-                        <label class="social-neo-dialog-field social-neo-dialog-invite-search-field" for="${escape(ctx.projectInviteSearchId)}">
+                    <div class="lux-glass-dialog-invite-toolbar">
+                        <label class="lux-glass-dialog-field lux-glass-dialog-invite-search-field" for="${escape(ctx.projectInviteSearchId)}">
                             <span class="social-neo-label">Search people</span>
                             <input class="social-neo-input" id="${escape(ctx.projectInviteSearchId)}" type="search" name="projectInviteSearch" placeholder="Search by name, faculty, role, or interests" value="${escape(text(runtime.ui?.projectInviteSearch || ''))}">
                         </label>
-                        <label class="social-neo-dialog-field social-neo-dialog-invite-faculty-field" for="${escape(ctx.projectInviteFacultyId)}">
+                        <label class="lux-glass-dialog-field lux-glass-dialog-invite-faculty-field" for="${escape(ctx.projectInviteFacultyId)}">
                             <span class="social-neo-label">Faculty</span>
                             <select class="social-neo-select" id="${escape(ctx.projectInviteFacultyId)}" name="projectInviteFaculty" data-lux-picker>
                                 ${ctx.facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${ctx.facultyFilter === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
                             </select>
                         </label>
                     </div>
-                    <div class="social-neo-dialog-invite-columns">
-                        <article class="social-neo-dialog-invite-block">
-                            <div class="social-neo-dialog-invite-block-head">
+                    <div class="lux-glass-dialog-invite-columns">
+                        <article class="lux-glass-dialog-invite-block">
+                            <div class="lux-glass-dialog-invite-block-head">
                                 <strong>Selected teammates</strong>
                                 <span>${escape(ctx.selectedMemberIds.length)} invitation${ctx.selectedMemberIds.length === 1 ? '' : 's'} queued.</span>
                             </div>
-                            <div class="social-neo-list social-neo-dialog-invite-list">${ctx.selectedMembersMarkup}</div>
+                            <div class="social-neo-list lux-glass-dialog-invite-list">${ctx.selectedMembersMarkup}</div>
                         </article>
-                        <article class="social-neo-dialog-invite-block">
-                            <div class="social-neo-dialog-invite-block-head">
+                        <article class="lux-glass-dialog-invite-block">
+                            <div class="lux-glass-dialog-invite-block-head">
                                 <strong>Search results</strong>
                                 <span>${escape(ctx.candidateAccounts.length)} people available.</span>
                             </div>
-                            <div class="social-neo-list social-neo-dialog-invite-list">${ctx.searchResultsMarkup}</div>
+                            <div class="social-neo-list lux-glass-dialog-invite-list">${ctx.searchResultsMarkup}</div>
                         </article>
                     </div>
                 </section>
@@ -234,13 +234,13 @@
             const showcaseId = controlId('project-settings-showcase');
             const scheduleStartId = controlId('project-settings-schedule-start');
             const scheduleStartValue = toDateTimeLocalValue(project.scheduleStartAt || '');
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--project-task-create social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-form="project-settings" data-project-id="${escape(text(project.id))}" data-action="noop" data-lux-transparency-exempt="1">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="project-settings" data-project-id="${escape(text(project.id))}" data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHead('Workspace settings', 'Tune status, visibility, advisor, and team size for this project.', { icon: 'fas fa-sliders' })}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-task-create">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-create">
                         <div class="social-neo-form-grid social-neo-form-grid-2">
                             ${neoField('Project name', `<input class="social-neo-input" id="${escape(nameId)}" type="text" name="projectName" value="${escape(text(project.name || project.title || ''))}" required>`, { forId: nameId })}
-                            <label class="social-neo-dialog-field" for="${escape(statusId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(statusId)}">
                                 <span class="social-neo-label">Status</span>
                                 <select class="social-neo-select" id="${escape(statusId)}" name="projectStatus" data-lux-picker>
                                     ${statusOptions.map((status) => `<option value="${escape(status)}" ${text(project.status || 'idea') === status ? 'selected' : ''}>${escape(status)}</option>`).join('')}
@@ -250,7 +250,7 @@
                         ${neoField('Summary', `<input class="social-neo-input" id="${escape(summaryId)}" type="text" name="projectSummary" value="${escape(text(project.summary || ''))}">`, { forId: summaryId })}
                         ${neoField('Description', `<textarea class="social-neo-textarea" id="${escape(descId)}" rows="3" name="projectDescription">${escape(text(project.description || ''))}</textarea>`, { forId: descId })}
                         <div class="social-neo-form-grid social-neo-form-grid-3">
-                            <label class="social-neo-dialog-field" for="${escape(visibilityId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(visibilityId)}">
                                 <span class="social-neo-label">Visibility</span>
                                 <select class="social-neo-select" id="${escape(visibilityId)}" name="projectVisibility" data-lux-picker>
                                     <option value="all_logged_in" ${text(project.visibilityMode || 'all_logged_in') === 'all_logged_in' ? 'selected' : ''}>Public to logged-in</option>
@@ -260,14 +260,14 @@
                             ${neoField('Recommended team size', `<input class="social-neo-input" id="${escape(recommendedId)}" type="number" min="2" max="20" name="projectRecommendedTeamSize" value="${escape(String(project.recommendedTeamSize || 4))}">`, { forId: recommendedId })}
                             ${neoField('Minimum team size', `<input class="social-neo-input" id="${escape(minId)}" type="number" min="2" max="20" name="projectMinTeamSize" value="${escape(String(project.minTeamSize || 4))}">`, { forId: minId })}
                         </div>
-                        <label class="social-neo-dialog-field" for="${escape(advisorId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(advisorId)}">
                             <span class="social-neo-label">Advisor</span>
                             <select class="social-neo-select" id="${escape(advisorId)}" name="projectAdvisorUserId" data-lux-picker>
                                 <option value="">No advisor assigned</option>
                                 ${advisorCandidates.map((account) => `<option value="${escape(text(account.id))}" ${text(project.advisorUserId || '') === text(account.id) ? 'selected' : ''}>${escape(displayName(account))}</option>`).join('')}
                             </select>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(scheduleStartId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(scheduleStartId)}">
                             <span class="social-neo-label">Project start date</span>
                             <input class="social-neo-input" id="${escape(scheduleStartId)}" type="datetime-local" name="projectScheduleStartAt" value="${escape(scheduleStartValue)}">
                             <span class="social-neo-muted social-neo-copy-mt-8">Used to derive planned finish dates on the task map (8h workday, no weekends).</span>
@@ -283,13 +283,13 @@
             const ctx = buildProjectCreateInviteContext(runtime);
             const inviteCount = ctx.selectedMemberIds.length;
             const inviteBadge = inviteCount > 0
-                ? `<span class="social-neo-dialog-submit-badge">${escape(String(inviteCount))}</span>`
+                ? `<span class="lux-glass-dialog-submit-badge">${escape(String(inviteCount))}</span>`
                 : '';
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--project-create social-neo-dialog-card--lms-create" data-form="create-project" data-action="noop" data-lux-transparency-exempt="1">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-create lux-glass-dialog-card" data-form="create-project" data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHead('Create workspace', 'Create a course group project, invite teammates, then track tasks together.', { icon: 'fas fa-diagram-project' })}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-create">
-                        <section class="social-neo-dialog-project-create-section">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-create">
+                        <section class="lux-glass-dialog-group-section">
                             ${neoSection('Basic info', 'Title, course context, and what the team will deliver.')}
                             <div class="social-neo-form-grid social-neo-form-grid-2">
                                 ${neoField('Title', `<input class="social-neo-input" id="${escape(ctx.projectNameId)}" type="text" name="projectName" placeholder="Smart irrigation prototype" value="${escape(text(runtime.ui?.projectName || ''))}" required>`, { forId: ctx.projectNameId })}
@@ -298,22 +298,22 @@
                             ${neoField('Summary', `<input class="social-neo-input" id="${escape(ctx.projectSummaryId)}" type="text" name="projectSummary" placeholder="Cross-faculty automation project for greenhouse monitoring" value="${escape(text(runtime.ui?.projectSummary || ''))}">`, { forId: ctx.projectSummaryId })}
                             ${neoField('Description', `<textarea class="social-neo-textarea" id="${escape(ctx.projectDescriptionId)}" rows="3" name="projectDescription" placeholder="What is the project, what problem are you solving, and what will the team deliver?">${escape(text(runtime.ui?.projectDescription || ''))}</textarea>`, { forId: ctx.projectDescriptionId })}
                         </section>
-                        <section class="social-neo-dialog-project-create-section">
+                        <section class="lux-glass-dialog-group-section">
                             ${neoSection('Settings', 'Visibility, advisor, team size, and faculties involved.')}
                             <div class="social-neo-form-grid social-neo-form-grid-3">
-                                <label class="social-neo-dialog-field" for="${escape(ctx.projectStatusId)}">
+                                <label class="lux-glass-dialog-field" for="${escape(ctx.projectStatusId)}">
                                     <span class="social-neo-label">Status</span>
                                     <select class="social-neo-select" id="${escape(ctx.projectStatusId)}" name="projectStatus" data-lux-picker>
                                         ${['idea', 'active', 'review', 'completed'].map((status) => `<option value="${escape(status)}" ${text(runtime.ui?.projectStatus || 'idea') === status ? 'selected' : ''}>${escape(status)}</option>`).join('')}
                                     </select>
                                 </label>
-                                <label class="social-neo-dialog-field" for="${escape(ctx.projectVisibilityId)}">
+                                <label class="lux-glass-dialog-field" for="${escape(ctx.projectVisibilityId)}">
                                     <span class="social-neo-label">Visibility</span>
                                     <select class="social-neo-select" id="${escape(ctx.projectVisibilityId)}" name="projectVisibility" data-lux-picker>
                                         ${['private', 'faculty', 'public'].map((visibility) => `<option value="${escape(visibility)}" ${text(runtime.ui?.projectVisibility || 'private') === visibility ? 'selected' : ''}>${escape(visibility)}</option>`).join('')}
                                     </select>
                                 </label>
-                                <label class="social-neo-dialog-field" for="${escape(ctx.projectAdvisorUserId)}">
+                                <label class="lux-glass-dialog-field" for="${escape(ctx.projectAdvisorUserId)}">
                                     <span class="social-neo-label">Advisor</span>
                                     <select class="social-neo-select" id="${escape(ctx.projectAdvisorUserId)}" name="projectAdvisorUserId" data-lux-picker>
                                         <option value="">No advisor yet</option>
@@ -326,10 +326,10 @@
                                 ${neoField('Minimum team size', `<input class="social-neo-input" id="${escape(ctx.projectMinTeamSizeId)}" type="number" min="2" name="projectMinTeamSize" value="${escape(text(runtime.ui?.projectMinTeamSize || 4))}">`, { forId: ctx.projectMinTeamSizeId })}
                             </div>
                             ${neoField('Skills / roles', `<input class="social-neo-input" id="${escape(ctx.projectSkillTagsId)}" type="text" name="projectSkillTags" placeholder="developer, designer, researcher, analyst" value="${escape(text(runtime.ui?.projectSkillTags || ''))}">`, { forId: ctx.projectSkillTagsId })}
-                            <div class="social-neo-dialog-project-create-faculties">
+                            <div class="lux-glass-dialog-project-create-faculties">
                                 <span class="social-neo-label">Faculties involved</span>
                                 <div class="social-neo-badge-row social-neo-badge-row-mt-8">
-                                    ${ctx.facultyOptions.map((facultyCode) => `<button class="social-neo-btn ${ctx.projectFaculties.includes(facultyCode) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>`).join('')}
+                                    ${ctx.facultyOptions.map((facultyCode) => `<button class="lux-secondary-btn ${ctx.projectFaculties.includes(facultyCode) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>`).join('')}
                                 </div>
                             </div>
                         </section>

@@ -716,9 +716,10 @@ function renderAdminRegTrackTab(container, tabConfig) {
 function addTrackProgram(tabId) {
     const tabConfig = resolveAdminRegTab(tabId);
     if (!tabConfig) return;
+    const containerLabel = String(tabConfig.programsLabel || tabConfig.label || 'Program').replace(/s$/i, '');
     openStructuredFormModal({
-        title: `New ${tabConfig.label} Program`,
-        subtitle: `Create a new program container for ${tabConfig.label.toLowerCase()}.`,
+        title: `New ${containerLabel}`,
+        subtitle: `Create a new ${containerLabel.toLowerCase()} container.`,
         submitLabel: 'Create Program',
         fields: [
             { name: 'programName', label: 'Program Name', placeholder: 'e.g. Brand Management Track', value: '' }

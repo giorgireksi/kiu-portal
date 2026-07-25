@@ -1,5 +1,4 @@
-    /* Route-owned admin tools runtime extracted from the registered bundle.
-       Keep this file as the editable source and regenerate index-admin-tools.js after changes. */
+    /* Editable SSOT for admin-tools index bundle. Regenerate: node scripts/regen-admin-tools-bundle.js */
 
     function ensureAdminToolsPage() {
         let page = document.getElementById('page-admin-tools');
@@ -111,36 +110,36 @@
                         </div>
                     </section>
 
-                    <div id="kiu-subject-builder-modal" class="registration-structured-modal-backdrop" data-lux-transparency-exempt="1" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="subject-builder-modal-title">
-                        <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create" data-form="create-subject" data-action="noop" data-lux-transparency-exempt="1" data-lux-glass-root="1">
-                            <div class="social-neo-section-head social-neo-dialog-head">
-                                <div class="social-neo-dialog-heading">
-                                    <strong class="social-neo-dialog-title"><i class="fas fa-book-open" aria-hidden="true"></i> <span id="subject-builder-modal-title">Add Subject</span></strong>
-                                    <span class="social-neo-dialog-subtitle registration-structured-modal-subtitle">Create a new course for the active faculty.</span>
+                    <div id="kiu-subject-builder-modal" class="registration-structured-modal-backdrop lms-glass-dialog-overlay" data-lux-transparency-exempt="1" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="subject-builder-modal-title">
+                        <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card" data-form="create-subject" data-action="noop" data-lux-transparency-exempt="1" data-lux-glass-root="1">
+                            <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                                <div class="lux-glass-dialog-heading">
+                                    <strong class="lux-glass-dialog-title"><i class="fas fa-book-open" aria-hidden="true"></i> <span id="subject-builder-modal-title">Add Subject</span></strong>
+                                    <span class="lux-glass-dialog-subtitle registration-structured-modal-subtitle">Create a new course for the active faculty.</span>
                                 </div>
-                                <button type="button" class="lux-ghost-btn social-neo-dialog-close-btn" data-subject-builder-modal-close="1" aria-label="Close"><i class="fas fa-times"></i></button>
+                                <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn" data-subject-builder-modal-close="1" aria-label="Close"><i class="fas fa-times"></i></button>
                             </div>
-                            <div id="curriculum-subject-builder-card" class="lux-scrollbar lux-admin-tools-builder-body social-neo-dialog-body social-neo-dialog-body--event-create">
-                                <div class="social-neo-dialog-preview" data-builder-section="target">
-                                    <strong class="social-neo-dialog-preview-title" id="curriculum-form-module-target"><i class="fas fa-layer-group" aria-hidden="true"></i><span>Loading...</span></strong>
-                                    <span class="social-neo-dialog-preview-copy" id="curriculum-form-module-help">Loading...</span>
+                            <div id="curriculum-subject-builder-card" class="lux-scrollbar lux-admin-tools-builder-body lux-glass-dialog-body lux-glass-dialog-body--event-create">
+                                <div class="lux-glass-dialog-preview" data-builder-section="target">
+                                    <strong class="lux-glass-dialog-preview-title" id="curriculum-form-module-target"><i class="fas fa-layer-group" aria-hidden="true"></i><span>Loading...</span></strong>
+                                    <span class="lux-glass-dialog-preview-copy" id="curriculum-form-module-help">Loading...</span>
                                 </div>
                                 <div class="social-neo-divider" aria-hidden="true"></div>
                                 <div class="social-neo-form-grid social-neo-form-grid-2 lux-field-grid lux-admin-tools-field-grid" data-builder-section="basics">
-                                    <label class="social-neo-dialog-field" for="new-subject-name">
+                                    <label class="lux-glass-dialog-field" for="new-subject-name">
                                         <span class="social-neo-label">Course name</span>
                                         <input id="new-subject-name" name="new_subject_name" type="text" class="social-neo-input lux-control" placeholder="Course name">
                                     </label>
-                                    <label class="social-neo-dialog-field" for="new-subject-code-preview">
+                                    <label class="lux-glass-dialog-field" for="new-subject-code-preview">
                                         <span class="social-neo-label">Course code</span>
                                         <input id="new-subject-code-preview" name="new_subject_code_preview" type="text" class="social-neo-input lux-control" placeholder="Code (auto or custom)">
                                     </label>
-                                    <label class="social-neo-dialog-field" for="new-subject-ects">
+                                    <label class="lux-glass-dialog-field" for="new-subject-ects">
                                         <span class="social-neo-label">ECTS credits</span>
                                         <input id="new-subject-ects" name="new_subject_ects" type="number" class="social-neo-input lux-control" value="6" min="1" placeholder="ECTS credits">
                                     </label>
                                 </div>
-                                <label class="social-neo-dialog-field" id="new-subject-semester-picker-field-label" for="new-subject-semester-lux-btn">
+                                <label class="lux-glass-dialog-field" id="new-subject-semester-picker-field-label" for="new-subject-semester-lux-btn">
                                     <span class="social-neo-label">Semesters offered</span>
                                     <div class="lux-admin-tools-semester-head social-neo-inline social-neo-events-toggle-row">
                                         <p class="lux-admin-tools-semester-hint" id="new-subject-semester-mode-hint" aria-live="polite">One semester — each selection replaces the current choice.</p>
@@ -149,16 +148,15 @@
                                             <button type="button" class="lux-semester-mode-segment__btn lux-ghost-btn" id="new-subject-semester-mode-multiple" data-semester-mode="add" aria-pressed="false">Multiple</button>
                                         </div>
                                     </div>
-                                    <div class="social-neo-dialog-field lux-semester-picker-field lux-picker-field lux-universal-picker-field lux-admin-tools-semester-field" id="new-subject-semester-picker">
+                                    <div class="lux-glass-dialog-field lux-picker-field lux-universal-picker-field lux-admin-tools-semester-field" id="new-subject-semester-picker">
                                         <div class="lux-semester-chip-tray" id="new-subject-semesters-tray" aria-label="Selected semesters"></div>
-                                        <button type="button" class="lux-picker-btn lux-universal-picker-btn lux-picker-btn--compact" id="new-subject-semester-lux-btn" aria-haspopup="listbox" aria-expanded="false" data-lux-skip-modern-button="true" aria-labelledby="new-subject-semester-picker-field-label">
+                                        <button type="button" class="lux-picker-btn lux-universal-picker-btn lux-picker-btn--compact" id="new-subject-semester-lux-btn" aria-haspopup="listbox" aria-expanded="false" data-lux-skip-modern-button="true" aria-label="Select semester" aria-labelledby="new-subject-semester-picker-field-label">
                                             <div class="lux-picker-copy">
-                                                <span class="lux-picker-caption">Select semester</span>
                                                 <strong class="lux-picker-value" id="new-subject-semester-lux-value">Semester 1</strong>
                                             </div>
                                             <i class="fas fa-chevron-down" aria-hidden="true"></i>
                                         </button>
-                                        <div class="lux-semester-scroll-panel lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll lux-droplist-panel" id="new-subject-semester-lux-panel" role="listbox" aria-hidden="true" tabindex="-1">
+                                        <div class="lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll lux-droplist-panel" id="new-subject-semester-lux-panel" role="listbox" aria-hidden="true" tabindex="-1">
                                             <div class="lux-scrollbar lux-semester-scroll-list" id="new-subject-semester-scroll-list"></div>
                                         </div>
                                         <input type="hidden" id="new-subject-semesters" name="new_subject_semesters" value="[1]">
@@ -166,7 +164,7 @@
                                 </label>
                                 <div class="social-neo-divider" aria-hidden="true"></div>
                                 <div data-builder-section="prerequisites">
-                                    <label class="social-neo-dialog-field" for="subject-search-input">
+                                    <label class="lux-glass-dialog-field" for="subject-search-input">
                                         <span class="social-neo-label">Search prerequisite</span>
                                         <input id="subject-search-input" name="subject_search_input" type="text" class="social-neo-input lux-control lux-admin-tools-prereq-search" placeholder="Search for a prerequisite course..." data-admin-tools-prereq-search="1">
                                     </label>
@@ -191,9 +189,9 @@
                                     <div id="new-subject-semester-parity-hint" class="lux-card-meta lux-admin-tools-parity-hint lux-admin-tools-parity-callout"></div>
                                 </div>
                             </div>
-                            <div class="social-neo-form-actions social-neo-dialog-actions lux-admin-tools-submit-row">
-                                <button type="button" class="lux-ghost-btn social-neo-dialog-cancel-btn" data-subject-builder-modal-close="1">Cancel</button>
-                                <button type="button" class="lux-primary-btn social-neo-dialog-submit-btn" id="save-curriculum-subject-btn" data-admin-tools-save-subject="1"><i class="fas fa-plus"></i> Save Subject</button>
+                            <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions lux-admin-tools-submit-row">
+                                <button type="button" class="lux-ghost-btn lux-glass-dialog-cancel-btn" data-subject-builder-modal-close="1">Cancel</button>
+                                <button type="button" class="lux-primary-btn lux-glass-dialog-submit-btn" id="save-curriculum-subject-btn" data-admin-tools-save-subject="1"><i class="fas fa-plus"></i> Save Subject</button>
                             </div>
                         </form>
                     </div>

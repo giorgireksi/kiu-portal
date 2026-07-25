@@ -197,7 +197,7 @@
                                 <span class="social-photo-mono">${isSuggested ? 'New' : `${escape(postCount)} photo${postCount === 1 ? '' : 's'}`}</span>
                             </button>
                             ${text(account.id) !== currentUserId() ? `
-                                <button class="social-neo-btn social-neo-btn-sm ${isFollowingProfile(account.id) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="photography-follow" data-user-id="${escape(text(account.id))}">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm ${isFollowingProfile(account.id) ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="photography-follow" data-user-id="${escape(text(account.id))}">
                                     ${isFollowingProfile(account.id) ? 'Following' : 'Follow'}
                                 </button>
                             ` : ''}
@@ -230,7 +230,7 @@
         const caption = text(post.body || '');
         const authorHandle = escape(displayName(author));
         const reactionPicker = ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-            <button class="social-neo-btn social-neo-btn-sm social-neo-post-reaction-btn ${viewerReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}" aria-label="${escape(reactionType)}">
+            <button class="lux-secondary-btn lux-secondary-btn-sm social-neo-post-reaction-btn ${viewerReaction === reactionType ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}" aria-label="${escape(reactionType)}">
                 <span>${typeof reactionEmoji === 'function' ? reactionEmoji(reactionType) : reactionType}</span>
             </button>
         `).join('');
@@ -246,7 +246,7 @@
                         </div>
                     </button>
                     ${text(author.id) !== currentUserId() ? `
-                        <button class="social-neo-btn social-neo-btn-sm ${isFollowingProfile(author.id) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="photography-follow" data-user-id="${escape(text(author.id))}">
+                        <button class="lux-secondary-btn lux-secondary-btn-sm ${isFollowingProfile(author.id) ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="photography-follow" data-user-id="${escape(text(author.id))}">
                             ${isFollowingProfile(author.id) ? 'Following' : 'Follow'}
                         </button>
                     ` : ''}
@@ -267,22 +267,22 @@
                     ${shareCount > 0 ? `<span class="social-neo-post-metric">${escape(shareCount)} share${shareCount !== 1 ? 's' : ''}</span>` : ''}
                 </div>
                 <div class="social-neo-post-actions social-neo-post-action-row social-photo-feed-actions" role="toolbar" aria-label="Photo actions">
-                    <button class="social-neo-btn social-neo-post-action-btn ${hasViewerReaction ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(viewerReaction || 'like')}">
+                    <button class="lux-secondary-btn social-neo-post-action-btn ${hasViewerReaction ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(viewerReaction || 'like')}">
                         ${hasViewerReaction && typeof reactionEmoji === 'function' && typeof reactionLabel === 'function'
                             ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
                             : '<span aria-hidden="true">👍</span> Appreciate'}
                     </button>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}">
+                    <button class="lux-secondary-btn social-neo-post-action-btn" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-comment"></i> Comment${commentTotal ? ` (${escape(commentTotal)})` : ''}
                     </button>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-share" data-post-id="${escape(normalizedPostId)}">
+                    <button class="lux-secondary-btn social-neo-post-action-btn" type="button" data-action="post-share" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-share"></i> Share
                     </button>
                     <div class="social-neo-reaction-picker social-photo-feed-reactions" aria-label="Quick reactions">
                         ${reactionPicker}
                     </div>
                     <span class="social-neo-flex-spacer"></span>
-                    <button class="social-neo-btn social-neo-post-save-btn ${saved ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
+                    <button class="lux-secondary-btn social-neo-post-save-btn ${saved ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Keep'}
                     </button>
                 </div>
@@ -339,7 +339,7 @@
                     <i class="fas fa-camera-retro"></i>
                     <strong class="social-photo-display">${escape(emptyCopy.title)}</strong>
                     <span>${escape(emptyCopy.hint)}</span>
-                    ${emptyCopy.cta ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-open">${escape(emptyCopy.cta)}</button>` : ''}
+                    ${emptyCopy.cta ? `<button class="lux-primary-btn" type="button" data-action="photography-upload-open">${escape(emptyCopy.cta)}</button>` : ''}
                 </div>
             </div>
         `;
@@ -360,7 +360,7 @@
                     <i class="fas fa-camera-retro"></i>
                     <strong class="social-photo-display">No photos yet</strong>
                     <span>Share your first campus moment.</span>
-                    <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-open">Share a photo</button>
+                    <button class="lux-primary-btn" type="button" data-action="photography-upload-open">Share a photo</button>
                 </div>
             </div>
         `;
@@ -465,8 +465,8 @@
                             <p class="social-photo-mono">${escape(userPosts.length)} photo${userPosts.length === 1 ? '' : 's'}</p>
                         </div>
                         ${isSelf
-                            ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-open">Develop a photo</button>`
-                            : `<button class="social-neo-btn ${isFollowingProfile(userId) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="photography-follow" data-user-id="${escape(text(userId))}">${isFollowingProfile(userId) ? 'Following' : 'Follow'}</button>`}
+                            ? `<button class="lux-primary-btn" type="button" data-action="photography-upload-open">Develop a photo</button>`
+                            : `<button class="lux-secondary-btn ${isFollowingProfile(userId) ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="photography-follow" data-user-id="${escape(text(userId))}">${isFollowingProfile(userId) ? 'Following' : 'Follow'}</button>`}
                     </div>
                 </header>
                 ${renderPhotoFeed(userPosts, 'explore')}
@@ -615,7 +615,7 @@
             : '';
 
         return `
-            <div class="social-neo-dialog-backdrop social-photo-ig-backdrop" data-action="dialog-close">
+            <div class="lux-glass-dialog-backdrop social-photo-ig-backdrop" data-action="dialog-close">
                 <div class="social-photo-ig-modal" data-action="noop">
                     <div class="social-photo-ig-modal-body">
                         <div class="social-photo-ig-media-pane">
@@ -623,24 +623,24 @@
                         </div>
                         <div class="social-photo-ig-comments-pane">
                             <div class="social-photo-ig-sheet-handle" aria-hidden="true"></div>
-                            <div class="social-neo-section-head social-neo-dialog-head social-photo-ig-comments-head">
-                                <div class="social-neo-dialog-heading">
-                                    <strong class="social-neo-dialog-title">Comments</strong>
-                                    <span class="social-neo-dialog-subtitle social-photo-ig-comments-subtitle">${dialogCommentTotal ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'}` : 'No comments yet'}</span>
+                            <div class="lux-glass-dialog-section-head lux-glass-dialog-head social-photo-ig-comments-head">
+                                <div class="lux-glass-dialog-heading">
+                                    <strong class="lux-glass-dialog-title">Comments</strong>
+                                    <span class="lux-glass-dialog-subtitle social-photo-ig-comments-subtitle">${dialogCommentTotal ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'}` : 'No comments yet'}</span>
                                 </div>
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                                <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                             </div>
                             <div class="social-photo-ig-comment-scroll">
-                                <div class="social-neo-dialog-comment-thread social-photo-ig-comment-thread" id="social-neo-dialog-comment-thread">
+                                <div class="lux-glass-dialog-comment-thread social-photo-ig-comment-thread" id="lux-glass-dialog-comment-thread">
                                     ${threadMarkup || '<div class="social-neo-empty">No comments yet. Be the first to reply.</div>'}
                                 </div>
                             </div>
-                            <form class="social-neo-dialog-comment-compose social-photo-ig-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
+                            <form class="lux-glass-dialog-comment-compose social-photo-ig-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
                                 ${commentAuthor ? avatar(commentAuthor, 'social-neo-avatar-sm') : ''}
-                                <div class="social-neo-dialog-comment-compose-main">
+                                <div class="lux-glass-dialog-comment-compose-main">
                                     <div class="social-neo-inline social-neo-comment-compose-row">
                                         <input class="social-neo-input" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="Add a comment..." aria-label="Add a comment" value="${escape(dialogCommentDraft)}">
-                                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Post</button>
+                                        <button class="lux-primary-btn" type="submit">Post</button>
                                     </div>
                                 </div>
                                 <input type="hidden" name="postId" value="${escape(dialogNormalizedPostId)}">
@@ -664,7 +664,7 @@
         if (step === 1) {
             body = `
                 <div class="social-photo-upload-step1">
-                    <label class="social-photo-upload-dropzone social-neo-btn-pointer${hasFile || preview ? ' has-preview' : ''}" data-photography-drop tabindex="0">
+                    <label class="social-photo-upload-dropzone lux-secondary-btn-pointer${hasFile || preview ? ' has-preview' : ''}" data-photography-drop tabindex="0">
                         <input class="social-photo-upload-file-input" type="file" name="photographyUploadFile" accept="image/*" tabindex="-1" aria-hidden="true">
                         <div class="social-photo-viewfinder"></div>
                         ${preview
@@ -672,7 +672,7 @@
                             : hasFile
                                 ? `<p class="social-photo-mono">${escape(text(draft.fileName || 'Image selected'))}</p>`
                                 : '<p>Drop an image here</p><p class="social-photo-mono">JPG · PNG · WEBP · max 25MB</p>'}
-                        <span class="social-photo-upload-choose-btn social-neo-btn social-neo-btn-primary">${hasFile || preview ? 'Replace image' : 'Choose image'}</span>
+                        <span class="social-photo-upload-choose-btn lux-primary-btn">${hasFile || preview ? 'Replace image' : 'Choose image'}</span>
                     </label>
                 </div>
             `;
@@ -699,21 +699,21 @@
         }
 
         return `
-            <div class="social-neo-dialog-backdrop social-photo-upload-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-dialog-card--lms-create social-photo-upload-card photo-panel" data-form="photography-upload" data-action="noop" data-lux-transparency-exempt="1">
+            <div class="lux-glass-dialog-backdrop social-photo-upload-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card social-photo-upload-card photo-panel" data-form="photography-upload" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-photo-upload-head">
                         <div>
                             <strong class="social-photo-display">${step === 1 ? 'Capture' : step === 2 ? 'Caption' : 'Publish'}</strong>
                             <div class="social-photo-step-dots">${stepDots}</div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                        <button class="lux-secondary-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     ${body}
                     <div class="social-photo-upload-actions">
-                        ${step > 1 ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="photography-upload-back">Back</button>` : `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>`}
+                        ${step > 1 ? `<button class="lux-secondary-btn" type="button" data-action="photography-upload-back">Back</button>` : `<button class="lux-secondary-btn" type="button" data-action="dialog-close">Cancel</button>`}
                         ${step < 3
-                            ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-next" ${step === 1 && !hasFile ? 'disabled' : ''}>Next</button>`
-                            : `<button class="social-neo-btn social-neo-btn-primary" type="submit">Publish</button>`}
+                            ? `<button class="lux-primary-btn" type="button" data-action="photography-upload-next" ${step === 1 && !hasFile ? 'disabled' : ''}>Next</button>`
+                            : `<button class="lux-primary-btn" type="submit">Publish</button>`}
                     </div>
                 </form>
             </div>

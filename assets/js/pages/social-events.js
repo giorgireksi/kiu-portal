@@ -96,7 +96,7 @@
             <section class="social-neo-card social-neo-events-hero${merged ? ' is-merged' : ''}">
                 <div class="social-neo-events-hero-head">
                     <div class="social-neo-events-hero-actions">
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-events-create-trigger" type="button" data-action="event-create-open">
+                        <button class="lux-primary-btn social-neo-events-create-trigger" type="button" data-action="event-create-open">
                             <i class="fas ${escape(text(actionConfig.icon || 'fa-calendar-plus'))}"></i>
                             <span>${escape(text(actionConfig.label || 'Create event'))}</span>
                         </button>
@@ -201,7 +201,7 @@
                             ${eventCanManage(item) ? `
                                 <div class="social-neo-event-feature-head-actions">
                                     <span class="social-neo-pill social-neo-events-owner-pill">You manage this</span>
-                                    <button class="social-neo-btn social-neo-btn-ghost social-neo-events-edit-btn social-neo-events-edit-btn--head" type="button" data-action="event-edit-open" data-event-id="${escape(eventId)}"><i class="fas fa-pen"></i> Edit</button>
+                                    <button class="lux-secondary-btn social-neo-events-edit-btn social-neo-events-edit-btn--head" type="button" data-action="event-edit-open" data-event-id="${escape(eventId)}"><i class="fas fa-pen"></i> Edit</button>
                                 </div>
                             ` : ''}
                         </div>
@@ -235,10 +235,10 @@
                             <strong>${escape(scopeLabel)}</strong>
                         </div>
                         <div class="social-neo-event-feature-actions">
-                            <button class="social-neo-btn ${item.viewerRsvpStatus === 'going' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="going">Going</button>
-                            <button class="social-neo-btn ${item.viewerRsvpStatus === 'interested' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="interested">Interested</button>
-                            <button class="social-neo-btn ${item.viewerRsvpStatus === 'declined' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="declined">Decline</button>
-                            ${item.viewerCanDelete ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(eventId)}"><i class="fas fa-trash"></i> Remove event</button>` : ''}
+                            <button class="lux-secondary-btn ${item.viewerRsvpStatus === 'going' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="going">Going</button>
+                            <button class="lux-secondary-btn ${item.viewerRsvpStatus === 'interested' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="interested">Interested</button>
+                            <button class="lux-secondary-btn ${item.viewerRsvpStatus === 'declined' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="declined">Decline</button>
+                            ${item.viewerCanDelete ? `<button class="lux-secondary-btn social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(eventId)}"><i class="fas fa-trash"></i> Remove event</button>` : ''}
                         </div>
                     </div>
                     <div class="social-neo-event-feature-foot">
@@ -300,8 +300,8 @@
                                 </div>
                                 <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                     <span class="social-neo-pill">${escape(text(item.scopeName || 'Published event'))}</span>
-                                    <button class="social-neo-btn social-neo-btn-primary social-neo-events-edit-btn social-neo-events-edit-btn--manage" type="button" data-action="event-edit-open" data-event-id="${escape(text(item.id))}"><i class="fas fa-pen"></i> Edit</button>
-                                    <button class="social-neo-btn social-neo-btn-ghost social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(text(item.id))}">
+                                    <button class="lux-primary-btn social-neo-events-edit-btn social-neo-events-edit-btn--manage" type="button" data-action="event-edit-open" data-event-id="${escape(text(item.id))}"><i class="fas fa-pen"></i> Edit</button>
+                                    <button class="lux-secondary-btn social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(text(item.id))}">
                                         <i class="fas fa-trash"></i> Remove
                                     </button>
                                 </div>
@@ -333,11 +333,11 @@
                             </div>
                             <div class="social-neo-inline social-neo-inline-column-end">
                                 ${group.membershipState === 'member' || group.membershipState === 'manager'
-                                    ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}">Open chat</button>
+                                    ? `<button class="lux-primary-btn" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}">Open chat</button>
                                        <button class="social-neo-link-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}">Leave</button>`
                                     : group.membershipState === 'pending'
                                         ? '<span class="social-neo-pill">Pending</span>'
-                                        : `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">${text(group.visibility) === 'private' ? 'Request to join' : 'Join'}</button>`
+                                        : `<button class="lux-primary-btn" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">${text(group.visibility) === 'private' ? 'Request to join' : 'Join'}</button>`
                                 }
                             </div>
                         </article>
@@ -456,12 +456,12 @@
         const submitLabel = isEditing ? 'Update event' : (isUniversity ? 'Publish official event' : 'Create student event');
         const submitIcon = isEditing ? 'fa-pen' : (isUniversity ? 'fa-university' : 'fa-calendar-plus');
         if (isUniversity && !isStaff) {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-dialog-card social-neo-dialog-card--event-create social-neo-dialog-card--lms-create" data-lux-transparency-exempt="1">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--event-create lux-glass-dialog-card" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Official events', 'Faculty and administrators can publish campus-wide events here.', { icon: 'fas fa-landmark' }) : ''}
-                    <p class="social-neo-dialog-hint">Official university announcements, exam sessions, and administration-led events are published by staff accounts.</p>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="dialog-close">Got it</button>
+                    <p class="lux-glass-dialog-hint">Official university announcements, exam sessions, and administration-led events are published by staff accounts.</p>
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="dialog-close">Got it</button>
                     </div>
                 </div>
             </div>`;
@@ -471,7 +471,7 @@
             <input type="hidden" name="eventIsOfficial" value="true">
         ` : '';
         const categoryField = isUniversity ? '' : `
-            <label class="social-neo-dialog-field" for="${escape(eventCategoryId)}">
+            <label class="lux-glass-dialog-field" for="${escape(eventCategoryId)}">
                 <span class="social-neo-label">Category</span>
                 <select class="social-neo-select" id="${escape(eventCategoryId)}" name="eventCategory" data-lux-picker>
                     <option value="social" ${text(runtime.ui?.eventCategory || 'social') === 'social' ? 'selected' : ''}>Social</option>
@@ -483,50 +483,50 @@
                 </select>
             </label>
         `;
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create" data-form="create-event" data-action="noop" data-lux-transparency-exempt="1">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title"><i class="fas ${isEditing ? 'fa-pen' : (isUniversity ? 'fa-landmark' : 'fa-calendar-plus')}" aria-hidden="true"></i> ${escape(title)}</strong>
-                        <span class="social-neo-dialog-subtitle">${escape(subtitle)}</span>
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card" data-form="create-event" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title"><i class="fas ${isEditing ? 'fa-pen' : (isUniversity ? 'fa-landmark' : 'fa-calendar-plus')}" aria-hidden="true"></i> ${escape(title)}</strong>
+                        <span class="lux-glass-dialog-subtitle">${escape(subtitle)}</span>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="social-neo-dialog-body social-neo-dialog-body--event-create">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--event-create">
                     ${hiddenFields}
-                    <label class="social-neo-dialog-field" for="${escape(eventTitleId)}">
+                    <label class="lux-glass-dialog-field" for="${escape(eventTitleId)}">
                         <span class="social-neo-label">Event title</span>
                         <input class="social-neo-input" id="${escape(eventTitleId)}" type="text" name="eventTitle" placeholder="${isUniversity ? 'Official event title' : 'Event title'}" value="${escape(text(runtime.ui?.eventTitle || ''))}" required>
                     </label>
-                    <label class="social-neo-dialog-field" for="${escape(eventDescId)}">
+                    <label class="lux-glass-dialog-field" for="${escape(eventDescId)}">
                         <span class="social-neo-label">Description</span>
                         <textarea class="social-neo-textarea" id="${escape(eventDescId)}" rows="4" name="eventDescription" placeholder="${isUniversity ? 'Explain the session, speakers, and what students should expect.' : 'What is happening, who should join, and what should people bring?'}">${escape(text(runtime.ui?.eventDescription || ''))}</textarea>
                     </label>
                     <div class="social-neo-form-grid social-neo-form-grid-2">
-                        <label class="social-neo-dialog-field" for="${escape(eventStartsAtId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(eventStartsAtId)}">
                             <span class="social-neo-label">Starts</span>
                             <input class="social-neo-input" id="${escape(eventStartsAtId)}" type="datetime-local" name="eventStartsAt" value="${escape(text(runtime.ui?.eventStartsAt || ''))}" required>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(eventEndsAtId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(eventEndsAtId)}">
                             <span class="social-neo-label">Ends</span>
                             <input class="social-neo-input" id="${escape(eventEndsAtId)}" type="datetime-local" name="eventEndsAt" value="${escape(text(runtime.ui?.eventEndsAt || ''))}">
                         </label>
                     </div>
                     <div class="social-neo-form-grid social-neo-form-grid-2">
-                        <label class="social-neo-dialog-field" for="${escape(eventLocationId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(eventLocationId)}">
                             <span class="social-neo-label">${isUniversity ? 'Venue / room' : 'Location'}</span>
                             <input class="social-neo-input" id="${escape(eventLocationId)}" type="text" name="eventLocation" placeholder="${isUniversity ? 'Auditorium A, Hall 3, Online...' : 'Library, Room 204, Courtyard, Zoom...'}" value="${escape(text(runtime.ui?.eventLocation || ''))}">
                         </label>
                         ${categoryField}
                     </div>
                     <div class="social-neo-form-grid social-neo-form-grid-3">
-                        <label class="social-neo-dialog-field" for="${escape(eventScopeId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(eventScopeId)}">
                             <span class="social-neo-label">Publish in</span>
                             <select class="social-neo-select" id="${escape(eventScopeId)}" name="eventScope" data-lux-picker>
                                 ${scopeOptions.map((option) => `<option value="${escape(`${option.type}:${option.id}`)}" ${selectedEventScope === `${option.type}:${option.id}` ? 'selected' : ''}>${escape(option.name)}</option>`).join('')}
                             </select>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(eventJoinModeId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(eventJoinModeId)}">
                             <span class="social-neo-label">${isUniversity ? 'Access' : 'Join mode'}</span>
                             <select class="social-neo-select" id="${escape(eventJoinModeId)}" name="eventJoinMode" data-lux-picker>
                                 <option value="open" ${text(runtime.ui?.eventJoinMode || 'open') === 'open' ? 'selected' : ''}>${isUniversity ? 'Open to all students' : 'Open to all'}</option>
@@ -534,7 +534,7 @@
                                 <option value="invite-only" ${text(runtime.ui?.eventJoinMode) === 'invite-only' ? 'selected' : ''}>Invite only</option>
                             </select>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(eventMaxSeatsId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(eventMaxSeatsId)}">
                             <span class="social-neo-label">Max seats</span>
                             <input class="social-neo-input" id="${escape(eventMaxSeatsId)}" type="number" name="eventMaxSeats" min="1" placeholder="Unlimited" value="${escape(text(runtime.ui?.eventMaxSeats || ''))}">
                         </label>
@@ -553,16 +553,16 @@
                         ` : ''}
                     </div>
                     <div class="social-neo-inline social-neo-events-form-actions">
-                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
+                        <label class="lux-secondary-btn lux-secondary-btn-pointer">
                             <i class="fas fa-image"></i> Add cover photo
                             <input id="${escape(eventImageId)}" name="eventImage" type="file" accept="image/*" hidden>
                         </label>
                         ${runtime.ui?.eventImageFile ? `<span class="social-neo-draft-file"><i class="fas fa-image"></i> ${escape(runtime.ui.eventImageFile.name)}</span>` : (runtime.ui?.eventImageUrl ? '<span class="social-neo-draft-file"><i class="fas fa-image"></i> Current cover</span>' : '')}
                     </div>
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn ${isUniversity ? 'is-blue' : ''}" type="submit"><i class="fas ${submitIcon}"></i> ${escape(submitLabel)}</button>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn ${isUniversity ? 'is-blue' : ''}" type="submit"><i class="fas ${submitIcon}"></i> ${escape(submitLabel)}</button>
                 </div>
             </form>
         </div>`;
@@ -581,14 +581,14 @@
             const eventItem = (Array.isArray(state().social?.events) ? state().social.events : [])
                 .find((item) => text(item.id) === text(dialog.eventId));
             if (!eventItem) return '';
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card" data-form="dialog-event-delete" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card" data-form="dialog-event-delete" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Delete event', 'This removes the event and its RSVP history.') : ''}
-                    <div class="social-neo-dialog-preview">
-                        <strong class="social-neo-dialog-preview-title">${escape(text(eventItem.title || 'Untitled event'))}</strong>
+                    <div class="lux-glass-dialog-preview">
+                        <strong class="lux-glass-dialog-preview-title">${escape(text(eventItem.title || 'Untitled event'))}</strong>
                         <div class="social-neo-muted social-neo-muted-mt-6">${escape(when(eventItem.startsAt || ''))}</div>
                     </div>
-                    <div class="social-neo-dialog-preview social-neo-dialog-preview-danger">
+                    <div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">
                         This will remove the event for everyone and clear its RSVP history.
                     </div>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Delete event' }) : ''}

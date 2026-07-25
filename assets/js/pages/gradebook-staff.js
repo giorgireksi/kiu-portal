@@ -376,7 +376,12 @@ function readLmsSubjectWeightProfileFromModal() {
 }
 
 function closeLmsSubjectWeightsModal() {
-    document.getElementById('lms-subject-weights-modal')?.remove();
+    const overlay = document.getElementById('lms-subject-weights-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function applyLmsSubjectWeightsToSelectedGroups() {
@@ -448,9 +453,14 @@ function openLmsSubjectWeightsModal() {
                 shellLabel: 'Max points per component',
                 subjectId: courseId
             })}`,
-        actionsHtml: `<button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-gradebook-click="close-subject-weights">Close</button>`
+        actionsHtml: `<button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-gradebook-click="close-subject-weights">Close</button>`
     });
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function resolveLmsEmbeddedStaffSelectedStudentId(students = [], criterionMeta, assessmentNumber) {

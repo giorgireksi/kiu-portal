@@ -106,6 +106,6 @@ describe('social-workspace-portfolio-ui', () => {
 
     it('renders portfolio create dialog shell', () => {
         const html = api.renderPortfolioCreateDialog({ ui: {} });
-        expect(html).toContain('social-neo-dialog');
+        expect(html).toContain('lux-glass-dialog');
     });
 });

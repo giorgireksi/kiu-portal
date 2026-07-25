@@ -166,7 +166,7 @@ describe('social-workspace-dialogs', () => {
 
     it('renders risk dialog shell for active project', () => {
         const html = api.renderProjectRiskDialog(runtime, { type: 'project-risk', projectId: 'p1' });
-        expect(html).toContain('social-neo-dialog');
+        expect(html).toContain('lux-glass-dialog');
         expect(html).toContain('data-project-id');
     });
 });

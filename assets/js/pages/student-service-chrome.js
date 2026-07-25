@@ -235,7 +235,7 @@ function renderStudentServiceDeleteConfirmShell(options = {}) {
                             <span class="student-service-qa-delete-confirm-dialog-subtitle">${ssEscape(dialogSubtitle)}</span>
                         </div>
                     </div>
-                    <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-qa-delete-confirm-close" ${skipLuxButton} data-student-service-cancel-delete="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    <button type="button" class="lux-secondary-btn student-service-qa-delete-confirm-close" ${skipLuxButton} data-student-service-cancel-delete="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
                 </div>
                 <div class="student-service-qa-delete-confirm-preview">
                     <div class="student-service-qa-delete-confirm-author">
@@ -251,8 +251,8 @@ function renderStudentServiceDeleteConfirmShell(options = {}) {
                     ${attestationMarkup}
                 </div>
                 <div class="student-service-qa-delete-confirm-actions">
-                    <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-qa-delete-confirm-cancel" ${skipLuxButton} data-student-service-cancel-delete="true">Cancel</button>
-                    <button type="button" class="social-neo-btn social-neo-btn-danger student-service-qa-delete-confirm-btn" ${skipLuxButton} ${confirmAttrs}>${ssEscape(confirmLabel)}</button>
+                    <button type="button" class="lux-secondary-btn student-service-qa-delete-confirm-cancel" ${skipLuxButton} data-student-service-cancel-delete="true">Cancel</button>
+                    <button type="button" class="lux-primary-btn lux-btn-danger student-service-qa-delete-confirm-btn" ${skipLuxButton} ${confirmAttrs}>${ssEscape(confirmLabel)}</button>
                 </div>
             </div>
         </div>

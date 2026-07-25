@@ -90,7 +90,7 @@ describe('lux droplist global unification', () => {
         if (socialSurveys.trim()) {
             expect(socialSurveys).toContain('.lux-picker-panel:not(.lux-droplist-panel)');
             expect(socialSurveys).not.toMatch(
-                /\.social-neo-dialog-card--survey-create \.lux-picker-panel\s*\{[^}]*background:\s*var\(--survey-create-surface\)/
+                /\.lux-glass-dialog-card--survey-create \.lux-picker-panel\s*\{[^}]*background:\s*var\(--survey-create-surface\)/
             );
         } else {
             expect(socialSurveys).toBe('');

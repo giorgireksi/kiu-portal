@@ -36,6 +36,8 @@ Lazy: droplist, modals (where needed), layout-portal (messenger), lux-mobile-act
 | Page haze / FOUC / utility popovers | `lux-fouc-ht.css` | Shared on all `lux-full-paint` portals |
 | Mobile drawer / bottom nav | `mobile-shell-core.css` | Eager on all portals; polish = `mobile-shell.css` (index) |
 | Hub modal warmglass | `lux-modals.css` | Linked on bare hubs with modals |
+
+**Portal glass modals (SSOT):** overlay class `.lux-glass-dialog-overlay` (alias `.lms-glass-dialog-overlay`, `.registration-structured-modal-backdrop`, `.admin-reg-course-modal-overlay`) + motion via `openLuxPortalModal` / `closeLuxPortalModal` in [`utilities.js`](../assets/js/shared/utilities.js). Card markup: `renderLuxGlassDialogCard` in [`lux-glass-dialog.js`](../assets/js/shared/lux-glass-dialog.js); layout chrome in `lux-modals.css` §7. **Warmglass** (`--lux-warmglass-*`) = dense modal glass. **Frosted glass** (`--lux-frosted-glass-*`, `.lux-frosted-glass-panel`) = translucent utility popups (~50%); Color & Motion Studio uses frosted and does **not** follow the portal opacity slider.
 | Messenger / notif / call UI | `layout-portal.css` | **Not** in HTML — `messenger.js` → `ensureLayoutPortalCss()` |
 | Droplist paint | `lux-droplist.css` | Lazy — `ensureLuxDroplistCss()` in shell chrome |
 | Home widgets | `index-home-*.css` | Index only |
@@ -96,5 +98,5 @@ Optional: merge `lux-focus-panel` into shell if desired. FOUC atmosphere is alre
 - **Warmglass / modal paint SSOT:** [`lux-modals.css`](../assets/css/lux-modals.css) + [`lux-tokens.css`](../assets/css/lux-tokens.css) — not per-route `*-route.css` sheets.
 - **Helper:** [`test/helpers/bare-shell-css.js`](../test/helpers/bare-shell-css.js) — `readWarmglassCss()`, `readDroplistCss()`, `expectRetiredCss()`, `RETIRED_ROUTE_CSS`.
 - **No route paint:** `student-service` and `exams` have no dedicated route sheets; they use shared paint + bare-lite layout.
-- **Redirect / auth diet:** alias redirects = `lux-tokens` + `lux-controls` + `redirect-route` only; `lux-surfaces` = login + protected-launch only.
+- **Redirect / auth diet:** alias redirects = `lux-tokens` + `lux-controls` + `redirect-route` only; auth = `lux-tokens` + `lux-focus-panel` + `lux-controls` + `lux-fouc-ht` + route CSS (`login-route`, `protected-launch-route`).
 - **Shared paint:** all portal pages link tokens / focus / controls / shell / FOUC; home dashboard CSS remains index-only.

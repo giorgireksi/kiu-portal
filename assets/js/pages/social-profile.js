@@ -132,8 +132,8 @@
                     </div>
                     <div class="social-neo-profile-actions">
                         ${isOwn
-                            ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="profile-edit"><i class="fas fa-edit"></i> Edit Profile</button>`
-                            : `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="profile-message" data-user-id="${escape(userId)}"><i class="fas fa-envelope"></i> Message</button>`
+                            ? `<button class="lux-primary-btn" type="button" data-action="profile-edit"><i class="fas fa-edit"></i> Edit Profile</button>`
+                            : `<button class="lux-secondary-btn" type="button" data-action="profile-message" data-user-id="${escape(userId)}"><i class="fas fa-envelope"></i> Message</button>`
                         }
                     </div>
                 </div>
@@ -198,7 +198,7 @@
                                     <span class="social-neo-pill">${escape(item.type === 'page' ? 'Page' : 'Group')}</span>
                                 </div>
                             </div>
-                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="focus-feed" data-scope-type="${escape(item.type)}" data-scope-id="${escape(item.id)}">Open</button>
+                            <button class="lux-secondary-btn" type="button" data-action="focus-feed" data-scope-type="${escape(item.type)}" data-scope-id="${escape(item.id)}">Open</button>
                         </article>
                     `).join('')}
                 </div>
@@ -278,8 +278,8 @@
                             <input class="social-neo-input" id="profileEventReminderLeadHours" name="profileEventReminderLeadHours" type="number" min="0" max="168" placeholder="24" value="${escape(String(runtime.ui.profileEventReminderLeadHours ?? currentSocialProfileSettings(userId).eventReminderLeadHours ?? 24))}">
                         </div>
                         <div class="social-neo-profile-edit-actions">
-                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="profile-edit-cancel">Cancel</button>
-                            <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-save"></i> Save</button>
+                            <button class="lux-secondary-btn" type="button" data-action="profile-edit-cancel">Cancel</button>
+                            <button class="lux-primary-btn" type="submit"><i class="fas fa-save"></i> Save</button>
                         </div>
                     </form>
                 `;
@@ -384,13 +384,13 @@
         const kind = text(dialog.type);
         if (!PROFILE_OWNED_DIALOG_KINDS.has(kind)) return '';
         if (kind === 'profile-cover') {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card" data-form="dialog-profile-cover" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card" data-form="dialog-profile-cover" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Update cover photo', 'Paste an image URL or upload a file for your profile banner.') : ''}
                     <input class="social-neo-input" name="coverImageUrl" type="url" placeholder="https://..." value="${escape(text(dialog.coverImage || ''))}">
                     ${renderFileChip(state().ui?.coverImageFile, 'Cover image ready')}
                     <div class="social-neo-inline social-neo-quick-actions">
-                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
+                        <label class="lux-secondary-btn lux-secondary-btn-pointer">
                             <i class="fas fa-image"></i> Upload image
                             <input name="coverImageFile" type="file" accept="image/*" hidden>
                         </label>

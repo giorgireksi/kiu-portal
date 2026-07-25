@@ -26,8 +26,11 @@ function extractFunctionBody(source, functionName) {
 }
 
 describe('lux picker compact options', () => {
+    const pickerRuntime = 'assets/js/features/luxury-shell-picker-runtime.js';
+    const topbarRuntime = 'assets/js/features/luxury-shell-topbar-runtime.js';
+
     it('renders single-line universal picker options without auto subtitles', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readSource(pickerRuntime);
         const renderBody = extractFunctionBody(shellChrome, 'renderLuxPickerOptionButton');
 
         expect(renderBody).not.toContain('`Choose ${caption.toLowerCase()}`');
@@ -38,7 +41,7 @@ describe('lux picker compact options', () => {
     });
 
     it('uses compact value-only universal picker trigger markup', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readSource(pickerRuntime);
         const enhanceBody = extractFunctionBody(shellChrome, 'enhanceUniversalPicker');
         const syncBody = extractFunctionBody(shellChrome, 'syncUniversalPicker');
 
@@ -49,11 +52,11 @@ describe('lux picker compact options', () => {
     });
 
     it('renders single-line faculty, role, and semester picker options', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const topbar = readSource(topbarRuntime);
         const semesterPicker = readSource('assets/js/pages/curriculum-semester-picker.js');
 
-        expect(shellChrome).toMatch(/data-faculty-option[\s\S]*?<strong>\$\{escapeHtml\(opt\.label\)\}<\/strong>\s*<\/button>/);
-        expect(shellChrome).toMatch(/data-role-option[\s\S]*?<strong>\$\{escapeHtml\(label\)\}<\/strong>\s*<\/button>/);
+        expect(topbar).toMatch(/data-faculty-option[\s\S]*?<strong>\$\{escapeHtml\(opt\.label\)\}<\/strong>\s*<\/button>/);
+        expect(topbar).toMatch(/data-role-option[\s\S]*?<strong>\$\{escapeHtml\(label\)\}<\/strong>\s*<\/button>/);
         expect(semesterPicker).not.toContain('getOptionSubtitle');
         expect(semesterPicker).toMatch(/data-semester-value[\s\S]*?<strong>\$\{escapeHtml\(title\)\}<\/strong>\s*<\/button>/);
         expect(semesterPicker).not.toContain('<span>Enter a semester number</span>');
@@ -67,5 +70,17 @@ describe('lux picker compact options', () => {
         expect(controls).toContain('--lux-droplist-option-height: 44px');
         expect(controls).toMatch(/\n\.lux-picker-option\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;/);
         expect(droplist).toContain('.lux-droplist-panel');
+    });
+
+    it('styles compact universal picker triggers like lux-control fields', () => {
+        const controls = readSource('assets/css/lux-controls.css');
+
+        expect(controls).toContain('.lux-picker-btn--compact');
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-radius:\s*var\(--lux-field-radius\)/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-color:\s*var\(--lux-field-border\)/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?padding:\s*11px 14px/);
+        expect(controls).toContain('.lux-picker-field > .lux-picker-btn.lux-picker-btn--compact');
+        expect(controls).toMatch(/\.lux-picker-btn--compact::before[\s\S]*?display:\s*none/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact::after[\s\S]*?display:\s*none/);
     });
 });

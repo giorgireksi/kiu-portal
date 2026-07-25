@@ -508,7 +508,7 @@
         }
 
         function resolveProjectTaskGraphPanBackdrop(stage) {
-            return stage?.closest('.social-neo-dialog-backdrop--project-task-graph') || null;
+            return stage?.closest('.lux-glass-dialog-backdrop--project-task-graph') || null;
         }
 
         function clientToProjectTaskGraphCoords(stage, clientX, clientY) {
@@ -539,7 +539,7 @@
         function getProjectTaskGraphHost() {
             const portal = document.getElementById('social-neo-overlay-portal');
             if (portal?.querySelector('.social-project-task-graph-immersive')) return portal;
-            const dialog = document.getElementById('social-neo-dialog-region');
+            const dialog = document.getElementById('lux-glass-dialog-region');
             if (dialog?.querySelector('.social-project-task-graph-immersive')) return dialog;
             return null;
         }
@@ -583,7 +583,7 @@
             stage?.classList.toggle('is-mode-browse', graphMode === 'browse');
             stage?.classList.remove('is-mode-arrange', 'is-mode-explore');
             const connectBtn = immersive.querySelector('[data-action="project-task-graph-mode-connect"], [data-action="project-task-graph-mode-link"]');
-            connectBtn?.classList.toggle('social-neo-btn-primary', graphMode === 'connect');
+            connectBtn?.classList.toggle('lux-primary-btn', graphMode === 'connect');
             let toolbar = immersive.querySelector('.social-project-task-graph-mode-toolbar');
             const actions = immersive.querySelector('.social-project-task-graph-immersive-actions');
             if (linkFromId && canContribute && graphMode === 'connect') {
@@ -599,7 +599,7 @@
                 }
                 if (toolbar && !toolbar.querySelector('[data-action="project-task-graph-link-cancel"]')) {
                     const cancelBtn = document.createElement('button');
-                    cancelBtn.className = 'social-neo-btn';
+                    cancelBtn.className = 'lux-secondary-btn';
                     cancelBtn.type = 'button';
                     cancelBtn.setAttribute('data-action', 'project-task-graph-link-cancel');
                     cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';

@@ -83,7 +83,8 @@ describe('topbar matches dashboard design language', () => {
 
     it('dual-writes lux-soft-chrome on topbar shell only (controls stay framed CTAs)', () => {
         const js = readSource('assets/js/features/index-luxury.js');
-        expect(js).toContain('lux-topbar-shell lux-soft-chrome lux-panel');
+        expect(js).toContain('lux-topbar-shell lux-soft-chrome');
+        expect(js).not.toContain('lux-topbar-shell lux-soft-chrome lux-panel');
         expect(js).toContain('ensureTopbarSoftChrome');
         expect(js).toContain("el.classList.remove('lux-soft-chrome')");
         expect(js).not.toMatch(/lux-picker-btn lux-soft-chrome/);

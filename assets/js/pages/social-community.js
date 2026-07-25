@@ -81,7 +81,7 @@
         const status = connectionStatusFor(account?.id);
         if (status.state === 'connected') {
             return `
-                <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+                <button class="lux-primary-btn" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
                     Message
                 </button>
                 <span class="social-neo-pill">Friends</span>
@@ -89,33 +89,33 @@
         }
         if (status.state === 'incoming') {
             return `
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+                <button class="lux-secondary-btn" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
                     Message
                 </button>
-                <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="connection-accept" data-relationship-id="${escape(text(status.relationship?.id))}">
+                <button class="lux-primary-btn" type="button" data-action="connection-accept" data-relationship-id="${escape(text(status.relationship?.id))}">
                     Accept friend
                 </button>
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-decline" data-relationship-id="${escape(text(status.relationship?.id))}">
+                <button class="lux-secondary-btn" type="button" data-action="connection-decline" data-relationship-id="${escape(text(status.relationship?.id))}">
                     Decline
                 </button>
             `;
         }
         if (status.state === 'outgoing') {
             return `
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+                <button class="lux-secondary-btn" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
                     Message
                 </button>
                 <span class="social-neo-pill">Friend request sent</span>
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-cancel" data-user-id="${escape(text(account.id))}">
+                <button class="lux-secondary-btn" type="button" data-action="connection-cancel" data-user-id="${escape(text(account.id))}">
                     Cancel request
                 </button>
             `;
         }
         return `
-            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+            <button class="lux-secondary-btn" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
                 Message
             </button>
-            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="connection-send" data-user-id="${escape(text(account.id))}">
+            <button class="lux-primary-btn" type="button" data-action="connection-send" data-user-id="${escape(text(account.id))}">
                 Add friend
             </button>
         `;
@@ -196,13 +196,13 @@
                     <div class="social-neo-field-fixed-220 social-neo-stack-end-260 social-neo-community-actions">
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-community-action-row social-neo-community-action-row-primary">
                             ${renderRelationshipActions(account)}
-                            ${showConnectionControls ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-remove" data-user-id="${escape(text(account.id))}">Remove</button>` : ''}
+                            ${showConnectionControls ? `<button class="lux-secondary-btn" type="button" data-action="connection-remove" data-user-id="${escape(text(account.id))}">Remove</button>` : ''}
                         </div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-community-action-row social-neo-community-action-row-secondary">
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="profile-view" data-user-id="${escape(text(account.id))}">
+                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="profile-view" data-user-id="${escape(text(account.id))}">
                                 <i class="fas fa-user"></i> View profile
                             </button>
-                            ${showInvite ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="person-group-invite" data-user-id="${escape(text(account.id))}">
+                            ${showInvite ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="person-group-invite" data-user-id="${escape(text(account.id))}">
                                 <i class="fas fa-user-plus"></i> Invite to group
                             </button>` : ''}
                         </div>

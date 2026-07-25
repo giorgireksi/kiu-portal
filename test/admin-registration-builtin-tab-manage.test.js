@@ -15,7 +15,7 @@ function createBuiltinTabManageVmContext() {
     const vm = require('vm');
     const sharedSource = readSource('assets/js/pages/registration-shared.js');
     const verifyStart = sharedSource.indexOf('function normalizeRegistrationRemoveVerificationToken');
-    const verifyEnd = sharedSource.indexOf('window.getAssignedCourseCurriculumDetails');
+    const verifyEnd = sharedSource.indexOf('__kiuRegSharedExpose({', verifyStart);
     const verifyBlock = sharedSource.slice(verifyStart, verifyEnd);
 
     const context = {
@@ -37,7 +37,7 @@ describe('admin registration builtin tab manage', () => {
         const track = readSource('assets/js/pages/admin-registration-track.js');
         const shared = readSource('assets/js/pages/registration-shared.js');
         const initialState = readSource('assets/js/data/initial-state.js');
-        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const adminRegistration = readSource('assets/js/pages/admin-registration-cms-runtime.js');
 
         expect(initialState).toContain('builtinTabOverrides: {}');
         expect(initialState).toContain('hiddenBuiltinTabs: []');
@@ -86,7 +86,7 @@ describe('admin registration builtin tab manage', () => {
     });
 
     it('keeps registration panel head manage button layout scoped in CSS', () => {
-        const css = readSource('assets/css/admin-tools-luxury.css');
+        const css = readSource('assets/css/lux-page-bare-lite.css');
 
         expect(css).toContain('.lux-card-head.lux-admin-tools-registration-panel-head');
         expect(css).toContain('flex-direction: row');

@@ -29,8 +29,19 @@ So: **shell/panel glass across portal = simple.** “The whole product UI with o
 | Shared primitives | `.lux-panel-pro`, `.lux-focus-panel`, `.lux-soft-chrome` |
 
 **In scope:** all non-auth portal routes (timetable, LMS, social, staff, news, admin-*, gradebook, home desk, …).  
-**Outer host SSOT:** denser desk glass under `--lux-panel-fill` / `--lux-panel-surface` / `--lux-panel-blur-filter` / `--lux-panel-host-border` / `--lux-panel-host-shadow` (FOUC + bare page-shell + home desk). Soft-chrome = matte chips only. Auth shells later.  
-**One outer host per page:** never paint both `.lux-page-shell` and nested `.lux-panel` with blur (admin-tools demotes the shell; home uses merged desk).
+**Outer host SSOT:** denser desk glass under `--lux-panel-fill` / `--lux-panel-surface` / `--lux-panel-blur-filter` / `--lux-panel-host-border` / `--lux-panel-host-shadow` (FOUC + bare page-shell + home desk). Soft-chrome = matte chips only. Auth (`login.html`, `protected-launch.html`) uses the same fouc-ht + focus-panel stack without portal shell JS.  
+**One outer host per page:** never paint both `.lux-page-shell` and nested `.lux-panel` with blur. Home desk hosts use `data-lux-glass-root="1"`; paint lives in `lux-fouc-ht.css` (same as admin-tools `.lux-panel` hosts).
+
+| Attribute | Role |
+|-----------|------|
+| `data-lux-layout-only="1"` on `.lux-page-shell` | Layout wrapper only — demoted in `lux-page-bare-lite.css` |
+| `data-lux-glass-root="1"` | Real frosted host — FOUC `--lux-panel-*` SSOT |
+
+Wave 1 bare routes: admin-tools, staff, students-admin, orders, admin-orders, chancellery, news, programs, exams, social, profile-view.
+
+Wave 2 bare routes (all remaining bare portals): library, personal-data, student-service, lms, timetable, registration, study-card, faculty-gradebook, admin-scheduler, admin-library, exam-portal.
+
+Transparency enforcement is generic: `isCssOwnedSurface()` + host attributes (`data-lux-layout-only`, `data-lux-glass-root`) — not per-route JS allowlists.
 
 
 ## Token map (change look once)
@@ -41,6 +52,7 @@ So: **shell/panel glass across portal = simple.** “The whole product UI with o
 | Outer host blur | `--lux-panel-blur-filter` (denser 0.55× desk; redesign here) |
 | Outer host rim / glow | `--lux-panel-host-border`, `--lux-panel-host-shadow` |
 | Control chips | `--lux-panel-control`, `-control-soft` |
+| Form fields / `.lux-control` | `--lux-field-*` (aliases `--lux-btn-*` frame + well) |
 | Primary button | `--lux-panel-cta-primary`, `-cta-mix`, `-cta-accent` |
 | Success / danger / warn btn | `--lux-panel-cta-success`, `-danger`, `-danger-strong`, `-warn` |
 | Status pills | `--lux-panel-status-*` |

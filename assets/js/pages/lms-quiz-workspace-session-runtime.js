@@ -88,6 +88,15 @@ function readLmsAntiCheatPolicyFromAccessDialog(quiz = {}) {
     });
 }
 
+function closeLmsQuizAccessDialog() {
+    const overlay = document.getElementById('lms-quiz-access-overlay');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
+}
+
 function openLmsQuizAccessDialog(resourceKey, quizId) {
     closeLmsQuizFloatingLayers();
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
@@ -109,31 +118,15 @@ function openLmsQuizAccessDialog(resourceKey, quizId) {
             </label>
         `).join('')
         : `<div class="lms-quiz-access-empty">No enrolled students found for this group.</div>`;
-
-    const overlay = document.createElement('div');
-    overlay.id = 'lms-quiz-access-overlay';
-    overlay.className = 'lms-quiz-access-overlay';
-    overlay.onclick = event => {
-        if (event.target === overlay) overlay.remove();
-    };
-    overlay.innerHTML = `
-        <div class="lms-quiz-access-dialog">
-            <div class="lms-quiz-access-head">
-                <div class="lms-quiz-access-head-copy">
-                    <div class="lms-quiz-access-title">${getLmsQuizLifecycleStatus(quiz) === 'draft' ? 'Publish Quiz' : 'Manage Quiz Access'}</div>
-                    <div class="lms-quiz-access-copy">Default roster starts with all enrolled students. Uncheck students who are absent from class.</div>
-                </div>
-                <button type="button" class="kiu-btn-outline lms-quiz-access-close-btn" data-lms-click="document.getElementById('lms-quiz-access-overlay')?.remove()"><i class="fas fa-times"></i> Close</button>
-            </div>
-            <div class="lms-quiz-access-body">
+    const bodyHtml = `
                 <div class="lms-quiz-access-toolbar">
                     <div class="lms-quiz-access-summary">
                         <div class="lms-quiz-access-summary-title">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
                         <div class="lms-quiz-access-summary-copy">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</div>
                     </div>
                     <div class="lms-quiz-access-toolbar-actions">
-                        <button type="button" class="kiu-btn-outline lms-quiz-access-toolbar-btn" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = true)">Select All</button>
-                        <button type="button" class="kiu-btn-outline lms-quiz-access-toolbar-btn" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = false)">Clear All</button>
+                        <button type="button" class="lux-secondary-btn lms-quiz-access-toolbar-btn" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = true)">Select All</button>
+                        <button type="button" class="lux-secondary-btn lms-quiz-access-toolbar-btn" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = false)">Clear All</button>
                     </div>
                 </div>
                 ${lifecycle === 'draft'
@@ -158,15 +151,34 @@ function openLmsQuizAccessDialog(resourceKey, quizId) {
                         </div>`
                 }
                 ${renderLmsAntiCheatPolicyControls(quiz)}
-                <div class="lms-quiz-access-student-list">${checkboxRows}</div>
-                <div class="lms-quiz-access-footer">
-                    <button type="button" class="kiu-btn-outline lms-quiz-access-footer-btn" data-lms-click="document.getElementById('lms-quiz-access-overlay')?.remove()">Cancel</button>
-                    <button type="button" class="kiu-btn-blue lms-quiz-access-footer-btn" data-lms-click="saveLmsQuizAccessSettings(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-check"></i> ${lifecycle === 'draft' ? 'Save Publish Settings' : 'Save Access'}</button>
-                </div>
-            </div>
-        </div>
-    `;
+                <div class="lms-quiz-access-student-list lux-scrollbar">${checkboxRows}</div>`;
+    const overlay = document.createElement('div');
+    overlay.id = 'lms-quiz-access-overlay';
+    overlay.className = 'lms-glass-dialog-overlay lms-quiz-access-overlay';
+    overlay.setAttribute('data-lux-transparency-exempt', '1');
+    overlay.onclick = event => {
+        if (event.target === overlay) closeLmsQuizAccessDialog();
+    };
+    overlay.innerHTML = typeof renderLuxGlassDialogCard === 'function'
+        ? renderLuxGlassDialogCard({
+            hookClass: 'lms-quiz-access-dialog',
+            bodyClass: 'lms-quiz-access-body',
+            title: lifecycle === 'draft' ? 'Publish Quiz' : 'Manage Quiz Access',
+            icon: 'fa-user-check',
+            subtitle: 'Default roster starts with all enrolled students. Uncheck students who are absent from class.',
+            closeAttr: 'data-lms-click="closeLmsQuizAccessDialog()"',
+            bodyHtml,
+            actionsHtml: `
+                <button type="button" class="lux-secondary-btn lms-quiz-access-footer-btn" data-lms-click="closeLmsQuizAccessDialog()">Cancel</button>
+                <button type="button" class="lux-primary-btn lms-quiz-access-footer-btn" data-lms-click="saveLmsQuizAccessSettings(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-check"></i> ${lifecycle === 'draft' ? 'Save Publish Settings' : 'Save Access'}</button>`
+        })
+        : bodyHtml;
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 
@@ -249,7 +261,7 @@ function saveLmsQuizAccessSettings(resourceKey, quizId) {
     syncLmsQuizRoster(resourceKey, quiz);
     saveState();
     syncProtectedQuizRecordToBackend(resourceKey, quiz, { status: 'published' }).catch(() => null);
-    document.getElementById('lms-quiz-access-overlay')?.remove();
+    closeLmsQuizAccessDialog();
     rerenderCurrentLmsQuizWorkspace();
 }
 
@@ -303,12 +315,12 @@ function renderEmbeddedLmsQuizSectionCards(resourceKey, quizzes, quizUiState) {
                 </div>
                 <div class="lms-quiz-card-actions">
                     ${lifecycle === 'draft'
-                        ? `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="loadAdminQuizForEdit(${jsQuote(quiz.id)})"><i class="fas fa-pen"></i> Edit Draft</button>
-                           <button class="kiu-btn-blue lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-paper-plane"></i> Publish</button>
-                           <button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-danger" data-lms-click="deleteAdminQuiz(${jsQuote(quiz.id)})"><i class="fas fa-trash"></i> Delete Draft</button>`
-                        : `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-users"></i> View Submissions</button>
-                           <button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-user-check"></i> Manage Access</button>
-                           ${lifecycle === 'published' ? `<button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-warning" data-lms-click="closeLmsQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`
+                        ? `<button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="loadAdminQuizForEdit(${jsQuote(quiz.id)})"><i class="fas fa-pen"></i> Edit Draft</button>
+                           <button class="lux-primary-btn lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-paper-plane"></i> Publish</button>
+                           <button class="lux-secondary-btn lms-quiz-card-action lms-quiz-card-action-danger" data-lms-click="deleteAdminQuiz(${jsQuote(quiz.id)})"><i class="fas fa-trash"></i> Delete Draft</button>`
+                        : `<button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-users"></i> View Submissions</button>
+                           <button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-user-check"></i> Manage Access</button>
+                           ${lifecycle === 'published' ? `<button class="lux-secondary-btn lms-quiz-card-action lms-quiz-card-action-warning" data-lms-click="closeLmsQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`
                     }
                 </div>
                 
@@ -1050,6 +1062,7 @@ function saveLmsQuizBuilderDraft() {
             renderLmsAntiCheatPolicyControls,
             readLmsAntiCheatPolicyFromAccessDialog,
             openLmsQuizAccessDialog,
+            closeLmsQuizAccessDialog,
             openStudentQuizPaperFromHistory,
             saveLmsQuizAccessSettings,
             closeLmsQuiz,

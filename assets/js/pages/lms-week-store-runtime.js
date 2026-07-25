@@ -207,7 +207,11 @@ function refreshLmsWeekManagerModal(resourceKey) {
 
 function openLmsWeekManagerModal(resourceKey) {
     const existing = document.getElementById('lms-week-manager-modal');
-    if (existing) existing.remove();
+    if (existing && typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(existing, { instant: true });
+    } else {
+        existing?.remove();
+    }
 
     const overlay = document.createElement('div');
     overlay.id = 'lms-week-manager-modal';
@@ -226,10 +230,20 @@ function openLmsWeekManagerModal(resourceKey) {
         bodyHtml: `<div id="lms-week-manager-modal-body">${renderLmsWeekManager(resourceKey)}</div>`
     }));
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function closeLmsWeekManagerModal() {
-    document.getElementById('lms-week-manager-modal')?.remove();
+    const overlay = document.getElementById('lms-week-manager-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function addLmsWeek(resourceKey, inputId) {

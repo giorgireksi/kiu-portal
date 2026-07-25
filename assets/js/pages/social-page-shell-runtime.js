@@ -119,7 +119,7 @@
                                 <strong class="social-neo-rail-title">Social Workspace</strong>
                                 <span class="social-neo-rail-copy">Navigate the network by product area.</span>
                             </div>
-                            <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-workspace-nav-collapse-btn" data-action="workspace-nav-collapse" aria-label="Hide workspace navigation" title="Hide navigation">
+                            <button type="button" class="lux-secondary-btn lux-secondary-btn-sm social-neo-workspace-nav-collapse-btn" data-action="workspace-nav-collapse" aria-label="Hide workspace navigation" title="Hide navigation">
                                 <i class="fas fa-angles-left" aria-hidden="true"></i>
                                 <span>Hide</span>
                             </button>
@@ -508,7 +508,7 @@
                     <div id="social-neo-flash-region"></div>
                     <div id="social-neo-topbar-region"></div>
                     <div id="social-neo-command-region"></div>
-                    <div class="social-neo-shell">
+                    <div class="social-neo-shell" data-lux-glass-root="1">
                         <div id="social-neo-workspace-nav-region"></div>
                         <div class="social-neo-center" id="social-neo-center-region"></div>
                     </div>

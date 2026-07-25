@@ -272,8 +272,8 @@
                                             <p class="sn-alert-card-preview">${escape(text(report.reportReason || 'No reason provided.'))}</p>
                                             <textarea class="social-neo-textarea" rows="2" placeholder="Resolution note (optional)" data-bind="report-resolution-note" data-report-id="${escape(text(report.id))}">${escape(text(state().ui?.reportResolutionNotes?.[text(report.id)] || ''))}</textarea>
                                             <div class="sn-alert-card-actions">
-                                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="dismiss">Dismiss</button>
-                                                <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="remove">Remove</button>
+                                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="dismiss">Dismiss</button>
+                                                <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="remove">Remove</button>
                                             </div>
                                         </div>
                                     </div>

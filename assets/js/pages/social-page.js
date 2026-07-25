@@ -128,7 +128,7 @@
         const projectId = escape(text(project?.id || ''));
         const riskCount = Number(project?.riskCount) || 0;
         const riskPill = riskCount > 0 ? ` <span class="social-neo-pill">${escape(String(riskCount))}</span>` : '';
-        const btnClass = text(options.buttonClass || 'social-neo-btn social-neo-btn-ghost');
+        const btnClass = text(options.buttonClass || 'lux-secondary-btn');
         return `
             <button class="${btnClass}" type="button" data-action="project-health-open" data-project-id="${projectId}"><i class="fas fa-heart-pulse"></i> Health</button>
             <button class="${btnClass}" type="button" data-action="project-risk-open" data-project-id="${projectId}"><i class="fas fa-triangle-exclamation"></i> Risks${riskPill}</button>

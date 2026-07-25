@@ -407,7 +407,7 @@ function ensureNewsWorkspaceShell(root) {
         || root.querySelector('.newsx-layout');
     if (needsContinuousShell) {
         root.innerHTML = `
-            <div class="newsx-shell" data-news-shell="1">
+            <div class="newsx-shell" data-news-shell="1" data-lux-glass-root="1">
                 <div id="newsx-sidebar-region"></div>
                 <main class="newsx-main">
                     <div id="newsx-header-region"></div>

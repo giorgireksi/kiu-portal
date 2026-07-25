@@ -602,7 +602,7 @@
                                 <span class="lux-panel-copy">${ssEscape(authorLabel)} · ${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
                             </div>
                         </div>
-                        <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-qa-thread-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-thread-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                        <button type="button" class="lux-secondary-btn student-service-qa-thread-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-thread-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
                     </div>
                     <div class="student-service-qa-thread-modal-body" data-student-service-question-thread-modal-body="1">
                         ${renderStudentServiceQuestionDetail(question, { mode, inThreadModal: true })}
@@ -750,7 +750,7 @@
     function renderStudentServiceAnswerHelpfulButtonMarkup(question, answer, skipLuxButton = 'data-lux-skip-modern-button="true"') {
         const helpfulCount = Number(answer.helpfulCount || 0);
         const viewerHelpfulVote = isStudentServiceAnswerHelpfulVoted(answer);
-        return `<button type="button" class="social-neo-btn social-neo-btn-sm student-service-qa-answer-helpful-btn${viewerHelpfulVote ? ' is-active social-neo-btn-primary' : ''}" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-answer-id="${ssEscape(answer.id)}" data-student-service-answer-helpful="true" aria-pressed="${viewerHelpfulVote ? 'true' : 'false'}"><i class="${viewerHelpfulVote ? 'fas' : 'far'} fa-thumbs-up" aria-hidden="true"></i> <span class="student-service-qa-answer-helpful-label">Helpful${helpfulCount ? ` (${helpfulCount})` : ''}</span></button>`;
+        return `<button type="button" class="lux-secondary-btn lux-secondary-btn-sm student-service-qa-answer-helpful-btn${viewerHelpfulVote ? ' is-active lux-primary-btn' : ''}" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-answer-id="${ssEscape(answer.id)}" data-student-service-answer-helpful="true" aria-pressed="${viewerHelpfulVote ? 'true' : 'false'}"><i class="${viewerHelpfulVote ? 'fas' : 'far'} fa-thumbs-up" aria-hidden="true"></i> <span class="student-service-qa-answer-helpful-label">Helpful${helpfulCount ? ` (${helpfulCount})` : ''}</span></button>`;
     }
 
     function updateStudentServiceAnswerHelpfulButton(button, answer = {}) {
@@ -758,7 +758,7 @@
         const helpfulCount = Number(answer.helpfulCount || 0);
         const viewerHelpfulVote = isStudentServiceAnswerHelpfulVoted(answer);
         button.classList.toggle('is-active', viewerHelpfulVote);
-        button.classList.toggle('social-neo-btn-primary', viewerHelpfulVote);
+        button.classList.toggle('lux-primary-btn', viewerHelpfulVote);
         button.setAttribute('aria-pressed', viewerHelpfulVote ? 'true' : 'false');
         const icon = button.querySelector('i');
         if (icon) icon.className = `${viewerHelpfulVote ? 'fas' : 'far'} fa-thumbs-up`;
@@ -1014,7 +1014,7 @@
                                 <span class="lux-panel-copy">${ssEscape(prompt)}</span>
                             </div>
                         </div>
-                        <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-qa-composer-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-composer-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                        <button type="button" class="lux-secondary-btn student-service-qa-composer-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-composer-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
                     </div>
                     <div class="student-service-qa-composer-modal-body">
                         ${renderStudentServiceQuestionComposerFormMarkup(currentUser)}
@@ -1092,8 +1092,8 @@
                 <textarea class="student-service-qa-reply-input student-service-qa-inline-reply-input social-neo-input lux-modern-field" rows="2" data-student-service-reply-input="${ssEscape(question.id)}" data-student-service-parent-answer="${ssEscape(answer.id)}" placeholder="Reply to @${ssEscape(replyName)}..."></textarea>
                 ${renderStudentServiceAttachmentPickerMarkup(getStudentServiceAnswerComposerId(question.id, answer.id))}
                 <div class="social-neo-comment-reply-form-actions student-service-qa-comment-reply-actions">
-                    <button type="button" class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost student-service-qa-reply-cancel-btn" ${skipLuxButton} data-student-service-cancel-reply="true">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-sm social-neo-btn-primary student-service-qa-reply-submit-btn" type="button" ${skipLuxButton} data-student-service-submit-answer="${ssEscape(question.id)}" data-student-service-parent-answer="${ssEscape(answer.id)}">Post reply</button>
+                    <button type="button" class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn student-service-qa-reply-cancel-btn" ${skipLuxButton} data-student-service-cancel-reply="true">Cancel</button>
+                    <button class="lux-secondary-btn lux-secondary-btn-sm lux-primary-btn student-service-qa-reply-submit-btn" type="button" ${skipLuxButton} data-student-service-submit-answer="${ssEscape(question.id)}" data-student-service-parent-answer="${ssEscape(answer.id)}">Post reply</button>
                 </div>
             </div>
         `;
@@ -1202,10 +1202,10 @@
                         <div class="social-neo-comment-actions student-service-qa-answer-actions">
                             ${answer.status === 'published' ? renderStudentServiceAnswerHelpfulButtonMarkup(question, answer, skipLuxButton) : ''}
                             ${(canRespond && !isReply) ? `
-                                <button type="button" class="social-neo-btn social-neo-btn-sm student-service-qa-answer-reply-btn" ${skipLuxButton} data-student-service-reply-to-answer="${ssEscape(answer.id)}" data-student-service-question-id="${ssEscape(question.id)}"><i class="fas fa-reply"></i> <span class="social-neo-comment-reply-label">Reply${replyCount ? ` (${replyCount})` : ''}</span></button>
+                                <button type="button" class="lux-secondary-btn lux-secondary-btn-sm student-service-qa-answer-reply-btn" ${skipLuxButton} data-student-service-reply-to-answer="${ssEscape(answer.id)}" data-student-service-question-id="${ssEscape(question.id)}"><i class="fas fa-reply"></i> <span class="social-neo-comment-reply-label">Reply${replyCount ? ` (${replyCount})` : ''}</span></button>
                             ` : ''}
                             ${canDelete ? `
-                                <button type="button" class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost student-service-qa-answer-delete-btn" ${skipLuxButton} data-student-service-delete-answer="${ssEscape(answer.id)}" data-student-service-question-id="${ssEscape(question.id)}" aria-label="Delete comment"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn student-service-qa-answer-delete-btn" ${skipLuxButton} data-student-service-delete-answer="${ssEscape(answer.id)}" data-student-service-question-id="${ssEscape(question.id)}" aria-label="Delete comment"><i class="fas fa-trash"></i></button>
                             ` : ''}
                         </div>
                     </div>
@@ -1346,7 +1346,7 @@
                             <div class="social-neo-comment-compose-main">
                                 <div class="social-neo-inline social-neo-comment-compose-row">
                                     <textarea class="student-service-qa-reply-input social-neo-input lux-modern-field" rows="1" data-student-service-reply-input="${ssEscape(question.id)}" placeholder="Write a comment..."></textarea>
-                                    <button class="social-neo-btn social-neo-btn-primary student-service-qa-reply-submit-btn" type="button" ${skipLuxButton} data-student-service-submit-answer="${ssEscape(question.id)}"><i class="fas fa-comment"></i> Comment</button>
+                                    <button class="lux-primary-btn student-service-qa-reply-submit-btn" type="button" ${skipLuxButton} data-student-service-submit-answer="${ssEscape(question.id)}"><i class="fas fa-comment"></i> Comment</button>
                                 </div>
                                 ${renderStudentServiceAttachmentPickerMarkup(getStudentServiceAnswerComposerId(question.id))}
                             </div>

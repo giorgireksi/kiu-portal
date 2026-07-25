@@ -56,7 +56,7 @@
                 { label: 'Discovery tags', value: tagOptions.length },
             ];
             const createCta = canCreate ? `
-                <button class="social-neo-btn social-neo-btn-primary social-neo-portfolio-hero-create-btn" type="button" data-action="portfolio-create-open">
+                <button class="lux-primary-btn social-neo-portfolio-hero-create-btn" type="button" data-action="portfolio-create-open">
                     <i class="fas fa-pen"></i> ${hasDraft ? 'Continue my portfolio' : 'Build my portfolio'}
                 </button>
                 ${hasDraft ? `<span class="social-neo-pill social-portfolio-draft-pill"><strong>Draft saved</strong><span>Ready to publish</span></span>` : ''}
@@ -84,9 +84,9 @@
                         </select>
                     </div>
                     <div class="social-portfolio-tag-row">
-                        <button class="social-neo-btn ${!discoverTag ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="">All tags</button>
+                        <button class="lux-secondary-btn ${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="">All tags</button>
                         ${tagOptions.map((tag) => `
-                            <button class="social-neo-btn ${discoverTag === text(tag).toLowerCase() ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">
+                            <button class="lux-secondary-btn ${discoverTag === text(tag).toLowerCase() ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">
                                 #${escape(text(tag).replace(/^#/, ''))}
                             </button>
                         `).join('')}
@@ -98,7 +98,7 @@
                     <div class="social-neo-portfolio-hero-head">
                         <div class="social-neo-portfolio-hero-actions">
                             ${createCta}
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-portfolio-hero-profile-btn" type="button" data-action="profile-portfolio-open">
+                            <button class="lux-secondary-btn social-neo-portfolio-hero-profile-btn" type="button" data-action="profile-portfolio-open">
                                 <i class="fas fa-id-card"></i> Open profile portfolio
                             </button>
                         </div>
@@ -114,7 +114,7 @@
                     <div class="social-neo-portfolio-hero-tabs-row">
                         <div class="portfolio-panel-tabs social-neo-portfolio-hero-tabs" role="tablist" aria-label="Portfolio views">
                             ${portfolioPanelTabs.map((tab) => `
-                                <button class="social-neo-btn portfolio-panel-tab ${portfolioPanelTab === tab.tab ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" role="tab" data-action="portfolio-panel-tab" ${tab.attrs} aria-selected="${portfolioPanelTab === tab.tab ? 'true' : 'false'}" aria-pressed="${portfolioPanelTab === tab.tab ? 'true' : 'false'}">
+                                <button class="lux-secondary-btn portfolio-panel-tab ${portfolioPanelTab === tab.tab ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" role="tab" data-action="portfolio-panel-tab" ${tab.attrs} aria-selected="${portfolioPanelTab === tab.tab ? 'true' : 'false'}" aria-pressed="${portfolioPanelTab === tab.tab ? 'true' : 'false'}">
                                     <strong>${escape(tab.label)}</strong>
                                     <span>${escape(tab.helper)}</span>
                                 </button>
@@ -152,11 +152,11 @@
                 ? 'Adjust the story, visuals, and audience from one polished editor.'
                 : 'Present completed work as a polished campus showcase entry.';
             const submitLabel = editing ? 'Save portfolio entry' : 'Publish portfolio card';
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--portfolio-create social-neo-dialog-card--lms-create" data-form="${editing ? 'portfolio-settings' : 'create-portfolio'}" ${editing ? `data-project-id="${escape(editing)}"` : ''} data-action="noop" data-lux-transparency-exempt="1">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-create lux-glass-dialog-card" data-form="${editing ? 'portfolio-settings' : 'create-portfolio'}" ${editing ? `data-project-id="${escape(editing)}"` : ''} data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHead(title, subtitle, { icon: 'fas fa-briefcase' })}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--portfolio-create">
-                        <section class="social-neo-dialog-portfolio-create-section">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-create">
+                        <section class="lux-glass-dialog-portfolio-create-section">
                             <div class="social-neo-form-grid social-neo-form-grid-2">
                                 ${neoField('Title', `<input class="social-neo-input" type="text" name="projectName" value="${escape(text(runtime.ui?.projectName || ''))}" placeholder="Sustainable marketplace app" required>`)}
                                 ${neoField('Short summary', `<input class="social-neo-input" type="text" name="projectSummary" value="${escape(text(runtime.ui?.projectSummary || ''))}" placeholder="Two-line hook that makes people stop scrolling">`)}
@@ -169,13 +169,13 @@
                             </div>
                             ${neoField('External links', `<textarea class="social-neo-textarea" name="projectExternalLinks" rows="3" placeholder="Prototype | https://...&#10;GitHub | https://...">${escape(text(runtime.ui?.projectExternalLinks || ''))}</textarea>`)}
                             <div class="social-neo-form-grid social-neo-form-grid-3">
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Status</span>
                                     <select class="social-neo-select" name="projectStatus" data-lux-picker>
                                         ${['draft', 'published'].map((status) => `<option value="${escape(status)}" ${text(runtime.ui?.projectStatus || 'draft') === status ? 'selected' : ''}>${escape(status)}</option>`).join('')}
                                     </select>
                                 </label>
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Audience</span>
                                     <select class="social-neo-select" name="projectVisibility" data-lux-picker>
                                         ${roleTargets.map(([value, label]) => `<option value="${escape(value)}" ${text(runtime.ui?.projectVisibility || 'all_logged_in') === value ? 'selected' : ''}>${escape(label)}</option>`).join('')}
@@ -183,11 +183,11 @@
                                 </label>
                                 ${neoField('Media upload', `<input class="social-neo-input" type="file" name="projectMediaFile" accept="image/*,.pdf,.ppt,.pptx,.doc,.docx,.zip,.fig,.sketch">`)}
                             </div>
-                            <div class="social-neo-dialog-portfolio-create-faculties">
+                            <div class="lux-glass-dialog-portfolio-create-faculties">
                                 <span class="social-neo-label">Faculty tags</span>
                                 <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                     ${uniqueStrings([currentFaculty, 'BUS', 'CS', 'LAW', 'MED', 'ARTS', ...facultyOptions.filter((code) => code !== 'all')]).map((facultyCode) => `
-                                        <button class="social-neo-btn ${draftFaculties.includes(facultyCode) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>
+                                        <button class="lux-secondary-btn ${draftFaculties.includes(facultyCode) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>
                                     `).join('')}
                                 </div>
                             </div>
@@ -237,11 +237,11 @@
         }
 
         function renderPortfolioEditorDialog() {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close"><div class="social-neo-dialog-card social-neo-dialog-card--portfolio-editor" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-dialog-editor-topbar">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close"><div class="lux-glass-dialog-card lux-glass-dialog-card--portfolio-editor" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-editor-topbar">
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="social-neo-dialog-body social-neo-dialog-body--portfolio-editor">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-editor">
                         ${renderMyPortfolioPanel()}
                         ${renderPortfolioCustomBuilderOverlay()}
                     </div>
@@ -266,7 +266,7 @@
                         <div><strong>${isOwn ? 'Your portfolio' : 'Portfolio highlights'}</strong><span>${isOwn ? 'Showcase projects, research, design, and startup work inside campus social.' : 'Visible showcase entries from this profile.'}</span></div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                             <span class="social-neo-pill"><strong>${escape(items.length)}</strong><span>Visible</span></span>
-                            ${isOwn ? `<button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="profile-portfolio-open"><i class="fas fa-briefcase"></i> Open Portfolio</button>` : ''}
+                            ${isOwn ? `<button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="profile-portfolio-open"><i class="fas fa-briefcase"></i> Open Portfolio</button>` : ''}
                         </div>
                     </div>
                     ${items.length ? `
@@ -281,7 +281,7 @@
                                     <p>${escape(entry.summary || entry.description || 'Portfolio entry')}</p>
                                     <div class="social-neo-inline social-neo-inline-between-gap-8-wrap">
                                         <div class="social-neo-badge-row">${entry.hashtags.slice(0, 2).map((tag) => `<span class="social-neo-pill">#${escape(tag.replace(/^#/, ''))}</span>`).join('')}</div>
-                                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-open" data-project-id="${escape(entry.id)}">Open</button>
+                                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-open" data-project-id="${escape(entry.id)}">Open</button>
                                     </div>
                                 </article>
                             `).join('')}
@@ -353,7 +353,7 @@
                                         <div class="social-neo-badge-row">
                                             ${(entry.facultyCodes || []).slice(0, 3).map((facultyCode) => `<span class="social-neo-pill">${escape(facultyLabel(facultyCode))}</span>`).join('')}
                                             ${(entry.skillTags || []).slice(0, 4).map((skill) => `<span class="social-neo-pill">${escape(skill)}</span>`).join('')}
-                                            ${(entry.hashtags || []).slice(0, 4).map((tag) => `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">#${escape(text(tag).replace(/^#/, ''))}</button>`).join('')}
+                                            ${(entry.hashtags || []).slice(0, 4).map((tag) => `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">#${escape(text(tag).replace(/^#/, ''))}</button>`).join('')}
                                         </div>
                                     </div>
                                     ${isOpen ? `
@@ -382,12 +382,12 @@
                                     ` : ''}
                                     <div class="social-portfolio-actions">
                                         ${entry.isPortfolioDocument ? `
-                                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>
-                                            ${entry.canEdit ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="portfolio-create-open"><i class="fas fa-pen"></i> Edit portfolio</button>` : `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
+                                            <button class="lux-secondary-btn" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>
+                                            ${entry.canEdit ? `<button class="lux-primary-btn" type="button" data-action="portfolio-create-open"><i class="fas fa-pen"></i> Edit portfolio</button>` : `<button class="lux-primary-btn" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
                                         ` : `
-                                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="${isOpen ? 'projects-back' : 'project-open'}" data-project-id="${escape(entry.id)}">${isOpen ? 'Hide details' : 'Open entry'}</button>
-                                            ${entry.canEdit ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="portfolio-edit" data-project-id="${escape(entry.id)}"><i class="fas fa-pen"></i> Edit</button>` : `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
-                                            ${entry.canEdit ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="portfolio-delete" data-project-id="${escape(entry.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
+                                            <button class="lux-secondary-btn" type="button" data-action="${isOpen ? 'projects-back' : 'project-open'}" data-project-id="${escape(entry.id)}">${isOpen ? 'Hide details' : 'Open entry'}</button>
+                                            ${entry.canEdit ? `<button class="lux-primary-btn" type="button" data-action="portfolio-edit" data-project-id="${escape(entry.id)}"><i class="fas fa-pen"></i> Edit</button>` : `<button class="lux-primary-btn" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
+                                            ${entry.canEdit ? `<button class="lux-secondary-btn" type="button" data-action="portfolio-delete" data-project-id="${escape(entry.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                                         `}
                                     </div>
                                 </article>

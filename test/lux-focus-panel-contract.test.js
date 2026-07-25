@@ -52,16 +52,20 @@ describe('lux-focus-panel portal contract', () => {
         expect(css).toMatch(/\.lux-timetable-hero-focus::before|\.lms-hero-focus\.lux-hero-side::before/);
     });
 
-    it('keeps lux-surfaces auth-only; focus-panel is not required with surfaces', () => {
+    it('auth pages use fouc-ht + focus-panel and never link lux-surfaces', () => {
         const htmlFiles = readdirSync(process.cwd()).filter((name) => name.endsWith('.html'));
+        const authPages = ['login.html', 'protected-launch.html'];
+        for (const name of authPages) {
+            const html = readSource(name);
+            expect(html, name).toContain('lux-focus-panel.css');
+            expect(html, name).toContain('lux-fouc-ht.css');
+            expect(html, name).toContain('lux-full-paint');
+            expect(html, name).not.toContain('lux-surfaces.css');
+        }
         const withSurfaces = htmlFiles.filter((name) =>
             readSource(name).includes('lux-surfaces.css')
         );
-        expect(withSurfaces.sort()).toEqual(['login.html', 'protected-launch.html']);
-        for (const name of withSurfaces) {
-            const html = readSource(name);
-            expect(html, name).not.toContain('lux-focus-panel.css');
-        }
+        expect(withSurfaces).toEqual([]);
         for (const name of ['calendar.html', 'profile.html', 'gradebook.html', 'faculty-schedule.html']) {
             const html = readSource(name);
             expect(html, name).not.toContain('lux-surfaces.css');

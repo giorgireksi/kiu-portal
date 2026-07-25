@@ -1294,7 +1294,12 @@ function suggestGradebookCustomSectionLabel(baseLabel, record = null) {
 }
 
 function closeStudentEvaluationHistoryModal() {
-    document.getElementById('student-evaluation-history-modal')?.remove();
+    const overlay = document.getElementById('student-evaluation-history-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function addGradebookCustomSectionByLabel(studentId, rawLabel, studentName = '') {

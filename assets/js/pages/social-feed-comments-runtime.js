@@ -52,8 +52,8 @@
                 <form class="social-neo-comment-reply-form" data-form="${formType}" data-post-id="${escape(normalizedPostId)}" data-reply-comment-id="${escape(text(comment.id))}" data-reply-author="${escape(author)}">
                     <input class="social-neo-input lux-modern-field" id="${escape(inputId)}" type="text" name="commentBody" placeholder="Reply to @${escape(author)}..." aria-label="Reply to @${escape(author)}..." value="" autocomplete="off">
                     <div class="social-neo-comment-reply-form-actions">
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-reply-cancel" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-primary" type="submit">Reply</button>
+                        <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn" type="button" data-action="comment-reply-cancel" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">Cancel</button>
+                        <button class="lux-secondary-btn lux-secondary-btn-sm lux-primary-btn" type="submit">Reply</button>
                     </div>
                     <input type="hidden" name="postId" value="${escape(normalizedPostId)}">
                 </form>
@@ -65,7 +65,7 @@
             const commentReaction = commentReactionType(comment);
             const reactionCounts = comment?.reactionCounts || {};
             return ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                <button class="social-neo-btn social-neo-btn-sm ${commentReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
+                <button class="lux-secondary-btn lux-secondary-btn-sm ${commentReaction === reactionType ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
                     <span>${reactionEmoji(reactionType)}</span> ${escape(text(reactionCounts[reactionType] || 0))}
                 </button>
             `).join('');
@@ -96,15 +96,15 @@
                             </div>
                             <div class="social-neo-comment-actions">
                                 <span class="social-neo-comment-reactions">${renderCommentReactionButtons(comment, normalizedPostId)}</span>
-                                <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-comment-reply-btn${isReplyTarget ? ' is-active' : ''}" type="button" data-action="comment-reply" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-comment-reply-btn${isReplyTarget ? ' is-active' : ''}" type="button" data-action="comment-reply" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
                                     <i class="fas fa-reply"></i> <span class="social-neo-comment-reply-label">Reply${replyCount ? ` (${replyCount})` : ''}</span>
                                 </button>
                                 ${canDeleteComment ? `
-                                <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-comment-delete-btn" type="button" data-action="comment-delete" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" aria-label="Delete comment">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-comment-delete-btn" type="button" data-action="comment-delete" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" aria-label="Delete comment">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 ` : ''}
-                                <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-report" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn" type="button" data-action="comment-report" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">
                                     <i class="fas fa-flag"></i>
                                 </button>
                             </div>
@@ -132,7 +132,7 @@
         
         // --- READABILITY: Patch ---
         function dialogCommentEl(commentId) {
-            const thread = document.getElementById('social-neo-dialog-comment-thread');
+            const thread = document.getElementById('lux-glass-dialog-comment-thread');
             return thread?.querySelector(`article.social-neo-comment[data-comment-id="${CSS.escape(text(commentId))}"]`) || null;
         }
         function patchCommentReactions(updatedPost, commentId) {
@@ -208,9 +208,9 @@
             relayoutCommentTrunks();
         }
         function patchCommentDialogCount(updatedPost) {
-            const card = document.querySelector('.social-neo-dialog-card--comments');
+            const card = document.querySelector('.lux-glass-dialog-card--comments');
             const heroCopy = card?.querySelector('.social-neo-surveys-hero-copy p');
-            const legacySubtitle = card?.querySelector('.social-neo-dialog-subtitle')
+            const legacySubtitle = card?.querySelector('.lux-glass-dialog-subtitle')
                 || document.querySelector('.social-photo-ig-modal .social-photo-ig-comments-subtitle');
             const subtitle = heroCopy || legacySubtitle;
             if (!subtitle && !card) return;
@@ -223,7 +223,7 @@
             } else if (legacySubtitle) {
                 legacySubtitle.textContent = total ? `${total} comment${total === 1 ? '' : 's'}` : 'No comments yet';
             }
-            const statStrong = card?.querySelector('.social-neo-dialog-comment-stats article:nth-child(2) strong');
+            const statStrong = card?.querySelector('.lux-glass-dialog-comment-stats article:nth-child(2) strong');
             if (statStrong) statStrong.textContent = String(total);
         }
         async function deleteCommentInline(postId, commentId) {
@@ -234,7 +234,7 @@
             const article = dialogCommentEl(commentId);
             const updatedPost = await removePortalSocialComment(postId, commentId);
             if (article?.parentNode) article.parentNode.removeChild(article);
-            const thread = document.getElementById('social-neo-dialog-comment-thread');
+            const thread = document.getElementById('lux-glass-dialog-comment-thread');
             const list = thread?.querySelector('.social-neo-comment-list');
             if (list && !list.querySelector('article.social-neo-comment')) {
                 list.remove();
@@ -249,7 +249,7 @@
             relayoutCommentTrunks();
         }
         function relayoutCommentTrunks(scope) {
-            const root = scope || document.getElementById('social-neo-dialog-comment-thread');
+            const root = scope || document.getElementById('lux-glass-dialog-comment-thread');
             if (!root) return;
             root.querySelectorAll('article.social-neo-comment').forEach((comment) => {
                 const kids = comment.querySelector(':scope > .social-neo-comment-children');

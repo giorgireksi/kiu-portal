@@ -508,7 +508,7 @@ function __kiuSspExpose(map) {
                 const range = document.createRange();
                 range.selectNodeContents(container);
                 container.replaceChildren(range.createContextualFragment(`
-                    <div class="student-service-shell" data-student-service-page-shell="1">
+                    <div class="student-service-shell" data-student-service-page-shell="1" data-lux-glass-root="1">
                         <div data-student-service-page-hero="1"></div>
                         <div data-student-service-page-switcher="1"></div>
                         <div data-student-service-page-workflow="1"></div>

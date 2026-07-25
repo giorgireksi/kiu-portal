@@ -684,6 +684,20 @@ function openCreateAndAssignSubjectModal(options = {}) {
 }
 
 // SUBJECT SELECTION MODAL: Show available Curriculum Library subjects to assign
+function closeCourseSelectionModal(onDone) {
+    const modal = document.getElementById('course-selection-modal-bg');
+    if (!modal) {
+        if (typeof onDone === 'function') onDone();
+        return;
+    }
+    if (typeof window.closeLuxPortalModal === 'function') {
+        window.closeLuxPortalModal(modal, { remove: true, onDone });
+        return;
+    }
+    modal.remove();
+    if (typeof onDone === 'function') onDone();
+}
+
 function openCourseSelectionModal(moduleId, tabType, options = {}) {
     const currentFaculty = normalizeFacultyCode(getAdminRegistrationFaculty(), 'ECON');
     const programType = options.programType || null;
@@ -757,7 +771,7 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
         : module.name;
 
     let html = `
-        <div id="course-selection-modal-bg" class="admin-reg-course-modal-overlay">
+        <div id="course-selection-modal-bg" class="admin-reg-course-modal-overlay lms-glass-dialog-overlay" data-lux-transparency-exempt="1">
             <div class="admin-reg-course-modal-card">
                 <div class="admin-reg-course-modal-header">
                     <div>
@@ -880,22 +894,21 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
     const quickMatches = document.getElementById('subject-quick-matches');
     
     const openSubjectCreator = (reason = 'manual-create') => {
-        modal.remove();
-        openCreateAndAssignSubjectModal({
+        closeCourseSelectionModal(() => openCreateAndAssignSubjectModal({
             moduleId,
             module,
             tabType,
             programType,
             programContext,
             reason
-        });
+        }));
     };
 
     // Close modal
     createSubjectBtn?.addEventListener('click', () => openSubjectCreator('manual-create'));
-    closeBtn.addEventListener('click', () => modal.remove());
+    closeBtn.addEventListener('click', () => closeCourseSelectionModal());
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
+        if (e.target === modal) closeCourseSelectionModal();
     });
 
     const updateQuickMatches = (visibleItems, searchKey) => {
@@ -968,7 +981,7 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
             const tType = item.getAttribute('data-tab-type');
             addCourseToModule(mId, cId, tType);
         }
-        modal.remove();
+        closeCourseSelectionModal();
     };
 
     courseItems.forEach(item => {
@@ -981,9 +994,8 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
             activateCourseItem(item);
         });
     });
-    
-    // Focus on search input
-    setTimeout(() => searchInput.focus(), 100);
+
+    openLuxPortalModalAfterAppend(modal, { focusSelector: '#course-search-input' });
 }
 
 function findCourseAcrossFaculties(courseId) {

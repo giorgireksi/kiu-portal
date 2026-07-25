@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { LUX_DROPLIST_CACHE_BUST } from './fixtures/lux-droplist-contract.js';
+import { LUX_DROPLIST_CACHE_BUST, LUX_ATMOSPHERE_CACHE_BUST } from './fixtures/lux-droplist-contract.js';
 
 function readSource(relativePath) {
     const full = join(process.cwd(), relativePath);
@@ -49,7 +49,8 @@ describe('studio glow + opacity slider INP (gpuperf4p)', () => {
     it('pins cache bust for chrome/atmosphere', () => {
         const index = readSource('index.html');
         expect(index).toContain(`luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
-        expect(index).toContain(`luxury-atmosphere-runtime.js?v=${LUX_DROPLIST_CACHE_BUST}`);
-        expect(LUX_DROPLIST_CACHE_BUST).toBe('20260723-gpuperf4p');
+        expect(index).toContain(`luxury-atmosphere-runtime.js?v=${LUX_ATMOSPHERE_CACHE_BUST}`);
+        expect(LUX_DROPLIST_CACHE_BUST).toBe('20260723-utility-bloom1');
+        expect(LUX_ATMOSPHERE_CACHE_BUST).toBe('20260723-gpuperf4p');
     });
 });

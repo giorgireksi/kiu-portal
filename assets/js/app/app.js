@@ -593,20 +593,20 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
             if (!hint) {
                 hint = document.createElement('div');
                 hint.id = 'new-subject-semester-parity-hint';
-                hint.className = 'lux-card-meta lux-admin-tools-parity-hint';
+                hint.className = 'lux-card-meta lux-admin-tools-parity-hint lux-admin-tools-parity-callout';
                 hintAnchor.insertAdjacentElement('afterend', hint);
+            } else {
+                hint.classList.add('lux-admin-tools-parity-callout');
             }
 
             let exceptionWrap = document.getElementById('new-subject-semester-parity-exception-wrap');
             if (!exceptionWrap) {
                 exceptionWrap = document.createElement('div');
                 exceptionWrap.id = 'new-subject-semester-parity-exception-wrap';
-                exceptionWrap.className = 'registration-parity-exception';
+                exceptionWrap.className = 'registration-parity-exception lux-admin-tools-parity-exception';
                 exceptionWrap.innerHTML = `
                     <input id="new-subject-parity-both-checkbox" class="registration-parity-exception-checkbox" type="checkbox">
-                    <label for="new-subject-parity-both-checkbox" class="registration-parity-exception-label">
-                        Exception: allow this subject for both odd and even student semesters
-                    </label>
+                    <label for="new-subject-parity-both-checkbox" class="registration-parity-exception-label">Make this subject available in both odd and even semesters</label>
                 `;
                 hint.insertAdjacentElement('afterend', exceptionWrap);
             }
@@ -630,18 +630,17 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
                 }
                 const sem = Number(semesters?.[0]);
                 if (!Number.isFinite(sem) || sem <= 0) {
-                    return 'Semester parity rule will be shown after selecting a valid semester.';
+                    return 'Select a semester to see the availability rule.';
                 }
                 return sem % 2 === 1
-                    ? `Semester ${sem} is ODD: this subject is available to odd-semester students (1/3/5/7/9...), if prerequisite is none or passed.`
-                    : `Semester ${sem} is EVEN: this subject is available to even-semester students (2/4/6/8...), if prerequisite is none or passed.`;
+                    ? `Semester ${sem} is odd. This subject is visible in odd semesters unless the override is enabled.`
+                    : `Semester ${sem} is even. This subject is visible in even semesters unless the override is enabled.`;
             };
             const updateHint = () => {
-                const baseText = describeParity(readSemesters());
-                const exceptionText = exceptionCheckbox?.checked
-                    ? ' Exception is ON: this subject will be available in both odd and even semesters (prerequisite still applies).'
+                const extra = exceptionCheckbox instanceof HTMLInputElement && exceptionCheckbox.checked
+                    ? ' Override enabled: students in both parity tracks can see this subject.'
                     : '';
-                hint.textContent = `${baseText}${exceptionText}`;
+                hint.textContent = `${describeParity(readSemesters())}${extra}`;
             };
 
             if (hiddenSemesters && !hiddenSemesters.dataset.parityHintBound) {
@@ -956,7 +955,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         return lmsRuntimeLoadPromise;
     };
 
-    const REGISTRATION_PICKER_ASSET_TOKEN = '20260725-legacycta1';
+    const REGISTRATION_PICKER_ASSET_TOKEN = '20260725-portalmodal1';
     const registrationRuntimeAsset = (path) => `${path}?v=${REGISTRATION_PICKER_ASSET_TOKEN}`;
     const REGISTRATION_RUNTIME_SCRIPTS = [
         registrationRuntimeAsset('assets/js/pages/registration-shared.js'),
@@ -968,14 +967,14 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         registrationRuntimeAsset('assets/js/pages/registration.js'),
         registrationRuntimeAsset('assets/js/pages/curriculum-semester-picker.js'),
         'assets/js/pages/curriculum-library-scroll.js?v=20260606-scrollrail1',
-        'assets/js/pages/student-registration-eligibility-runtime.js?v=20260608-regfix1',
+        'assets/js/pages/student-registration-eligibility-runtime.js?v=20260725-portalmodal2',
         'assets/js/pages/student-registration-choice-runtime.js?v=20260724-peelfix1',
         'assets/js/pages/student-registration.js?v=20260724-peelfix1',
         'assets/js/pages/admin-registration-track.js?v=20260725-legacycta1',
         'assets/js/pages/admin-registration-seats-runtime.js?v=20260719-regseats1',
         'assets/js/pages/admin-registration-cms-runtime.js?v=20260724-peelfix2',
         'assets/js/pages/admin-registration-boot-runtime.js?v=20260724-peelfix1',
-        'assets/js/pages/admin-registration.js?v=20260724-peelfix2'
+        'assets/js/pages/admin-registration.js?v=20260725-portalmodal1'
     ];
     const REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS = [
         registrationRuntimeAsset('assets/js/pages/timetable-runtime.js'),

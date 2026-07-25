@@ -300,7 +300,7 @@ function openRecipientOrder(orderId) {
 function ensureRecipientOrdersShell(container) {
     if (!container.querySelector('[data-orders-inbox-shell="1"]')) {
         container.innerHTML = `
-            <div class="lux-page-shell orders-inbox-shell" data-orders-inbox-shell="1">
+            <div class="lux-page-shell orders-inbox-shell" data-orders-inbox-shell="1" data-lux-glass-root="1">
                 <section class="lux-card surface-card orders-inbox-hero lux-summary-surface lux-summary-surface--hero">
                     <div class="lux-card-body lux-hero-stage orders-inbox-hero-stage">
                         <div id="orders-inbox-hero-main" class="lux-hero-main"></div>

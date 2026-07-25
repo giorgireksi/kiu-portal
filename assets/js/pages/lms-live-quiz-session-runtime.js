@@ -17,7 +17,11 @@ function isLmsLiveSessionRemoveDialogOpen() {
 function closeLmsLiveSessionRemoveDialog() {
     if (typeof document === 'undefined') return;
     const overlay = document.getElementById('lms-live-session-remove-overlay');
-    if (overlay) overlay.remove();
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function renderLmsLiveSessionRemoveDialogCard(resourceKey, session = null, step = 1) {
@@ -44,10 +48,10 @@ function renderLmsLiveSessionRemoveDialogCard(resourceKey, session = null, step 
         </div>`
         : `<div class="lms-live-session-remove-warning ${isLive ? 'is-live' : ''}">${escapeHtml(confirmCopy)}</div>`;
     const actions = step === 1
-        ? `<button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-lms-click="closeLmsLiveSessionRemoveDialog()">Cancel</button>
-            <button type="button" class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" data-lms-click="advanceLmsLiveSessionRemoveDialog(${lmsInlineArg(resourceKey)}, 2)">Next</button>`
-        : `<button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-lms-click="advanceLmsLiveSessionRemoveDialog(${lmsInlineArg(resourceKey)}, 1)">Back</button>
-            <button type="button" class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" data-lms-click="confirmLmsLiveSessionRemove(${lmsInlineArg(resourceKey)})"><i class="fas fa-trash"></i> Remove session</button>`;
+        ? `<button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-lms-click="closeLmsLiveSessionRemoveDialog()">Cancel</button>
+            <button type="button" class="lux-primary-btn lux-glass-dialog-submit-btn" data-lms-click="advanceLmsLiveSessionRemoveDialog(${lmsInlineArg(resourceKey)}, 2)">Next</button>`
+        : `<button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-lms-click="advanceLmsLiveSessionRemoveDialog(${lmsInlineArg(resourceKey)}, 1)">Back</button>
+            <button type="button" class="lux-primary-btn lux-glass-dialog-submit-btn" data-lms-click="confirmLmsLiveSessionRemove(${lmsInlineArg(resourceKey)})"><i class="fas fa-trash"></i> Remove session</button>`;
     return renderLmsGlassDialogCard({
         hookClass: 'lms-live-session-remove-card',
         title: 'Remove session',
@@ -95,6 +99,11 @@ function mountLmsLiveSessionRemoveDialog(resourceKey, step = 1) {
     const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
     workspace.ui.sessionRemoveStep = step;
     workspace.ui.sessionRemoveTargetId = session.id;
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function openLmsLiveSessionRemoveDialog(resourceKey) {

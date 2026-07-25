@@ -999,7 +999,7 @@ function renderProfile(type, id, facCode) {
     };
 
     root.innerHTML = `
-    <div class="pv-shell">
+    <div class="pv-shell" data-lux-glass-root="1">
         <div class="pv-command-bar">
             <button type="button" class="lux-secondary-btn pv-command-back" data-pv-action="go-back"><i class="fas fa-arrow-left"></i> Back</button>
             <div class="pv-command-actions">

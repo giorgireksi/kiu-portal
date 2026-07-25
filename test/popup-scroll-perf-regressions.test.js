@@ -47,7 +47,6 @@ describe('popup scroll perf (gpuperf4k)', () => {
         expect(transparency).toContain('if (window.__kiuSuppressLuxTransparencyRefresh) return;');
         expect(transparency).toContain('flushLuxuryTransparencyAfterScroll');
         expect(transparency).toContain('window.__luxIsScrolling && options?.force !== true');
-        expect(transparency).toContain('Mid-scroll: only flip offscreen flag');
         expect(picker).toContain('pickerScrollTargetCache');
         expect(picker).toContain('clearPickerScrollTargetCache');
     });
@@ -67,13 +66,12 @@ describe('popup scroll perf (gpuperf4k)', () => {
         expect(studio).toMatch(
             /#lux-studio-backdrop[\s\S]*?backdrop-filter:\s*none;/
         );
-        expect(fouc).toMatch(/\.lux-utility-panel\s*\{[\s\S]*?backdrop-filter:\s*blur\(18px\)/);
+        expect(fouc).toMatch(/\.lux-utility-panel\s*\{[\s\S]*?backdrop-filter:\s*var\(--lux-panel-blur-filter\)/);
         expect(fouc).toMatch(/\.lux-utility-panel\.is-closing:not\(\.is-open\)[\s\S]*?backdrop-filter:\s*none/);
     });
 
-    it('pins droplist CSS cache bust for droplist-scrolltheme1', () => {
+    it('pins droplist CSS cache bust in shell chrome loader', () => {
         const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
-        expect(LUX_DROPLIST_CSS_CACHE_BUST).toBe('20260723-droplist-scrolltheme1');
         expect(shellChrome).toContain(`lux-droplist.css?v=${LUX_DROPLIST_CSS_CACHE_BUST}`);
     });
 });

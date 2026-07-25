@@ -56,19 +56,19 @@
             const priority = text(task?.priority || 'medium').toLowerCase() || 'medium';
             const taskTitle = text(task?.title || 'Task') || 'Task';
             const backdropClass = text(options.backdropClass || '');
-            const backdropClasses = ['social-neo-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
+            const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
             return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Remove task">
-                <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--compact social-neo-delete-confirm social-neo-dialog-card--project-task-delete social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-form="dialog-project-task-delete" data-action="noop" data-lux-transparency-exempt="1">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact social-neo-delete-confirm lux-glass-dialog-card--project-task-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="dialog-project-task-delete" data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHead('Remove task', 'This permanently deletes the task from the project board.', { icon: 'fas fa-trash' })}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-task-delete">
-                        <section class="social-neo-dialog-project-create-section social-neo-delete-confirm-preview">
-                            <strong class="social-neo-dialog-preview-title">${escape(taskTitle)}</strong>
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-delete">
+                        <section class="lux-glass-dialog-group-section social-neo-delete-confirm-preview">
+                            <strong class="lux-glass-dialog-preview-title">${escape(taskTitle)}</strong>
                             <div class="social-neo-muted social-neo-muted-mt-6">${escape(statusLabel)} · ${escape(priority)}</div>
                         </section>
-                        <section class="social-neo-dialog-project-create-section social-neo-dialog-preview social-neo-dialog-preview-danger">The task will be permanently removed for everyone on this project.</section>
-                        <label class="social-neo-item-line social-neo-dialog-checkbox-line">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-preview lux-glass-dialog-preview-danger">The task will be permanently removed for everyone on this project.</section>
+                        <label class="social-neo-item-line lux-glass-dialog-checkbox-line">
                             <input type="checkbox" name="confirmProjectTaskDelete" value="yes">
-                            <span class="social-neo-dialog-checkbox-copy">I understand this task will be permanently removed.</span>
+                            <span class="lux-glass-dialog-checkbox-copy">I understand this task will be permanently removed.</span>
                         </label>
                     </div>
                     ${neoActions({
@@ -97,15 +97,15 @@
             const submitLabel = isEdit ? 'Save changes' : 'Create task';
             const submitIcon = isEdit ? 'fa-check' : 'fa-plus';
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, isEdit ? 'project-task-edit' : 'project-task-create');
-            const backdropClasses = ['social-neo-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
+            const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
             return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${isEdit ? 'Edit task' : 'Create task'}">
-                <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--project-task-create social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-form="${escape(formKind)}" data-project-id="${escape(text(project.id))}" ${isEdit ? `data-task-id="${escape(text(dialog?.taskId))}"` : ''} data-budget-currency="${escape(text(project?.budgetCurrency || '') || 'USD')}" data-action="noop" data-lux-transparency-exempt="1">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="${escape(formKind)}" data-project-id="${escape(text(project.id))}" ${isEdit ? `data-task-id="${escape(text(dialog?.taskId))}"` : ''} data-budget-currency="${escape(text(project?.budgetCurrency || '') || 'USD')}" data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHead(
                         isEdit ? 'Edit task' : 'Create task',
                         isEdit ? 'Update work, assignment, or checklist.' : 'Add work to the board, assign a teammate, and place it in the right column.',
                         { icon: isEdit ? 'fas fa-pen' : 'fas fa-list-check' }
                     )}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-task-create">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-create">
                         ${renderProjectTaskFormFields(runtime, {
                             mode: 'modal',
                             isEdit,
@@ -115,11 +115,11 @@
                             memberSummaries
                         })}
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        ${isEdit ? `<button class="social-neo-btn social-neo-btn-danger social-neo-btn-ghost" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(dialog?.taskId))}"><i class="fas fa-trash"></i> Remove task</button>` : ''}
-                        ${isEdit ? '' : `<button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-submit-btn" type="submit" data-submit-mode="create-another"><i class="fas fa-plus"></i> Create &amp; add another</button>`}
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit"><i class="fas ${submitIcon}"></i> ${escape(submitLabel)}</button>
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        ${isEdit ? `<button class="lux-primary-btn lux-btn-danger lux-secondary-btn" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(dialog?.taskId))}"><i class="fas fa-trash"></i> Remove task</button>` : ''}
+                        ${isEdit ? '' : `<button class="lux-secondary-btn lux-glass-dialog-submit-btn" type="submit" data-submit-mode="create-another"><i class="fas fa-plus"></i> Create &amp; add another</button>`}
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit"><i class="fas ${submitIcon}"></i> ${escape(submitLabel)}</button>
                     </div>
                 </form>
             </div>`;
@@ -236,15 +236,15 @@
             ].join('');
 
             const essentials = `
-                <section class="social-neo-dialog-project-create-section">
-                    <div class="social-neo-dialog-project-create-section-head">
+                <section class="lux-glass-dialog-group-section">
+                    <div class="lux-glass-dialog-section-head">
                         <strong>Task</strong>
                         <span>${isEdit ? 'Update the work item.' : 'Name it. You can add detail later.'}</span>
                     </div>
                     ${neoField('Task title', `<input class="social-neo-input" id="${escape(taskTitleId)}" type="text" name="projectTaskTitle" placeholder="What needs to be done?" value="${escape(titleValue)}" maxlength="120" required>`, { forId: taskTitleId })}
                     ${typeof socialNeoFieldHtml === 'function' ? socialNeoFieldHtml(`Description <span class="social-neo-muted">(optional)</span>`, `<textarea class="social-neo-textarea" id="${escape(taskDescId)}" rows="${isEdit ? 3 : 2}" name="projectTaskDescription" placeholder="Context, acceptance criteria, or links..." maxlength="2000">${escape(descValue)}</textarea>`, { forId: taskDescId }) : ''}
                     ${isEdit ? '' : `
-                    <label class="social-neo-dialog-field" for="${escape(taskPackageId)}">
+                    <label class="lux-glass-dialog-field" for="${escape(taskPackageId)}">
                         <span class="social-neo-label">Package</span>
                         <select class="social-neo-select" id="${escape(taskPackageId)}" name="projectTaskPackageId" data-lux-picker>
                             ${packageOptions}
@@ -264,7 +264,7 @@
                             <div class="social-project-task-matrix-preview" data-lux-transparency-exempt="1">Score ${escape(String(matrixPreviewScore))} · ${escape(matrixPreviewLabel)}</div>
                         </div>
                     </div>
-                <section class="social-neo-dialog-project-create-section">
+                <section class="lux-glass-dialog-group-section">
                     ${neoSection('Duration (PERT)', 'Three-point estimate — drives the critical path.')}
                     <div class="social-neo-form-grid social-neo-form-grid-3">
                         ${neoField('Optimistic (O)', `<input class="social-neo-input" id="${escape(taskTimeOptimisticId)}" type="number" min="0" step="0.5" name="projectTaskTimeOptimistic" placeholder="0" value="${escape(timeOptimisticValue)}">`, { forId: taskTimeOptimisticId })}
@@ -272,7 +272,7 @@
                         ${neoField('Pessimistic (P)', `<input class="social-neo-input" id="${escape(taskTimePessimisticId)}" type="number" min="0" step="0.5" name="projectTaskTimePessimistic" placeholder="0" value="${escape(timePessimisticValue)}">`, { forId: taskTimePessimisticId })}
                     </div>
                     <div class="social-neo-form-grid social-neo-form-grid-2">
-                        <label class="social-neo-dialog-field" for="${escape(taskTimeUnitId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(taskTimeUnitId)}">
                             <span class="social-neo-label">Schedule unit</span>
                             <select class="social-neo-select" id="${escape(taskTimeUnitId)}" name="projectTaskTimeUnit" data-lux-picker>
                                 <option value="h" ${timeUnitValue === 'h' ? 'selected' : ''}>hours</option>
@@ -282,43 +282,43 @@
                         <div class="social-project-task-pert-preview" data-lux-transparency-exempt="1">${escape(schedulePreview.estimate > 0 && taskHasPert({ timeOptimistic: timeOptimisticValue, timeMostLikely: timeMostLikelyValue, timePessimistic: timePessimisticValue }) ? `PERT ${formatTaskTime(schedulePreview.estimate, timeUnitValue)} (O=${timeOptimisticValue || '—'} · M=${timeMostLikelyValue || '—'} · P=${timePessimisticValue || '—'})` : (timeMostLikelyValue ? `Most likely ${formatTaskTime(timeMostLikelyValue, timeUnitValue)}` : 'Enter O, M, and P for a PERT estimate'))}</div>
                     </div>
                 </section>
-                <section class="social-neo-dialog-project-create-section">
+                <section class="lux-glass-dialog-group-section">
                     ${neoSection('Planning', 'Optional start and due dates.')}
                     <div class="social-neo-form-grid social-neo-form-grid-2">
                         ${neoField('Start date (optional)', `<input class="social-neo-input" id="${escape(taskStartId)}" type="datetime-local" name="projectTaskStartAt" value="${escape(startValue)}">`, { forId: taskStartId })}
                         ${neoField('Due date', `<input class="social-neo-input" id="${escape(taskDueId)}" type="datetime-local" name="projectTaskDueAt" value="${escape(dueValue)}">`, { forId: taskDueId })}
                     </div>
                 </section>
-                <section class="social-neo-dialog-project-create-section">
+                <section class="lux-glass-dialog-group-section">
                     ${neoSection('Budget', 'Planned task cost.')}
-                    <label class="social-neo-dialog-field" for="${escape(taskBudgetId)}">
+                    <label class="lux-glass-dialog-field" for="${escape(taskBudgetId)}">
                         <span class="social-neo-label">Planned task cost (${escape(budgetCurrency)})</span>
                         <input class="social-neo-input" id="${escape(taskBudgetId)}" type="number" min="0" step="0.01" name="projectTaskBudgetEstimate" placeholder="0.00" value="${escape(budgetEstimateValue)}">
                     </label>
                 </section>
-                <section class="social-neo-dialog-project-create-section">
+                <section class="lux-glass-dialog-group-section">
                     ${neoSection('Actuals', 'Record after work starts (optional on create).')}
                     <div class="social-neo-form-grid social-neo-form-grid-2">
-                        <label class="social-neo-dialog-field" for="${escape(taskActualTimeId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(taskActualTimeId)}">
                             <span class="social-neo-label"><i class="fas fa-stopwatch" aria-hidden="true"></i> Actual time (${escape(timeUnitValue === 'd' ? 'days' : 'hours')})</span>
                             <input class="social-neo-input" id="${escape(taskActualTimeId)}" type="number" min="0" step="0.5" name="projectTaskActualTime" placeholder="0" value="${escape(actualTimeValue)}">
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(taskActualCostId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(taskActualCostId)}">
                             <span class="social-neo-label"><i class="fas fa-receipt" aria-hidden="true"></i> Actual cost (${escape(budgetCurrency)})</span>
                             <input class="social-neo-input" id="${escape(taskActualCostId)}" type="number" min="0" step="0.01" name="projectTaskActualCost" placeholder="0.00" value="${escape(actualCostValue)}">
                         </label>
                     </div>
                 </section>
-                <section class="social-neo-dialog-project-create-section">
+                <section class="lux-glass-dialog-group-section">
                     ${neoSection('Ownership', 'Who delivers this task.')}
-                    <label class="social-neo-dialog-field" for="${escape(taskAssigneeId)}">
+                    <label class="lux-glass-dialog-field" for="${escape(taskAssigneeId)}">
                         <span class="social-neo-label">Assignee</span>
                         <select class="social-neo-select" id="${escape(taskAssigneeId)}" name="projectTaskAssigneeId" data-lux-picker>
                             ${assigneeOptions}
                         </select>
                     </label>
                 </section>
-                <section class="social-neo-dialog-project-create-section">
+                <section class="lux-glass-dialog-group-section">
                     <div class="social-project-task-dep-current">
                         <span class="social-neo-label">Waiting on</span>
                         <div class="social-project-task-dep-chips">${selectedDepChips || '<span class="social-project-task-dep-chip is-empty">None</span>'}</div>
@@ -329,7 +329,7 @@
 
             if (isEdit) {
                 return `${essentials}
-                <section class="social-neo-dialog-project-create-section">
+                <section class="lux-glass-dialog-group-section">
                     ${neoSection('Details', 'Priority, schedule, ownership, and links.')}
                     ${advancedInner}
                 </section>
@@ -695,10 +695,10 @@
                         ${blockedByCount || blocksCount ? `<button class="social-neo-pill social-project-task-deps-chip" type="button" data-action="project-task-graph-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="Open dependency graph"><i class="fas fa-link"></i> blocked by ${escape(String(blockedByCount))} · blocks ${escape(String(blocksCount))}</button>` : ''}
                     </div>
                     <div class="social-project-task-actions">
-                        ${project.viewerCanContribute ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Edit task" data-action="project-task-edit-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-pen"></i></button>` : ''}
-                        ${canMoveLeft ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Move to ${escape(PROJECT_TASK_COLUMNS[columnIndex - 1].label)}" data-action="project-task-move" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(PROJECT_TASK_COLUMNS[columnIndex - 1].id)}"><i class="fas fa-arrow-left"></i></button>` : ''}
-                        ${canMoveRight ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Move to ${escape(PROJECT_TASK_COLUMNS[columnIndex + 1].label)}" data-action="project-task-move" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(PROJECT_TASK_COLUMNS[columnIndex + 1].id)}"><i class="fas fa-arrow-right"></i></button>` : ''}
-                        ${project.viewerCanContribute ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Delete task" data-action="project-task-delete" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-trash"></i></button>` : ''}
+                        ${project.viewerCanContribute ? `<button class="lux-secondary-btn lux-secondary-btn-icon" type="button" title="Edit task" data-action="project-task-edit-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-pen"></i></button>` : ''}
+                        ${canMoveLeft ? `<button class="lux-secondary-btn lux-secondary-btn-icon" type="button" title="Move to ${escape(PROJECT_TASK_COLUMNS[columnIndex - 1].label)}" data-action="project-task-move" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(PROJECT_TASK_COLUMNS[columnIndex - 1].id)}"><i class="fas fa-arrow-left"></i></button>` : ''}
+                        ${canMoveRight ? `<button class="lux-secondary-btn lux-secondary-btn-icon" type="button" title="Move to ${escape(PROJECT_TASK_COLUMNS[columnIndex + 1].label)}" data-action="project-task-move" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(PROJECT_TASK_COLUMNS[columnIndex + 1].id)}"><i class="fas fa-arrow-right"></i></button>` : ''}
+                        ${project.viewerCanContribute ? `<button class="lux-secondary-btn lux-secondary-btn-icon" type="button" title="Delete task" data-action="project-task-delete" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-trash"></i></button>` : ''}
                     </div>
                 </article>
             `;
@@ -720,15 +720,15 @@
             const columnIcon = text(column.icon || 'fa-columns') || 'fa-columns';
             const canContribute = Boolean(project.viewerCanContribute);
             const taskCountLabel = `${escape(String(tasks.length))} ${tasks.length === 1 ? 'task' : 'tasks'} in this column`;
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Column tasks">
-                <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--project-column-tasks social-neo-dialog-card--lms-create" data-action="noop" data-lux-transparency-exempt="1">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Column tasks">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-column-tasks lux-glass-dialog-card" data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHeadHtml(
                         `<i class="fas ${escape(columnIcon)}" aria-hidden="true"></i> ${escape(column.label)}`,
                         `${taskCountLabel}. Click a card for full details.`
                     )}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-column-tasks">
-                        <section class="social-neo-dialog-project-create-section">
-                            <div class="social-neo-dialog-project-create-section-head">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-column-tasks">
+                        <section class="lux-glass-dialog-group-section">
+                            <div class="lux-glass-dialog-section-head">
                                 <strong>Tasks</strong>
                                 <span>All work items currently in ${escape(column.label)}.</span>
                             </div>
@@ -739,7 +739,7 @@
                     </div>
                     ${canContribute
                         ? neoActions({ cancelLabel: 'Cancel', submitLabel: `Add task to ${column.label}`, submitIcon: 'fas fa-plus', submitType: 'button', submitAttrs: `data-action="project-task-quick-add" data-project-id="${escape(text(project.id))}" data-column="${escape(column.id)}"` })
-                        : `<div class="social-neo-form-actions social-neo-dialog-actions"><button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button></div>`}
+                        : `<div class="lux-glass-dialog-form-actions lux-glass-dialog-actions"><button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button></div>`}
                 </div>
             </div>`;
         }

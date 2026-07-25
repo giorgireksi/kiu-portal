@@ -232,7 +232,7 @@ function renderLmsPersonalDashboardSharePanel(resourceKey = '') {
                             <p class="lms-personal-dashboard-share-panel-copy">Who can open your live board. Combine instructors, whole group, and people — classmates get the higher of group or personal access.</p>
                         </div>
                     </div>
-                    <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn lms-personal-dashboard-share-close" data-lms-personal-dashboard-action="close-share-panel" aria-label="Close share panel"><i class="fas fa-times"></i></button>
+                    <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn lms-personal-dashboard-share-close" data-lms-personal-dashboard-action="close-share-panel" aria-label="Close share panel"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="lms-personal-dashboard-share-section">
                     <div class="lms-route-eyebrow lms-personal-dashboard-share-section-label"><i class="fas fa-chalkboard-user"></i> Instructors</div>
@@ -526,14 +526,30 @@ function isLmsPersonalDashboardStudentViewer() {
     return typeof isLmsStudentViewer === 'function' && isLmsStudentViewer();
 }
 
-function destroyLmsPersonalDashboardOverlay() {
+function destroyLmsPersonalDashboardOverlay(options = {}) {
     if (typeof window !== 'undefined' && window.__lmsPersonalDashboardPageHideHandler) {
         window.removeEventListener('pagehide', window.__lmsPersonalDashboardPageHideHandler);
         window.__lmsPersonalDashboardPageHideHandler = null;
     }
     const overlay = document.getElementById('lms-personal-dashboard-overlay');
-    if (overlay) overlay.remove();
-    document.body.classList.remove('lms-personal-dashboard-open');
+    const finish = () => {
+        document.body.classList.remove('lms-personal-dashboard-open');
+    };
+    if (!overlay) {
+        finish();
+        return;
+    }
+    if (options.instant) {
+        overlay.remove();
+        finish();
+        return;
+    }
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay, { onDone: finish });
+        return;
+    }
+    overlay.remove();
+    finish();
 }
 
 function renderLmsPersonalDashboardShortcutsColumn() {
@@ -616,11 +632,11 @@ function renderLmsPersonalDashboardMarkup(resourceKey = '') {
     const headHtml = `
         <div class="lms-personal-dashboard-head">
             <div class="lms-personal-dashboard-head-main">
-                <strong class="social-neo-dialog-title"><i class="fas ${titleIcon}" aria-hidden="true"></i> ${escapeHtml(title)}</strong>
-                <span class="social-neo-dialog-subtitle">${escapeHtml(formatLmsPersonalDashboardSubtitle())}</span>${staffNotice}
+                <strong class="lux-glass-dialog-title"><i class="fas ${titleIcon}" aria-hidden="true"></i> ${escapeHtml(title)}</strong>
+                <span class="lux-glass-dialog-subtitle">${escapeHtml(formatLmsPersonalDashboardSubtitle())}</span>${staffNotice}
             </div>
             <div class="lms-personal-dashboard-head-actions">${shareButton}${autosaveStatus}${saveButton}
-                <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" aria-label="Close personal workspace" data-lms-personal-dashboard-action="close"><i class="fas fa-times"></i></button>
+                <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn" aria-label="Close personal workspace" data-lms-personal-dashboard-action="close"><i class="fas fa-times"></i></button>
             </div>
         </div>`;
     return typeof renderLmsGlassDialogCard === 'function'
@@ -1077,13 +1093,17 @@ function mountLmsPersonalDashboardOverlay(resourceKey = '') {
     }
     overlay.innerHTML = renderLmsPersonalDashboardMarkup(key);
     overlay.hidden = false;
-    overlay.classList.add('is-open');
     document.body.classList.add('lms-personal-dashboard-open');
     bindLmsPersonalDashboardOverlay(overlay, key);
     mountLmsPersonalDashboardScratchBoard(key);
     refreshLmsPersonalDashboardHistory();
     refreshLmsPersonalDashboardSharedWithMe();
     syncLmsPersonalDashboardAutosaveStatus(key);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
     return true;
 }
 
@@ -1232,7 +1252,7 @@ async function handleLmsPersonalDashboardSectionSwitch() {
         await flushLmsPersonalDashboardAutosave(previousResourceKey);
     }
     const overlay = document.getElementById('lms-personal-dashboard-overlay');
-    const subtitle = overlay?.querySelector('.social-neo-dialog-subtitle');
+    const subtitle = overlay?.querySelector('.lux-glass-dialog-subtitle');
     if (subtitle) subtitle.textContent = formatLmsPersonalDashboardSubtitle();
     if (host) host.dataset.lmsPersonalDashboardBoardHost = resourceKey;
     await loadLmsPersonalDashboardWorkspace(resourceKey);

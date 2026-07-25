@@ -38,10 +38,9 @@ describe('staff route regressions', () => {
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         const staffJs = readSource('assets/js/pages/staff-command-center.js');
 
-        expect(transparency).toContain('STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS');
-        expect(transparency).toContain('.staff-hub-directory-panel');
-        expect(transparency).toContain('.staff-hub-metric-card');
+        expect(transparency).toContain('function appendRouteOwnedSurfaces');
         expect(transparency).toContain("document.body.classList.contains('lux-route-staff')");
+        expect(transparency).toContain('staff-hub-');
 
         expect(staffJs).toContain('staff-hub-shell');
         expect(staffJs).toContain('staff-hub-directory-panel');

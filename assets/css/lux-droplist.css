@@ -13,8 +13,8 @@
     rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)) 48%,
     rgba(var(--lux-accent-rgb), 0.22)
   );
-  --lux-droplist-frame-ring: 0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50));
-  --lux-droplist-frame-glow: 0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32));
+  --lux-droplist-frame-ring: var(--lux-soft-chrome-rim-ring);
+  --lux-droplist-frame-glow: var(--lux-soft-chrome-rim-glow);
   --lux-droplist-fade-shadow:
     var(--lux-droplist-frame-ring),
     var(--lux-droplist-frame-glow),
@@ -114,7 +114,10 @@
 ) {
   gap: var(--lux-droplist-shell-gap);
   min-height: 0;
-  max-height: 100%;
+  max-height: calc(
+    var(--lux-droplist-option-height) * var(--lux-droplist-visible-options)
+    + var(--lux-droplist-shell-gap) * (var(--lux-droplist-visible-options) - 1)
+  );
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -178,6 +181,8 @@
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel:is(.is-open, .is-closing) {
   display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
   position: fixed;
   will-change: opacity, transform, filter;
 }

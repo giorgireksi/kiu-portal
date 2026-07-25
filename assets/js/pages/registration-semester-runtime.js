@@ -183,15 +183,17 @@ function getSemesterParityDescription(semesterValue) {
         : `Semester ${semester} is even. This subject is visible in even semesters unless the override is enabled.`;
 }
 
+const SEMESTER_DROPDOWN_CONFIGS = [
+    { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem' },
+    { id: 'admin-active-semester', includeCustom: true, numberPrefix: 'Semester' },
+    { id: 'admin-tt-semester', includeCustom: true, numberPrefix: 'Sem' },
+    { id: 'admin-generate-semester', includeCustom: true, numberPrefix: 'Sem' },
+    { id: 'stu-reg-semester', includeCustom: true, numberPrefix: 'Semester' },
+    { id: 'new-user-semester', includeCustom: true, numberPrefix: 'Semester' }
+];
+
 function refreshSemesterDropdowns() {
-    [
-        { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem' },
-        { id: 'admin-active-semester', includeCustom: true, numberPrefix: 'Semester' },
-        { id: 'admin-tt-semester', includeCustom: true, numberPrefix: 'Sem' },
-        { id: 'admin-generate-semester', includeCustom: true, numberPrefix: 'Sem' },
-        { id: 'stu-reg-semester', includeCustom: true, numberPrefix: 'Semester' },
-        { id: 'new-user-semester', includeCustom: true, numberPrefix: 'Semester' }
-    ].forEach((cfg) => {
+    SEMESTER_DROPDOWN_CONFIGS.forEach((cfg) => {
         document.querySelectorAll(`#${cfg.id}`).forEach((selectEl) => populateSemesterSelectOptions(selectEl, cfg));
     });
 }
@@ -329,6 +331,7 @@ function clearConditionSelection() {
             getSemesterParityDescription,
             refreshSemesterDropdowns,
             ensureSubjectSemesterParityHint,
+            SEMESTER_DROPDOWN_CONFIGS,
             toggleConditionBox,
             getSelectedConditionEntries,
             renderSelectedConditionEntries,

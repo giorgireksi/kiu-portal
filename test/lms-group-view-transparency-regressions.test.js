@@ -15,29 +15,22 @@ describe('LMS CSS-token surface regressions', () => {
         expect(tokens).toContain('--lux-panel-surface');
     });
 
-    it('CSS-owns LMS shells via shouldKeepLmsFadeCssBackground strip path', () => {
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+    it('CSS-owns LMS shells via generic isCssOwnedSurface strip path', () => {
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         const transparency = readSource('assets/js/shared/lux-transparency.js');
-        const gateStart = routeRuntime.indexOf('function shouldKeepLmsFadeCssBackground');
-        expect(gateStart).toBeGreaterThan(-1);
-        const gateEnd = routeRuntime.indexOf('function shouldKeepStaffFadeCssBackground', gateStart);
-        const gate = routeRuntime.slice(gateStart, gateEnd > gateStart ? gateEnd : gateStart + 1200);
+        const lmsHtml = readSource('lms.html');
 
-        expect(routeRuntime).toContain('function shouldKeepLmsFadeCssBackground(el)');
-        expect(transparency).toContain('shouldKeepLmsFadeCssBackground');
+        expect(routeRuntime).toContain('function isCssOwnedSurface(el)');
         expect(routeRuntime).toContain('function shouldKeepRouteFadeCssBackground(el)');
-        expect(gate).toContain("closest?.('#page-lms')");
-        expect(gate).toContain("el.classList.contains('page-hero')");
-        expect(gate).toContain("el.classList.contains('lux-lms-hero')");
-        expect(gate).toContain("el.classList.contains('lms-route-panel')");
-        expect(gate).toContain("el.classList.contains('lux-lms-group-card')");
-        expect(gate).not.toContain("el.classList.contains('lux-card')");
-        expect(gate).not.toContain('lms-clean-subject-card');
+        expect(routeRuntime).toMatch(/lux-route-lms[\s\S]*lms-route-panel/);
+        expect(routeRuntime).toContain('.lux-lms-group-card');
+        expect(transparency).toContain('isCssOwnedSurface');
         expect(transparency).toMatch(
             /shouldKeepRouteFadeCssBackground\(el\)\)[\s\S]{0,120}stripInlineGlassPaint/
         );
         expect(transparency).not.toContain('Math.max(amount, 0.10)');
         expect(transparency).not.toContain('isLmsShellSurface');
+        expect(lmsHtml.match(/data-lux-glass-root="1"/g).length).toBeGreaterThanOrEqual(3);
     });
 
     it('does not use LMS transparency root hacks', () => {
@@ -55,7 +48,6 @@ describe('LMS CSS-token surface regressions', () => {
         const transparency = readSource('assets/js/shared/lux-transparency.js');
 
         expect(transparency).toContain("'.lux-lms-group-card'");
-        expect(transparency).toContain("'lux-lms-group-card'");
         expect(transparency).not.toContain("'.lms-clean-subject-card'");
         expect(transparency).not.toContain("'.lms-clean-signal-pill'");
         expect(transparency).toContain("'.page-hero'");
@@ -63,16 +55,17 @@ describe('LMS CSS-token surface regressions', () => {
     });
 
     it('engine CSS-owns LMS shells; residual paint uses panel tokens only', () => {
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         const bootSource = readSource('assets/js/pages/lms-route-boot.js');
         const lmsHtml = readSource('lms.html');
 
-        expect(routeRuntime).toContain("el.classList.contains('lms-hero-focus')");
-        expect(routeRuntime).toContain("el.classList.contains('lms-clean-subjects')");
-        expect(routeRuntime).toContain("el.classList.contains('lux-lms-hero')");
-        expect(routeRuntime).toContain("el.classList.contains('page-hero')");
-        expect(transparency).toContain('shouldKeepLmsFadeCssBackground');
+        expect(routeRuntime).toMatch(/lux-route-lms[\s\S]*lms-route-panel/);
+        expect(routeRuntime).toContain('.lms-hero-focus');
+        expect(routeRuntime).toContain('.lms-clean-subjects');
+        expect(routeRuntime).toContain('.lux-lms-hero');
+        expect(routeRuntime).toContain('.page-hero');
+        expect(transparency).toContain('isCssOwnedSurface');
         expect(transparency).toContain('shouldKeepRouteFadeCssBackground');
         expect(transparency).toContain("'var(--lux-panel-surface)'");
         expect(transparency).toContain("'var(--lux-panel-surface-soft)'");
@@ -87,7 +80,7 @@ describe('LMS CSS-token surface regressions', () => {
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         const paintStart = transparency.indexOf('const buildDynamicSurfaceBackground = (el, lightMode, amount) =>');
         expect(paintStart).toBeGreaterThan(-1);
-        const paintEnd = transparency.indexOf('const shouldApplyDynamicBackground', paintStart);
+        const paintEnd = transparency.indexOf('function shouldApplyDynamicBackground', paintStart);
         const paint = transparency.slice(paintStart, paintEnd);
         expect(paint).toContain('shouldKeepRouteFadeCssBackground');
         expect(paint).toContain('buildLuxuryRoutePanelGradient');
@@ -100,7 +93,7 @@ describe('LMS CSS-token surface regressions', () => {
     it('never gates LMS large shells on high-opacity skip (avoids blue wash at slider >=80)', () => {
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         expect(transparency).not.toMatch(/if\s*\(\s*!_isHighTransBg\s*&&\s*isLmsRoute\s*&&/);
-        expect(transparency).toContain('shouldKeepLmsFadeCssBackground');
+        expect(transparency).toContain('isCssOwnedSurface');
         expect(transparency).toContain('shouldKeepRouteFadeCssBackground');
     });
 });

@@ -17,9 +17,10 @@ describe('timetable route regressions', () => {
         const boardCss = readSource('assets/css/layout-schedule-board.css');
         const themePrimer = readSource('assets/js/theme-primer.js');
         const luxTransparency = readSource('assets/js/shared/lux-transparency.js');
+        const structuralStart = luxTransparency.indexOf('const isStructuralSurface = (el) =>');
         const timetableStructuralBranch = luxTransparency.slice(
-            luxTransparency.indexOf("(document.body.classList.contains('lux-route-timetable') && ("),
-            luxTransparency.indexOf("(document.body.classList.contains('lux-route-registration') && (")
+            structuralStart,
+            luxTransparency.indexOf("(document.body.classList.contains('lux-route-registration')", structuralStart)
         );
         const inlineHandlerMatches = html.match(/on(click|input|change|mouseover|mouseout|mouseenter|mouseleave)=/g) || [];
 
@@ -130,8 +131,8 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain('class="ev-title lux-timetable-event-title"');
         expect(timetableRuntime).toContain('class="ev-meta lux-timetable-event-meta"');
         expect(timetableRuntime).toContain("showScheduleSurfaceEmpty(container, emptyMessage, 'schedule-grid-empty lux-timetable-grid-empty');");
-        expect(timetableRuntime).not.toContain('kiu-btn-blue');
-        expect(timetableRuntime).not.toContain('kiu-btn-outline');
+        expect(timetableRuntime).not.toContain('lux-primary-btn');
+        expect(timetableRuntime).not.toContain('lux-secondary-btn');
         expect(timetableRuntime).not.toContain('style="height:${slotHeight}px; cursor:default;"');
         expect(timetableRuntime).not.toContain('style="top:${nowTopPx}px;"');
         expect(timetableRuntime).not.toContain('style="background:${color};"');
@@ -148,9 +149,8 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).not.toContain('timetable-insight-next');
         expect(timetableRuntime).not.toContain('renderTimetableNextCompactFacts');
         expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
-        expect(timetableStructuralBranch).toContain("el.classList.contains('lux-timetable-hero')");
-        expect(timetableStructuralBranch).toContain("el.classList.contains('lux-timetable-command')");
-        expect(timetableStructuralBranch).toContain("el.classList.contains('lux-timetable-session-card')");
+        expect(timetableStructuralBranch).toContain('isCssOwnedSurface(el)');
+        expect(timetableStructuralBranch).not.toContain("el.classList.contains('lux-timetable-session-card')");
         expect(luxTransparency).toContain('const isTimetableGridCell = (el) => {');
         expect(luxTransparency).toContain('TIMETABLE_GRID_CELL_CLASS_NAMES');
         expect(luxTransparency).toContain('isTimetableGridCell(el) ||');
@@ -175,5 +175,11 @@ describe('timetable route regressions', () => {
         expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-timetable-mobile1');
         expect(html).not.toContain('(function initMobileExperience(){');
         expect(html).not.toContain("var ht=setInterval(function(){if(typeof window.navigate==='function')");
+    });
+
+    it('marks layout-only shell and glass-root stage host', () => {
+        const html = readSource('timetable.html');
+        expect(html).toContain('data-lux-layout-only="1"');
+        expect(html).toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
     });
 });

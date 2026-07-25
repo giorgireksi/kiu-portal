@@ -243,4 +243,51 @@ describe('lux picker viewport edge clamp', () => {
         expect(Number.parseFloat(panel.style.left) + placement.width)
             .toBeLessThanOrEqual(1377 - 28);
     });
+
+    it('caps teleported picker max-height to CSS droplist option budget', () => {
+        const win = bootPickerPlacementApi();
+        const doc = win.document;
+        stubViewport(win, { width: 1200, height: 900 });
+
+        const style = doc.createElement('style');
+        style.textContent = `
+            :root {
+                --lux-droplist-option-height: 44px;
+                --lux-droplist-visible-options: 5;
+                --lux-droplist-shell-gap: 6px;
+                --lux-droplist-shell-pad: 12px;
+            }
+        `;
+        doc.head.append(style);
+
+        const trigger = doc.createElement('button');
+        trigger.getBoundingClientRect = () => ({
+            top: 200,
+            bottom: 240,
+            left: 76,
+            right: 336,
+            width: 260,
+            height: 40
+        });
+        const panel = doc.createElement('div');
+        panel.className = 'lux-picker-panel lux-universal-picker-panel lux-droplist-panel';
+        stubPanelBox(panel, () => ({
+            top: 248,
+            bottom: 948,
+            left: 76,
+            right: 396,
+            width: 320,
+            height: 700
+        }));
+        doc.body.append(trigger, panel);
+
+        win.placeLuxFloatingPanel({
+            trigger,
+            panel,
+            preferredWidth: 320,
+            estimatedHeight: 700
+        });
+
+        expect(Number.parseFloat(panel.style.maxHeight)).toBe(268);
+    });
 });

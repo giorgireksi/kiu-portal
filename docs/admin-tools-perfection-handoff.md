@@ -83,7 +83,7 @@ flowchart TB
 | Curriculum workspace / empty states | `assets/js/pages/registration.js` (+ peels) |
 | Registration tabs / program panes | `assets/js/pages/admin-registration*.js` |
 | Surface stamps | `assets/js/pages/admin-tools-index-alignment.js` |
-| Paint policy | `assets/js/shared/lux-transparency.js` + `lux-transparency-route-runtime.js` |
+| Paint policy | `assets/js/shared/lux-transparency.js` |
 | Layout + flatten CSS | `assets/css/lux-page-bare-lite.css` (scoped `#lux-admin-tools-shell` / `lux-route-admin-tools`) |
 
 **Historical CSS source (read-only port):**  

@@ -1035,9 +1035,9 @@ function renderAdminOrders() {
 function ensureAdminOrdersShell(root) {
     if (!root.querySelector('[data-admin-orders-shell="1"]')) {
         root.innerHTML = `
-            <div class="lux-page-shell orders-admin-shell" data-admin-orders-shell="1">
+            <div class="lux-page-shell orders-admin-shell" data-admin-orders-shell="1" data-lux-layout-only="1">
                 <div class="orders-admin-grid">
-                    <section class="lux-panel orders-admin-panel orders-admin-workspace-card lux-soft-chrome">
+                    <section class="lux-panel orders-admin-panel orders-admin-workspace-card" data-lux-glass-root="1">
                         <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--workspace">
                             <div class="orders-admin-workspace-section orders-admin-workspace-section--command" id="admin-orders-command-panel" aria-label="Create official order"></div>
                             <div class="orders-admin-workspace-divider" role="presentation"></div>

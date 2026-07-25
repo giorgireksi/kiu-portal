@@ -253,15 +253,6 @@ function formatEctsProgress(max, completed = 0) {
     return `${safeMax}/${safeCompleted}`;
 }
 
-function closeStructuredFormModal() {
-    if (typeof window.__kiuStructuredFormCleanup === 'function') {
-        window.__kiuStructuredFormCleanup();
-        window.__kiuStructuredFormCleanup = null;
-    }
-    const existing = document.getElementById('kiu-structured-form-modal');
-    if (existing) existing.remove();
-}
-
 function escapeHtml(value) {
     if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
         const shared = window.escapeHtml;
@@ -282,153 +273,6 @@ function jsQuote(value) {
 function toPositiveInt(value, fallback = 0) {
     const parsed = parseInt(String(value == null ? '' : value).trim(), 10);
     return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function buildStructuredFormFieldNode(field) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'registration-structured-field';
-
-    const id = field.name;
-    const label = document.createElement('label');
-    label.htmlFor = id;
-    label.className = 'registration-structured-label';
-    label.textContent = field.label || field.name;
-    wrapper.appendChild(label);
-
-    let control;
-    if (field.type === 'textarea') {
-        control = document.createElement('textarea');
-        control.rows = field.rows || 3;
-        control.className = `registration-structured-control registration-structured-control--textarea${field.readonly || field.disabled ? ' is-muted' : ''}`;
-        control.value = field.value == null ? '' : String(field.value);
-    } else if (field.type === 'select') {
-        control = document.createElement('select');
-        control.className = `registration-structured-control${field.disabled ? ' is-muted' : ''}`;
-        (field.options || []).forEach((opt) => {
-            const option = document.createElement('option');
-            option.value = String(opt.value);
-            option.textContent = String(opt.label);
-            option.selected = String(opt.value) === String(field.value);
-            control.appendChild(option);
-        });
-    } else {
-        control = document.createElement('input');
-        control.type = field.type || 'text';
-        control.className = `registration-structured-control${field.readonly || field.disabled ? ' is-muted' : ''}`;
-        control.value = field.value == null ? '' : String(field.value);
-        if (field.min != null) control.min = String(field.min);
-        if (field.max != null) control.max = String(field.max);
-        if (field.step != null) control.step = String(field.step);
-    }
-
-    control.id = id;
-    control.name = id;
-    if (field.placeholder) control.placeholder = String(field.placeholder);
-    if (field.readonly) control.readOnly = true;
-    if (field.disabled) control.disabled = true;
-    wrapper.appendChild(control);
-
-    if (field.help) {
-        const help = document.createElement('div');
-        help.className = 'registration-structured-help';
-        help.textContent = String(field.help);
-        wrapper.appendChild(help);
-    }
-
-    return wrapper;
-}
-
-function openStructuredFormModal(config) {
-    closeStructuredFormModal();
-
-    const fields = config.fields || [];
-    const modal = document.createElement('div');
-    modal.id = 'kiu-structured-form-modal';
-    modal.className = 'registration-structured-modal-backdrop';
-
-    const card = document.createElement('div');
-    card.className = 'registration-structured-modal-card';
-
-    const header = document.createElement('div');
-    header.className = 'registration-structured-modal-head';
-    const headerCopy = document.createElement('div');
-    headerCopy.className = 'registration-structured-modal-copy';
-    const headerTitle = document.createElement('div');
-    headerTitle.className = 'registration-structured-modal-title';
-    headerTitle.textContent = config.title || 'Edit Item';
-    const headerSubtitle = document.createElement('div');
-    headerSubtitle.className = 'registration-structured-modal-subtitle';
-    headerSubtitle.textContent = config.subtitle || 'Fill in the details below.';
-    headerCopy.append(headerTitle, headerSubtitle);
-    const closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.id = 'kiu-structured-form-close';
-    closeBtn.className = 'registration-structured-modal-close';
-    closeBtn.textContent = '×';
-    header.append(headerCopy, closeBtn);
-
-    const form = document.createElement('form');
-    form.id = 'kiu-structured-form';
-    form.className = 'registration-structured-form';
-    const body = document.createElement('div');
-    body.className = 'registration-structured-modal-body';
-    const grid = document.createElement('div');
-    grid.className = 'registration-structured-grid';
-    fields.forEach((field) => grid.appendChild(buildStructuredFormFieldNode(field)));
-    body.appendChild(grid);
-    const footer = document.createElement('div');
-    footer.className = 'registration-structured-modal-footer';
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.id = 'kiu-structured-form-cancel';
-    cancelBtn.className = 'lux-secondary-btn registration-structured-modal-action';
-    cancelBtn.textContent = 'Cancel';
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'submit';
-    submitBtn.className = 'lux-primary-btn registration-structured-modal-action';
-    submitBtn.textContent = config.submitLabel || 'Save';
-    footer.append(cancelBtn, submitBtn);
-    form.append(body, footer);
-    card.append(header, form);
-    modal.appendChild(card);
-    document.body.appendChild(modal);
-
-    const onKeyDown = (event) => {
-        if (event.key === 'Escape') close();
-    };
-    const close = () => closeStructuredFormModal();
-    window.__kiuStructuredFormCleanup = () => {
-        window.removeEventListener('keydown', onKeyDown);
-    };
-    if (closeBtn) closeBtn.onclick = close;
-    if (cancelBtn) cancelBtn.onclick = close;
-    window.addEventListener('keydown', onKeyDown);
-    if (modal) {
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) close();
-        });
-    }
-
-    if (form) {
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const values = {};
-            fields.forEach(field => {
-                const el = document.getElementById(field.name);
-                values[field.name] = el ? el.value : '';
-            });
-            if (typeof config.onSave === 'function') {
-                config.onSave(values, close);
-            } else {
-                close();
-            }
-        });
-    }
-
-    setTimeout(() => {
-        const firstField = modal?.querySelector('input, textarea, select');
-        if (firstField && typeof firstField.focus === 'function') firstField.focus();
-    }, 0);
 }
 
 window.STUDENT_REGISTRATION_GRADEBOOK_CRITERIA = window.STUDENT_REGISTRATION_GRADEBOOK_CRITERIA || {
@@ -620,12 +464,9 @@ function getStudentCompletedEctsForCourseIds(studentId, courseIds, preferredFacu
             evaluateStudentCourseEligibility,
             parseEctsProgress,
             formatEctsProgress,
-            closeStructuredFormModal,
             escapeHtml,
             jsQuote,
             toPositiveInt,
-            buildStructuredFormFieldNode,
-            openStructuredFormModal,
             getStudentRegistrationGradebookCriterionMeta,
             normalizeStudentRegistrationAssessmentNumber,
             sortStudentRegistrationAssessmentEntries,

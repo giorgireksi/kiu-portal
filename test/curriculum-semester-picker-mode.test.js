@@ -22,12 +22,14 @@ describe('curriculum semester picker mode', () => {
         expect(picker).toContain('function applyCustomSemester(custom, config)');
         expect(picker).toContain("return addSemestersMode ? 'Add to selection' : 'Select semester'");
         expect(picker).toContain('function syncModeSegmentUi(config = {})');
+        expect(picker).toContain('pickerButton.setAttribute(\'aria-label\', getPickerCaption())');
+        expect(picker).not.toContain('lux-picker-caption');
         expect(picker).toContain('window.setCurriculumSemesterAddMode = setAddSemestersMode');
         expect(picker).toContain('data-semester-mode');
         expect(picker).toContain('new-subject-semester-mode-hint');
     });
 
-    it('ships segmented control markup and updated picker caption in admin-tools bundle', () => {
+    it('ships compact value-only semester trigger in admin-tools bundle', () => {
         const bundle = readSource('assets/js/features/index-admin-tools.bundle-source.js');
 
         expect(bundle).toContain('lux-semester-mode-segment');
@@ -36,19 +38,23 @@ describe('curriculum semester picker mode', () => {
         expect(bundle).toContain('data-semester-mode="replace"');
         expect(bundle).toContain('data-semester-mode="add"');
         expect(bundle).toContain('new-subject-semester-mode-hint');
-        expect(bundle).toContain('Select semester');
+        expect(bundle).toContain('lux-picker-btn--compact');
+        expect(bundle).toContain('lux-picker-value');
+        expect(bundle).toContain('aria-label="Select semester"');
+        expect(bundle).not.toContain('lux-picker-caption');
         expect(bundle).toContain('lux-universal-picker-panel');
-        expect(bundle).not.toContain('new-subject-semester-lux-panel" role="listbox" aria-hidden="true" hidden');
         expect(bundle).not.toContain('lux-semester-add-mode-btn');
         expect(bundle).not.toContain('Add or remove semester');
     });
 
-    it('styles the semester mode segment in admin-tools luxury css', () => {
-        const css = readSource('assets/css/admin-tools-luxury.css');
+    it('styles the semester mode segment in bare-lite shared css', () => {
+        const css = readSource('assets/css/lux-page-bare-lite.css');
 
+        expect(existsSync(join(process.cwd(), 'assets/css/admin-tools-luxury.css'))).toBe(false);
         expect(css).toContain('.lux-admin-tools-semester-head');
         expect(css).toContain('.lux-admin-tools-semester-hint');
         expect(css).toContain('.lux-semester-mode-segment');
         expect(css).toContain('.lux-semester-mode-segment__btn[aria-pressed="true"]');
+        expect(css).toContain('.lux-picker-btn--compact');
     });
 });

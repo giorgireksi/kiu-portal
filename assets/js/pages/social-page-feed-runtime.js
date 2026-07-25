@@ -166,24 +166,24 @@
             const tagsHtml = tags.length
                 ? `<div class="social-neo-badge-row">${tags.map((tag) => `<span class="social-neo-pill">${escape(text(tag))}</span>`).join('')}</div>`
                 : '';
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(meta.title)}">
-                <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--group-detail social-neo-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-section-head social-neo-dialog-head social-neo-group-detail-head">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(meta.title)}">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--group-detail lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head social-neo-group-detail-head">
                         <div class="social-neo-group-detail-identity">
                             <div class="social-neo-group-card-icon social-neo-group-card-avatar social-neo-group-detail-avatar"><i class="fas ${escape(meta.icon)}"></i></div>
-                            <div class="social-neo-dialog-heading">
-                                <strong class="social-neo-dialog-title">${escape(meta.title)}</strong>
-                                <span class="social-neo-dialog-subtitle social-neo-group-detail-meta">
+                            <div class="lux-glass-dialog-heading">
+                                <strong class="lux-glass-dialog-title">${escape(meta.title)}</strong>
+                                <span class="lux-glass-dialog-subtitle social-neo-group-detail-meta">
                                     <span class="social-neo-pill">${escape(meta.sectionLabel)}</span>
                                     <span>${escape(meta.subtitle)}</span>
                                 </span>
                             </div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="social-neo-dialog-body social-neo-dialog-body--group-detail">
-                        <section class="social-neo-dialog-group-create-section social-neo-group-detail-section">
-                            <div class="social-neo-dialog-group-create-section-head">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--group-detail">
+                        <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>About</strong>
                                 <span>${escape(meta.sectionLabel)} description.</span>
                             </div>
@@ -191,17 +191,17 @@
                             ${tagsHtml}
                         </section>
                         ${stats ? `
-                        <section class="social-neo-dialog-group-create-section social-neo-group-detail-section">
-                            <div class="social-neo-dialog-group-create-section-head">
+                        <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Details</strong>
                                 <span>Key facts about this ${escape(meta.sectionLabel.toLowerCase())}.</span>
                             </div>
                             <div class="social-neo-list social-neo-group-detail-list">${stats}</div>
                         </section>` : ''}
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions social-neo-group-detail-actions">
-                        <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="entity-goto" data-entity-type="${escape(type)}" data-entity-id="${escape(id)}"><i class="fas fa-arrow-right"></i> Open full view</button>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions social-neo-group-detail-actions">
+                        <button class="lux-primary-btn" type="button" data-action="entity-goto" data-entity-type="${escape(type)}" data-entity-id="${escape(id)}"><i class="fas fa-arrow-right"></i> Open full view</button>
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
                     </div>
                 </div>
             </div>`;
@@ -219,7 +219,7 @@
                             <div class="social-neo-post-compose-chip">
                                 <i class="fas ${escape(meta.icon)}" aria-hidden="true"></i>
                                 <span><strong>${escape(meta.title)}</strong> · ${escape(meta.sectionLabel)}</span>
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="post-compose-entity-remove" data-entity-type="${escape(meta.type)}" data-entity-id="${escape(meta.id)}" aria-label="Remove attachment">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="post-compose-entity-remove" data-entity-type="${escape(meta.type)}" data-entity-id="${escape(meta.id)}" aria-label="Remove attachment">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -236,8 +236,8 @@
                     ${links.map((link) => {
                         const meta = resolveEntityLinkMeta(link);
                         const surveyExtra = meta.type === 'survey'
-                            ? `<button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="survey-take-open" data-survey-id="${escape(meta.id)}"><i class="fas fa-play"></i> Take survey</button>`
-                            : `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="entity-link-open" data-entity-type="${escape(meta.type)}" data-entity-id="${escape(meta.id)}">Open <i class="fas fa-arrow-right"></i></button>`;
+                            ? `<button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="survey-take-open" data-survey-id="${escape(meta.id)}"><i class="fas fa-play"></i> Take survey</button>`
+                            : `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="entity-link-open" data-entity-type="${escape(meta.type)}" data-entity-id="${escape(meta.id)}">Open <i class="fas fa-arrow-right"></i></button>`;
                         return `
                             <article class="social-neo-post-entity-card">
                                 <div class="social-neo-post-entity-card-copy">
@@ -265,21 +265,21 @@
         const renderPostComposeAttachResultsHtml = createSocialLazyStub('renderPostComposeAttachResultsHtml', hasSocialFeedModule, ensureSocialFeedModule, '', null);
         function patchPostComposeAttachDialog(runtime = state()) {
             if (text(activeDialog()?.type || '') !== 'post-compose-attach') return false;
-            const card = document.querySelector('.social-neo-dialog-card--post-compose-attach');
+            const card = document.querySelector('.lux-glass-dialog-card--post-compose-attach');
             if (!card) return false;
             const filter = text(runtime.ui?.postComposeAttachFilter || 'mine') || 'mine';
             const list = card.querySelector('.social-neo-post-compose-attach-results');
             if (list) list.innerHTML = renderPostComposeAttachResultsHtml(runtime);
             card.querySelectorAll('[data-action="post-compose-attach-filter"]').forEach((btn) => {
                 const isActive = text(btn.getAttribute('data-filter') || '') === filter;
-                btn.classList.toggle('social-neo-btn-primary', isActive);
-                btn.classList.toggle('social-neo-btn-ghost', !isActive);
+                btn.classList.toggle('lux-primary-btn', isActive);
+                btn.classList.toggle('lux-secondary-btn', !isActive);
             });
             const count = normalizeComposerEntityLinks(runtime.ui?.composerEntityLinks).length;
             const done = card.querySelector('.social-neo-post-compose-attach-done');
             if (done) {
                 const badge = count
-                    ? `<span class="social-neo-dialog-submit-badge">${escape(String(count))}</span>`
+                    ? `<span class="lux-glass-dialog-submit-badge">${escape(String(count))}</span>`
                     : '';
                 done.innerHTML = `<i class="fas fa-check"></i> Done${badge}`;
             }
@@ -301,9 +301,9 @@
         }
         function patchPostComposeDialog(runtime = state()) {
             if (text(activeDialog()?.type || '') !== 'post-compose') return false;
-            const form = document.querySelector('form[data-form="post-compose"].social-neo-dialog-card--post-compose');
+            const form = document.querySelector('form[data-form="post-compose"].lux-glass-dialog-card--post-compose');
             if (!form) return false;
-            const invite = form.querySelector('.social-neo-dialog-project-create-section--invite');
+            const invite = form.querySelector('.lux-glass-dialog-group-section--invite');
             if (!invite) return false;
             const wrap = document.createElement('div');
             wrap.innerHTML = renderPostComposeShareSection(runtime).trim();
@@ -311,10 +311,10 @@
             if (!nextInvite) return false;
             invite.replaceWith(nextInvite);
             const entityLinks = normalizeComposerEntityLinks(runtime.ui?.composerEntityLinks);
-            const submit = form.querySelector('.social-neo-dialog-submit-btn');
+            const submit = form.querySelector('.lux-glass-dialog-submit-btn');
             if (submit) {
                 const badge = entityLinks.length
-                    ? `<span class="social-neo-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
+                    ? `<span class="lux-glass-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
                     : '';
                 submit.innerHTML = `<i class="fas fa-paper-plane"></i> Publish${badge}`;
             }
@@ -537,12 +537,12 @@
             const head = compact ? '' : `
                 <div class="social-neo-section-head social-project-task-checklist-head">
                     <div><span class="social-neo-label">Checklist</span><span>Break the task into small, trackable steps.</span></div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-checklist-add" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> Add step</button>
+                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-task-checklist-add" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> Add step</button>
                 </div>
             `;
-            const addBtn = compact ? `<div class="social-project-task-checklist-toolbar"><button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-checklist-add" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> Add step</button></div>` : '';
+            const addBtn = compact ? `<div class="social-project-task-checklist-toolbar"><button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-task-checklist-add" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> Add step</button></div>` : '';
             return `
-                <div class="social-neo-dialog-field social-project-task-checklist-field">
+                <div class="lux-glass-dialog-field social-project-task-checklist-field">
                     ${head}
                     ${addBtn}
                     <div class="social-project-task-checklist-rows" data-project-id="${escape(text(project.id))}">
@@ -550,7 +550,7 @@
                             <label class="social-project-task-checklist-row">
                                 <input type="checkbox" name="projectTaskChecklistDone" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}" ${item.done ? 'checked' : ''}>
                                 <input class="social-neo-input" type="text" name="projectTaskChecklistLabel" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}" value="${escape(text(item.label || ''))}" placeholder="Step description">
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Remove step" data-action="project-task-checklist-remove" data-project-id="${escape(text(project.id))}" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}"><i class="fas fa-times"></i></button>
+                                <button class="lux-secondary-btn lux-secondary-btn-icon" type="button" title="Remove step" data-action="project-task-checklist-remove" data-project-id="${escape(text(project.id))}" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}"><i class="fas fa-times"></i></button>
                             </label>
                         `).join('') : `<div class="social-neo-empty social-project-task-checklist-empty">No steps yet. Add one to track progress on this task.</div>`}
                     </div>
@@ -589,9 +589,9 @@
         }
         function getProjectHealthDialogCard() {
             return document.querySelector(
-                '.social-project-health-anchor .social-neo-dialog-card--project-health-fs, '
-                + '.social-neo-dialog-card--project-health-fs, '
-                + '.social-neo-dialog-card--project-health'
+                '.social-project-health-anchor .lux-glass-dialog-card--project-health-fs, '
+                + '.lux-glass-dialog-card--project-health-fs, '
+                + '.lux-glass-dialog-card--project-health'
             );
         }
         /** Patch only My plan card — avoid full Health remount/flicker. */
@@ -636,7 +636,7 @@
         const renderProjectHealthPlanPickResultsHtml = createSocialLazyStub('renderProjectHealthPlanPickResultsHtml', hasSocialWorkspaceModule, ensureSocialWorkspaceModule, '', null);
         const renderProjectHealthPlanPickToolbarHtml = createSocialLazyStub('renderProjectHealthPlanPickToolbarHtml', hasSocialWorkspaceModule, ensureSocialWorkspaceModule, '', null);
         function patchProjectHealthPlanPick(runtime = state()) {
-            const card = document.querySelector('.social-neo-dialog-card--health-plan-pick');
+            const card = document.querySelector('.lux-glass-dialog-card--health-plan-pick');
             if (!card) return false;
             const dialog = activeDialog();
             if (text(dialog?.type || '') !== 'project-health-plan-pick') return false;
@@ -795,11 +795,11 @@
                                     <span class="social-neo-shell-drawer-profile-subtitle">${escape(accountSubtitle(user))}</span>
                                 </div>
                             </button>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="shell-drawer-close"><i class="fas fa-times"></i></button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="shell-drawer-close"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="social-neo-inline social-neo-inline-gap-4 social-neo-shell-drawer-actions">
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-drawer-action-btn" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}"><i class="fas fa-user"></i> Profile</button>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-drawer-action-btn" type="button" data-action="panel-messages"><i class="fas fa-paper-plane"></i> Messages</button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm social-neo-shell-drawer-action-btn" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}"><i class="fas fa-user"></i> Profile</button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm social-neo-shell-drawer-action-btn" type="button" data-action="panel-messages"><i class="fas fa-paper-plane"></i> Messages</button>
                         </div>
                     </section>
                     <section class="social-neo-card social-neo-shell-drawer-nav-card">

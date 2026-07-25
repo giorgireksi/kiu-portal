@@ -42,7 +42,6 @@ const factoryPeelAllowlist = [
     'assets/js/pages/lms-live-quiz-session-runtime.js',
     'assets/js/pages/lms-section-quiz-runtime.js',
     'assets/js/pages/student-registration-eligibility-runtime.js',
-    'assets/js/shared/lux-transparency-route-runtime.js',
     'assets/js/shared/faculty-schedule-runtime.js',
     'assets/js/pages/registration-semester-runtime.js',
     'assets/js/pages/gradebook-weights-runtime.js',
@@ -447,12 +446,7 @@ const lineCountThresholds = [
     {
         file: 'assets/js/shared/lux-transparency.js',
         maxLines: 2000,
-        reason: 'Wave 16: route shouldKeep* helpers in lux-transparency-route-runtime.js.'
-    },
-    {
-        file: 'assets/js/shared/lux-transparency-route-runtime.js',
-        maxLines: 850,
-        reason: 'Route shouldKeep* fade ownership helpers peeled from lux-transparency.js.'
+        reason: 'Merged route API (isCssOwnedSurface, shouldKeepRouteFadeCssBackground) + transparency engine.'
     },
     {
         file: 'assets/js/app/app.js',

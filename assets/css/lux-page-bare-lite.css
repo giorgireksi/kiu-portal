@@ -56,10 +56,10 @@ body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: gr
   body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Admin-tools layout (paint → lux-fouc-ht / lux-controls) ── */
+/* ── Bare host contract (paint → lux-fouc-ht / lux-controls) ── */
 
-/* Page-shell is a layout wrapper — inner .lux-panel sections are the glass hosts */
-body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell {
+/* Layout-only shells: spacing wrapper — real glass hosts use data-lux-glass-root="1" */
+body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
   background: transparent;
   border: 0;
   box-shadow: none;
@@ -132,7 +132,8 @@ body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell {
 #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i {
   position: absolute;
   left: 12px;
-  bottom: 12px;
+  bottom: calc(var(--lux-field-min-height, 44px) / 2);
+  transform: translateY(50%);
   z-index: 1;
   pointer-events: none;
   color: var(--lux-text-muted, rgba(248, 250, 252, 0.55));
@@ -236,13 +237,493 @@ body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell {
 #lux-admin-tools-shell .admin-reg-program-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: 260px;
+  gap: 4px;
+  max-height: min(60vh, 480px);
   overflow: auto;
   padding-right: 4px;
 }
+#lux-admin-tools-shell .admin-reg-program-list-title--strong {
+  font-size: 13px;
+  font-weight: 800;
+}
+#lux-admin-tools-shell .admin-reg-program-list-empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
 #lux-admin-tools-shell .admin-reg-program-list-placeholder {
   padding: 20px;
+  text-align: center;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  border: 1px dashed var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+}
+
+/* Program list options */
+#lux-admin-tools-shell .admin-reg-program-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+#lux-admin-tools-shell .admin-reg-program-option--wide {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#lux-admin-tools-shell .admin-reg-program-option:hover,
+#lux-admin-tools-shell .admin-reg-program-option:focus-within {
+  border-color: rgba(var(--lux-accent-rgb, 11, 132, 255), 0.2);
+}
+#lux-admin-tools-shell .admin-reg-program-option.is-active {
+  background: rgba(var(--lux-accent-rgb, 11, 132, 255), 0.08);
+  border-color: rgba(var(--lux-accent-rgb, 11, 132, 255), 0.24);
+  box-shadow: inset 3px 0 0 var(--lux-accent, #0b84ff);
+}
+#lux-admin-tools-shell .admin-reg-program-option-label {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+#lux-admin-tools-shell .admin-reg-program-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+#lux-admin-tools-shell .admin-reg-program-option-input {
+  margin: 0;
+  accent-color: var(--lux-accent, #0b84ff);
+  inline-size: 16px;
+  block-size: 16px;
+  flex: 0 0 auto;
+}
+#lux-admin-tools-shell .admin-reg-program-option-title {
+  font-weight: 700;
+  color: var(--lux-text, #f8fafc);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#lux-admin-tools-shell .admin-reg-program-option-progress {
+  font-size: 10px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  padding-left: 26px;
+}
+#lux-admin-tools-shell .admin-reg-program-option-progress--pill {
+  padding-left: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--lux-accent, #0b84ff);
+  background: color-mix(in srgb, var(--lux-accent, #0b84ff) 12%, transparent);
+  border: 1px solid rgba(var(--lux-accent-rgb, 11, 132, 255), 0.16);
+  padding: 5px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+#lux-admin-tools-shell .admin-reg-program-option-actions {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+/* Program pane (free / prog CMS layouts) */
+#lux-admin-tools-shell .admin-reg-program-pane-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-main {
+  min-width: 0;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lux-text, #f8fafc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-copy {
+  font-size: 11px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  margin-top: 3px;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-progress {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--lux-accent, #0b84ff);
+  background: color-mix(in srgb, var(--lux-accent, #0b84ff) 12%, transparent);
+  border: 1px solid rgba(var(--lux-accent-rgb, 11, 132, 255), 0.16);
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-btn {
+  padding: 7px 12px;
+  font-size: 11px;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-btn--primary {
+  padding: 8px 14px;
+  font-size: 12px;
+}
+#lux-admin-tools-shell .admin-reg-program-subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#lux-admin-tools-shell .admin-reg-program-subject-head {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+#lux-admin-tools-shell .admin-reg-program-subject-head-number { width: 84px; text-align: center; }
+#lux-admin-tools-shell .admin-reg-program-subject-head-title { flex: 3; }
+#lux-admin-tools-shell .admin-reg-program-subject-head-ects { width: 110px; text-align: center; }
+#lux-admin-tools-shell .admin-reg-program-subject-head-meta { flex: 2; }
+#lux-admin-tools-shell .admin-reg-program-subject-head-actions { width: 120px; }
+#lux-admin-tools-shell .admin-reg-program-subject-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+  box-shadow: var(--lux-soft-chrome-surface-shadow, none);
+}
+#lux-admin-tools-shell .admin-reg-program-subject-number {
+  width: 84px;
+  text-align: center;
+  font-weight: 800;
+  color: var(--lux-accent-2, #38bdf8);
+}
+#lux-admin-tools-shell .admin-reg-program-subject-main { flex: 3; min-width: 0; }
+#lux-admin-tools-shell .admin-reg-program-subject-title {
+  font-weight: 700;
+  color: var(--lux-text, #f8fafc);
+}
+#lux-admin-tools-shell .admin-reg-program-subject-courses {
+  font-size: 10px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  margin-top: 2px;
+}
+#lux-admin-tools-shell .admin-reg-program-subject-ects {
+  width: 110px;
+  text-align: center;
+  font-weight: 800;
+  color: var(--lux-accent-2, #38bdf8);
+}
+#lux-admin-tools-shell .admin-reg-program-subject-details {
+  flex: 2;
+  font-size: 11px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+#lux-admin-tools-shell .admin-reg-program-subject-detail { margin-top: 4px; }
+#lux-admin-tools-shell .admin-reg-program-subject-detail--semester {
+  color: var(--lux-green, #22c55e);
+  font-weight: 700;
+}
+#lux-admin-tools-shell .admin-reg-program-subject-detail--access {
+  color: var(--lux-accent-2, #38bdf8);
+  font-weight: 700;
+}
+#lux-admin-tools-shell .admin-reg-program-subject-actions {
+  width: 120px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Track workspace (program / conc / minor tabs) */
+#lux-admin-tools-shell .admin-reg-track-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+#lux-admin-tools-shell .admin-reg-track-head-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--lux-text, #f8fafc);
+}
+#lux-admin-tools-shell .admin-reg-track-head-copy {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+#lux-admin-tools-shell .admin-reg-track-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+#lux-admin-tools-shell .admin-reg-track-group-card {
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+  box-shadow: var(--lux-soft-chrome-surface-shadow, none);
+  overflow: hidden;
+}
+#lux-admin-tools-shell .admin-reg-track-group-header {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  border-bottom: 1px solid rgba(var(--lux-accent-rgb, 11, 132, 255), 0.1);
+}
+#lux-admin-tools-shell .admin-reg-track-group-toggle {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+}
+#lux-admin-tools-shell button.admin-reg-track-group-toggle {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+#lux-admin-tools-shell div.admin-reg-track-group-toggle {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+#lux-admin-tools-shell .admin-reg-track-group-chevron {
+  color: var(--lux-accent, #0b84ff);
+  font-size: 12px;
+}
+#lux-admin-tools-shell .admin-reg-track-group-main {
+  min-width: 0;
+}
+#lux-admin-tools-shell .admin-reg-track-group-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--lux-text, #f8fafc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#lux-admin-tools-shell .admin-reg-track-group-copy {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+#lux-admin-tools-shell .admin-reg-track-group-progress {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-accent, #0b84ff) 12%, transparent);
+  border: 1px solid rgba(var(--lux-accent-rgb, 11, 132, 255), 0.16);
+  color: var(--lux-accent, #0b84ff);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+#lux-admin-tools-shell .admin-reg-track-group-header .admin-reg-track-group-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px 8px 0;
+  flex: 0 0 auto;
+}
+#lux-admin-tools-shell div.admin-reg-track-group-toggle .admin-reg-track-group-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+}
+#lux-admin-tools-shell .admin-reg-track-group-body {
+  padding: 0 18px 18px;
+  border-top: 1px solid rgba(var(--lux-accent-rgb, 11, 132, 255), 0.1);
+}
+#lux-admin-tools-shell .admin-reg-track-subject-head {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1.5fr) 96px minmax(0, 1fr) 104px;
+  gap: 10px;
+  margin-top: 16px;
+  margin-bottom: 10px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+#lux-admin-tools-shell .admin-reg-track-subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#lux-admin-tools-shell .admin-reg-track-subject-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1.5fr) 96px minmax(0, 1fr) 104px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+  box-shadow: var(--lux-soft-chrome-surface-shadow, none);
+}
+#lux-admin-tools-shell .admin-reg-track-subject-number,
+#lux-admin-tools-shell .admin-reg-track-subject-ects {
+  font-weight: 800;
+  text-align: center;
+  color: var(--lux-accent-2, #38bdf8);
+}
+#lux-admin-tools-shell .admin-reg-track-subject-main,
+#lux-admin-tools-shell .admin-reg-track-subject-details {
+  min-width: 0;
+}
+#lux-admin-tools-shell .admin-reg-track-subject-title {
+  font-weight: 700;
+  color: var(--lux-text, #f8fafc);
+}
+#lux-admin-tools-shell .admin-reg-track-subject-code {
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+#lux-admin-tools-shell .admin-reg-track-subject-details {
+  font-size: 11px;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+#lux-admin-tools-shell .admin-reg-track-subject-detail { margin-top: 4px; }
+#lux-admin-tools-shell .admin-reg-track-subject-detail--semester {
+  color: var(--lux-green, #22c55e);
+  font-weight: 700;
+}
+#lux-admin-tools-shell .admin-reg-track-subject-detail--access {
+  color: var(--lux-accent-2, #38bdf8);
+  font-weight: 700;
+}
+#lux-admin-tools-shell .admin-reg-track-subject-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+#lux-admin-tools-shell .admin-reg-track-group-footer {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+#lux-admin-tools-shell .admin-reg-track-group-btn,
+#lux-admin-tools-shell .admin-reg-track-subject-btn {
+  padding: 6px 9px;
+  font-size: 10px;
+}
+#lux-admin-tools-shell .admin-reg-track-group-btn--danger,
+#lux-admin-tools-shell .admin-reg-track-subject-btn--danger {
+  color: var(--lux-red, #ef4444);
+}
+
+/* Compact manage gear in workspace lists */
+#lux-admin-tools-shell .admin-reg-manage-gear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+#lux-admin-tools-shell .admin-reg-manage-gear-btn:hover,
+#lux-admin-tools-shell .admin-reg-manage-gear-btn:focus-visible {
+  color: var(--lux-text, #f8fafc);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+}
+
+/* Empty / fallback states */
+#lux-admin-tools-shell :is(
+  .admin-reg-render-fallback,
+  .admin-reg-program-pane-empty,
+  .admin-reg-program-subject-empty,
+  .admin-reg-track-empty,
+  .admin-reg-track-subject-empty
+) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 18px;
+  text-align: center;
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+  border: 1px dashed var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+}
+#lux-admin-tools-shell :is(
+  .admin-reg-render-fallback,
+  .admin-reg-program-pane-empty,
+  .admin-reg-program-subject-empty,
+  .admin-reg-track-empty,
+  .admin-reg-track-subject-empty
+) i {
+  font-size: 18px;
+  color: var(--lux-accent, #0b84ff);
+}
+#lux-admin-tools-shell :is(
+  .admin-reg-render-fallback,
+  .admin-reg-program-pane-empty,
+  .admin-reg-program-subject-empty,
+  .admin-reg-track-empty,
+  .admin-reg-track-subject-empty
+) strong {
+  font-size: 14px;
+  color: var(--lux-text, #f8fafc);
+}
+#lux-admin-tools-shell :is(
+  .admin-reg-render-fallback,
+  .admin-reg-program-pane-empty,
+  .admin-reg-program-subject-empty,
+  .admin-reg-track-empty,
+  .admin-reg-track-subject-empty
+) span {
+  max-width: 42ch;
+  font-size: 12px;
+  line-height: 1.45;
+}
+#lux-admin-tools-shell .admin-reg-program-pane-empty--tall {
+  min-height: 300px;
 }
 
 /* Sleek danger ghost buttons */
@@ -270,6 +751,99 @@ body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell {
   transform: translateY(-1px);
   border-color: var(--lux-accent, #0b84ff);
   background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.55));
+}
+
+/* Subject-builder semester picker — layout only; trigger paint from lux-controls. */
+#lux-admin-tools-shell .lux-admin-tools-semester-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+#lux-admin-tools-shell .lux-admin-tools-semester-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+#lux-admin-tools-shell .lux-semester-mode-segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+  box-shadow: var(--lux-soft-chrome-surface-shadow, none);
+}
+#lux-admin-tools-shell .lux-semester-mode-segment__btn {
+  min-width: 72px;
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+#lux-admin-tools-shell .lux-semester-mode-segment__btn:hover:not(.is-active) {
+  color: var(--lux-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+#lux-admin-tools-shell .lux-semester-mode-segment__btn.is-active,
+#lux-admin-tools-shell .lux-semester-mode-segment__btn[aria-pressed="true"] {
+  border-color: rgba(var(--lux-accent-rgb), 0.30);
+  background: rgba(var(--lux-accent-rgb), 0.14);
+  color: var(--lux-text);
+  box-shadow: 0 8px 18px rgba(var(--lux-accent-rgb), 0.10);
+}
+#lux-admin-tools-shell .lux-admin-tools-semester-field {
+  display: grid;
+  gap: 8px;
+}
+#lux-admin-tools-shell .lux-semester-chip-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+  order: -1;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  background: var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.35));
+  box-shadow: var(--lux-soft-chrome-surface-shadow, none);
+}
+#lux-admin-tools-shell .lux-semester-chip-tray.is-single-mode-hidden,
+#lux-admin-tools-shell .lux-semester-chip-tray[hidden] {
+  display: none;
+}
+#lux-admin-tools-shell .lux-semester-chip-tray__empty {
+  font-size: 11px;
+  color: var(--lux-text-muted);
+}
+#lux-admin-tools-shell .lux-semester-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
+  background: rgba(var(--lux-accent-rgb), 0.1);
+  color: var(--lux-text);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#lux-admin-tools-shell .lux-semester-chip i {
+  font-size: 9px;
+  opacity: 0.85;
+}
+#lux-admin-tools-shell .lux-admin-tools-semester-field > .lux-picker-btn--compact {
+  width: 100%;
 }
 
 /* Light mode icon alignment; shared .lux-control owns field colors. */

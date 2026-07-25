@@ -548,15 +548,15 @@ function openEditStaffModal(memberId, memberType) {
 
     const modalHtml = `
     <div id="edit-staff-modal-bg" data-edit-staff-overlay="1" class="registration-structured-modal-backdrop" data-lux-transparency-exempt="1" role="dialog" aria-modal="true">
-        <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create admin-edit-staff-card" data-lux-transparency-exempt="1" data-lux-glass-root="1">
-            <div class="social-neo-section-head social-neo-dialog-head admin-edit-staff-head">
-                <div class="social-neo-dialog-heading">
-                    <strong class="social-neo-dialog-title admin-edit-staff-title">Edit Staff Member</strong>
-                    <span class="social-neo-dialog-subtitle admin-edit-staff-subtitle">${escapeHtml(member.name || member.nameEn || memberId)} / ${escapeHtml(facultyLabel)}</span>
+        <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card admin-edit-staff-card" data-lux-transparency-exempt="1" data-lux-glass-root="1">
+            <div class="lux-glass-dialog-section-head lux-glass-dialog-head admin-edit-staff-head">
+                <div class="lux-glass-dialog-heading">
+                    <strong class="lux-glass-dialog-title admin-edit-staff-title">Edit Staff Member</strong>
+                    <span class="lux-glass-dialog-subtitle admin-edit-staff-subtitle">${escapeHtml(member.name || member.nameEn || memberId)} / ${escapeHtml(facultyLabel)}</span>
                 </div>
-                <button type="button" data-edit-staff-action="close" class="lux-ghost-btn social-neo-dialog-close-btn" aria-label="Close"><i class="fas fa-times"></i></button>
+                <button type="button" data-edit-staff-action="close" class="lux-ghost-btn lux-glass-dialog-close-btn" aria-label="Close"><i class="fas fa-times"></i></button>
             </div>
-            <div class="admin-edit-staff-form social-neo-dialog-body social-neo-dialog-body--event-create lux-scrollbar" id="edit-staff-form" data-member-id="${escapeHtml(memberId)}" data-member-type="${escapeHtml(memberType)}" data-fac="${escapeHtml(fac)}">
+            <div class="admin-edit-staff-form lux-glass-dialog-body lux-glass-dialog-body--event-create lux-scrollbar" id="edit-staff-form" data-member-id="${escapeHtml(memberId)}" data-member-type="${escapeHtml(memberType)}" data-fac="${escapeHtml(fac)}">
                 <div class="admin-edit-staff-section-title"><i class="fas fa-user admin-edit-staff-section-icon"></i>Personal Information</div>
                 <div class="admin-edit-staff-grid-2">
                     <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Name (Georgian)</label><input id="es-name" value="${escapeHtml(member.name || '')}" class="admin-edit-staff-control lux-control"></div>
@@ -577,7 +577,7 @@ function openEditStaffModal(memberId, memberType) {
                     <button type="button" data-edit-staff-action="add-row" class="lux-secondary-btn"><i class="fas fa-plus"></i> Add Row</button>
                 </div>
                 <div id="edit-sched-rows" class="admin-edit-staff-rows">${rowsHtml}</div>
-                <div class="admin-edit-staff-footer social-neo-dialog-actions">
+                <div class="admin-edit-staff-footer lux-glass-dialog-actions">
                     <button type="button" data-edit-staff-action="delete" class="lux-ghost-btn admin-reg-manage-modal-action--danger"><i class="fas fa-trash"></i> Remove Staff</button>
                     <div class="admin-edit-staff-actions">
                         <button type="button" data-edit-staff-action="close" class="lux-ghost-btn">Cancel</button>
@@ -1062,7 +1062,7 @@ function populateAntiReqDropdown() {
         .slice()
         .sort((left, right) => String(left?.name || '').localeCompare(String(right?.name || '')));
 
-    picker.className = 'social-neo-dialog-field lux-admin-tools-antireq-picker';
+    picker.className = 'lux-glass-dialog-field lux-admin-tools-antireq-picker';
     picker.innerHTML = `
         <span class="social-neo-label">Anti-requisites</span>
         <span class="lux-admin-tools-antireq-hint">Block enrollment when another course is taken</span>
@@ -1145,12 +1145,7 @@ function closeBuilderSemesterPickerPanel() {
     if (!panel?.classList.contains('is-open')) return;
     if (typeof window.closePickerPanels === 'function') {
         window.closePickerPanels();
-        return;
     }
-    const button = document.getElementById('new-subject-semester-lux-btn');
-    panel.classList.remove('is-open');
-    panel.setAttribute('aria-hidden', 'true');
-    if (button) button.setAttribute('aria-expanded', 'false');
 }
 
 function resetCurriculumSubjectBuilderForm() {
@@ -1181,15 +1176,34 @@ function closeCurriculumSubjectBuilderModal() {
     if (!modal || modal.hidden) return;
     closeBuilderSemesterPickerPanel();
     curriculumLibraryUiState.editingSubjectId = null;
+    if (typeof window.closeLuxPortalModal === 'function') {
+        window.closeLuxPortalModal(modal, { remove: false });
+        return;
+    }
+    modal.classList.remove('is-open', 'is-closing');
     modal.hidden = true;
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
 }
 
+function openCurriculumSubjectBuilderModalShell(modal, focusSelector) {
+    if (!modal) return;
+    if (!modal.hasAttribute('data-lux-transparency-exempt')) {
+        modal.setAttribute('data-lux-transparency-exempt', '1');
+    }
+    if (document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxStructuredModal = '1';
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
+    openLuxPortalModalAfterAppend(modal, { focusSelector });
+}
+
 function syncCurriculumSubjectBuilderModalCopy(mode = 'create') {
     const title = document.getElementById('subject-builder-modal-title');
-    const titleIcon = document.querySelector('#kiu-subject-builder-modal .social-neo-dialog-title i');
-    const subtitle = document.querySelector('#kiu-subject-builder-modal .social-neo-dialog-subtitle');
+    const titleIcon = document.querySelector('#kiu-subject-builder-modal .lux-glass-dialog-title i');
+    const subtitle = document.querySelector('#kiu-subject-builder-modal .lux-glass-dialog-subtitle');
     const saveBtn = document.getElementById('save-curriculum-subject-btn');
     const isEdit = mode === 'edit';
     if (title) title.textContent = isEdit ? 'Edit Subject' : 'Add Subject';
@@ -1217,19 +1231,7 @@ function openCurriculumSubjectBuilderModal() {
     resetCurriculumSubjectBuilderForm();
     syncCurriculumSubjectBuilderModalCopy('create');
     syncCurriculumSubjectBuilderTarget(getCurrentFaculty());
-    if (!modal.hasAttribute('data-lux-transparency-exempt')) {
-        modal.setAttribute('data-lux-transparency-exempt', '1');
-    }
-    modal.hidden = false;
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    if (document.body.classList.contains('lux-route-admin-tools')) {
-        modal.dataset.luxStructuredModal = '1';
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
-        }
-    }
-    setTimeout(() => document.getElementById('new-subject-name')?.focus(), 0);
+    openCurriculumSubjectBuilderModalShell(modal, '#new-subject-name');
 }
 
 function parseCurriculumRequirementTokens(value, prefix) {
@@ -1303,16 +1305,7 @@ function openCurriculumSubjectBuilderModalForEdit(subjectId) {
     populateCurriculumSubjectBuilderForEdit(subject);
     syncCurriculumSubjectBuilderModalCopy('edit');
     syncCurriculumSubjectBuilderTarget(faculty);
-    modal.hidden = false;
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    if (document.body.classList.contains('lux-route-admin-tools')) {
-        modal.dataset.luxStructuredModal = '1';
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
-        }
-    }
-    setTimeout(() => document.getElementById('new-subject-name')?.focus(), 0);
+    openCurriculumSubjectBuilderModalShell(modal, '#new-subject-name');
 }
 
 function focusCurriculumSubjectBuilder() {
@@ -1646,8 +1639,8 @@ function renderCurriculumTable() {
         }
 
         populateAntiReqDropdown();
-        if (typeof initCurriculumSemesterPicker === 'function') {
-            initCurriculumSemesterPicker({
+        if (typeof window.syncCurriculumSemesterPickerUi === 'function') {
+            window.syncCurriculumSemesterPickerUi({
                 onChange: () => {
                     if (typeof ensureSubjectSemesterParityHint === 'function') ensureSubjectSemesterParityHint();
                     if (typeof updateSubjectCodePreview === 'function') updateSubjectCodePreview();

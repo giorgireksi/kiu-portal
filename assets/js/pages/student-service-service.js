@@ -288,7 +288,7 @@
             <button type="button" class="student-service-mini-action lux-secondary-btn student-service-ticket-expand-btn" data-student-service-open-ticket-fullscreen="true" title="Open fullscreen conversation"><i class="fas fa-expand"></i> Full screen</button>
         ` : '';
         const closeButton = layout === 'modal' ? `
-            <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-ticket-thread-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-ticket-thread-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+            <button type="button" class="lux-secondary-btn student-service-ticket-thread-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-ticket-thread-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
         ` : '';
         return `
             <div class="student-service-ticket-conversation-header">

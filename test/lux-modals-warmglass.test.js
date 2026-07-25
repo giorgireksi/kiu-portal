@@ -24,8 +24,10 @@ describe('global lux-modals warmglass', () => {
         expect(css).toContain('[data-lux-transparency-exempt="1"]');
         expect(css).toContain('--lux-modal-glass-surface: var(--lux-warmglass-surface)');
         expect(css).toContain('.students-hub-modal');
-        expect(css).toContain('.social-neo-dialog-card--lms-create');
+        expect(css).toContain('.lux-glass-dialog-card');
         expect(css).toContain('body:not(.lux-route-social)');
+        expect(css).toContain('.lms-glass-dialog-overlay');
+        expect(css).toContain('.lms-quiz-board-modal');
         expect(css).toContain('.lux-picker-panel');
         expect(css).toContain('[data-lux-modal-overlay].active:not([aria-hidden=\'true\'])');
     });
@@ -38,6 +40,6 @@ describe('global lux-modals warmglass', () => {
         expect(css).toContain('--lux-text-muted: var(--lux-text)');
         expect(css).toContain('--lux-text-soft: var(--lux-text)');
         expect(css).toContain('#lux-studio-backdrop');
-        expect(css).toContain('.social-neo-dialog-card');
+        expect(css).toContain('.lux-glass-dialog-card');
     });
 });

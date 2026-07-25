@@ -342,9 +342,11 @@ function renderLmsWhiteboardMembersPanel(resourceKey = '', options = {}) {
 
 function closeLmsWhiteboardMembersModal() {
     const overlay = document.getElementById('lms-whiteboard-members-modal');
-    if (!overlay) return;
-    overlay.classList.remove('is-open');
-    setTimeout(() => overlay.remove(), 160);
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function openLmsWhiteboardMembersModal(resourceKey = '') {
@@ -352,7 +354,12 @@ function openLmsWhiteboardMembersModal(resourceKey = '') {
         ? resolveCanonicalLmsResourceKey(resourceKey)
         : String(resourceKey || '').trim();
     if (!canonicalKey || typeof renderLmsGlassDialogHead !== 'function') return;
-    document.getElementById('lms-whiteboard-members-modal')?.remove();
+    const existing = document.getElementById('lms-whiteboard-members-modal');
+    if (existing && typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(existing, { instant: true });
+    } else {
+        existing?.remove();
+    }
     const overlay = document.createElement('div');
     overlay.id = 'lms-whiteboard-members-modal';
     overlay.className = 'lms-glass-dialog-overlay lms-whiteboard-members-overlay';
@@ -366,11 +373,16 @@ function openLmsWhiteboardMembersModal(resourceKey = '') {
         closeAttr: 'data-lms-click="closeLmsWhiteboardMembersModal()"'
     });
     overlay.innerHTML = `
-        <div class="social-neo-dialog-card social-neo-dialog-card--form lms-whiteboard-members-modal-card" role="dialog" aria-modal="true" data-lux-transparency-exempt="1">
+        <div class="lux-glass-dialog-card lux-glass-dialog-card--form lms-whiteboard-members-modal-card" role="dialog" aria-modal="true" data-lux-transparency-exempt="1">
             ${head}
-            <div class="social-neo-dialog-body lms-whiteboard-members-modal-body">${renderLmsWhiteboardMembersPanel(canonicalKey)}</div>
+            <div class="lux-glass-dialog-body lms-whiteboard-members-modal-body">${renderLmsWhiteboardMembersPanel(canonicalKey)}</div>
         </div>`;
-    requestAnimationFrame(() => overlay.classList.add('is-open'));
+    document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
     overlay.addEventListener('change', event => {
         const studentToggle = event.target.closest?.('[data-lms-whiteboard-action="toggle-student-control"]');
         if (studentToggle && typeof setLmsWhiteboardStudentControl === 'function') {
@@ -404,7 +416,6 @@ function openLmsWhiteboardMembersModal(resourceKey = '') {
         };
         openStudentWorkspace().catch(() => null);
     });
-    document.body.appendChild(overlay);
     refreshLmsWhiteboardMembersDashboardSection(overlay, canonicalKey, LMS_WHITEBOARD_MEMBERS_UI.dashboardFilter);
 }
 function renderLmsWhiteboardPropsPanel(canEdit = false, canManage = false, resourceKey = '') {
@@ -1034,7 +1045,12 @@ function setLmsWhiteboardPropsTab(tabId = 'draw') {
 }
 
 function closeLmsWhiteboardMoreMenu() {
-    document.getElementById('lms-whiteboard-more-menu')?.remove();
+    const overlay = document.getElementById('lms-whiteboard-more-menu');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function openLmsWhiteboardMoreMenu(canEdit = false, canManage = false) {
@@ -1107,6 +1123,11 @@ function openLmsWhiteboardMoreMenu(canEdit = false, canManage = false) {
         }
     });
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function updateLmsWhiteboardSelectionCountUi() {

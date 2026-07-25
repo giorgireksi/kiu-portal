@@ -14,7 +14,7 @@ describe('social overlay dialog dedupe', () => {
         expect(overlay).toContain('function normalizeSocialOverlayDialogRegion()');
         expect(overlay).toMatch(/function ensureSocialOverlayPortal\(\)[\s\S]*?normalizeSocialOverlayDialogRegion\(\)/);
         expect(page).toMatch(/function setSocialRegionMarkup\(node, markup\)[\s\S]*?normalizeSocialOverlayDialogRegion\(\)/);
-        expect(overlay).toMatch(/canonical\.querySelectorAll\(':scope > \.social-neo-dialog-backdrop'\)/);
+        expect(overlay).toMatch(/canonical\.querySelectorAll\(':scope > \.lux-glass-dialog-backdrop'\)/);
         expect(page).toContain('createKiuSocialOverlayChromeApi');
         expect(page).not.toContain('function renderPageBody()');
         expect(page).not.toMatch(/\$\{renderDialog\(\)\}/);

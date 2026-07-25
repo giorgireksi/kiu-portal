@@ -60,7 +60,7 @@
                                 </label>
                                 <label><span class="social-neo-label">Spend cap (0 = unset)</span><input class="social-neo-input" type="number" min="0" step="0.01" name="projectBudgetCap" value="${escape(String(budgetCapValue || 0))}"></label>
                             </div>
-                            <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-check"></i> Save budget settings</button></div>
+                            <div class="social-neo-inline social-neo-inline-end"><button class="lux-primary-btn" type="submit"><i class="fas fa-check"></i> Save budget settings</button></div>
                         </form>
                     ` : ''}
                     <section class="social-neo-card social-project-rich-panel">
@@ -72,7 +72,7 @@
                             <form data-form="project-budget-category-add" data-project-id="${escape(text(activeProject.id))}" class="social-neo-grid-3 social-project-budget-add-row">
                                 <label><span class="social-neo-label">Category title</span><input class="social-neo-input" type="text" name="projectBudgetCategoryTitle" placeholder="Materials" required></label>
                                 <label><span class="social-neo-label">Planned amount</span><input class="social-neo-input" type="number" min="0" step="0.01" name="projectBudgetCategoryPlanned" placeholder="0.00"></label>
-                                <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-plus"></i> Add category</button></div>
+                                <div class="social-neo-inline social-neo-inline-end"><button class="lux-primary-btn" type="submit"><i class="fas fa-plus"></i> Add category</button></div>
                             </form>
                         ` : ''}
                         <div class="social-project-budget-category-list">
@@ -93,8 +93,8 @@
                                         </div>
                                         ${activeProject.viewerCanContribute ? `
                                             <div class="social-project-budget-category-actions">
-                                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-budget-category-edit" data-project-id="${escape(text(activeProject.id))}" data-category-id="${escape(text(category.id))}"><i class="fas fa-pen"></i> Edit</button>
-                                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-budget-category-delete" data-project-id="${escape(text(activeProject.id))}" data-category-id="${escape(text(category.id))}"><i class="fas fa-trash"></i> Remove</button>
+                                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-budget-category-edit" data-project-id="${escape(text(activeProject.id))}" data-category-id="${escape(text(category.id))}"><i class="fas fa-pen"></i> Edit</button>
+                                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-budget-category-delete" data-project-id="${escape(text(activeProject.id))}" data-category-id="${escape(text(category.id))}"><i class="fas fa-trash"></i> Remove</button>
                                             </div>
                                         ` : ''}
                                     </article>
@@ -119,7 +119,7 @@
                                         </select>
                                     </label>
                                 </div>
-                                <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-plus"></i> Log expense</button></div>
+                                <div class="social-neo-inline social-neo-inline-end"><button class="lux-primary-btn" type="submit"><i class="fas fa-plus"></i> Log expense</button></div>
                             </form>
                         ` : ''}
                         <div class="social-project-budget-expense-list">
@@ -150,11 +150,11 @@
                                         ${activeProject.viewerCanContribute ? `
                                             <div class="social-project-budget-expense-actions">
                                                 ${expense?.submittedById && status === 'draft' ? `<span class="social-neo-muted">Logged by ${escape(displayName(accountById(expense.submittedById) || { id: expense.submittedById }))}</span>` : ''}
-                                                ${status === 'draft' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="submitted"><i class="fas fa-paper-plane"></i> Submit</button>` : ''}
-                                                ${canReviewBudget && status === 'submitted' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="approved"><i class="fas fa-check"></i> Approve</button>` : ''}
-                                                ${canReviewBudget && status === 'submitted' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="rejected"><i class="fas fa-xmark"></i> Reject</button>` : ''}
-                                                ${canReviewBudget && status === 'approved' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="paid"><i class="fas fa-money-bill-wave"></i> Mark paid</button>` : ''}
-                                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-budget-expense-delete" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}"><i class="fas fa-trash"></i> Remove</button>
+                                                ${status === 'draft' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="submitted"><i class="fas fa-paper-plane"></i> Submit</button>` : ''}
+                                                ${canReviewBudget && status === 'submitted' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="approved"><i class="fas fa-check"></i> Approve</button>` : ''}
+                                                ${canReviewBudget && status === 'submitted' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="rejected"><i class="fas fa-xmark"></i> Reject</button>` : ''}
+                                                ${canReviewBudget && status === 'approved' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-budget-expense-status" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}" data-status="paid"><i class="fas fa-money-bill-wave"></i> Mark paid</button>` : ''}
+                                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-budget-expense-delete" data-project-id="${escape(text(activeProject.id))}" data-expense-id="${escape(text(expense.id))}"><i class="fas fa-trash"></i> Remove</button>
                                             </div>
                                         ` : ''}
                                     </article>

@@ -226,9 +226,12 @@ html body[data-lux-background-animation="on"] #lux-bg-overlay {
   min-width: 180px;
   padding: 8px;
   border-radius: 16px;
-  border: 1px solid var(--lux-border);
-  background: rgba(12, 16, 28, 0.96);
-  box-shadow: var(--lux-shadow);
+  border: 1px solid var(--lux-panel-host-border, var(--lux-border));
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  box-shadow: var(--lux-panel-host-shadow, var(--lux-shadow));
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
   display: none;
   transform-origin: top right;
   opacity: 0;
@@ -300,7 +303,8 @@ body.lux-light-mode .lux-user-menu button::before {
   z-index: 5;
 }
 body.lux-light-mode .lux-user-menu {
-  background: linear-gradient(180deg, rgba(252, 249, 245, 0.98), rgba(241, 235, 226, 0.98));
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
 }
 body.lux-light-mode .lux-pill, body.lux-light-mode .lux-stat, body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lux-light-mode .lux-user-chip, body.lux-light-mode .lux-quick-btn, body.lux-light-mode .lux-strip-card, body.lux-light-mode .lux-hero-side, body.lux-light-mode .lux-utility-item {
   background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha)));
@@ -337,11 +341,12 @@ html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-p
   width: min(390px, calc(100vw - 48px));
   padding: 12px;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(180deg, rgba(15, 20, 33, var(--lux-utility-alpha)), rgba(8, 12, 20, calc(var(--lux-utility-alpha) + 0.02))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 28%);
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid var(--lux-panel-host-border);
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
   display: none;
   transform-origin: top right;
   opacity: 0;
@@ -389,7 +394,7 @@ html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-p
 }
 .lux-hero { min-height: 240px; padding: 26px; }
 /* Outer glass host SSOT — denser desk panel tokens (redesign via lux-tokens). */
-body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert) {
+body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]) {
   background-color: var(--lux-panel-fill);
   background-image: var(--lux-panel-surface);
   border: 1px solid var(--lux-panel-host-border);
@@ -400,14 +405,48 @@ body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert) {
   background-clip: padding-box;
 }
 
+/* Home desk inners: accent chips on glass host — no nested frost blur */
+body.lux-route-home #page-home #lux-home-shell :is(
+  .lux-home-grid > .lux-panel,
+  .lux-home-grid > .lux-card,
+  .lux-home-grid > .lux-hero,
+  .lux-home-merged :is(
+    .lms-hero-focus,
+    .lux-hero-side,
+    .lux-focus-panel,
+    .lux-list-row.lux-soft-chrome,
+    .lux-stat.lux-soft-chrome,
+    .lux-pill.lux-soft-chrome,
+    .lux-quick-btn.lux-soft-chrome,
+    .lux-admin-op-card.lux-soft-chrome,
+    .home-hover-chip.lux-soft-chrome,
+    .lux-alert.lux-soft-chrome
+  )
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+body.lux-route-home #page-home #lux-home-shell :is(
+  .lux-home-grid > .lux-panel,
+  .lux-home-grid > .lux-card,
+  .lux-home-grid > .lux-hero
+) {
+  background-color: var(--home-glass-fill, rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)));
+  border-color: var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow-halo);
+}
+
 /* Global soft-chrome inner surface paint — accent fill, glow border, elevation
- * Applies to inner chips/shells inside panels (not outer glass hosts like .lux-panel/.lux-alert).
+ * Applies to inner chips/shells inside panels (not outer glass hosts).
  * Admin-tools: .lux-section-card is layout-only under the outer glass host (no second paint). */
-body.lux-unified-shell:not(.lux-route-admin-tools) :is(
-  .lux-soft-chrome:not(.lux-panel):not(.lux-alert):not(.lux-hero):not(.lux-page-shell):not(.lux-home-merged),
-  .lux-section-card
-),
-body.lux-route-admin-tools.lux-unified-shell .lux-soft-chrome:not(.lux-panel):not(.lux-alert):not(.lux-hero):not(.lux-page-shell):not(.lux-home-merged) {
+body.lux-unified-shell .lux-soft-chrome:not(.lux-panel):not(.lux-alert):not(.lux-hero):not(.lux-page-shell):not(.lux-home-merged):not([data-lux-layout-only]),
+body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
   border: 1px solid color-mix(
@@ -416,10 +455,7 @@ body.lux-route-admin-tools.lux-unified-shell .lux-soft-chrome:not(.lux-panel):no
     var(--lux-soft-chrome-border)
   );
   border-radius: 16px;
-  box-shadow:
-    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.40)),
-    0 0 12px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.22)),
-    var(--lux-soft-chrome-shadow);
+  box-shadow: var(--lux-soft-chrome-surface-shadow);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
@@ -431,8 +467,8 @@ body.lux-route-admin-tools.lux-unified-shell .lux-soft-chrome:not(.lux-panel):no
  * Excluded: .lux-topbar-shell, .lux-page-shell, .lux-sidebar-nav, .lux-alert,
  *           .lux-admin-curriculum-control-band (holds picker dropdowns),
  *           admin-tools .lux-section-card (nested under glass host). */
-body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card),
-body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card) {
+body.lux-unified-shell :is(.home-hover-chip, .lux-card),
+body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   position: relative;
   isolation: isolate;
   contain: paint;
@@ -440,8 +476,8 @@ body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card) {
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
 }
 
-body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card)::after,
-body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card)::after {
+body.lux-unified-shell :is(.home-hover-chip, .lux-card)::after,
+body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
   content: '';
   position: absolute;
   inset: -1px;
@@ -454,41 +490,41 @@ body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card)::a
   transition: opacity 0.2s ease;
 }
 
-body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card) > *,
-body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card) > * {
+body.lux-unified-shell :is(.home-hover-chip, .lux-card) > *,
+body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > * {
   position: relative;
   z-index: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover,
-  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover {
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover,
+  body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
   }
-  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover::after,
-  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover::after {
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover::after,
+  body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover::after {
     opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card),
-  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card) {
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card),
+  body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
     transition: border-color 0.15s ease;
   }
-  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card)::after,
-  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card)::after {
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card)::after,
+  body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
     display: none;
   }
-  body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover,
-  body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover {
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover,
+  body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: none;
   }
 }
 
-html[data-lux-transparency="0"] body.lux-unified-shell:not(.lux-route-admin-tools) :is(.home-hover-chip, .lux-card, .lux-section-card):hover,
-html[data-lux-transparency="0"] body.lux-route-admin-tools.lux-unified-shell :is(.home-hover-chip, .lux-card):hover {
+html[data-lux-transparency="0"] body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover,
+html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
   transform: none;
   box-shadow: none;
 }
@@ -532,4 +568,11 @@ body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lu
   }
   #app-content { padding: 28px 18px 36px !important; }
   .lux-hero-stage { grid-template-columns: 1fr; }
+}
+.lux-frosted-glass-panel {
+  border: 1px solid var(--lux-frosted-glass-border);
+  background: var(--lux-frosted-glass-surface);
+  backdrop-filter: var(--lux-frosted-glass-blur);
+  -webkit-backdrop-filter: var(--lux-frosted-glass-blur);
+  box-shadow: var(--lux-frosted-glass-shadow);
 }

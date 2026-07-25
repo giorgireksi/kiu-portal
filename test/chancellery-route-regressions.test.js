@@ -21,7 +21,10 @@ describe('chancellery route regressions.test', () => {
         expect(existsSync(join(process.cwd(), 'assets/css', 'chancellery-route.css'))).toBe(false);
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('body.lux-page-bare');
-        expect(bare).not.toContain('backdrop-filter: none');
+        expect(bare).not.toMatch(/body\.lux-page-bare\s*\{[^}]*backdrop-filter:\s*none/);
+        expect(bare).toContain('.lux-page-shell[data-lux-layout-only="1"]');
+        expect(readSource('chancellery.html')).toContain('data-lux-layout-only="1"');
+        expect(readSource('assets/js/pages/chancellery.js')).toMatch(/data-chancellery-shell="1"[\s\S]*data-lux-glass-root="1"/);
         const shell = readSource('assets/css/lux-shell.css');
         expect(shell).toContain('body.lux-page-bare .lux-page-shell');
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');

@@ -223,7 +223,6 @@ function getDedicatedRouteCss(source) {
             'assets/css/base.css',
             'assets/css/layout-schedule.css',
             'assets/css/lux-tokens.css',
-            'assets/css/lux-surfaces.css',
             'assets/css/lux-controls.css',
             'assets/css/lux-focus-panel.css',
             'assets/css/lux-modals.css',

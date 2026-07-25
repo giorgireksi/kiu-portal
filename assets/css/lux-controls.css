@@ -1,22 +1,47 @@
 /* READABILITY: controls — §1 structure (top) then §2 paint sheen (wins cascade) · §3 full-paint CTA. */
 /* ── §1 structure (base controls) ── */
 .lux-control {
+  box-sizing: border-box;
   width: 100%;
+  min-height: var(--lux-field-min-height);
   padding: 11px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-width: var(--lux-field-border-width);
+  border-style: solid;
+  border-color: var(--lux-field-border);
+  border-radius: var(--lux-field-radius);
+  background: var(--lux-field-fill);
+  background-clip: padding-box;
+  background-origin: padding-box;
+  box-shadow: var(--lux-field-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: var(--lux-text);
   font-size: 13px;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+input.lux-control,
+select.lux-control,
+textarea.lux-control {
+  appearance: none;
+  -webkit-appearance: none;
+}
+input[type="search"].lux-control::-webkit-search-decoration,
+input[type="search"].lux-control::-webkit-search-cancel-button {
+  -webkit-appearance: none;
 }
 .lux-control::placeholder { color: var(--lux-text-muted); opacity: 0.6; }
-.lux-control:focus {
-  border-color: rgba(var(--lux-accent-rgb), 0.4);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.1);
+.lux-control:focus,
+.lux-control:focus-visible {
+  border-color: var(--lux-field-border);
+  background: var(--lux-field-fill-focus);
+  box-shadow: var(--lux-field-shadow-focus), var(--lux-field-focus-ring);
+  outline: none;
+}
+.lux-control:disabled,
+.lux-control.is-muted {
+  opacity: 0.72;
 }
 .lux-control select { cursor: pointer; }
 .lux-icon-btn, .lux-control-btn, .lux-mode-btn, .lux-bg-mode-btn { position: relative; overflow: hidden; }
@@ -62,6 +87,23 @@
   align-items: center;
   padding: 12px 14px 12px 16px;
   border-radius: 18px;
+}
+.lux-picker-field > .lux-picker-btn.lux-picker-btn--compact,
+.lux-picker-btn--compact {
+  min-width: 0;
+  min-height: var(--lux-field-min-height);
+  padding: 11px 14px;
+  border-radius: var(--lux-field-radius);
+  border-width: var(--lux-field-border-width);
+  border-style: solid;
+  border-color: var(--lux-field-border);
+  background: var(--lux-field-fill);
+  background-clip: padding-box;
+  background-origin: padding-box;
+  box-shadow: var(--lux-field-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 .lux-picker-field > .lux-picker-panel {
   left: 0;
@@ -152,6 +194,23 @@
 .lux-picker-btn[aria-expanded="true"] i {
   transform: rotate(180deg);
 }
+.lux-picker-btn--compact .lux-picker-value,
+.lux-picker-btn--compact strong {
+  margin-top: 0;
+  font-size: 13px;
+  font-weight: inherit;
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+.lux-picker-btn--compact:focus-visible {
+  border-color: var(--lux-field-border);
+  background: var(--lux-field-fill-focus);
+  box-shadow: var(--lux-field-shadow-focus), var(--lux-field-focus-ring);
+  outline: none;
+}
+.lux-picker-btn--compact:active {
+  transform: none;
+}
 :root {
   --lux-picker-visible-options: 5;
   --lux-picker-option-height: 44px;
@@ -204,7 +263,10 @@
   display: grid;
   gap: 8px;
   min-height: 0;
-  max-height: 100%;
+  max-height: calc(
+    var(--lux-picker-option-height) * var(--lux-picker-visible-options)
+    + var(--lux-picker-panel-gap) * (var(--lux-picker-visible-options) - 1)
+  );
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -395,6 +457,16 @@
 }
 .lux-primary-btn:active { transform: translateY(0) scale(0.985); }
 .lux-primary-btn:active::after { opacity: 0; transition: none; will-change: auto; }
+.lux-primary-btn.lux-btn-danger {
+  border-color: var(--lux-btn-danger-border, #dc2626);
+  background: var(--lux-panel-cta-danger);
+  box-shadow: var(--lux-btn-frame-shadow);
+}
+.lux-primary-btn.lux-btn-danger:hover,
+.lux-primary-btn.lux-btn-danger:focus-visible {
+  border-color: var(--lux-btn-danger-border, #dc2626);
+  background: var(--lux-panel-cta-danger-hover, var(--lux-panel-cta-danger));
+}
 .lux-secondary-btn {
   min-height: var(--lux-secondary-btn-min-height, 44px);
   color: var(--lux-btn-label, #f7fbff);
@@ -483,6 +555,18 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
   background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha)));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+.lux-picker-btn--compact {
+  background: var(--lux-field-fill);
+}
+.lux-picker-btn--compact::before,
+.lux-picker-btn--compact::after {
+  display: none;
+}
+.lux-picker-btn--compact:hover,
+.lux-picker-btn--compact.is-active,
+.lux-picker-btn--compact[aria-expanded="true"] {
+  transform: none;
 }
 #lux-topbar .lux-topbar-shell :is(.lux-picker-btn, .lux-icon-btn),
 #page-home #lux-home-shell .lux-home-merged :is(.lux-picker-btn, .lux-icon-btn, .lux-quick-btn, .home-hover-chip) {

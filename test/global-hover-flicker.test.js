@@ -54,7 +54,7 @@ describe('global hover flicker prevention', () => {
     });
 
     it('routes fade CSS through lux-transparency route runtime', () => {
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         expect(routeRuntime).toContain('shouldKeepRouteFadeCssBackground');
     });
 
@@ -67,14 +67,14 @@ describe('global hover flicker prevention', () => {
 
     it('calms social route hovers via bare-shell era (no social-rebuild CSS)', () => {
         expectRetiredCss('social-rebuild.css');
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         expect(routeRuntime).toContain('shouldKeepSocialFadeCssBackground');
     });
 
     it('calms lms route hovers inside glass parents', () => {
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         expect(routeRuntime).toContain("document.body.classList.contains('lux-route-lms')");
-        expect(routeRuntime).toContain('lms-clean-subject-card');
+        expect(routeRuntime).toContain('lms-clean-subjects');
     });
 
     it('strips nested topbar control blur on dashboard paint', () => {

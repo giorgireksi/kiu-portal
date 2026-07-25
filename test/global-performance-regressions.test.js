@@ -61,7 +61,7 @@ describe('global interaction performance guardrails', () => {
     const luxuryBackground = readSource('assets/js/features/luxury-background.js');
     const navigation = readSource('assets/js/features/navigation.js');
     const transparency = readSource('assets/js/shared/lux-transparency.js');
-    const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+    const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
 
     expect(luxury).toContain('function isStandaloneLibraryRouteActive()');
     expect(luxury).toContain('isStandaloneLibraryRouteActive()');
@@ -806,13 +806,16 @@ describe('global interaction performance guardrails', () => {
     expect(bareLite).toContain('body.lux-page-bare .lux-page-shell');
     // Global bare blur kill forbidden; scoped admin-tools page-shell demotion is OK.
     expect(bareLite).not.toMatch(/body\.lux-page-bare\s*\{[^}]*backdrop-filter:\s*none/);
-    expect(bareLite).toContain('body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell');
+    expect(bareLite).toContain('.lux-page-shell[data-lux-layout-only="1"]');
     expect(bareLite).not.toMatch(/backdrop-filter:\s*var\(--lux-panel-blur-filter/);
     expect(shellCss).toMatch(/body\.lux-page-bare \.lux-page-shell[\s\S]*backdrop-filter:\s*var\(--lux-panel-blur-filter/);
     expect(shellCss).not.toMatch(/body\.lux-page-bare \.lux-page-shell :is\(\.page-hero, \.lux-panel, \.lux-alert\)[\s\S]*backdrop-filter:\s*none/);
     const homeRole = readSource('assets/css/index-home-role.css');
-    expect(homeRole).toContain('#page-home #lux-home-shell .lux-home-grid');
-    expect(homeRole).toMatch(/\.lux-home-grid > \.lux-panel[\s\S]*backdrop-filter:\s*none !important/);
+    const homeFouc = readSource('assets/css/lux-fouc-ht.css');
+    expect(homeFouc).toContain('[data-lux-glass-root="1"]');
+    expect(homeFouc).toMatch(/body\.lux-route-home #page-home #lux-home-shell[\s\S]*\.lux-home-grid > \.lux-card[\s\S]*backdrop-filter:\s*none/);
+    expect(homeRole).toContain('.lux-home-merged');
+    expect(homeRole).not.toMatch(/\.lux-home-grid[\s\S]{0,200}var\(--lux-panel-fill/);
     const governor = readSource('assets/js/shared/lux-render-governor.js');
     expect(governor).toContain('getPacingMultiplier');
     const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');

@@ -105,7 +105,7 @@
             { tab: 'joined', label: 'Your groups', icon: 'fa-layer-group', helper: 'Rooms you belong to' },
         ];
         const createCta = `<div class="social-neo-groups-hero-actions">
-                <button class="social-neo-btn social-neo-btn-primary social-neo-groups-hero-create-btn" type="button" data-action="group-create-open">
+                <button class="lux-primary-btn social-neo-groups-hero-create-btn" type="button" data-action="group-create-open">
                     <i class="fas fa-plus"></i> ${activeTab === 'joined' ? 'Create Another Group' : 'Create Group'}
                 </button>
             </div>`;
@@ -167,14 +167,14 @@
                         ${pinnedCount ? `<span class="social-neo-pill">${escape(pinnedCount)} pinned</span>` : ''}
                     </div>
                     <div class="social-neo-group-card-actions">
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="group-detail-open" data-group-id="${escape(text(group.id))}">
+                        <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="group-detail-open" data-group-id="${escape(text(group.id))}">
                             <i class="fas fa-circle-info"></i> View
                         </button>
                         ${group.membershipState === 'manager' || group.membershipState === 'member'
-                            ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}"><i class="fas fa-comments"></i> Chat</button>`
+                            ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}"><i class="fas fa-comments"></i> Chat</button>`
                             : group.membershipState === 'pending'
                                 ? `<span class="social-neo-pill">Pending</span>`
-                                : `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">
+                                : `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">
                                     <i class="fas fa-plus"></i> ${text(group.visibility) === 'private' ? 'Request' : 'Join'}
                                   </button>`
                         }
@@ -190,8 +190,8 @@
                         <i class="fas fa-layer-group"></i>
                         <strong>No groups yet</strong>
                         <span>Create the first group to start a campus community.</span>
-                        <div class="social-neo-form-actions social-neo-form-actions-mt-14">
-                            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-create-open">
+                        <div class="lux-glass-dialog-form-actions lux-glass-dialog-form-actions-mt-14">
+                            <button class="lux-primary-btn" type="button" data-action="group-create-open">
                                 <i class="fas fa-plus-circle"></i> Create Group
                             </button>
                         </div>
@@ -207,8 +207,8 @@
                         <i class="fas fa-door-open"></i>
                         <strong>You haven't joined any groups</strong>
                         <span>Discover groups and join conversations.</span>
-                        <div class="social-neo-form-actions social-neo-form-actions-mt-14">
-                            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-create-open">
+                        <div class="lux-glass-dialog-form-actions lux-glass-dialog-form-actions-mt-14">
+                            <button class="lux-primary-btn" type="button" data-action="group-create-open">
                                 <i class="fas fa-plus-circle"></i> Create Group Instead
                             </button>
                         </div>
@@ -268,13 +268,13 @@
                                 <span>${escape(accountSubtitle(account))}</span>
                             </div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-creator-member-remove" data-user-id="${escape(text(memberId))}">
+                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="group-creator-member-remove" data-user-id="${escape(text(memberId))}">
                             <i class="fas fa-xmark"></i> Remove
                         </button>
                     </div>
                 `;
             }).join('')
-            : '<p class="social-neo-dialog-hint">No invited members selected yet.</p>';
+            : '<p class="lux-glass-dialog-hint">No invited members selected yet.</p>';
         const searchResultsMarkup = candidateAccounts.length
             ? candidateAccounts.slice(0, 12).map((account) => `
                 <article class="social-neo-entity-card social-neo-group-creator-member">
@@ -285,12 +285,12 @@
                             <span>${escape(accountSubtitle(account))}</span>
                         </div>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="group-creator-member-add" data-user-id="${escape(text(account.id))}">
+                    <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="group-creator-member-add" data-user-id="${escape(text(account.id))}">
                         <i class="fas fa-user-plus"></i> Invite
                     </button>
                 </article>
             `).join('')
-            : `<p class="social-neo-dialog-hint">${memberSearch || facultyFilter !== 'all' ? 'No people match the current search or faculty filter.' : 'Start typing or choose a faculty to find people.'}</p>`;
+            : `<p class="lux-glass-dialog-hint">${memberSearch || facultyFilter !== 'all' ? 'No people match the current search or faculty filter.' : 'Start typing or choose a faculty to find people.'}</p>`;
         return {
             groupNameId,
             groupDescriptionId,
@@ -310,37 +310,37 @@
     function renderGroupCreateInviteSection(runtime, inviteContext) {
         const ctx = inviteContext || buildGroupCreateInviteContext(runtime);
         return `
-            <section class="social-neo-dialog-group-create-section social-neo-dialog-group-create-section--invite">
-                <div class="social-neo-dialog-group-create-section-head">
+            <section class="lux-glass-dialog-group-section lux-glass-dialog-group-section--invite">
+                <div class="lux-glass-dialog-group-section-head">
                     <strong>Invite members</strong>
                     <span>Optional. Search by name, faculty, or role. Invitations send after the group is created.</span>
                 </div>
-                <div class="social-neo-dialog-invite-toolbar">
-                    <label class="social-neo-dialog-field social-neo-dialog-invite-search-field" for="${escape(ctx.memberSearchId)}">
+                <div class="lux-glass-dialog-invite-toolbar">
+                    <label class="lux-glass-dialog-field lux-glass-dialog-invite-search-field" for="${escape(ctx.memberSearchId)}">
                         <span class="social-neo-label">Search people</span>
                         <input class="social-neo-input" id="${escape(ctx.memberSearchId)}" type="search" name="groupMemberSearch" placeholder="Search people to invite..." value="${escape(text(runtime.ui?.groupInviteSearch || ''))}">
                     </label>
-                    <label class="social-neo-dialog-field social-neo-dialog-invite-faculty-field" for="${escape(ctx.memberFacultyId)}">
+                    <label class="lux-glass-dialog-field lux-glass-dialog-invite-faculty-field" for="${escape(ctx.memberFacultyId)}">
                         <span class="social-neo-label">Faculty</span>
                         <select class="social-neo-select" id="${escape(ctx.memberFacultyId)}" name="groupMemberFaculty" data-lux-picker>
                             ${ctx.facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${ctx.facultyFilter === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
                         </select>
                     </label>
                 </div>
-                <div class="social-neo-dialog-invite-columns">
-                    <article class="social-neo-dialog-invite-block">
-                        <div class="social-neo-dialog-invite-block-head">
+                <div class="lux-glass-dialog-invite-columns">
+                    <article class="lux-glass-dialog-invite-block">
+                        <div class="lux-glass-dialog-invite-block-head">
                             <strong>Selected members</strong>
                             <span>${escape(ctx.selectedMemberIds.length)} invitation${ctx.selectedMemberIds.length === 1 ? '' : 's'} queued.</span>
                         </div>
-                        <div class="social-neo-list social-neo-dialog-invite-list">${ctx.selectedMembersMarkup}</div>
+                        <div class="social-neo-list lux-glass-dialog-invite-list">${ctx.selectedMembersMarkup}</div>
                     </article>
-                    <article class="social-neo-dialog-invite-block">
-                        <div class="social-neo-dialog-invite-block-head">
+                    <article class="lux-glass-dialog-invite-block">
+                        <div class="lux-glass-dialog-invite-block-head">
                             <strong>Search results</strong>
                             <span>${escape(ctx.candidateAccounts.length)} people available.</span>
                         </div>
-                        <div class="social-neo-list social-neo-dialog-invite-list">${ctx.searchResultsMarkup}</div>
+                        <div class="social-neo-list lux-glass-dialog-invite-list">${ctx.searchResultsMarkup}</div>
                     </article>
                 </div>
             </section>
@@ -350,34 +350,34 @@
         const ctx = buildGroupCreateInviteContext(runtime);
         const inviteCount = ctx.selectedMemberIds.length;
         const inviteBadge = inviteCount > 0
-            ? `<span class="social-neo-dialog-submit-badge">${escape(String(inviteCount))}</span>`
+            ? `<span class="lux-glass-dialog-submit-badge">${escape(String(inviteCount))}</span>`
             : '';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--group-create social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-form="create-group" data-action="noop" data-lux-transparency-exempt="1">
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--group-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="create-group" data-action="noop" data-lux-transparency-exempt="1">
                 ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create group', 'Name your group, set visibility, invite members, then open the group workspace.', { icon: 'fas fa-layer-group' }) : ''}
-                <div class="social-neo-dialog-body social-neo-dialog-body--group-create">
-                    <section class="social-neo-dialog-group-create-section">
-                        <div class="social-neo-dialog-group-create-section-head">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--group-create">
+                    <section class="lux-glass-dialog-group-section">
+                        <div class="lux-glass-dialog-group-section-head">
                             <strong>Group details</strong>
                             <span>Name, visibility, and member limits.</span>
                         </div>
-                        <label class="social-neo-dialog-field" for="${escape(ctx.groupNameId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(ctx.groupNameId)}">
                             <span class="social-neo-label">Group name</span>
                             <input class="social-neo-input" id="${escape(ctx.groupNameId)}" type="text" name="groupName" placeholder="e.g. MATH 201 Study Circle" value="${escape(text(runtime.ui?.groupName || ''))}" required>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(ctx.groupDescriptionId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(ctx.groupDescriptionId)}">
                             <span class="social-neo-label">Description</span>
                             <textarea class="social-neo-textarea" id="${escape(ctx.groupDescriptionId)}" rows="3" name="groupDescription" placeholder="What will members collaborate on?">${escape(text(runtime.ui?.groupDescription || ''))}</textarea>
                         </label>
                         <div class="social-neo-form-grid social-neo-form-grid-2">
-                            <label class="social-neo-dialog-field" for="${escape(ctx.groupVisibilityId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(ctx.groupVisibilityId)}">
                                 <span class="social-neo-label">Visibility</span>
                                 <select class="social-neo-select" id="${escape(ctx.groupVisibilityId)}" name="groupVisibility" data-lux-picker>
                                     <option value="public" ${text(runtime.ui?.groupVisibility || 'public') === 'public' ? 'selected' : ''}>Public - Anyone can join</option>
                                     <option value="private" ${text(runtime.ui?.groupVisibility) === 'private' ? 'selected' : ''}>Private - Approval required</option>
                                 </select>
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(ctx.groupMaxMembersId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(ctx.groupMaxMembersId)}">
                                 <span class="social-neo-label">Max members</span>
                                 <input class="social-neo-input" id="${escape(ctx.groupMaxMembersId)}" type="number" name="groupMaxMembers" min="2" max="100" placeholder="No limit" value="${escape(text(runtime.ui?.groupMaxMembers || ''))}">
                             </label>
@@ -386,9 +386,9 @@
                     </section>
                     ${renderGroupCreateInviteSection(runtime, ctx)}
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit"><i class="fas fa-layer-group"></i> Create Group${inviteBadge}</button>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit"><i class="fas fa-layer-group"></i> Create Group${inviteBadge}</button>
                 </div>
             </form>
         </div>`;
@@ -433,63 +433,63 @@
             : (group.membershipState === 'member' ? 'Member' : group.membershipState === 'pending' ? 'Request pending' : 'Not a member');
         const description = text(group.description || '') || 'No description yet.';
         const primaryAction = group.membershipState === 'manager' || group.membershipState === 'member'
-            ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}"><i class="fas fa-comments"></i> Open chat</button>
-               <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}"><i class="fas fa-sign-out-alt"></i> Leave</button>`
+            ? `<button class="lux-primary-btn" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}"><i class="fas fa-comments"></i> Open chat</button>
+               <button class="lux-secondary-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}"><i class="fas fa-sign-out-alt"></i> Leave</button>`
             : group.membershipState === 'pending'
                 ? `<span class="social-neo-pill">Request pending</span>`
-                : `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">
+                : `<button class="lux-primary-btn" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">
                     <i class="fas fa-plus"></i> ${visibility === 'private' ? 'Request to join' : 'Join group'}
                   </button>`;
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(text(group.name || 'Group'))}">
-            <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--group-detail social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1" data-group-id="${escape(text(group.id))}">
-                <div class="social-neo-section-head social-neo-dialog-head social-neo-group-detail-head">
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(text(group.name || 'Group'))}">
+            <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--group-detail lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1" data-group-id="${escape(text(group.id))}">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head social-neo-group-detail-head">
                     <div class="social-neo-group-detail-identity">
                         <div class="social-neo-group-card-avatar social-neo-group-detail-avatar">${groupAvatar(group)}</div>
-                        <div class="social-neo-dialog-heading">
-                            <strong class="social-neo-dialog-title">${escape(text(group.name || 'Group'))}</strong>
-                            <span class="social-neo-dialog-subtitle social-neo-group-detail-meta">
+                        <div class="lux-glass-dialog-heading">
+                            <strong class="lux-glass-dialog-title">${escape(text(group.name || 'Group'))}</strong>
+                            <span class="lux-glass-dialog-subtitle social-neo-group-detail-meta">
                                 <span class="social-neo-pill">${escape(visibility)}</span>
                                 <span>${escape(String(memberCount))} members</span>
                                 <span class="social-neo-pill">${escape(roleLabel)}</span>
                             </span>
                         </div>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="social-neo-dialog-body social-neo-dialog-body--group-detail">
-                    <section class="social-neo-dialog-group-create-section social-neo-group-detail-section">
-                        <div class="social-neo-dialog-group-create-section-head">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--group-detail">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                        <div class="lux-glass-dialog-group-section-head">
                             <strong>About</strong>
                             <span>Group description and purpose.</span>
                         </div>
                         <p class="social-neo-group-detail-desc">${escape(description)}</p>
                     </section>
-                    <section class="social-neo-dialog-group-create-section social-neo-group-detail-section">
-                        <div class="social-neo-dialog-group-create-section-head">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                        <div class="lux-glass-dialog-group-section-head">
                             <strong>Members</strong>
                             <span>${escape(String(memberIds.length || memberCount))} active members.</span>
                         </div>
                         <div class="social-neo-list social-neo-group-detail-list">
                             ${memberIds.length
                                 ? memberIds.map((memberId) => renderGroupDetailMemberLine(group, memberId)).join('')
-                                : '<p class="social-neo-dialog-hint">No members yet.</p>'}
+                                : '<p class="lux-glass-dialog-hint">No members yet.</p>'}
                         </div>
                     </section>
-                    <section class="social-neo-dialog-group-create-section social-neo-group-detail-section">
-                        <div class="social-neo-dialog-group-create-section-head">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                        <div class="lux-glass-dialog-group-section-head">
                             <strong>Pinned resources</strong>
                             <span>${escape(String(pinnedCount))} pinned updates in this group feed.</span>
                         </div>
                     </section>
                     ${group.isManager ? `
-                    <section class="social-neo-dialog-group-create-section social-neo-group-detail-section">
-                        <div class="social-neo-dialog-group-create-section-head">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                        <div class="lux-glass-dialog-group-section-head">
                             <strong>Manager tools</strong>
                             <span>Visibility and join requests.</span>
                         </div>
                         <div class="social-neo-badge-row">
-                            <button class="social-neo-btn social-neo-btn-sm ${visibility === 'public' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="public">Public</button>
-                            <button class="social-neo-btn social-neo-btn-sm ${visibility === 'private' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="private">Private</button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm ${visibility === 'public' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="public">Public</button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm ${visibility === 'private' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="private">Private</button>
                         </div>
                         ${pendingMembers.length ? `
                         <div class="social-neo-group-detail-pending">
@@ -509,14 +509,14 @@
                                 }).join('')}
                             </div>
                         </div>
-                        ` : '<p class="social-neo-dialog-hint">No pending join requests.</p>'}
+                        ` : '<p class="lux-glass-dialog-hint">No pending join requests.</p>'}
                     </section>
                     ` : ''}
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions social-neo-group-detail-actions">
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions social-neo-group-detail-actions">
                     ${primaryAction}
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="group-report" data-group-id="${escape(text(group.id))}"><i class="fas fa-flag"></i> Report</button>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
+                    <button class="lux-secondary-btn" type="button" data-action="group-report" data-group-id="${escape(text(group.id))}"><i class="fas fa-flag"></i> Report</button>
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
                 </div>
             </div>
         </div>`;
@@ -556,28 +556,28 @@
                 : 'You created this group. If you leave now, the group stays alive without an owner until someone else joins and takes it over.')
             : 'Chat history, posts, and files stay in the group. Only your membership is removed.';
         const stepBody = leaveStep === 1
-            ? `<div class="social-neo-dialog-preview">
-                    <strong class="social-neo-dialog-preview-title">${escape(text(groupItem.name || 'Group'))}</strong>
+            ? `<div class="lux-glass-dialog-preview">
+                    <strong class="lux-glass-dialog-preview-title">${escape(text(groupItem.name || 'Group'))}</strong>
                     <div class="social-neo-muted social-neo-muted-mt-6">${escape(`${groupItem.memberCount || 0} members`)}</div>
                 </div>
-                <div class="social-neo-dialog-preview">
+                <div class="lux-glass-dialog-preview">
                     You will lose access to the group chat and updates until you join again.
                 </div>`
             : leaveStep === 2
-                ? `<div class="social-neo-dialog-preview ${isOwner ? 'social-neo-dialog-preview-danger' : ''}">
+                ? `<div class="lux-glass-dialog-preview ${isOwner ? 'lux-glass-dialog-preview-danger' : ''}">
                     ${impactCopy}
                 </div>`
                 : `<label class="social-neo-label" for="groupLeaveToken">Step 3 of 3: Type ${escape(verification.expectedToken)} to confirm leaving.</label>
                 <input class="social-neo-input" id="groupLeaveToken" name="groupLeaveToken" type="text" autocomplete="off" placeholder="${escape(verification.displayName)}">`;
         const actions = leaveStep < 3
-            ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="${leaveStep === 1 ? 'dialog-close' : 'group-leave-wizard-prev'}">${leaveStep === 1 ? 'Cancel' : 'Back'}</button>
-               <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="group-leave-wizard-next">Next</button>`
-            : `<button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="group-leave-wizard-prev">Back</button>
-               <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Leave group</button>`;
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card" data-form="dialog-group-leave" data-action="noop">
+            ? `<button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="${leaveStep === 1 ? 'dialog-close' : 'group-leave-wizard-prev'}">${leaveStep === 1 ? 'Cancel' : 'Back'}</button>
+               <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="group-leave-wizard-next">Next</button>`
+            : `<button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="group-leave-wizard-prev">Back</button>
+               <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">Leave group</button>`;
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card" data-form="dialog-group-leave" data-action="noop">
                 ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Leave group', 'Complete all three verification steps before leaving.') : ''}
-                <div class="social-neo-pages-wizard-steps social-neo-dialog-group-leave-steps">
+                <div class="social-neo-pages-wizard-steps lux-glass-dialog-group-leave-steps">
                     ${[
                         ['1', 'Review'],
                         ['2', 'Impact'],
@@ -590,7 +590,7 @@
                     `).join('')}
                 </div>
                 ${stepBody}
-                <div class="social-neo-form-actions social-neo-dialog-actions">
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
                     ${actions}
                 </div>
                 <input type="hidden" name="groupId" value="${escape(text(groupItem.id))}">
@@ -642,32 +642,32 @@
                         ${groups.map((group) => `<option value="${escape(text(group.id))}" ${text(dialog.groupId || '') === text(group.id) ? 'selected' : ''}>${escape(text(group.name || 'Group'))}</option>`).join('')}
                     </select>`
                 : `<div class="social-neo-empty">You are not in any groups you can invite from yet.</div>`;
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-dialog-card--compact social-neo-dialog-card--form" data-form="dialog-group-invite" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--compact lux-glass-dialog-card--form" data-form="dialog-group-invite" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Invite to group', 'They will get a notification and can accept or decline.', { icon: 'fas fa-envelope-open-text' }) : ''}
-                    <div class="social-neo-dialog-preview social-neo-dialog-recipient-preview">
+                    <div class="lux-glass-dialog-preview lux-glass-dialog-recipient-preview">
                         <div class="social-neo-person social-neo-person-start-gap-12">
                             ${avatar(targetAccount, 'social-neo-avatar-sm')}
                             <div>
-                                <strong class="social-neo-dialog-preview-title">${escape(displayName(targetAccount))}</strong>
+                                <strong class="lux-glass-dialog-preview-title">${escape(displayName(targetAccount))}</strong>
                                 <div class="social-neo-muted social-neo-muted-mt-6">${escape(accountSubtitle(targetAccount))}</div>
                             </div>
                         </div>
                     </div>
-                    <div class="social-neo-dialog-body">
-                        <label class="social-neo-dialog-field"${groups.length ? ` for="${escape(inviteGroupId)}"` : ''}>
+                    <div class="lux-glass-dialog-body">
+                        <label class="lux-glass-dialog-field"${groups.length ? ` for="${escape(inviteGroupId)}"` : ''}>
                             <span class="social-neo-label">Group</span>
                             ${groupField}
                             <span class="social-neo-muted social-neo-muted-mt-6">Only groups where you are a member or manager.</span>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(inviteNoteId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(inviteNoteId)}">
                             <span class="social-neo-label">Personal message <span class="social-neo-muted">(optional)</span></span>
                             <textarea class="social-neo-textarea" id="${escape(inviteNoteId)}" name="inviteNote" rows="4" placeholder="Want to join our study group this week?">${escape(text(dialog.note || ''))}</textarea>
                         </label>
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit" ${groups.length ? '' : 'disabled'}><i class="fas fa-paper-plane" aria-hidden="true"></i> Send invite</button>
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit" ${groups.length ? '' : 'disabled'}><i class="fas fa-paper-plane" aria-hidden="true"></i> Send invite</button>
                     </div>
                     <input type="hidden" name="targetUserId" value="${escape(text(dialog.targetUserId || ''))}">
                 </form>
@@ -683,17 +683,17 @@
             const panelIsAdmin = Boolean(panelGroup.isManager);
             const panelCurrentUserId = currentUserId();
             const panelGroupName = text(panelGroup.name || panelChat.title || 'Group');
-            const panelShellOpen = (extraClass = '') => `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                    <div class="social-neo-card social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--panel social-neo-dialog-card--lms-create${extraClass ? ` ${extraClass}` : ''}" data-action="noop" data-lux-transparency-exempt="1">`;
+            const panelShellOpen = (extraClass = '') => `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                    <div class="social-neo-card lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card${extraClass ? ` ${extraClass}` : ''}" data-action="noop" data-lux-transparency-exempt="1">`;
             const panelShellClose = `</div>
                 </div>`;
-            const panelHeroHead = (kicker, title, subtitle) => `<div class="social-neo-dialog-head social-neo-surveys-hero-head">
+            const panelHeroHead = (kicker, title, subtitle) => `<div class="lux-glass-dialog-head social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">${kicker}</span>
                             <h2>${title}</h2>
                             <p>${subtitle}</p>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>`;
             const panelStat = (value, label) => `<article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${value}</strong><span>${label}</span></article>`;
             const formatBytes = (bytes) => {
@@ -705,25 +705,25 @@
             };
             if (kind === 'group-panel-media') {
                 const mediaCount = panelAssets.media.length;
-                return `${panelShellOpen('social-neo-dialog-card--panel-media')}
+                return `${panelShellOpen('lux-glass-dialog-card--panel-media')}
                     ${panelHeroHead('Shared media', 'Photos &amp; images', `Media shared in ${escape(panelGroupName)}. Tap an item to jump to the message.`)}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--panel">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(mediaCount)), 'Images')}
                             ${panelStat(escape(panelGroupName), 'Group')}
                             ${panelStat(panelIsAdmin ? 'Admin' : 'Member', 'Your role')}
                         </div>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Gallery</strong>
                                 <span>${mediaCount ? 'Images shared in this thread.' : 'Nothing shared yet.'}</span>
                             </div>
-                            ${mediaCount ? `<div class="social-neo-dialog-media-grid">${panelAssets.media.map((entry) => {
+                            ${mediaCount ? `<div class="lux-glass-dialog-media-grid">${panelAssets.media.map((entry) => {
                             const src = fileUrl(entry.file);
                             const sender = accountById(entry.senderId) || { id: entry.senderId };
-                            return `<div class="social-neo-dialog-media-thumb" data-action="group-thread-search-open" data-chat-id="${escape(text(panelChat.id))}" data-message-id="${escape(text(entry.message?.id || ''))}">
-                                ${src ? `<img src="${escape(src)}" alt="${escape(text(entry.file?.name || 'Image'))}">` : '<div class="social-neo-dialog-media-placeholder"><i class="fas fa-image"></i></div>'}
-                                <div class="social-neo-dialog-media-meta"><span>${escape(displayName(sender))}</span><span>${escape(when(entry.sentAt))}</span></div>
+                            return `<div class="lux-glass-dialog-media-thumb" data-action="group-thread-search-open" data-chat-id="${escape(text(panelChat.id))}" data-message-id="${escape(text(entry.message?.id || ''))}">
+                                ${src ? `<img src="${escape(src)}" alt="${escape(text(entry.file?.name || 'Image'))}">` : '<div class="lux-glass-dialog-media-placeholder"><i class="fas fa-image"></i></div>'}
+                                <div class="lux-glass-dialog-media-meta"><span>${escape(displayName(sender))}</span><span>${escape(when(entry.sentAt))}</span></div>
                             </div>`;
                         }).join('')}</div>` : '<div class="social-neo-empty">No shared media yet.</div>'}
                         </section>
@@ -731,28 +731,28 @@
                 ${panelShellClose}`;
             }
             if (kind === 'group-panel-members') {
-                return `${panelShellOpen('social-neo-dialog-card--panel-members')}
+                return `${panelShellOpen('lux-glass-dialog-card--panel-members')}
                     ${panelHeroHead('Group members', 'Members', `People in ${escape(panelGroupName)}. View profiles, message, or manage join requests.`)}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--panel">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelMemberIds.length)), 'Active')}
                             ${panelStat(escape(String(panelPendingIds.length)), 'Pending')}
                             ${panelStat(panelIsAdmin ? 'Admin' : 'Member', 'Your role')}
                         </div>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Active members</strong>
                                 <span>${escape(String(panelMemberIds.length))} people currently in this group.</span>
                             </div>
-                            <div class="social-neo-dialog-member-list">
+                            <div class="lux-glass-dialog-member-list">
                             ${panelMemberIds.map((memberId) => {
                                 const member = accountById(memberId) || { id: memberId };
                                 const isSelf = text(memberId) === panelCurrentUserId;
                                 const isAdmin = text(panelGroup.createdBy) === text(memberId) || text(memberId) === text(panelGroup.managerId || '');
-                                return `<div class="social-neo-dialog-member-row">
+                                return `<div class="lux-glass-dialog-member-row">
                                     <div class="social-neo-person">
                                         ${avatar(member, 'social-neo-avatar-sm')}
-                                        <div class="social-neo-dialog-member-info">
+                                        <div class="lux-glass-dialog-member-info">
                                             <strong>${escape(displayName(member))}${isAdmin ? ' <span class="social-neo-pill social-neo-pill-accent">Admin</span>' : ''}</strong>
                                             <span>${escape(accountSubtitle(member))}</span>
                                         </div>
@@ -767,17 +767,17 @@
                             }).join('') || '<div class="social-neo-empty">No members found.</div>'}
                             </div>
                         </section>
-                        ${panelIsAdmin ? `<section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section social-neo-dialog-member-pending">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        ${panelIsAdmin ? `<section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section lux-glass-dialog-member-pending">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Pending requests</strong>
                                 <span>${escape(String(panelPendingIds.length))} waiting for approval.</span>
                             </div>
                             ${panelPendingIds.length ? panelPendingIds.map((memberId) => {
                                 const member = accountById(memberId) || { id: memberId };
-                                return `<div class="social-neo-dialog-member-row">
+                                return `<div class="lux-glass-dialog-member-row">
                                     <div class="social-neo-person">
                                         ${avatar(member, 'social-neo-avatar-sm')}
-                                        <div class="social-neo-dialog-member-info">
+                                        <div class="lux-glass-dialog-member-info">
                                             <strong>${escape(displayName(member))}</strong>
                                             <span>${escape(accountSubtitle(member))}</span>
                                         </div>
@@ -812,30 +812,30 @@
                     if (isImage(entry.file)) return 'fa-file-image';
                     return 'fa-file';
                 };
-                return `${panelShellOpen('social-neo-dialog-card--panel-files')}
+                return `${panelShellOpen('lux-glass-dialog-card--panel-files')}
                     ${panelHeroHead('Shared files', 'Files', `Documents and attachments in ${escape(panelGroupName)}.`)}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--panel">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelAssets.files.length)), 'Total')}
                             ${panelStat(escape(String(filteredFiles.length)), 'Showing')}
                             ${panelStat(escape(fileFilter === 'all' ? 'All types' : fileFilter.charAt(0).toUpperCase() + fileFilter.slice(1)), 'Filter')}
                         </div>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>File library</strong>
                                 <span>Filter and open attachments from this chat.</span>
                             </div>
                             <div class="social-neo-inline social-neo-inline-gap-6-wrap social-neo-panel-filter-row">
                             ${['all', 'documents', 'images', 'other'].map((f) => `<button class="social-neo-chip ${fileFilter === f ? 'is-active' : ''}" type="button" data-action="group-panel-file-filter" data-chat-id="${escape(text(dialog.chatId))}" data-filter="${escape(f)}">${escape(f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1))}</button>`).join('')}
                             </div>
-                            ${filteredFiles.length ? `<div class="social-neo-dialog-file-list">${filteredFiles.map((entry) => {
+                            ${filteredFiles.length ? `<div class="lux-glass-dialog-file-list">${filteredFiles.map((entry) => {
                             const name = text(entry.file?.name || 'File');
                             const href = fileUrl(entry.file);
                             const sender = accountById(entry.senderId) || { id: entry.senderId };
                             const size = formatBytes(entry.file?.size);
-                            return `<div class="social-neo-dialog-file-row">
-                                <div class="social-neo-dialog-file-icon" aria-hidden="true"><i class="fas ${fileIcon(entry)}"></i></div>
-                                <div class="social-neo-dialog-file-info">
+                            return `<div class="lux-glass-dialog-file-row">
+                                <div class="lux-glass-dialog-file-icon" aria-hidden="true"><i class="fas ${fileIcon(entry)}"></i></div>
+                                <div class="lux-glass-dialog-file-info">
                                     <strong>${escape(name)}</strong>
                                     <span>${escape(displayName(sender))}${size ? ` · ${escape(size)}` : ''} · ${escape(when(entry.sentAt))}</span>
                                 </div>
@@ -851,28 +851,28 @@
             }
             if (kind === 'group-panel-links') {
                 const linkCount = panelAssets.links.length;
-                return `${panelShellOpen('social-neo-dialog-card--panel-links')}
+                return `${panelShellOpen('lux-glass-dialog-card--panel-links')}
                     ${panelHeroHead('Shared links', 'Links', `URLs shared in ${escape(panelGroupName)}.`)}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--panel">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(linkCount)), 'Links')}
                             ${panelStat(escape(panelGroupName), 'Group')}
                             ${panelStat(panelIsAdmin ? 'Admin' : 'Member', 'Your role')}
                         </div>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Link list</strong>
                                 <span>${linkCount ? 'Open a link or jump to the original message.' : 'No links have been shared yet.'}</span>
                             </div>
-                            ${linkCount ? `<div class="social-neo-dialog-link-list">${panelAssets.links.map((entry) => {
+                            ${linkCount ? `<div class="lux-glass-dialog-link-list">${panelAssets.links.map((entry) => {
                             const url = text(entry.url || entry.href || '');
                             const sender = accountById(entry.senderId) || { id: entry.senderId };
-                            return `<div class="social-neo-dialog-link-row">
-                                <div class="social-neo-dialog-link-icon" aria-hidden="true"><i class="fas fa-link"></i></div>
-                                <div class="social-neo-dialog-link-info">
+                            return `<div class="lux-glass-dialog-link-row">
+                                <div class="lux-glass-dialog-link-icon" aria-hidden="true"><i class="fas fa-link"></i></div>
+                                <div class="lux-glass-dialog-link-info">
                                     <strong>${escape(text(entry.title || url || 'Link'))}</strong>
                                     <span>${escape(displayName(sender))} · ${escape(when(entry.sentAt))}</span>
-                                    ${url ? `<a class="social-neo-muted social-neo-dialog-link-url" href="${escape(url)}" target="_blank" rel="noopener">${escape(url)}</a>` : ''}
+                                    ${url ? `<a class="social-neo-muted lux-glass-dialog-link-url" href="${escape(url)}" target="_blank" rel="noopener">${escape(url)}</a>` : ''}
                                 </div>
                                 <div class="social-neo-inline social-neo-inline-gap-6-wrap">
                                     ${url ? `<a class="social-neo-link-btn" href="${escape(url)}" target="_blank" rel="noopener">Open</a>` : ''}
@@ -899,41 +899,41 @@
                     const haystack = [displayName(account), account?.email, account?.facultyCode, account?.faculty, roleLabel(account?.role)].filter(Boolean).join(' ').toLowerCase();
                     return haystack.includes(inviteSearch);
                 }).slice(0, 40);
-                return `${panelShellOpen('social-neo-dialog-card--panel-invite')}
+                return `${panelShellOpen('lux-glass-dialog-card--panel-invite')}
                     ${panelHeroHead('Invite people', 'Invite', `Grow ${escape(panelGroupName)} by inviting campus connections.`)}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--panel">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelMemberIds.length)), 'Members')}
                             ${panelStat(escape(String(candidates.length)), 'Matches')}
                             ${panelStat(escape(inviteFaculty === 'all' ? 'All' : facultyLabel(inviteFaculty)), 'Faculty')}
                         </div>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Find people</strong>
                                 <span>Search by name or filter by faculty, then invite.</span>
                             </div>
                             <div class="social-neo-form-grid-2 social-neo-panel-invite-filters">
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Search people</span>
                                     <input class="social-neo-input" type="search" data-bind="group-thread-invite-search" data-chat-id="${escape(text(dialog.chatId))}" placeholder="Search people to invite..." value="${escape(text(runtime.ui?.groupThreadInviteSearchByChat?.[text(dialog.chatId)] || ''))}">
                                 </label>
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Faculty</span>
                                     <select class="social-neo-select" data-bind="group-thread-invite-faculty" data-chat-id="${escape(text(dialog.chatId))}" data-lux-picker>
                                         ${facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${inviteFaculty === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
                                     </select>
                                 </label>
                             </div>
-                            ${candidates.length ? `<div class="social-neo-dialog-member-list">${candidates.map((candidate) => `
-                            <div class="social-neo-dialog-member-row">
+                            ${candidates.length ? `<div class="lux-glass-dialog-member-list">${candidates.map((candidate) => `
+                            <div class="lux-glass-dialog-member-row">
                                 <div class="social-neo-person">
                                     ${avatar(candidate, 'social-neo-avatar-sm')}
-                                    <div class="social-neo-dialog-member-info">
+                                    <div class="lux-glass-dialog-member-info">
                                         <strong>${escape(displayName(candidate))}</strong>
                                         <span>${escape(accountSubtitle(candidate))}</span>
                                     </div>
                                 </div>
-                                <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="group-thread-invite-add" data-group-id="${escape(text(panelGroup.id))}" data-user-id="${escape(text(candidate.id))}"><i class="fas fa-user-plus"></i> Invite</button>
+                                <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="group-thread-invite-add" data-group-id="${escape(text(panelGroup.id))}" data-user-id="${escape(text(candidate.id))}"><i class="fas fa-user-plus"></i> Invite</button>
                             </div>
                         `).join('')}</div>` : '<div class="social-neo-empty">No invite candidates match the current filters.</div>'}
                         </section>
@@ -941,20 +941,20 @@
                 ${panelShellClose}`;
             }
             if (kind === 'group-panel-settings') {
-                return `${panelShellOpen('social-neo-dialog-card--panel-settings')}
+                return `${panelShellOpen('lux-glass-dialog-card--panel-settings')}
                     ${panelHeroHead('Group settings', 'Settings', `Notifications and details for ${escape(panelGroupName)}.`)}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--panel">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelMemberIds.length)), 'Members')}
                             ${panelStat(escape(text(panelGroup.visibility || 'public')), 'Visibility')}
                             ${panelStat(panelIsAdmin ? 'Admin' : 'Member', 'Your role')}
                         </div>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Notifications</strong>
                                 <span>Choose what alerts you receive from this group.</span>
                             </div>
-                            <label class="social-neo-dialog-field">
+                            <label class="lux-glass-dialog-field">
                                 <span class="social-neo-label">Preference</span>
                                 <select class="social-neo-select" data-bind="group-thread-notify" data-group-id="${escape(text(panelGroup.id))}" data-lux-picker>
                                     <option value="all" ${groupNotificationPreference(panelGroup) === 'all' ? 'selected' : ''}>All messages</option>
@@ -964,56 +964,56 @@
                             </label>
                         </section>
                         ${panelIsAdmin ? `
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Group details</strong>
                                 <span>Name, description, visibility, and branding.</span>
                             </div>
                             <form class="social-neo-stack social-neo-panel-settings-form" data-form="group-settings" data-group-id="${escape(text(panelGroup.id))}" data-chat-id="${escape(text(panelChat.id))}">
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Name</span>
                                     <input class="social-neo-input" type="text" name="groupName" placeholder="Group name" value="${escape(text(runtime.ui?.groupThreadNameByChat?.[text(panelChat.id)] || panelGroup.name || ''))}">
                                 </label>
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Description</span>
                                     <textarea class="social-neo-textarea" rows="3" name="groupDescription" placeholder="What is this group for?">${escape(text(runtime.ui?.groupThreadDescriptionByChat?.[text(panelChat.id)] || panelGroup.description || ''))}</textarea>
                                 </label>
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Visibility</span>
                                     <select class="social-neo-select" name="groupVisibility" data-lux-picker>
                                         <option value="public" ${text(runtime.ui?.groupThreadVisibilityByChat?.[text(panelChat.id)] || panelGroup.visibility || 'public') === 'public' ? 'selected' : ''}>Public</option>
                                         <option value="private" ${text(runtime.ui?.groupThreadVisibilityByChat?.[text(panelChat.id)] || panelGroup.visibility || '') === 'private' ? 'selected' : ''}>Private</option>
                                     </select>
                                 </label>
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Avatar image URL</span>
                                     <input class="social-neo-input" type="url" name="groupAvatarUrl" placeholder="Avatar image URL" value="${escape(text(runtime.ui?.groupThreadAvatarUrlByChat?.[text(panelChat.id)] || panelGroup.avatarImage || ''))}">
                                 </label>
-                                <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
+                                <label class="lux-secondary-btn lux-secondary-btn-pointer">
                                     <i class="fas fa-image"></i> Upload avatar
                                     <input name="groupAvatarFile" data-chat-id="${escape(text(panelChat.id))}" type="file" accept="image/*" hidden>
                                 </label>
-                                <label class="social-neo-dialog-field">
+                                <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Banner image URL</span>
                                     <input class="social-neo-input" type="url" name="groupBannerUrl" placeholder="Banner image URL" value="${escape(text(runtime.ui?.groupThreadBannerUrlByChat?.[text(panelChat.id)] || panelGroup.bannerImage || ''))}">
                                 </label>
-                                <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
+                                <label class="lux-secondary-btn lux-secondary-btn-pointer">
                                     <i class="fas fa-panorama"></i> Upload banner
                                     <input name="groupBannerFile" data-chat-id="${escape(text(panelChat.id))}" type="file" accept="image/*" hidden>
                                 </label>
-                                <div class="social-neo-dialog-actions">
-                                    <button class="social-neo-btn social-neo-btn-primary" type="submit">Save group settings</button>
+                                <div class="lux-glass-dialog-actions">
+                                    <button class="lux-primary-btn" type="submit">Save group settings</button>
                                 </div>
                             </form>
                         </section>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Leave group</strong>
                                 <span>Leaving keeps the group available for others.</span>
                             </div>
                             <div class="social-neo-inline social-neo-inline-gap-10-wrap">
                                 <span class="social-neo-muted social-neo-flex-spacer">You can rejoin later if the group is public or you are re-invited.</span>
-                                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="group-leave-open" data-group-id="${escape(text(panelGroup.id))}"><i class="fas fa-sign-out-alt"></i> Leave group</button>
+                                <button class="lux-secondary-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(panelGroup.id))}"><i class="fas fa-sign-out-alt"></i> Leave group</button>
                             </div>
                         </section>
                         ` : ''}

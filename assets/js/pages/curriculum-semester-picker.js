@@ -1,4 +1,4 @@
-/* Scroll-snap semester picker for admin-tools curriculum subject builder. */
+/* Compact value-only semester picker for admin-tools subject builder. */
 (function curriculumSemesterPickerModule() {
     'use strict';
 
@@ -7,9 +7,8 @@
     let addSemestersMode = false;
 
     function escapeHtml(value) {
-        if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
-            const shared = window.escapeHtml;
-            if (shared !== escapeHtml) return shared(value);
+        if (typeof window.escapeHtml === 'function') {
+            return window.escapeHtml(value);
         }
         return String(value == null ? '' : value)
             .replace(/&/g, '&amp;')
@@ -20,8 +19,8 @@
     }
 
     function normalizeList(value) {
-        if (typeof window.setBuilderSubjectSemesters === 'function') {
-            return window.setBuilderSubjectSemesters(value);
+        if (typeof window.normalizeSemesterList === 'function') {
+            return window.normalizeSemesterList(value);
         }
         const source = Array.isArray(value) ? value : [value];
         return [...new Set(source
@@ -44,16 +43,17 @@
     }
 
     function writeSelection(semesters) {
-        const resolved = normalizeList(semesters);
+        const resolved = typeof window.setBuilderSubjectSemesters === 'function'
+            ? window.setBuilderSubjectSemesters(semesters)
+            : normalizeList(semesters);
         const hidden = document.getElementById('new-subject-semesters');
+        if (hidden && typeof window.setBuilderSubjectSemesters !== 'function') {
+            hidden.value = JSON.stringify(resolved.length ? resolved : [1]);
+        }
         if (hidden) {
-            hidden.value = JSON.stringify(resolved);
             hidden.dispatchEvent(new Event('change', { bubbles: true }));
         }
-        if (typeof window.setBuilderSubjectSemesters === 'function') {
-            window.setBuilderSubjectSemesters(resolved);
-        }
-        return resolved;
+        return resolved.length ? resolved : [1];
     }
 
     function formatButtonLabel(semesters) {
@@ -136,7 +136,6 @@
         const segmentRoot = document.querySelector(config.segmentSelector || '.lux-semester-mode-segment');
         const hintNode = document.getElementById(config.modeHintId || 'new-subject-semester-mode-hint');
         const pickerButton = document.getElementById(config.buttonId || 'new-subject-semester-lux-btn');
-        const captionNode = pickerButton?.querySelector('.lux-picker-caption');
         if (segmentRoot) {
             segmentRoot.querySelectorAll('[data-semester-mode]').forEach((button) => {
                 const isAdd = button.dataset.semesterMode === 'add';
@@ -146,7 +145,7 @@
             });
         }
         if (hintNode) hintNode.textContent = getModeHintText();
-        if (captionNode) captionNode.textContent = getPickerCaption();
+        if (pickerButton) pickerButton.setAttribute('aria-label', getPickerCaption());
     }
 
     function syncUi(config = {}) {
@@ -236,7 +235,7 @@
         const segmentRoot = document.querySelector(config.segmentSelector || '.lux-semester-mode-segment');
         if (!button || !panel || !listNode || !trayNode || !hidden) return false;
         panel.classList.add('lux-droplist-panel');
-        panel.classList.remove('social-neo-dialog-picker-panel');
+        panel.classList.remove('lux-glass-dialog-picker-panel');
         if (button.dataset.curriculumSemesterPickerBound === '1') {
             syncUi(config);
             return true;

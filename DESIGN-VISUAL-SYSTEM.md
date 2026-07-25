@@ -88,7 +88,7 @@ background:
 | 3 | `assets/css/base.css` | Base resets / globals |
 | 4 | `assets/css/layout.css` | Shell layout (sidebar/topbar/grid) |
 | 5 | **`assets/css/lux-tokens.css`** | **Foundation: all colors, 7 palettes, glass/opacity/blur/glow variables** |
-| 6 | **`assets/css/lux-surfaces.css`** | **Reusable glass surface recipes** (`.lux-summary-surface`, pills, data cards) |
+| 6 | **`assets/css/lux-fouc-ht.css`** | **FOUC + reusable glass surface recipes** (`.lux-summary-surface`, panel hosts, home desk) |
 | 7 | `assets/css/lux-controls.css` | Buttons / controls |
 | 8 | `assets/css/lux-layout-primitives.css` | Grid/layout helpers |
 | 9 | **`assets/css/index-luxury.css`** | **Monolith (~22.8k lines): real `.lux-hero`/`.lux-card`/`.lux-quick-btn` glass + per-route fades** |

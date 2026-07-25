@@ -37,11 +37,11 @@
 
         const SOCIAL_OVERLAY_PORTAL_ID = 'social-neo-overlay-portal';
         const SOCIAL_OVERLAY_REGION_IDS = [
-            'social-neo-dialog-region',
+            'lux-glass-dialog-region',
             'social-neo-story-viewer-region',
             'social-neo-story-composer-region'
         ];
-        const SOCIAL_OVERLAY_SURFACE_SELECTOR = '.social-neo-dialog-backdrop, .social-neo-story-viewer, .social-neo-story-composer';
+        const SOCIAL_OVERLAY_SURFACE_SELECTOR = '.lux-glass-dialog-backdrop, .social-neo-story-viewer, .social-neo-story-composer';
 
         function socialOverlayPortalHasContent() {
             return SOCIAL_OVERLAY_REGION_IDS.some((regionId) => {
@@ -82,7 +82,7 @@
             const runtime = state();
             if (!runtime?.ui) return;
 
-            const hasDialogSurface = Boolean(document.getElementById('social-neo-dialog-region')?.querySelector('.social-neo-dialog-backdrop'));
+            const hasDialogSurface = Boolean(document.getElementById('lux-glass-dialog-region')?.querySelector('.lux-glass-dialog-backdrop'));
             const hasStoryViewer = Boolean(document.getElementById('social-neo-story-viewer-region')?.querySelector('.social-neo-story-viewer'));
             const hasStoryComposer = Boolean(document.getElementById('social-neo-story-composer-region')?.querySelector('.social-neo-story-composer'));
 
@@ -111,7 +111,7 @@
         }
 
         function socialDialogRegion() {
-            return document.getElementById('social-neo-dialog-region');
+            return document.getElementById('lux-glass-dialog-region');
         }
 
         function photographyUploadForm() {
@@ -120,14 +120,14 @@
 
         function normalizeSocialOverlayDialogRegion() {
             const portal = document.getElementById(SOCIAL_OVERLAY_PORTAL_ID);
-            const regionId = 'social-neo-dialog-region';
+            const regionId = 'lux-glass-dialog-region';
             const regions = Array.from(document.querySelectorAll(`[id="${regionId}"]`));
             const canonical = (portal && portal.querySelector(`[id="${regionId}"]`)) || regions[0] || null;
             regions.forEach((region) => {
                 if (region !== canonical) region.remove();
             });
             if (canonical) {
-                const backdrops = canonical.querySelectorAll(':scope > .social-neo-dialog-backdrop');
+                const backdrops = canonical.querySelectorAll(':scope > .lux-glass-dialog-backdrop');
                 if (backdrops.length > 1) {
                     Array.from(backdrops).slice(1).forEach((node) => node.remove());
                 }
@@ -165,7 +165,7 @@
             normalizeSocialOverlayDialogRegion();
             return {
                 portal,
-                dialog: document.getElementById('social-neo-dialog-region'),
+                dialog: document.getElementById('lux-glass-dialog-region'),
                 storyViewer: document.getElementById('social-neo-story-viewer-region'),
                 storyComposer: document.getElementById('social-neo-story-composer-region')
             };
@@ -260,12 +260,12 @@
         }
 
         function focusSocialDialog() {
-            const dialogRegion = document.getElementById('social-neo-dialog-region');
+            const dialogRegion = document.getElementById('lux-glass-dialog-region');
             if (!dialogRegion) return;
             // Prefer the top-most overlay card (health child, then graph child, then any).
-            const card = dialogRegion.querySelector('.social-project-health-child-slot .social-neo-dialog-card')
-                || dialogRegion.querySelector('.social-project-task-graph-child-slot .social-neo-dialog-card')
-                || dialogRegion.querySelector('.social-neo-dialog-card');
+            const card = dialogRegion.querySelector('.social-project-health-child-slot .lux-glass-dialog-card')
+                || dialogRegion.querySelector('.social-project-task-graph-child-slot .lux-glass-dialog-card')
+                || dialogRegion.querySelector('.lux-glass-dialog-card');
             if (!card) return;
             const focusTarget = card.querySelector('input:not([type="hidden"]), select, textarea')
                 || card.querySelector('button[data-action="dialog-close"]');
@@ -340,13 +340,13 @@
 
         function syncSurveyResultsDialog(scope = root()) {
             const host = scope || document;
-            const rail = host.querySelector?.('.social-neo-dialog-body--survey-results[data-lux-scroll-rail]')
-                || document.querySelector('.social-neo-dialog-body--survey-results[data-lux-scroll-rail]');
+            const rail = host.querySelector?.('.lux-glass-dialog-body--survey-results[data-lux-scroll-rail]')
+                || document.querySelector('.lux-glass-dialog-body--survey-results[data-lux-scroll-rail]');
             if (!rail) return;
             if (typeof window.initLuxScrollRail === 'function') {
-                window.initLuxScrollRail(rail, { shellSelector: '.social-neo-dialog-body--survey-results[data-lux-scroll-rail]' });
+                window.initLuxScrollRail(rail, { shellSelector: '.lux-glass-dialog-body--survey-results[data-lux-scroll-rail]' });
             } else if (typeof window.syncLuxScrollRail === 'function') {
-                window.syncLuxScrollRail(rail, { shellSelector: '.social-neo-dialog-body--survey-results[data-lux-scroll-rail]' });
+                window.syncLuxScrollRail(rail, { shellSelector: '.lux-glass-dialog-body--survey-results[data-lux-scroll-rail]' });
             }
         }
 

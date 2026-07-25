@@ -156,7 +156,7 @@
                     </div>
                     ${canCreate ? `
                     <div class="social-neo-surveys-hero-actions">
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-surveys-hero-create-btn" type="button" data-action="survey-create-open">
+                        <button class="lux-primary-btn social-neo-surveys-hero-create-btn" type="button" data-action="survey-create-open">
                             <i class="fas ${escape(createIcon)}"></i>
                             <span>${escape(createLabel)}</span>
                         </button>
@@ -349,7 +349,7 @@
                     `).join('')}
                     <div class="social-neo-inline social-neo-events-form-actions social-neo-survey-submit-actions">
                         <span class="social-neo-flex-spacer"></span>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-survey-submit-btn" type="submit">
+                        <button class="lux-primary-btn social-neo-survey-submit-btn" type="submit">
                             <span class="social-neo-survey-submit-btn-icon" aria-hidden="true"><i class="fas fa-paper-plane"></i></span>
                             <span class="social-neo-survey-submit-btn-label">Submit responses</span>
                         </button>
@@ -499,8 +499,8 @@
 
     function renderQuestionResultCard(item, index) {
         return `
-            <section class="social-neo-dialog-survey-create-section social-neo-survey-results-question" style="--survey-stagger: ${index}">
-                <div class="social-neo-dialog-survey-create-section-head social-neo-survey-results-question-head">
+            <section class="lux-glass-dialog-group-section social-neo-survey-results-question" style="--survey-stagger: ${index}">
+                <div class="lux-glass-dialog-group-section-head social-neo-survey-results-question-head">
                     <div>
                         <strong>Question ${index + 1}</strong>
                         <span>${escape(text(item.prompt))}</span>
@@ -527,16 +527,16 @@
             : `<div class="social-neo-survey-results-empty social-neo-survey-results-empty--panel"><i class="fas fa-chart-column"></i><strong>No question results yet</strong><span>Responses will appear here once participants submit answers.</span></div>`;
 
         return `
-            <div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-card social-neo-dialog-card social-neo-dialog-card--lms-create social-neo-dialog-card--survey-create social-neo-dialog-card--survey-results social-neo-surveys-results-dialog" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-dialog-head social-neo-surveys-hero-head social-neo-surveys-results-dialog-head">
+            <div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <div class="social-neo-card lux-glass-dialog-card lux-glass-dialog-card lux-glass-dialog-card--survey-create lux-glass-dialog-card--survey-results social-neo-surveys-results-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-head social-neo-surveys-hero-head social-neo-surveys-results-dialog-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker"><i class="fas fa-chart-column" aria-hidden="true"></i> Survey results</span>
                             <h2>${escape(text(survey.title))}</h2>
                             <p>${metaParts.join(' · ')}</p>
                             ${text(survey.description) ? `<p class="social-neo-survey-results-desc">${escape(text(survey.description))}</p>` : ''}
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close results"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close results"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-surveys-hero-stats social-neo-surveys-results-kpis">
                         <article class="social-neo-surveys-hero-stat"><strong>${escape(String(responseCount))}</strong><span>Responses</span></article>
@@ -544,7 +544,7 @@
                         <article class="social-neo-surveys-hero-stat"><strong>${escape(surveyStatusLabel(survey))}</strong><span>Status</span></article>
                         <article class="social-neo-surveys-hero-stat"><strong>${escape(surveyAudienceLabel(survey))}</strong><span>Audience</span></article>
                     </div>
-                    <div class="lux-scroll-rail social-neo-dialog-body social-neo-dialog-body--survey-results" data-lux-scroll-rail>
+                    <div class="lux-scroll-rail lux-glass-dialog-body lux-glass-dialog-body--survey-results" data-lux-scroll-rail>
                         <div class="lux-scroll-rail__controls social-neo-survey-results-scroll-controls" aria-hidden="true">
                             <div class="lux-scroll-rail__dock" role="group" aria-label="Scroll survey results">
                                 <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="up" aria-label="Scroll results up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
@@ -558,14 +558,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions social-neo-surveys-results-dialog-actions">
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions social-neo-surveys-results-dialog-actions">
                         ${survey.viewerCanManage ? `
                             <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-surveys-results-actions">
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-export" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-file-export"></i> Export JSON</button>
-                                ${text(survey.status) === 'published' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-close" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-lock"></i> Close survey</button>` : ''}
+                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-export" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-file-export"></i> Export JSON</button>
+                                ${text(survey.status) === 'published' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-close" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-lock"></i> Close survey</button>` : ''}
                             </div>
                         ` : '<span class="social-neo-flex-spacer"></span>'}
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="dialog-close">Close</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="dialog-close">Close</button>
                     </div>
                 </div>
             </div>
@@ -599,14 +599,14 @@
                 ${text(survey.description) ? `<div class="social-neo-muted social-neo-survey-card-desc">${escape(text(survey.description))}</div>` : ''}
                 <div class="social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-survey-card-actions">
                     <div class="social-neo-inline social-neo-inline-gap-8-wrap">
-                        ${canTake ? `<button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="survey-take-open" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-play"></i> Take survey</button>` : ''}
-                        ${hasResponded && !canTake ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" disabled><i class="fas fa-check"></i> Completed</button>` : ''}
+                        ${canTake ? `<button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="survey-take-open" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-play"></i> Take survey</button>` : ''}
+                        ${hasResponded && !canTake ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" disabled><i class="fas fa-check"></i> Completed</button>` : ''}
                     </div>
                     <div class="social-neo-inline social-neo-inline-gap-8-wrap">
-                        ${canViewResults ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-results-open" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-chart-column"></i> Results</button>` : ''}
-                        ${survey.viewerCanManage ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-export" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-file-export"></i> Export</button>` : ''}
-                        ${survey.viewerCanManage && text(survey.status) === 'published' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-close" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-lock"></i> Close</button>` : ''}
-                        ${survey.viewerCanManage ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-delete" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-trash"></i> Remove</button>` : ''}
+                        ${canViewResults ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-results-open" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-chart-column"></i> Results</button>` : ''}
+                        ${survey.viewerCanManage ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-export" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-file-export"></i> Export</button>` : ''}
+                        ${survey.viewerCanManage && text(survey.status) === 'published' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-close" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-lock"></i> Close</button>` : ''}
+                        ${survey.viewerCanManage ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-delete" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                     </div>
                 </div>
             </article>
@@ -638,27 +638,27 @@
         if (isQuestionDelete) {
             const typeMeta = surveyQuestionTypeMeta(question.questionType);
             const promptText = text(question.prompt) || 'Untitled question';
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-delete-confirm" data-form="dialog-survey-draft-question-delete" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card social-neo-delete-confirm" data-form="dialog-survey-draft-question-delete" data-action="noop">
                     <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                        <div class="lux-glass-dialog-heading">
                             <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                             <div class="social-neo-delete-confirm-title">
-                                <strong class="social-neo-dialog-title">Delete question</strong>
-                                <span class="social-neo-dialog-subtitle">This removes the question from your survey draft.</span>
+                                <strong class="lux-glass-dialog-title">Delete question</strong>
+                                <span class="lux-glass-dialog-subtitle">This removes the question from your survey draft.</span>
                             </div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-delete-confirm-preview">
-                        <strong class="social-neo-dialog-preview-title">Question ${escape(String(questionIndex + 1))}</strong>
+                        <strong class="lux-glass-dialog-preview-title">Question ${escape(String(questionIndex + 1))}</strong>
                         <blockquote class="social-neo-delete-confirm-quote">${escape(promptText)}</blockquote>
                         <div class="social-neo-muted social-neo-muted-mt-6">${escape(typeMeta.label)}</div>
                     </div>
                     <div class="social-neo-delete-confirm-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-danger social-neo-dialog-submit-btn" type="submit">Remove question</button>
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="lux-primary-btn lux-btn-danger lux-glass-dialog-submit-btn" type="submit">Remove question</button>
                     </div>
                     <input type="hidden" name="questionIndex" value="${escape(String(questionIndex))}">
                 </form>
@@ -669,27 +669,27 @@
         const option = options[optionIndex];
         if (!Number.isFinite(optionIndex) || optionIndex < 0 || !option || options.length <= 2) return '';
         const optionLabel = text(option.label) || 'Empty choice';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-delete-confirm" data-form="dialog-survey-draft-choice-delete" data-action="noop">
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card social-neo-delete-confirm" data-form="dialog-survey-draft-choice-delete" data-action="noop">
                 <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
                         <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                         <div class="social-neo-delete-confirm-title">
-                            <strong class="social-neo-dialog-title">Remove choice</strong>
-                            <span class="social-neo-dialog-subtitle">This removes the answer choice from the question.</span>
+                            <strong class="lux-glass-dialog-title">Remove choice</strong>
+                            <span class="lux-glass-dialog-subtitle">This removes the answer choice from the question.</span>
                         </div>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="social-neo-delete-confirm-preview">
-                    <strong class="social-neo-dialog-preview-title">Choice ${escape(String(optionIndex + 1))}</strong>
+                    <strong class="lux-glass-dialog-preview-title">Choice ${escape(String(optionIndex + 1))}</strong>
                     <blockquote class="social-neo-delete-confirm-quote">${escape(optionLabel)}</blockquote>
                     <div class="social-neo-muted social-neo-muted-mt-6">Question ${escape(String(questionIndex + 1))}</div>
                 </div>
                 <div class="social-neo-delete-confirm-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-danger social-neo-dialog-submit-btn" type="submit">Remove choice</button>
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-btn-danger lux-glass-dialog-submit-btn" type="submit">Remove choice</button>
                 </div>
                 <input type="hidden" name="questionIndex" value="${escape(String(questionIndex))}">
                 <input type="hidden" name="optionIndex" value="${escape(String(optionIndex))}">
@@ -706,7 +706,7 @@
             <div class="social-neo-survey-question-options">
                 <div class="social-neo-survey-question-options-head">
                     <strong>Answer choices</strong>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-question-option-add" data-question-index="${escape(String(index))}">
+                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-question-option-add" data-question-index="${escape(String(index))}">
                         <i class="fas fa-plus"></i> Add choice
                     </button>
                 </div>
@@ -715,7 +715,7 @@
                         <div class="social-neo-survey-choice-row social-neo-survey-question-option-row ${optionsRemovable ? '' : 'social-neo-survey-choice-row--no-remove'}">
                             <input class="social-neo-input" type="text" name="surveyQuestionOption-${escape(String(index))}" value="${escape(text(option?.label || ''))}" placeholder="Choice ${escape(String(optionIndex + 1))}" required>
                             ${optionsRemovable ? `
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-question-option-remove" data-question-index="${escape(String(index))}" data-option-index="${escape(String(optionIndex))}" aria-label="Remove choice">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-question-option-remove" data-question-index="${escape(String(index))}" data-option-index="${escape(String(optionIndex))}" aria-label="Remove choice">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             ` : ''}
@@ -754,12 +754,12 @@
                         <span class="social-neo-muted">${escape(typeMeta.label)}</span>
                     </div>
                     ${questionCount > 1 ? `
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="survey-question-remove" data-question-index="${escape(String(index))}">
+                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-question-remove" data-question-index="${escape(String(index))}">
                             <i class="fas fa-trash"></i> Remove
                         </button>
                     ` : ''}
                 </div>
-                <label class="social-neo-dialog-field" for="${escape(typeId)}">
+                <label class="lux-glass-dialog-field" for="${escape(typeId)}">
                     <span class="social-neo-label">Question type</span>
                     <select class="social-neo-select" id="${escape(typeId)}" name="surveyQuestionType-${escape(String(index))}" data-lux-picker>
                         <option value="single_choice" ${questionType === 'single_choice' ? 'selected' : ''}>Single choice</option>
@@ -769,7 +769,7 @@
                         <option value="text" ${questionType === 'text' ? 'selected' : ''}>Text</option>
                     </select>
                 </label>
-                <label class="social-neo-dialog-field" for="${escape(promptId)}">
+                <label class="lux-glass-dialog-field" for="${escape(promptId)}">
                     <span class="social-neo-label">Question text</span>
                     <input class="social-neo-input" id="${escape(promptId)}" type="text" name="surveyQuestionPrompt-${escape(String(index))}" value="${escape(text(question.prompt))}" placeholder="What should we ask?" required>
                 </label>
@@ -782,13 +782,13 @@
                     <div class="social-neo-survey-question-config-block">
                         <strong class="social-neo-survey-question-config-title">Rating scale</strong>
                         <div class="social-neo-form-grid-2 social-neo-survey-question-config-grid">
-                            <label class="social-neo-dialog-field" for="${escape(minRatingId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(minRatingId)}">
                                 <span class="social-neo-label">From</span>
                                 <select class="social-neo-select" id="${escape(minRatingId)}" name="surveyQuestionMinRating-${escape(String(index))}" data-lux-picker>
                                     ${ratingValues.map((value) => `<option value="${escape(String(value))}" ${minRating === value ? 'selected' : ''}>${escape(String(value))}</option>`).join('')}
                                 </select>
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(maxRatingId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(maxRatingId)}">
                                 <span class="social-neo-label">To</span>
                                 <select class="social-neo-select" id="${escape(maxRatingId)}" name="surveyQuestionMaxRating-${escape(String(index))}" data-lux-picker>
                                     ${ratingValues.map((value) => `<option value="${escape(String(value))}" ${maxRating === value ? 'selected' : ''}>${escape(String(value))}</option>`).join('')}
@@ -834,7 +834,7 @@
                     </button>`;
                 }).join('')}
             </div>
-            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-survey-question-rail-add" type="button" data-action="survey-question-add">
+            <button class="lux-secondary-btn lux-secondary-btn-sm social-neo-survey-question-rail-add" type="button" data-action="survey-question-add">
                 <i class="fas fa-plus"></i> Add question
             </button>`;
     }
@@ -844,7 +844,7 @@
         const activeQuestionIndex = ensureSurveyDraftActiveIndex();
         const activeQuestion = draftQuestions[activeQuestionIndex] || draftQuestions[0];
         return `
-            <div class="social-neo-dialog-survey-create-section-head social-neo-surveys-create-questions-head">
+            <div class="lux-glass-dialog-group-section-head social-neo-surveys-create-questions-head">
                 <strong>Questions</strong>
                 <span>Pick a question from the list, then edit it on the right.</span>
             </div>
@@ -861,18 +861,18 @@
         const userRole = text(currentUser()?.role || 'student');
         const isStaff = ['professor', 'ta', 'admin', 'student_service'].includes(userRole);
         if (isOfficial && !isStaff) {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-card social-neo-surveys-hero social-neo-surveys-create-hero social-neo-dialog-card--survey-create" data-lux-transparency-exempt="1">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <div class="social-neo-card social-neo-surveys-hero social-neo-surveys-create-hero lux-glass-dialog-card--survey-create" data-lux-transparency-exempt="1">
                     <div class="social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Official surveys</span>
                             <h2>University-wide feedback</h2>
                             <p>Faculty and administrators can publish official campus surveys here.</p>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
                     <p class="social-neo-muted">Official surveys for services, policy, and course evaluation are published by staff accounts.</p>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-surveys-hero-create-btn" type="button" data-action="dialog-close">Got it</button>
+                    <button class="lux-primary-btn social-neo-surveys-hero-create-btn" type="button" data-action="dialog-close">Got it</button>
                 </div>
             </div>`;
         }
@@ -925,31 +925,31 @@
         const submitLabel = isOfficial ? 'Publish official survey' : 'Publish survey';
         const submitIcon = isOfficial ? 'fa-landmark' : 'fa-paper-plane';
         const titlePlaceholder = isOfficial ? 'e.g. Library services evaluation' : 'e.g. Study group session feedback';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-card social-neo-dialog-card social-neo-surveys-hero social-neo-surveys-create-hero social-neo-dialog-card--survey-create social-neo-dialog-card--lms-create ${isOfficial ? 'social-neo-surveys-create-hero--official' : 'social-neo-surveys-create-hero--student'}" data-form="survey-create" data-action="noop" data-lux-transparency-exempt="1">
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="social-neo-card lux-glass-dialog-card social-neo-surveys-hero social-neo-surveys-create-hero lux-glass-dialog-card--survey-create lux-glass-dialog-card ${isOfficial ? 'social-neo-surveys-create-hero--official' : 'social-neo-surveys-create-hero--student'}" data-form="survey-create" data-action="noop" data-lux-transparency-exempt="1">
                 ${isOfficial ? '<input type="hidden" name="surveyIsOfficial" value="true">' : ''}
-                <div class="social-neo-dialog-head social-neo-surveys-hero-head">
+                <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
                     <div class="social-neo-surveys-hero-copy">
                         <span class="social-neo-section-kicker">${isOfficial ? 'Official survey' : 'Student survey'}</span>
                         <h2>${escape(title)}</h2>
                         <p>${escape(subtitle)}</p>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Cancel"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Cancel"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="social-neo-dialog-body social-neo-dialog-body--survey-create">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--survey-create">
                 <div class="social-neo-surveys-hero-stats">
                     <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(formatSurveyQuestionCountStat(draftQuestions))}</strong><span>Questions</span></article>
                     <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(audienceStatLabel)}</strong><span>Audience</span></article>
                     <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(closesStatLabel)}</strong><span>Closes</span></article>
                     <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(visibilityStatLabel)}</strong><span>Visibility</span></article>
                 </div>
-                <section class="social-neo-dialog-survey-create-section">
-                    <div class="social-neo-dialog-survey-create-section-head">
+                <section class="lux-glass-dialog-group-section">
+                    <div class="lux-glass-dialog-group-section-head">
                         <strong>Survey settings</strong>
                         <span>Scope, audience, schedule, and visibility.</span>
                     </div>
                     <div class="social-neo-form-grid-2 social-neo-surveys-create-settings-grid">
-                        <label class="social-neo-dialog-field" for="${escape(scopeId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(scopeId)}">
                             <span class="social-neo-label">Publish as</span>
                             <select class="social-neo-select" id="${escape(scopeId)}" name="surveyScope" data-lux-picker>
                                 ${scopeOptions.map((scope) => {
@@ -958,17 +958,17 @@
                                 }).join('')}
                             </select>
                         </label>
-                        <label class="social-neo-dialog-field">
+                        <label class="lux-glass-dialog-field">
                             <span class="social-neo-label">Audience</span>
                             <select class="social-neo-select" name="surveyAudience" data-lux-picker>
                                 ${audienceOptions.map((option) => `<option value="${escape(option.value)}" ${selectedAudience === option.value ? 'selected' : ''}>${escape(option.label)}</option>`).join('')}
                             </select>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(closesAtId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(closesAtId)}">
                             <span class="social-neo-label">Closes</span>
                             <input class="social-neo-input" id="${escape(closesAtId)}" type="datetime-local" name="surveyClosesAt" min="${escape(closesAtMin)}" value="${escape(selectedClosesAt)}" required>
                         </label>
-                        <label class="social-neo-dialog-field">
+                        <label class="lux-glass-dialog-field">
                             <span class="social-neo-label">Results visibility</span>
                             <select class="social-neo-select" name="surveyResultsVisibility" data-lux-picker>
                                 ${resultsOptions.map((option) => `<option value="${escape(option.value)}" ${selectedResultsVisibility === option.value ? 'selected' : ''}>${escape(option.label)}</option>`).join('')}
@@ -999,9 +999,9 @@
                 </div>
                 <div class="social-neo-surveys-create-questions">${renderSurveyCreateQuestionsMarkup()}</div>
                 </div>
-                <div class="social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-surveys-hero-create-btn" type="submit"><i class="fas ${escape(submitIcon)}"></i><span>${escape(submitLabel)}</span></button>
+                <div class="lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn social-neo-surveys-hero-create-btn" type="submit"><i class="fas ${escape(submitIcon)}"></i><span>${escape(submitLabel)}</span></button>
                 </div>
             </form>
         </div>`;
@@ -1048,7 +1048,7 @@
                     <i class="fas fa-clipboard-list"></i>
                     <strong>No surveys in this view</strong>
                     <span>${escape(emptyCopy)}</span>
-                    ${canCreate ? '<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="survey-create-open">Create survey</button>' : ''}
+                    ${canCreate ? '<button class="lux-primary-btn" type="button" data-action="survey-create-open">Create survey</button>' : ''}
                 </div>
             `}
         `;

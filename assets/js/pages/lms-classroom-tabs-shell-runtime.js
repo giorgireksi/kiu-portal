@@ -722,11 +722,14 @@ function switchLMSTab(tab, options = {}) {
         window.closeLmsQuizOverlays();
     } else {
         // Quiz module may still be lazy; drop any leftover overlay nodes safely.
-        document.getElementById('lms-quiz-board-modal')?.remove();
-        document.getElementById('lms-quiz-review-board-modal')?.remove();
-        document.getElementById('lms-quiz-review-modal')?.remove();
-        document.getElementById('lms-quiz-subject-library-modal')?.remove();
-        document.getElementById('lms-quiz-preview-modal')?.remove();
+        ['lms-quiz-board-modal', 'lms-quiz-review-board-modal', 'lms-quiz-review-modal', 'lms-quiz-subject-library-modal', 'lms-quiz-preview-modal', 'lms-quiz-access-overlay'].forEach((id) => {
+            const overlay = document.getElementById(id);
+            if (overlay && typeof window.closeLuxGlassDialogOverlay === 'function') {
+                window.closeLuxGlassDialogOverlay(overlay, { instant: true });
+            } else {
+                overlay?.remove();
+            }
+        });
     }
     if (typeof refreshLmsQuizTabPresentation === 'function') {
         refreshLmsQuizTabPresentation();

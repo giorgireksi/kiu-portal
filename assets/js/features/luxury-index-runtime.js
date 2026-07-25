@@ -836,7 +836,7 @@ return {
 
     function renderHomeShellLoadingPlaceholder(homeShell) {
         homeShell.innerHTML = `
-            <div class="lux-home-grid is-loading" data-home-loading-shell="1">
+            <div class="lux-home-grid is-loading" data-home-loading-shell="1" data-lux-glass-root="1">
                 <section class="lux-card">
                     <div class="lux-card-body lux-stack-grid">
                         <div class="lux-kicker">Dashboard</div>
@@ -860,7 +860,7 @@ return {
         const safeTitle = escapeHtml(title || 'Dashboard could not load');
         const safeCopy = escapeHtml(copy || 'The home dashboard bundle did not finish loading. Try again or refresh the page.');
         homeShell.innerHTML = `
-            <div class="lux-home-grid is-loading" data-home-recovery-shell="1">
+            <div class="lux-home-grid is-loading" data-home-recovery-shell="1" data-lux-glass-root="1">
                 <section class="lux-card">
                     <div class="lux-card-body lux-stack-grid">
                         <div class="lux-kicker">Dashboard</div>

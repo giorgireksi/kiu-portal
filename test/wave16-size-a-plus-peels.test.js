@@ -108,19 +108,6 @@ const peels = [
         marker: 'evaluateStudentCourseEligibility'
     },
     {
-        name: 'lux-transparency-route',
-        host: 'assets/js/shared/lux-transparency.js',
-        peel: 'assets/js/shared/lux-transparency-route-runtime.js',
-        factory: '__kiuCreateLuxTransparencyRouteApi',
-        loaded: '__KIU_LUX_TRANSPARENCY_ROUTE_LOADED',
-        loadCheck() {
-            const html = readSource('index.html');
-            expect(html.indexOf('lux-transparency-route-runtime.js'))
-                .toBeLessThan(html.indexOf('lux-transparency.js'));
-        },
-        marker: 'shouldKeepLmsFadeCssBackground'
-    },
-    {
         name: 'luxury-transparency-model',
         host: 'assets/js/features/index-luxury.js',
         peel: 'assets/js/features/luxury-transparency-model-runtime.js',

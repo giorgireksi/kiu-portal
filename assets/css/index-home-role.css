@@ -85,40 +85,7 @@
   }
   .lux-admin-op-btn span { min-width: 0; }
 }
-/* --- soft-chrome-surfaces --- */
-/* Legacy grid host: single desk frost */
-body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid {
-  background-color: var(--lux-panel-fill) !important;
-  background-image: var(--lux-panel-surface) !important;
-  border: 1px solid var(--lux-panel-host-border) !important;
-  border-radius: var(--lux-panel-radius, 22px) !important;
-  box-shadow: var(--lux-panel-host-shadow) !important;
-  backdrop-filter: var(--lux-panel-blur-filter) !important;
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter) !important;
-  background-clip: padding-box;
-}
-/* Legacy grid children: accent surface on host — no second frost blur */
-body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell :is(
-  .lux-home-grid > .lux-panel,
-  .lux-home-grid > .lux-card,
-  .lux-home-grid > .lux-hero
-) {
-  background-color: var(--home-glass-fill, rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)));
-  background-image: var(--lux-soft-chrome-surface, var(--home-fade-soft, var(--lux-panel-surface-soft)));
-  border-color: color-mix(
-    in srgb,
-    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)) 48%,
-    var(--lux-soft-chrome-border, var(--home-fade-border-soft, var(--lux-panel-border)))
-  );
-  box-shadow:
-    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50)),
-    0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32)),
-    0 0 40px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.16)),
-    var(--lux-soft-chrome-shadow, var(--home-fade-shadow-soft, var(--lux-elev-2)));
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background-clip: padding-box;
-}
+/* --- soft-chrome-surfaces (layout/demotion only — paint → lux-fouc-ht) --- */
 /* Merged shell: demote band section roots only (no own border — part of desk).
  * Exclude inner shells (focus aside, chips) — they keep glow chrome below. */
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-merged > .lux-home-band :is(
@@ -141,47 +108,7 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-/* Merged desk host: chip-like fade — tamed accent radial, no mega-wash */
-body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-merged.lux-soft-chrome {
-  background-color: var(--lux-panel-fill) !important;
-  background-image: var(--lux-panel-surface) !important;
-  border: 1px solid var(--lux-panel-host-border) !important;
-  border-radius: var(--lux-panel-radius, 22px) !important;
-  box-shadow: var(--lux-panel-host-shadow) !important;
-  backdrop-filter: var(--lux-panel-blur-filter) !important;
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter) !important;
-  background-clip: padding-box;
-}
-/* Inner shells/chips: accent surface on desk — no second frost blur (desk is blur host) */
-body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-merged :is(
-  .lms-hero-focus,
-  .lux-hero-side,
-  .lux-focus-panel,
-  .lux-list-row.lux-soft-chrome,
-  .lux-stat.lux-soft-chrome,
-  .lux-pill.lux-soft-chrome,
-  .lux-quick-btn.lux-soft-chrome,
-  .lux-admin-op-card.lux-soft-chrome,
-  .home-hover-chip.lux-soft-chrome,
-  .lux-alert.lux-soft-chrome
-) {
-  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent)) !important;
-  background-image: var(--lux-soft-chrome-surface, var(--home-fade-soft, var(--lux-panel-surface-soft))) !important;
-  border: 1px solid color-mix(
-    in srgb,
-    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)) 48%,
-    var(--lux-soft-chrome-border, var(--home-fade-border-soft, var(--lux-panel-border)))
-  ) !important;
-  border-radius: 16px !important;
-  box-shadow:
-    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50)),
-    0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32)),
-    var(--lux-soft-chrome-shadow, var(--lux-elev-2)) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  background-clip: padding-box;
-}
-body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-merged :is(
+body.lux-route-home #page-home #lux-home-shell .lux-home-merged :is(
   .lms-hero-focus,
   .lux-hero-side,
   .lux-focus-panel

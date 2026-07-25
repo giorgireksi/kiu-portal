@@ -49,7 +49,7 @@
                     </div>
                     ${activeProject.isManager ? `
                         <div class="social-project-team-toolbar-actions">
-                            <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="project-team-invite-toggle"><i class="fas fa-user-plus"></i> Invite</button>
+                            <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="project-team-invite-toggle"><i class="fas fa-user-plus"></i> Invite</button>
                         </div>
                     ` : ''}
                 </header>
@@ -106,9 +106,9 @@
                                             </div>
                                         </div>
                                         <div class="social-project-team-actions">
-                                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="member">Invite member</button>
-                                            ${isStaffAccount(account) ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="advisor">Promote to advisor</button>` : ''}
-                                            ${isStaffAccount(account) ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="instructor-viewer">Set instructor viewer</button>` : ''}
+                                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="member">Invite member</button>
+                                            ${isStaffAccount(account) ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="advisor">Promote to advisor</button>` : ''}
+                                            ${isStaffAccount(account) ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="instructor-viewer">Set instructor viewer</button>` : ''}
                                         </div>
                                     </article>
                                 `).join('') : `<div class="social-neo-empty">No invite candidates match the current filters.</div>`}
@@ -122,7 +122,7 @@
                         ${nextOwner ? `<span class="social-neo-pill">Next owner: ${escape(displayName(nextOwner))}</span>` : ''}
                         <p class="social-neo-muted">${escape(leaveNote)}</p>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-leave-open" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-sign-out-alt"></i> Leave workspace</button>
+                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-leave-open" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-sign-out-alt"></i> Leave workspace</button>
                 </footer>
             </section>
         `;

@@ -592,7 +592,7 @@
                                 <span class="student-service-zone-copy">Configure which filters staff see in the inbox zone.</span>
                             </div>
                         </div>
-                        <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-inbox-filter-editor-close" data-lux-skip-modern-button="true" data-student-service-inbox-filter-editor-close="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                        <button type="button" class="lux-secondary-btn student-service-inbox-filter-editor-close" data-lux-skip-modern-button="true" data-student-service-inbox-filter-editor-close="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
                     </header>
                     <div class="student-service-inbox-filter-editor-body">
                         <p class="student-service-inbox-filter-editor-copy">Search is always shown in the inbox. Add dropdown filters below, or save with none. Saving updates the team layout students and other accounts see.</p>

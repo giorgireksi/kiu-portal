@@ -24,8 +24,8 @@ const SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS = [
     '.social-neo-page-card-support', '.social-neo-page-compose-block', '.social-neo-page-profile',
     '.social-neo-page-about-card', '.social-neo-thread-head', '.social-neo-thread-compose',
     '.social-neo-thread-messages', '.social-neo-thread-group-hero', '.social-neo-call-card', '.social-neo-call-stage',
-    '.social-neo-call-video', '.social-neo-dialog-card', '.social-neo-dialog-card--project-create',
-    '.social-neo-dialog-preview', '.social-neo-toast', '.social-neo-mobile-tabbar', '.social-neo-mobile-tab',
+    '.social-neo-call-video', '.lux-glass-dialog-card', '.lux-glass-dialog-card--project-create',
+    '.lux-glass-dialog-preview', '.social-neo-toast', '.social-neo-mobile-tabbar', '.social-neo-mobile-tab',
     '.social-neo-shell-drawer', '.social-neo-shell-drawer-profile', '.social-neo-shell-drawer-nav-card',
     '.social-projects-hero', '.social-projects-hero-rich', '.social-project-create-card', '.social-project-card',
     '.social-project-metric-card', '.social-project-detail-hero', '.social-project-detail-hero-rich',
@@ -52,57 +52,281 @@ const SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
     'social-portfolio-link'
 ];
 
-const STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
-    '.staff-hub-hero', '.staff-hub-command-panel', '.staff-hub-command-card', '.staff-hub-focus-card',
-    '.staff-hub-mini-card', '.staff-hub-metric-card', '.staff-hub-controls', '.staff-hub-directory-panel',
-    '.staff-hub-profile', '.staff-hub-info-card', '.staff-hub-warning', '.staff-hub-modal',
-    '.staff-hub-list-item'
-];
-
-const STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
-    '.students-hub-hero', '.students-hub-profile', '.students-hub-profile-header', '.students-hub-info-card',
-    '.students-hub-controls', '.students-hub-directory-panel', '.students-hub-list-item', '.students-hub-modal',
-    '.students-hub-warning'
-];
+function isHomeCssOwnedInnerPanel(el) {
+    if (!document.body.classList.contains('lux-route-home') || !el?.classList) return false;
+    const isHomeLegacyGridInner = Boolean(el.parentElement?.classList?.contains('lux-home-grid'))
+        && (el.classList.contains('lux-panel') || el.classList.contains('lux-card') || el.classList.contains('lux-hero'));
+    const isHomeWidgetInner = Boolean(el.closest?.('.lux-grid-widget-body'))
+        && !el.classList.contains('lux-grid-widget-body');
+    return isHomeLegacyGridInner || isHomeWidgetInner;
+}
 
 const SOCIAL_BLUR_HOST_CLASSES = new Set([
     'social-neo-card', 'social-neo-post-card', 'social-neo-topbar-card', 'social-neo-community-panel',
     'social-neo-group-card', 'social-neo-group-thread-panel', 'social-neo-page-card-rich', 'social-neo-events-lane',
-    'social-neo-events-support-card', 'social-neo-event-feature', 'social-neo-dialog-card', 'social-neo-shell-drawer',
+    'social-neo-events-support-card', 'social-neo-event-feature', 'lux-glass-dialog-card', 'social-neo-shell-drawer',
     'social-neo-story-composer-card', 'social-neo-call-card', 'social-neo-empty', 'social-project-detail-hero-rich',
     'social-project-tab-shell', 'social-project-rich-panel', 'social-project-card',
     'social-portfolio-card'
 ]);
 
-const isSocialBlurHost = window.isSocialBlurHost;
-const isSocialPaintSurface = window.isSocialPaintSurface;
-const shouldKeepSocialFadeCssBackground = window.shouldKeepSocialFadeCssBackground;
-const shouldKeepAdminLibraryFadeCssBackground = window.shouldKeepAdminLibraryFadeCssBackground;
-const shouldKeepLibraryFadeCssBackground = window.shouldKeepLibraryFadeCssBackground;
-const shouldKeepExamsFadeCssBackground = window.shouldKeepExamsFadeCssBackground;
-const shouldKeepAdminToolsFadeCssBackground = window.shouldKeepAdminToolsFadeCssBackground;
-const shouldKeepAdminOrdersFadeCssBackground = window.shouldKeepAdminOrdersFadeCssBackground;
-const shouldKeepSchedulerFadeCssBackground = window.shouldKeepSchedulerFadeCssBackground;
-const shouldKeepFacultyGradebookFadeCssBackground = window.shouldKeepFacultyGradebookFadeCssBackground;
-const shouldKeepTimetableFadeCssBackground = window.shouldKeepTimetableFadeCssBackground;
-const shouldKeepExamPortalFadeCssBackground = window.shouldKeepExamPortalFadeCssBackground;
-const shouldKeepProfileViewFadeCssBackground = window.shouldKeepProfileViewFadeCssBackground;
+function isSocialBlurHost(el) {
+    if (!el?.classList) return false;
+    for (const className of el.classList) {
+        if (SOCIAL_BLUR_HOST_CLASSES.has(className)) return true;
+    }
+    return false;
+}
 
-const shouldKeepRouteFadeCssBackground = window.shouldKeepRouteFadeCssBackground;
-const shouldKeepPersonalDataFadeCssBackground = window.shouldKeepPersonalDataFadeCssBackground;
-const shouldKeepRegistrationFadeCssBackground = window.shouldKeepRegistrationFadeCssBackground;
-const shouldKeepNewsFadeCssBackground = window.shouldKeepNewsFadeCssBackground;
-const shouldKeepLmsFadeCssBackground = window.shouldKeepLmsFadeCssBackground;
-const shouldKeepStaffFadeCssBackground = window.shouldKeepStaffFadeCssBackground;
-const shouldKeepStudentsAdminFadeCssBackground = window.shouldKeepStudentsAdminFadeCssBackground;
-const stripInlineGlassPaint = window.stripInlineGlassPaint;
-const shouldKeepStudyCardFadeCssBackground = window.shouldKeepStudyCardFadeCssBackground;
-const shouldKeepProgramsFadeCssBackground = window.shouldKeepProgramsFadeCssBackground;
-const shouldKeepChancelleryFadeCssBackground = window.shouldKeepChancelleryFadeCssBackground;
-const shouldKeepStudentServiceFadeCssBackground = window.shouldKeepStudentServiceFadeCssBackground;
-const shouldKeepOrdersFadeCssBackground = window.shouldKeepOrdersFadeCssBackground;
-const buildHomeStyleSurfaceBackground = window.buildHomeStyleSurfaceBackground;
-const buildLuxuryRoutePanelGradient = window.buildLuxuryRoutePanelGradient;
+function isSocialPaintSurface(el) {
+    if (!el?.classList) return false;
+    return SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className));
+}
+
+function shouldKeepSocialFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-social')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-social, #public-social-root')) return false;
+    return isSocialPaintSurface(el) || isSocialBlurHost(el);
+}
+
+function shouldKeepHomeFadeCssBackground(el) {
+    return isHomeCssOwnedInnerPanel(el);
+}
+
+const CSS_OWNED_HOST_SELECTOR = '.page-hero, .lux-panel, .lux-alert';
+const CSS_OWNED_PRIMITIVE_SELECTOR = '.lux-soft-chrome, .lux-focus-panel, .lms-hero-focus, .lux-timetable-hero-focus';
+const CSS_OWNED_CHIP_SELECTOR = [
+    '.lux-summary-surface',
+    '.lux-strip-card',
+    '.lux-stat-card',
+    '.lux-status-pill',
+    '.lux-control',
+    '.lux-pill',
+    '.lux-primary-btn',
+    '.lux-secondary-btn',
+    '.lux-data-card',
+    '.lux-metric-card',
+    '.lux-inline-card',
+    '.lux-info-card',
+    '.lux-select-card',
+    '.lux-person-card',
+    '.lux-subcard',
+    '.surface-card',
+].join(', ');
+
+function hasOwnedClassPrefix(el, prefixes) {
+    for (const className of el.classList) {
+        if (prefixes.some((prefix) => className.startsWith(prefix))) return true;
+    }
+    return false;
+}
+
+/** Route-scoped surfaces identified by body class + closest root + class prefix. */
+function isRouteOwnedSurface(el) {
+    if (!el?.classList) return false;
+
+    if (document.body.classList.contains('lux-route-lms')) {
+        if (el.matches?.(
+            '.lms-route-panel, .lms-route-workspace-chrome, .lms-route-card, .lms-route-tab-strip, ' +
+            '.lms-route-empty, .lms-clean-subjects, .lux-lms-hero, .lms-hero-v2, ' +
+            '.lux-lms-group-card, .lux-lms-subject-card'
+        )) return true;
+        if (el.closest?.('.lms-quiz-builder') && hasOwnedClassPrefix(el, ['lms-quiz-'])) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-profile-view')) {
+        if (el.classList.contains('pv-shell')) return false;
+        if (hasOwnedClassPrefix(el, ['pv-']) || el.classList.contains('upload-zone')) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-timetable')) {
+        if (hasOwnedClassPrefix(el, ['lux-timetable-', 'schedule-']) || el.classList.contains('filter-shell')) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-exams') || document.body.classList.contains('lux-route-exam')) {
+        if (hasOwnedClassPrefix(el, ['ex2-']) || el.parentElement?.classList?.contains('ex2-mini-grid')) return true;
+        if (el.matches?.('.lms-route-panel, .exam-confirm-card, .exam-dashboard-shell')) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-news')
+        && el.closest?.('#page-news, #portal-news-root, .newsx-modal-overlay, #newsx-publisher-modal, #newsx-confirm-modal, #newsx-sections-modal')) {
+        if (hasOwnedClassPrefix(el, ['newsx-']) || (el.id && el.id.startsWith('newsx-'))) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-registration')
+        && el.closest?.('#page-registration, .registration-structured-modal-card, .registration-section-picker-dialog, .modal-content')) {
+        if (hasOwnedClassPrefix(el, ['registration-'])
+            || el.matches?.('.filter-shell, .reg-tab, .admin-chip, .wave2-chip, .lux-modern-surface, .lux-timetable-hero, .lux-timetable-command, .lux-timetable-stage, .lux-timetable-filters')) {
+            return true;
+        }
+    }
+
+    if (document.body.classList.contains('lux-route-faculty-gradebook')
+        && el.closest?.('.lux-faculty-gradebook-page, #page-faculty-gradebook')) {
+        if (hasOwnedClassPrefix(el, ['lux-fg-', 'gb-', 'lux-faculty-'])) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-admin-scheduler')
+        && el.closest?.('#page-admin-scheduler')) {
+        if (hasOwnedClassPrefix(el, ['sch-', 'palette-'])
+            || el.matches?.('.lux-strip-card')
+            || ((el.tagName === 'SELECT' || el.tagName === 'INPUT')
+                && el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))) {
+            return true;
+        }
+    }
+
+    if (document.body.classList.contains('lux-route-staff') && el.closest?.('#staff-content')) {
+        if (hasOwnedClassPrefix(el, ['staff-hub-'])) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-students-admin')
+        && el.closest?.('#students-content')
+        && !el.closest?.('#students-admin-lms-modal')) {
+        if (hasOwnedClassPrefix(el, ['students-hub-'])) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-study-card')
+        && el.closest?.('#page-study-card, #study-card-container, .study-card-page-shell')) {
+        if (hasOwnedClassPrefix(el, ['study-card-']) || el.id === 'study-card-container') return true;
+    }
+
+    if (document.body.classList.contains('lux-route-personal-data') && el.closest?.('#page-personal-data')) {
+        if (hasOwnedClassPrefix(el, ['personal-data-', 'profile-']) || el.classList.contains('filter-shell')) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-programs') && el.closest?.('#page-programs')) {
+        if (hasOwnedClassPrefix(el, ['lux-program-', 'lux-prog-', 'lux-module-', 'lux-subject-'])) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-chancellery') && el.closest?.('#page-chancellery')) {
+        if (hasOwnedClassPrefix(el, ['lux-chancellery-'])
+            || el.classList.contains('lux-queue-item')
+            || el.classList.contains('lux-thread-entry')) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-student-service')
+        && el.closest?.('#page-student-service, .student-service-shell')) {
+        if (hasOwnedClassPrefix(el, ['student-service-'])) return true;
+    }
+
+    if (!document.body.classList.contains('lux-route-admin-orders')
+        && el.closest?.('#page-orders, #orders-inbox-root')) {
+        if (hasOwnedClassPrefix(el, ['orders-']) || el.classList.contains('lux-hero-signal')) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-admin-orders')
+        && el.closest?.('#admin-orders-root, #modal-studio')) {
+        if (hasOwnedClassPrefix(el, ['orders-', 'admin-orders-'])) return true;
+    }
+
+    if (document.body.classList.contains('lux-route-library') && el.closest?.('#page-library')) {
+        if (el.matches?.('.library-catalog-filters-panel, .admin-library-catalog-card, .admin-library-tabs, .admin-library-catalog-foot, .lux-hero-signal, .lux-picker-btn')) return true;
+    }
+
+    if ((document.body.classList.contains('lux-route-admin-library') || document.body.classList.contains('lux-entry-admin-library'))
+        && (el.closest?.('#page-library') || el.classList.contains('admin-library-modal'))) {
+        if (el.matches?.(
+            '.alib-panel, .admin-library-chip, .admin-library-param-group, .library-catalog-filters-panel, ' +
+            '.admin-library-catalog-card, .admin-library-tabs, .admin-library-catalog-foot, .admin-library-modal'
+        )) return true;
+    }
+
+    return false;
+}
+
+/** True when FOUC / route CSS owns paint (engine must not apply inline glass). */
+function isCssOwnedSurface(el) {
+    if (!el?.classList) return false;
+
+    if (el.matches?.(CSS_OWNED_HOST_SELECTOR)) return true;
+    if (el.matches?.(CSS_OWNED_PRIMITIVE_SELECTOR)) return true;
+    if (el.matches?.(CSS_OWNED_CHIP_SELECTOR)) return true;
+
+    if (document.body.classList.contains('lux-page-bare')) {
+        const desk = el.closest?.('[data-lux-glass-root="1"]');
+        if (desk && el !== desk) return true;
+        if (el.matches?.('.lux-card') && el.closest?.('.page-section, [data-lux-glass-root="1"]')) return true;
+        if (el.closest?.('.page-section') && el.matches?.('select, input, table')) return true;
+    }
+
+    if (isHomeCssOwnedInnerPanel(el)) return true;
+
+    return isRouteOwnedSurface(el);
+}
+
+const GLOBAL_DYNAMIC_PAINT_CLASSES = new Set([
+    'lux-card', 'lux-panel', 'lux-page-shell', 'surface-card', 'content-box', 'kiu-card', 'page-hero',
+    'schedule-toolbar-host', 'schedule-toolbar', 'lux-modern-surface', 'lux-modern-table',
+    'lux-strip-card', 'lux-stat-card', 'lux-person-card', 'lux-subcard',
+    'lux-admin-op-card', 'lux-admin-ops-panel', 'lux-hero', 'lux-dashboard-section',
+    'lux-hero-signal', 'lux-hero-side-head', 'lux-control', 'lux-status-pill',
+    'lux-primary-btn', 'lux-secondary-btn',
+]);
+
+function shouldApplyDynamicBackground(el) {
+    if (!el?.classList) return false;
+    if (el.getAttribute('data-lux-glass-root') === '1') return true;
+    for (const className of el.classList) {
+        if (GLOBAL_DYNAMIC_PAINT_CLASSES.has(className)) return true;
+    }
+    if (document.body.classList.contains('lux-route-social')) {
+        return isSocialPaintSurface(el) || isSocialBlurHost(el)
+            || el.classList.contains('social-neo-card')
+            || el.parentElement?.classList?.contains('social-neo-stat-grid')
+            || [...el.classList].some((className) =>
+                className.startsWith('social-neo-') ||
+                className.startsWith('social-project') ||
+                className.startsWith('social-portfolio'));
+    }
+    return isRouteOwnedSurface(el);
+}
+
+function shouldKeepRouteFadeCssBackground(el) {
+    if (el?.getAttribute?.('data-lux-layout-only') === '1') return true;
+    if (el?.getAttribute?.('data-lux-glass-root') === '1') return true;
+    if (shouldKeepHomeFadeCssBackground(el)) return true;
+    if (shouldKeepSocialFadeCssBackground(el)) return true;
+    return isCssOwnedSurface(el);
+}
+
+function stripInlineGlassPaint(el, transparencySignature) {
+    el.style.removeProperty('background-color');
+    el.style.removeProperty('background');
+    el.style.removeProperty('backdrop-filter');
+    el.style.removeProperty('-webkit-backdrop-filter');
+    el.dataset.luxTransparencySignature = transparencySignature;
+}
+
+function buildHomeStyleSurfaceBackground(lightMode, amount) {
+    if (lightMode) {
+        return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.24).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.065).toFixed(2)}), rgba(255,255,255, ${(amount * 0.84).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.70).toFixed(2)}))`;
+    }
+    return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.08).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.28).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.18).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.89).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.80).toFixed(2)}))`;
+}
+
+function buildLuxuryRoutePanelGradient(lightMode, isSmallSurface) {
+    return isSmallSurface
+        ? 'var(--lux-panel-surface-soft)'
+        : 'var(--lux-panel-surface)';
+}
+
+Object.assign(window, {
+    isSocialBlurHost,
+    isSocialPaintSurface,
+    shouldKeepSocialFadeCssBackground,
+    isRouteOwnedSurface,
+    isCssOwnedSurface,
+    shouldApplyDynamicBackground,
+    shouldKeepRouteFadeCssBackground,
+    shouldKeepHomeFadeCssBackground,
+    stripInlineGlassPaint,
+    buildHomeStyleSurfaceBackground,
+    buildLuxuryRoutePanelGradient,
+    matchesTransparencyObserver,
+    appendRouteOwnedSurfaces,
+});
 
 const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [
     '.lux-card', '.lux-panel', '.lux-person-card', '.lux-subcard', '.lux-hero', '.lux-stack', '.lux-dashboard-section',
@@ -112,20 +336,64 @@ const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [
     '.modal-content', '.page-hero', '.lux-person-head', '.lux-inline-meta', '.lux-card-actions', '.lux-card-head',
     '.lux-card-body', '.lux-panel-body', '.lux-page-shell', '.lux-stat-card', '.lux-stat',
     '.lux-page-kicker', '.lux-status-pill', '.lux-control',
-    '.lux-faculty-command', '.lux-faculty-command-deck', '.lux-faculty-command-head', '.lux-faculty-command-grid',
-    '.lux-faculty-insight', '.lux-faculty-insight-grid', '.lux-faculty-insight-label',
-    '.lux-faculty-insight-value', '.lux-faculty-insight-list',
-    '.lux-faculty-stage', '.lux-faculty-stage-head', '.lux-faculty-hero-focus',
-    '.lux-faculty-hero-main', '.lux-faculty-hero-top', '.lux-faculty-filters',
-    '.lux-faculty-controls', '.lux-faculty-controls-row', '.lux-faculty-overview-row', '.lux-faculty-filter-title',
-    '.lux-fg-control-band', '.lux-fg-filters', '.lux-fg-ops-panel', '.lux-fg-ops-grid',
-    '.lux-fg-ops-tile', '.lux-fg-workspace', '.lux-fg-action-band', '.lux-fg-toolbar',
+    '[data-lux-glass-root="1"]',
     '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
     '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav', '.schedule-overview-row', '.schedule-view-row',
     ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS,
     ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS
 ];
-const SHARED_TRANSPARENCY_OBSERVER_SELECTOR = SHARED_TRANSPARENCY_OBSERVER_SELECTORS.join(', ');
+
+function matchesTransparencyObserver(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE || !node.classList?.length) return false;
+    if (shouldApplyDynamicBackground(node) || isRouteOwnedSurface(node)) return true;
+    if (node.matches?.(SHARED_TRANSPARENCY_OBSERVER_SELECTORS.join(', '))) return true;
+    if (node.querySelector?.('[data-lux-glass-root="1"], .lux-card, .lux-panel, .lux-hero, .social-neo-card')) return true;
+    return false;
+}
+
+const TRANSPARENCY_CORE_SELECTORS = [
+    '.lux-card', '.lux-panel', '.lux-dashboard-section', '.lux-hero',
+    '.lux-grid-widget', '.lux-home-card', '.lux-admin-ops-card', '.lux-builder-card', '.lux-builder-section',
+    '.lux-page-shell', '.lux-stat-card', '.lux-stat', '.surface-card', '.content-box', '.kiu-card', '.page-card',
+    '.section-card', '.panel-card', '.dashboard-card', '.tabs-container', '.modal-content', '.page-hero',
+    '.portal-msg-page-top', '.portal-msg-panel', '.portal-msg-group-modal',
+    '.lux-admin-op-card', '.lux-admin-ops-panel', '[data-lux-glass-root="1"]',
+    '.lux-person-card', '.lux-subcard', '.lux-stack', '.lux-person-head', '.lux-inline-meta', '.lux-card-actions',
+    '.lux-grid-widget-body', '.lux-widget-container', '.lux-card-head', '.lux-card-body', '.lux-panel-body',
+    '.lux-page-kicker', '.lux-status-pill',
+    '#modal-studio.admin-orders-studio', '#modal-studio .admin-orders-studio-card',
+    '#modal-studio .admin-orders-palette-option', '#modal-studio .admin-orders-mode-btn',
+    '#modal-studio .admin-orders-background-btn', '#modal-studio .admin-orders-apply-btn',
+    '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
+    '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav',
+    '.schedule-overview-row', '.schedule-view-row',
+    ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS,
+    ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS
+];
+
+function appendRouteOwnedSurfaces(elements, rootsOverride) {
+    const seen = new Set(elements);
+    const explicitRoots = normalizeTransparencyRoots(rootsOverride);
+    const scanRoots = explicitRoots.length
+        ? explicitRoots
+        : [document.querySelector('.page-section.active-page')].filter(Boolean);
+    if (!scanRoots.length && document.body) scanRoots.push(document.body);
+
+    scanRoots.forEach((root) => {
+        if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+        const stack = [root];
+        while (stack.length) {
+            const el = stack.pop();
+            if (!el || el.nodeType !== Node.ELEMENT_NODE) continue;
+            if (el.classList?.length && isRouteOwnedSurface(el) && !seen.has(el)) {
+                seen.add(el);
+                elements.push(el);
+            }
+            for (let i = el.children.length - 1; i >= 0; i -= 1) stack.push(el.children[i]);
+        }
+    });
+    return elements;
+}
 const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [
     '#lux-shell', '#lux-topbar', '#mobile-bottom-nav', '#mobile-action-sheet', '#modal-overlay',
     '.lux-picker-panel'
@@ -187,11 +455,15 @@ function collectTransparencySurfaceElements(selectorList, rootsOverride) {
             }
             root.querySelectorAll(selector).forEach((el) => elements.add(el));
         });
-        return finalizeTransparencySurfaceElements(Array.from(elements));
+        return finalizeTransparencySurfaceElements(
+            appendRouteOwnedSurfaces(Array.from(elements), explicitRoots)
+        );
     }
 
     if (!document.querySelector('.page-section')) {
-        return finalizeTransparencySurfaceElements(Array.from(document.querySelectorAll(selector)));
+        return finalizeTransparencySurfaceElements(
+            appendRouteOwnedSurfaces(Array.from(document.querySelectorAll(selector)), explicitRoots)
+        );
     }
 
     const roots = new Set();
@@ -216,7 +488,9 @@ function collectTransparencySurfaceElements(selectorList, rootsOverride) {
     });
 
     if (!roots.size) {
-        return finalizeTransparencySurfaceElements(Array.from(document.querySelectorAll(selector)));
+        return finalizeTransparencySurfaceElements(
+            appendRouteOwnedSurfaces(Array.from(document.querySelectorAll(selector)), explicitRoots)
+        );
     }
 
     const elements = new Set();
@@ -228,7 +502,9 @@ function collectTransparencySurfaceElements(selectorList, rootsOverride) {
         root.querySelectorAll(selector).forEach((el) => elements.add(el));
     });
 
-    return finalizeTransparencySurfaceElements(Array.from(elements));
+    return finalizeTransparencySurfaceElements(
+        appendRouteOwnedSurfaces(Array.from(elements), explicitRoots)
+    );
 }
 
 function filterCssOwnedTransparencySurfaces(elements) {
@@ -656,60 +932,6 @@ function updateTransparency(value, options = {}) {
     const blurAmount = (2 + fillRatio * 22) * glassBlurMult;
     const saturateAmount = 100 + (fillRatio * 45);
     const surfaceFillAmount = transparencyModel.panelFillAlpha;
-    const registrationGlassSelectors = [
-        '.registration-hero', '.registration-workspace', '.registration-insight-card',
-        '.registration-focus-card', '.registration-state-card',
-        '.registration-module-list-card', '.registration-module-pane-card',
-        '.registration-track-card', '.registration-footer-bar', '.registration-mini-metric', '.registration-course-row',
-        '.registration-module-choice', '.registration-track-group'
-    ];
-    const registrationGlassClasses = [
-        'registration-hero', 'registration-workspace', 'registration-insight-card',
-        'registration-focus-card', 'registration-state-card',
-        'registration-module-list-card', 'registration-module-pane-card',
-        'registration-track-card', 'registration-footer-bar', 'registration-mini-metric', 'registration-course-row',
-        'registration-module-choice', 'registration-track-group'
-    ];
-    const schedulerGlassSelectors = [
-        '#page-admin-scheduler .sch-rail-hero', '#page-admin-scheduler .sch-rail-section',
-        '#page-admin-scheduler .sch-grid-shell', '#page-admin-scheduler .sch-modal',
-        '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
-        '#page-admin-scheduler .sch-grid-tag', '#page-admin-scheduler .sch-legend-pill',
-        '#page-admin-scheduler .sch-action-btn', '#page-admin-scheduler .sch-week-arrow',
-        '#page-admin-scheduler .sch-empty-state', '#page-admin-scheduler .sch-grid-empty',
-        '#page-admin-scheduler .lux-strip-card', '#page-admin-scheduler .sch-control-group select',
-        '#page-admin-scheduler .sch-board-toolbar-row select', '#page-admin-scheduler .sch-search-shell input',
-        '#page-admin-scheduler .sch-modal input',
-        '#page-admin-scheduler .sch-modal select'
-    ];
-    const schedulerGlassClasses = [
-        'sch-rail-hero', 'sch-rail-section', 'sch-grid-shell', 'sch-modal',
-        'palette-card', 'sch-stat-card', 'sch-grid-tag', 'sch-legend-pill', 'sch-action-btn', 'sch-week-arrow',
-        'sch-empty-state', 'sch-grid-empty', 'lux-strip-card'
-    ];
-    const lmsGlassSelectors = [
-        '.lux-lms-group-card', '.lux-lms-subject-card', '.lms-route-panel', '.lms-route-card',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-studio-hero',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-studio-main-card',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-tool-panel',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-saved-card',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-studio-stat-card',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-rules-card',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-question-nav-card',
-        '#lms-content-area .lms-quiz-builder .lms-quiz-question-editor-card'
-    ];
-    const lmsGlassClasses = [
-        'lux-lms-group-card', 'lux-lms-subject-card', 'lms-route-panel', 'lms-route-card'
-    ];
-    const lmsQuizBuilderGlassClasses = [
-        'lms-quiz-studio-hero', 'lms-quiz-studio-main-card', 'lms-quiz-tool-panel',
-        'lms-quiz-saved-card', 'lms-quiz-studio-stat-card', 'lms-quiz-rules-card',
-        'lms-quiz-question-nav-card', 'lms-quiz-question-editor-card',
-        'lms-quiz-variant-question-card', 'lms-quiz-variant-workspace', 'lms-quiz-card',
-        'lms-live-monitor-card', 'lms-quiz-board-empty', 'lms-quiz-card-empty',
-        'lms-quiz-empty-state', 'lms-quiz-policy-card'
-    ];
-    const isLmsRoute = document.body.classList.contains('lux-route-lms');
     const structuralClasses = [
         'lux-card-head', 'lux-card-title', 'lux-card-meta', 'lux-builder-copy', 'lux-card-body', 'lux-panel-body',
         'lux-grid-widget-body', 'lux-widget-container', 'lux-inline-meta', 'lux-card-actions', 'lux-page-kicker',
@@ -726,24 +948,16 @@ function updateTransparency(value, options = {}) {
         if (!el.closest?.('.lux-timetable-grid-shell, .schedule-grid-shell[data-tt-grid="1"]')) return false;
         return TIMETABLE_GRID_CELL_CLASS_NAMES.some((className) => el.classList.contains(className));
     };
+    const isTableGridCell = (el, tableSelector) => (
+        Boolean(el.closest?.(tableSelector)) &&
+        (el.tagName === 'TD' || el.tagName === 'TH' || el.tagName === 'TR')
+    );
     const isStructuralSurface = (el) => (
         isTimetableGridCell(el) ||
         structuralClasses.some((className) => el.classList.contains(className)) ||
-        (document.body.classList.contains('lux-route-admin-scheduler') && (
-            el.classList.contains('sch-sidebar') ||
-            el.classList.contains('sch-main') ||
-            el.classList.contains('sch-grid-root') ||
-            el.classList.contains('sch-header-row') ||
-            el.classList.contains('sch-time-col') ||
-            el.classList.contains('sch-day-col') ||
-            el.classList.contains('sch-time-labels') ||
-            el.classList.contains('sch-time-slot') ||
-            el.classList.contains('sch-body') ||
-            el.classList.contains('sch-lane') ||
-            el.classList.contains('sch-slot-bg') ||
-            el.classList.contains('sch-event') ||
-            el.classList.contains('sch-day-lanes')
-        )) ||
+        (document.body.classList.contains('lux-route-admin-scheduler')
+            && Boolean(el.closest?.('#page-admin-scheduler'))
+            && isRouteOwnedSurface(el)) ||
         (document.body.classList.contains('lux-route-admin-library') && (
             el.classList.contains('admin-library-modal') ||
             el.classList.contains('admin-library-modal-overlay') ||
@@ -753,167 +967,25 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('admin-library-empty-cell')
         )) ||
         (document.body.classList.contains('lux-route-admin-orders') && (
-
-            el.classList.contains('admin-orders-studio-header') ||
-            el.classList.contains('admin-orders-studio-body') ||
-            el.classList.contains('admin-orders-studio-close') ||
-            el.classList.contains('orders-admin-shell') ||
-            el.classList.contains('orders-admin-table__delete') ||
-            (Boolean(el.closest?.('.orders-admin-table')) && (
-                el.tagName === 'TR' ||
-                el.tagName === 'TH' ||
-                el.tagName === 'TD'
-            ))
+            isCssOwnedSurface(el) ||
+            isTableGridCell(el, '.orders-admin-table')
         )) ||
-        (Boolean(el.closest?.('#page-orders, #orders-inbox-root')) &&
-            !document.body.classList.contains('lux-route-admin-orders') && (
-            el.classList.contains('orders-inbox-shell') ||
-            el.classList.contains('orders-inbox-hero') ||
-            el.classList.contains('orders-list-card') ||
-            el.classList.contains('orders-detail-card') ||
-            el.classList.contains('orders-inbox-hero-side') ||
-            el.classList.contains('lux-hero-signal') ||
-            el.classList.contains('lux-hero-side-head') ||
-            el.classList.contains('orders-list-wrap') ||
-            el.classList.contains('orders-status-filter') ||
-            el.classList.contains('orders-item') ||
-            el.classList.contains('orders-metric-card') ||
-            el.classList.contains('orders-attachment-card') ||
-            el.classList.contains('orders-recipient-card') ||
-            el.classList.contains('orders-detail-panel') ||
-            el.classList.contains('orders-detail-empty') ||
-            el.classList.contains('lux-control') ||
-            el.classList.contains('lux-status-pill')
-        )) ||
-        (document.body.classList.contains('lux-route-faculty-gradebook') && (
-            Boolean(el.closest?.('.lux-faculty-gradebook-page')) && (
-                el.classList.contains('lux-faculty-hero') ||
-                el.classList.contains('lux-faculty-command-deck') ||
-                el.classList.contains('lux-faculty-hero-focus') ||
-                el.classList.contains('lux-faculty-command') ||
-                el.classList.contains('lux-faculty-stage') ||
-                el.classList.contains('lux-faculty-insight') ||
-                el.classList.contains('lux-faculty-filters') ||
-                el.classList.contains('lux-faculty-controls') ||
-                el.classList.contains('lux-fg-control-band') ||
-                el.classList.contains('lux-fg-ops-panel') ||
-                el.classList.contains('lux-fg-ops-tile') ||
-                el.classList.contains('lux-fg-workspace') ||
-                el.classList.contains('lux-status-pill') ||
-                el.classList.contains('lux-primary-btn') ||
-                el.classList.contains('lux-secondary-btn') ||
-                [...el.classList].some((className) => className.startsWith('lux-fg-'))
-            )
-        )) ||
-        (document.body.classList.contains('lux-route-faculty-gradebook') && (
-            [...el.classList].some((className) => className.startsWith('gb-')) ||
-            (Boolean(el.closest?.('#gradebook-table')) && (
-                el.tagName === 'TD' || el.tagName === 'TH' || el.tagName === 'TR'
-            ))
-        )) ||
-        (document.body.classList.contains('lux-route-timetable') && (
-            el.classList.contains('lux-timetable-hero') ||
-            el.classList.contains('lux-timetable-command') ||
-            el.classList.contains('lux-timetable-stage') ||
-            el.classList.contains('lux-timetable-hero-focus') ||
-            el.classList.contains('lux-timetable-filters') ||
-            el.classList.contains('lux-timetable-view-switcher') ||
-            el.classList.contains('lux-timetable-week-nav') ||
-            el.classList.contains('lux-timetable-overview-row') ||
-            el.classList.contains('lux-timetable-insight') ||
-            el.classList.contains('lux-timetable-grid-shell') ||
-            el.classList.contains('lux-timetable-canvas') ||
-            el.classList.contains('lux-timetable-day-section') ||
-            el.classList.contains('lux-timetable-session-card') ||
-            el.classList.contains('schedule-day-section') ||
-            el.classList.contains('schedule-session-card') ||
-            el.classList.contains('schedule-view-switcher') ||
-            el.classList.contains('schedule-week-nav') ||
-            el.classList.contains('schedule-overview-row') ||
-            el.classList.contains('schedule-chip') ||
-            el.classList.contains('lux-status-pill')
-        )) ||
-        
-        (document.body.classList.contains('lux-route-registration') && (
-            el.classList.contains('lux-timetable-hero') ||
-            el.classList.contains('lux-timetable-command') ||
-            el.classList.contains('lux-timetable-stage') ||
-            el.classList.contains('lux-timetable-hero-focus') ||
-            el.classList.contains('lux-timetable-filters') ||
-            el.classList.contains('registration-hero-shell') ||
-            el.classList.contains('registration-hero-aside') ||
-            el.classList.contains('registration-insight-card') ||
-            el.classList.contains('registration-workspace') ||
-            el.classList.contains('registration-term-shell') ||
-            el.classList.contains('registration-footer-bar') ||
-            el.classList.contains('registration-progress-shell') ||
-            el.classList.contains('registration-module-list-card') ||
-            el.classList.contains('registration-module-pane-card') ||
-            el.classList.contains('registration-state-card') ||
-            el.classList.contains('registration-track-card') ||
-            el.classList.contains('registration-course-row') ||
-            el.classList.contains('registration-module-choice') ||
-            el.classList.contains('registration-shell-empty') ||
-            el.classList.contains('filter-shell') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-status-pill') ||
-            el.classList.contains('lux-pill')
-        )) ||
-        (document.body.classList.contains('lux-route-chancellery') && Boolean(el.closest?.('#page-chancellery')) && (
-            el.classList.contains('page-hero') ||
-            el.classList.contains('lux-chancellery-hero') ||
-            el.classList.contains('lux-chancellery-hero-card') ||
-            el.classList.contains('lux-chancellery-command-bar') ||
-            el.classList.contains('filter-shell') ||
-            el.classList.contains('lux-chancellery-focus-card') ||
-            el.classList.contains('lux-chancellery-snapshot-card') ||
-            el.classList.contains('lux-chancellery-subcard') ||
-            el.classList.contains('lux-chancellery-queue-item') ||
-            el.classList.contains('lux-chancellery-thread-entry') ||
-            el.classList.contains('lux-chancellery-focus-row') ||
-            el.classList.contains('lux-chancellery-main-panel') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-queue-item') ||
-            el.classList.contains('lux-thread-entry') ||
-            el.classList.contains('lux-control') ||
-            el.classList.contains('lux-chancellery-control') ||
-            el.classList.contains('lux-status-pill') ||
-            el.classList.contains('lux-strip-card') ||
-            el.classList.contains('surface-card') ||
-            el.classList.contains('content-box')
-        )) ||
-        (document.body.classList.contains('lux-route-profile-view') && (
-            el.classList.contains('pv-hero') ||
-            el.classList.contains('pv-meta') ||
-            el.classList.contains('pv-left') ||
-            el.classList.contains('pv-right') ||
-            el.classList.contains('pv-stat-card') ||
-            el.classList.contains('pv-tab') ||
-            el.classList.contains('pv-modal-card') ||
-            el.classList.contains('pv-profile-edit-card') ||
-            el.classList.contains('pv-session-list-row') ||
-            el.classList.contains('pv-document-card') ||
-            el.classList.contains('pv-course-row') ||
-            el.classList.contains('pv-financial-status-card') ||
-            el.classList.contains('upload-zone') ||
-            el.classList.contains('surface-card') ||
-            el.classList.contains('lux-summary-surface') ||
-            el.classList.contains('lux-strip-card') ||
-            el.classList.contains('lux-inline-card') ||
-            el.classList.contains('lux-data-card') ||
-            el.classList.contains('lux-info-card') ||
-            el.classList.contains('lux-status-pill') ||
-            el.classList.contains('lux-control') ||
-            el.classList.contains('lux-select-card')
-        )) ||
-        (document.body.classList.contains('lux-route-profile-view') && (
-            ([...el.classList].some((className) => className.startsWith('pv-') && className !== 'pv-shell')) ||
-            (Boolean(el.closest?.('.pv-financial-table')) && (
-                el.tagName === 'TD' || el.tagName === 'TH' || el.tagName === 'TR'
-            ))
-        ))
+        (Boolean(el.closest?.('#page-orders, #orders-inbox-root'))
+            && !document.body.classList.contains('lux-route-admin-orders')
+            && isRouteOwnedSurface(el)) ||
+        (document.body.classList.contains('lux-route-faculty-gradebook')
+            && Boolean(el.closest?.('.lux-faculty-gradebook-page, #page-faculty-gradebook'))
+            && (isCssOwnedSurface(el) || isTableGridCell(el, '#gradebook-table'))) ||
+        (document.body.classList.contains('lux-route-timetable') && isCssOwnedSurface(el)) ||
+        (document.body.classList.contains('lux-route-registration')
+            && Boolean(el.closest?.('#page-registration'))
+            && isCssOwnedSurface(el)) ||
+        (document.body.classList.contains('lux-route-chancellery')
+            && Boolean(el.closest?.('#page-chancellery'))
+            && isCssOwnedSurface(el)) ||
+        (document.body.classList.contains('lux-route-profile-view') && isCssOwnedSurface(el)) ||
+        (document.body.classList.contains('lux-route-profile-view')
+            && isTableGridCell(el, '.pv-financial-table'))
     );
     const buildDynamicSurfaceBackground = (el, lightMode, amount) => {
 
@@ -943,193 +1015,6 @@ function updateTransparency(value, options = {}) {
         );
         return buildLuxuryRoutePanelGradient(lightMode, softChrome);
     };
-    const shouldApplyDynamicBackground = (el) =>
-        el.classList.contains('lux-card') ||
-        el.classList.contains('lux-panel') ||
-        el.classList.contains('lux-page-shell') ||
-        el.classList.contains('surface-card') ||
-        el.classList.contains('content-box') ||
-        el.classList.contains('kiu-card') ||
-        el.classList.contains('page-hero') ||
-        el.classList.contains('schedule-toolbar-host') ||
-        el.classList.contains('schedule-toolbar') ||
-        el.classList.contains('lux-modern-surface') ||
-        el.classList.contains('lux-modern-table') ||
-        el.classList.contains('lux-program-hero') ||
-        el.classList.contains('lux-program-filter-shell') ||
-        el.classList.contains('lux-program-stage') ||
-        el.classList.contains('lux-program-overview-card') ||
-        el.classList.contains('lux-program-focus-panel') ||
-        el.classList.contains('lux-program-publish-pill') ||
-        el.classList.contains('lux-program-metric') ||
-        el.classList.contains('lux-program-focus-stat') ||
-        el.classList.contains('lux-program-semester-chip') ||
-        el.classList.contains('lux-module-option') ||
-        el.classList.contains('lux-subject-row') ||
-        el.id === 'study-card-container' ||
-        el.classList.contains('study-card-semester-table') ||
-        el.classList.contains('study-card-summary-stage') ||
-        el.classList.contains('lux-strip-card') ||
-        el.classList.contains('study-card-grade-circle') ||
-        el.classList.contains('study-card-assessment-window__chip') ||
-        el.classList.contains('study-card-assessment-window__card') ||
-        el.classList.contains('study-card-assessment-pill') ||
-        el.classList.contains('study-card-term-header') ||
-        el.classList.contains('study-card-term-row') ||
-        el.classList.contains('personal-data-toolbar') ||
-        el.classList.contains('profile-card') ||
-        el.classList.contains('personal-data-record-card') ||
-        el.classList.contains('personal-data-kpi-card') ||
-        el.classList.contains('personal-data-mini') ||
-        el.classList.contains('personal-data-record-item') ||
-        el.classList.contains('personal-data-card-meta') ||
-        el.classList.contains('lux-meta-pair-card') ||
-        el.classList.contains('personal-data-hero-panel') ||
-        el.classList.contains('newsx-panel') ||
-        el.classList.contains('newsx-feed-card') ||
-        el.classList.contains('newsx-filter') ||
-        el.classList.contains('newsx-sidebar') ||
-        el.classList.contains('newsx-section') ||
-        el.classList.contains('newsx-private-item') ||
-        el.classList.contains('newsx-check') ||
-        el.classList.contains('newsx-account-card') ||
-        el.classList.contains('newsx-section-btn') ||
-        el.classList.contains('student-service-canvas') ||
-        el.classList.contains('student-service-zone') ||
-        el.classList.contains('student-service-article-card') ||
-        el.classList.contains('student-service-ticket-row') ||
-        el.classList.contains('student-service-lane-card') ||
-        el.classList.contains('student-service-ticket-card') ||
-        el.classList.contains('student-service-ops-card') ||
-        el.classList.contains('student-service-article-preview') ||
-        el.classList.contains('student-service-ticket-stat') ||
-        el.classList.contains('student-service-track-card') ||
-        el.classList.contains('student-service-ops-ticket') ||
-        el.classList.contains('student-service-ops-lane') ||
-        el.classList.contains('student-service-ticket-thread') ||
-        el.classList.contains('student-service-home-panel') ||
-        el.classList.contains('student-service-home-card') ||
-        el.classList.contains('student-service-home-ticket') ||
-        el.classList.contains('student-service-home-topic') ||
-        el.classList.contains('student-service-lane-choice-card') ||
-        el.classList.contains('library-catalog-filters-panel') ||
-        el.classList.contains('admin-library-catalog-card') ||
-        el.classList.contains('admin-library-tabs') ||
-        el.classList.contains('admin-library-catalog-foot') ||
-        el.classList.contains('alib-panel') ||
-        el.classList.contains('admin-library-metric-card') ||
-        el.classList.contains('admin-library-param-group') ||
-        el.classList.contains('admin-library-chip') ||
-        (document.body.classList.contains('lux-route-library') && (
-            (el.classList.contains('lux-strip-card') && el.closest?.('#page-library')) ||
-            (el.classList.contains('lux-hero-signal') && el.closest?.('#page-library')) ||
-            (el.classList.contains('lux-picker-btn') && el.closest?.('.library-catalog-filters-panel')) ||
-            (el.classList.contains('lux-control') && el.closest?.('.library-catalog-filters-panel'))
-        )) ||
-        el.classList.contains('ex2-hero') ||
-        el.classList.contains('ex2-workspace-panel') ||
-        el.classList.contains('ex2-workspace-head') ||
-        el.classList.contains('ex2-workspace-section') ||
-        el.classList.contains('ex2-stat-chip') ||
-        el.classList.contains('ex2-panel') ||
-        el.classList.contains('ex2-toolbar') ||
-        el.classList.contains('ex2-card') ||
-        el.classList.contains('ex2-stat-card') ||
-        el.classList.contains('ex2-cohort-card') ||
-        el.classList.contains('ex2-session-card') ||
-        el.classList.contains('ex2-list-card') ||
-        el.classList.contains('ex2-question-card') ||
-        el.classList.contains('ex2-review-card') ||
-        el.classList.contains('ex2-side-card') ||
-        el.classList.contains('ex2-select-card') ||
-        el.classList.contains('ex2-live-sidebar') ||
-        el.classList.contains('ex2-q-card') ||
-        el.classList.contains('ex2-q-card-head') ||
-        el.classList.contains('ex2-empty-state') ||
-        el.classList.contains('ex2-timeline-card') ||
-        el.classList.contains('ex2-split-box') ||
-        el.classList.contains('ex2-auto-gen-box') ||
-        el.classList.contains('ex2-qnav-bar') ||
-        el.classList.contains('ex2-progress-step') ||
-        el.classList.contains('lux-admin-op-card') ||
-        el.classList.contains('lux-admin-ops-panel') ||
-        el.getAttribute('data-lux-glass-root') === '1' ||
-        (document.body.classList.contains('lux-route-admin-orders') &&
-            Boolean(el.closest?.('#admin-orders-root, #modal-studio')) && (
-            el.classList.contains('orders-admin-shell') ||
-            el.classList.contains('orders-admin-hero') ||
-            el.classList.contains('orders-admin-panel') ||
-            el.classList.contains('orders-admin-hero-side') ||
-            el.classList.contains('orders-detail-panel') ||
-            el.classList.contains('orders-admin-table-wrap') ||
-            el.classList.contains('admin-orders-studio') ||
-            el.classList.contains('orders-metric-card') ||
-            el.classList.contains('orders-recipient-row') ||
-            el.classList.contains('orders-recipient-card') ||
-            el.classList.contains('orders-attachment-card') ||
-            el.classList.contains('orders-detail-empty') ||
-            el.classList.contains('orders-detail-card') ||
-            el.classList.contains('orders-recipient-list-shell') ||
-            el.classList.contains('orders-recipient-list-empty') ||
-            el.classList.contains('lux-hero-side-head') ||
-            el.classList.contains('lux-hero-signal') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-control') ||
-            el.classList.contains('lux-status-pill') ||
-            el.classList.contains('lux-primary-btn') ||
-            el.classList.contains('lux-secondary-btn') ||
-            el.classList.contains('admin-orders-studio-card') ||
-            el.classList.contains('admin-orders-palette-option') ||
-            el.classList.contains('admin-orders-mode-btn') ||
-            el.classList.contains('admin-orders-background-btn') ||
-            el.classList.contains('admin-orders-apply-btn')
-        )) ||
-        (document.body.classList.contains('lux-route-social') && (            el.classList.contains('social-neo-card') ||
-            SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
-            el.parentElement?.classList?.contains('social-neo-stat-grid') ||
-            [...el.classList].some((className) =>
-                className.startsWith('social-neo-') ||
-                className.startsWith('social-project') ||
-                className.startsWith('social-portfolio')
-            )
-        )) ||
-        (document.body.classList.contains('lux-route-staff') && Boolean(el.closest?.('#staff-content')) && (
-                                    el.classList.contains('staff-hub-controls') ||
-            el.classList.contains('staff-hub-directory-panel') ||
-            el.classList.contains('staff-hub-profile') ||
-            el.classList.contains('staff-hub-info-card') ||
-            el.classList.contains('staff-hub-warning') ||
-            el.classList.contains('staff-hub-modal') ||
-            el.classList.contains('staff-hub-list-item') ||
-                        el.classList.contains('lux-card') ||
-            el.classList.contains('lux-person-card') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('surface-card') ||
-            el.classList.contains('content-box')
-        )) ||
-        (document.body.classList.contains('lux-route-students-admin') &&
-            Boolean(el.closest?.('#students-content')) &&
-            !el.closest?.('#students-admin-lms-modal') && (
-            el.classList.contains('students-hub-hero') ||
-            el.classList.contains('students-hub-profile') ||
-            el.classList.contains('students-hub-profile-header') ||
-            el.classList.contains('students-hub-info-card') ||
-            el.classList.contains('students-hub-controls') ||
-            el.classList.contains('students-hub-directory-panel') ||
-            el.classList.contains('students-hub-list-item') ||
-            el.classList.contains('students-hub-modal') ||
-            el.classList.contains('students-hub-warning')
-        )) ||
-        registrationGlassClasses.some((className) => el.classList.contains(className)) ||
-        (document.body.classList.contains('lux-route-admin-scheduler') && Boolean(el.closest?.('#page-admin-scheduler')) && (
-            schedulerGlassClasses.some((className) => el.classList.contains(className)) ||
-            ((el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
-                el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))
-        )) ||
-        lmsGlassClasses.some((className) => el.classList.contains(className)) ||
-        (isLmsRoute && Boolean(el.closest?.('.lms-quiz-builder')) &&
-            lmsQuizBuilderGlassClasses.some((className) => el.classList.contains(className)));
 
     const isStudyCardGradebookProgressSegment = (el) => (
         document.body.classList.contains('lux-route-study-card') &&
@@ -1190,96 +1075,7 @@ function updateTransparency(value, options = {}) {
     }
     window.__luxLastAppliedTransparencySignature = transparencySignature;
 
-    const allSelectors = window.__luxTransparencyAllSelectors || (window.__luxTransparencyAllSelectors = [
-
-        '.lux-card', '.lux-panel', '.lux-dashboard-section', '.lux-hero',
-        '.lux-grid-widget', '.lux-home-card', '.lux-admin-ops-card', '.lux-builder-card', '.lux-builder-section',
-        '.lux-page-shell', '.lux-stat-card', '.lux-stat', '.surface-card', '.content-box', '.kiu-card', '.page-card',
-
-        '.section-card', '.panel-card', '.dashboard-card', '.tabs-container', '.modal-content', '.page-hero',
-        ...registrationGlassSelectors,
-        ...schedulerGlassSelectors,
-        ...lmsGlassSelectors,
-
-        '.lux-program-hero', '.lux-program-filter-shell', '.lux-program-stage',
-        '.lux-program-overview-card', '.lux-program-focus-panel', '.lux-program-publish-pill', '.lux-program-metric',
-        '.lux-program-focus-stat', '.lux-program-semester-chip', '.lux-module-option', '.lux-subject-row',
-
-        '#profile-view-root .pv-shell', '.pv-hero', '.pv-meta', '.pv-left', '.pv-right',
-
-        '#study-card-container', '.study-card-semester-table', '.study-card-summary-stage',
-        '.study-card-grade-circle', '.study-card-assessment-window__chip',
-        '.study-card-assessment-window__card', '.study-card-assessment-pill',
-        '.study-card-term-header', '.study-card-term-row', '#study-card-container .lux-strip-card',
-
-        '.personal-data-toolbar', '.profile-card', '.personal-data-record-card',
-        '.personal-data-kpi-card', '.personal-data-mini', '.personal-data-record-item',
-        '.personal-data-card-meta', '.lux-meta-pair-card', '.personal-data-hero-panel',
-        '#page-personal-data .lux-strip-card', '.newsx-panel', '.newsx-feed-card', '.newsx-filter',
-
-        '.newsx-sidebar', '.newsx-section', '.newsx-private-item', '.newsx-check', '.newsx-account-card',
-        '.newsx-section-btn', '.student-service-command-bar-shell', '.student-service-canvas', '.student-service-zone',
-
-        '.student-service-article-card', '.student-service-ticket-row',
-        '.student-service-lane-card', '.student-service-ticket-card',
-        '.student-service-ops-card',         '.student-service-article-preview', '.student-service-ticket-stat',
-        '.student-service-track-card', '.student-service-ops-ticket',
-        '.student-service-ops-lane',         '.student-service-home-panel',
-        '.student-service-home-card', '.student-service-home-ticket',
-        '.student-service-home-topic', '.student-service-lane-choice-card', '.social-neo-card',
-
-        ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS,
-
-        ...STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS,
-        '#staff-content .lux-card', '#staff-content .lux-person-card',
-        '#staff-content .lux-subcard', '#staff-content .surface-card',
-        '#staff-content .content-box', '#staff-content .lux-strip-card', '#staff-content .lux-data-card',
-
-        ...STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS,
-
-        '.library-catalog-filters-panel', '.admin-library-catalog-card',
-        '.admin-library-tabs', '.admin-library-catalog-foot', '.alib-panel',
-        '#page-library .alib-panel', '#page-library .lux-strip-card',
-        '.admin-library-metric-card', '.admin-library-param-group', '.admin-library-chip',
-        '.library-catalog-filters-panel .lux-picker-btn', '.library-catalog-filters-panel .lux-control',
-
-        '.ex2-hero', '.ex2-workspace-panel', '.ex2-workspace-head', '.ex2-workspace-section',
-        '.ex2-panel', '.ex2-toolbar', '.ex2-card',
-        '.ex2-stat-card', '.ex2-stat-chip', '.ex2-cohort-card', '.ex2-session-card',
-        '.ex2-list-card', '.ex2-question-card', '.ex2-review-card',
-        '.ex2-side-card', '.ex2-select-card', '.ex2-live-sidebar',
-        '.ex2-q-card', '.ex2-q-card-head', '.ex2-empty-state',
-        '.ex2-timeline-card', '.ex2-split-box', '.ex2-auto-gen-box',
-        '.ex2-qnav-bar', '.ex2-progress-step', '.ex2-mini-grid > div',
-
-        '.lux-admin-op-card', '.lux-admin-ops-panel', '[data-lux-glass-root="1"]',
-
-        '.lux-person-card', '.lux-subcard', '.lux-stack', '.lux-person-head', '.lux-inline-meta', '.lux-card-actions',
-
-        '.lux-grid-widget-body', '.lux-widget-container', '.lux-card-head', '.lux-card-body', '.lux-panel-body',
-
-        '.lux-page-kicker', '.lux-status-pill',
-        '#admin-orders-root .orders-admin-shell', '#admin-orders-root .orders-admin-hero',
-        '#admin-orders-root .orders-admin-panel', '#admin-orders-root .orders-admin-hero-side',
-        '#admin-orders-root .orders-detail-panel', '#admin-orders-root .orders-admin-table-wrap',
-        '#admin-orders-root .orders-metric-card', '#admin-orders-root .orders-recipient-row',
-        '#admin-orders-root .orders-recipient-card', '#admin-orders-root .orders-attachment-card',
-        '#admin-orders-root .orders-detail-empty', '#admin-orders-root .orders-detail-card',
-        '#admin-orders-root .orders-recipient-list-shell', '#admin-orders-root .orders-recipient-list-empty',
-        '#admin-orders-root .lux-hero-side-head', '#admin-orders-root .lux-hero-signal',
-        '#admin-orders-root .lux-stat-card', '#admin-orders-root .lux-card',
-        '#admin-orders-root .lux-control', '#admin-orders-root .lux-primary-btn',
-        '#admin-orders-root .lux-secondary-btn',
-        '#modal-studio.admin-orders-studio', '#modal-studio .admin-orders-studio-card',
-        '#modal-studio .admin-orders-palette-option', '#modal-studio .admin-orders-mode-btn',
-        '#modal-studio .admin-orders-background-btn', '#modal-studio .admin-orders-apply-btn',
-        '#modal-studio .lux-control', '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
-
-        '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav',
-        '.schedule-overview-row', '.schedule-view-row', '.lux-control',
-
-        ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS
-    ]);
+    const allSelectors = TRANSPARENCY_CORE_SELECTORS;
 
     const surfaceElements = getCachedTransparencySurfaceElements(allSelectors, scopedRoots);
 
@@ -1332,19 +1128,14 @@ function updateTransparency(value, options = {}) {
             return;
         }
 
-        if (
-            document.body.classList.contains('lux-route-admin-tools') &&
-            el.id === 'page-admin-tools' &&
-            el.classList.contains('lux-page-shell')
-        ) {
+        if (el.getAttribute('data-lux-layout-only') === '1') {
             stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         if (
-            document.body.classList.contains('lux-route-admin-tools') &&
-            Boolean(el.closest?.('#lux-admin-tools-shell')) &&
-            Boolean(el.closest?.('[data-lux-glass-root="1"]')) &&
-            el !== el.closest?.('[data-lux-glass-root="1"]')
+            document.body.classList.contains('lux-page-bare')
+            && Boolean(el.closest?.('[data-lux-glass-root="1"]'))
+            && el !== el.closest?.('[data-lux-glass-root="1"]')
         ) {
             stripInlineGlassPaint(el, transparencySignature);
             return;
@@ -1383,7 +1174,7 @@ function updateTransparency(value, options = {}) {
                 return;
             }
 
-            if (percentage >= 99 && shouldKeepRegistrationFadeCssBackground(el) && el.closest?.('#page-registration')) {
+            if (percentage >= 99 && isCssOwnedSurface(el) && el.closest?.('#page-registration')) {
                 const isFocusPanel = el.classList.contains('lux-timetable-hero-focus') || el.classList.contains('registration-hero-aside');
                 var _solidBg2 = isFocusPanel
                     ? (isLightMode
@@ -1446,30 +1237,12 @@ function updateTransparency(value, options = {}) {
                 return;
             }
 
-            const needsComplexProbe = !shouldKeepRouteFadeCssBackground(el) && (
-                registrationGlassClasses.some((className) => el.classList.contains(className))
-                || (
-                    document.body.classList.contains('lux-route-admin-scheduler')
-                    && Boolean(el.closest?.('#page-admin-scheduler'))
-                    && (
-                        schedulerGlassClasses.some((className) => el.classList.contains(className))
-                        || ((el.tagName === 'SELECT' || el.tagName === 'INPUT')
-                            && el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))
-                    )
-                )
-                || lmsGlassClasses.some((className) => el.classList.contains(className))
-            );
-            let hasComplexBackground = false;
-            if (needsComplexProbe && !shouldApplyDynamicBackground(el)) {
-                hasComplexBackground = true;
-            }
-
             const isSocialRouteSurface = document.body.classList.contains('lux-route-social');
             const keepSocialFadeCss = shouldKeepSocialFadeCssBackground(el);
-            const keepAdminLibraryFadeCss = shouldKeepAdminLibraryFadeCssBackground(el);
+            const keepCssOwnedSurface = isCssOwnedSurface(el);
 
             const isWrapperInnerPanel = document.body.classList.contains('lux-page-bare')
-                && !document.body.classList.contains('lux-route-admin-tools')
+                && !Boolean(el.closest?.('.lux-page-shell[data-lux-layout-only="1"]'))
                 && Boolean(el.closest?.('.lux-page-shell'))
                 && !el.classList.contains('lux-page-shell');
             const isHomeLegacyGridInnerPanel = document.body.classList.contains('lux-route-home')
@@ -1483,44 +1256,15 @@ function updateTransparency(value, options = {}) {
                 shouldApplyDynamicBackground(el) &&
                 !isSocialPaintSurface(el) &&
                 !isSocialBlurHost(el));
-            const backdropValue = (suppressBlur || keepSocialFadeCss || keepAdminLibraryFadeCss)
+            const backdropValue = (suppressBlur || keepSocialFadeCss || keepCssOwnedSurface)
                 ? 'none'
                 : `blur(${blurAmount}px) saturate(${saturateAmount}%)`;
 
-            if (hasComplexBackground) {
-
-                el.style.setProperty('backdrop-filter', backdropValue, 'important');
-                el.style.setProperty('-webkit-backdrop-filter', backdropValue, 'important');
-
-                if (shouldApplyDynamicBackground(el) && !keepSocialFadeCss && !keepAdminLibraryFadeCss) {
-                    {
-                        const _dynBg = buildDynamicSurfaceBackground(el, isLightMode, surfaceFillAmount);
-                        if (_dynBg) el.style.setProperty('background', _dynBg, 'important');
-                    }
-                }
-            } else {
-
-                el.style.setProperty('backdrop-filter', backdropValue, 'important');
-                el.style.setProperty('-webkit-backdrop-filter', backdropValue, 'important');
-                if (
-                    !keepSocialFadeCss &&
-                    !keepAdminLibraryFadeCss &&
-                    (
-                        registrationGlassClasses.some(className => el.classList.contains(className)) ||
-                        (document.body.classList.contains('lux-route-admin-scheduler') && Boolean(el.closest?.('#page-admin-scheduler')) && (
-                            schedulerGlassClasses.some(className => el.classList.contains(className)) ||
-                            ((el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
-                                el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))
-                        )) ||
-                        lmsGlassClasses.some(className => el.classList.contains(className)) ||
-                        shouldApplyDynamicBackground(el)
-                    )
-                ) {
-                    {
-                        const _dynBg2 = buildDynamicSurfaceBackground(el, isLightMode, surfaceFillAmount);
-                        if (_dynBg2) el.style.setProperty('background', _dynBg2, 'important');
-                    }
-                }
+            el.style.setProperty('backdrop-filter', backdropValue, 'important');
+            el.style.setProperty('-webkit-backdrop-filter', backdropValue, 'important');
+            if (!keepSocialFadeCss && !keepCssOwnedSurface && shouldApplyDynamicBackground(el)) {
+                const _dynBg = buildDynamicSurfaceBackground(el, isLightMode, surfaceFillAmount);
+                if (_dynBg) el.style.setProperty('background', _dynBg, 'important');
             }
             el.dataset.luxTransparencySignature = transparencySignature;
         } else {
@@ -1543,6 +1287,7 @@ function updateTransparency(value, options = {}) {
 function isLuxTransparencyExemptSubtree(node) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
     if (node.closest && node.closest('[data-lux-transparency-exempt="1"]')) return true;
+    if (node.closest && node.closest('.lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay')) return true;
     if (node.closest && node.closest('#lux-studio-backdrop, .lux-studio-panel, #lux-bg-mode-params-backdrop')) return true;
     return false;
 }
@@ -1561,10 +1306,7 @@ function setupTransparencyObserver() {
             for (const node of mutation.addedNodes) {
                 if (node.nodeType !== Node.ELEMENT_NODE) continue;
                 if (isLuxTransparencyExemptSubtree(node)) continue;
-                if (
-                    (node.matches && node.matches(SHARED_TRANSPARENCY_OBSERVER_SELECTOR)) ||
-                    (node.querySelector && node.querySelector(SHARED_TRANSPARENCY_OBSERVER_SELECTOR))
-                ) {
+                if (matchesTransparencyObserver(node)) {
                     needsUpdate = true;
                     pendingRoots.add(node);
                 }

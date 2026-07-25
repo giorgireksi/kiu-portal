@@ -432,10 +432,10 @@ function applyLuxPickerPanelVariants(panel, button) {
     if (button?.closest?.('#admin-exams-root')) {
         panel.classList.add('ex2-picker-panel');
     }
-    if (button?.closest?.('.social-neo-dialog-backdrop, #social-neo-overlay-portal')) {
-        panel.classList.add('social-neo-dialog-picker-panel');
+    if (button?.closest?.('.lux-glass-dialog-backdrop, #social-neo-overlay-portal')) {
+        panel.classList.add('lux-glass-dialog-picker-panel');
     } else {
-        panel.classList.remove('social-neo-dialog-picker-panel');
+        panel.classList.remove('lux-glass-dialog-picker-panel');
     }
 }
 
@@ -466,6 +466,30 @@ function closePickerPanels(options = {}) {
             endPickerChromeBusy();
         }, LUX_PICKER_CLOSE_FALLBACK_MS);
     });
+}
+
+function resolveLuxPickerPanelHeightCap(panel) {
+    if (!panel?.classList?.contains('lux-picker-panel') || typeof window === 'undefined') return null;
+    const rootStyle = window.getComputedStyle(document.documentElement);
+    const usesDroplist = panel.classList.contains('lux-droplist-panel');
+    const optionHeight = parseFloat(rootStyle.getPropertyValue(usesDroplist ? '--lux-droplist-option-height' : '--lux-picker-option-height'));
+    const visibleOptions = parseFloat(rootStyle.getPropertyValue(usesDroplist ? '--lux-droplist-visible-options' : '--lux-picker-visible-options'));
+    const gap = parseFloat(rootStyle.getPropertyValue(usesDroplist ? '--lux-droplist-shell-gap' : '--lux-picker-panel-gap'));
+    const pad = parseFloat(rootStyle.getPropertyValue(usesDroplist ? '--lux-droplist-shell-pad' : '--lux-picker-panel-pad'));
+    if (!Number.isFinite(optionHeight) || !Number.isFinite(visibleOptions) || visibleOptions <= 0) return null;
+    const gapVal = Number.isFinite(gap) ? gap : (usesDroplist ? 6 : 8);
+    const shellPad = usesDroplist
+        ? (Number.isFinite(pad) ? pad * 2 : 24)
+        : (Number.isFinite(pad) ? pad : 20);
+    const height = optionHeight * visibleOptions + gapVal * Math.max(0, visibleOptions - 1) + shellPad;
+    return height > 0 ? height : null;
+}
+
+function capLuxFloatingPanelMaxHeight(panel, viewportMaxHeight) {
+    const available = Math.max(0, Number(viewportMaxHeight) || 0);
+    const cssCap = resolveLuxPickerPanelHeightCap(panel);
+    if (cssCap == null) return available;
+    return Math.min(available, cssCap);
 }
 
 function resolveLuxFloatingPanelPlacement({
@@ -604,7 +628,7 @@ function placeLuxFloatingPanel({
     panel.style.top = `${placement.top}px`;
     panel.style.left = `${placement.left}px`;
     panel.style.width = `${placement.width}px`;
-    panel.style.maxHeight = `${Math.max(0, placement.maxHeight)}px`;
+    panel.style.maxHeight = `${capLuxFloatingPanelMaxHeight(panel, placement.maxHeight)}px`;
 
     if (!fastPlace) {
         polishLuxFloatingPanelClamp(panel, placement, {
@@ -729,7 +753,7 @@ function openPickerPanel(panel, button, buttonId) {
         panel.style.top = `${refined.top}px`;
         panel.style.left = `${refined.left}px`;
         panel.style.width = `${refined.width}px`;
-        panel.style.maxHeight = `${Math.max(0, refined.maxHeight)}px`;
+        panel.style.maxHeight = `${capLuxFloatingPanelMaxHeight(panel, refined.maxHeight)}px`;
         polishLuxFloatingPanelClamp(panel, refined, { viewportWidth, paintPad, minWidth });
         if (placement) Object.assign(placement, refined);
 

@@ -137,7 +137,7 @@
 
         function projectTaskGraphStackedBackdropClass(runtime, kind = '') {
             if (shouldRenderProjectTaskGraphStack(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)) {
-                return 'social-neo-dialog-backdrop--stacked-child';
+                return 'lux-glass-dialog-backdrop--stacked-child';
             }
             return '';
         }
@@ -1178,7 +1178,7 @@
             // Must live inside overlay portal so social interaction routing can see it,
             // and we also bind direct handlers (data-action on body is ignored).
             const mount = document.getElementById('social-neo-overlay-portal')
-                || document.getElementById('social-neo-dialog-region')
+                || document.getElementById('lux-glass-dialog-region')
                 || document.body;
             mount.appendChild(menu);
 

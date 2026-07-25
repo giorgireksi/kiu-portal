@@ -103,7 +103,7 @@ describe('Wave dashboard CSS A+ (criteria → 10/10)', () => {
         const roleCss = read('assets/css/index-home-role.css');
         expect(layoutCss).toContain('.lux-home-merged');
         expect(layoutCss).toContain('.lux-home-band--split');
-        expect(roleCss).toContain('.lux-home-merged.lux-soft-chrome');
+        expect(roleCss).toContain('.lux-home-merged > .lux-home-band');
         expect(widgetsCss).not.toContain('.lux-dashboard-canvas.is-desktop');
     });
 });

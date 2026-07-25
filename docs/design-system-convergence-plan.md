@@ -52,7 +52,7 @@
 ### 3.1 Allowed shared stack (every non-auth portal page)
 
 ```
-kiu-fonts → base → layout → lux-tokens → lux-surfaces → lux-focus-panel
+kiu-fonts → lux-tokens → lux-focus-panel → lux-fouc-ht → lux-controls
 → lux-controls → lux-layout-primitives → lux-modals (if needed)
 → thin shell chrome → route CSS (layout only)
 ```

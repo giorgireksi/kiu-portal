@@ -103,7 +103,7 @@
                 if (!shell) {
                     root.innerHTML = `
                         <div class="ex2-shell" data-exam-shell="1" data-exam-mounted="0">
-                            <section class="ex2-workspace-panel lux-modern-surface">
+                            <section class="ex2-workspace-panel lux-modern-surface" data-lux-glass-root="1">
                                 <div id="ex2-chrome-region" data-exam-region="chrome"></div>
                                 <div id="ex2-body-region" class="ex2-workspace-body" data-exam-region="body"></div>
                                 <div id="ex2-modal-region" data-exam-region="modal"></div>

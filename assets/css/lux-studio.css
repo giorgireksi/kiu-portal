@@ -1,9 +1,9 @@
 /* Color & Motion Studio — self-contained fixed 50% glassmorph (ignores portal opacity slider). */
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) {
   --lux-studio-glass-border: rgba(255, 255, 255, 0.14);
-  --lux-studio-dialog-bg: rgba(8, 12, 21, 0.50);
-  --lux-studio-dialog-border: rgba(255, 255, 255, 0.14);
-  --lux-studio-dialog-shadow: 0 24px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --lux-studio-dialog-bg: var(--lux-frosted-glass-surface);
+  --lux-studio-dialog-border: var(--lux-frosted-glass-border);
+  --lux-studio-dialog-shadow: var(--lux-frosted-glass-shadow);
   --lux-studio-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.10);
   --lux-studio-chip-radius: 16px;
   --lux-studio-btn-radius: 14px;
@@ -71,7 +71,7 @@
   box-sizing: border-box;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--lux-popup-anim-close-duration) ease;
   background: rgba(0, 0, 0, 0.45);
   /* Panel carries frost; backdrop is dim-only (no stacked live blur). */
   backdrop-filter: none;
@@ -83,6 +83,18 @@
 }
 body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
 
+:is(
+  #lux-studio-backdrop .lux-studio-panel,
+  .lux-bg-mode-params-dialog,
+  .lux-bg-gallery-dialog
+) {
+  border: 1px solid var(--lux-studio-dialog-border);
+  background: var(--lux-studio-dialog-bg);
+  backdrop-filter: var(--lux-frosted-glass-blur);
+  -webkit-backdrop-filter: var(--lux-frosted-glass-blur);
+  box-shadow: var(--lux-studio-dialog-shadow);
+}
+
 #lux-studio-backdrop .lux-studio-panel {
   position: relative;
   width: min(640px, 100%);
@@ -93,15 +105,10 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   padding: 18px;
   box-sizing: border-box;
   overflow: hidden;
-  transform: translateY(12px) scale(0.97);
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
   opacity: 0;
-  transition: transform 0.24s ease, opacity 0.24s ease;
+  transition: transform var(--lux-popup-anim-duration) ease, opacity var(--lux-popup-anim-duration) ease;
   color: var(--lux-text);
-  border: 1px solid var(--lux-studio-dialog-border);
-  background: var(--lux-studio-dialog-bg);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  box-shadow: var(--lux-studio-dialog-shadow);
 }
 #lux-studio-backdrop.is-open .lux-studio-panel {
   transform: translateY(0) scale(1);
@@ -910,7 +917,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   box-sizing: border-box;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--lux-popup-anim-close-duration) ease;
   background: rgba(0, 0, 0, 0.45);
   /* Dialog carries frost; backdrop is dim-only. */
   backdrop-filter: none;
@@ -935,14 +942,9 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   box-sizing: border-box;
   overflow: hidden;
   color: var(--lux-text);
-  border: 1px solid var(--lux-studio-dialog-border);
-  background: var(--lux-studio-dialog-bg);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  box-shadow: var(--lux-studio-dialog-shadow);
-  transform: translateY(10px) scale(0.98);
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
   opacity: 0;
-  transition: transform 0.22s ease, opacity 0.22s ease;
+  transition: transform var(--lux-popup-anim-duration) ease, opacity var(--lux-popup-anim-duration) ease;
 }
 .lux-bg-mode-params-backdrop.is-open .lux-bg-mode-params-dialog {
   transform: translateY(0) scale(1);
@@ -1128,9 +1130,6 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 /* Light mode — still fixed 50% glass */
 :is(html.lux-light-mode, body.lux-light-mode) :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) {
   --lux-studio-glass-border: rgba(77, 52, 31, 0.14);
-  --lux-studio-dialog-bg: rgba(255, 255, 255, 0.88);
-  --lux-studio-dialog-border: rgba(77, 52, 31, 0.10);
-  --lux-studio-dialog-shadow: 0 22px 50px rgba(73, 48, 25, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.55);
   --lux-studio-btn-shadow: 0 4px 12px rgba(73, 48, 25, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.78);
   --lux-studio-chip-surface:
     radial-gradient(circle at 88% 8%, rgba(var(--lux-accent-rgb), 0.18), transparent 40%),
@@ -1187,14 +1186,6 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   background: rgba(73, 48, 25, 0.28);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-}
-:is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-studio-panel,
-:is(html.lux-light-mode, body.lux-light-mode) .lux-bg-mode-params-dialog {
-  border-color: var(--lux-studio-dialog-border);
-  background: var(--lux-studio-dialog-bg);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  box-shadow: var(--lux-studio-dialog-shadow);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-studio-section:has(
   .lux-bg-mode-item,
@@ -1854,7 +1845,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   box-sizing: border-box;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--lux-popup-anim-close-duration) ease;
   background: rgba(0, 0, 0, 0.45);
   /* Dialog carries frost; backdrop is dim-only. */
   backdrop-filter: none;
@@ -1878,14 +1869,9 @@ body.lux-studio-open .lux-bg-gallery-backdrop {
   box-sizing: border-box;
   overflow: hidden;
   color: var(--lux-text);
-  border: 1px solid var(--lux-studio-dialog-border);
-  background: var(--lux-studio-dialog-bg);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  box-shadow: var(--lux-studio-dialog-shadow);
-  transform: translateY(10px) scale(0.98);
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
   opacity: 0;
-  transition: transform 0.22s ease, opacity 0.22s ease;
+  transition: transform var(--lux-popup-anim-duration) ease, opacity var(--lux-popup-anim-duration) ease;
 }
 .lux-bg-gallery-backdrop.is-open .lux-bg-gallery-dialog {
   transform: translateY(0) scale(1);

@@ -211,7 +211,7 @@ function persistStudentEvaluationComment(studentId, criterion, number, commentTe
         }
         saveState();
         refreshGradebookAfterStaffScoreChange({ closeScoreEditModal: false });
-        document.getElementById('gradebook-comment-modal')?.remove();
+        closeGradebookCommentModal();
         return;
     }
     const updated = persistStudentEvaluationCommentOnRoster(currentRosterId, studentId, criterion, number, trimmedComment, studentName);
@@ -222,7 +222,7 @@ function persistStudentEvaluationComment(studentId, criterion, number, commentTe
     mockStudents = KIU_STATE.studentGrades[currentRosterId].map(student => ensureGradeRecordHistories(student));
     saveState();
     refreshGradebookAfterStaffScoreChange({ closeScoreEditModal: false });
-    document.getElementById('gradebook-comment-modal')?.remove();
+    closeGradebookCommentModal();
 }
 
 function resolveGradebookCommentEntryNote(studentId, criterion, number) {
@@ -236,19 +236,42 @@ function resolveGradebookCommentEntryNote(studentId, criterion, number) {
     return String(entry?.note || '').trim();
 }
 
+function closeGradebookCommentModal() {
+    const overlay = document.getElementById('gradebook-comment-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
+}
+
+function closeGradebookScoreEditModal() {
+    const overlay = document.getElementById('gradebook-score-edit-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
+}
+
 function openGradebookCommentModal(studentId, criterion, number, studentName = '') {
     if (![USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(getEffectiveUserRole())) {
         alert('Only professors or teaching assistants can leave student feedback.');
         return;
     }
-    document.getElementById('gradebook-comment-modal')?.remove();
+    const existingComment = document.getElementById('gradebook-comment-modal');
+    if (existingComment && typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(existingComment, { instant: true });
+    } else {
+        existingComment?.remove();
+    }
     const inputId = `gradebook-comment-${toDomToken(studentId)}-${toDomToken(criterion)}-${normalizeAssessmentNumber(number, 1)}`;
     const currentNote = resolveGradebookCommentEntryNote(studentId, criterion, number);
     const overlay = document.createElement('div');
     overlay.id = 'gradebook-comment-modal';
     overlay.className = 'gb-score-edit-overlay gb-comment-edit-overlay lms-glass-dialog-overlay';
     overlay.onclick = event => {
-        if (event.target === overlay) overlay.remove();
+        if (event.target === overlay) closeGradebookCommentModal();
     };
     overlay.innerHTML = renderLmsGlassDialogCard({
             hookClass: 'gb-score-edit-card gb-comment-edit-card',
@@ -261,10 +284,15 @@ function openGradebookCommentModal(studentId, criterion, number, studentName = '
                 <textarea id="${inputId}" class="lms-route-input" placeholder="Explain the score, next steps, or classroom feedback...">${escapeHtml(currentNote)}</textarea>
             </label>`,
             actionsHtml: `
-                <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-gradebook-click="close-gradebook-comment">Cancel</button>
-                <button type="button" class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" data-gradebook-click="save-gradebook-comment" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(criterion))}" data-gradebook-number="${escapeHtml(String(normalizeAssessmentNumber(number, 1)))}" data-gradebook-input-id="${escapeHtml(String(inputId))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-comment"></i> Save comment</button>`
+                <button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-gradebook-click="close-gradebook-comment">Cancel</button>
+                <button type="button" class="lux-primary-btn lux-glass-dialog-submit-btn" data-gradebook-click="save-gradebook-comment" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(criterion))}" data-gradebook-number="${escapeHtml(String(normalizeAssessmentNumber(number, 1)))}" data-gradebook-input-id="${escapeHtml(String(inputId))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-comment"></i> Save comment</button>`
         });
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
     setTimeout(() => document.getElementById(inputId)?.focus(), 20);
 }
 
@@ -291,7 +319,12 @@ function resolveLmsStudentGradebookRecord() {
 }
 
 function closeStudentCategoryScoreHistoryModal() {
-    document.getElementById('gradebook-category-history-modal')?.remove();
+    const overlay = document.getElementById('gradebook-category-history-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function renderStudentCategoryHistoryCards(record, criterionKeys = [], categoryLabel = '') {
@@ -408,6 +441,11 @@ function openStudentCategoryScoreHistoryModal(criterionKey, altCriterionKey = ''
         bodyHtml: renderStudentCategoryHistoryCards(record, criterionKeys, label)
     });
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function renderLmsStaffScoreEditorBlock({
@@ -453,7 +491,12 @@ function openGradebookScoreEditModal(studentId, criterion, number, currentScore,
         alert('Only professors or teaching assistants can save evaluation scores.');
         return;
     }
-    document.getElementById('gradebook-score-edit-modal')?.remove();
+    const existingScore = document.getElementById('gradebook-score-edit-modal');
+    if (existingScore && typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(existingScore, { instant: true });
+    } else {
+        existingScore?.remove();
+    }
     const inputId = `gradebook-score-edit-${toDomToken(studentId)}-${toDomToken(criterion)}-${normalizeAssessmentNumber(number, 1)}`;
     const reasonId = `${inputId}-reason`;
     const hasExistingScore = currentScore !== null && currentScore !== undefined && currentScore !== ''
@@ -463,7 +506,7 @@ function openGradebookScoreEditModal(studentId, criterion, number, currentScore,
     overlay.id = 'gradebook-score-edit-modal';
     overlay.className = 'gb-score-edit-overlay lms-glass-dialog-overlay';
     overlay.onclick = event => {
-        if (event.target === overlay) overlay.remove();
+        if (event.target === overlay) closeGradebookScoreEditModal();
     };
     overlay.innerHTML = renderLmsGlassDialogCard({
         hookClass: 'gb-score-edit-card',
@@ -479,10 +522,15 @@ function openGradebookScoreEditModal(studentId, criterion, number, currentScore,
                 <textarea id="${reasonId}" class="lms-route-input" placeholder="Explain the score or leave feedback the student can read in their history."></textarea>
             </label>`,
         actionsHtml: `
-                <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-gradebook-click="close-score-edit">Cancel</button>
-                <button type="button" class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" data-gradebook-click="save-score-edit" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(criterion))}" data-gradebook-number="${escapeHtml(String(normalizeAssessmentNumber(number, 1)))}" data-gradebook-input-id="${escapeHtml(String(inputId))}" data-gradebook-reason-id="${escapeHtml(String(reasonId))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-save"></i> Save score</button>`
+                <button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-gradebook-click="close-score-edit">Cancel</button>
+                <button type="button" class="lux-primary-btn lux-glass-dialog-submit-btn" data-gradebook-click="save-score-edit" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(criterion))}" data-gradebook-number="${escapeHtml(String(normalizeAssessmentNumber(number, 1)))}" data-gradebook-input-id="${escapeHtml(String(inputId))}" data-gradebook-reason-id="${escapeHtml(String(reasonId))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-save"></i> Save score</button>`
     });
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
     setTimeout(() => document.getElementById(inputId)?.focus(), 20);
 }
 
@@ -806,11 +854,11 @@ function bindStandaloneGradebookShell() {
             return;
         }
         if (action === 'close-score-edit') {
-            document.getElementById('gradebook-score-edit-modal')?.remove();
+            closeGradebookScoreEditModal();
             return;
         }
         if (action === 'close-gradebook-comment') {
-            document.getElementById('gradebook-comment-modal')?.remove();
+            closeGradebookCommentModal();
             return;
         }
         if (action === 'close-category-history') {
@@ -1036,7 +1084,13 @@ function openStudentEvaluationHistoryModal(studentId, studentName = '', focusSec
         if (historyGrid) historyGrid.innerHTML = renderStudentEvaluationHistorySectionsV3(record, record.id, displayName, focusSectionKey, canEdit);
         return;
     }
-    if (existing) existing.remove();
+    if (existing) {
+        if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+            window.closeLuxGlassDialogOverlay(existing, { instant: true });
+        } else {
+            existing.remove();
+        }
+    }
 
     const overlay = document.createElement('div');
     overlay.id = 'student-evaluation-history-modal';
@@ -1070,6 +1124,11 @@ function openStudentEvaluationHistoryModal(studentId, studentName = '', focusSec
                 </div>`
     });
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function renderGradebookRosterSelection() {

@@ -897,7 +897,7 @@ function ensureChancelleryShell(root) {
     if (!root) return null;
     if (!root.querySelector('[data-chancellery-shell="1"]')) {
         root.innerHTML = `
-            <div class="lux-page-shell" data-chancellery-shell="1">
+            <div class="lux-page-shell" data-chancellery-shell="1" data-lux-glass-root="1">
                 <div id="chancellery-hero-region"></div>
                 <div id="chancellery-command-region"></div>
                 <div id="chancellery-content-region"></div>

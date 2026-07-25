@@ -59,7 +59,7 @@ describe('non-dashboard hard-clean (retired route skins purged)', () => {
         expect(bare).not.toContain('#lux-bg-canvas');
         // Global bare blur kill forbidden; scoped admin-tools page-shell demotion is OK.
         expect(bare).not.toMatch(/body\.lux-page-bare\s*\{[^}]*backdrop-filter:\s*none/);
-        expect(bare).toContain('body.lux-page-bare.lux-route-admin-tools #page-admin-tools.lux-page-shell');
+        expect(bare).toContain('.lux-page-shell[data-lux-layout-only="1"]');
         expect(bare).toContain('body.lux-page-bare');
         expect(bare).toContain('.lux-page-shell');
     });

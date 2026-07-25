@@ -1357,7 +1357,7 @@
             if (action === 'project-health-plan-pick-toggle-all') {
                 const runtime = state();
                 const mode = text(trigger.getAttribute('data-mode') || 'all');
-                const card = trigger.closest('.social-neo-dialog-card--health-plan-pick') || document;
+                const card = trigger.closest('.lux-glass-dialog-card--health-plan-pick') || document;
                 const visibleIds = Array.from(card.querySelectorAll?.('.sph-pick-row[data-task-id]') || [])
                     .map((el) => text(el.getAttribute('data-task-id')))
                     .filter(Boolean);

@@ -21,8 +21,9 @@ describe('login route regressions', () => {
         expect(html).not.toContain('assets/css/index-luxury.css');
         expect(html).not.toContain('assets/css/mobile-responsive.css');
         expect(html).toContain('assets/css/lux-tokens.css');
-        expect(html).toContain('assets/css/lux-surfaces.css');
-        expect(html).not.toContain('assets/css/lux-focus-panel.css');
+        expect(html).toContain('assets/css/lux-focus-panel.css');
+        expect(html).toContain('assets/css/lux-fouc-ht.css');
+        expect(html).not.toContain('assets/css/lux-surfaces.css');
         expect(html).toContain('assets/css/lux-controls.css');
         expect(html).not.toContain('assets/css/lux-layout-primitives.css');
         expect(html).not.toContain('assets/js/app/app.js');
@@ -33,7 +34,7 @@ describe('login route regressions', () => {
         expect(html).not.toContain('assets/js/shared/faculty.js');
         expect(html).toContain('assets/css/login-route.css');
         expect(html).toContain('assets/js/pages/login-runtime.js');
-        expect(html).toContain('class="login-page palette-obsidian-amber"');
+        expect(html).toContain('class="login-page lux-full-paint palette-obsidian-amber"');
         expect(html).not.toContain('onclick=');
         expect(html).toContain('data-login-tab="login"');
         expect(html).toContain('data-login-tab="activate"');

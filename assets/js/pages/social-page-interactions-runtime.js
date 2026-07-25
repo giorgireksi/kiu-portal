@@ -183,9 +183,9 @@ function patchPhotographyFollowButtons(userId, isFollowing) {
     if (!buttons.length) return false;
     const following = Boolean(isFollowing);
     buttons.forEach((btn) => {
-        btn.classList.toggle('social-neo-btn-primary', following);
-        btn.classList.toggle('social-neo-btn-ghost', !following);
-        const sm = btn.classList.contains('social-neo-btn-sm');
+        btn.classList.toggle('lux-primary-btn', following);
+        btn.classList.toggle('lux-secondary-btn', !following);
+        const sm = btn.classList.contains('lux-secondary-btn-sm');
         btn.textContent = following ? 'Following' : 'Follow';
         // preserve spacing for sm buttons that had only text
         if (!sm && following) {
@@ -210,7 +210,7 @@ function refreshPhotographyPanelStage() {
 const patchPostReactions = createSocialLazyStub('patchPostReactions', hasSocialFeedModule, ensureSocialFeedModule, false, null);
 function portfolioEditorFormRoot() {
     if (text(activeDialog()?.type || '') === 'portfolio-editor') {
-        return socialDialogRegion()?.querySelector('.social-neo-dialog-body--portfolio-editor') || null;
+        return socialDialogRegion()?.querySelector('.lux-glass-dialog-body--portfolio-editor') || null;
     }
     return document.getElementById('social-neo-center-region');
 }
@@ -327,8 +327,8 @@ function patchEventRsvpButtons(eventId) {
     buttons.forEach((btn) => {
         const status = text(btn.getAttribute('data-status'));
         const isActive = status === activeStatus;
-        btn.classList.toggle('social-neo-btn-primary', isActive);
-        btn.classList.toggle('social-neo-btn-ghost', !isActive);
+        btn.classList.toggle('lux-primary-btn', isActive);
+        btn.classList.toggle('lux-secondary-btn', !isActive);
     });
     return true;
 }
@@ -385,8 +385,8 @@ function patchPageFollowState(pageId) {
     if (!buttons.length) return false;
     const isFollowing = Boolean(page.isFollowing);
     buttons.forEach((button) => {
-        button.classList.toggle('social-neo-btn-primary', isFollowing);
-        button.classList.toggle('social-neo-btn-ghost', !isFollowing);
+        button.classList.toggle('lux-primary-btn', isFollowing);
+        button.classList.toggle('lux-secondary-btn', !isFollowing);
         const composeCta = button.closest('.social-neo-page-compose-block');
         button.innerHTML = composeCta
             ? '<i class="fas fa-plus"></i> Follow Page'

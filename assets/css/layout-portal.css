@@ -126,10 +126,13 @@
   align-items: stretch;
 }
 .portal-msg-panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,249,253,0.96));
-  border: 1px solid rgba(16, 32, 56, 0.08);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
   border-radius: 24px;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
   padding: 18px;
   min-height: 560px;
   display: flex;
@@ -158,11 +161,11 @@
 .portal-msg-panel-title, .portal-msg-dock-title, .portal-msg-thread-title { font-size: 16px; font-weight: 900; color: var(--lux-text); }
 .portal-msg-search, .portal-msg-textarea {
   width: 100%;
-  border: 1px solid rgba(16, 32, 56, 0.12);
+  border: 1px solid var(--lux-warmglass-border);
   border-radius: 16px;
   padding: 12px 14px;
   outline: none;
-  background: rgba(255,255,255,0.95);
+  background: var(--lux-warmglass-input);
   color: var(--lux-text);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
@@ -174,8 +177,8 @@
 .portal-msg-textarea { min-height: 104px; resize: vertical; }
 .portal-msg-textarea.is-compact { min-height: 88px; }
 .portal-msg-chip {
-  border: 1px solid rgba(16, 32, 56, 0.1);
-  background: rgba(248,250,252,0.96);
+  border: 1px solid var(--lux-warmglass-border);
+  background: var(--lux-warmglass-section);
   color: var(--lux-text);
   border-radius: 999px;
   padding: 8px 12px;
@@ -206,9 +209,9 @@
 }
 /* ── § msg-cards-threads ── */
 .portal-msg-card, .portal-msg-chat-item {
-  border: 1px solid rgba(16, 32, 56, 0.08);
+  border: 1px solid var(--lux-warmglass-border);
   border-radius: 18px;
-  background: rgba(255,255,255,0.98);
+  background: var(--lux-warmglass-section);
   padding: 12px;
   display: flex;
   align-items: center;
@@ -459,11 +462,12 @@
   max-width: calc(100vw - 24px);
   height: min(520px, calc(100vh - 110px));
   border-radius: 28px;
-  border: 1px solid rgba(16, 32, 56, 0.12);
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.24);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
   display: none;
   flex-direction: column;
   overflow: hidden;
@@ -484,8 +488,8 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 12px 14px;
-  border-top: 1px solid rgba(16, 32, 56, 0.08);
-  background: rgba(248, 250, 252, 0.96);
+  border-top: 1px solid var(--lux-warmglass-border);
+  background: var(--lux-warmglass-section);
 }
 .portal-notif-fab {
   border: none;
@@ -563,11 +567,12 @@
   max-width: calc(100vw - 24px);
   height: min(620px, calc(100vh - 110px));
   border-radius: 28px;
-  border: 1px solid rgba(16, 32, 56, 0.12);
-  background: rgba(255,255,255,0.98);
-  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.24);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
   display: none;
   flex-direction: column;
   overflow: hidden;
@@ -583,7 +588,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,248,252,0.96));
+  background: transparent;
 }
 .portal-msg-ghost-btn {
   width: 38px;
@@ -600,24 +605,44 @@
   inset: 0;
   z-index: 3500;
   pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--lux-popup-anim-close-duration) ease, visibility var(--lux-popup-anim-close-duration) ease;
 }
-.portal-msg-modal-overlay.is-open { pointer-events: auto; }
+.portal-msg-modal-overlay.is-open {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transition-duration: var(--lux-popup-anim-duration);
+}
 .portal-msg-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(3, 9, 20, 0.56);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--lux-warmglass-overlay-dark);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .portal-msg-modal-window {
   position: absolute;
   inset: 36px;
   border-radius: 34px;
   overflow: hidden;
-  background: rgba(255,255,255,0.98);
-  box-shadow: 0 34px 80px rgba(15, 23, 42, 0.34);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
   display: flex;
   flex-direction: column;
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
+  transition: transform var(--lux-popup-anim-close-duration) ease, opacity var(--lux-popup-anim-close-duration) ease;
+}
+.portal-msg-modal-overlay.is-open .portal-msg-modal-window {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  transition-duration: var(--lux-popup-anim-duration);
 }
 .portal-notif-modal-overlay {
   position: fixed;
@@ -626,30 +651,34 @@
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: opacity .18s ease, visibility .18s ease;
+  transition: opacity var(--lux-popup-anim-close-duration) ease, visibility var(--lux-popup-anim-close-duration) ease;
 }
-.portal-notif-modal-overlay.is-open { pointer-events: auto; opacity: 1; visibility: visible; }
+.portal-notif-modal-overlay.is-open { pointer-events: auto; opacity: 1; visibility: visible; transition-duration: var(--lux-popup-anim-duration); }
 .portal-notif-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(3, 9, 20, 0.56);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--lux-warmglass-overlay-dark);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .portal-notif-modal-window {
   position: absolute;
   inset: 36px;
   border-radius: 34px;
   overflow: hidden;
-  background: rgba(255,255,255,0.98);
-  box-shadow: 0 34px 80px rgba(15, 23, 42, 0.34);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
   display: flex;
   flex-direction: column;
-  transform: translateY(12px) scale(0.985);
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
   opacity: 0;
-  transition: transform .18s ease, opacity .18s ease;
+  transition: transform var(--lux-popup-anim-close-duration) ease, opacity var(--lux-popup-anim-close-duration) ease;
 }
-.portal-notif-modal-overlay.is-open .portal-notif-modal-window { transform: none; opacity: 1; }
+.portal-notif-modal-overlay.is-open .portal-notif-modal-window { transform: translateY(0) scale(1); opacity: 1; transition-duration: var(--lux-popup-anim-duration); }
 .portal-notif-modal-head {
   display: flex;
   align-items: flex-start;
@@ -683,7 +712,7 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,248,252,0.96));
+  background: transparent;
 }
 /* ── § call-overlay ── */
 .portal-call-overlay {
@@ -691,24 +720,44 @@
   inset: 0;
   z-index: 3600;
   pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--lux-popup-anim-close-duration) ease, visibility var(--lux-popup-anim-close-duration) ease;
 }
-.portal-call-overlay.is-open { pointer-events: auto; }
+.portal-call-overlay.is-open {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+  transition-duration: var(--lux-popup-anim-duration);
+}
 .portal-call-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(4, 11, 24, 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: var(--lux-warmglass-overlay-dark);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .portal-call-window {
   position: absolute;
   inset: 28px;
   border-radius: 34px;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(241,246,252,0.98));
-  box-shadow: 0 34px 80px rgba(2, 6, 23, 0.4);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
   display: flex;
   flex-direction: column;
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
+  transition: transform var(--lux-popup-anim-close-duration) ease, opacity var(--lux-popup-anim-close-duration) ease;
+}
+.portal-call-overlay.is-open .portal-call-window {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  transition-duration: var(--lux-popup-anim-duration);
 }
 .portal-call-head {
   display: flex;
@@ -878,24 +927,24 @@
 }
 .portal-msg-modal-head {
   padding: 18px 24px;
-  border-bottom: 1px solid rgba(16, 32, 56, 0.08);
-  background: linear-gradient(135deg, var(--lux-text), #f7fbff);
+  border-bottom: 1px solid var(--lux-warmglass-border);
+  background: var(--lux-warmglass-section);
 }
 .portal-msg-modal-body {
   flex: 1;
   min-height: 0;
   overflow: auto;
   padding: 22px;
-  background: linear-gradient(180deg, rgba(245,248,252,0.98), rgba(237,243,250,0.98));
+  background: transparent;
 }
 /* ── § msg-group ── */
 .portal-msg-group-overlay { position: fixed; inset: 0; z-index: 3650; }
 .portal-msg-group-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(4, 11, 24, 0.48);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: var(--lux-warmglass-overlay-dark);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .portal-msg-group-modal {
   position: absolute;
@@ -906,9 +955,12 @@
   max-height: min(82vh, 760px);
   overflow: hidden;
   border-radius: 30px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,248,252,0.98));
-  box-shadow: 0 34px 80px rgba(15, 23, 42, 0.28);
-  border: 1px solid rgba(16, 32, 56, 0.08);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
   display: flex;
   flex-direction: column;
 }
@@ -950,13 +1002,13 @@
 }
 .portal-msg-group-person {
   width: 100%;
-  border: 1px solid rgba(16, 32, 56, 0.08);
+  border: 1px solid var(--lux-warmglass-border);
   border-radius: 18px;
   padding: 12px;
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255,255,255,0.98);
+  background: var(--lux-warmglass-section);
   cursor: pointer;
   text-align: left;
 }
@@ -965,6 +1017,26 @@
   border-color: rgba(11,132,255,0.2);
 }
 .portal-msg-group-check { color: rgb(var(--lux-accent-rgb)); font-size: 18px; }
+:is(html.lux-light-mode, body.lux-light-mode) :is(
+  .portal-msg-modal-backdrop,
+  .portal-notif-modal-backdrop,
+  .portal-call-backdrop,
+  .portal-msg-group-backdrop
+) {
+  background: var(--lux-warmglass-overlay-light);
+}
+:is(html.lux-light-mode, body.lux-light-mode) :is(
+  .portal-msg-modal-window,
+  .portal-notif-modal-window,
+  .portal-call-window,
+  .portal-msg-group-modal,
+  .portal-msg-dock,
+  .portal-notif-dock,
+  .portal-msg-panel
+) {
+  border-color: var(--lux-warmglass-border);
+  box-shadow: var(--lux-warmglass-shadow-light);
+}
 body.lux-light-mode :is(.portal-msg-modal-window, .portal-msg-group-modal, .portal-notif-modal-body) :is(
   .portal-msg-modal-copy,
   .portal-msg-thread-copy,

@@ -295,31 +295,63 @@ function formatEctsProgress(max, completed = 0) {
     return `${safeMax}/${safeCompleted}`;
 }
 
-function closeStructuredFormModal() {
-    if (typeof window.__kiuStructuredFormCleanup === 'function') {
-        window.__kiuStructuredFormCleanup();
-        window.__kiuStructuredFormCleanup = null;
+function luxStructuredModalOverlayClass(extra = '') {
+    return `registration-structured-modal-backdrop lms-glass-dialog-overlay${extra ? ` ${extra}` : ''}`;
+}
+
+function closeLuxPortalModalEphemeral(modalId, cleanupKey) {
+    const cleanup = window[cleanupKey];
+    window[cleanupKey] = null;
+    const existing = document.getElementById(modalId);
+    if (!existing) {
+        if (typeof cleanup === 'function') cleanup();
+        return;
     }
-    const existing = document.getElementById('kiu-structured-form-modal');
-    if (existing) existing.remove();
+    const finish = () => {
+        if (typeof cleanup === 'function') cleanup();
+    };
+    if (typeof window.closeLuxPortalModal === 'function') {
+        window.closeLuxPortalModal(existing, { remove: true, onDone: finish });
+        return;
+    }
+    existing.remove();
+    finish();
+}
+
+function openLuxPortalModalAfterAppend(modal, options = {}) {
+    if (!modal) return;
+    if (typeof window.openLuxPortalModal === 'function') {
+        window.openLuxPortalModal(modal, options);
+        return;
+    }
+    const { focusSelector, scrollLock = true } = options;
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    if (scrollLock) document.body.style.overflow = 'hidden';
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(modal);
+    } else {
+        modal.classList.remove('is-closing');
+        modal.classList.add('is-open');
+    }
+    if (focusSelector) {
+        window.setTimeout(() => {
+            const focusTarget = modal.querySelector(focusSelector);
+            if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+        }, 0);
+    }
+}
+
+function closeStructuredFormModal() {
+    closeLuxPortalModalEphemeral('kiu-structured-form-modal', '__kiuStructuredFormCleanup');
 }
 
 function closeAdminRegManageModal() {
-    if (typeof window.__kiuAdminRegManageCleanup === 'function') {
-        window.__kiuAdminRegManageCleanup();
-        window.__kiuAdminRegManageCleanup = null;
-    }
-    const existing = document.getElementById('kiu-admin-reg-manage-modal');
-    if (existing) existing.remove();
+    closeLuxPortalModalEphemeral('kiu-admin-reg-manage-modal', '__kiuAdminRegManageCleanup');
 }
 
 function closeLuxuryConfirmModal() {
-    if (typeof window.__kiuLuxuryConfirmCleanup === 'function') {
-        window.__kiuLuxuryConfirmCleanup();
-        window.__kiuLuxuryConfirmCleanup = null;
-    }
-    const existing = document.getElementById('kiu-luxury-confirm-modal');
-    if (existing) existing.remove();
+    closeLuxPortalModalEphemeral('kiu-luxury-confirm-modal', '__kiuLuxuryConfirmCleanup');
 }
 
 function openLuxuryConfirmModal(config = {}) {
@@ -336,23 +368,24 @@ function openLuxuryConfirmModal(config = {}) {
 
     const modal = document.createElement('div');
     modal.id = 'kiu-luxury-confirm-modal';
-    modal.className = 'registration-structured-modal-backdrop';
+    modal.className = luxStructuredModalOverlayClass();
+    modal.setAttribute('data-lux-transparency-exempt', '1');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
 
     const card = document.createElement('div');
-    card.className = 'social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create';
+    card.className = 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card';
     card.dataset.luxTransparencyExempt = '1';
     card.dataset.luxGlassRoot = '1';
 
     const head = document.createElement('div');
-    head.className = 'social-neo-section-head social-neo-dialog-head';
+    head.className = 'lux-glass-dialog-section-head lux-glass-dialog-head';
 
     const heading = document.createElement('div');
-    heading.className = 'social-neo-dialog-heading';
+    heading.className = 'lux-glass-dialog-heading';
 
     const titleStrong = document.createElement('strong');
-    titleStrong.className = 'social-neo-dialog-title';
+    titleStrong.className = 'lux-glass-dialog-title';
     const titleIcon = document.createElement('i');
     titleIcon.className = `fas ${danger ? 'fa-triangle-exclamation' : 'fa-circle-question'}`;
     titleIcon.setAttribute('aria-hidden', 'true');
@@ -361,14 +394,14 @@ function openLuxuryConfirmModal(config = {}) {
     titleStrong.append(titleIcon, document.createTextNode(' '), titleText);
 
     const subtitleEl = document.createElement('span');
-    subtitleEl.className = 'social-neo-dialog-subtitle';
+    subtitleEl.className = 'lux-glass-dialog-subtitle';
     subtitleEl.textContent = subtitle || 'Please confirm this action.';
 
     heading.append(titleStrong, subtitleEl);
 
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
-    closeButton.className = 'lux-ghost-btn social-neo-dialog-close-btn';
+    closeButton.className = 'lux-ghost-btn lux-glass-dialog-close-btn';
     closeButton.setAttribute('aria-label', 'Close');
     const closeIcon = document.createElement('i');
     closeIcon.className = 'fas fa-times';
@@ -377,23 +410,23 @@ function openLuxuryConfirmModal(config = {}) {
     head.append(heading, closeButton);
 
     const body = document.createElement('div');
-    body.className = 'social-neo-dialog-body social-neo-dialog-body--event-create';
+    body.className = 'lux-glass-dialog-body lux-glass-dialog-body--event-create';
     const messageCopy = document.createElement('div');
-    messageCopy.className = 'social-neo-dialog-preview-copy';
+    messageCopy.className = 'lux-glass-dialog-preview-copy';
     messageCopy.textContent = message;
     body.appendChild(messageCopy);
 
     const footer = document.createElement('div');
-    footer.className = 'social-neo-dialog-actions';
+    footer.className = 'lux-glass-dialog-actions';
 
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
-    cancelButton.className = 'lux-ghost-btn social-neo-dialog-cancel-btn';
+    cancelButton.className = 'lux-ghost-btn lux-glass-dialog-cancel-btn';
     cancelButton.textContent = 'Cancel';
 
     const confirmButton = document.createElement('button');
     confirmButton.type = 'button';
-    confirmButton.className = `lux-primary-btn social-neo-dialog-submit-btn${danger ? ' social-neo-dialog-submit-btn--danger' : ''}`;
+    confirmButton.className = `lux-primary-btn lux-glass-dialog-submit-btn${danger ? ' lux-glass-dialog-submit-btn--danger' : ''}`;
     confirmButton.textContent = confirmLabel;
 
     footer.append(cancelButton, confirmButton);
@@ -429,9 +462,7 @@ function openLuxuryConfirmModal(config = {}) {
         if (event.target === modal) close();
     });
 
-    setTimeout(() => {
-        if (typeof confirmButton.focus === 'function') confirmButton.focus();
-    }, 0);
+    openLuxPortalModalAfterAppend(modal, { focusSelector: '.lux-glass-dialog-submit-btn' });
 }
 
 function resolveAdminRegManageTitleIcon({ title } = {}) {
@@ -455,24 +486,24 @@ function openAdminRegManageModal({
 
     const modal = document.createElement('div');
     modal.id = 'kiu-admin-reg-manage-modal';
-    modal.className = 'registration-structured-modal-backdrop admin-reg-manage-modal-backdrop';
+    modal.className = luxStructuredModalOverlayClass('admin-reg-manage-modal-backdrop');
     modal.setAttribute('data-lux-transparency-exempt', '1');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
 
     const card = document.createElement('div');
-    card.className = 'social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create';
+    card.className = 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card';
     card.dataset.luxTransparencyExempt = '1';
     card.dataset.luxGlassRoot = '1';
 
     const head = document.createElement('div');
-    head.className = 'social-neo-section-head social-neo-dialog-head';
+    head.className = 'lux-glass-dialog-section-head lux-glass-dialog-head';
 
     const heading = document.createElement('div');
-    heading.className = 'social-neo-dialog-heading';
+    heading.className = 'lux-glass-dialog-heading';
 
     const titleStrong = document.createElement('strong');
-    titleStrong.className = 'social-neo-dialog-title';
+    titleStrong.className = 'lux-glass-dialog-title';
     const titleIcon = document.createElement('i');
     titleIcon.className = `fas ${resolveAdminRegManageTitleIcon({ title })}`;
     titleIcon.setAttribute('aria-hidden', 'true');
@@ -481,14 +512,14 @@ function openAdminRegManageModal({
     titleStrong.append(titleIcon, document.createTextNode(' '), titleText);
 
     const subtitleEl = document.createElement('span');
-    subtitleEl.className = 'social-neo-dialog-subtitle';
+    subtitleEl.className = 'lux-glass-dialog-subtitle';
     subtitleEl.textContent = subtitle || 'Choose an action for this item.';
 
     heading.append(titleStrong, subtitleEl);
 
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
-    closeButton.className = 'lux-ghost-btn social-neo-dialog-close-btn';
+    closeButton.className = 'lux-ghost-btn lux-glass-dialog-close-btn';
     closeButton.setAttribute('aria-label', 'Close');
     const closeIcon = document.createElement('i');
     closeIcon.className = 'fas fa-times';
@@ -497,7 +528,7 @@ function openAdminRegManageModal({
     head.append(heading, closeButton);
 
     const body = document.createElement('div');
-    body.className = 'social-neo-dialog-body social-neo-dialog-body--event-create';
+    body.className = 'lux-glass-dialog-body lux-glass-dialog-body--event-create';
     const actions = document.createElement('div');
     actions.className = 'admin-reg-manage-modal-actions';
 
@@ -533,10 +564,10 @@ function openAdminRegManageModal({
     body.appendChild(actions);
 
     const footer = document.createElement('div');
-    footer.className = 'social-neo-form-actions social-neo-dialog-actions';
+    footer.className = 'lux-glass-dialog-form-actions lux-glass-dialog-actions';
     const dismissButton = document.createElement('button');
     dismissButton.type = 'button';
-    dismissButton.className = 'lux-ghost-btn social-neo-dialog-cancel-btn';
+    dismissButton.className = 'lux-ghost-btn lux-glass-dialog-cancel-btn';
     dismissButton.textContent = 'Close';
     footer.appendChild(dismissButton);
 
@@ -565,9 +596,7 @@ function openAdminRegManageModal({
         if (event.target === modal) close();
     });
 
-    setTimeout(() => {
-        if (typeof editButton.focus === 'function') editButton.focus();
-    }, 0);
+    openLuxPortalModalAfterAppend(modal, { focusSelector: '.admin-reg-manage-modal-action' });
 }
 
 function jsQuote(value) {
@@ -594,7 +623,7 @@ function resolveStructuredFormTitleIcon(config) {
 function buildStructuredFormFieldNode(field) {
     const id = field.name;
     const wrapper = document.createElement('label');
-    wrapper.className = 'social-neo-dialog-field';
+    wrapper.className = 'lux-glass-dialog-field';
     wrapper.htmlFor = id;
 
     const label = document.createElement('span');
@@ -651,23 +680,23 @@ function openStructuredFormModal(config) {
     const fields = config.fields || [];
     const modal = document.createElement('div');
     modal.id = 'kiu-structured-form-modal';
-    modal.className = 'registration-structured-modal-backdrop';
+    modal.className = luxStructuredModalOverlayClass();
     modal.setAttribute('data-lux-transparency-exempt', '1');
 
     const form = document.createElement('form');
     form.id = 'kiu-structured-form';
-    form.className = 'social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create';
+    form.className = 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card';
     form.dataset.luxTransparencyExempt = '1';
     form.dataset.luxGlassRoot = '1';
 
     const head = document.createElement('div');
-    head.className = 'social-neo-section-head social-neo-dialog-head';
+    head.className = 'lux-glass-dialog-section-head lux-glass-dialog-head';
 
     const heading = document.createElement('div');
-    heading.className = 'social-neo-dialog-heading';
+    heading.className = 'lux-glass-dialog-heading';
 
     const titleStrong = document.createElement('strong');
-    titleStrong.className = 'social-neo-dialog-title';
+    titleStrong.className = 'lux-glass-dialog-title';
     const titleIcon = document.createElement('i');
     titleIcon.className = `fas ${resolveStructuredFormTitleIcon(config)}`;
     titleIcon.setAttribute('aria-hidden', 'true');
@@ -676,7 +705,7 @@ function openStructuredFormModal(config) {
     titleStrong.append(titleIcon, document.createTextNode(' '), titleText);
 
     const subtitle = document.createElement('span');
-    subtitle.className = 'social-neo-dialog-subtitle';
+    subtitle.className = 'lux-glass-dialog-subtitle';
     subtitle.textContent = config.subtitle || 'Fill in the details below.';
 
     heading.append(titleStrong, subtitle);
@@ -684,7 +713,7 @@ function openStructuredFormModal(config) {
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
     closeButton.id = 'kiu-structured-form-close';
-    closeButton.className = 'lux-ghost-btn social-neo-dialog-close-btn';
+    closeButton.className = 'lux-ghost-btn lux-glass-dialog-close-btn';
     closeButton.setAttribute('aria-label', 'Close');
     const closeIcon = document.createElement('i');
     closeIcon.className = 'fas fa-times';
@@ -693,7 +722,7 @@ function openStructuredFormModal(config) {
     head.append(heading, closeButton);
 
     const body = document.createElement('div');
-    body.className = 'social-neo-dialog-body social-neo-dialog-body--event-create lux-scrollbar';
+    body.className = 'lux-glass-dialog-body lux-glass-dialog-body--event-create lux-scrollbar';
 
     const grid = document.createElement('div');
     grid.className = `social-neo-form-grid${fields.length >= 2 ? ' social-neo-form-grid-2' : ''}`;
@@ -701,17 +730,17 @@ function openStructuredFormModal(config) {
     body.appendChild(grid);
 
     const footer = document.createElement('div');
-    footer.className = 'social-neo-form-actions social-neo-dialog-actions';
+    footer.className = 'lux-glass-dialog-form-actions lux-glass-dialog-actions';
 
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
     cancelButton.id = 'kiu-structured-form-cancel';
-    cancelButton.className = 'lux-ghost-btn social-neo-dialog-cancel-btn';
+    cancelButton.className = 'lux-ghost-btn lux-glass-dialog-cancel-btn';
     cancelButton.textContent = 'Cancel';
 
     const submitButton = document.createElement('button');
     submitButton.type = 'submit';
-    submitButton.className = 'lux-primary-btn social-neo-dialog-submit-btn';
+    submitButton.className = 'lux-primary-btn lux-glass-dialog-submit-btn';
     submitButton.textContent = config.submitLabel || 'Save';
 
     footer.append(cancelButton, submitButton);
@@ -761,10 +790,7 @@ function openStructuredFormModal(config) {
         });
     }
 
-    setTimeout(() => {
-        const firstField = modal?.querySelector('input, textarea, select');
-        if (firstField && typeof firstField.focus === 'function') firstField.focus();
-    }, 0);
+    openLuxPortalModalAfterAppend(modal, { focusSelector: 'input, textarea, select' });
 }
 
 function getCourseEctsValue(course) {
@@ -1769,6 +1795,8 @@ __kiuRegSharedExpose({
     buildAdminRegSubjectRemoveVerification,
     openAdminRegManageModal,
     closeAdminRegManageModal,
+    openStructuredFormModal,
+    closeStructuredFormModal,
     openLuxuryConfirmModal,
     closeLuxuryConfirmModal,
     purgeStudentRegistrationTrackSelectionForTab,

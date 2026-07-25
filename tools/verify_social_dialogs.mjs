@@ -274,35 +274,35 @@ const DIALOG_CASES = [
         id: 'survey-create',
         action: 'survey-create-open',
         panel: 'surveys',
-        card: '.social-neo-dialog-card--survey-create',
+        card: '.lux-glass-dialog-card--survey-create',
         ready: () => Boolean(document.querySelector('[data-action="survey-create-open"]'))
     },
     {
         id: 'event-create',
         action: 'event-create-open',
         panel: 'events',
-        card: '.social-neo-dialog-card--event-create',
+        card: '.lux-glass-dialog-card--event-create',
         ready: () => Boolean(document.querySelector('[data-action="event-create-open"]'))
     },
     {
         id: 'page-create',
         action: 'page-create-open',
         panel: 'pages',
-        card: '.social-neo-dialog-card--page-create',
+        card: '.lux-glass-dialog-card--page-create',
         ready: () => Boolean(document.querySelector('[data-action="page-create-open"]'))
     },
     {
         id: 'portfolio-editor',
         action: 'portfolio-create-open',
         panel: 'projects',
-        card: '.social-neo-dialog-card--portfolio-editor',
+        card: '.lux-glass-dialog-card--portfolio-editor',
         ready: () => Boolean(document.querySelector('[data-action="portfolio-create-open"]'))
     },
     {
         id: 'lost-found-create',
         action: 'lost-found-create-open',
         panel: 'lost-and-found',
-        card: '.social-neo-dialog-card--lost-found-create',
+        card: '.lux-glass-dialog-card--lost-found-create',
         ready: () => Boolean(document.querySelector('[data-action="lost-found-create-open"]'))
     }
 ];
@@ -332,7 +332,7 @@ async function waitForPanelReady(page, condition, timeout = 15000) {
 
 async function waitForDialogCard(page, cardSelector, timeout = 10000) {
     await page.waitForFunction(
-        (selector) => Boolean(document.querySelector(`#social-neo-overlay-portal ${selector}, .social-neo-dialog-backdrop ${selector}`)),
+        (selector) => Boolean(document.querySelector(`#social-neo-overlay-portal ${selector}, .lux-glass-dialog-backdrop ${selector}`)),
         cardSelector,
         { timeout }
     );
@@ -341,22 +341,22 @@ async function waitForDialogCard(page, cardSelector, timeout = 10000) {
 async function dialogCardVisible(page, cardSelector) {
     return page.evaluate((selector) => {
         const node = document.querySelector(`#social-neo-overlay-portal ${selector}`)
-            || document.querySelector(`.social-neo-dialog-backdrop ${selector}`);
+            || document.querySelector(`.lux-glass-dialog-backdrop ${selector}`);
         if (!node) return false;
-        const backdrop = node.closest('.social-neo-dialog-backdrop');
+        const backdrop = node.closest('.lux-glass-dialog-backdrop');
         const style = backdrop ? getComputedStyle(backdrop) : getComputedStyle(node);
         return style.display !== 'none' && style.visibility !== 'hidden';
     }, cardSelector);
 }
 
 async function closeDialog(page, cardSelector) {
-    const closeButton = page.locator(`${cardSelector} .social-neo-dialog-close-btn[data-action="dialog-close"], ${cardSelector} [data-action="dialog-close"].social-neo-dialog-cancel-btn`).first();
+    const closeButton = page.locator(`${cardSelector} .lux-glass-dialog-close-btn[data-action="dialog-close"], ${cardSelector} [data-action="dialog-close"].lux-glass-dialog-cancel-btn`).first();
     await closeButton.waitFor({ state: 'visible', timeout: 5000 });
     await closeButton.evaluate((node) => node.click());
     await page.waitForFunction(
         (selector) => {
             const node = document.querySelector(`#social-neo-overlay-portal ${selector}`)
-                || document.querySelector(`.social-neo-dialog-backdrop ${selector}`);
+                || document.querySelector(`.lux-glass-dialog-backdrop ${selector}`);
             return !node;
         },
         cardSelector,

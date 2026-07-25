@@ -14,7 +14,7 @@ function ensureLayoutPortalCss() {
     if (existing) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'assets/css/layout-portal.css?v=20260720-readable6500';
+    link.href = 'assets/css/layout-portal.css?v=20260725-legacypurge2';
     link.setAttribute('data-kiu-layout-portal', '1');
     document.head.appendChild(link);
 }

@@ -1,7 +1,7 @@
 
 function ensureLuxModalsCss() {
     if (typeof document === 'undefined') return;
-    const href = 'assets/css/lux-modals.css?v=20260723-gpuperf4k';
+    const href = 'assets/css/lux-modals.css?v=20260725-legacypurge3';
     const existing = document.querySelector('link[data-kiu-lux-modals], link[href*="lux-modals.css"]');
     if (existing) {
         if (existing.getAttribute('href') !== href) existing.setAttribute('href', href);
@@ -66,7 +66,7 @@ const INDEX_SYLLABUS_FILE_ROWS = [
     'Introduction to Probability and Statistics_Spring 2026.pdf'
 ];
 
-const LUX_MODAL_CLOSE_MS = 180;
+const LUX_MODAL_CLOSE_MS = typeof window.LUX_POPUP_CLOSE_MS === 'number' ? window.LUX_POPUP_CLOSE_MS : 180;
 let luxModalCloseTimer = 0;
 
 function ensureModalOverlayBindings() {
@@ -251,7 +251,10 @@ function openModal_ensureCss(type, title, body) {
     window.clearTimeout(luxModalCloseTimer);
     overlay.classList.remove('is-closing');
     overlay.hidden = false;
-    overlay.classList.add('active');
+    const scheduleOpen = typeof window.requestAnimationFrame === 'function'
+        ? window.requestAnimationFrame.bind(window)
+        : (cb) => window.setTimeout(cb, 0);
+    scheduleOpen(() => scheduleOpen(() => overlay.classList.add('active')));
     if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
         const scheduleRefresh = typeof window.requestAnimationFrame === 'function'
             ? window.requestAnimationFrame.bind(window)

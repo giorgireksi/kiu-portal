@@ -12,12 +12,15 @@ describe('route panel transparency parity', () => {
     const utilitiesSource = readSource('assets/js/shared/utilities.js');
     const shellCss = readCss('assets/css/lux-shell.css');
 
-    it('includes social, staff, and students-admin selectors in the paint list', () => {
-        expect(transparencySource).toContain('...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS');
-        expect(transparencySource).toContain('...STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS');
-        expect(transparencySource).toContain('...STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS');
-        expect(transparencySource).toContain("'.staff-hub-command-panel'");
-        expect(transparencySource).toContain("'.staff-hub-metric-card'");
+    it('discovers social, staff, and students-admin via isRouteOwnedSurface', () => {
+        expect(transparencySource).toContain('function appendRouteOwnedSurfaces');
+        expect(transparencySource).toContain('function isRouteOwnedSurface(el)');
+        expect(transparencySource).toContain("document.body.classList.contains('lux-route-staff')");
+        expect(transparencySource).toContain("document.body.classList.contains('lux-route-students-admin')");
+        expect(transparencySource).toContain('staff-hub-');
+        expect(transparencySource).toContain('students-hub-');
+        expect(transparencySource).not.toContain('STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS');
+        expect(transparencySource).not.toContain('registrationGlassSelectors');
     });
 
     it('does not treat staff or social panels as structural surfaces', () => {
@@ -29,7 +32,8 @@ describe('route panel transparency parity', () => {
     });
 
     it('enables dynamic paint on route panels via shouldApplyDynamicBackground', () => {
-        expect(transparencySource).toContain('const shouldApplyDynamicBackground = (el) =>');
+        expect(transparencySource).toContain('function shouldApplyDynamicBackground(el)');
+        expect(transparencySource).toContain('function isRouteOwnedSurface(el)');
         expect(transparencySource).toContain("document.body.classList.contains('lux-route-social')");
         expect(transparencySource).toContain("document.body.classList.contains('lux-route-staff')");
         expect(transparencySource).toContain("document.body.classList.contains('lux-route-students-admin')");
@@ -71,10 +75,11 @@ describe('route panel transparency parity', () => {
     });
 
     it('applies single blur layer on social via blur hosts only', () => {
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         expect(routeRuntime).toContain('function isSocialBlurHost(el)');
         expect(transparencySource).toContain('const SOCIAL_BLUR_HOST_CLASSES = new Set([');
-        expect(transparencySource).toContain('const isSocialBlurHost = window.isSocialBlurHost');
+        expect(transparencySource).toContain('Object.assign(window, {');
+        expect(transparencySource).toContain('isSocialBlurHost');
         const blurHostBlock = transparencySource.match(
             /const SOCIAL_BLUR_HOST_CLASSES = new Set\(\[([\s\S]*?)\]\);/
         )?.[1] || '';
@@ -84,8 +89,9 @@ describe('route panel transparency parity', () => {
 
     it('applies merged-shell frost on loading grid and desk host', () => {
         const homeCss = readSource('assets/css/index-home-role.css');
+        const foucCss = readSource('assets/css/lux-fouc-ht.css');
         expect(transparencySource).toContain('isHomeWidgetInnerPanel');
-        expect(homeCss).toContain('.lux-home-merged.lux-soft-chrome');
+        expect(foucCss).toContain('[data-lux-glass-root="1"]');
         expect(homeCss).toContain('#page-home #lux-home-shell .lux-home-merged');
     });
 

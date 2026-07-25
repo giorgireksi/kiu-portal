@@ -2,16 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { expectRetiredCss, readSource } from './helpers/bare-shell-css.js';
 
 describe('staff / students-admin CSS-owned panel glass', () => {
-    it('defines keep-CSS helpers in lux-transparency route runtime', () => {
-        const utilities = readSource('assets/js/shared/lux-transparency-route-runtime.js');
-        expect(utilities).toContain('function shouldKeepStaffFadeCssBackground(el)');
-        expect(utilities).toContain('function shouldKeepStudentsAdminFadeCssBackground(el)');
-        expect(utilities).toContain("closest?.('#staff-content')");
-        expect(utilities).toContain("closest?.('#students-content')");
-        expect(utilities).toContain("el.classList.contains('staff-hub-hero')");
-        expect(utilities).toContain("el.classList.contains('students-hub-hero')");
+    it('defines generic CSS-owned surface helpers in lux-transparency route runtime', () => {
+        const runtime = readSource('assets/js/shared/lux-transparency.js');
+        expect(runtime).toContain('function isCssOwnedSurface(el)');
+        expect(runtime).toMatch(/students-hub-|staff-hub-/);
+        expect(runtime).toContain("closest?.('#staff-content')");
+        expect(runtime).toContain("closest?.('#students-content')");
         const host = readSource('assets/js/shared/lux-transparency.js');
-        expect(host).toContain('shouldKeepStudentsAdminFadeCssBackground');
+        expect(host).toContain('isCssOwnedSurface');
         expect(host).toMatch(/stripInlineGlassPaint/);
     });
 

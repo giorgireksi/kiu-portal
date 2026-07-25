@@ -124,7 +124,7 @@
                 <div class="social-neo-pages-hero-header">
                     <div class="social-neo-pages-hero-head">
                         <div class="social-neo-pages-hero-actions">
-                            <button class="social-neo-btn social-neo-btn-primary social-neo-pages-create-trigger" type="button" data-action="page-create-open">
+                            <button class="lux-primary-btn social-neo-pages-create-trigger" type="button" data-action="page-create-open">
                                 <i class="fas fa-plus"></i> Create Page
                             </button>
                         </div>
@@ -149,7 +149,7 @@
                         <span class="social-neo-label">Search pages</span>
                         <input class="social-neo-input" id="${escape(pagesSearchId)}" name="pagesSearch" type="search" placeholder="Search pages by name, category, or bio..." data-bind="pages-search" value="${escape(pageSearchValue)}" autocomplete="off">
                     </label>
-                    <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-search"></i> Search</button>
+                    <button class="lux-primary-btn" type="submit"><i class="fas fa-search"></i> Search</button>
                 </form>
                 <div class="social-neo-pages-grid">
                     ${gridMarkup}
@@ -172,14 +172,14 @@
                 ? 'Follow pages to keep their official and community posts close.'
                 : 'Use Create Page to launch the first page in this space.';
         const cta = hasSearch
-            ? `<div class="social-neo-form-actions social-neo-form-actions-mt-14">
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="pages-search-clear">
+            ? `<div class="lux-glass-dialog-form-actions lux-glass-dialog-form-actions-mt-14">
+                <button class="lux-secondary-btn" type="button" data-action="pages-search-clear">
                     <i class="fas fa-times"></i> Clear search
                 </button>
             </div>`
             : activeTab === 'following'
-                ? `<div class="social-neo-form-actions social-neo-form-actions-mt-14">
-                    <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="panel-pages" data-pages-tab="discover">
+                ? `<div class="lux-glass-dialog-form-actions lux-glass-dialog-form-actions-mt-14">
+                    <button class="lux-primary-btn" type="button" data-action="panel-pages" data-pages-tab="discover">
                         <i class="fas fa-compass"></i> Browse Discover
                     </button>
                 </div>`
@@ -204,7 +204,7 @@
                             <strong>Join the conversation</strong>
                             <span>Follow this page first if you want to publish a community post.</span>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
+                        <button class="lux-primary-btn" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
                             <i class="fas fa-plus"></i> Follow Page
                         </button>
                     </div>
@@ -222,7 +222,7 @@
                         <strong>${escape(title)}</strong>
                         <span>${escape(subtitle)}</span>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-page-compose-open-btn" type="button" data-action="page-post-compose-open" data-page-id="${escape(text(page?.id))}">
+                    <button class="lux-primary-btn social-neo-page-compose-open-btn" type="button" data-action="page-post-compose-open" data-page-id="${escape(text(page?.id))}">
                         <i class="fas fa-pen"></i> Write post
                     </button>
                 </div>
@@ -336,14 +336,14 @@
                             ${isManagedPage(page) ? '<span class="social-neo-pill">Managed by you</span>' : ''}
                         </div>
                         <div class="social-neo-page-card-actions">
-                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="page-open-profile" data-page-id="${escape(text(page?.id))}">
+                            <button class="lux-secondary-btn" type="button" data-action="page-open-profile" data-page-id="${escape(text(page?.id))}">
                                 <i class="fas fa-globe"></i> Open Page
                             </button>
-                            <button class="social-neo-btn ${page?.isFollowing ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
+                            <button class="lux-secondary-btn ${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
                                 <i class="fas ${page?.isFollowing ? 'fa-check' : 'fa-plus'}"></i> ${page?.isFollowing ? 'Following' : 'Follow'}
                             </button>
-                            ${actionHref ? `<a class="social-neo-btn social-neo-btn-ghost" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
-                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="page-report" data-page-id="${escape(text(page?.id))}">
+                            ${actionHref ? `<a class="lux-secondary-btn" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
+                            <button class="lux-secondary-btn" type="button" data-action="page-report" data-page-id="${escape(text(page?.id))}">
                                 <i class="fas fa-flag"></i> Report
                             </button>
                         </div>
@@ -376,7 +376,7 @@
                                 <strong>Edit page profile</strong>
                                 <span>Update branding, contact details, and the public page summary.</span>
                             </div>
-                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="page-profile-edit-cancel">
+                            <button class="lux-secondary-btn" type="button" data-action="page-profile-edit-cancel">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
                         </div>
@@ -398,8 +398,8 @@
                             <label><span class="social-neo-label">Primary action label</span><input class="social-neo-input" type="text" name="pageActionLabel" value="${escape(text(runtime.ui?.pageActionLabel || page?.actionLabel || ''))}"></label>
                             <label class="social-neo-grid-col-span-all"><span class="social-neo-label">Primary action URL</span><input class="social-neo-input" type="url" name="pageActionUrl" value="${escape(text(runtime.ui?.pageActionUrl || page?.actionUrl || ''))}"></label>
                         </div>
-                        <div class="social-neo-form-actions">
-                            <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-save"></i> Save Page</button>
+                        <div class="lux-glass-dialog-form-actions">
+                            <button class="lux-primary-btn" type="submit"><i class="fas fa-save"></i> Save Page</button>
                         </div>
                     </form>
                 `;
@@ -414,7 +414,7 @@
                                 <span>${escape(text(page?.tagline || 'Public profile information and contact details.'))}</span>
                             </div>
                             ${page?.isManager ? `
-                                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="page-profile-edit-toggle" data-page-id="${escape(text(page?.id))}">
+                                <button class="lux-secondary-btn" type="button" data-action="page-profile-edit-toggle" data-page-id="${escape(text(page?.id))}">
                                     <i class="fas fa-pen"></i> Edit page
                                 </button>
                             ` : ''}
@@ -437,7 +437,7 @@
                             <div><strong>${escape(adminIds.length)}</strong><span>Admins</span></div>
                             <div><strong>${escape(page?.followerCount || followerIds.length || 0)}</strong><span>Followers</span></div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-page-people-open" type="button" data-action="page-members-open" data-page-id="${escape(text(page?.id))}">
+                        <button class="lux-secondary-btn social-neo-page-people-open" type="button" data-action="page-members-open" data-page-id="${escape(text(page?.id))}">
                             <i class="fas fa-users"></i> View page members
                         </button>
                     </article>
@@ -455,7 +455,7 @@
                     <article class="social-neo-card social-neo-page-profile">
                         <div class="social-neo-page-cover">
                             ${coverSrc ? `<img src="${escape(coverSrc)}" alt="${escape(text(page?.name || 'Page'))} cover">` : '<div class="social-neo-page-card-cover-fallback"></div>'}
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-page-profile-back" type="button" data-action="page-profile-back">
+                            <button class="lux-secondary-btn social-neo-page-profile-back" type="button" data-action="page-profile-back">
                                 <i class="fas fa-arrow-left"></i> Back to pages
                             </button>
                         </div>
@@ -475,11 +475,11 @@
                                 </div>
                             </div>
                             <div class="social-neo-page-profile-actions">
-                                <button class="social-neo-btn ${page?.isFollowing ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
+                                <button class="lux-secondary-btn ${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
                                     <i class="fas ${page?.isFollowing ? 'fa-check' : 'fa-plus'}"></i> ${page?.isFollowing ? 'Following' : 'Follow'}
                                 </button>
-                                ${actionHref ? `<a class="social-neo-btn social-neo-btn-ghost" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
-                                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="page-report" data-page-id="${escape(text(page?.id))}">
+                                ${actionHref ? `<a class="lux-secondary-btn" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
+                                <button class="lux-secondary-btn" type="button" data-action="page-report" data-page-id="${escape(text(page?.id))}">
                                     <i class="fas fa-flag"></i> Report
                                 </button>
                             </div>
@@ -547,11 +547,11 @@
         const categories = ['Technology', 'Entertainment', 'Gaming', 'Sports', 'Education', 'Business', 'Community', 'Media', 'Campus'];
         const pageType = text(runtime.ui?.pageType || 'brand') || 'brand';
         const pageVisibility = text(runtime.ui?.pageVisibility || 'public') || 'public';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--page-create social-neo-dialog-card--lms-create" data-form="create-page" data-action="noop" data-lux-transparency-exempt="1">
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--page-create lux-glass-dialog-card" data-form="create-page" data-action="noop" data-lux-transparency-exempt="1">
                 ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create page', 'Build a public-facing page for a brand, product, club, department, or official campus team.', { icon: 'fas fa-flag' }) : ''}
-                <div class="social-neo-dialog-body social-neo-dialog-body--page-create">
-                    <div class="social-neo-pages-wizard-steps social-neo-dialog-page-create-steps">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--page-create">
+                    <div class="social-neo-pages-wizard-steps lux-glass-dialog-page-create-steps">
                         ${[
                             ['1', 'Basics'],
                             ['2', 'Branding'],
@@ -567,17 +567,17 @@
                     </div>
                     ${wizardStep === 1 ? `
                         <div class="social-neo-form-grid social-neo-pages-form-grid">
-                            <label class="social-neo-dialog-field" for="${escape(pageNameId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageNameId)}">
                                 <span class="social-neo-label">Page name</span>
                                 <input class="social-neo-input" id="${escape(pageNameId)}" type="text" name="pageName" placeholder="Apple, Netflix, Fortnite..." value="${escape(text(runtime.ui?.pageName || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageCategoryId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageCategoryId)}">
                                 <span class="social-neo-label">Category</span>
                                 <select class="social-neo-select" id="${escape(pageCategoryId)}" name="pageCategory" data-lux-picker>
                                     ${categories.map((category) => `<option value="${escape(category)}" ${text(runtime.ui?.pageCategory || '') === category ? 'selected' : ''}>${escape(category)}</option>`).join('')}
                                 </select>
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageTypeId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageTypeId)}">
                                 <span class="social-neo-label">Page type</span>
                                 <select class="social-neo-select" id="${escape(pageTypeId)}" name="pageType" data-lux-picker>
                                     <option value="brand" ${pageType === 'brand' ? 'selected' : ''}>Brand / product</option>
@@ -585,7 +585,7 @@
                                     <option value="campus" ${pageType === 'campus' ? 'selected' : ''}>Campus / official</option>
                                 </select>
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageVisibilityId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageVisibilityId)}">
                                 <span class="social-neo-label">Visibility</span>
                                 <select class="social-neo-select" id="${escape(pageVisibilityId)}" name="pageVisibility" data-lux-picker>
                                     <option value="public" ${pageVisibility === 'public' ? 'selected' : ''}>Public</option>
@@ -596,20 +596,20 @@
                     ` : ''}
                     ${wizardStep === 2 ? `
                         <div class="social-neo-form-grid social-neo-pages-form-grid">
-                            <label class="social-neo-dialog-field" for="${escape(pageAvatarUrlId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageAvatarUrlId)}">
                                 <span class="social-neo-label">Avatar image URL</span>
                                 <input class="social-neo-input" id="${escape(pageAvatarUrlId)}" type="url" name="pageAvatarUrl" placeholder="https://..." value="${escape(text(runtime.ui?.pageAvatarUrl || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageCoverUrlId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageCoverUrlId)}">
                                 <span class="social-neo-label">Cover image URL</span>
                                 <input class="social-neo-input" id="${escape(pageCoverUrlId)}" type="url" name="pageCoverUrl" placeholder="https://..." value="${escape(text(runtime.ui?.pageCoverUrl || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field">
+                            <label class="lux-glass-dialog-field">
                                 <span class="social-neo-label">Upload avatar</span>
                                 <input class="social-neo-input" type="file" name="pageAvatarFile" accept="image/*">
                                 ${renderFileChip(runtime.ui?.pageAvatarFile, 'Avatar image ready')}
                             </label>
-                            <label class="social-neo-dialog-field">
+                            <label class="lux-glass-dialog-field">
                                 <span class="social-neo-label">Upload cover</span>
                                 <input class="social-neo-input" type="file" name="pageCoverFile" accept="image/*">
                                 ${renderFileChip(runtime.ui?.pageCoverFile, 'Cover image ready')}
@@ -618,15 +618,15 @@
                     ` : ''}
                     ${wizardStep === 3 ? `
                         <div class="social-neo-stack">
-                            <label class="social-neo-dialog-field" for="${escape(pageTaglineId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageTaglineId)}">
                                 <span class="social-neo-label">Tagline</span>
                                 <input class="social-neo-input" id="${escape(pageTaglineId)}" type="text" name="pageTagline" placeholder="Short headline people will remember" value="${escape(text(runtime.ui?.pageTagline || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageDescriptionId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageDescriptionId)}">
                                 <span class="social-neo-label">Short description</span>
                                 <textarea class="social-neo-textarea" id="${escape(pageDescriptionId)}" rows="3" name="pageDescription" placeholder="What is this page for?">${escape(text(runtime.ui?.pageDescription || ''))}</textarea>
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageAboutId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageAboutId)}">
                                 <span class="social-neo-label">About</span>
                                 <textarea class="social-neo-textarea" id="${escape(pageAboutId)}" rows="5" name="pageAbout" placeholder="Tell people what this page offers, who runs it, and what they should expect.">${escape(text(runtime.ui?.pageAbout || ''))}</textarea>
                             </label>
@@ -634,23 +634,23 @@
                     ` : ''}
                     ${wizardStep === 4 ? `
                         <div class="social-neo-form-grid social-neo-pages-form-grid">
-                            <label class="social-neo-dialog-field" for="${escape(pageWebsiteId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageWebsiteId)}">
                                 <span class="social-neo-label">Website</span>
                                 <input class="social-neo-input" id="${escape(pageWebsiteId)}" type="url" name="pageWebsite" placeholder="https://example.com" value="${escape(text(runtime.ui?.pageWebsite || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageContactEmailId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageContactEmailId)}">
                                 <span class="social-neo-label">Contact email</span>
                                 <input class="social-neo-input" id="${escape(pageContactEmailId)}" type="email" name="pageContactEmail" placeholder="team@example.com" value="${escape(text(runtime.ui?.pageContactEmail || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageLocationId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageLocationId)}">
                                 <span class="social-neo-label">Location</span>
                                 <input class="social-neo-input" id="${escape(pageLocationId)}" type="text" name="pageLocation" placeholder="Cupertino, CA / Online" value="${escape(text(runtime.ui?.pageLocation || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(pageActionLabelId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(pageActionLabelId)}">
                                 <span class="social-neo-label">Primary action label</span>
                                 <input class="social-neo-input" id="${escape(pageActionLabelId)}" type="text" name="pageActionLabel" placeholder="Visit site / Join beta / Learn more" value="${escape(text(runtime.ui?.pageActionLabel || ''))}">
                             </label>
-                            <label class="social-neo-dialog-field social-neo-grid-col-span-all" for="${escape(pageActionUrlId)}">
+                            <label class="lux-glass-dialog-field social-neo-grid-col-span-all" for="${escape(pageActionUrlId)}">
                                 <span class="social-neo-label">Primary action URL</span>
                                 <input class="social-neo-input" id="${escape(pageActionUrlId)}" type="url" name="pageActionUrl" placeholder="https://..." value="${escape(text(runtime.ui?.pageActionUrl || ''))}">
                             </label>
@@ -676,16 +676,16 @@
                         </div>
                     ` : ''}
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="page-wizard-prev" ${wizardStep === 1 ? 'disabled' : ''}>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="page-wizard-prev" ${wizardStep === 1 ? 'disabled' : ''}>
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
                     ${wizardStep < 5 ? `
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="page-wizard-next">
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="page-wizard-next">
                             Continue <i class="fas fa-arrow-right"></i>
                         </button>
                     ` : `
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">
                             <i class="fas fa-rocket"></i> Publish Page
                         </button>
                     `}
@@ -705,18 +705,18 @@
         const placeholder = page?.isManager
             ? 'Share an official update, launch note, or announcement...'
             : 'Share a community thought, reaction, or question...';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--page-post social-neo-dialog-card--lms-create" data-form="page-profile-post" data-page-id="${escape(text(page?.id))}" data-action="noop" data-lux-transparency-exempt="1">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title"><i class="fas fa-pen" aria-hidden="true"></i> ${escape(title)}</strong>
-                        <span class="social-neo-dialog-subtitle">${escape(subtitle)}</span>
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--page-post lux-glass-dialog-card" data-form="page-profile-post" data-page-id="${escape(text(page?.id))}" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title"><i class="fas fa-pen" aria-hidden="true"></i> ${escape(title)}</strong>
+                        <span class="lux-glass-dialog-subtitle">${escape(subtitle)}</span>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="social-neo-dialog-body social-neo-dialog-body--page-post">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--page-post">
                     ${page?.isManager ? `
-                        <label class="social-neo-dialog-field">
+                        <label class="lux-glass-dialog-field">
                             <span class="social-neo-label">Post type</span>
                             <select class="social-neo-select" name="pagePostType" data-lux-picker>
                                 <option value="official" ${selectedPostType === 'official' ? 'selected' : ''}>Official post</option>
@@ -724,19 +724,19 @@
                             </select>
                         </label>
                     ` : '<input type="hidden" name="pagePostType" value="community">'}
-                    <label class="social-neo-dialog-field" for="${escape(pagePostBodyId)}">
+                    <label class="lux-glass-dialog-field" for="${escape(pagePostBodyId)}">
                         <span class="social-neo-label">Message</span>
                         <textarea class="social-neo-textarea" id="${escape(pagePostBodyId)}" rows="4" name="pagePostBody" placeholder="${escape(placeholder)}">${escape(text(runtime.ui?.pagePostBody || ''))}</textarea>
                     </label>
-                    <label class="social-neo-dialog-field">
+                    <label class="lux-glass-dialog-field">
                         <span class="social-neo-label">Attachment</span>
                         <input class="social-neo-input" type="file" name="pagePostFile" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.zip,.txt">
                         ${renderFileChip(runtime.ui?.pagePostFile, 'Page attachment ready')}
                     </label>
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">
                         <i class="fas fa-paper-plane"></i> Publish
                     </button>
                 </div>
@@ -767,18 +767,18 @@
             const page = dialog.page || getSocialPageRecord(dialog.pageId);
             if (!page) return '';
             const aboutBody = text(page?.about || page?.description || 'No profile summary yet.');
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-dialog-card social-neo-dialog-card--compact" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading">
-                            <strong class="social-neo-dialog-title"><i class="fas fa-circle-info"></i> About ${escape(text(page?.name || 'Page'))}</strong>
-                            <span class="social-neo-dialog-subtitle">Full page description</span>
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--compact" data-action="noop">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                        <div class="lux-glass-dialog-heading">
+                            <strong class="lux-glass-dialog-title"><i class="fas fa-circle-info"></i> About ${escape(text(page?.name || 'Page'))}</strong>
+                            <span class="lux-glass-dialog-subtitle">Full page description</span>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="social-neo-dialog-preview social-neo-page-about-dialog-body">${escape(aboutBody)}</div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="dialog-close">Close</button>
+                    <div class="lux-glass-dialog-preview social-neo-page-about-dialog-body">${escape(aboutBody)}</div>
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="dialog-close">Close</button>
                     </div>
                 </div>
             </div>`;
@@ -799,28 +799,28 @@
             const adminCount = pageAdminIdsFor(page).length;
             const followerCount = page?.followerCount || pageFollowerIdsFor(page).length || 0;
             const filterChip = (value, label) => `<button class="social-neo-pill social-neo-page-members-filter ${membersFilter === value ? 'is-active' : ''}" type="button" data-action="page-members-filter" data-filter="${escape(value)}">${escape(label)}</button>`;
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-card social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--panel social-neo-dialog-card--lms-create social-neo-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-dialog-head social-neo-surveys-hero-head">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <div class="social-neo-card lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card lux-glass-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Page</span>
                             <h2>Members</h2>
                             <p>Admins and followers of ${escape(text(page?.name || 'this page'))}.</p>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="social-neo-dialog-body social-neo-dialog-body--panel">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(adminCount))}</strong><span>Admins</span></article>
                             <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(followerCount))}</strong><span>Followers</span></article>
                             <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(members.length))}</strong><span>Showing</span></article>
                         </div>
-                        <section class="social-neo-dialog-survey-create-section social-neo-dialog-panel-section">
-                            <div class="social-neo-dialog-survey-create-section-head">
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
                                 <strong>Browse members</strong>
                                 <span>Search and filter people connected to this page.</span>
                             </div>
-                            <label class="social-neo-dialog-field">
+                            <label class="lux-glass-dialog-field">
                                 <span class="social-neo-label">Search members</span>
                                 <input class="social-neo-input" type="search" data-bind="page-members-search" placeholder="Search by name, email, or faculty..." value="${escape(text(runtime.ui?.pageMembersSearch || ''))}">
                             </label>
@@ -829,15 +829,15 @@
                                 ${filterChip('admins', 'Admins')}
                                 ${filterChip('followers', 'Followers')}
                             </div>
-                            <div class="social-neo-dialog-member-list">
+                            <div class="lux-glass-dialog-member-list">
                                 ${members.length ? members.map((member) => {
                                     const account = accountById(member.id) || { id: member.id };
                                     const isSelf = text(member.id) === text(currentUserId());
                                     const roleLabelText = member.role === 'admin' ? 'Admin' : 'Follower';
-                                    return `<div class="social-neo-dialog-member-row">
+                                    return `<div class="lux-glass-dialog-member-row">
                                         <div class="social-neo-person">
                                             ${avatar(account, 'social-neo-avatar-sm')}
-                                            <div class="social-neo-dialog-member-info">
+                                            <div class="lux-glass-dialog-member-info">
                                                 <strong>${escape(displayName(account))} <span class="social-neo-pill ${member.role === 'admin' ? 'social-neo-pill-accent' : ''}">${escape(roleLabelText)}</span></strong>
                                                 <span>${escape(accountSubtitle(account))}</span>
                                             </div>

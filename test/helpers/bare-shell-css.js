@@ -36,6 +36,15 @@ export const RETIRED_ROUTE_CSS = [
     'lms-quiz-live.css',
     'lms-gradebook-misc.css',
     'lms-whiteboard-catalog.css',
+    'lux-surfaces.css',
+];
+
+/** Lightweight auth stack (no portal shell JS). */
+export const AUTH_STACK = [
+    'assets/css/lux-tokens.css',
+    'assets/css/lux-focus-panel.css',
+    'assets/css/lux-controls.css',
+    'assets/css/lux-fouc-ht.css',
 ];
 
 const BARE_STACK = [
@@ -53,8 +62,9 @@ const INDEX_STACK_EXTRA = [
     'assets/css/index-home-role.css',
 ];
 
-/** Concatenated index-only home dashboard CSS (layout + widgets + role). */
+/** Concatenated home dashboard paint + layout CSS (FOUC owns glass; role = layout/demotion). */
 export const HOME_DASHBOARD_CSS_FILES = [
+    'assets/css/lux-fouc-ht.css',
     'assets/css/index-home-layout.css',
     'assets/css/index-home-widgets.css',
     'assets/css/index-home-role.css',

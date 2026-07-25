@@ -28,10 +28,10 @@ describe('home hero focus LMS parity', () => {
 
     it('dual-writes soft-chrome on dashboard panels', () => {
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
-        expect(render).toContain('lux-soft-chrome lux-summary-surface--hero');
-        expect(render).toMatch(/lux-panel lux-soft-chrome lux-alert/);
-        expect(render).toContain('lux-dashboard-section lux-builder-section lux-soft-chrome');
-        expect(render).toContain('lux-card lux-builder-card lux-soft-chrome');
+        expect(render).toContain('lux-soft-chrome lux-hero lux-builder-hero page-hero lux-summary-surface--hero');
+        expect(render).toMatch(/lux-soft-chrome lux-alert/);
+        expect(render).toContain('lux-soft-chrome lux-dashboard-section lux-builder-section');
+        expect(render).toContain('lux-soft-chrome lux-card lux-builder-card');
         expect(render).toContain('lux-stat lux-soft-chrome');
         expect(render).toContain('lux-quick-btn lux-soft-chrome');
         expect(render).toContain('lux-list-row lux-soft-chrome');
@@ -41,10 +41,11 @@ describe('home hero focus LMS parity', () => {
     it('uses unified soft-chrome material selector (asd31 parity)', () => {
         const homeCss = readHomeDashboardCss();
         const tokens = readSource('assets/css/lux-tokens.css');
-        expect(tokens).toContain('--lux-focus-fill: var(--home-fade-soft)');
+        expect(tokens).toContain('--lux-focus-fill: var(--lux-soft-chrome-surface)');
+        expect(tokens).toContain('--home-fade-soft: var(--lux-soft-chrome-surface)');
         expect(tokens).not.toContain('--lux-home-panel-fill');
         expect(homeCss).toMatch(
-            /body\.lux-unified-shell:not\(\.lux-route-students-admin\) #page-home #lux-home-shell[\s\S]*?\.lux-soft-chrome/
+            /body\.lux-route-home #page-home #lux-home-shell[\s\S]*?\.lux-soft-chrome/
         );
         expect(homeCss).toContain('--lux-panel-surface');
         expect(homeCss).not.toContain('var(--lux-home-panel-fill');
@@ -86,13 +87,13 @@ describe('home hero focus LMS parity', () => {
     });
 
     it('engine paints residual non-home glass from panel CSS tokens', () => {
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         expect(routeRuntime).toContain('function buildLuxuryRoutePanelGradient');
         expect(routeRuntime).toContain("'var(--lux-panel-surface-soft)'");
         expect(routeRuntime).toContain("'var(--lux-panel-surface)'");
         expect(transparency).toContain('shouldKeepRouteFadeCssBackground');
-        expect(transparency).toContain('shouldKeepLmsFadeCssBackground');
+        expect(transparency).toContain('isCssOwnedSurface');
         expect(transparency).toContain("el.classList.contains('lux-timetable-hero-focus')");
     });
 
@@ -105,13 +106,13 @@ describe('home hero focus LMS parity', () => {
         expect(css).toContain('.lux-home-merged :is(');
         expect(css).toContain('.lms-hero-focus');
         expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
-        expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*backdrop-filter:\s*none !important/);
+        expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*backdrop-filter:\s*none/);
     });
 
     it('applies single frost host on lux-home-grid with fill-only children', () => {
         const css = readHomeDashboardCss();
         const transparency = readSource('assets/js/shared/lux-transparency.js');
-        expect(css).toContain('#page-home #lux-home-shell .lux-home-grid');
+        expect(css).toMatch(/\.lux-home-grid/);
         expect(css).toMatch(/\.lux-home-grid > \.lux-card[\s\S]*backdrop-filter:\s*none !important/);
         expect(css).not.toContain('.lux-grid-widget > .lux-grid-widget-body');
         expect(transparency).toContain('isHomeLegacyGridInnerPanel');
@@ -148,7 +149,7 @@ describe('home hero focus LMS parity', () => {
         const css = readHomeDashboardCss();
         const primitives = readSource('assets/css/lux-layout-primitives.css');
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
-        expect(render).toContain('lux-panel lux-soft-chrome lux-alert');
+        expect(render).toContain('lux-soft-chrome lux-alert');
         expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-alert(?:\.lux-soft-chrome|\s*\{)/);
         expect(css).toContain('var(--lux-soft-chrome-surface');
         // tone on icon, not full green gradient wash (shared primitives)

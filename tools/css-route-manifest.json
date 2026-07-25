@@ -5,7 +5,7 @@
   "stacks": {
     "shared-portal": "kiu-fonts → lux-tokens → lux-focus-panel → lux-controls → lux-shell → lux-fouc-ht → lux-page-bare-lite (+ mobile-shell-core)",
     "index": "shared-portal + index-home-layout/widgets/role (+ mobile-shell ≤1024)",
-    "auth": "lux-tokens + lux-surfaces + lux-controls + route CSS (no focus-panel)",
+    "auth": "lux-tokens + lux-focus-panel + lux-controls + lux-fouc-ht + route CSS",
     "redirect": "lux-tokens + lux-controls + redirect-route only",
     "minimal": "no dedicated portal paint sheets"
   },

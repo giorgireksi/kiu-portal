@@ -19,7 +19,7 @@ describe('popup open perf (gpuperf4l)', () => {
         expect(chrome).toContain('ensureLuxDroplistCss()');
         expect(chrome).toContain('ensureStudioCss()');
         expect(chrome).toContain(`lux-droplist.css?v=${LUX_DROPLIST_CSS_CACHE_BUST}`);
-        expect(chrome).toContain('lux-studio.css?v=20260723-gpuperf4l');
+        expect(chrome).toContain('lux-studio.css?v=20260725-frosted1');
     });
 
     it('reveals pickers before focus/listener work and preps will-change', () => {

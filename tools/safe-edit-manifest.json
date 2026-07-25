@@ -94,10 +94,6 @@
       "editRule": "Mobile shell core — many standalone pages."
     },
     {
-      "path": "assets/css/lux-surfaces.css",
-      "editRule": "Surfaces used by auth and some shells."
-    },
-    {
       "path": "assets/js/pages/standalone-mobile-shell.js",
       "editRule": "Shared mobile shell runtime for many non-index pages."
     }

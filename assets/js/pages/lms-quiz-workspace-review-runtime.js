@@ -88,8 +88,8 @@ function renderLmsQuizReviewPanel(resourceKey, quiz) {
                 <td class="lms-quiz-review-gradebook-score">${submission.gradebookScore === null || submission.gradebookScore === undefined ? '-' : Number(submission.gradebookScore)}</td>
                 <td class="lms-quiz-review-actions">
                     <div class="lms-quiz-review-action-row">
-                        ${examSession ? `<button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-quiz-review-action-btn ${blocked ? 'is-approved' : 'is-danger'}" data-lms-click="toggleLmsExamSessionStudentBlock(${jsQuote(examSession.id)}, ${jsQuote(student.id)})"><i class="fas ${blocked ? 'fa-unlock' : 'fa-user-slash'}"></i> ${blocked ? 'Unblock' : 'Block'}</button>` : ''}
-                        <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-quiz-review-action-btn" data-lms-click="openLmsQuizReviewModal(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)})"><i class="fas fa-eye"></i> View Quiz Paper</button>
+                        ${examSession ? `<button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-quiz-review-action-btn ${blocked ? 'is-approved' : 'is-danger'}" data-lms-click="toggleLmsExamSessionStudentBlock(${jsQuote(examSession.id)}, ${jsQuote(student.id)})"><i class="fas ${blocked ? 'fa-unlock' : 'fa-user-slash'}"></i> ${blocked ? 'Unblock' : 'Block'}</button>` : ''}
+                        <button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-quiz-review-action-btn" data-lms-click="openLmsQuizReviewModal(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)})"><i class="fas fa-eye"></i> View Quiz Paper</button>
                     </div>
                 </td>
             </tr>
@@ -217,8 +217,8 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
         `;
     }).join('');
     const secondaryAction = options.hideAction
-        ? `<button type="button" class="kiu-btn-outline lms-quiz-action-btn lms-quiz-review-paper-secondary-action-btn" data-lms-click="${options.hideAction}">Hide quiz</button>`
-        : `<button type="button" class="kiu-btn-outline lms-quiz-action-btn lms-quiz-review-paper-secondary-action-btn" data-lms-click="document.getElementById('lms-quiz-review-modal')?.remove()">Close</button>`;
+        ? `<button type="button" class="lux-secondary-btn lms-quiz-action-btn lms-quiz-review-paper-secondary-action-btn" data-lms-click="${options.hideAction}">Hide quiz</button>`
+        : `<button type="button" class="lux-secondary-btn lms-quiz-action-btn lms-quiz-review-paper-secondary-action-btn" data-lms-click="closeLmsQuizReviewModal()">Close</button>`;
     return `
         <div class="lms-quiz-review-paper-shell${options.embedded ? ' is-embedded' : ''}">
             <div class="lms-quiz-review-paper-head">
@@ -251,7 +251,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
                 ${examSession
                     ? `<div class="lms-quiz-review-paper-attendance"><span class="lms-quiz-review-paper-attendance-title">Exam List</span><div class="lms-quiz-review-paper-attendance-value">${submission.sessionBlocked ? 'Blocked by staff' : 'Approved by exam list'}</div><span class="lms-quiz-review-paper-attendance-meta">Handwritten room attendance is handled outside the portal.</span></div>`
                     : `<label class="lms-quiz-review-paper-attendance"><span class="lms-quiz-review-paper-attendance-title">Attendance</span><select id="${attendanceId}" class="lms-quiz-review-paper-attendance-select"><option value="" ${!submission.attendanceStatus ? 'selected' : ''}>Not checked</option><option value="Present" ${submission.attendanceStatus === 'Present' ? 'selected' : ''}>Present</option><option value="Late" ${submission.attendanceStatus === 'Late' ? 'selected' : ''}>Late</option><option value="Absent" ${submission.attendanceStatus === 'Absent' ? 'selected' : ''}>Absent</option></select><span class="lms-quiz-review-paper-attendance-meta">${submission.attendanceVerifiedAt ? `Verified ${escapeHtml(formatLmsDateTime(submission.attendanceVerifiedAt))} by ${escapeHtml(submission.attendanceVerifiedBy || 'Staff')}` : 'Not verified yet'}</span></label>`}
-                <div class="lms-quiz-review-paper-action-row">${secondaryAction}<button type="button" class="kiu-btn-blue lms-quiz-review-paper-save-btn" data-lms-click="saveLmsQuizManualGrade(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)}, ${jsQuote(attendanceId)}, ${jsQuote(scopeToken)}, ${jsQuote(options.focusSectionKey || '')}, ${jsQuote(options.studentName || student.name || '')})"><i class="fas fa-save"></i> Save Review</button></div>
+                <div class="lms-quiz-review-paper-action-row">${secondaryAction}<button type="button" class="lux-primary-btn lms-quiz-review-paper-save-btn" data-lms-click="saveLmsQuizManualGrade(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)}, ${jsQuote(attendanceId)}, ${jsQuote(scopeToken)}, ${jsQuote(options.focusSectionKey || '')}, ${jsQuote(options.studentName || student.name || '')})"><i class="fas fa-save"></i> Save Review</button></div>
             </div>
             <div class="lms-quiz-review-paper-answer-list">${answerRows || '<div class="lms-quiz-review-paper-answer-empty">No answers recorded yet.</div>'}</div>
         </div>

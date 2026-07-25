@@ -632,10 +632,7 @@ body.lux-full-paint.lux-unified-shell #lux-topbar {
     );
     background-color: color-mix(in srgb, var(--home-glass-fill, rgba(8, 12, 21, 0.55)) 72%, transparent);
     background-image: var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft));
-    box-shadow:
-      0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50)),
-      0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32)),
-      var(--lux-soft-chrome-shadow, var(--lux-elev-2));
+    box-shadow: var(--lux-soft-chrome-chip-shadow);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     color: var(--lux-text);

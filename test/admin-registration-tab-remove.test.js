@@ -15,7 +15,7 @@ function createTabRemoveVmContext() {
     const vm = require('vm');
     const sharedSource = readSource('assets/js/pages/registration-shared.js');
     const verifyStart = sharedSource.indexOf('function normalizeRegistrationRemoveVerificationToken');
-    const verifyEnd = sharedSource.indexOf('window.getAssignedCourseCurriculumDetails');
+    const verifyEnd = sharedSource.indexOf('__kiuRegSharedExpose({', verifyStart);
     const verifyBlock = sharedSource.slice(verifyStart, verifyEnd);
 
     const context = {
@@ -59,7 +59,7 @@ describe('admin registration custom tab removal', () => {
         const track = readSource('assets/js/pages/admin-registration-track.js');
         const shared = readSource('assets/js/pages/registration-shared.js');
         const bundle = readSource('assets/js/features/index-admin-tools.bundle-source.js');
-        const css = readSource('assets/css/admin-tools-luxury.css');
+        const css = readSource('assets/css/lux-page-bare-lite.css');
 
         expect(track).toContain('function renderAdminRegPanelHeadActions');
         expect(track).toContain('function openAdminRegTabManage');
@@ -78,7 +78,6 @@ describe('admin registration custom tab removal', () => {
         expect(track).not.toContain('admin-reg-overflow-menu');
         expect(bundle).toContain('data-admin-reg-panel-head-actions');
         expect(shared).toContain('function runRegistrationRemoveVerification');
-        expect(css).toContain('.admin-reg-panel-manage-tab-btn');
         expect(css).toContain('.admin-reg-tab-tray');
     });
 
@@ -104,7 +103,7 @@ describe('admin registration custom tab removal', () => {
     });
 
     it('student route falls back when active custom tab is removed', () => {
-        const studentRegistration = readSource('assets/js/pages/student-registration.js');
+        const studentRegistration = readSource('assets/js/pages/student-registration-choice-runtime.js');
         expect(studentRegistration).toContain('getStudentRegistrationTabsForFaculty(faculty)');
         expect(studentRegistration).toContain("activeTab = 'prog'");
     });

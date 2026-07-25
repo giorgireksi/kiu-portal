@@ -7,31 +7,51 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 2000;
-  display: none;
+  display: flex;
   justify-content: center;
   align-items: center;
-}
-.modal-overlay.active { display: flex; }
-.modal-overlay.is-closing {
-  display: flex;
+  opacity: 0;
   pointer-events: none;
-  animation: luxModalOverlayOut 180ms ease-in forwards;
+  transition: opacity var(--lux-popup-anim-close-duration) ease;
+}
+.modal-overlay[hidden] { display: none !important; }
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+  transition-duration: var(--lux-popup-anim-duration);
+}
+.modal-overlay.is-closing {
+  opacity: 0;
+  pointer-events: none;
 }
 .modal-content {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: var(--kiu-glass-blur);
+  background: var(--lux-modal-glass-surface, var(--lux-warmglass-surface));
+  backdrop-filter: var(--lux-modal-glass-blur, var(--lux-warmglass-blur));
+  -webkit-backdrop-filter: var(--lux-modal-glass-blur, var(--lux-warmglass-blur));
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid var(--lux-modal-glass-border, var(--lux-warmglass-border));
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
+  color: var(--lux-text);
+  box-shadow: var(--lux-warmglass-shadow-dark);
   /* Glass frame; body scrolls so blur is not recomposited every wheel tick. */
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   position: relative;
-  animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
+  transition: transform var(--lux-popup-anim-close-duration) ease, opacity var(--lux-popup-anim-close-duration) ease;
+}
+.modal-overlay.active .modal-content {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  transition-duration: var(--lux-popup-anim-duration);
+}
+.modal-overlay.is-closing .modal-content {
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
 }
 .modal-content > .modal-body {
   flex: 1 1 auto;
@@ -47,26 +67,12 @@
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
-@keyframes modalSlideIn {
-  from { transform: translateY(40px) scale(0.95); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
-}
-@keyframes luxModalSlideOut {
-  from { transform: translateY(0) scale(1); opacity: 1; }
-  to { transform: translateY(18px) scale(0.96); opacity: 0; }
-}
-@keyframes luxModalOverlayOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-.modal-overlay.is-closing .modal-content {
-  animation: luxModalSlideOut 180ms ease-in forwards;
-}
 @media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
   .modal-content,
-  .modal-overlay.is-closing,
-  .modal-overlay.is-closing .modal-content {
-    animation-duration: 0.01ms;
+  :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay),
+  :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay) > * {
+    transition-duration: 0.01ms !important;
   }
 }
 .modal-header {
@@ -93,13 +99,16 @@
   --lux-modal-glass-border: var(--lux-warmglass-border);
   --lux-modal-glass-blur: var(--lux-warmglass-blur);
 }
+:is(html.lux-light-mode, body.lux-light-mode) .modal-content {
+  box-shadow: var(--lux-warmglass-shadow-light);
+}
 [data-lux-transparency-exempt="1"] :is( .students-hub-modal-backdrop,
   .staff-hub-modal-backdrop,
   .registration-structured-modal-backdrop ),
   [data-lux-modal-overlay].active:not([aria-hidden='true']),
   [data-lux-modal-overlay].open:not([aria-hidden='true']),
   [data-lux-modal-overlay]:not([aria-hidden='true']).is-open,
-  body:not(.lux-route-social) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-backdrop ) {
+  [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-backdrop ) {
   background: var(--lux-warmglass-overlay-dark);
   /* Modal panel carries frost; overlay is dim-only (no stacked live blur). */
   backdrop-filter: none;
@@ -116,8 +125,8 @@
   body.lux-light-mode) [data-lux-modal-overlay].open:not([aria-hidden='true']),
   :is(html.lux-light-mode,
   body.lux-light-mode) [data-lux-modal-overlay]:not([aria-hidden='true']).is-open,
-  :is(html.lux-light-mode body:not(.lux-route-social),
-  body.lux-light-mode:not(.lux-route-social)) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-backdrop ) {
+  :is(html.lux-light-mode,
+  body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-backdrop ) {
   background: var(--lux-warmglass-overlay-light);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -130,8 +139,9 @@
   .newsx-confirm-modal,
   .newsx-sections-modal,
   .sch-modal,
-  .pv-modal-card ),
-  body:not(.lux-route-social) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-card--lms-create ) {
+  .pv-modal-card,
+  .lms-quiz-board-modal ),
+  [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-card ) {
   border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
   background: var(--lux-modal-glass-surface);
   box-shadow: var(--lux-warmglass-shadow-dark);
@@ -148,14 +158,15 @@
   .newsx-confirm-modal,
   .newsx-sections-modal,
   .sch-modal,
-  .pv-modal-card ),
-  :is(html.lux-light-mode body:not(.lux-route-social),
-  body.lux-light-mode:not(.lux-route-social)) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-card--lms-create ) {
+  .pv-modal-card,
+  .lms-quiz-board-modal ),
+  :is(html.lux-light-mode,
+  body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-card ) {
   border-color: var(--lux-modal-glass-border);
   background: var(--lux-modal-glass-surface);
   box-shadow: var(--lux-warmglass-shadow-light);
 }
-[data-lux-transparency-exempt="1"] :is( .students-hub-form-section, .lux-data-card ), body:not(.lux-route-social) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-group-create-section ) {
+[data-lux-transparency-exempt="1"] :is( .students-hub-form-section, .lux-data-card ), [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-group-section ) {
   border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
   background: var(--lux-panel-modal-section);
   box-shadow: var(--lux-warmglass-section-shadow);
@@ -168,11 +179,20 @@
   .students-hub-schema-empty,
   .staff-hub-schema-empty,
   .lux-data-card ),
-  :is(html.lux-light-mode body:not(.lux-route-social),
-  body.lux-light-mode:not(.lux-route-social)) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-group-create-section ) {
+  :is(html.lux-light-mode,
+  body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-group-section ) {
   border-color: var(--lux-modal-glass-border);
 }
-[data-lux-transparency-exempt="1"] :is( .lux-control,
+[data-lux-transparency-exempt="1"] :is(
+  .lux-control,
+  .social-neo-input.lux-control,
+  .social-neo-textarea.lux-control,
+  .social-neo-select.lux-control ) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--lux-text);
+}
+[data-lux-transparency-exempt="1"] :is(
   .lux-modern-field,
   input.lux-modern-field:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
   select.lux-modern-field,
@@ -180,9 +200,10 @@
   .students-hub-control,
   .lux-picker-btn,
   .lux-picker-panel ),
-  body:not(.lux-route-social) [data-lux-transparency-exempt="1"] :is( .social-neo-input,
-  .social-neo-textarea,
-  .social-neo-select ) {
+  [data-lux-transparency-exempt="1"] :is(
+  .social-neo-input:not(.lux-control),
+  .social-neo-textarea:not(.lux-control),
+  .social-neo-select:not(.lux-control) ) {
   background: var(--lux-modal-glass-input);
   border: 1px solid var(--lux-modal-glass-border);
   box-shadow: none;
@@ -201,7 +222,7 @@
 [data-lux-transparency-exempt="1"] :is( .students-hub-modal-head,
   .staff-hub-modal-head,
   .registration-structured-modal-head ),
-  body:not(.lux-route-social) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-head ) {
+  [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-head ) {
   background: var(--lux-panel-modal-head-tint);
   border-bottom: 1px solid var(--lux-modal-glass-border);
   color: var(--lux-text);
@@ -214,7 +235,7 @@
 :is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .students-hub-modal-foot, .staff-hub-modal-foot ) {
   background: var(--lux-panel-modal-foot-tint-light);
 }
-[data-lux-transparency-exempt="1"] .lux-secondary-btn {
+[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *)) {
   background: transparent;
   border: 1px solid var(--lux-modal-glass-border);
   box-shadow: none;
@@ -222,7 +243,7 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-[data-lux-transparency-exempt="1"] .lux-primary-btn {
+[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *)) {
   background: var(--lux-panel-cta-accent);
   border: 1px solid rgba(var(--lux-accent-rgb), 0.5);
   color: #fff;
@@ -239,6 +260,7 @@
   .lux-utility-panel,
   .lux-user-menu,
   .mob-sheet-panel,
+  .lms-quiz-board-modal,
   [data-lux-transparency-exempt="1"] :is(
     .students-hub-modal,
     .staff-hub-modal,
@@ -249,7 +271,7 @@
     .newsx-sections-modal,
     .sch-modal,
     .pv-modal-card,
-    .social-neo-dialog-card
+    .lux-glass-dialog-card
   )
 ) {
   --lux-text: #000;
@@ -257,4 +279,560 @@
   --lux-text-soft: var(--lux-text);
   --kiu-text-main: #000;
   --kiu-text-muted: var(--kiu-text-main);
+}
+/* ── §4 portal glass-dialog overlays (canonical + aliases) + quiz board layout ── */
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay) {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 28px);
+  background: var(--lux-warmglass-overlay-dark);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lux-popup-anim-close-duration) ease;
+}
+:is(.registration-structured-modal-backdrop, .admin-reg-course-modal-overlay) {
+  z-index: 2600;
+}
+.registration-structured-modal-backdrop[hidden]:not(.is-open):not(.is-closing) {
+  display: none !important;
+}
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay).is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transition-duration: var(--lux-popup-anim-duration);
+}
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay).is-closing:not(.is-open) {
+  opacity: 0;
+  pointer-events: none;
+}
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay) > * {
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
+  transition: transform var(--lux-popup-anim-close-duration) ease, opacity var(--lux-popup-anim-close-duration) ease;
+}
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay).is-open > * {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  transition-duration: var(--lux-popup-anim-duration);
+}
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay).is-closing:not(.is-open) > * {
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
+}
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .admin-reg-course-modal-overlay) {
+  background: var(--lux-warmglass-overlay-light);
+}
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .registration-structured-modal-backdrop) > :is(.lux-glass-dialog-card, .lms-quiz-board-modal),
+.lms-quiz-board-overlay > .lms-quiz-board-modal,
+.gb-modal-overlay > .lux-glass-dialog-card {
+  width: min(960px, 100%);
+  max-height: min(90vh, 920px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#lms-quiz-board-modal > .lms-quiz-board-modal {
+  height: min(85vh, 920px);
+  min-height: min(72vh, 680px);
+}
+.lms-quiz-board-modal .lms-quiz-board-body,
+.lms-quiz-board-modal .lux-glass-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lms-quiz-board-modal .lms-quiz-board-card-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.lms-quiz-board-modal .lms-quiz-card-divider { display: none; }
+.lms-quiz-board-modal [data-lms-quiz-board-tabs-rail],
+.lms-quiz-board-modal .lms-quiz-board-tabs-rail {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.lms-quiz-board-modal .lms-quiz-card { padding: 8px 10px; }
+.lms-quiz-board-modal .lms-quiz-card-stats {
+  display: flex;
+  background: var(--lux-panel-control);
+}
+.lms-quiz-board-modal .lms-quiz-card-stat-value { font-size: 14px; }
+.lms-quiz-board-modal .lms-quiz-board-tab { min-height: 28px !important; }
+.lms-quiz-board-modal .lms-quiz-card-action { min-height: 28px !important; }
+.lms-quiz-board-modal:not(.lux-glass-dialog-card) {
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  border-radius: 22px;
+  background: var(--lux-modal-glass-surface, var(--lux-warmglass-surface));
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-modal-glass-blur, var(--lux-warmglass-blur));
+  -webkit-backdrop-filter: var(--lux-modal-glass-blur, var(--lux-warmglass-blur));
+  color: var(--lux-text);
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lms-quiz-board-modal:not(.lux-glass-dialog-card) {
+  border-color: var(--lux-modal-glass-border, var(--lux-warmglass-border));
+  box-shadow: var(--lux-warmglass-shadow-light);
+}
+/* ── §5 hub command-center modals (students / staff) ── */
+[data-lux-transparency-exempt="1"] .students-hub-modal-backdrop,
+[data-lux-transparency-exempt="1"] .staff-hub-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 28px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--lux-popup-anim-close-duration) ease;
+}
+[data-lux-transparency-exempt="1"] .students-hub-modal-backdrop.is-open,
+[data-lux-transparency-exempt="1"] .staff-hub-modal-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transition-duration: var(--lux-popup-anim-duration);
+}
+[data-lux-transparency-exempt="1"] .students-hub-modal-backdrop.is-closing:not(.is-open),
+[data-lux-transparency-exempt="1"] .staff-hub-modal-backdrop.is-closing:not(.is-open) {
+  opacity: 0;
+  pointer-events: none;
+}
+[data-lux-transparency-exempt="1"] .students-hub-modal-backdrop > .students-hub-modal,
+[data-lux-transparency-exempt="1"] .staff-hub-modal-backdrop > .staff-hub-modal {
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
+  transition: transform var(--lux-popup-anim-close-duration) ease, opacity var(--lux-popup-anim-close-duration) ease;
+}
+[data-lux-transparency-exempt="1"] .students-hub-modal-backdrop.is-open > .students-hub-modal,
+[data-lux-transparency-exempt="1"] .staff-hub-modal-backdrop.is-open > .staff-hub-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  transition-duration: var(--lux-popup-anim-duration);
+}
+[data-lux-transparency-exempt="1"] .students-hub-modal-backdrop.is-closing:not(.is-open) > .students-hub-modal,
+[data-lux-transparency-exempt="1"] .staff-hub-modal-backdrop.is-closing:not(.is-open) > .staff-hub-modal {
+  transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
+  opacity: 0;
+}
+.lms-quiz-access-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+.lms-quiz-access-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.lms-quiz-access-toolbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.lms-quiz-access-student-list {
+  flex: 1 1 auto;
+  min-height: 120px;
+  max-height: min(42vh, 420px);
+  overflow-y: auto;
+  display: grid;
+  gap: 8px;
+}
+.lms-quiz-access-student-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--lux-panel-modal-section);
+  border: 1px solid var(--lux-modal-glass-border);
+}
+.lms-quiz-access-policy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+.lms-quiz-policy-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--lux-panel-modal-section);
+  border: 1px solid var(--lux-modal-glass-border);
+}
+/* ── §7 glass-dialog card chrome (global) ── */
+.lux-glass-dialog-card {
+  width: min(960px, 100%);
+  max-height: min(90vh, 920px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+}
+.lux-glass-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  flex-shrink: 0;
+}
+.lux-glass-dialog-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.lux-glass-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.lux-glass-dialog-subtitle {
+  font-size: 12px;
+  color: var(--lux-text-muted);
+  line-height: 1.45;
+}
+.lux-glass-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lux-glass-dialog-body--event-create {
+  gap: 14px;
+}
+.lux-glass-dialog-actions,
+.lux-glass-dialog-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-modal-foot-tint);
+}
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-glass-dialog-actions, .lux-glass-dialog-form-actions) {
+  background: var(--lux-panel-modal-foot-tint-light);
+}
+.lux-glass-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+[data-lux-transparency-exempt="1"] .lux-glass-dialog-field > .social-neo-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+[data-lux-transparency-exempt="1"] .registration-structured-help {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+[data-lux-transparency-exempt="1"] :is(.social-neo-input, .social-neo-textarea, .social-neo-select).lux-control::placeholder {
+  color: var(--lux-text-muted);
+  opacity: 0.75;
+}
+#kiu-structured-form-modal > .lux-glass-dialog-card {
+  width: min(560px, 100%);
+  max-width: 560px;
+}
+.lux-glass-dialog-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-modal-section);
+}
+.lux-glass-dialog-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.lux-glass-dialog-preview-copy {
+  font-size: 12px;
+  color: var(--lux-text-muted);
+  line-height: 1.45;
+}
+:is(.lux-glass-dialog-form-grid, .social-neo-form-grid) {
+  display: grid;
+  gap: 12px;
+}
+:is(.lux-glass-dialog-form-grid-2, .social-neo-form-grid-2) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 640px) {
+  :is(.lux-glass-dialog-form-grid-2, .social-neo-form-grid-2) {
+    grid-template-columns: 1fr;
+  }
+}
+#kiu-subject-builder-modal #curriculum-subject-builder-card {
+  display: flex;
+  flex-direction: column;
+  max-height: min(78vh, 680px);
+  overflow: hidden;
+  padding: 0;
+}
+#kiu-subject-builder-modal #curriculum-subject-builder-card.lux-glass-dialog-body {
+  flex: 1 1 auto;
+}
+#kiu-subject-builder-modal .lux-admin-tools-submit-row {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-modal-foot-tint);
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+}
+/* ── §8 admin course-picker internals ── */
+.admin-reg-course-modal-card {
+  width: min(800px, 94vw);
+  max-height: min(88vh, 900px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
+  border-radius: 26px;
+  background: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+  backdrop-filter: var(--lux-warmglass-blur);
+  -webkit-backdrop-filter: var(--lux-warmglass-blur);
+  color: var(--lux-text);
+}
+:is(html.lux-light-mode, body.lux-light-mode) .admin-reg-course-modal-card {
+  border-color: var(--lux-warmglass-border);
+  box-shadow: var(--lux-warmglass-shadow-light);
+}
+.admin-reg-course-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--lux-modal-glass-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--lux-panel-modal-head-tint);
+  border-radius: 26px 26px 0 0;
+  flex-shrink: 0;
+}
+.admin-reg-course-modal-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+.admin-reg-course-modal-subtitle {
+  font-size: 12px;
+  color: var(--lux-text-muted);
+  margin-top: 4px;
+}
+.admin-reg-course-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.admin-reg-course-modal-filters {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--lux-modal-glass-border);
+  flex-shrink: 0;
+}
+.admin-reg-course-modal-filter-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 640px) {
+  .admin-reg-course-modal-filter-grid { grid-template-columns: 1fr; }
+}
+.admin-reg-course-modal-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lux-text-muted);
+}
+:is(.admin-reg-course-modal-search, .admin-reg-course-modal-select) {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  margin-top: 6px;
+  box-sizing: border-box;
+  background: var(--lux-modal-glass-input);
+  border: 1px solid var(--lux-modal-glass-border);
+  color: var(--lux-text);
+}
+:is(.admin-reg-course-modal-search, .admin-reg-course-modal-select):focus-visible {
+  outline: none;
+  border-color: rgba(var(--lux-accent-rgb), 0.45);
+  box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.14);
+}
+.admin-reg-course-modal-count {
+  font-size: 11px;
+  color: var(--lux-text-muted);
+}
+.admin-reg-course-modal-count strong { color: var(--lux-accent); }
+.admin-reg-course-modal-list-shell {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: min(52vh, 520px);
+}
+.admin-reg-course-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 24px 24px;
+}
+.admin-reg-subject-quick-matches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.admin-reg-subject-quick-match {
+  border: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-control);
+  color: var(--lux-text);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.admin-reg-no-results {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--lux-text-muted);
+  margin: 18px 24px 24px;
+  border: 1px dashed var(--lux-modal-glass-border);
+  border-radius: 18px;
+  background: var(--lux-panel-modal-section);
+}
+.admin-reg-no-results-icon {
+  font-size: 32px;
+  opacity: 0.3;
+  margin-bottom: 12px;
+  display: block;
+}
+.admin-reg-no-results-copy { font-size: 13px; }
+.admin-reg-course-item {
+  --admin-reg-faculty-accent: var(--lux-accent);
+  position: relative;
+  padding: 16px 18px 16px 20px;
+  border: 1px solid var(--lux-modal-glass-border);
+  cursor: pointer;
+  background: var(--lux-panel-modal-section);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.admin-reg-course-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--admin-reg-faculty-accent, var(--lux-accent)), rgba(var(--lux-accent-rgb), 0.08));
+  border-radius: 16px 0 0 16px;
+}
+.admin-reg-course-item[data-faculty="CS"] { --admin-reg-faculty-accent: #5b21b6; }
+.admin-reg-course-item[data-faculty="ECON"] { --admin-reg-faculty-accent: #a4262c; }
+.admin-reg-course-item[data-faculty="LAW"] { --admin-reg-faculty-accent: #107c41; }
+.admin-reg-course-item[data-faculty="MED"] { --admin-reg-faculty-accent: #065f46; }
+.admin-reg-course-item[data-faculty="ARTS"] { --admin-reg-faculty-accent: #b45309; }
+.admin-reg-course-item[data-faculty="OTHER"] { --admin-reg-faculty-accent: #666666; }
+.admin-reg-course-item:hover,
+.admin-reg-course-item:focus-visible {
+  border-color: rgba(var(--lux-accent-rgb), 0.35);
+  box-shadow: var(--lux-warmglass-shadow-dark);
+}
+.admin-reg-course-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.admin-reg-course-item-main { flex: 1; }
+.admin-reg-course-item-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.admin-reg-course-item-meta {
+  font-size: 11px;
+  color: var(--lux-text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.admin-reg-course-item-code {
+  background: color-mix(in srgb, var(--admin-reg-faculty-accent, var(--lux-accent)) 15%, transparent);
+  color: var(--admin-reg-faculty-accent, var(--lux-accent));
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+.admin-reg-course-item-ects {
+  color: var(--lux-accent);
+  font-weight: bold;
+}
+.admin-reg-course-item-prereq,
+.admin-reg-course-item-antireq {
+  font-size: 10px;
+  margin-bottom: 4px;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+.admin-reg-course-item-prereq {
+  color: color-mix(in srgb, var(--lux-accent) 70%, #0b2219);
+  background: color-mix(in srgb, var(--lux-accent) 12%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--lux-accent) 64%, #10b981);
+}
+.admin-reg-course-item-antireq {
+  color: color-mix(in srgb, var(--lux-danger, #ef4444) 80%, #32090d);
+  background: color-mix(in srgb, var(--lux-danger, #ef4444) 12%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--lux-danger, #ef4444) 68%, #ef4444);
+}
+.admin-reg-course-item-cta {
+  background: var(--lux-panel-control);
+  border: 1px solid var(--lux-modal-glass-border);
+  color: var(--lux-text);
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  align-self: center;
 }

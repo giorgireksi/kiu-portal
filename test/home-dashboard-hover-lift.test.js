@@ -62,25 +62,22 @@ describe('home dashboard shell hover lift', () => {
 
     it('merges home sections into one frost shell without customize chrome', () => {
         const role = readSource('assets/css/index-home-role.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
         const layout = readSource('assets/css/index-home-layout.css');
         const shell = readSource('assets/js/features/home-dashboard/shell.js');
-        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome/);
-        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}background-image:\s*var\(--lux-panel-surface\)/);
-        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}var\(--lux-panel-fill/);
-        expect(role).toMatch(
-            /\.lux-home-merged\.lux-soft-chrome[\s\S]{0,800}backdrop-filter:\s*var\(--lux-panel-blur-filter/
-        );
-        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
-        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*--home-chip-surface-fill/);
-        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-stat\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);
-        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-alert\.lux-soft-chrome/);
+        expect(fouc).toContain('[data-lux-glass-root="1"]');
+        expect(fouc).toMatch(/\[data-lux-glass-root="1"\][\s\S]{0,400}var\(--lux-panel-surface\)/);
+        expect(fouc).toMatch(/body\.lux-route-home #page-home #lux-home-shell[\s\S]*\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
+        expect(fouc).toMatch(/body\.lux-route-home #page-home #lux-home-shell[\s\S]*\.lms-hero-focus[\s\S]*--home-chip-surface-fill/);
+        expect(fouc).toMatch(/body\.lux-route-home #page-home #lux-home-shell[\s\S]*\.lux-stat\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none/);
+        expect(fouc).toMatch(/body\.lux-route-home #page-home #lux-home-shell[\s\S]*\.lux-alert\.lux-soft-chrome/);
         expect(role).toMatch(/\.lux-home-merged[\s\S]*backdrop-filter:\s*none !important/);
+        expect(role).not.toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,200}var\(--lux-panel-fill/);
         expect(layout).toContain('.lux-home-merged');
         expect(layout).toContain('.lux-home-band--split');
         expect(layout).toMatch(/\.lux-home-merged[\s\S]*gap:\s*0/);
         expect(shell).toContain('lux-home-merged');
-        expect(shell).toMatch(/lux-home-merged lux-soft-chrome/);
-        expect(shell).not.toContain('data-lux-glass-root="1"');
+        expect(shell).toMatch(/lux-home-merged lux-soft-chrome[\s\S]*data-lux-glass-root="1"/);
         expect(shell).toContain('lux-home-band');
         expect(shell).not.toContain('Customize dashboard');
         expect(shell).not.toContain('lux-grid-widget');
@@ -90,6 +87,9 @@ describe('home dashboard shell hover lift', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         const primer = readSource('assets/js/theme-primer.js');
         expect(tokens).toContain('--home-chip-glass-fill');
+        expect(tokens).toContain('--lux-soft-chrome-rim-glow');
+        expect(tokens).toContain('--lux-soft-chrome-chip-shadow');
+        expect(tokens).toMatch(/body\.lux-full-paint[\s\S]*--lux-soft-chrome-surface:[\s\S]*--home-fade-soft:\s*var\(--lux-soft-chrome-surface\)/);
         expect(tokens).toContain('--lux-panel-host-border');
         expect(tokens).toContain('--lux-panel-host-shadow');
         expect(tokens).toContain('--lux-panel-surface');

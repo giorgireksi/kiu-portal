@@ -194,10 +194,10 @@ function __kiuFeedExpose(map) {
                         <span class="social-neo-pill social-neo-post-scope-badge">${escape(scopeBadge)}</span>
                         ${pagePostLabel ? `<span class="social-neo-pill social-neo-post-page-label">${escape(pagePostLabel)}</span>` : ''}
                         ${post.isPinned ? `<span class="social-neo-pill social-neo-pill-pinned social-neo-post-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
-                        ${post.viewerCanManageScope ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-pin" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-thumbtack"></i> ${post.isPinned ? 'Unpin' : 'Pin'}</button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-edit" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-pen"></i></button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-delete" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-trash-alt"></i></button>` : ''}
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-report" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-ellipsis-h"></i></button>
+                        ${post.viewerCanManageScope ? `<button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-post-head-action-btn" type="button" data-action="post-pin" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-thumbtack"></i> ${post.isPinned ? 'Unpin' : 'Pin'}</button>` : ''}
+                        ${post.viewerCanEdit ? `<button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-post-head-action-btn" type="button" data-action="post-edit" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-pen"></i></button>` : ''}
+                        ${post.viewerCanEdit ? `<button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-post-head-action-btn" type="button" data-action="post-delete" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-trash-alt"></i></button>` : ''}
+                        <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-post-head-action-btn" type="button" data-action="post-report" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-ellipsis-h"></i></button>
                     </div>
                 </div>
                 <div class="social-neo-post-body">${escape(post.body || post.text || '') || '<span class="social-neo-muted">Shared without extra text.</span>'}</div>
@@ -218,26 +218,26 @@ function __kiuFeedExpose(map) {
                     return `<div class="social-neo-inline-metrics social-neo-post-metrics">${reactionMetricHtml}${commentMetricHtml}${shareMetricHtml}</div>`;
                 })()}
                 <div class="social-neo-post-actions social-neo-post-action-row">
-                    <button class="social-neo-btn social-neo-post-action-btn ${hasViewerReaction ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(viewerReaction || 'like')}">
+                    <button class="lux-secondary-btn social-neo-post-action-btn ${hasViewerReaction ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(viewerReaction || 'like')}">
                         ${hasViewerReaction
                             ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
                             : '<i class="fas fa-thumbs-up"></i> Like'}
                     </button>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-focus-comment" data-post-id="${escape(normalizedPostId)}">
+                    <button class="lux-secondary-btn social-neo-post-action-btn" type="button" data-action="post-focus-comment" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-comment"></i> Comment${post.replyCount ? ` (${escape(text(post.replyCount))})` : ''}
                     </button>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-share" data-post-id="${escape(normalizedPostId)}">
+                    <button class="lux-secondary-btn social-neo-post-action-btn" type="button" data-action="post-share" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-share"></i> Share
                     </button>
                     <div class="social-neo-reaction-picker">
                         ${['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                            <button class="social-neo-btn social-neo-btn-sm social-neo-post-reaction-btn ${post.viewerReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}">
+                            <button class="lux-secondary-btn lux-secondary-btn-sm social-neo-post-reaction-btn ${post.viewerReaction === reactionType ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}">
                                 <span>${reactionEmoji(reactionType)}</span>
                             </button>
                         `).join('')}
                     </div>
                     <span class="social-neo-flex-spacer"></span>
-                    <button class="social-neo-btn social-neo-post-save-btn ${saved ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
+                    <button class="lux-secondary-btn social-neo-post-save-btn ${saved ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Save'}
                     </button>
                 </div>
@@ -376,8 +376,8 @@ function __kiuFeedExpose(map) {
         const buttons = host.querySelectorAll(`.social-neo-post-save-btn[data-action="post-save"][data-post-id="${CSS.escape(normalizedId)}"]`);
         if (!buttons.length) return false;
         buttons.forEach((saveBtn) => {
-            saveBtn.classList.toggle('social-neo-btn-primary', saved);
-            saveBtn.classList.toggle('social-neo-btn-ghost', !saved);
+            saveBtn.classList.toggle('lux-primary-btn', saved);
+            saveBtn.classList.toggle('lux-secondary-btn', !saved);
             const label = saveBtn.closest('.social-photo-feed-card') ? (saved ? 'Saved' : 'Keep') : (saved ? 'Saved' : 'Save');
             saveBtn.innerHTML = `<i class="fas fa-bookmark"></i> ${label}`;
         });
@@ -419,8 +419,8 @@ function __kiuFeedExpose(map) {
         const isPhotoCard = card.classList.contains('social-photo-feed-card');
         const mainBtn = card.querySelector(`.social-neo-post-action-btn[data-action="post-react"][data-post-id="${CSS.escape(normalizedId)}"]`);
         if (mainBtn) {
-            mainBtn.classList.toggle('social-neo-btn-primary', hasViewerReaction);
-            mainBtn.classList.toggle('social-neo-btn-ghost', !hasViewerReaction);
+            mainBtn.classList.toggle('lux-primary-btn', hasViewerReaction);
+            mainBtn.classList.toggle('lux-secondary-btn', !hasViewerReaction);
             mainBtn.setAttribute('data-reaction-type', viewerReaction || 'like');
             mainBtn.innerHTML = hasViewerReaction
                 ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
@@ -433,8 +433,8 @@ function __kiuFeedExpose(map) {
             picker.querySelectorAll('.social-neo-post-reaction-btn').forEach((btn) => {
                 const type = text(btn.getAttribute('data-reaction-type'));
                 const isActive = type === viewerReaction;
-                btn.classList.toggle('social-neo-btn-primary', isActive);
-                btn.classList.toggle('social-neo-btn-ghost', !isActive);
+                btn.classList.toggle('lux-primary-btn', isActive);
+                btn.classList.toggle('lux-secondary-btn', !isActive);
             });
         }
         return true;
@@ -493,10 +493,10 @@ function __kiuFeedExpose(map) {
             <div class="social-neo-feed-hero">
                 <div class="social-neo-feed-hero-head">
                     <div class="social-neo-feed-hero-actions">
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-feed-hero-action-btn" type="button" data-action="feed-refresh">
+                        <button class="lux-primary-btn social-neo-feed-hero-action-btn" type="button" data-action="feed-refresh">
                             <i class="fas fa-arrows-rotate"></i> Refresh feed
                         </button>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-feed-hero-action-btn" type="button" data-action="panel-groups" data-groups-tab="discover">
+                        <button class="lux-secondary-btn social-neo-feed-hero-action-btn" type="button" data-action="panel-groups" data-groups-tab="discover">
                             <i class="fas fa-users"></i> Find groups
                         </button>
                     </div>
@@ -551,7 +551,7 @@ function __kiuFeedExpose(map) {
                 <button class="social-neo-composer-cta" type="button" data-action="post-compose-open">
                     ${avatar(currentUser())}
                     <span class="social-neo-composer-cta-copy">What's on your mind, ${escape(firstName)}?</span>
-                    <span class="social-neo-btn social-neo-btn-primary social-neo-composer-cta-btn"><i class="fas fa-pen"></i> Create post</span>
+                    <span class="lux-primary-btn social-neo-composer-cta-btn"><i class="fas fa-pen"></i> Create post</span>
                 </button>
             </div>
         `;
@@ -588,35 +588,35 @@ function __kiuFeedExpose(map) {
                                 <span>${escape(meta.sectionLabel)} · ${escape(meta.subtitle)}</span>
                             </div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="post-compose-entity-remove" data-entity-type="${escape(meta.type)}" data-entity-id="${escape(meta.id)}">
+                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="post-compose-entity-remove" data-entity-type="${escape(meta.type)}" data-entity-id="${escape(meta.id)}">
                             <i class="fas fa-xmark"></i> Remove
                         </button>
                     </article>
                 `;
             }).join('')
-            : '<p class="social-neo-dialog-hint">No campus items attached yet. Pick a section above to browse.</p>';
+            : '<p class="lux-glass-dialog-hint">No campus items attached yet. Pick a section above to browse.</p>';
         return `
-            <section class="social-neo-dialog-project-create-section social-neo-dialog-project-create-section--invite">
-                <div class="social-neo-dialog-project-create-section-head">
+            <section class="lux-glass-dialog-group-section lux-glass-dialog-group-section--invite">
+                <div class="lux-glass-dialog-section-head">
                     <strong>Share from campus</strong>
                     <span>Optional. Open a section to attach surveys, groups, pages, and more.</span>
                 </div>
-                <div class="social-neo-dialog-project-create-faculties">
+                <div class="lux-glass-dialog-project-create-faculties">
                     <span class="social-neo-label">Browse</span>
                     <div class="social-neo-badge-row social-neo-badge-row-mt-8 social-neo-post-compose-section-shortcuts" role="group" aria-label="Attach section">
                         ${POST_COMPOSE_ATTACH_SECTIONS.map((entry) => `
-                            <button class="social-neo-btn ${lastSection === entry.id ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-compose-attach-section" data-section="${escape(entry.id)}">
+                            <button class="lux-secondary-btn ${lastSection === entry.id ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="post-compose-attach-section" data-section="${escape(entry.id)}">
                                 <i class="fas ${escape(entry.icon)}" aria-hidden="true"></i> ${escape(entry.label)}
                             </button>
                         `).join('')}
                     </div>
                 </div>
-                <div class="social-neo-dialog-invite-block social-neo-post-compose-selected">
-                    <div class="social-neo-dialog-invite-block-head">
+                <div class="lux-glass-dialog-invite-block social-neo-post-compose-selected">
+                    <div class="lux-glass-dialog-invite-block-head">
                         <strong>Selected</strong>
                         <span>${escape(String(attached.length))} item${attached.length === 1 ? '' : 's'} attached.</span>
                     </div>
-                    <div class="social-neo-list social-neo-dialog-invite-list">${selectedMarkup}</div>
+                    <div class="social-neo-list lux-glass-dialog-invite-list">${selectedMarkup}</div>
                 </div>
             </section>
         `;
@@ -633,7 +633,7 @@ function __kiuFeedExpose(map) {
             ? 'No creations here yet.'
             : 'Nothing from others matches this filter.';
         if (!rows.length) {
-            return `<p class="social-neo-dialog-hint social-neo-post-compose-attach-empty">${escape(emptyCopy)}</p>`;
+            return `<p class="lux-glass-dialog-hint social-neo-post-compose-attach-empty">${escape(emptyCopy)}</p>`;
         }
         return rows.map((row) => {
             const key = `${row.type}:${row.id}`;
@@ -641,12 +641,12 @@ function __kiuFeedExpose(map) {
             const atLimit = !alreadyAttached && remaining <= 0;
             const actionBtn = alreadyAttached
                 ? `
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="post-compose-entity-remove" data-entity-type="${escape(row.type)}" data-entity-id="${escape(row.id)}">
+                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="post-compose-entity-remove" data-entity-type="${escape(row.type)}" data-entity-id="${escape(row.id)}">
                         <i class="fas fa-check"></i> Attached
                     </button>
                 `
                 : `
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="post-compose-attach-pick-add" data-entity-type="${escape(row.type)}" data-entity-id="${escape(row.id)}" ${atLimit ? 'disabled' : ''}>
+                    <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="post-compose-attach-pick-add" data-entity-type="${escape(row.type)}" data-entity-id="${escape(row.id)}" ${atLimit ? 'disabled' : ''}>
                         <i class="fas fa-plus"></i> Add
                     </button>
                 `;
@@ -676,24 +676,24 @@ function __kiuFeedExpose(map) {
         const attached = normalizeComposerEntityLinks(runtime.ui?.composerEntityLinks);
         const rows = listAttachableEntities(sectionId, filter, search);
         const countBadge = attached.length
-            ? `<span class="social-neo-dialog-submit-badge">${escape(String(attached.length))}</span>`
+            ? `<span class="lux-glass-dialog-submit-badge">${escape(String(attached.length))}</span>`
             : '';
-        return `<div class="social-neo-dialog-backdrop social-neo-dialog-backdrop--stacked-child social-neo-dialog-backdrop--post-compose-attach" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Attach ${escape(sectionMeta.label)}">
-            <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--post-compose-attach social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass sn-mat-modal" data-form="post-compose-attach" data-action="noop" data-lux-transparency-exempt="1" data-section="${escape(sectionMeta.id)}">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title"><i class="fas ${escape(sectionMeta.icon)}" aria-hidden="true"></i> Attach · ${escape(sectionMeta.label)}</strong>
-                        <span class="social-neo-dialog-subtitle">Choose items to share on your Home post. Up to ${escape(String(POST_COMPOSE_ENTITY_LINK_MAX))} attachments.</span>
+        return `<div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child lux-glass-dialog-backdrop--post-compose-attach" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Attach ${escape(sectionMeta.label)}">
+            <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--post-compose-attach lux-glass-dialog-card lux-glass-dialog-card--social-glass sn-mat-modal" data-form="post-compose-attach" data-action="noop" data-lux-transparency-exempt="1" data-section="${escape(sectionMeta.id)}">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title"><i class="fas ${escape(sectionMeta.icon)}" aria-hidden="true"></i> Attach · ${escape(sectionMeta.label)}</strong>
+                        <span class="lux-glass-dialog-subtitle">Choose items to share on your Home post. Up to ${escape(String(POST_COMPOSE_ENTITY_LINK_MAX))} attachments.</span>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="social-neo-dialog-body social-neo-dialog-body--post-compose-attach">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--post-compose-attach">
                     <div class="social-neo-post-compose-attach-toolbar" data-lux-transparency-exempt="1">
                         <div class="social-neo-badge-row" role="group" aria-label="Ownership filter">
-                            <button class="social-neo-btn ${filter === 'mine' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-compose-attach-filter" data-filter="mine">My creations</button>
-                            <button class="social-neo-btn ${filter === 'others' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-compose-attach-filter" data-filter="others">Others / campus</button>
+                            <button class="lux-secondary-btn ${filter === 'mine' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="post-compose-attach-filter" data-filter="mine">My creations</button>
+                            <button class="lux-secondary-btn ${filter === 'others' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="post-compose-attach-filter" data-filter="others">Others / campus</button>
                         </div>
-                        <label class="social-neo-dialog-field social-neo-post-compose-attach-search" for="${escape(searchId)}">
+                        <label class="lux-glass-dialog-field social-neo-post-compose-attach-search" for="${escape(searchId)}">
                             <span class="social-neo-label">Search</span>
                             <input class="social-neo-input" id="${escape(searchId)}" name="postComposeAttachSearch" type="search" value="${escape(search)}" placeholder="Filter by name…" autocomplete="off">
                         </label>
@@ -703,9 +703,9 @@ function __kiuFeedExpose(map) {
                     </div>
                     <div class="social-neo-list social-neo-post-compose-attach-results" data-lux-transparency-exempt="1">${renderPostComposeAttachResultsHtml(runtime)}</div>
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn social-neo-post-compose-attach-done" type="button" data-action="dialog-close"><i class="fas fa-check"></i> Done${countBadge}</button>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn social-neo-post-compose-attach-done" type="button" data-action="dialog-close"><i class="fas fa-check"></i> Done${countBadge}</button>
                 </div>
             </div>
         </div>`;
@@ -724,35 +724,35 @@ function __kiuFeedExpose(map) {
         const firstName = displayName(currentUser()).split(' ')[0] || 'there';
         const entityLinks = normalizeComposerEntityLinks(runtime.ui?.composerEntityLinks);
         const attachBadge = entityLinks.length
-            ? `<span class="social-neo-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
+            ? `<span class="lux-glass-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
             : '';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--post-compose social-neo-dialog-card--project-create social-neo-dialog-card--lms-create sn-mat-modal" data-form="post-compose" data-action="noop" data-lux-transparency-exempt="1">
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--post-compose lux-glass-dialog-card--project-create lux-glass-dialog-card sn-mat-modal" data-form="post-compose" data-action="noop" data-lux-transparency-exempt="1">
                 ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create post', 'Write an update, add photos, then attach campus items to share on Home.', { icon: 'fas fa-pen' }) : ''}
-                <div class="social-neo-dialog-body social-neo-dialog-body--project-create">
-                    <section class="social-neo-dialog-project-create-section">
-                        <div class="social-neo-dialog-project-create-section-head">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--project-create">
+                    <section class="lux-glass-dialog-group-section">
+                        <div class="lux-glass-dialog-section-head">
                             <strong>Basic info</strong>
                             <span>Message people will see on the Home feed.</span>
                         </div>
-                        <label class="social-neo-dialog-field" for="${escape(composerTextId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(composerTextId)}">
                             <span class="social-neo-label">Message</span>
                             <textarea class="social-neo-textarea" id="${escape(composerTextId)}" name="composerText" rows="3" placeholder="What's on your mind, ${escape(firstName)}?" data-bind="composer-text">${escape(text(runtime.ui?.composerText || ''))}</textarea>
                         </label>
                     </section>
-                    <section class="social-neo-dialog-project-create-section">
-                        <div class="social-neo-dialog-project-create-section-head">
+                    <section class="lux-glass-dialog-group-section">
+                        <div class="lux-glass-dialog-section-head">
                             <strong>Audience</strong>
                             <span>Choose who you post as and who can see it.</span>
                         </div>
                         <div class="social-neo-form-grid social-neo-form-grid-2">
-                            <label class="social-neo-dialog-field" for="${escape(composerScopeId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(composerScopeId)}">
                                 <span class="social-neo-label">Posting as</span>
                                 <select class="social-neo-select" id="${escape(composerScopeId)}" name="composerScope" data-bind="composer-scope" data-lux-picker>
                                     ${scopeOptions.map((option) => `<option value="${escape(`${option.type}:${option.id}`)}" ${currentScopeType === option.type && currentScopeId === option.id ? 'selected' : ''}>${escape(option.name)}</option>`).join('')}
                                 </select>
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(composerAudienceId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(composerAudienceId)}">
                                 <span class="social-neo-label">Audience</span>
                                 <select class="social-neo-select" id="${escape(composerAudienceId)}" name="composerAudience" data-bind="composer-audience" data-lux-picker>
                                     <option value="campus" ${currentAudience === 'campus' ? 'selected' : ''}>Campus</option>
@@ -764,25 +764,25 @@ function __kiuFeedExpose(map) {
                             </label>
                         </div>
                     </section>
-                    <section class="social-neo-dialog-project-create-section">
-                        <div class="social-neo-dialog-project-create-section-head">
+                    <section class="lux-glass-dialog-group-section">
+                        <div class="lux-glass-dialog-section-head">
                             <strong>Media</strong>
                             <span>Optional photo or story alongside the post.</span>
                         </div>
                         <div class="social-neo-post-compose-file-host">${renderFileChip(runtime.ui?.composerFile)}</div>
-                        <div class="social-neo-dialog-project-create-faculties">
+                        <div class="lux-glass-dialog-project-create-faculties">
                             <span class="social-neo-label">Attachments</span>
                             <div class="social-neo-badge-row social-neo-badge-row-mt-8">
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-composer-attach-btn" type="button" data-action="composer-attach"><i class="fas fa-image"></i> Photo</button>
+                                <button class="lux-secondary-btn lux-secondary-btn-sm social-neo-composer-attach-btn" type="button" data-action="composer-attach"><i class="fas fa-image"></i> Photo</button>
                             </div>
                         </div>
                         <input id="${escape(composerFileId)}" name="postFile" type="file" accept="image/*" hidden>
                     </section>
                     ${renderPostComposeShareSection(runtime)}
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit"><i class="fas fa-paper-plane"></i> Publish${attachBadge}</button>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit"><i class="fas fa-paper-plane"></i> Publish${attachBadge}</button>
                 </div>
             </form>
         </div>`;
@@ -814,8 +814,8 @@ function __kiuFeedExpose(map) {
             ? (Array.isArray(state().feed) ? state().feed : []).find((item) => postKey(item) === postKey(dialog.postId))
             : null;
         if (kind === 'post-edit' && post) {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-edit" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-edit" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Edit post', 'Refine the post without leaving the feed.') : ''}
                     <textarea class="social-neo-textarea" name="dialogBody" rows="6" placeholder="Update your post...">${escape(text(dialog.body || post.body || post.text || ''))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Save changes' }) : ''}
@@ -824,19 +824,19 @@ function __kiuFeedExpose(map) {
             </div>`;
         }
         if (kind === 'post-share' && post) {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-share" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-share" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Share post', 'Add context before it goes back into the stream.') : ''}
                     <textarea class="social-neo-textarea" name="dialogNote" rows="4" placeholder="Say something about this...">${escape(text(dialog.note || ''))}</textarea>
-                    <div class="social-neo-dialog-preview">${escape(text(post.body || post.text || 'Original post'))}</div>
+                    <div class="lux-glass-dialog-preview">${escape(text(post.body || post.text || 'Original post'))}</div>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Share now' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
             </div>`;
         }
         if (kind === 'post-report' && post) {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-report" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-report" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report post', 'Explain what is wrong with this content.') : ''}
                     <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Submit report' }) : ''}
@@ -848,10 +848,10 @@ function __kiuFeedExpose(map) {
             const reportPost = (Array.isArray(state().feed) ? state().feed : []).find((item) => postKey(item) === postKey(dialog.postId));
             const comment = findCommentInThread(reportPost?.comments, dialog.commentId);
             if (!comment) return '';
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-comment-report" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-comment-report" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report comment', 'Explain what is wrong with this comment.') : ''}
-                    <div class="social-neo-dialog-preview">${escape(text(comment.body || comment.text || 'Comment'))}</div>
+                    <div class="lux-glass-dialog-preview">${escape(text(comment.body || comment.text || 'Comment'))}</div>
                     <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Submit report' }) : ''}
                     <input type="hidden" name="postId" value="${escape(postKey(dialog.postId))}">
@@ -864,23 +864,23 @@ function __kiuFeedExpose(map) {
             if (!post) {
                 // eslint-disable-next-line no-console
                 console.warn('[comment-delete] post not in feed', { postId: dialog.postId, feedSize: Array.isArray(state().feed) ? state().feed.length : 0 });
-                return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                    <div class="social-neo-dialog-card social-neo-delete-confirm sn-mat-modal">
-                        <div class="social-neo-section-head social-neo-dialog-head">
-                            <div class="social-neo-dialog-heading">
+                return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                    <div class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal">
+                        <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                            <div class="lux-glass-dialog-heading">
                                 <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                                 <div class="social-neo-delete-confirm-title">
-                                    <strong class="social-neo-dialog-title">Delete comment</strong>
-                                    <span class="social-neo-dialog-subtitle">Post unavailable.</span>
+                                    <strong class="lux-glass-dialog-title">Delete comment</strong>
+                                    <span class="lux-glass-dialog-subtitle">Post unavailable.</span>
                                 </div>
                             </div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                            <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="social-neo-delete-confirm-preview social-neo-delete-confirm-preview--empty">
                             <p>The post for this comment could not be located. Cancel and refresh.</p>
                         </div>
                         <div class="social-neo-delete-confirm-actions">
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                            <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
                         </div>
                     </div>
                 </div>`;
@@ -908,18 +908,18 @@ function __kiuFeedExpose(map) {
                 // eslint-disable-next-line no-console
                 console.warn('[comment-delete] comment lookup missed', { postId: post.id, commentId: dialog.commentId, commentCount: Array.isArray(post.comments) ? post.comments.length : 0 });
             }
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-delete-confirm sn-mat-modal" data-form="dialog-comment-delete" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal" data-form="dialog-comment-delete" data-action="noop">
                     <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                        <div class="lux-glass-dialog-heading">
                             <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                             <div class="social-neo-delete-confirm-title">
-                                <strong class="social-neo-dialog-title">Delete comment</strong>
-                                <span class="social-neo-dialog-subtitle">This cannot be undone.</span>
+                                <strong class="lux-glass-dialog-title">Delete comment</strong>
+                                <span class="lux-glass-dialog-subtitle">This cannot be undone.</span>
                             </div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-delete-confirm-preview">
                         ${previewAuthor}
@@ -927,8 +927,8 @@ function __kiuFeedExpose(map) {
                         ${debugNote}
                     </div>
                     <div class="social-neo-delete-confirm-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-danger social-neo-dialog-submit-btn" type="submit" ${targetComment ? '' : 'disabled'}>Delete comment</button>
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="lux-primary-btn lux-btn-danger lux-glass-dialog-submit-btn" type="submit" ${targetComment ? '' : 'disabled'}>Delete comment</button>
                     </div>
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                     <input type="hidden" name="commentId" value="${escape(text(targetComment?.id || dialog.commentId || ''))}">
@@ -936,10 +936,10 @@ function __kiuFeedExpose(map) {
             </div>`;
         }
         if (kind === 'post-delete' && post) {
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-delete" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-delete" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Delete post', 'This removes the post from the social feed.') : ''}
-                    <div class="social-neo-dialog-preview">${escape(text(post.body || post.text || 'This post has no text.'))}</div>
+                    <div class="lux-glass-dialog-preview">${escape(text(post.body || post.text || 'This post has no text.'))}</div>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Delete post' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
@@ -969,24 +969,24 @@ function __kiuFeedExpose(map) {
             const dialogSubtitle = dialogCommentTotal
                 ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'} on this post.`
                 : 'Be the first to reply to this post.';
-            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Comments">
-                <div class="social-neo-dialog-card social-neo-dialog-card--comments sn-mat-modal" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-dialog-head social-neo-surveys-hero-head">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Comments">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--comments sn-mat-modal" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Post</span>
                             <h2>Comments</h2>
                             <p>${escape(dialogSubtitle)}</p>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats social-neo-dialog-comment-stats">
+                    <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats lux-glass-dialog-comment-stats">
                         <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogPostReactionTotal))}</strong><span>Reactions</span></article>
                         <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogCommentTotal))}</strong><span>Comments</span></article>
                         <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(dialogScopeBadge)}</strong><span>Scope</span></article>
                     </div>
-                    <div class="social-neo-dialog-comment-scroll">
-                    <div class="social-neo-dialog-comment-preview">
-                        <div class="social-neo-dialog-comment-post-head">
+                    <div class="lux-glass-dialog-comment-scroll">
+                    <div class="lux-glass-dialog-comment-preview">
+                        <div class="lux-glass-dialog-comment-post-head">
                             <div class="social-neo-person social-neo-person-start-gap-10">
                                 ${avatar(dialogPostAuthor, 'social-neo-avatar-sm')}
                                 <div>
@@ -996,7 +996,7 @@ function __kiuFeedExpose(map) {
                             </div>
                             <span class="social-neo-pill social-neo-post-scope-badge">${escape(dialogScopeBadge)}</span>
                         </div>
-                        ${text(post.body || post.text || '') ? `<div class="social-neo-dialog-comment-post-body">${escape(text(post.body || post.text || ''))}</div>` : ''}
+                        ${text(post.body || post.text || '') ? `<div class="lux-glass-dialog-comment-post-body">${escape(text(post.body || post.text || ''))}</div>` : ''}
                         ${dialogPostMedia.map((media) => filePreview(media)).join('')}
                         ${dialogSharedPost ? `
                             <div class="social-neo-shared">
@@ -1006,23 +1006,23 @@ function __kiuFeedExpose(map) {
                             </div>
                         ` : ''}
                         ${(dialogPostReactionTotal || dialogCommentTotal) ? `
-                            <div class="social-neo-dialog-comment-post-metrics">
+                            <div class="lux-glass-dialog-comment-post-metrics">
                                 ${renderPostReactionMetrics(dialogPostReactionCounts)}
                                 ${dialogCommentTotal ? `<span class="social-neo-post-metric">${escape(dialogCommentTotal)} comment${dialogCommentTotal === 1 ? '' : 's'}</span>` : ''}
                                 ${Number(post.shareCount || 0) > 0 ? `<span class="social-neo-post-metric">${escape(post.shareCount)} share${post.shareCount !== 1 ? 's' : ''}</span>` : ''}
                             </div>
                         ` : ''}
                     </div>
-                    <div class="social-neo-dialog-comment-thread" id="social-neo-dialog-comment-thread">
+                    <div class="lux-glass-dialog-comment-thread" id="lux-glass-dialog-comment-thread">
                         ${dialogComments.length ? renderCommentThread(dialogComments, post, 'dialog') : '<div class="social-neo-empty">No comments yet. Be the first to reply.</div>'}
                     </div>
                     </div>
-                    <form class="social-neo-dialog-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
+                    <form class="lux-glass-dialog-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
                         ${avatar(commentAuthor, 'social-neo-avatar-sm')}
-                        <div class="social-neo-dialog-comment-compose-main">
+                        <div class="lux-glass-dialog-comment-compose-main">
                             <div class="social-neo-inline social-neo-comment-compose-row">
                                 <input class="social-neo-input" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="${escape(dialogCommentPlaceholder)}" aria-label="${escape(dialogCommentPlaceholder)}" value="${escape(dialogCommentDraft)}">
-                                <button class="social-neo-btn social-neo-btn-primary" type="submit">${dialogCommentSubmitLabel}</button>
+                                <button class="lux-primary-btn" type="submit">${dialogCommentSubmitLabel}</button>
                             </div>
                         </div>
                         <input type="hidden" name="postId" value="${escape(dialogNormalizedPostId)}">
@@ -1403,7 +1403,7 @@ function __kiuFeedExpose(map) {
                 }
                 const body = text(commentInput?.value || runtime.ui.commentDraftByPost?.[postId]);
                 if (!body) throw new Error('Comment body is required.');
-                const thread = document.getElementById('social-neo-dialog-comment-thread');
+                const thread = document.getElementById('lux-glass-dialog-comment-thread');
                 const priorIds = new Set(
                     thread
                         ? Array.from(thread.querySelectorAll('[data-comment-id]')).map((n) => String(n.getAttribute('data-comment-id') || ''))
@@ -1547,7 +1547,7 @@ function __kiuFeedExpose(map) {
                     return;
                 }
                 const updatedPost = await removePortalSocialComment(postId, commentId);
-                const thread = document.getElementById('social-neo-dialog-comment-thread');
+                const thread = document.getElementById('lux-glass-dialog-comment-thread');
                 const article = thread?.querySelector(`article.social-neo-comment[data-comment-id="${CSS.escape(commentId)}"]`);
                 if (article?.parentNode) article.parentNode.removeChild(article);
                 if (thread) {

@@ -304,13 +304,13 @@ function renderLmsQuizLifecycleCard(context, quiz, sectionType) {
             </div>
             <div class="lms-quiz-card-actions">
                 ${sectionType === 'draft'
-                    ? `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="loadLmsQuizDraftForEdit(${jsQuote(quiz.id)})"><i class="fas fa-pen"></i> Edit Draft</button>
-                       <button class="kiu-btn-blue lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-paper-plane"></i> Publish</button>
-                       <button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-danger" data-lms-click="deleteLmsQuizDraft(${jsQuote(quiz.id)})"><i class="fas fa-trash"></i> Delete Draft</button>`
-                    : `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-users"></i> View Submissions</button>
-                       <button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="exportLmsQuizMonitoringLog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-file-export"></i> Export Monitoring</button>
-                       <button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-user-check"></i> Manage Access</button>
-                       ${lifecycle === 'published' ? `<button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-warning" data-lms-click="closeLmsQuiz(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`}
+                    ? `<button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="loadLmsQuizDraftForEdit(${jsQuote(quiz.id)})"><i class="fas fa-pen"></i> Edit Draft</button>
+                       <button class="lux-primary-btn lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-paper-plane"></i> Publish</button>
+                       <button class="lux-secondary-btn lms-quiz-card-action lms-quiz-card-action-danger" data-lms-click="deleteLmsQuizDraft(${jsQuote(quiz.id)})"><i class="fas fa-trash"></i> Delete Draft</button>`
+                    : `<button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-users"></i> View Submissions</button>
+                       <button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="exportLmsQuizMonitoringLog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-file-export"></i> Export Monitoring</button>
+                       <button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-user-check"></i> Manage Access</button>
+                       ${lifecycle === 'published' ? `<button class="lux-secondary-btn lms-quiz-card-action lms-quiz-card-action-warning" data-lms-click="closeLmsQuiz(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`}
             </div>
             ${variantAssignments.length ? `<div class="lms-quiz-card-variant-list">${variantAssignments.map(entry => `<span class="lms-quiz-card-variant-pill">${escapeHtml(entry.label)}  -  ${entry.count} student${entry.count === 1 ? '' : 's'}</span>`).join('')}</div>` : ''}
         </div>
@@ -484,10 +484,14 @@ function renderLmsQuizResultsBoard(context) {
 }
 
 function closeLmsQuizFloatingLayers() {
-    document.getElementById('lms-quiz-board-modal')?.remove();
-    document.getElementById('lms-quiz-review-board-modal')?.remove();
-    document.getElementById('lms-quiz-access-overlay')?.remove();
-    document.getElementById('lms-quiz-review-modal')?.remove();
+    ['lms-quiz-board-modal', 'lms-quiz-review-board-modal', 'lms-quiz-access-overlay', 'lms-quiz-review-modal'].forEach((id) => {
+        const overlay = document.getElementById(id);
+        if (overlay && typeof window.closeLuxGlassDialogOverlay === 'function') {
+            window.closeLuxGlassDialogOverlay(overlay, { instant: true });
+        } else {
+            overlay?.remove();
+        }
+    });
 }
 
 function closeLmsQuizOverlays() {
@@ -496,7 +500,12 @@ function closeLmsQuizOverlays() {
 }
 
 function closeLmsQuizBoardModal() {
-    document.getElementById('lms-quiz-board-modal')?.remove();
+    const overlay = document.getElementById('lms-quiz-board-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function openLmsQuizBoardModal(page = null) {
@@ -517,40 +526,44 @@ function openLmsQuizBoardModal(page = null) {
     closeLmsQuizFloatingLayers();
     const overlay = document.createElement('div');
     overlay.id = 'lms-quiz-board-modal';
-    overlay.className = 'lms-quiz-board-overlay';
+    overlay.className = 'lms-quiz-board-overlay lms-glass-dialog-overlay';
+    overlay.setAttribute('data-lux-transparency-exempt', '1');
     overlay.onclick = event => {
         if (event.target === overlay) closeLmsQuizBoardModal();
     };
-    overlay.innerHTML = `
-        <div class="lms-quiz-board-modal">
-            <div class="lms-quiz-board-head">
-                <div class="lms-quiz-board-head-copy">
-                    <div class="lms-quiz-board-kicker">Quiz Board</div>
-                    <div class="lms-quiz-board-title">${escapeHtml(meta.title)}  -  ${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
-                    <div class="lms-quiz-board-copy">${escapeHtml(meta.description)}</div>
-                </div>
-                <button type="button" class="kiu-btn-outline lms-quiz-board-close-btn" data-lms-click="closeLmsQuizBoardModal()"><i class="fas fa-times"></i> Close</button>
-            </div>
-            <div class="lms-quiz-board-body">
-                <div class="lms-quiz-board-toolbar">
+    const boardBody = `
+                <div class="lms-quiz-board-toolbar" data-lms-quiz-board-tabs-rail>
                     <div class="lms-quiz-board-tabs">
                         ${modalTabs.map(tab => `
-                            <button type="button" data-lms-click="openLmsQuizBoardModal(${jsQuote(tab.key)})" class="${targetPage === tab.key ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-quiz-board-tab">
+                            <button type="button" data-lms-click="openLmsQuizBoardModal(${jsQuote(tab.key)})" class="${targetPage === tab.key ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-quiz-board-tab">
                                 ${escapeHtml(tab.label)}
                             </button>
                         `).join('')}
                     </div>
-                    <div class="lms-quiz-board-count-pill">
-                        ${escapeHtml(String(meta.items.length))} total in this section
-                    </div>
+                    <span class="lux-status-pill is-muted lms-quiz-board-count-pill">${escapeHtml(String(meta.items.length))} total in this section</span>
                 </div>
+                <div class="lms-quiz-board-card-list lux-scrollbar">
                 ${meta.items.length
                     ? meta.items.map(quiz => renderLmsQuizLifecycleCard(context, quiz, meta.sectionType)).join('')
                     : '<div class="lms-quiz-board-empty">Nothing here yet.</div>'}
-            </div>
-        </div>
-    `;
+                </div>`;
+    overlay.innerHTML = typeof renderLmsGlassDialogCard === 'function'
+        ? renderLmsGlassDialogCard({
+            hookClass: 'lms-quiz-board-modal',
+            bodyClass: 'lms-quiz-board-body',
+            title: 'Quiz Board',
+            icon: 'fa-clipboard-list',
+            subtitle: `${escapeHtml(meta.title)} · ${escapeHtml(context.subject?.name || context.courseId)} · ${escapeHtml(context.group?.name || context.groupId)} — ${escapeHtml(meta.description)}`,
+            closeAttr: 'data-lms-click="closeLmsQuizBoardModal()"',
+            bodyHtml: boardBody
+        })
+        : `<div class="lms-quiz-board-modal">${boardBody}</div>`;
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function setLmsQuizBoardPage(page) {
@@ -768,7 +781,7 @@ function renderLmsStaffQuizWorkspace(context) {
                             <div class="lms-quiz-variant-question-copy">${question.sourceQuestionId ? `From base pool  -  ${escapeHtml(question.sourceQuestionId)}` : 'Manual copy'}</div>
                         </div>
                         <div class="lms-quiz-variant-question-actions">
-                            <button type="button" class="kiu-btn-outline lms-quiz-variant-action-danger" data-lms-click="removeLmsQuizVariantQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)})"><i class="fas fa-trash"></i> Remove</button>
+                            <button type="button" class="lux-secondary-btn lms-quiz-variant-action-danger" data-lms-click="removeLmsQuizVariantQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)})"><i class="fas fa-trash"></i> Remove</button>
                         </div>
                     </div>
                     <textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Variant question text..." class="lms-quiz-variant-question-textarea">${escapeHtml(question.text || '')}</textarea>
@@ -789,7 +802,7 @@ function renderLmsStaffQuizWorkspace(context) {
                     }
                     <div class="lms-quiz-variant-replace-row">
                         <label class="lms-quiz-variant-field">Replace With Base Question<select id="${replacementSelectId}" class="lms-quiz-variant-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
-                        <button type="button" class="kiu-btn-outline lms-quiz-variant-action" data-lms-click="replaceLmsQuizVariantQuestionWithBaseQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, document.getElementById(${jsQuote(replacementSelectId)})?.value)"><i class="fas fa-arrows-rotate"></i> Replace</button>
+                        <button type="button" class="lux-secondary-btn lms-quiz-variant-action" data-lms-click="replaceLmsQuizVariantQuestionWithBaseQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, document.getElementById(${jsQuote(replacementSelectId)})?.value)"><i class="fas fa-arrows-rotate"></i> Replace</button>
                     </div>
                 </div>
             `;
@@ -824,7 +837,7 @@ function renderLmsStaffQuizWorkspace(context) {
                         <div class="lms-quiz-studio-alert-summary-copy">${alertSummary.alertedStudents} student${alertSummary.alertedStudents === 1 ? '' : 's'} triggered ${alertSummary.alertCount} warning${alertSummary.alertCount === 1 ? '' : 's'} across ${alertSummary.quizzesWithAlerts} quiz${alertSummary.quizzesWithAlerts === 1 ? '' : 'zes'}.</div>
                         ${alertSummary.latestAlert ? `<div class="lms-quiz-studio-alert-summary-latest">Latest: ${escapeHtml(alertSummary.latestAlert.note || alertSummary.latestAlert.type || 'Monitoring event')}  -  ${escapeHtml(formatLmsDateTime(alertSummary.latestAlert.createdAt))}</div>` : ''}
                     </div>
-                    <button type="button" class="kiu-btn-outline lms-quiz-studio-alert-action" data-lms-click="setLmsQuizBoardPage('review')">
+                    <button type="button" class="lux-secondary-btn lms-quiz-studio-alert-action" data-lms-click="setLmsQuizBoardPage('review')">
                         <i class="fas fa-triangle-exclamation"></i> Open Review Queue
                     </button>
                 </div>
@@ -840,19 +853,19 @@ function renderLmsStaffQuizWorkspace(context) {
                         <div class="lms-live-monitor-count-pill">
                             <span class="lms-monitor-pulse-dot"></span> ${liveMonitorEntries.length} ${monitorMode === 'all' ? 'flagged case' : 'active case'}${liveMonitorEntries.length === 1 ? '' : 's'}
                         </div>
-                        <button type="button" class="${monitorMode === 'running' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorMode('running')">
+                        <button type="button" class="${monitorMode === 'running' ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorMode('running')">
                             Running Quiz Only
                         </button>
-                        <button type="button" class="${monitorMode === 'all' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorMode('all')">
+                        <button type="button" class="${monitorMode === 'all' ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorMode('all')">
                             All Flagged
                         </button>
-                        <button type="button" class="${monitorAckFilter === 'all' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('all')">
+                        <button type="button" class="${monitorAckFilter === 'all' ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('all')">
                             All Alerts
                         </button>
-                        <button type="button" class="${monitorAckFilter === 'unacknowledged' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('unacknowledged')">
+                        <button type="button" class="${monitorAckFilter === 'unacknowledged' ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('unacknowledged')">
                             Unacknowledged
                         </button>
-                        <button type="button" class="${monitorAckFilter === 'acknowledged' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('acknowledged')">
+                        <button type="button" class="${monitorAckFilter === 'acknowledged' ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('acknowledged')">
                             Acknowledged
                         </button>
                     </div>
@@ -873,10 +886,10 @@ function renderLmsStaffQuizWorkspace(context) {
                             <div class="lms-live-monitor-timeline">${escapeHtml(formatLmsDateTime(entry.latestAlert.createdAt))}  -  Attendance: ${escapeHtml(entry.attendanceStatus)}  -  Status: ${escapeHtml(entry.submissionStatus)}  -  Quiz: ${escapeHtml(entry.availability)}</div>
                             ${entry.isAcknowledged ? `<div class="lms-live-monitor-ack-note">Acknowledged by staff at ${escapeHtml(formatLmsDateTime(entry.acknowledgedAt))}</div>` : ''}
                             <div class="lms-live-monitor-actions">
-                                ${entry.isAcknowledged ? '' : `<button type="button" class="kiu-btn-outline lms-live-monitor-action lms-live-monitor-action-ack" data-lms-click="acknowledgeLmsQuizMonitorAlert(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})">
+                                ${entry.isAcknowledged ? '' : `<button type="button" class="lux-secondary-btn lms-live-monitor-action lms-live-monitor-action-ack" data-lms-click="acknowledgeLmsQuizMonitorAlert(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})">
                                     <i class="fas fa-check"></i> Acknowledge
                                 </button>`}
-                                <button type="button" class="kiu-btn-outline lms-live-monitor-action lms-live-monitor-action-open" data-lms-click="openLmsQuizReviewModal(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})">
+                                <button type="button" class="lux-secondary-btn lms-live-monitor-action lms-live-monitor-action-open" data-lms-click="openLmsQuizReviewModal(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})">
                                     <i class="fas fa-eye"></i> Open Student Monitor
                                 </button>
                             </div>
@@ -926,7 +939,7 @@ function renderLmsStaffQuizWorkspace(context) {
                             </div>
                             <div class="lms-quiz-tool-actions">
                                 <span class="lms-quiz-compact-badge"><i class="fas fa-clone"></i> ${draft?.variantEnabled ? 'Variants on' : 'Variants off'}</span>
-                                <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="toggleLmsQuizVariantSetPanel()"><i class="fas ${variantSetExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${variantSetExpanded ? 'Hide setup' : 'Show setup'}</button>
+                                <button type="button" class="lux-secondary-btn lms-quiz-variant-action-btn" data-lms-click="toggleLmsQuizVariantSetPanel()"><i class="fas ${variantSetExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${variantSetExpanded ? 'Hide setup' : 'Show setup'}</button>
                             </div>
                         </div>
                         <div class="lms-quiz-tool-body">
@@ -942,9 +955,9 @@ function renderLmsStaffQuizWorkspace(context) {
                             </div>
                             ${draft?.variantEnabled ? `
                                 <div class="lms-quiz-variant-action-row">
-                                    <button type="button" class="kiu-btn-blue lms-quiz-variant-action-btn" data-lms-click="generateLmsQuizVariants()"><i class="fas fa-wand-magic-sparkles"></i> Generate Variants</button>
-                                    <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="regenerateAllLmsQuizVariants()"><i class="fas fa-rotate"></i> Regenerate All</button>
-                                    <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="resetLmsQuizVariantsToBasePool()"><i class="fas fa-layer-group"></i> Reset to Base Pool</button>
+                                    <button type="button" class="lux-primary-btn lms-quiz-variant-action-btn" data-lms-click="generateLmsQuizVariants()"><i class="fas fa-wand-magic-sparkles"></i> Generate Variants</button>
+                                    <button type="button" class="lux-secondary-btn lms-quiz-variant-action-btn" data-lms-click="regenerateAllLmsQuizVariants()"><i class="fas fa-rotate"></i> Regenerate All</button>
+                                    <button type="button" class="lux-secondary-btn lms-quiz-variant-action-btn" data-lms-click="resetLmsQuizVariantsToBasePool()"><i class="fas fa-layer-group"></i> Reset to Base Pool</button>
                                 </div>
                                 <div class="lms-quiz-variant-workspace">
                                     <div class="lms-quiz-variant-workspace-head">
@@ -952,12 +965,12 @@ function renderLmsStaffQuizWorkspace(context) {
                                             <div class="lms-quiz-variant-workspace-kicker">Variant Tabs</div>
                                             <div class="lms-quiz-variant-workspace-copy">Generate first, then adjust a single variant manually if needed.</div>
                                         </div>
-                                        ${activeVariant ? `<button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="regenerateLmsQuizVariant(${jsQuote(activeVariant.id)})"><i class="fas fa-repeat"></i> Regenerate ${escapeHtml(activeVariant.label)}</button>` : ''}
+                                        ${activeVariant ? `<button type="button" class="lux-secondary-btn lms-quiz-variant-action-btn" data-lms-click="regenerateLmsQuizVariant(${jsQuote(activeVariant.id)})"><i class="fas fa-repeat"></i> Regenerate ${escapeHtml(activeVariant.label)}</button>` : ''}
                                     </div>
                                     <div class="lms-quiz-variant-tab-row">${variantTabsMarkup || '<span class="lms-quiz-variant-empty-copy">No variants generated yet.</span>'}</div>
                                     ${activeVariant ? `<div class="lms-quiz-variant-add-row">
                                         <label class="lms-quiz-variant-field">Add Base Question To ${escapeHtml(activeVariant.label)}<select id="lms-variant-add-base-question" class="lms-quiz-variant-config-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
-                                        <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="addBaseQuestionToLmsQuizVariant(${jsQuote(activeVariant.id)}, document.getElementById('lms-variant-add-base-question')?.value)"><i class="fas fa-plus"></i> Add Question</button>
+                                        <button type="button" class="lux-secondary-btn lms-quiz-variant-action-btn" data-lms-click="addBaseQuestionToLmsQuizVariant(${jsQuote(activeVariant.id)}, document.getElementById('lms-variant-add-base-question')?.value)"><i class="fas fa-plus"></i> Add Question</button>
                                     </div>` : ''}
                                     <div class="lms-quiz-variant-question-list">${activeVariantQuestionsMarkup}</div>
                                 </div>
@@ -971,9 +984,9 @@ function renderLmsStaffQuizWorkspace(context) {
                                 <span>${escapeHtml(questionNavigatorStatus)}. Hide the whole builder when you only need quiz settings or saved quizzes.</span>
                             </div>
                             <div class="lms-quiz-tool-actions">
-                                <button class="kiu-btn-outline lms-quiz-action-btn" data-lms-click="resetLmsQuizBuilderDraft()"><i class="fas fa-rotate-left"></i> Reset Draft</button>
-                                <button class="kiu-btn-blue lms-quiz-action-btn" data-lms-click="addLmsQuizQuestion()"><i class="fas fa-plus"></i> Add Question</button>
-                                <button type="button" class="kiu-btn-outline lms-quiz-action-btn" data-lms-click="toggleLmsQuizQuestionNavigatorPanel()"><i class="fas ${questionNavigatorExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${questionNavigatorExpanded ? 'Hide builder' : 'Show builder'}</button>
+                                <button class="lux-secondary-btn lms-quiz-action-btn" data-lms-click="resetLmsQuizBuilderDraft()"><i class="fas fa-rotate-left"></i> Reset Draft</button>
+                                <button class="lux-primary-btn lms-quiz-action-btn" data-lms-click="addLmsQuizQuestion()"><i class="fas fa-plus"></i> Add Question</button>
+                                <button type="button" class="lux-secondary-btn lms-quiz-action-btn" data-lms-click="toggleLmsQuizQuestionNavigatorPanel()"><i class="fas ${questionNavigatorExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${questionNavigatorExpanded ? 'Hide builder' : 'Show builder'}</button>
                             </div>
                         </div>
                         <div class="lms-quiz-tool-body">
@@ -989,7 +1002,7 @@ function renderLmsStaffQuizWorkspace(context) {
                                     <div class="lms-quiz-question-editor-title">Focused Question Editor</div>
                                 </div>
                                 <div class="lms-quiz-question-editor-actions">
-                                    <button class="kiu-btn-outline lms-quiz-question-remove-btn" data-lms-click="removeActiveLmsQuizBuilderQuestion()" ${(draft?.questions?.length || 0) <= 1 ? 'disabled' : ''}><i class="fas fa-trash"></i> Remove</button>
+                                    <button class="lux-secondary-btn lms-quiz-question-remove-btn" data-lms-click="removeActiveLmsQuizBuilderQuestion()" ${(draft?.questions?.length || 0) <= 1 ? 'disabled' : ''}><i class="fas fa-trash"></i> Remove</button>
                                 </div>
                             </div>
                             <div class="lms-quiz-question-editor-body">
@@ -1002,13 +1015,13 @@ function renderLmsStaffQuizWorkspace(context) {
                                 ${activeAnswerComposer}
                             </div>
                             <div class="lms-quiz-question-step-row">
-                                <button class="kiu-btn-outline lms-quiz-question-step-btn ${activeQuestionIndex <= 0 ? 'is-disabled' : ''}" data-lms-click="stepLmsQuizBuilderQuestion(-1)" ${activeQuestionIndex <= 0 ? 'disabled' : ''}><i class="fas fa-arrow-left"></i> Previous</button>
-                                <button class="kiu-btn-outline lms-quiz-question-step-btn ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'is-disabled' : ''}" data-lms-click="stepLmsQuizBuilderQuestion(1)" ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'disabled' : ''}>Next <i class="fas fa-arrow-right"></i></button>
+                                <button class="lux-secondary-btn lms-quiz-question-step-btn ${activeQuestionIndex <= 0 ? 'is-disabled' : ''}" data-lms-click="stepLmsQuizBuilderQuestion(-1)" ${activeQuestionIndex <= 0 ? 'disabled' : ''}><i class="fas fa-arrow-left"></i> Previous</button>
+                                <button class="lux-secondary-btn lms-quiz-question-step-btn ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'is-disabled' : ''}" data-lms-click="stepLmsQuizBuilderQuestion(1)" ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'disabled' : ''}>Next <i class="fas fa-arrow-right"></i></button>
                             </div>
                         </div>
                     </div>
                     <div class="lms-quiz-question-save-row">
-                        <button class="kiu-btn-blue lms-quiz-question-save-btn" data-lms-click="saveLmsQuizBuilderDraft()"><i class="fas fa-save"></i> ${draft?.editingQuizId ? 'Update Draft' : 'Save Draft'}</button>
+                        <button class="lux-primary-btn lms-quiz-question-save-btn" data-lms-click="saveLmsQuizBuilderDraft()"><i class="fas fa-save"></i> ${draft?.editingQuizId ? 'Update Draft' : 'Save Draft'}</button>
                     </div>
                         </div>
                     </div>
@@ -1030,7 +1043,7 @@ function renderLmsStaffQuizWorkspace(context) {
                                 <div class="lms-quiz-saved-subtitle">${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
                             </div>
                             <div class="lms-quiz-saved-actions">
-                                <button type="button" class="kiu-btn-outline lms-quiz-saved-open-btn" data-lms-click="openLmsQuizBoardModal(${jsQuote(boardPage)})">
+                                <button type="button" class="lux-secondary-btn lms-quiz-saved-open-btn" data-lms-click="openLmsQuizBoardModal(${jsQuote(boardPage)})">
                                     <i class="fas fa-up-right-and-down-left-from-center"></i> Open Full View
                                 </button>
                                 <div class="lms-quiz-saved-count-pill">${ensureLmsQuizzesForKey(context.resourceKey).length} total</div>
@@ -1043,7 +1056,7 @@ function renderLmsStaffQuizWorkspace(context) {
                                 { key: 'review', label: `Review Queue (${reviewItems.length}${alertSummary.alertCount ? `  -  ${alertSummary.alertCount} warn` : ''})` },
                                 { key: 'results', label: `Results (${workspace.closed.length})` }
                             ].map(tab => `
-                                <button type="button" data-lms-click="setLmsQuizBoardPage(${jsQuote(tab.key)})" class="${boardPage === tab.key ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-quiz-saved-tab-btn">
+                                <button type="button" data-lms-click="setLmsQuizBoardPage(${jsQuote(tab.key)})" class="${boardPage === tab.key ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-quiz-saved-tab-btn">
                                     ${escapeHtml(tab.label)}
                                 </button>
                             `).join('')}
@@ -1072,10 +1085,10 @@ function renderLmsStaffQuizWorkspace(context) {
                     <div class="lms-quiz-error-title">Quiz Builder could not load</div>
                     <div class="lms-quiz-error-copy">The staff quiz workspace hit a runtime problem, so we stopped it before it could break the whole LMS page.</div>
                     <div class="lms-quiz-error-actions">
-                        <button type="button" class="kiu-btn-outline lms-quiz-error-btn" data-lms-click="resetLmsQuizBuilderDraft(${jsQuote(context.resourceKey)}); renderLmsQuizSection(${jsQuote(context.resourceKey)})">
+                        <button type="button" class="lux-secondary-btn lms-quiz-error-btn" data-lms-click="resetLmsQuizBuilderDraft(${jsQuote(context.resourceKey)}); renderLmsQuizSection(${jsQuote(context.resourceKey)})">
                             <i class="fas fa-life-ring"></i> Reset Builder Draft
                         </button>
-                        <button type="button" class="kiu-btn-blue lms-quiz-error-btn" data-lms-click="renderLmsQuizSection(${jsQuote(context.resourceKey)})">
+                        <button type="button" class="lux-primary-btn lms-quiz-error-btn" data-lms-click="renderLmsQuizSection(${jsQuote(context.resourceKey)})">
                             <i class="fas fa-rotate-right"></i> Reload Quiz Workspace
                         </button>
                     </div>
@@ -1195,7 +1208,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                             <span class="lms-student-quiz-status-pill ${badgeToneClass}">${escapeHtml(badge.label)}</span>
                         </div>
                         <div class="lms-student-quiz-card-action-row">
-                            <button data-lms-student-quiz-action="true" type="button" class="kiu-btn-blue lms-student-quiz-primary-btn" data-lms-click="openLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})">
+                            <button data-lms-student-quiz-action="true" type="button" class="lux-primary-btn lms-student-quiz-primary-btn" data-lms-click="openLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})">
                                 <i class="fas fa-arrow-right"></i> ${escapeHtml(['submitted', 'auto-submitted', 'graded'].includes(String(submission?.status || '')) ? 'View Quiz' : 'Open in Anti-Cheat')}
                             </button>
                         </div>
@@ -1346,7 +1359,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                 <div class="lms-quiz-studio-hero">
                     <div class="lms-quiz-studio-hero-head">
                         <div>
-                            <button type="button" class="kiu-btn-outline lms-student-quiz-back-btn" data-lms-click="backToStudentLmsQuizList(${jsQuote(resourceKey)})"><i class="fas fa-arrow-left"></i> Back to Quizzes</button>
+                            <button type="button" class="lux-secondary-btn lms-student-quiz-back-btn" data-lms-click="backToStudentLmsQuizList(${jsQuote(resourceKey)})"><i class="fas fa-arrow-left"></i> Back to Quizzes</button>
                             <div class="lms-quiz-studio-kicker">${escapeHtml(getLmsQuizDisplayLabel(selectedQuiz))}</div>
                             <div class="lms-quiz-studio-title">${escapeHtml(selectedQuiz.title || getLmsQuizDisplayLabel(selectedQuiz))}</div>
                             <div class="lms-quiz-studio-copy">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}${selectedQuiz.weekLabel ? `  -  ${escapeHtml(selectedQuiz.weekLabel)}` : ''}${refreshedSubmission.variantLabel ? `  -  ${escapeHtml(refreshedSubmission.variantLabel)}` : ''}</div>
@@ -1392,7 +1405,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                                 </div>
                             </div>
                             <div class="lms-student-quiz-cover-actions lms-quiz-gate-actions">
-                                <button type="button" class="kiu-btn-blue lms-student-quiz-cover-btn" data-lms-click="revealLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})" ${(blueGate.required && !blueGate.startUnlocked) || (sessionGate.required && !sessionGate.startUnlocked) ? 'disabled' : ''}>
+                                <button type="button" class="lux-primary-btn lms-student-quiz-cover-btn" data-lms-click="revealLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})" ${(blueGate.required && !blueGate.startUnlocked) || (sessionGate.required && !sessionGate.startUnlocked) ? 'disabled' : ''}>
                                     <i class="fas fa-play"></i> Start Quiz
                                 </button>
                             </div>
@@ -1425,7 +1438,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                                 </div>
                             </div>
                         </div>`
-                        : `<div class="lms-student-quiz-answer-shell">${answersMarkup}${showSubmit ? `<div class="lms-student-quiz-submit-row"><button type="button" class="kiu-btn-blue lms-student-quiz-submit-btn" data-lms-click="submitLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})"><i class="fas fa-paper-plane"></i> Submit Answers</button></div>` : ''}</div>`
+                        : `<div class="lms-student-quiz-answer-shell">${answersMarkup}${showSubmit ? `<div class="lms-student-quiz-submit-row"><button type="button" class="lux-primary-btn lms-student-quiz-submit-btn" data-lms-click="submitLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})"><i class="fas fa-paper-plane"></i> Submit Answers</button></div>` : ''}</div>`
                 ) : ''}
                 ${resultMarkup}
             </div>
@@ -1475,7 +1488,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                     <div class="lms-quiz-error-title">My Quizzes could not load</div>
                     <div class="lms-quiz-error-copy">The student quiz view hit a runtime problem, so we stopped it before it could break the whole LMS page.</div>
                     <div class="lms-quiz-error-actions">
-                        <button type="button" class="kiu-btn-blue lms-student-quiz-error-btn" data-lms-click="renderLmsQuizSection(currentLmsQuizCourseKey || currentCourseId)">
+                        <button type="button" class="lux-primary-btn lms-student-quiz-error-btn" data-lms-click="renderLmsQuizSection(currentLmsQuizCourseKey || currentCourseId)">
                             <i class="fas fa-rotate-right"></i> Reload My Quizzes
                         </button>
                     </div>
@@ -1492,7 +1505,12 @@ function toggleLmsQuizReviewPanel(resourceKey, quizId) {
 }
 
 function closeLmsQuizReviewBoardModal() {
-    document.getElementById('lms-quiz-review-board-modal')?.remove();
+    const overlay = document.getElementById('lms-quiz-review-board-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function openLmsQuizReviewBoardModal(resourceKey, quizId) {
@@ -1503,25 +1521,29 @@ function openLmsQuizReviewBoardModal(resourceKey, quizId) {
 
     const overlay = document.createElement('div');
     overlay.id = 'lms-quiz-review-board-modal';
-    overlay.className = 'lms-quiz-board-overlay lms-quiz-review-board-overlay';
+    overlay.className = 'lms-quiz-board-overlay lms-quiz-review-board-overlay lms-glass-dialog-overlay';
+    overlay.setAttribute('data-lux-transparency-exempt', '1');
     overlay.onclick = event => {
         if (event.target === overlay) closeLmsQuizReviewBoardModal();
     };
-    overlay.innerHTML = `
-        <div class="lms-quiz-board-modal lms-quiz-review-board-modal">
-            <div class="lms-quiz-board-head">
-                <div class="lms-quiz-board-head-copy">
-                    <div class="lms-quiz-board-title">View Submissions</div>
-                    <div class="lms-quiz-board-copy">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
-                </div>
-                <button type="button" class="kiu-btn-outline lms-quiz-board-close-btn" data-lms-click="closeLmsQuizReviewBoardModal()"><i class="fas fa-times"></i> Close</button>
-            </div>
-            <div class="lms-quiz-board-body">
-                ${renderLmsQuizReviewPanel(resourceKey, quiz)}
-            </div>
-        </div>
-    `;
+    const reviewBody = renderLmsQuizReviewPanel(resourceKey, quiz);
+    overlay.innerHTML = typeof renderLmsGlassDialogCard === 'function'
+        ? renderLmsGlassDialogCard({
+            hookClass: 'lms-quiz-board-modal lms-quiz-review-board-modal',
+            bodyClass: 'lms-quiz-board-body',
+            title: 'View Submissions',
+            icon: 'fa-users',
+            subtitle: `${escapeHtml(getLmsQuizDisplayLabel(quiz))} · ${escapeHtml(quiz.title || 'Untitled Quiz')}`,
+            closeAttr: 'data-lms-click="closeLmsQuizReviewBoardModal()"',
+            bodyHtml: reviewBody
+        })
+        : `<div class="lms-quiz-board-modal lms-quiz-review-board-modal"><div class="lms-quiz-board-body">${reviewBody}</div></div>`;
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function setLmsQuizAttendanceStatus(resourceKey, quizId, studentId, status) {
@@ -1608,6 +1630,15 @@ function toggleStudentQuizPaperInline(studentId, criterion, number, panelId, stu
     panel.hidden = false;
 }
 
+function closeLmsQuizReviewModal() {
+    const overlay = document.getElementById('lms-quiz-review-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
+}
+
 function openLmsQuizReviewModal(resourceKey, quizId, studentId) {
     closeLmsQuizFloatingLayers();
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
@@ -1618,26 +1649,29 @@ function openLmsQuizReviewModal(resourceKey, quizId, studentId) {
         || { id: studentId, name: `Student ${studentId}` };
     const overlay = document.createElement('div');
     overlay.id = 'lms-quiz-review-modal';
-    overlay.className = 'lms-quiz-board-overlay lms-quiz-review-paper-overlay';
+    overlay.className = 'lms-quiz-board-overlay lms-quiz-review-paper-overlay lms-glass-dialog-overlay';
+    overlay.setAttribute('data-lux-transparency-exempt', '1');
     overlay.onclick = event => {
-        if (event.target === overlay) overlay.remove();
+        if (event.target === overlay) closeLmsQuizReviewModal();
     };
-    overlay.innerHTML = `
-        <div class="lms-quiz-board-modal lms-quiz-review-paper-modal">
-            <div class="lms-quiz-board-head">
-                <div class="lms-quiz-board-head-copy">
-                    <div class="lms-quiz-board-title">${escapeHtml(student.name)}</div>
-                    <div class="lms-quiz-board-copy">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(quiz.title || '')}</div>
-                    <div class="lms-quiz-board-kicker">Full submitted quiz view for TA / Professor review</div>
-                </div>
-                <button type="button" class="kiu-btn-outline lms-quiz-board-close-btn" data-lms-click="document.getElementById('lms-quiz-review-modal')?.remove()"><i class="fas fa-times"></i> Close</button>
-            </div>
-            <div class="lms-quiz-board-body">
-                ${buildLmsQuizReviewPaperMarkup(resourceKey, quizId, student.id, { studentName: student.name })}
-            </div>
-        </div>
-    `;
+    const paperBody = buildLmsQuizReviewPaperMarkup(resourceKey, quizId, student.id, { studentName: student.name });
+    overlay.innerHTML = typeof renderLmsGlassDialogCard === 'function'
+        ? renderLmsGlassDialogCard({
+            hookClass: 'lms-quiz-board-modal lms-quiz-review-paper-modal',
+            bodyClass: 'lms-quiz-board-body',
+            title: student.name,
+            icon: 'fa-file-lines',
+            subtitle: `${escapeHtml(getLmsQuizDisplayLabel(quiz))} · ${escapeHtml(quiz.title || '')} — Full submitted quiz view for TA / Professor review`,
+            closeAttr: 'data-lms-click="closeLmsQuizReviewModal()"',
+            bodyHtml: paperBody
+        })
+        : `<div class="lms-quiz-board-modal lms-quiz-review-paper-modal"><div class="lms-quiz-board-body">${paperBody}</div></div>`;
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 function saveLmsQuizManualGrade(resourceKey, quizId, studentId, attendanceId, scopeToken = '', focusSectionKey = '', studentName = '') {
     const quiz = getLmsQuizById(resourceKey, quizId);
@@ -1732,7 +1766,7 @@ function saveLmsQuizManualGrade(resourceKey, quizId, studentId, attendanceId, sc
     if (document.getElementById('student-evaluation-history-modal')) {
         openStudentEvaluationHistoryModal(studentId, studentName || student.name || '', focusSectionKey || normalizeLmsQuizAssessmentType(quiz.assessmentType));
     }
-    document.getElementById('lms-quiz-review-modal')?.remove();
+    closeLmsQuizReviewModal();
     rerenderCurrentLmsQuizWorkspace();
 }
 

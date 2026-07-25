@@ -1002,7 +1002,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         if (!topbar) return;
         const shell = topbar.querySelector('.lux-topbar-shell');
         if (shell) {
-            shell.classList.add('lux-soft-chrome', 'lux-panel');
+            shell.classList.add('lux-soft-chrome');
             shell.style.removeProperty('background');
             shell.style.removeProperty('background-color');
             shell.style.removeProperty('backdrop-filter');
@@ -1026,7 +1026,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             const topbar = document.createElement('div');
             topbar.id = 'lux-topbar';
             topbar.innerHTML = `
-                <div class="lux-topbar-shell lux-soft-chrome lux-panel">
+                <div class="lux-topbar-shell lux-soft-chrome">
                     <div class="lux-topbar-main">
                         <button class="lux-secondary-btn lux-sidebar-toggle-btn" id="lux-sidebar-toggle" type="button" aria-pressed="false" title="Show navigation">
                             <i class="fas fa-sidebar"></i>
@@ -1085,7 +1085,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         if (!homeShell || homeShellHasDashboardContent(homeShell)) return;
         if (homeShell.querySelector('[data-home-chrome-skeleton="1"]')) return;
         homeShell.innerHTML = `
-            <div class="lux-home-grid is-loading" data-home-chrome-skeleton="1" data-home-loading-shell="1">
+            <div class="lux-home-grid is-loading" data-home-chrome-skeleton="1" data-home-loading-shell="1" data-lux-glass-root="1">
                 <section class="lux-card">
                     <div class="lux-card-body lux-stack-grid">
                         <div class="lux-kicker">Dashboard</div>

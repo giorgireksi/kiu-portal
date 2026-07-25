@@ -112,8 +112,8 @@ function buildLmsAssignmentGradeModalBodyHtml({
                         <textarea id="${fieldIds.feedbackInputId}" class="lms-route-textarea lms-route-textarea-min-110 lms-assignment-grade-feedback-input" placeholder="Explain the score, note what to revise, or confirm why the work is ready.">${escapeHtml(submission.feedback || '')}</textarea>
                     </div>
                     <div class="lms-route-actions lms-route-actions-mt-16 lms-assignment-grade-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-lms-click="closeLmsAssignmentGradeModal()"><i class="fas fa-arrow-left"></i> Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" data-lms-click="saveLmsAssignmentSubmissionGrade(${jsQuote(courseId)}, ${jsQuote(assignment.id)}, ${jsQuote(studentId)})"><i class="fas fa-save"></i> Save Grade</button>
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-lms-click="closeLmsAssignmentGradeModal()"><i class="fas fa-arrow-left"></i> Cancel</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" data-lms-click="saveLmsAssignmentSubmissionGrade(${jsQuote(courseId)}, ${jsQuote(assignment.id)}, ${jsQuote(studentId)})"><i class="fas fa-save"></i> Save Grade</button>
                     </div>
                 </div>`;
 }
@@ -427,7 +427,12 @@ function buildLmsAssignmentGradeModalFieldIds(resourceKey, assignmentId, student
 }
 
 function closeLmsAssignmentGradeModal() {
-    document.getElementById('lms-assignment-grade-modal')?.remove();
+    const overlay = document.getElementById('lms-assignment-grade-modal');
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
 function saveLmsAssignmentSubmissionGrade(courseId, assignmentId, studentId) {
@@ -508,6 +513,11 @@ function gradeLmsAssignmentSubmission(courseId, assignmentId, studentId) {
         })
     }));
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 if (typeof window !== 'undefined') {

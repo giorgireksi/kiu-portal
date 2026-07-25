@@ -299,7 +299,7 @@ async function captureRun(browser, run) {
             };
             tick();
         });
-        document.querySelector('[data-study-card-assessment-close], [aria-label="Close section picker"], #student-course-section-picker-modal .kiu-btn-outline')?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        document.querySelector('[data-study-card-assessment-close], [aria-label="Close section picker"], #student-course-section-picker-modal .lux-secondary-btn')?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
         return Math.round(performance.now() - startMark);
     });
 

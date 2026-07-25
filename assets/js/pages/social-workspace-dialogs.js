@@ -304,26 +304,26 @@
                         </section>`;
 
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, 'project-task-detail');
-            const backdropClasses = ['social-neo-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
+            const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
             return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Task detail">
-                <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--project-task-detail social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass spt-detail-dialog" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-section-head social-neo-dialog-head spt-detail-head">
-                        <div class="social-neo-dialog-heading spt-detail-heading">
-                            <strong class="social-neo-dialog-title spt-detail-title">${escape(text(editTask.title || 'Task'))}</strong>
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-detail lux-glass-dialog-card lux-glass-dialog-card--social-glass spt-detail-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head spt-detail-head">
+                        <div class="lux-glass-dialog-heading spt-detail-heading">
+                            <strong class="lux-glass-dialog-title spt-detail-title">${escape(text(editTask.title || 'Task'))}</strong>
                             <div class="spt-detail-head-chips" aria-label="Status and priority">
                                 <span class="spt-detail-chip spt-detail-chip--status" data-status="${escape(statusId)}">${escape(statusLabel)}</span>
                                 <span class="spt-detail-chip spt-detail-chip--pri" data-priority="${escape(priorityInfo.bucket || priority)}">${escape(priorityShort)}</span>
                                 ${editTask?.isMilestone ? '<span class="spt-detail-chip spt-detail-chip--mile">Milestone</span>' : ''}
                                 ${readinessChip}
                             </div>
-                            ${headerMeta ? `<span class="social-neo-dialog-subtitle spt-detail-subtitle">${escape(headerMeta)}</span>` : ''}
+                            ${headerMeta ? `<span class="lux-glass-dialog-subtitle spt-detail-subtitle">${escape(headerMeta)}</span>` : ''}
                         </div>
                         <div class="spt-detail-head-actions">
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-graph-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(taskId))}" title="Open on map"><i class="fas fa-diagram-project" aria-hidden="true"></i> Map</button>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-task-graph-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(taskId))}" title="Open on map"><i class="fas fa-diagram-project" aria-hidden="true"></i> Map</button>
+                            <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-task-detail spt-detail-body">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-detail spt-detail-body">
                         <section class="spt-detail-section">
                             <h3 class="spt-detail-section-title">Description</h3>
                             <div class="social-project-task-detail-description spt-detail-description${description ? '' : ' is-empty'}">${description ? escape(description) : 'No description added yet.'}</div>
@@ -396,11 +396,11 @@
                         ${scheduleBlock}
                         ${depsBlock}
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions spt-detail-actions">
-                        ${canEdit ? `<button class="social-neo-btn social-neo-btn-danger social-neo-btn-ghost" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(taskId))}"><i class="fas fa-trash"></i> Remove</button>` : '<span></span>'}
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions spt-detail-actions">
+                        ${canEdit ? `<button class="lux-primary-btn lux-btn-danger lux-secondary-btn" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(taskId))}"><i class="fas fa-trash"></i> Remove</button>` : '<span></span>'}
                         <div class="spt-detail-actions-end">
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
-                            ${canEdit ? `<button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="project-task-edit-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(taskId))}"><i class="fas fa-pen"></i> Edit task</button>` : ''}
+                            <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
+                            ${canEdit ? `<button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="project-task-edit-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(taskId))}"><i class="fas fa-pen"></i> Edit task</button>` : ''}
                         </div>
                     </div>
                 </div>
@@ -593,8 +593,8 @@
                             </div>
                         </div>
                         ${canEdit ? `<div class="spr-risk-actions">
-                            <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" data-action="project-risk-edit" data-project-id="${escape(projectId)}" data-risk-id="${escape(text(risk?.id))}" aria-label="Edit risk"><i class="fas fa-pen"></i></button>
-                            <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" data-action="project-risk-delete" data-project-id="${escape(projectId)}" data-risk-id="${escape(text(risk?.id))}" aria-label="Delete risk"><i class="fas fa-trash"></i></button>
+                            <button type="button" class="lux-secondary-btn lux-secondary-btn-xs" data-action="project-risk-edit" data-project-id="${escape(projectId)}" data-risk-id="${escape(text(risk?.id))}" aria-label="Edit risk"><i class="fas fa-pen"></i></button>
+                            <button type="button" class="lux-secondary-btn lux-secondary-btn-xs" data-action="project-risk-delete" data-project-id="${escape(projectId)}" data-risk-id="${escape(text(risk?.id))}" aria-label="Delete risk"><i class="fas fa-trash"></i></button>
                         </div>` : ''}
                     </div>
                     ${text(risk?.description) ? `<p class="spr-risk-desc">${escape(text(risk.description))}</p>` : ''}
@@ -606,10 +606,10 @@
             };
 
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, 'project-risk');
-            const backdropClasses = ['social-neo-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
+            const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
             const composeFields = canEdit && composeOpen ? `
-                            <form class="spr-compose social-neo-dialog-group-create-section" data-form="project-risk-save" data-project-id="${escape(projectId)}" data-group-id="${escape(selectedGroupId)}" data-task-id="${escape(selectedTaskId)}" data-risk-id="${escape(text(formRisk?.id || ''))}" data-default-title="${escape(defaultRiskTitle)}" data-existing-title="${escape(text(formRisk?.title || ''))}" data-action="noop" autocomplete="off">
-                                <div class="social-neo-dialog-group-create-section-head">
+                            <form class="spr-compose lux-glass-dialog-group-section" data-form="project-risk-save" data-project-id="${escape(projectId)}" data-group-id="${escape(selectedGroupId)}" data-task-id="${escape(selectedTaskId)}" data-risk-id="${escape(text(formRisk?.id || ''))}" data-default-title="${escape(defaultRiskTitle)}" data-existing-title="${escape(text(formRisk?.title || ''))}" data-action="noop" autocomplete="off">
+                                <div class="lux-glass-dialog-group-section-head">
                                     <strong>${formRisk ? 'Edit risk' : 'Add risk'}</strong>
                                     <span>Scope: ${escape(scopeBreadcrumb)} · ${formRisk ? 'Update this entry' : 'Record a new risk'}</span>
                                 </div>
@@ -621,20 +621,20 @@
                                 <p class="spr-exposure-hint">Score = Likelihood × Impact (1–5 each, max 25). High ≥ 15 · Medium ≥ 5.</p>
                                 <p class="spr-exposure-live" aria-live="polite">Risk score: <strong>${escape(formatProjectRiskScore(formExposureScore, formExposureTier))}</strong></p>
                                 <div class="social-neo-form-grid social-neo-form-grid-2">
-                                    <label class="social-neo-dialog-field" for="${escape(statusId)}">
+                                    <label class="lux-glass-dialog-field" for="${escape(statusId)}">
                                         <span class="social-neo-label">Status</span>
                                         <select class="social-neo-select" id="${escape(statusId)}" name="projectRiskStatus" data-lux-picker>
                                             ${PROJECT_RISK_STATUS_OPTIONS.map((option) => `<option value="${escape(option)}" ${text(formRisk?.status || 'open') === option ? 'selected' : ''}>${escape(projectRiskOptionLabel(option))}</option>`).join('')}
                                         </select>
                                     </label>
-                                    <label class="social-neo-dialog-field" for="${escape(responseId)}">
+                                    <label class="lux-glass-dialog-field" for="${escape(responseId)}">
                                         <span class="social-neo-label">Response</span>
                                         <select class="social-neo-select" id="${escape(responseId)}" name="projectRiskResponse" data-lux-picker>
                                             ${PROJECT_RISK_RESPONSE_OPTIONS.map((option) => `<option value="${escape(option)}" ${text(formRisk?.response || 'mitigate') === option ? 'selected' : ''}>${escape(projectRiskOptionLabel(option))}</option>`).join('')}
                                         </select>
                                     </label>
                                 </div>
-                                <label class="social-neo-dialog-field" for="${escape(ownerId)}">
+                                <label class="lux-glass-dialog-field" for="${escape(ownerId)}">
                                     <span class="social-neo-label">Owner</span>
                                     <select class="social-neo-select" id="${escape(ownerId)}" name="projectRiskOwnerUserId" data-lux-picker>
                                         <option value="">Unassigned</option>
@@ -660,20 +660,20 @@
                     : neoActions({ hideCancel: true, submitLabel: 'Close', submitIcon: 'fas fa-check', submitType: 'button', submitAttrs: 'data-action="dialog-close"' }));
 
             return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Risk register">
-                <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--project-risk social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading">
-                            <strong class="social-neo-dialog-title"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Risk register</strong>
-                            <span class="social-neo-dialog-subtitle">${escape(text(project.name || project.title || 'Project'))} · Scope: ${escape(scopeBreadcrumb)}</span>
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-risk lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                        <div class="lux-glass-dialog-heading">
+                            <strong class="lux-glass-dialog-title"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Risk register</strong>
+                            <span class="lux-glass-dialog-subtitle">${escape(text(project.name || project.title || 'Project'))} · Scope: ${escape(scopeBreadcrumb)}</span>
                             <div class="spr-summary" aria-label="Risk summary">
                                 <span class="spr-summary-chip">${summary.open} open</span>
                                 <span class="spr-summary-chip${summary.high ? ' is-hot' : ''}">${summary.high} high exposure</span>
                                 <span class="spr-summary-chip">${summary.unassigned} unassigned</span>
                             </div>
                         </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-risk">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-risk">
                         <div class="spr-layout">
                             <aside class="spr-rail" aria-label="Risk scope">
                                 <div class="spr-rail-head">
@@ -691,7 +691,7 @@
                                         <h3>${escape(sectionLabel)}</h3>
                                         <p>${filteredRisks.length ? `${filteredRisks.length} risk${filteredRisks.length === 1 ? '' : 's'} in this scope` : 'No risks in this scope'}</p>
                                     </div>
-                                    ${canEdit && !composeOpen ? `<button type="button" class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" data-action="project-risk-compose-open" data-project-id="${escape(projectId)}"><i class="fas fa-plus"></i> Add risk</button>` : ''}
+                                    ${canEdit && !composeOpen ? `<button type="button" class="lux-primary-btn lux-secondary-btn-sm" data-action="project-risk-compose-open" data-project-id="${escape(projectId)}"><i class="fas fa-plus"></i> Add risk</button>` : ''}
                                 </div>
                                 <div class="spr-risk-list">
                                     ${listEmpty}
@@ -750,7 +750,7 @@
                     `).join('')}
                 </div>
                 <div class="sph-plan-add">
-                    <button type="button" class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" data-action="project-health-plan-pick-open" data-project-id="${escape(projectId)}" data-window="${escape(planWindow)}"><i class="fas fa-plus"></i> Add tasks…</button>
+                    <button type="button" class="lux-primary-btn lux-secondary-btn-sm" data-action="project-health-plan-pick-open" data-project-id="${escape(projectId)}" data-window="${escape(planWindow)}"><i class="fas fa-plus"></i> Add tasks…</button>
                     <span class="sph-plan-add-hint">Adding to <b>${escape(planHorizonLabel)}</b></span>
                 </div>
                 ${listHtml}
@@ -821,7 +821,7 @@
                     <strong class="sph-pick-pane-title">${escape(pkgName)}</strong>
                     <span class="sph-pick-meta">${visibleTasks.length} shown · ${selectedCount} selected</span>
                 </div>
-                <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" data-action="project-health-plan-pick-toggle-all" data-mode="${allVisibleSelected ? 'clear' : 'all'}" ${visibleIds.length ? '' : 'disabled'}>
+                <button type="button" class="lux-secondary-btn lux-secondary-btn-sm" data-action="project-health-plan-pick-toggle-all" data-mode="${allVisibleSelected ? 'clear' : 'all'}" ${visibleIds.length ? '' : 'disabled'}>
                     ${allVisibleSelected ? 'Clear visible' : 'Select all visible'}
                 </button>`;
         }
@@ -853,13 +853,13 @@
                 selectedCount
             } = model;
 
-            return `<div class="social-neo-dialog-backdrop social-neo-dialog-backdrop--stacked-child" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Add tasks to plan">
-                <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--health-plan-pick social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1" data-project-id="${escape(projectId)}" data-horizon="${escape(horizon)}">
+            return `<div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Add tasks to plan">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--health-plan-pick lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1" data-project-id="${escape(projectId)}" data-horizon="${escape(horizon)}">
                     ${neoHeadHtml(
                         `<i class="fas fa-list-check" aria-hidden="true"></i> Add to plan · ${escape(horizonLabel)}`,
                         'Pick a package or specific tasks, then add them to your plan.'
                     )}
-                    <div class="social-neo-dialog-body social-neo-dialog-body--health-plan-pick">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--health-plan-pick">
                         <div class="sph-pick-filters" data-lux-transparency-exempt="1">
                             <input class="social-neo-input social-neo-input-sm sph-pick-search" type="search" name="projectHealthPlanPickSearch" value="${escape(searchRaw)}" placeholder="Search tasks…" data-action="project-health-plan-pick-filter" data-filter="search" autocomplete="off">
                             <label class="sph-pick-checklab"><input type="checkbox" data-action="project-health-plan-pick-filter" data-filter="openOnly" ${openOnly ? 'checked' : ''}> Open only</label>
@@ -943,23 +943,23 @@
             };
 
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, 'project-health');
-            const backdropClasses = ['social-neo-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
+            const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
 
-            return `<div class="${backdropClasses} social-neo-dialog-backdrop--project-health-fs" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Project health">
-                <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--project-health social-neo-dialog-card--project-health-fs social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="social-neo-section-head social-neo-dialog-head sph-fs-topbar">
-                        <div class="social-neo-dialog-heading">
-                            <strong class="social-neo-dialog-title"><i class="fas fa-heart-pulse" aria-hidden="true"></i> Project health</strong>
-                            <span class="social-neo-dialog-subtitle">${escape(projectName)} · live from tasks, schedule, budget &amp; risks.</span>
+            return `<div class="${backdropClasses} lux-glass-dialog-backdrop--project-health-fs" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Project health">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-health lux-glass-dialog-card--project-health-fs lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head sph-fs-topbar">
+                        <div class="lux-glass-dialog-heading">
+                            <strong class="lux-glass-dialog-title"><i class="fas fa-heart-pulse" aria-hidden="true"></i> Project health</strong>
+                            <span class="lux-glass-dialog-subtitle">${escape(projectName)} · live from tasks, schedule, budget &amp; risks.</span>
                         </div>
                         <div class="sph-fs-topbar-actions">
                             <span class="sph-health-badge" data-health="${escape(healthLevel)}">${escape(healthLabel)}</span>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}"><i class="fas fa-diagram-project"></i> Map</button>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}"><i class="fas fa-diagram-project"></i> Map</button>
+                            <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
-                    <div class="social-neo-dialog-body social-neo-dialog-body--project-health">
-                        <section class="social-neo-dialog-group-create-section sph-fs-hero-section">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-health">
+                        <section class="lux-glass-dialog-group-section sph-fs-hero-section">
                             <div class="sph-verdict sph-verdict--rich sph-verdict--fs" data-health="${escape(healthLevel)}" data-over="${overCap ? '1' : '0'}">
                                 <div class="sph-verdict-lede">
                                     <span class="sph-k">The one-line read</span>
@@ -1051,7 +1051,7 @@
                                         <h3>Risks</h3>
                                         <span class="sph-auto">auto</span>
                                         ${canContribute || riskCount
-                                            ? `<button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" data-action="project-risk-open" data-project-id="${escape(projectId)}"><i class="fas fa-triangle-exclamation"></i> Register</button>`
+                                            ? `<button type="button" class="lux-secondary-btn lux-secondary-btn-sm" data-action="project-risk-open" data-project-id="${escape(projectId)}"><i class="fas fa-triangle-exclamation"></i> Register</button>`
                                             : ''}
                                     </div>
                                     <div class="sph-profile">
@@ -1117,9 +1117,9 @@
                         </div>
                         <div class="sph-legend"><span class="sph-auto">auto</span> Hygiene chips open the Work Desk filter. <span class="sph-auto">yours</span> My plan is manual (days / weeks / months / all). Risks open the risk register.</div>
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions sph-fs-footer">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}"><i class="fas fa-diagram-project"></i> Open map</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="dialog-close"><i class="fas fa-check"></i> Close</button>
+                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions sph-fs-footer">
+                        <button class="lux-secondary-btn" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}"><i class="fas fa-diagram-project"></i> Open map</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="dialog-close"><i class="fas fa-check"></i> Close</button>
                     </div>
                 </div>
             </div>`;

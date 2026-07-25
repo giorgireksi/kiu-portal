@@ -35,7 +35,7 @@ describe('student academic profile runtime', () => {
 
         expect(html).toContain('assets/js/shared/student-academic-helpers.js?v=20260705-student-academic13');
         expect(html).toContain('assets/js/pages/student-academic-runtime.js?v=20260705-student-academic13');
-        expect(html).toContain('assets/js/pages/students-command-center.js?v=20260705-student-academic13');
+        expect(html).toContain('assets/js/pages/students-command-center.js?v=20260720-sccmob1');
         expect(runtime).toContain('renderPersonalDataSubjectsSection');
         expect(runtime).toContain('hydrateStudentAcademicRecord');
         expect(runtime).toContain('toggleMobilityTransferPanel');
@@ -45,12 +45,13 @@ describe('student academic profile runtime', () => {
         const runtime = readSource('assets/js/pages/student-academic-runtime.js');
         const utilities = readSource('assets/js/shared/utilities.js');
 
-        expect(runtime).toContain('.students-hub-profile-metrics');
-        expect(runtime).toContain('.students-hub-academic-table');
-        expect(runtime).toContain('.students-hub-academic-overview');
-        expect(runtime).toContain('.students-hub-academic-stack');
-        expect(runtime).toContain('.students-hub-academic-schedule-canvas');
-        expect(utilities).toContain('shouldKeepStudentsAdminFadeCssBackground');
+        expect(runtime).toContain('students-hub-profile-metrics');
+        expect(runtime).toContain('students-hub-academic-table');
+        expect(runtime).toContain('students-hub-academic-overview');
+        expect(runtime).toContain('students-hub-academic-stack');
+        expect(runtime).toContain('students-hub-academic-schedule-canvas');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
+        expect(routeRuntime).toContain('isCssOwnedSurface');
         expect(existsSync(join(process.cwd(), 'assets/css/students-admin-lms.css'))).toBe(false);
     });
 });

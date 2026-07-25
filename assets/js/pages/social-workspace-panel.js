@@ -403,7 +403,7 @@
                     ...(isManager ? [{ icon: 'fa-globe', label: 'Publish showcase', action: 'project-showcase-publish' }] : []),
                 ];
                 const renderActionBtn = (entry, extraClass = '') => {
-                    const cls = `social-neo-btn social-neo-btn-ghost${extraClass ? ` ${extraClass}` : ''}`;
+                    const cls = `lux-secondary-btn${extraClass ? ` ${extraClass}` : ''}`;
                     if (entry.action === 'project-open-chat') {
                         return `<button class="${cls}" type="button" data-action="project-open-chat" data-project-id="${projectId}"><i class="fas ${entry.icon}"></i> ${entry.label}</button>`;
                     }
@@ -756,12 +756,12 @@
                                                 <strong>Needs your work</strong>
                                                 ${escape(String(overdueAssignedCount))} overdue · ${escape(String(dueTodayCount))} due today · ${escape(String(blockedAssignedCount))} blocked
                                             </span>
-                                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-hub-scope" data-scope="attention">Show projects →</button>
+                                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-hub-scope" data-scope="attention">Show projects →</button>
                                         </div>
                                     ` : ''}
                                     <div class="social-project-hub-scope" role="tablist" aria-label="Project scope">
                                         ${scopeChips.map(([value, label]) => `
-                                            <button class="social-neo-btn ${hubScope === value ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-hub-scope" data-scope="${escape(value)}" aria-pressed="${hubScope === value ? 'true' : 'false'}">${escape(label)}</button>
+                                            <button class="lux-secondary-btn ${hubScope === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-scope" data-scope="${escape(value)}" aria-pressed="${hubScope === value ? 'true' : 'false'}">${escape(label)}</button>
                                         `).join('')}
                                     </div>
                                     <div class="social-project-hub-filterbar">
@@ -769,7 +769,7 @@
                                             <span class="social-project-hub-filter-label">Status</span>
                                             <div class="social-project-hub-filter-pills">
                                                 ${statusPills.map(([value, label]) => `
-                                                    <button class="social-neo-btn ${hubStatus === value ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-hub-status" data-status="${escape(value)}">${escape(label)}${value !== 'all' ? ` (${escape(String(hubStatusCounts[value] || 0))})` : ''}</button>
+                                                    <button class="lux-secondary-btn ${hubStatus === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-status" data-status="${escape(value)}">${escape(label)}${value !== 'all' ? ` (${escape(String(hubStatusCounts[value] || 0))})` : ''}</button>
                                                 `).join('')}
                                             </div>
                                         </div>
@@ -782,10 +782,10 @@
                                         <div class="social-project-hub-filter-group social-project-hub-filter-group--skills">
                                             <span class="social-project-hub-filter-label">Skills</span>
                                             <div class="social-project-hub-filter-pills">
-                                                <button class="social-neo-btn ${!discoverTag ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-hub-skill" data-tag="">All</button>
+                                                <button class="lux-secondary-btn ${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-skill" data-tag="">All</button>
                                                 ${hubSkillOptions.map((skill) => {
                                                     const value = text(skill).toLowerCase();
-                                                    return `<button class="social-neo-btn ${discoverTag === value ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-hub-skill" data-tag="${escape(value)}">${escape(skill)}</button>`;
+                                                    return `<button class="lux-secondary-btn ${discoverTag === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-skill" data-tag="${escape(value)}">${escape(skill)}</button>`;
                                                 }).join('')}
                                             </div>
                                         </div>
@@ -798,8 +798,8 @@
                                                     <span>${escape(String(hubProjects.length))} matching</span>
                                                 </div>
                                                 <div class="social-project-hub-view-toggle" role="group" aria-label="Hub view mode">
-                                                    <button class="social-neo-btn ${hubViewMode === 'grid' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-hub-view" data-view="grid"><i class="fas fa-th-large"></i> Grid</button>
-                                                    <button class="social-neo-btn ${hubViewMode === 'list' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-hub-view" data-view="list"><i class="fas fa-list"></i> List</button>
+                                                    <button class="lux-secondary-btn ${hubViewMode === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-view" data-view="grid"><i class="fas fa-th-large"></i> Grid</button>
+                                                    <button class="lux-secondary-btn ${hubViewMode === 'list' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-view" data-view="list"><i class="fas fa-list"></i> List</button>
                                                 </div>
                                             </div>
                                             ${hubProjects.length
@@ -893,12 +893,12 @@
                             </div>
                         </div>
                         <div class="social-project-team-row-actions">
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="message-start" data-user-id="${escape(text(account.id))}"><i class="fas fa-paper-plane"></i> Message</button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="message-start" data-user-id="${escape(text(account.id))}"><i class="fas fa-paper-plane"></i> Message</button>
                             ${activeProject.isManager && text(entry.userId) !== text(activeProject.ownerUserId || '') ? `
-                                ${role !== 'member' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon social-neo-btn-sm" type="button" title="Make member" data-action="project-member-role" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}" data-role="member"><i class="fas fa-user"></i></button>` : ''}
-                                ${role !== 'advisor' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon social-neo-btn-sm" type="button" title="Promote to advisor" data-action="project-member-role" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}" data-role="advisor"><i class="fas fa-user-shield"></i></button>` : ''}
-                                ${role !== 'instructor-viewer' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon social-neo-btn-sm" type="button" title="Set instructor viewer" data-action="project-member-role" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}" data-role="instructor-viewer"><i class="fas fa-chalkboard-user"></i></button>` : ''}
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon social-neo-btn-sm" type="button" title="Remove member" data-action="project-member-remove" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}"><i class="fas fa-user-minus"></i></button>
+                                ${role !== 'member' ? `<button class="lux-secondary-btn lux-secondary-btn-icon lux-secondary-btn-sm" type="button" title="Make member" data-action="project-member-role" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}" data-role="member"><i class="fas fa-user"></i></button>` : ''}
+                                ${role !== 'advisor' ? `<button class="lux-secondary-btn lux-secondary-btn-icon lux-secondary-btn-sm" type="button" title="Promote to advisor" data-action="project-member-role" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}" data-role="advisor"><i class="fas fa-user-shield"></i></button>` : ''}
+                                ${role !== 'instructor-viewer' ? `<button class="lux-secondary-btn lux-secondary-btn-icon lux-secondary-btn-sm" type="button" title="Set instructor viewer" data-action="project-member-role" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}" data-role="instructor-viewer"><i class="fas fa-chalkboard-user"></i></button>` : ''}
+                                <button class="lux-secondary-btn lux-secondary-btn-icon lux-secondary-btn-sm" type="button" title="Remove member" data-action="project-member-remove" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(entry.userId))}"><i class="fas fa-user-minus"></i></button>
                             ` : ''}
                         </div>
                     </article>
@@ -1140,7 +1140,7 @@
                             ['list', 'List', 'fa-list'],
                             ['graph', 'Map', 'fa-diagram-project']
                         ].map(([mode, label, icon]) => `
-                            <button class="social-neo-btn ${taskViewMode === mode ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-task-view" data-view="${escape(mode)}" aria-pressed="${taskViewMode === mode ? 'true' : 'false'}">
+                            <button class="lux-secondary-btn ${taskViewMode === mode ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-task-view" data-view="${escape(mode)}" aria-pressed="${taskViewMode === mode ? 'true' : 'false'}">
                                 <i class="fas ${escape(icon)}" aria-hidden="true"></i> ${escape(label)}
                             </button>
                         `).join('')}
@@ -1438,8 +1438,8 @@
                                 <strong>Nothing is ready to start</strong>
                                 <span>Finish a parent task, or open All / Map to re-link work.</span>
                                 <div class="spt-desk-empty-ready-actions">
-                                    <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" data-action="project-task-focus" data-focus="all">Show all</button>
-                                    <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" data-action="project-task-graph-open" data-project-id="${escape(projectId)}">Open map</button>
+                                    <button type="button" class="lux-secondary-btn lux-secondary-btn-sm" data-action="project-task-focus" data-focus="all">Show all</button>
+                                    <button type="button" class="lux-secondary-btn lux-secondary-btn-sm" data-action="project-task-graph-open" data-project-id="${escape(projectId)}">Open map</button>
                                 </div>
                             </div>`
                         : '';
@@ -1465,8 +1465,8 @@
                                             <span>${copy}</span>
                                         </div>
                                         <div class="spt-desk-link-banner-actions">
-                                            <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" data-action="project-task-desk-link-start" data-project-id="${escape(projectId)}" data-task-id="${escape(text(link.taskId))}" data-role="${role === 'parent' ? 'child' : 'parent'}">Switch: pick ${role === 'parent' ? 'parent' : 'child'} first</button>
-                                            <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" data-action="project-task-desk-link-cancel">Cancel</button>
+                                            <button type="button" class="lux-secondary-btn lux-secondary-btn-sm" data-action="project-task-desk-link-start" data-project-id="${escape(projectId)}" data-task-id="${escape(text(link.taskId))}" data-role="${role === 'parent' ? 'child' : 'parent'}">Switch: pick ${role === 'parent' ? 'parent' : 'child'} first</button>
+                                            <button type="button" class="lux-secondary-btn lux-secondary-btn-sm" data-action="project-task-desk-link-cancel">Cancel</button>
                                         </div>
                                     </div>
                                 `;
@@ -1600,7 +1600,7 @@
                                 <strong>Dependency map</strong>
                                 <span>See how work connects. Open the full map to rearrange and link.</span>
                             </div>
-                            <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}">
+                            <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}">
                                 <i class="fas fa-expand"></i> Open full map
                             </button>
                         </div>
@@ -1620,7 +1620,7 @@
                             <div class="social-project-task-shell-actions">
                                 ${viewToggle}
                                 ${canContribute ? `
-                                    <button class="social-neo-btn social-neo-btn-primary social-project-task-compose-trigger" type="button" data-action="project-task-create-open" data-project-id="${escape(projectId)}">
+                                    <button class="lux-primary-btn social-project-task-compose-trigger" type="button" data-action="project-task-create-open" data-project-id="${escape(projectId)}">
                                         <i class="fas fa-plus"></i> New task
                                     </button>
                                 ` : ''}
@@ -1750,7 +1750,7 @@
                         <div class="social-project-detail-top">
                             <div class="social-project-detail-copy">
                                 <div class="social-neo-inline social-neo-inline-gap-10-wrap">
-                                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="projects-back"><i class="fas fa-arrow-left"></i> Back</button>
+                                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="projects-back"><i class="fas fa-arrow-left"></i> Back</button>
                                     ${projectRolePill(activeProject.role || 'member')}
                                     <span class="social-neo-pill">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
                                     ${activeProject.isOrphaned ? `<span class="social-neo-pill">Ownerless</span>` : ''}
@@ -1772,11 +1772,11 @@
                                     </div>
                                 </div>
                                 <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
-                                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-open-chat" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-comments"></i> Chat</button>
-                                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="tasks"><i class="fas fa-list-check"></i> Tasks</button>
+                                    <button class="lux-secondary-btn" type="button" data-action="project-open-chat" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-comments"></i> Chat</button>
+                                    <button class="lux-secondary-btn" type="button" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="tasks"><i class="fas fa-list-check"></i> Tasks</button>
                                     ${renderProjectWorkspaceNavButtons(activeProject)}
-                                    ${activeProject.isManager ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-settings-open" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-sliders"></i> Settings</button>` : ''}
-                                    ${activeProject.isManager ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-globe"></i> Showcase</button>` : ''}
+                                    ${activeProject.isManager ? `<button class="lux-secondary-btn" type="button" data-action="project-settings-open" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-sliders"></i> Settings</button>` : ''}
+                                    ${activeProject.isManager ? `<button class="lux-primary-btn" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-globe"></i> Showcase</button>` : ''}
                                 </div>
                             </div>
                         </div>

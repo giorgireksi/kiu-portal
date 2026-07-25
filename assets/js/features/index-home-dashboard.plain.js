@@ -702,7 +702,7 @@
     function renderAdminOpsMarkup(config) {
         if (!config || !Array.isArray(config.groups) || !config.groups.length) return '';
         return `
-            <section class="lux-panel lux-admin-ops-panel lux-soft-chrome">
+            <section class="lux-soft-chrome lux-admin-ops-panel">
                 <div class="lux-card-head lux-admin-ops-head">
                     <div>
                         <div class="lux-card-title">${escapeHtml(config.title || 'Admin operations')}</div>
@@ -764,7 +764,7 @@
     function renderHeroWidgetMarkup(heroModel, role) {
         const model = heroModel || buildHomeModel(role);
         return `
-            <section class="lux-panel lux-hero lux-builder-hero page-hero lux-soft-chrome lux-summary-surface--hero">
+            <section class="lux-soft-chrome lux-hero lux-builder-hero page-hero lux-summary-surface--hero">
                 <div class="lux-hero-stage">
                     <div class="lux-hero-main">
                         <div class="lux-kicker">${escapeHtml(model.kicker || ROLE_LABELS[role] || 'Portal View')}</div>
@@ -793,7 +793,7 @@
             if (!widget.alert) return '';
             const alertTone = ['green', 'royal', 'support', 'warm'].includes(widget.alert.tone) ? ` is-${widget.alert.tone}` : '';
             return `
-                <div class="lux-panel lux-soft-chrome lux-alert${alertTone}">
+                <div class="lux-soft-chrome lux-alert${alertTone}">
                     <div class="lux-alert-icon"><i class="${escapeHtml(widget.alert.icon)}"></i></div>
                     <div class="lux-alert-copy">
                         <strong>${escapeHtml(widget.alert.title)}</strong>
@@ -806,7 +806,7 @@
         if (widget.renderType === 'hero') return renderHeroWidgetMarkup(widget.heroModel, role);
         if (widget.renderType === 'quick') {
             return `
-                <section class="lux-panel lux-dashboard-section lux-builder-section lux-soft-chrome">
+                <section class="lux-soft-chrome lux-dashboard-section lux-builder-section">
                     <div class="lux-card-head">
                         <div>
                             <div class="lux-card-title">${escapeHtml(widget.title)}</div>
@@ -820,7 +820,7 @@
         }
         if (widget.renderType === 'admin-ops') return renderAdminOpsMarkup(widget.adminOperations);
         return `
-            <section class="lux-panel lux-card lux-builder-card lux-soft-chrome">
+            <section class="lux-soft-chrome lux-card lux-builder-card">
                 <div class="lux-card-head">
                     <div>
                         <div class="lux-card-title">${escapeHtml(widget.title)}</div>
@@ -906,7 +906,7 @@
                         ${copy ? `<p>${escapeHtml(copy)}</p>` : ''}
                     </div>
                 </div>
-                <div class="lux-home-merged lux-soft-chrome">
+                <div class="lux-home-merged lux-soft-chrome" data-lux-glass-root="1">
                     ${mergedContent}
                 </div>
             </div>

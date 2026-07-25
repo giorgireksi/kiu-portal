@@ -81,10 +81,38 @@ describe('admin registration manage modal', () => {
         expect(shared).toContain('admin-reg-manage-modal-actions');
         expect(shared).toContain('lux-ghost-btn admin-reg-manage-modal-action');
         expect(shared).toContain('admin-reg-manage-modal-action--danger');
+        expect(shared).toContain('openLuxPortalModalAfterAppend');
+        expect(shared).toContain('lms-glass-dialog-overlay');
         expect(modals).toContain('registration-structured-modal-backdrop');
-        expect(modals).toContain('social-neo-dialog-card--lms-create');
+        expect(modals).toMatch(/\.registration-structured-modal-backdrop[\s\S]*?position:\s*fixed/);
+        expect(modals).toContain('admin-reg-course-modal-overlay');
+        expect(modals).toContain('lux-glass-dialog-card');
         expect(controls).toContain('.lux-icon-btn');
         expect(existsSync(join(process.cwd(), 'assets/css', 'admin-tools-luxury.css'))).toBe(false);
+    });
+
+    it('openLuxPortalModalAfterAppend fallback adds is-open when portal helper missing', () => {
+        const shared = readSource('assets/js/pages/registration-shared.js');
+        const registration = readSource('assets/js/pages/registration.js');
+        const adminReg = readSource('assets/js/pages/admin-registration.js');
+
+        expect(shared).toMatch(/function openLuxPortalModalAfterAppend[\s\S]*?openLuxGlassDialogOverlay/);
+        expect(shared).toMatch(/function openLuxPortalModalAfterAppend[\s\S]*?classList\.add\('is-open'\)/);
+        expect(registration).toContain('openLuxPortalModalAfterAppend(modal, { focusSelector })');
+        expect(registration).toContain("modal.classList.remove('is-open', 'is-closing')");
+        expect(adminReg).toContain("openLuxPortalModalAfterAppend(modal, { focusSelector: '#course-search-input' })");
+    });
+
+    it('keeps structured form modal SSOT on registration-shared (eligibility peel must not clobber)', () => {
+        const shared = readSource('assets/js/pages/registration-shared.js');
+        const eligibility = readSource('assets/js/pages/student-registration-eligibility-runtime.js');
+
+        expect(shared).toMatch(/function openStructuredFormModal[\s\S]*?openLuxPortalModalAfterAppend/);
+        expect(shared).toMatch(/openStructuredFormModal,/);
+        expect(shared).toMatch(/closeStructuredFormModal,/);
+        expect(eligibility).not.toContain('function openStructuredFormModal');
+        expect(eligibility).not.toMatch(/openStructuredFormModal,/);
+        expect(eligibility).not.toMatch(/closeStructuredFormModal,/);
     });
 
     it('exposes tab manage popup helpers in track source', () => {

@@ -572,7 +572,7 @@ function ensureStudioCss() {
     ensureStudioChipBurstHandler();
     if (typeof document === 'undefined') return;
     const sheets = [
-        { href: 'assets/css/lux-studio.css?v=20260723-gpuperf4l', key: 'data-kiu-studio' },
+        { href: 'assets/css/lux-studio.css?v=20260725-frosted1', key: 'data-kiu-studio' },
         { href: 'assets/css/lux-studio-mobile.css?v=20260722-popupblack1', key: 'data-kiu-studio-mobile' }
     ];
     for (const sheet of sheets) {
@@ -607,7 +607,7 @@ function ensureLuxDroplistCss() {
     if (has) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'assets/css/lux-droplist.css?v=20260723-droplist-scrolltheme1';
+    link.href = 'assets/css/lux-droplist.css?v=20260725-pickerscroll2';
     link.setAttribute('data-kiu-lux-droplist', '1');
     document.head.appendChild(link);
 }

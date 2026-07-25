@@ -39,12 +39,12 @@ ${inner}
     function socialNeoDialogHead(title, subtitle, options = {}) {
         const icon = options.icon ? `<i class="${esc(options.icon)}" aria-hidden="true"></i> ` : '';
         const close = options.hideClose ? '' : `
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>`;
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>`;
         return `
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title">${icon}${esc(title)}</strong>
-                        ${subtitle ? `<span class="social-neo-dialog-subtitle">${esc(subtitle)}</span>` : ''}
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title">${icon}${esc(title)}</strong>
+                        ${subtitle ? `<span class="lux-glass-dialog-subtitle">${esc(subtitle)}</span>` : ''}
                     </div>${close}
                 </div>`;
     }
@@ -58,15 +58,15 @@ ${inner}
         const cancelAction = options.cancelAction || 'dialog-close';
         const actionsClass = options.actionsClass ? ` ${options.actionsClass}` : '';
         const cancelExtra = options.cancelClass ? ` ${options.cancelClass}` : '';
-        const tone = options.submitTone === 'danger' ? 'social-neo-btn-danger' : 'social-neo-btn-primary';
+        const tone = options.submitTone === 'danger' ? 'lux-primary-btn lux-btn-danger' : 'lux-primary-btn';
         const submitBody = options.submitHtml != null ? options.submitHtml : `${submitIcon}${esc(submit)}`;
         const cancelBtn = options.hideCancel
             ? ''
-            : `<button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn${cancelExtra}" type="button" data-action="${esc(cancelAction)}">${esc(cancel)}</button>`;
+            : `<button class="lux-secondary-btn lux-glass-dialog-cancel-btn${cancelExtra}" type="button" data-action="${esc(cancelAction)}">${esc(cancel)}</button>`;
         return `
-                <div class="social-neo-form-actions social-neo-dialog-actions${actionsClass}">
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions${actionsClass}">
                     ${cancelBtn}
-                    <button class="social-neo-btn ${tone} social-neo-dialog-submit-btn${submitExtra}" type="${options.submitType || 'submit'}" ${submitAttrs}>${submitBody}</button>
+                    <button class="${tone} lux-glass-dialog-submit-btn${submitExtra}" type="${options.submitType || 'submit'}" ${submitAttrs}>${submitBody}</button>
                 </div>`;
     }
 
@@ -74,7 +74,7 @@ ${inner}
         const idAttr = options.forId ? ` for="${esc(options.forId)}"` : '';
         const fieldClass = options.fieldClass ? ` ${options.fieldClass}` : '';
         return `
-                        <label class="social-neo-dialog-field${fieldClass}"${idAttr}>
+                        <label class="lux-glass-dialog-field${fieldClass}"${idAttr}>
                             <span class="social-neo-label">${esc(label)}</span>
                             ${controlHtml}
                         </label>`;
@@ -82,7 +82,7 @@ ${inner}
 
     function socialNeoSectionHead(title, subtitle) {
         return `
-                        <div class="social-neo-dialog-project-create-section-head">
+                        <div class="lux-glass-dialog-section-head">
                             <strong>${esc(title)}</strong>
                             ${subtitle ? `<span>${esc(subtitle)}</span>` : ''}
                         </div>`;
@@ -92,12 +92,12 @@ ${inner}
     /** titleHtml/subtitleHtml already escaped by caller (use for dynamic titles). */
     function socialNeoDialogHeadHtml(titleHtml, subtitleHtml, options = {}) {
         const close = options.hideClose ? '' : `
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>`;
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>`;
         return `
-                <div class="social-neo-section-head social-neo-dialog-head${options.headClass ? ` ${options.headClass}` : ''}">
-                    <div class="social-neo-dialog-heading${options.headingClass ? ` ${options.headingClass}` : ''}">
-                        <strong class="social-neo-dialog-title${options.titleClass ? ` ${options.titleClass}` : ''}">${titleHtml || ''}</strong>
-                        ${subtitleHtml ? `<span class="social-neo-dialog-subtitle">${subtitleHtml}</span>` : ''}
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head${options.headClass ? ` ${options.headClass}` : ''}">
+                    <div class="lux-glass-dialog-heading${options.headingClass ? ` ${options.headingClass}` : ''}">
+                        <strong class="lux-glass-dialog-title${options.titleClass ? ` ${options.titleClass}` : ''}">${titleHtml || ''}</strong>
+                        ${subtitleHtml ? `<span class="lux-glass-dialog-subtitle">${subtitleHtml}</span>` : ''}
                     </div>${close}
                 </div>`;
     }
@@ -108,7 +108,7 @@ ${inner}
             : '';
         const fieldClass = options.fieldClass ? ` ${options.fieldClass}` : '';
         return `
-                        <label class="social-neo-dialog-field${fieldClass}"${idAttr}>
+                        <label class="lux-glass-dialog-field${fieldClass}"${idAttr}>
                             <span class="social-neo-label">${labelHtml || ''}</span>
                             ${controlHtml}
                         </label>`;

@@ -7,7 +7,7 @@ function profileViewSource() {
 describe('profile-view shell redesign', () => {
     it('uses a single pv-shell surface with command bar, head grid, and single tab panel', () => {
         const html = profileViewSource();
-        const utilities = readSource('assets/js/shared/utilities.js');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         const runtime = readSource('assets/js/features/luxury-index-runtime.js');
 
         expect(readSource('profile-view.html')).toContain('assets/js/pages/profile-view-page.js');
@@ -35,9 +35,9 @@ describe('profile-view shell redesign', () => {
         expect(html).toContain('hydrateProfileViewStudentRecord');
 
         expectRetiredCss('profile-view-route.css');
-        expect(utilities).toContain('shouldKeepProfileViewFadeCssBackground');
-        expect(utilities).toContain("if (el.classList.contains('pv-shell')) return false");
-        expect(utilities).toContain('#profile-view-root .pv-shell');
+        expect(routeRuntime).toContain('function isCssOwnedSurface(el)');
+        expect(routeRuntime).toMatch(/pv-shell[\s\S]*return false/);
+        expect(html).toContain('data-lux-glass-root="1"');
         expect(runtime).toContain("node.closest?.('#profile-view-root')");
     });
 

@@ -673,7 +673,7 @@ function getSocialCenterMaxScroll(center, shell) {
 
 function setSocialRegionMarkup(node, markup) {
     if (!node) return;
-    if (node.id === 'social-neo-dialog-region') normalizeSocialOverlayDialogRegion();
+    if (node.id === 'lux-glass-dialog-region') normalizeSocialOverlayDialogRegion();
     const nextMarkup = String(markup || '');
     if (node.__kiuLastMarkup === nextMarkup) return;
     node.innerHTML = nextMarkup;
@@ -706,7 +706,7 @@ function enhanceSocialAccessibility(host) {
     });
     const accessibilityRoots = [host, document.getElementById(SOCIAL_OVERLAY_PORTAL_ID)].filter(Boolean);
     accessibilityRoots.forEach((accessibilityHost) => {
-        accessibilityHost.querySelectorAll('.social-neo-dialog-backdrop').forEach((node) => {
+        accessibilityHost.querySelectorAll('.lux-glass-dialog-backdrop').forEach((node) => {
             node.setAttribute('role', 'dialog');
             node.setAttribute('aria-modal', 'true');
             if (!node.getAttribute('aria-label')) {

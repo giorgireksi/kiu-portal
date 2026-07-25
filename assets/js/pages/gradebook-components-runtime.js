@@ -66,7 +66,7 @@ function renderGradebookComponentManager() {
                 <div class="gb-component-list">${componentRows}</div>
                 <div class="gb-component-add">
                     <input id="gb-component-add-input" type="text" class="lux-modern-field lms-route-input" placeholder="New component name (e.g. Lab, Presentation)">
-                    <button type="button" class="social-neo-btn social-neo-btn-primary" data-gradebook-click="component-manager-add"><i class="fas fa-plus"></i> Add component</button>
+                    <button type="button" class="lux-primary-btn" data-gradebook-click="component-manager-add"><i class="fas fa-plus"></i> Add component</button>
                 </div>
                 <div class="gb-component-profiles">
                     <div class="gb-modern-kicker">Profiles</div>
@@ -77,10 +77,14 @@ function renderGradebookComponentManager() {
                     </div>
                 </div>`,
         actionsHtml: `
-                <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-gradebook-click="component-manager-close">Cancel</button>
-                <button type="button" class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" data-gradebook-click="component-manager-save"><i class="fas fa-check"></i> Save changes</button>`
+                <button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-gradebook-click="component-manager-close">Cancel</button>
+                <button type="button" class="lux-primary-btn lux-glass-dialog-submit-btn" data-gradebook-click="component-manager-save"><i class="fas fa-check"></i> Save changes</button>`
     });
-    overlay.classList.add('is-open');
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
 }
 
 function addGradebookComponentFromManager() {
@@ -166,7 +170,11 @@ function commitGradebookComponentManager() {
 function closeGradebookComponentManager() {
     gradebookComponentManagerState = null;
     const overlay = document.getElementById('gradebook-component-manager');
-    if (overlay) overlay.remove();
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay?.remove();
+    }
 }
 
         const api = {

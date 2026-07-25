@@ -436,7 +436,7 @@ function renderStudentServiceGuidanceModalShell(ctx) {
                             <span>Browse official guidance before opening a private case.</span>
                         </div>
                     </div>
-                    <button type="button" class="social-neo-btn social-neo-btn-ghost student-service-guidance-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-guidance-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    <button type="button" class="lux-secondary-btn student-service-guidance-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-guidance-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
                 </header>
                 <div class="student-service-guidance-modal-body">
                     ${browserMarkup}

@@ -95,7 +95,7 @@
                         <p>Post missing items, help others recover them, and mark returns when they are found.</p>
                     </div>
                     <div class="social-neo-lost-found-hero-actions">
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-lost-found-hero-create-btn" type="button" data-action="lost-found-create-open">
+                        <button class="lux-primary-btn social-neo-lost-found-hero-create-btn" type="button" data-action="lost-found-create-open">
                             <i class="fas fa-plus"></i>
                             <span>Post item</span>
                         </button>
@@ -161,34 +161,34 @@
         const submitLabel = isDelete ? 'Remove listing' : 'Mark as found';
         const icon = isDelete ? 'fa-trash' : 'fa-circle-check';
         const formType = isDelete ? 'dialog-lost-found-delete' : 'dialog-lost-found-mark-found';
-        const submitClass = isDelete ? 'social-neo-btn-danger' : 'social-neo-btn-primary';
+        const submitClass = isDelete ? 'lux-primary-btn lux-btn-danger' : 'lux-primary-btn';
         const previewLocation = text(item.locationText) ? `<div class="social-neo-muted social-neo-muted-mt-6"><i class="fas fa-location-dot"></i> ${escape(item.locationText)}</div>` : '';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-delete-confirm" data-form="${formType}" data-action="noop">
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card social-neo-delete-confirm" data-form="${formType}" data-action="noop">
                 <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
                         <span class="social-neo-delete-confirm-icon-chip"><i class="fas ${icon}" aria-hidden="true"></i></span>
                         <div class="social-neo-delete-confirm-title">
-                            <strong class="social-neo-dialog-title">${escape(title)}</strong>
-                            <span class="social-neo-dialog-subtitle">${escape(subtitle)}</span>
+                            <strong class="lux-glass-dialog-title">${escape(title)}</strong>
+                            <span class="lux-glass-dialog-subtitle">${escape(subtitle)}</span>
                         </div>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="social-neo-delete-confirm-preview">
-                    <strong class="social-neo-dialog-preview-title">${escape(text(item.title || 'Untitled listing'))}</strong>
+                    <strong class="lux-glass-dialog-preview-title">${escape(text(item.title || 'Untitled listing'))}</strong>
                     <div class="social-neo-muted social-neo-muted-mt-6">${escape(text(item.category || 'General'))}</div>
                     ${previewLocation}
                 </div>
-                <div class="social-neo-dialog-preview social-neo-dialog-preview-danger">${escape(warning)}</div>
-                <label class="social-neo-item-line social-neo-dialog-checkbox-line">
+                <div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">${escape(warning)}</div>
+                <label class="social-neo-item-line lux-glass-dialog-checkbox-line">
                     <input type="checkbox" name="${checkboxName}" value="yes">
-                    <span class="social-neo-dialog-checkbox-copy">${escape(checkboxCopy)}</span>
+                    <span class="lux-glass-dialog-checkbox-copy">${escape(checkboxCopy)}</span>
                 </label>
                 <div class="social-neo-delete-confirm-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn ${submitClass} social-neo-dialog-submit-btn" type="submit">${escape(submitLabel)}</button>
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-secondary-btn ${submitClass} lux-glass-dialog-submit-btn" type="submit">${escape(submitLabel)}</button>
                 </div>
                 <input type="hidden" name="itemId" value="${escape(text(item.id))}">
             </form>
@@ -221,12 +221,12 @@
         const expiresAtId = controlId('lost-found-expires-at');
         const expiresAtMin = toDateTimeLocalValue(new Date().toISOString());
         const suggestionsMarkup = suggestions.length ? `
-            <section class="social-neo-dialog-lost-found-create-section">
-                <div class="social-neo-dialog-lost-found-create-section-head">
+            <section class="lux-glass-dialog-lost-found-create-section">
+                <div class="lux-glass-dialog-lost-found-create-section-head">
                     <strong>Similar items</strong>
                     <span>These recent posts look close to your draft and may already help.</span>
                 </div>
-                <div class="social-neo-list social-neo-dialog-lost-found-suggestions">
+                <div class="social-neo-list lux-glass-dialog-lost-found-suggestions">
                     ${suggestions.slice(0, 3).map((item) => `
                         <article class="social-neo-entity-card">
                             <div>
@@ -238,46 +238,46 @@
                 </div>
             </section>
         ` : '';
-        return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--lost-found-create social-neo-dialog-card--lms-create" data-form="lost-found-item" data-action="noop" data-lux-transparency-exempt="1">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title"><i class="fas fa-magnifying-glass-location" aria-hidden="true"></i> ${editItem ? 'Edit listing' : 'Post item'}</strong>
-                        <span class="social-neo-dialog-subtitle">${editItem ? 'Update the details and republish the item.' : 'Add a photo, location, and identifying details so campus can help.'}</span>
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--lost-found-create lux-glass-dialog-card" data-form="lost-found-item" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title"><i class="fas fa-magnifying-glass-location" aria-hidden="true"></i> ${editItem ? 'Edit listing' : 'Post item'}</strong>
+                        <span class="lux-glass-dialog-subtitle">${editItem ? 'Update the details and republish the item.' : 'Add a photo, location, and identifying details so campus can help.'}</span>
                     </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="social-neo-dialog-body social-neo-dialog-body--lost-found-create">
-                    <section class="social-neo-dialog-lost-found-create-section">
-                        <label class="social-neo-dialog-field" for="${escape(categoryId)}">
+                <div class="lux-glass-dialog-body lux-glass-dialog-body--lost-found-create">
+                    <section class="lux-glass-dialog-lost-found-create-section">
+                        <label class="lux-glass-dialog-field" for="${escape(categoryId)}">
                             <span class="social-neo-label">Category</span>
                             <input class="social-neo-input" id="${escape(categoryId)}" type="text" name="lostFoundCategory" placeholder="Wallet, laptop, ID card..." value="${escape(draft.category)}">
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(titleId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(titleId)}">
                             <span class="social-neo-label">Title</span>
                             <input class="social-neo-input" id="${escape(titleId)}" type="text" name="lostFoundTitle" placeholder="Black backpack with silver zipper" value="${escape(draft.title)}" required>
                         </label>
-                        <label class="social-neo-dialog-field" for="${escape(descriptionId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(descriptionId)}">
                             <span class="social-neo-label">Description</span>
                             <textarea class="social-neo-textarea" id="${escape(descriptionId)}" rows="4" name="lostFoundDescription" placeholder="Add identifying details, contents, and any contact-safe clues.">${escape(draft.description)}</textarea>
                         </label>
                         <div class="social-neo-form-grid social-neo-form-grid-2">
-                            <label class="social-neo-dialog-field" for="${escape(locationId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(locationId)}">
                                 <span class="social-neo-label">Last seen at</span>
                                 <input class="social-neo-input" id="${escape(locationId)}" type="text" name="lostFoundLocation" placeholder="Main library, 2nd floor" value="${escape(draft.locationText)}">
                             </label>
-                            <label class="social-neo-dialog-field" for="${escape(dateId)}">
+                            <label class="lux-glass-dialog-field" for="${escape(dateId)}">
                                 <span class="social-neo-label">Date</span>
                                 <input class="social-neo-input" id="${escape(dateId)}" type="date" name="lostFoundDate" value="${escape(draft.eventDate)}">
                             </label>
                         </div>
-                        <label class="social-neo-dialog-field" for="${escape(expiresAtId)}">
+                        <label class="lux-glass-dialog-field" for="${escape(expiresAtId)}">
                             <span class="social-neo-label">Listing ends</span>
                             <input class="social-neo-input" id="${escape(expiresAtId)}" type="datetime-local" name="lostFoundExpiresAt" min="${escape(expiresAtMin)}" value="${escape(toDateTimeLocalValue(draft.expiresAt))}" required>
-                            <span class="social-neo-dialog-hint">The listing is removed automatically after this time.</span>
+                            <span class="lux-glass-dialog-hint">The listing is removed automatically after this time.</span>
                         </label>
                         <div class="social-neo-inline social-neo-inline-gap-10-wrap">
-                            <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
+                            <label class="lux-secondary-btn lux-secondary-btn-pointer">
                                 <i class="fas fa-image"></i> Add photo
                                 <input name="lostFoundFile" type="file" accept="image/*" hidden>
                             </label>
@@ -286,9 +286,9 @@
                     </section>
                     ${suggestionsMarkup}
                 </div>
-                <div class="social-neo-form-actions social-neo-dialog-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit"><i class="fas fa-paper-plane"></i> ${escape(submitLabel)}</button>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit"><i class="fas fa-paper-plane"></i> ${escape(submitLabel)}</button>
                 </div>
             </form>
         </div>`;
@@ -341,12 +341,12 @@
                             </div>
                             <div class="social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-lf-card-actions">
                                 <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-actions-main">
-                                    <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="lost-found-contact" data-item-id="${escape(item.id)}" data-user-id="${escape(item.authorUserId)}"><i class="fas fa-comments"></i> Contact</button>
-                                    ${canMarkFound ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="lost-found-mark-found" data-item-id="${escape(item.id)}"><i class="fas fa-circle-check"></i> Mark as found</button>` : ''}
+                                    <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="lost-found-contact" data-item-id="${escape(item.id)}" data-user-id="${escape(item.authorUserId)}"><i class="fas fa-comments"></i> Contact</button>
+                                    ${canMarkFound ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="lost-found-mark-found" data-item-id="${escape(item.id)}"><i class="fas fa-circle-check"></i> Mark as found</button>` : ''}
                                 </div>
                                 <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-actions-side">
-                                    ${canManage ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="lost-found-edit" data-item-id="${escape(item.id)}"><i class="fas fa-pen"></i> Edit</button>` : ''}
-                                    ${canRemove ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="lost-found-delete" data-item-id="${escape(item.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
+                                    ${canManage ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="lost-found-edit" data-item-id="${escape(item.id)}"><i class="fas fa-pen"></i> Edit</button>` : ''}
+                                    ${canRemove ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="lost-found-delete" data-item-id="${escape(item.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                                 </div>
                             </div>
                         </div>
