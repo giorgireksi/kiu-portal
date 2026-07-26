@@ -9,11 +9,11 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     const SLOT_TIMES = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
     const SCHEDULER_START_MINUTES = 9 * 60;
     const SCHEDULER_FACULTY_OPTIONS = [
-        ['ECON', 'Business Management'],
+        ['ECON', 'Management'],
         ['CS', 'Computer Science'],
         ['LAW', 'Law'],
         ['MED', 'Medicine'],
-        ['ARTS', 'Arts'],
+        ['ARTS', 'Arts & Humanities'],
         ['all', 'All Faculties']
     ];
     const SCHEDULER_SEMESTER_OPTIONS = Array.from({ length: 8 }, (_, index) => {
@@ -24,8 +24,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     const SCHEDULER_CREATE_MODAL_ID = 'schModalOverlay';
     const SCHEDULER_PRESET_MANAGER_TEMPLATE_ID = 'sch-preset-manager-template';
     const SCHEDULER_PRESET_MANAGER_ID = 'schPresetManagerOverlay';
-    const SCHEDULER_QUIZ_MODAL_TEMPLATE_ID = 'prof-quiz-modal-template';
-    const SCHEDULER_QUIZ_MODAL_ID = 'profQuizModalOverlay';
+    const SCHEDULER_QUIZ_RUNTIME_SRC = 'assets/js/pages/admin-scheduler-quiz-runtime.js?v=20260726-schedclean2';
     const SCHEDULER_PALETTE_SEARCH_DEBOUNCE_MS = 120;
 // --- READABILITY: Sessions ---
     const SCHEDULER_SESSION_PRESETS_KEY = 'kiuSchedulerSessionPresets';
@@ -33,7 +32,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     const SCHEDULER_DEFAULT_ROOM_PRESETS = ['A-101', 'A-102', 'A-201', 'B-201', 'B-202', 'C-301', 'C-303', 'K-201', 'LAB-1', 'LAB-2'];
     let selectedPaletteSubject = null;
     let schedulerInitialized = false;
-    let profQuizQuestions = [];
+    let schedulerQuizApiPromise = null;
     let schedulerPaletteSearchHandle = 0;
     let schedulerPresetSearchHandle = 0;
     let schedulerRefreshHandle = 0;
@@ -112,42 +111,60 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     }
 
     function openSchedulerPortalModal(overlay, options = {}) {
-        if (!overlay) return;
-        if (typeof window.openLuxPortalModal === 'function') {
-            window.openLuxPortalModal(overlay, { scrollLock: true, ...options });
-        } else if (typeof window.openLuxGlassDialogOverlay === 'function') {
-            overlay.hidden = false;
-            overlay.setAttribute('aria-hidden', 'false');
-            window.openLuxGlassDialogOverlay(overlay);
-        } else {
-            overlay.hidden = false;
-            overlay.setAttribute('aria-hidden', 'false');
-            overlay.classList.add('is-open');
-        }
+        if (!overlay || typeof window.openLuxPortalModal !== 'function') return;
+        window.openLuxPortalModal(overlay, { scrollLock: true, ...options });
         if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             window.queueLuxuryTransparencyRefresh(undefined, { roots: [overlay] });
         }
     }
 
     function closeSchedulerPortalModal(overlay, options = {}) {
-        if (!overlay) return;
-        if (typeof window.closeLuxPortalModal === 'function') {
-            window.closeLuxPortalModal(overlay, { remove: false, scrollLock: true, ...options });
-            return;
+        if (!overlay || typeof window.closeLuxPortalModal !== 'function') return;
+        window.closeLuxPortalModal(overlay, { remove: false, scrollLock: true, ...options });
+    }
+
+    function isStandaloneAdminSchedulerPage() {
+        return /admin-scheduler(?:\.html)?$/i.test(String(window.location.pathname || ''));
+    }
+
+    function loadSchedulerQuizApi() {
+        if (window.__kiuAdminSchedulerQuizApi) {
+            return Promise.resolve(window.__kiuAdminSchedulerQuizApi);
         }
-        if (typeof window.closeLuxGlassDialogOverlay === 'function') {
-            window.closeLuxGlassDialogOverlay(overlay, {
-                remove: false,
-                onDone: () => {
-                    overlay.hidden = true;
-                    overlay.setAttribute('aria-hidden', 'true');
+        if (!schedulerQuizApiPromise) {
+            schedulerQuizApiPromise = new Promise((resolve, reject) => {
+                if (typeof window.__kiuCreateAdminSchedulerQuizApi === 'function') {
+                    const api = window.__kiuCreateAdminSchedulerQuizApi({
+                        el, setText, bindNodeOnce,
+                        openSchedulerPortalModal, closeSchedulerPortalModal,
+                        saveState: (...args) => (typeof saveState === 'function' ? saveState(...args) : window.saveState?.(...args)),
+                    });
+                    window.__kiuAdminSchedulerQuizApi = api;
+                    resolve(api);
+                    return;
                 }
+                const script = document.createElement('script');
+                script.src = SCHEDULER_QUIZ_RUNTIME_SRC;
+                script.defer = true;
+                script.onload = () => {
+                    const factory = window.__kiuCreateAdminSchedulerQuizApi;
+                    if (typeof factory !== 'function') {
+                        reject(new Error('admin-scheduler-quiz-runtime.js missing'));
+                        return;
+                    }
+                    const api = factory({
+                        el, setText, bindNodeOnce,
+                        openSchedulerPortalModal, closeSchedulerPortalModal,
+                        saveState: (...args) => (typeof saveState === 'function' ? saveState(...args) : window.saveState?.(...args)),
+                    });
+                    window.__kiuAdminSchedulerQuizApi = api;
+                    resolve(api);
+                };
+                script.onerror = () => reject(new Error('admin-scheduler-quiz-runtime.js failed to load'));
+                document.head.appendChild(script);
             });
-            return;
         }
-        overlay.classList.remove('is-open', 'open');
-        overlay.hidden = true;
-        overlay.setAttribute('aria-hidden', 'true');
+        return schedulerQuizApiPromise;
     }
 
     function rebuildSchedulerSelect(select, options, fallbackValue) {
@@ -428,7 +445,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             if (harvestedKeys.has(lowerName)) badges.push('<span class="sch-preset-manage-badge sch-preset-manage-badge--schedule">In schedule</span>');
             const actionButtons = [];
             if (storedKeys.has(lowerName) || visibleDefaultKeys.has(lowerName)) {
-                actionButtons.push(`<button type="button" class="sch-preset-manage-delete-btn" data-scheduler-preset-remove="${escapeSchedulerPresetHtml(name)}" aria-label="Remove ${escapeSchedulerPresetHtml(name)}"><i class="fas fa-trash-alt"></i></button>`);
+                actionButtons.push(`<button type="button" class="lux-secondary-btn sch-preset-manage-delete-btn" data-scheduler-preset-remove="${escapeSchedulerPresetHtml(name)}" aria-label="Remove ${escapeSchedulerPresetHtml(name)}"><i class="fas fa-trash-alt"></i></button>`);
             }
             const actionsMarkup = actionButtons.length
                 ? `<div class="sch-preset-manage-item-actions">${actionButtons.join('')}</div>`
@@ -567,10 +584,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const overlay = ensureMountedTemplate(SCHEDULER_PRESET_MANAGER_TEMPLATE_ID, SCHEDULER_PRESET_MANAGER_ID);
         if (!overlay) return null;
         bindSchedulerPresetManagerListeners(overlay);
-        if (document.body.classList.contains('lux-route-admin-scheduler')) {
-            overlay.dataset.luxSchPresetModal = '1';
-            overlay.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
-        }
         return overlay;
     }
 
@@ -652,8 +665,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     }
 
     function updateSchedulerRailChrome() {
-        const weekStart = getSchedulerWeekStart();
-        const currentWeek = getCurrentWeekStartISO();
         const visibleSessions = getVisibleSchedulerSessions();
         const drafts = visibleSessions.filter((session) => session.prof === 'TBD' || session.room === 'TBD').length;
         const roomCount = new Set(
@@ -664,16 +675,14 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const staffCount = new Set(
             visibleSessions.flatMap((session) => [session.prof, session.ta].filter((name) => name && name !== 'TBD'))
         ).size;
-        const facultyCode = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
-        const semester = el('admin-tt-semester')?.value || '3';
-        const isCurrentWeek = weekStart === currentWeek;
+        const paletteCount = getPaletteSubjectsCount();
 
         setText('sch-stat-sessions', String(visibleSessions.length));
         setText('sch-stat-drafts', String(drafts));
         setText('sch-stat-rooms', String(roomCount));
         setText('sch-stat-instructors', String(staffCount));
-        setText('sch-palette-count', String(getPaletteSubjectsCount()));
-        setText('sch-palette-summary', `${getPaletteSubjectsCount()} subjects`);
+        setText('sch-palette-count', String(paletteCount));
+        setText('sch-palette-summary', `${paletteCount} subjects`);
     }
 
     function schedulerRosterDisplayName(person = {}) {
@@ -850,202 +859,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         }
     }
 
-    function buildProfessorQuizEmptyState() {
-        const empty = document.createElement('div');
-        empty.className = 'quiz-question-empty-state';
-        empty.textContent = 'No questions yet.';
-        return empty;
-    }
-
-    function buildProfessorQuizQuestionCard(question, index) {
-        const card = document.createElement('div');
-        card.className = 'quiz-question-card lux-soft-chrome';
-
-        const header = document.createElement('div');
-        header.className = 'quiz-question-card-head';
-
-        const label = document.createElement('span');
-        label.className = 'quiz-question-card-label';
-        label.textContent = `Q${index + 1}`;
-
-        const removeButton = document.createElement('button');
-        removeButton.type = 'button';
-        removeButton.dataset.profQuizQuestionRemove = String(index);
-        removeButton.className = 'lux-ghost-btn quiz-question-remove-btn';
-        removeButton.setAttribute('aria-label', `Remove question ${index + 1}`);
-
-        const removeIcon = document.createElement('i');
-        removeIcon.className = 'fas fa-trash';
-        removeButton.appendChild(removeIcon);
-
-        header.append(label, removeButton);
-
-        const questionLabel = document.createElement('label');
-        questionLabel.htmlFor = `pq-question-text-${index}`;
-        questionLabel.className = 'sch-visually-hidden';
-        questionLabel.textContent = `Question ${index + 1} text`;
-
-        const questionInput = document.createElement('input');
-        questionInput.type = 'text';
-        questionInput.id = `pq-question-text-${index}`;
-        questionInput.name = `pq-question-text-${index}`;
-        questionInput.placeholder = 'Question text...';
-        questionInput.value = question.text || '';
-        questionInput.dataset.profQuizQuestionText = String(index);
-        questionInput.className = 'lux-control quiz-question-input';
-
-        const pointsRow = document.createElement('div');
-        pointsRow.className = 'quiz-question-points-row';
-
-        const pointsLabel = document.createElement('label');
-        pointsLabel.htmlFor = `pq-question-points-${index}`;
-        pointsLabel.className = 'quiz-question-points-label';
-        pointsLabel.textContent = 'Pts:';
-
-        const pointsInput = document.createElement('input');
-        pointsInput.type = 'number';
-        pointsInput.id = `pq-question-points-${index}`;
-        pointsInput.name = `pq-question-points-${index}`;
-        pointsInput.value = String(question.points ?? 10);
-        pointsInput.dataset.profQuizQuestionPoints = String(index);
-        pointsInput.min = '0';
-        pointsInput.className = 'lux-control quiz-question-points-input';
-
-        pointsRow.append(pointsLabel, pointsInput);
-        card.append(header, questionLabel, questionInput, pointsRow);
-        return card;
-    }
-
-    function renderProfQuizQuestions() {
-        const container = el('pq-questions-list');
-        if (!container) return;
-        if (!profQuizQuestions.length) {
-            container.replaceChildren(buildProfessorQuizEmptyState());
-            return;
-        }
-        const fragment = document.createDocumentFragment();
-        profQuizQuestions.forEach((question, index) => {
-            fragment.appendChild(buildProfessorQuizQuestionCard(question, index));
-        });
-        container.replaceChildren(fragment);
-    }
-
-    function addProfQuizQuestion() {
-        profQuizQuestions.push({ id: `q${Date.now()}`, text: '', points: 10 });
-        renderProfQuizQuestions();
-        const list = el('pq-questions-list');
-        if (list) {
-            setTimeout(() => {
-                list.scrollTop = list.scrollHeight;
-            }, 50);
-        }
-    }
-
-    function removeProfQuizQuestion(index) {
-        profQuizQuestions.splice(index, 1);
-        renderProfQuizQuestions();
-    }
-
-    function closeProfQuizModal() {
-        const modal = el(SCHEDULER_QUIZ_MODAL_ID);
-        if (modal) closeSchedulerPortalModal(modal);
-    }
-
-    function saveProfQuiz() {
-        const courseId = el('pq-course')?.value || '';
-        const groupId = el('pq-group')?.value || '';
-        const title = el('pq-title')?.value?.trim() || 'Untitled Quiz';
-        const quiz = {
-            id: `quiz-${Date.now()}`,
-            subjectId: courseId,
-            groupId,
-            title,
-            durationMinutes: parseInt(el('pq-duration')?.value || '30', 10) || 30,
-            availableFrom: el('pq-date')?.value || '',
-            questions: profQuizQuestions,
-            status: 'published',
-            createdAt: new Date().toISOString()
-        };
-        const facultyCode = localStorage.getItem('currentFaculty') || 'ECON';
-        if (typeof KIU_STATE !== 'undefined' && KIU_STATE.facultyProfiles?.[facultyCode]) {
-            if (!KIU_STATE.facultyProfiles[facultyCode].quizzes) KIU_STATE.facultyProfiles[facultyCode].quizzes = [];
-            KIU_STATE.facultyProfiles[facultyCode].quizzes.push(quiz);
-            if (typeof saveState === 'function') saveState();
-        }
-        alert(`Quiz "${title}" deployed to ${courseId} Group ${groupId.toUpperCase()}!`);
-        closeProfQuizModal();
-    }
-
-    function bindProfessorQuizModalListeners(modal) {
-        bindNodeOnce(modal, 'click', 'schedulerQuizModalClickBound', (event) => {
-            if (event.target === event.currentTarget) {
-                closeProfQuizModal();
-                return;
-            }
-
-            const quizAction = event.target.closest('[data-admin-scheduler-quiz-action]');
-            if (quizAction) {
-                event.preventDefault();
-                const action = quizAction.dataset.adminSchedulerQuizAction || '';
-                if (action === 'add') addProfQuizQuestion();
-                if (action === 'save') saveProfQuiz();
-                return;
-            }
-
-            const removeButton = event.target.closest('[data-prof-quiz-question-remove]');
-            if (removeButton) {
-                event.preventDefault();
-                const index = parseInt(removeButton.dataset.profQuizQuestionRemove || '-1', 10);
-                if (Number.isFinite(index) && index >= 0) removeProfQuizQuestion(index);
-                return;
-            }
-
-            if (event.target.closest('[data-prof-quiz-close]')) {
-                event.preventDefault();
-                closeProfQuizModal();
-            }
-        });
-
-        bindNodeOnce(modal, 'input', 'schedulerQuizModalInputBound', (event) => {
-            const textInput = event.target.closest('[data-prof-quiz-question-text]');
-            if (textInput) {
-                const index = parseInt(textInput.dataset.profQuizQuestionText || '-1', 10);
-                if (Number.isFinite(index) && profQuizQuestions[index]) {
-                    profQuizQuestions[index].text = textInput.value;
-                }
-                return;
-            }
-
-            const pointsInput = event.target.closest('[data-prof-quiz-question-points]');
-            if (!pointsInput) return;
-            const index = parseInt(pointsInput.dataset.profQuizQuestionPoints || '-1', 10);
-            if (Number.isFinite(index) && profQuizQuestions[index]) {
-                profQuizQuestions[index].points = Number(pointsInput.value);
-            }
-        });
-    }
-
-    function ensureProfessorQuizModal() {
-        const modal = ensureMountedTemplate(SCHEDULER_QUIZ_MODAL_TEMPLATE_ID, SCHEDULER_QUIZ_MODAL_ID);
-        if (modal) bindProfessorQuizModalListeners(modal);
-        return modal;
-    }
-
-    function openProfQuizModal(courseId, groupId, weekStart) {
-        const modal = ensureProfessorQuizModal();
-        if (!modal) return;
-        setText('prof-quiz-subtitle', `${courseId} · Group ${String(groupId || '').toUpperCase()}`);
-        if (el('pq-course')) el('pq-course').value = courseId;
-        if (el('pq-group')) el('pq-group').value = groupId;
-        if (el('pq-week')) el('pq-week').value = weekStart;
-        if (el('pq-title')) el('pq-title').value = '';
-        if (el('pq-duration')) el('pq-duration').value = '30';
-        if (el('pq-date')) el('pq-date').value = new Date().toISOString().split('T')[0];
-        profQuizQuestions = [{ id: 'q1', text: '', points: 10 }];
-        renderProfQuizQuestions();
-        openSchedulerPortalModal(modal, { focusSelector: '#pq-title' });
-    }
-
     function bindSchedulerCreateModalListeners(modal) {
         bindNodeOnce(modal, 'click', 'schedulerModalClickBound', (event) => {
             const manageButton = event.target.closest('[data-scheduler-preset-manage]');
@@ -1083,14 +896,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function ensureSchedulerCreateModal() {
         const modal = ensureMountedTemplate(SCHEDULER_CREATE_MODAL_TEMPLATE_ID, SCHEDULER_CREATE_MODAL_ID);
-        if (modal) {
-            bindSchedulerCreateModalListeners(modal);
-            modal.setAttribute('data-lux-transparency-exempt', '1');
-            if (document.body.classList.contains('lux-route-admin-scheduler')) {
-                modal.dataset.luxSchModal = '1';
-                modal.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
-            }
-        }
+        if (modal) bindSchedulerCreateModalListeners(modal);
         return modal;
     }
 
@@ -1148,8 +954,12 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function openSchEditModal(courseId, groupId, weekStart = getSchedulerWeekStart()) {
         const role = typeof getEffectiveRole === 'function' ? getEffectiveRole() : getEffectiveUserRole();
-        if (role === 'professor' && typeof openProfQuizModal === 'function') {
-            openProfQuizModal(courseId, groupId, weekStart);
+        if (role === 'professor') {
+            loadSchedulerQuizApi()
+                .then((api) => api.openProfQuizModal(courseId, groupId, weekStart))
+                .catch(() => {
+                    window.alert('Unable to open quiz manager. Please refresh and try again.');
+                });
             return;
         }
 
@@ -1243,12 +1053,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function findScheduleConflict(kind, actor, day, start, end, excludeKey, weekStart) {
         if (!actor || actor === 'TBD' || !day || !start) return null;
-        if (kind === 'professor' && typeof checkProfessorOverlap === 'function') {
-            return checkProfessorOverlap(actor, day, start, end, excludeKey, weekStart);
-        }
-        if (kind === 'room' && typeof checkRoomOverlap === 'function') {
-            return checkRoomOverlap(actor, day, start, end, excludeKey, weekStart);
-        }
         const allSessions = getAvailableScheduleItemsForWeek(weekStart);
         return allSessions.find((session) => {
             if (kind === 'professor' && session.prof !== actor) return false;
@@ -1275,7 +1079,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const tone = getSchedulerFacultyTone(facultyCode);
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = `palette-card lux-strip-card lux-soft-chrome${isActive ? ' selected' : ''}`;
+        card.className = `palette-card lux-strip-card lux-soft-chrome home-hover-chip${isActive ? ' selected' : ''}`;
         card.dataset.schedulerSubjectId = subject.id;
         card.dataset.schedulerSearchHaystack = [
             subject.id,
@@ -1663,7 +1467,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     const {
         mergeUniqueSubjects,
         deriveFaculty,
-        normalizeFacultyDisplay,
         getSchedulerWeekStart,
         normalizeSchedulerDayLabel,
         getSchedulerFacultyTone,
@@ -1701,32 +1504,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     function jumpSchedulerToCurrentWeek() {
         setStoredWeekStart(SCHEDULER_WEEK_STORAGE_KEY, getCurrentWeekStartISO());
         queueSchedulerRefresh({ grid: true });
-    }
-
-    function openSchedulerQuickCreate() {
-        const semester = parseInt(el('admin-tt-semester')?.value || '3', 10);
-        openSchModal('Monday', '09:00', semester, getSchedulerWeekStart());
-    }
-
-    function focusSchedulerPalette() {
-        const list = el('palette-list');
-        if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        const search = el('palette-search');
-        if (search) search.focus({ preventScroll: true });
-    }
-
-    function resetSchedulerRail() {
-        normalizeSchedulerSelectOptions();
-        const faculty = localStorage.getItem('currentFaculty') || 'ECON';
-        const semester = String((typeof KIU_STATE !== 'undefined' && KIU_STATE.activeSemester) || 3);
-        if (el('admin-tt-faculty')) el('admin-tt-faculty').value = faculty;
-        if (el('admin-tt-semester')) el('admin-tt-semester').value = semester;
-        if (el('admin-tt-prof')) el('admin-tt-prof').value = 'all';
-        if (el('admin-tt-ta')) el('admin-tt-ta').value = 'all';
-        if (el('palette-search')) el('palette-search').value = '';
-        selectedPaletteSubject = null;
-        window.selectedPaletteSubject = null;
-        syncSchedulerFacultyScope(faculty);
     }
 
     function bindSchedulerListeners() {
@@ -1810,7 +1587,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
         const appContent = el('app-content');
         const schedulerPage = el('page-admin-scheduler');
-        if (appContent && schedulerPage) {
+        if (!isStandaloneAdminSchedulerPage() && appContent && schedulerPage) {
             Array.from(appContent.children).forEach((child) => {
                 if (child !== schedulerPage && child.classList?.contains('page-section')) {
                     child.remove();
@@ -1844,8 +1621,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         bindSchedulerListeners();
         populateProfList();
         queueSchedulerRefresh({ palette: true, grid: true, revealShell: true });
-
-        window.dispatchEvent(new CustomEvent('kiu:scheduler-ready'));
     }
 
     __kiuSchedExpose({
@@ -1871,12 +1646,8 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         schDeleteSession,
         schCreateSession,
         updateSchedulerRailChrome,
-        openSchedulerQuickCreate,
-        focusSchedulerPalette,
-        resetSchedulerRail,
         initializeAdminSchedulerPage,
-        openProfQuizModal,
-        closeProfQuizModal,
+        loadSchedulerQuizApi,
     });
 
     if (document.readyState === 'loading') {

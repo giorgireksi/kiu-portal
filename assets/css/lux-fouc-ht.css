@@ -651,15 +651,10 @@ body.lux-route-admin-scheduler .sch-modal-close-muted:hover {
 body.lux-route-admin-scheduler .sch-modal-foot {
   background: color-mix(in srgb, var(--lux-panel-fill, transparent) 82%, transparent);
 }
-body.lux-route-admin-scheduler #schModalOverlay .sch-modal :is(input, select),
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-modal :is(input, select) {
-  background: var(--lux-panel-control, var(--lux-soft-chrome-control)) !important;
-  border: 1px solid color-mix(in srgb, var(--lux-border) 78%, transparent) !important;
-  box-shadow: var(--lux-elev-1) !important;
-  color: var(--lux-text) !important;
-}
 body.lux-route-admin-scheduler #schModalOverlay .sch-preset-manage-link {
   color: var(--lux-accent-2);
+  text-transform: none;
+  letter-spacing: 0.04em;
 }
 body.lux-route-admin-scheduler #schModalOverlay .sch-preset-manage-link:hover {
   color: var(--lux-text);
@@ -673,32 +668,95 @@ body.lux-route-admin-scheduler #schModalOverlay .sch-create-btn.lux-primary-btn:
   color: #fff8ef !important;
   box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.2) !important;
 }
-body.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='danger'] {
-  background: rgba(239, 68, 68, 0.10);
-  border-color: rgba(239, 68, 68, 0.24);
+/* Session modal copy — readable labels, values, and conflict messaging on CTA fields. */
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-body {
+  color: var(--lux-text);
+}
+body.lux-route-admin-scheduler #schModalOverlay :is(
+  .sch-form-section-title,
+  .sch-input-group > label,
+  .sch-input-label-row label
+) {
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-form-section-copy {
+  color: var(--lux-text-muted);
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-inline-required {
+  color: #f87171;
+  font-weight: 800;
+}
+body.lux-route-admin-scheduler #schModalOverlay :is(.lux-control, .lux-picker-btn--compact) {
+  color: var(--lux-btn-label, var(--lux-text));
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-control::placeholder {
+  color: color-mix(in srgb, var(--lux-btn-label, var(--lux-text)) 58%, transparent);
+  opacity: 1;
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn--compact :is(.lux-picker-value, strong, i) {
+  color: inherit;
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn--compact i {
+  opacity: 0.82;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-readonly.lux-control {
+  color: color-mix(in srgb, var(--lux-btn-label, var(--lux-text)) 76%, var(--lux-text-muted));
+}
+body.lux-route-admin-scheduler #schModalOverlay input[type='time'].lux-control,
+body.lux-route-admin-scheduler #schModalOverlay input[type='number'].lux-control {
+  color: var(--lux-btn-label, var(--lux-text));
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show {
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  border-style: solid;
+  border-width: var(--lux-btn-frame-width, 3.5px);
+  box-shadow: var(--lux-btn-frame-shadow);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show i {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  font-size: 14px;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger'] {
+  background: color-mix(in srgb, #7f1d1d 22%, var(--lux-btn-well-soft));
+  border-color: var(--lux-btn-danger-border, #dc2626);
   color: #fecaca;
 }
-body.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='success'] {
-  background: rgba(74, 222, 128, 0.10);
-  border-color: rgba(74, 222, 128, 0.24);
+body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='success'] {
+  background: color-mix(in srgb, #14532d 20%, var(--lux-btn-well-soft));
+  border-color: color-mix(in srgb, #22c55e 72%, var(--lux-btn-border-solid, var(--lux-accent)));
   color: #bbf7d0;
 }
-body.lux-light-mode.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='danger'] {
+body.lux-light-mode.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger'] {
   color: #991b1b;
+  background: color-mix(in srgb, #fecaca 48%, var(--lux-btn-well-soft));
 }
-body.lux-light-mode.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='success'] {
+body.lux-light-mode.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='success'] {
   color: #166534;
+  background: color-mix(in srgb, #bbf7d0 44%, var(--lux-btn-well-soft));
+}
+body.lux-light-mode.lux-route-admin-scheduler #schModalOverlay :is(.lux-control, .lux-picker-btn--compact) {
+  text-shadow: none;
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item {
-  border: 1px solid color-mix(in srgb, var(--lux-border) 72%, transparent);
-  background: color-mix(in srgb, var(--lux-panel-control, transparent) 72%, transparent);
-  box-shadow: var(--lux-elev-1);
+  border-width: var(--lux-btn-frame-width, 3.5px);
+  border-style: solid;
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well-soft);
+  box-shadow: var(--lux-btn-frame-shadow);
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item:hover {
-  border-color: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, var(--lux-border));
-  box-shadow: var(--lux-elev-2);
-  transform: translateY(-1px);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft));
+  box-shadow: var(--lux-btn-frame-shadow-hover);
+  transform: translateY(-2px);
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge--saved {
   background: rgba(var(--lux-accent-rgb), 0.14);
@@ -716,26 +774,22 @@ body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge
   border: 1px solid rgba(56, 189, 248, 0.24);
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn {
-  border: 1px solid color-mix(in srgb, var(--lux-border) 72%, transparent);
-  background: var(--lux-panel-control, transparent);
+  width: var(--lux-primary-btn-min-height, 46px);
+  min-width: var(--lux-primary-btn-min-height, 46px);
+  height: var(--lux-primary-btn-min-height, 46px);
+  padding: 0;
   color: #f87171;
-  box-shadow: var(--lux-elev-1);
+  border-color: var(--lux-btn-danger-border, #dc2626);
 }
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn:hover {
-  border-color: rgba(239, 68, 68, 0.28);
-  background: rgba(239, 68, 68, 0.10);
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn:hover,
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn:focus-visible {
+  color: #fca5a5;
+  border-color: var(--lux-btn-danger-border, #dc2626);
+  background: var(--lux-panel-cta-danger-hover, var(--lux-panel-cta-danger));
 }
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input,
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search {
-  border: 1px solid color-mix(in srgb, var(--lux-border) 78%, transparent);
-  background: var(--lux-panel-control, transparent);
-  color: var(--lux-text);
-  box-shadow: var(--lux-elev-1);
-}
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input:focus,
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search:focus {
-  border-color: rgba(var(--lux-accent-rgb), 0.42);
-  box-shadow: 0 0 0 4px rgba(var(--lux-accent-rgb), 0.10), var(--lux-elev-1);
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-droplist-panel:not(.is-open):not(.is-closing),
+body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-field > .lux-droplist-panel:not(.is-open):not(.is-closing) {
+  display: none !important;
 }
 body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-picker-label,
 body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn .lux-picker-caption,
@@ -761,7 +815,26 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .sch-info-banner.lux-soft-chrome,
   .sch-empty-week-notice.lux-soft-chrome,
   .sch-grid-empty.lux-soft-chrome,
-  .sch-rail-control-band.lux-soft-chrome
+  .staff-hub-table-wrap.lux-data-card,
+  .students-hub-table-wrap.lux-data-card,
+  .staff-hub-info-card.lux-data-card,
+  .students-hub-info-card.lux-data-card,
+  .staff-hub-schema-empty.lux-data-card,
+  .students-hub-schema-empty.lux-data-card,
+  .staff-hub-profile-panel.lux-data-card,
+  .students-hub-profile-panel.lux-data-card,
+  .staff-hub-section-field-workspace.lux-data-card,
+  .students-hub-section-field-workspace.lux-data-card,
+  .staff-hub-builder-type,
+  .students-hub-builder-type,
+  .staff-hub-copy-bar,
+  .students-hub-copy-bar,
+  .staff-hub-profile-list-shell,
+  .students-hub-profile-list-shell,
+  .staff-hub-studio-quick-btn,
+  .students-hub-studio-quick-btn,
+  .staff-hub-builder-launch-card,
+  .students-hub-builder-launch-card
 ):not(.lux-panel):not([data-lux-glass-root="1"]) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -771,6 +844,128 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+}
+
+/* Staff/students hub: flat sections inside one glass host (scheduler-merge pattern). */
+body.lux-unified-shell.lux-page-bare :is(.staff-hub-shell, .students-hub-shell)[data-lux-glass-root="1"] > :is(
+  .staff-hub-controls,
+  .staff-hub-directory-panel,
+  .students-hub-controls,
+  .students-hub-directory-panel
+) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.lux-unified-shell.lux-page-bare :is(.staff-hub-shell, .students-hub-shell)[data-lux-glass-root="1"] > :is(
+  .staff-hub-directory-panel,
+  .students-hub-directory-panel
+) {
+  border-top: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08)) !important;
+}
+body.lux-unified-shell.lux-page-bare :is(.staff-hub-profile, .students-hub-profile)[data-lux-glass-root="1"] > :is(
+  .staff-hub-profile-head,
+  .staff-hub-tabs,
+  .staff-hub-profile-body,
+  .students-hub-profile-head,
+  .students-hub-tabs,
+  .students-hub-profile-body
+) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08)) !important;
+}
+body.lux-unified-shell.lux-page-bare :is(.staff-hub-profile, .students-hub-profile)[data-lux-glass-root="1"] > :is(
+  .staff-hub-toolbar,
+  .students-hub-toolbar
+) {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Form settings: tier-1 frosted panels (asd8 parity, lux-panel SSOT). */
+body.lux-route-staff #staff-content :is(
+  .staff-hub-form-settings-head,
+  .staff-hub-builder-rail,
+  .staff-hub-builder-canvas,
+  .staff-hub-builder-panel
+),
+body.lux-route-students-admin #students-content :is(
+  .students-hub-form-settings-head,
+  .students-hub-builder-rail,
+  .students-hub-builder-canvas,
+  .students-hub-builder-panel
+) {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  color: var(--lux-text);
+  background-clip: padding-box;
+}
+
+/* Form settings: tier-2 inner cards (subtler than rail/canvas). */
+body.lux-route-staff #staff-content .staff-hub-form-settings :is(
+  .staff-hub-profile-panel.lux-data-card,
+  .staff-hub-section-field-workspace.lux-data-card,
+  .staff-hub-builder-type,
+  .staff-hub-copy-bar,
+  .staff-hub-profile-list-shell,
+  .staff-hub-builder-launch-card
+),
+body.lux-route-students-admin #students-content .students-hub-form-settings :is(
+  .students-hub-profile-panel.lux-data-card,
+  .students-hub-section-field-workspace.lux-data-card,
+  .students-hub-builder-type,
+  .students-hub-copy-bar,
+  .students-hub-profile-list-shell,
+  .students-hub-builder-launch-card
+) {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface-soft, var(--lux-panel-surface));
+  border: 1px solid var(--lux-hub-card-border, var(--lux-panel-host-border));
+  box-shadow: var(--lux-elev-1, var(--lux-panel-host-shadow));
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  color: var(--lux-text);
+  background-clip: padding-box;
+}
+
+/* Hub row / builder tokens for form studio layout (shared with lux-page-bare-lite). */
+body.lux-route-staff,
+body.lux-route-students-admin {
+  --lux-hub-border-soft: rgba(255, 255, 255, 0.10);
+  --lux-hub-border: rgba(var(--lux-accent-rgb), 0.22);
+  --lux-hub-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
+  --lux-hub-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
+  --lux-hub-card-border: rgba(var(--lux-accent-rgb), 0.14);
+}
+body.lux-light-mode.lux-route-staff,
+body.lux-light-mode.lux-route-students-admin,
+html.lux-light-mode body.lux-route-staff,
+html.lux-light-mode body.lux-route-students-admin {
+  --lux-hub-border-soft: rgba(77, 52, 31, 0.12);
+  --lux-hub-border: rgba(var(--lux-accent-rgb), 0.16);
+  --lux-hub-row: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.48));
+  --lux-hub-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
+  --lux-hub-card-border: rgba(31, 52, 86, 0.13);
 }
 
 /* Global soft-chrome inner surface paint — accent fill, glow border, elevation

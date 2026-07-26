@@ -735,7 +735,7 @@
                     aria-label="Remove ${esc(label)} filter"
                 ><span>${esc(label)}</span><em>${esc(value)}</em><i class="fas fa-xmark" aria-hidden="true"></i></button>
             `).join('')
-            : '<span class="${H.hub}-chip lux-status-pill is-muted">No active filters</span>';
+            : `<span class="${H.hub}-chip lux-status-pill is-muted">No active filters</span>`;
 
         return `
             <div class="${H.hub}-controls-head">

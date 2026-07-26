@@ -1678,3 +1678,4420 @@ body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-search-shell .sch-p
   }
 }
 
+
+/* ── Staff / students hub + form settings (asd8 layout parity) ── */
+
+body.lux-route-staff #staff-content.staff-command-root,
+body.lux-route-students-admin #students-content.students-admin-root
+{
+    width: min(100%, 1580px);
+    margin: 0 auto;
+    padding: 0 18px 84px;
+}
+
+@media (min-width: 901px) {
+body.lux-route-staff #app-content,
+body.lux-route-students-admin #app-content
+{
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+body.lux-route-staff #staff-content .staff-hub-table-wrap,
+body.lux-route-students-admin #students-content .students-hub-table-wrap
+{
+        scroll-padding-left: 24px;
+    }
+
+body.lux-route-staff #staff-content [data-staff-action="select"],
+body.lux-route-students-admin #students-content [data-staff-action="select"]
+{
+        scroll-margin-left: 24px;
+    }}
+
+/* === Loading state === */
+body.lux-route-staff .staff-shell-loading-state,
+body.lux-route-students-admin .staff-shell-loading-state
+{
+    text-align: center;
+    padding: 68px 20px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff .staff-shell-loading-icon,
+body.lux-route-students-admin .staff-shell-loading-icon
+{
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+body.lux-route-staff .staff-shell-modal,
+body.lux-route-students-admin .staff-shell-modal
+{
+    display: none;
+}
+
+body.lux-route-staff .staff-shell-modal-wide,
+body.lux-route-students-admin .staff-shell-modal-wide
+{
+    max-width: 600px;
+}
+
+/* === Main shell grid === */
+body.lux-route-staff #staff-content .staff-hub-shell,
+body.lux-route-students-admin #students-content .students-hub-shell
+{
+    display: grid;
+    gap: 22px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-shell > *,
+body.lux-route-students-admin #students-content .students-hub-shell > *
+{
+    animation: staff-hub-fade-in 0.36s ease both;
+}
+
+body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(2),
+body.lux-route-students-admin #students-content .students-hub-shell > *:nth-child(2)
+{ animation-delay: 0.05s; }
+body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(3),
+body.lux-route-students-admin #students-content .students-hub-shell > *:nth-child(3)
+{ animation-delay: 0.1s; }
+body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(4),
+body.lux-route-students-admin #students-content .students-hub-shell > *:nth-child(4)
+{ animation-delay: 0.15s; }
+
+/* === Hero layout === */
+body.lux-route-staff #staff-content .staff-hub-hero,
+body.lux-route-students-admin #students-content .students-hub-hero
+{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-height: auto;
+    padding: 22px 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero::before,
+body.lux-route-staff #staff-content .staff-hub-profile::before,
+body.lux-route-students-admin #students-content .students-hub-profile::before
+{
+    content: "";
+    position: absolute;
+    inset: auto -8% -28% auto;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--lux-accent-rgb), 0.18), transparent 64%);
+    pointer-events: none;
+    animation: staff-hub-orbit 14s linear infinite;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-toolbar,
+body.lux-route-students-admin #students-content .students-hub-hero-toolbar
+{
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-topline,
+body.lux-route-students-admin #students-content .students-hub-hero-topline
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-intro,
+body.lux-route-students-admin #students-content .students-hub-hero-intro
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 14px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-controls,
+body.lux-route-students-admin #students-content .students-hub-hero-controls
+{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-kicker,
+body.lux-route-staff #staff-content .staff-hub-overline,
+body.lux-route-students-admin #students-content .students-hub-overline
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-route-staff #staff-content .staff-hub-title,
+body.lux-route-students-admin #students-content .students-hub-title
+{
+    margin: 0;
+    font-size: clamp(24px, 2.4vw, 32px);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    max-width: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-meta,
+body.lux-route-staff #staff-content .staff-hub-action-row,
+body.lux-route-staff #staff-content .staff-hub-inline-actions,
+body.lux-route-staff #staff-content .staff-hub-modal-actions,
+body.lux-route-staff #staff-content .staff-hub-toolbar-actions,
+body.lux-route-students-admin #students-content .students-hub-toolbar-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-meta--spaced,
+body.lux-route-students-admin #students-content .students-hub-hero-meta--spaced
+{
+    margin-top: 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-action-row--spaced,
+body.lux-route-students-admin #students-content .students-hub-action-row--spaced
+{
+    margin-top: 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-panel,
+body.lux-route-students-admin #students-content .students-hub-hero-panel
+{
+    display: grid;
+    gap: 16px;
+    align-content: start;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-search-grid,
+body.lux-route-students-admin #students-content .students-hub-hero-search-grid
+{
+    grid-template-columns: minmax(240px, 1.2fr) minmax(180px, 0.8fr);
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-toolbar .staff-hub-field label,
+body.lux-route-students-admin #students-content .students-hub-hero-toolbar .students-hub-field label
+{
+    font-size: 11px;
+}
+
+/* === Controls layout === */
+body.lux-route-staff #staff-content .staff-hub-controls,
+body.lux-route-students-admin #students-content .students-hub-controls
+{
+    padding: 28px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls-head,
+body.lux-route-staff #staff-content .staff-hub-profile-head,
+body.lux-route-staff #staff-content .staff-hub-directory-head,
+body.lux-route-students-admin #students-content .students-hub-directory-head
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-grid,
+body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary,
+body.lux-route-staff #staff-content .staff-hub-form-grid,
+body.lux-route-staff #staff-content .staff-hub-info-grid,
+body.lux-route-students-admin #students-content .students-hub-info-grid
+{
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-grid,
+body.lux-route-students-admin #students-content .students-hub-filter-grid
+{
+    grid-template-columns: minmax(300px, 1.55fr) repeat(4, minmax(150px, .8fr));
+    margin-top: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary,
+body.lux-route-students-admin #students-content .students-hub-filter-grid-secondary
+{
+    grid-template-columns: repeat(4, minmax(160px, 1fr)) auto;
+    margin-top: 14px;
+}
+
+/* === Adaptive directory controls deck === */
+body.lux-route-staff #staff-content .staff-hub-controls--adaptive,
+body.lux-route-students-admin #students-content .students-hub-controls--adaptive
+{
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls-copy,
+body.lux-route-students-admin #students-content .students-hub-controls-copy
+{
+    display: grid;
+    gap: 4px;
+    max-width: 720px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-result-pill,
+body.lux-route-students-admin #students-content .students-hub-result-pill
+{
+    display: inline-flex;
+    align-items: center;
+    margin-right: 8px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: rgba(var(--lux-accent-rgb), 0.14);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
+    color: var(--lux-text);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-bar,
+body.lux-route-students-admin #students-content .students-hub-command-bar
+{
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-saved-views,
+body.lux-route-students-admin #students-content .students-hub-saved-views
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 16px;
+    background: var(--lux-hub-card-bg, transparent);
+    border: 1px solid var(--lux-hub-card-border, rgba(var(--lux-accent-rgb), 0.14));
+    box-shadow: var(--lux-hub-card-shadow, none);
+}
+
+body.lux-route-staff #staff-content .staff-hub-saved-view-btn,
+body.lux-route-students-admin #students-content .students-hub-saved-view-btn
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-saved-view-btn i,
+body.lux-route-students-admin #students-content .students-hub-saved-view-btn i
+{
+    color: rgba(var(--lux-accent-rgb), 0.82);
+    font-size: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-saved-view-btn:hover,
+body.lux-route-staff #staff-content .staff-hub-saved-view-btn:focus-visible,
+body.lux-route-students-admin #students-content .students-hub-saved-view-btn:focus-visible
+{
+    background: var(--lux-hub-row-hover, rgba(var(--lux-accent-rgb), 0.10));
+    border-color: rgba(var(--lux-accent-rgb), 0.18);
+    color: var(--lux-text);
+    transform: translateY(-1px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-active-filters,
+body.lux-route-students-admin #students-content .students-hub-active-filters
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 34px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck,
+body.lux-route-students-admin #students-content .students-hub-filter-deck
+{
+    display: grid;
+    gap: 0;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section
+{
+    display: grid;
+    gap: 12px;
+    padding: 16px 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section + .staff-hub-filter-deck-section,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section + .students-hub-filter-deck-section
+{
+    border-top: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary
+{
+    grid-template-columns: minmax(260px, 1fr);
+    gap: 14px;
+    align-items: end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--droplist-search,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section--droplist-search
+{
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-droplist-search-row,
+body.lux-route-students-admin #students-content .students-hub-droplist-search-row
+{
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr);
+    gap: 14px;
+    align-items: end;
+}
+
+body.lux-route-staff #staff-content [data-staff-directory-field-filter][hidden],
+body.lux-route-students-admin #students-content [data-staff-directory-field-filter][hidden]
+{
+    display: none !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-heading,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-heading
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-kicker,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-kicker
+{
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-link,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-link
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: rgba(var(--lux-accent-rgb), 0.92);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-group,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-group
+{
+    border: 1px solid var(--lux-hub-control, transparent);
+    border-radius: 14px;
+    background: var(--lux-hub-card-bg, transparent);
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-group + .staff-hub-filter-deck-group,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-group + .students-hub-filter-deck-group
+{
+    margin-top: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-group-summary,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-group-summary
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    list-style: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-group-summary::-webkit-details-marker,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-group-summary::-webkit-details-marker
+{
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-group-title,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-group-title
+{
+    font-weight: 700;
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-group-count,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-group-count
+{
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-grid--group,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-grid--group
+{
+    padding: 0 14px 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-grid,
+body.lux-route-staff #staff-content .staff-hub-filter-ops-grid,
+body.lux-route-students-admin #students-content .students-hub-filter-ops-grid
+{
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-grid,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-grid
+{
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-ops-grid,
+body.lux-route-students-admin #students-content .students-hub-filter-ops-grid
+{
+    grid-template-columns: repeat(3, minmax(150px, 1fr)) auto;
+    align-items: end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-search-field,
+body.lux-route-students-admin #students-content .students-hub-search-field
+{
+    position: relative;
+    display: grid;
+}
+
+body.lux-route-staff #staff-content .staff-hub-search-field i,
+body.lux-route-students-admin #students-content .students-hub-search-field i
+{
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(var(--lux-accent-rgb), 0.72);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-search-field .staff-hub-control,
+body.lux-route-students-admin #students-content .students-hub-search-field .students-hub-control
+{
+    padding-left: 40px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field--pending,
+body.lux-route-students-admin #students-content .students-hub-field--pending
+{
+    opacity: 0.72;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field--pending label,
+body.lux-route-students-admin #students-content .students-hub-field--pending label
+{
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-field--pending select:disabled,
+body.lux-route-students-admin #students-content .students-hub-field--pending select:disabled
+{
+    cursor: not-allowed;
+    color: var(--lux-text-muted);
+    opacity: 0.88;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-hint,
+body.lux-route-students-admin #students-content .students-hub-filter-hint
+{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(var(--lux-accent-rgb), 0.06);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-hint > i,
+body.lux-route-students-admin #students-content .students-hub-filter-hint > i
+{
+    flex: 0 0 auto;
+    color: rgba(var(--lux-accent-rgb), 0.88);
+    font-size: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-hint p,
+body.lux-route-students-admin #students-content .students-hub-filter-hint p
+{
+    margin: 0;
+    flex: 1 1 auto;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-hint strong,
+body.lux-route-students-admin #students-content .students-hub-filter-hint strong
+{
+    color: var(--lux-text);
+    font-weight: 700;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-hint-btn,
+body.lux-route-students-admin #students-content .students-hub-filter-hint-btn
+{
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.28);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: var(--lux-text);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 180ms ease, transform 180ms ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-hint-btn:hover,
+body.lux-route-students-admin #students-content .students-hub-filter-hint-btn:hover
+{
+    background: rgba(var(--lux-accent-rgb), 0.18);
+    transform: translateY(-1px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-review-btn,
+body.lux-route-students-admin #students-content .students-hub-review-btn
+{
+    align-self: end;
+    white-space: nowrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-muted,
+body.lux-route-students-admin #students-content .students-hub-chip.is-muted
+{
+    opacity: 0.72;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-clickable,
+body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"],
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"]
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-clickable span,
+body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"] span,
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] span
+{
+    font-weight: 800;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-clickable em,
+body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"] em,
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] em
+{
+    font-style: normal;
+    color: var(--lux-text-muted);
+    font-size: 11px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-clickable i,
+body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"] i,
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] i
+{
+    font-size: 10px;
+    opacity: 0.72;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-clickable:hover,
+body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"]:hover,
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"]:hover
+{
+    background: var(--lux-hub-row-hover, rgba(var(--lux-accent-rgb), 0.10)) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.28) !important;
+    transform: translateY(-1px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-field,
+body.lux-route-staff #staff-command-modal-root .staff-hub-field,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field
+{
+    display: grid;
+    gap: 7px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field--grow,
+body.lux-route-students-admin #students-content .students-hub-field--grow
+{
+    min-width: 280px;
+    flex: 1 1 280px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field--compact,
+body.lux-route-students-admin #students-content .students-hub-field--compact
+{
+    min-width: 170px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field label,
+body.lux-route-staff #staff-command-modal-root .staff-hub-field label,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field label
+{
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.lux-route-staff #staff-content textarea.staff-hub-control,
+body.lux-route-staff #staff-command-modal-root textarea.staff-hub-control,
+body.lux-route-students-admin #students-admin-modal-root textarea.students-hub-control
+{
+    min-height: 104px;
+    padding: 12px 14px;
+    resize: vertical;
+}
+/* === Directory and profile layouts === */
+body.lux-route-staff #staff-content .staff-hub-directory-panel,
+body.lux-route-staff #staff-content .staff-hub-profile,
+body.lux-route-students-admin #students-content .students-hub-profile
+{
+    padding: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-workspace,
+body.lux-route-students-admin #students-content .students-hub-workspace
+{
+    display: grid;
+    gap: 20px;
+}
+
+/* === Table layout === */
+body.lux-route-staff #staff-content .staff-hub-table-wrap,
+body.lux-route-students-admin #students-content .students-hub-table-wrap
+{
+    overflow: auto;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table,
+body.lux-route-students-admin #students-content .students-hub-table
+{
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table th,
+body.lux-route-staff #staff-content .staff-hub-table td,
+body.lux-route-students-admin #students-content .students-hub-table td
+{
+    padding: 15px 16px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table th,
+body.lux-route-students-admin #students-content .students-hub-table th
+{
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table tbody tr,
+body.lux-route-students-admin #students-content .students-hub-table tbody tr
+{
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-row-button,
+body.lux-route-students-admin #students-content .students-hub-row-button
+{
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    inline-size: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-row-button:focus-visible .staff-hub-person,
+body.lux-route-staff #staff-content .staff-hub-row-button:hover .staff-hub-person,
+body.lux-route-students-admin #students-content .students-hub-row-button:hover .students-hub-person
+{
+    transform: translateY(-1px);
+}
+
+/* === Person card layout === */
+body.lux-route-staff #staff-content .staff-hub-person,
+body.lux-route-students-admin #students-content .students-hub-person
+{
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-avatar,
+body.lux-route-staff #staff-command-modal-root .staff-hub-avatar,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar
+{
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+body.lux-route-staff #staff-content .staff-hub-avatar img,
+body.lux-route-staff #staff-command-modal-root .staff-hub-avatar img,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar img
+{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+body.lux-route-staff #staff-content .staff-hub-avatar.is-large,
+body.lux-route-staff #staff-command-modal-root .staff-hub-avatar.is-large,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar.is-large
+{
+    width: 84px;
+    height: 84px;
+    border-radius: 26px;
+    font-size: 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-name,
+body.lux-route-students-admin #students-content .students-hub-name
+{
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-meta,
+body.lux-route-students-admin #students-content .students-hub-meta
+{
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+body.lux-route-staff #staff-content .staff-hub-progress,
+body.lux-route-students-admin #students-content .students-hub-progress
+{
+    display: grid;
+    gap: 6px;
+    min-width: 120px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-progress-track,
+body.lux-route-students-admin #students-content .students-hub-progress-track
+{
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-progress-fill,
+body.lux-route-students-admin #students-content .students-hub-progress-fill
+{
+    display: block;
+    width: var(--staff-hub-progress, 0%);
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.24s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-empty,
+body.lux-route-students-admin #students-content .students-hub-empty
+{
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    padding: 52px 20px;
+    text-align: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-empty-icon,
+body.lux-route-students-admin #students-content .students-hub-empty-icon
+{
+    font-size: 32px;
+}
+
+/* === Profile layout === */
+body.lux-route-staff #staff-content .staff-hub-profile,
+body.lux-route-students-admin #students-content .students-hub-profile
+{
+    padding: 0;
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-toolbar,
+body.lux-route-students-admin #students-content .students-hub-toolbar
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-head,
+body.lux-route-students-admin #students-content .students-hub-profile-head
+{
+    padding: 28px 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-head-main,
+body.lux-route-students-admin #students-content .students-hub-profile-head-main
+{
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.7fr) auto;
+    gap: 18px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-id,
+body.lux-route-students-admin #students-content .students-hub-profile-id
+{
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-id h2,
+body.lux-route-students-admin #students-content .students-hub-profile-id h2
+{
+    margin: 6px 0 0;
+    font-size: clamp(30px, 4vw, 42px);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-id p,
+body.lux-route-students-admin #students-content .students-hub-profile-id p
+{
+    margin: 8px 0 0;
+    font-size: 13px;
+}
+
+/* === Tabs layout === */
+body.lux-route-staff #staff-content .staff-hub-tabs,
+body.lux-route-students-admin #students-content .students-hub-tabs
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    padding: 12px 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-tabs.is-profile-tabs,
+body.lux-route-students-admin #students-content .students-hub-tabs.is-profile-tabs
+{
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 10px;
+    scrollbar-width: thin;
+}
+
+body.lux-route-staff #staff-content .staff-hub-tab,
+body.lux-route-students-admin #students-content .students-hub-tab
+{
+    min-height: 38px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-tab,
+body.lux-route-students-admin #students-content .students-hub-profile-tab
+{
+    flex: 0 0 auto;
+    min-width: 112px;
+    max-width: 220px;
+    padding-inline: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body,
+body.lux-route-students-admin #students-content .students-hub-profile-body
+{
+    display: grid;
+    gap: 16px;
+    padding: 24px;
+    align-content: start;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section
+{
+    display: grid;
+    gap: 16px;
+    padding: 18px 18px 18px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10)) !important;
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.03)) !important;
+    box-shadow: none !important;
+    border-left: 3px solid rgba(var(--lux-accent-rgb), 0.34) !important;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section,
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section
+{
+    background: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.34)) !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section-head,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section-head
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section-head strong,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section-head strong
+{
+    display: block;
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section-head p,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section-head p
+{
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-grid,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-grid
+{
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-grid.is-one,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-grid.is-one
+{
+    grid-template-columns: 1fr;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field
+{
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.03);
+    border-left: 3px solid rgba(var(--lux-accent-rgb), 0.18);
+    transition: background 180ms ease, border-color 180ms ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field:hover,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field:hover
+{
+    background: rgba(var(--lux-accent-rgb), 0.06);
+    border-left-color: rgba(var(--lux-accent-rgb), 0.32);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field.is-full,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field.is-full
+{
+    grid-column: 1 / -1;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field-label,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field-label
+{
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field-value,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field-value
+{
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.45;
+    color: var(--lux-text);
+    word-break: break-word;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field-value.is-empty,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field-value.is-empty
+{
+    color: var(--lux-text-muted);
+    font-weight: 600;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field-value p,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field-value p
+{
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.55;
+    color: inherit;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-section-nav,
+body.lux-route-students-admin #students-content .students-hub-profile-section-nav
+{
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    margin: 0 0 14px;
+    padding: 8px 0 10px;
+    background: linear-gradient(180deg, var(--lux-hub-surface, transparent) 72%, transparent);
+    backdrop-filter: blur(8px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-section-nav-track,
+body.lux-route-students-admin #students-content .students-hub-profile-section-nav-track
+{
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-section-pill,
+body.lux-route-students-admin #students-content .students-hub-profile-section-pill
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-hub-control, transparent);
+    background: var(--lux-hub-card-bg, transparent);
+    color: var(--lux-text);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-section-pill.is-active,
+body.lux-route-students-admin #students-content .students-hub-profile-section-pill.is-active
+{
+    border-color: var(--lux-accent, #2dd4bf);
+    background: color-mix(in srgb, var(--lux-accent, #2dd4bf) 16%, var(--lux-hub-card-bg, transparent));
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-section-pill-index,
+body.lux-route-students-admin #students-content .students-hub-profile-section-pill-index
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--lux-hub-control, transparent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-sections,
+body.lux-route-students-admin #students-content .students-hub-profile-sections
+{
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-info-grid,
+body.lux-route-students-admin #students-content .students-hub-info-grid
+{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+body.lux-route-staff #staff-command-modal-root[hidden],
+body.lux-route-students-admin #students-admin-modal-root[hidden]
+{
+    display: none;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-backdrop,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-backdrop
+{
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal
+{
+    width: min(820px, 100%);
+    max-height: min(88vh, 940px);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
+    border-radius: 24px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-head,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-head
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px 24px 18px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-head-main,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-head-main
+{
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-title-row,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-title-row
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-type-pill,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-type-pill
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-foot,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-foot
+{
+    display: grid;
+    gap: 14px;
+    padding: 18px 24px 22px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-status,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-status
+{
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress
+{
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-meta,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress-meta
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-track,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress-track
+{
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-light-mode.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-track,
+html.lux-light-mode body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-track,
+html.lux-light-mode body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress-track
+{
+    background: rgba(31, 52, 86, 0.08);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-fill,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress-fill
+{
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(var(--lux-accent-rgb), 0.72), rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), 0.82));
+    transition: width 220ms ease;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-fill.is-warning,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress-fill.is-warning
+{
+    background: linear-gradient(90deg, rgba(244, 162, 97, 0.88), rgba(255, 209, 164, 0.92));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-fill.is-danger,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress-fill.is-danger
+{
+    background: linear-gradient(90deg, rgba(248, 113, 113, 0.88), rgba(255, 160, 160, 0.92));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-progress-fill.is-success,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-progress-fill.is-success
+{
+    background: linear-gradient(90deg, rgba(32, 197, 124, 0.88), rgba(118, 230, 174, 0.92));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-status-copy,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-status-copy
+{
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-missing,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-missing
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-body,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-body
+{
+    overflow: auto;
+    padding: 24px;
+    display: grid;
+    gap: 20px;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-section
+{
+    display: grid;
+    gap: 16px;
+    padding: 18px 18px 18px 20px;
+    border-radius: 16px;
+    border-left: 3px solid rgba(var(--lux-accent-rgb), 0.34) !important;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section.is-complete,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-section.is-complete
+{
+    border-left-color: rgba(32, 197, 124, 0.62) !important;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section.is-partial,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-section.is-partial
+{
+    border-left-color: rgba(244, 162, 97, 0.62) !important;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-section-head
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head strong,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-section-head strong
+{
+    display: block;
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head p,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-section-head p
+{
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-overline,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-overline
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-section-status,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-section-status
+{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    flex: 0 0 auto;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-section-status.is-complete,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-section-status.is-complete
+{
+    border-color: rgba(32, 197, 124, 0.28);
+    background: rgba(32, 197, 124, 0.14);
+    color: #76e6ae;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-section-status.is-partial,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-section-status.is-partial
+{
+    border-color: rgba(244, 162, 97, 0.28);
+    background: rgba(244, 162, 97, 0.14);
+    color: #ffd1a4;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-grid
+{
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid.is-two,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-grid.is-two
+{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid.is-one,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-form-grid.is-one
+{
+    grid-template-columns: 1fr;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field label,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field label
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-required-mark,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-required-mark
+{
+    color: rgba(248, 113, 113, 0.92);
+    font-weight: 900;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field-complete-dot,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field-complete-dot
+{
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    flex: 0 0 auto;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field[data-staff-field-complete="true"] .staff-hub-field-complete-dot,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field[data-staff-field-complete="true"] .students-hub-field-complete-dot
+{
+    background: rgba(32, 197, 124, 0.92);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-control,
+body.lux-route-staff #staff-command-modal-root .lux-picker-btn,
+body.lux-route-students-admin #students-admin-modal-root .lux-picker-btn
+{
+    min-height: 44px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-control:focus-visible,
+body.lux-route-staff #staff-command-modal-root .lux-picker-btn:focus-visible,
+body.lux-route-students-admin #students-admin-modal-root .lux-picker-btn:focus-visible
+{
+    outline: 2px solid rgba(var(--lux-accent-rgb), 0.42);
+    outline-offset: 2px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-help,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-help
+{
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-error,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-error
+{
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffb4b4;
+}
+
+body.lux-light-mode.lux-route-staff #staff-command-modal-root .staff-hub-error,
+html.lux-light-mode body.lux-route-staff #staff-command-modal-root .staff-hub-error,
+html.lux-light-mode body.lux-route-students-admin #students-admin-modal-root .students-hub-error
+{
+    color: #b42318;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-invalid .staff-hub-control,
+body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-invalid .lux-picker-btn,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field.is-invalid .lux-picker-btn
+{
+    border-color: rgba(248, 113, 113, 0.48) !important;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-invalid .staff-hub-error,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field.is-invalid .students-hub-error
+{
+    display: flex;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-title,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-title
+{
+    margin: 0;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-copy,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-copy
+{
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-actions,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-actions
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+/* === Responsive === */
+@media (max-width: 1280px) {
+    body.lux-route-staff #staff-content .staff-hub-hero-controls,
+    body.lux-route-staff #staff-content .staff-hub-hero-search-grid,
+    body.lux-route-staff #staff-content .staff-hub-filter-grid,
+    body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary,
+    body.lux-route-staff #staff-content .staff-hub-profile-head-main,
+    body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid,
+    body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid.is-two {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 768px) {
+    body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary,
+    body.lux-route-staff #staff-content .staff-hub-filter-deck-grid,
+    body.lux-route-staff #staff-content .staff-hub-filter-ops-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-filter-hint {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-saved-views {
+        padding: 4px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-saved-view-btn {
+        flex: 1 1 calc(50% - 4px);
+        justify-content: center;
+    }
+}
+
+@media (max-width: 900px) {
+    body.lux-route-staff #staff-content.staff-command-root {
+        padding: 0 12px 72px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-hero,
+    body.lux-route-staff #staff-content .staff-hub-controls,
+    body.lux-route-staff #staff-content .staff-hub-directory-panel,
+    body.lux-route-staff #staff-content .staff-hub-profile {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-hero-controls {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-tabs {
+        overflow-x: auto;
+        display: flex;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-tab {
+        flex: 0 0 auto;
+        padding: 0 14px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-info-grid,
+    body.lux-route-staff #staff-content .staff-hub-hero-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    body.lux-route-staff #staff-content .staff-hub-hero {
+        padding: 18px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-action-row,
+    body.lux-route-staff #staff-content .staff-hub-inline-actions,
+    body.lux-route-staff #staff-content .staff-hub-modal-actions,
+    body.lux-route-staff #staff-content .staff-hub-toolbar-actions,
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal-foot {
+        gap: 16px;
+    }
+
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-hero .lux-primary-btn,
+    body.lux-route-staff #staff-content .staff-hub-hero .lux-secondary-btn,
+    body.lux-route-staff #staff-content .staff-hub-controls .lux-primary-btn,
+    body.lux-route-staff #staff-content .staff-hub-controls .lux-secondary-btn,
+    body.lux-route-staff #staff-content .staff-hub-toolbar .lux-primary-btn,
+    body.lux-route-staff #staff-content .staff-hub-toolbar .lux-secondary-btn,
+    body.lux-route-staff #staff-command-modal-root .lux-primary-btn,
+    body.lux-route-staff #staff-command-modal-root .lux-secondary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal-backdrop {
+        padding: 0;
+    }
+
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal {
+        width: 100%;
+        max-height: none;
+        min-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* === Legacy directory route composition (layout only, visual chrome delegated to shared classes) === */
+/* === Staff directory runtime contract (layout only) === */
+body.lux-route-staff #staff-content .staff-dir-card-section {
+    display: grid !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-head {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    gap: 14px !important;
+    align-items: start !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-identity {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-name {
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    line-height: 1.15 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-name-en,
+body.lux-route-staff #staff-content .staff-dir-name-alt {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-title,
+body.lux-route-staff #staff-content .staff-dir-role,
+body.lux-route-staff #staff-content .staff-dir-meta,
+body.lux-route-staff #staff-content .staff-dir-load-meta,
+body.lux-route-staff #staff-content .staff-dir-load-summary,
+body.lux-route-staff #staff-content .staff-dir-schedule-meta,
+body.lux-route-staff #staff-content .staff-dir-session-meta,
+body.lux-route-staff #staff-content .staff-dir-session-count,
+body.lux-route-staff #staff-content .staff-dir-empty-note {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-inline-meta {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px 14px !important;
+    align-items: center !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-inline-meta > span {
+    display: inline-flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    min-width: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stat-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stat-card strong {
+    font-size: 20px !important;
+    line-height: 1 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stat-card span {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: .05em !important;
+    text-transform: uppercase !important;
+}
+
+/* === Progress bar (route content) === */
+body.lux-route-staff #staff-content .staff-dir-progress,
+body.lux-route-staff #staff-content .staff-dir-load-bar {
+    height: 8px !important;
+    overflow: hidden !important;
+    display: block !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill,
+body.lux-route-staff #staff-content .staff-dir-load-bar > i {
+    display: block !important;
+    width: var(--staff-dir-progress, 0%) !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent))) !important;
+    transition: width 0.24s ease;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-success,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='success'] > i {
+    background: linear-gradient(90deg, #20c57c, #76e6ae) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-warning,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='warning'] > i {
+    background: linear-gradient(90deg, #f4a261, #ffd1a4) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-danger,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='danger'] > i {
+    background: linear-gradient(90deg, #f87171, #ffb4b4) !important;
+}
+
+/* === Semantic text colors (route content) === */
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-success {
+    color: #76e6ae !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-warning {
+    color: #ffd1a4 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-danger {
+    color: #ffd2d2 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-section {
+    display: grid !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-section-title {
+    margin-bottom: 8px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-subject-pills {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-count {
+    margin-top: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-list,
+body.lux-route-staff #staff-content .staff-dir-session-list {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-item,
+body.lux-route-staff #staff-content .staff-dir-session-head {
+    display: grid !important;
+    gap: 6px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-title,
+body.lux-route-staff #staff-content .staff-dir-session-title {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-empty {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stack-tight {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+/* === Staff route page shell layout === */
+body.lux-route-staff #staff-content,
+body.lux-route-staff #staff-content.staff-command-root {
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-staff .lux-page-shell {
+    display: grid;
+    gap: 18px;
+}
+
+/* === Dynamic staff form settings deck === */
+body.lux-route-staff #staff-content .staff-hub-form-settings {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-settings-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-settings-copy {
+    display: grid;
+    gap: 4px;
+    max-width: 760px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-settings-copy strong {
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-settings-copy p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+    gap: 16px;
+    min-height: 0;
+    align-items: stretch;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-rail {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 20px;
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    max-height: calc(100vh - 120px);
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-rail-head {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-rail-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-rail-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-rail-head strong {
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-rail-head p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-list {
+    display: grid;
+    gap: 8px;
+    overflow: auto;
+    min-height: 0;
+    padding-right: 2px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    color: var(--lux-text);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type:hover,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn:hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+    transform: translateY(-1px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type.is-active,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn.is-active {
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    box-shadow: inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.88), 0 8px 20px rgba(var(--lux-accent-rgb), 0.1);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: rgba(var(--lux-accent-rgb), 0.92);
+    font-size: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-label {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-status.is-locked i {
+    color: rgba(var(--lux-accent-rgb), 0.55);
+    font-size: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-status.is-editable i {
+    color: rgba(var(--lux-accent-rgb), 0.75);
+    font-size: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type-stats {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-add-type {
+    width: 100%;
+    justify-content: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas {
+    --staff-builder-radius-panel: 16px;
+    --staff-builder-gap-zone: 16px;
+    --staff-builder-type-display: 18px;
+    display: grid;
+    gap: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    min-height: 420px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy {
+    display: grid;
+    gap: 4px;
+    max-width: 560px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy strong {
+    font-size: var(--staff-builder-type-display, 18px);
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.2);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-input {
+    border-color: rgba(59, 130, 246, 0.28);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-droplist {
+    border-color: rgba(16, 185, 129, 0.28);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-actions,
+body.lux-route-staff #staff-content .staff-hub-builder-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-toolbar {
+    padding: 0 20px 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-body {
+    padding: 0 20px 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-panel {
+    display: grid;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--staff-builder-radius-panel, 16px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-panel-copy {
+    display: grid;
+    gap: 4px;
+    min-width: min(100%, 320px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-panel-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-count {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-type-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-panel-head p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+    line-height: 1.45;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-add {
+    min-height: 38px;
+    flex-shrink: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-list-shell {
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    background: rgba(var(--lux-accent-rgb), 0.03);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-list-columns {
+    display: grid;
+    grid-template-columns: 36px 32px minmax(0, 1fr) 120px 36px;
+    gap: 10px;
+    align-items: center;
+    padding: 0 12px 2px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: min(220px, 32vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 2px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row {
+    display: grid;
+    grid-template-columns: 36px 32px minmax(0, 1fr) 120px 36px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: var(--lux-hub-row, rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.085));
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row:hover {
+    background: var(--lux-hub-row-hover, rgba(var(--lux-accent-rgb), 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-active {
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    background: rgba(var(--lux-accent-rgb), 0.09);
+    box-shadow: inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.72);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-new {
+    border-color: rgba(var(--lux-accent-rgb), 0.44);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-incomplete.is-active {
+    border-color: color-mix(in srgb, var(--lux-warning, #f59e0b) 38%, rgba(var(--lux-accent-rgb), 0.34));
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-dragging {
+    opacity: 0.55;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-before::before,
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-after::after,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-before::before,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-after::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(var(--lux-accent-rgb), 0.88);
+    pointer-events: none;
+    z-index: 2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-before::before,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-before::before {
+    top: -6px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-after::after,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-after::after {
+    bottom: -6px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-drag,
+body.lux-route-staff #staff-content .staff-hub-studio-drag {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.06);
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    padding: 0;
+    cursor: grab;
+    touch-action: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-drag:active,
+body.lux-route-staff #staff-content .staff-hub-studio-drag:active {
+    cursor: grabbing;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--lux-text);
+    flex-shrink: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-identity {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-avatar {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.16);
+    background: rgba(var(--lux-accent-rgb), 0.1);
+    color: rgba(var(--lux-accent-rgb), 0.9);
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-identity-copy {
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-empty {
+    border-color: rgba(201, 138, 26, 0.28);
+    background: rgba(201, 138, 26, 0.1);
+    color: var(--lux-warning, #c98a1a);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-draft {
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+    background: rgba(var(--lux-accent-rgb), 0.1);
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-complete {
+    border-color: rgba(34, 197, 94, 0.24);
+    background: rgba(34, 197, 94, 0.1);
+    color: #86efac;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-name-input {
+    min-height: 36px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: text;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row:hover .staff-hub-profile-name-input,
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-active .staff-hub-profile-name-input,
+body.lux-route-staff #staff-content .staff-hub-profile-row:focus-within .staff-hub-profile-name-input {
+    border-color: var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.05);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-remove {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row:hover .staff-hub-profile-remove,
+body.lux-route-staff #staff-content .staff-hub-profile-row:focus-within .staff-hub-profile-remove,
+body.lux-route-staff #staff-content .staff-hub-profile-remove:focus-visible {
+    opacity: 1;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-empty {
+    margin: 0;
+    padding: 20px 16px;
+    border-radius: 12px;
+    border: 1px dashed rgba(var(--lux-accent-rgb), 0.2);
+}
+
+@media (max-width: 960px) {
+    body.lux-route-staff #staff-content .staff-hub-profile-list {
+        max-height: none;
+    }
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace {
+    display: grid;
+    gap: 0;
+    overflow: hidden;
+    border-radius: var(--staff-builder-radius-panel, 16px);
+    min-height: 320px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas:has(.staff-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-builder-canvas:has(.staff-hub-studio-field-menu[open]) {
+    overflow: visible;
+    position: relative;
+    z-index: 2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace:has(.staff-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace:has(.staff-hub-studio-field-menu[open]) {
+    overflow: visible;
+    position: relative;
+    z-index: 3;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-fields:has(.staff-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-section-builder-fields:has(.staff-hub-studio-field-menu[open]) {
+    overflow: visible;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace.is-empty,
+body.lux-route-staff #staff-content .staff-hub-field-workspace-empty {
+    padding: 32px 24px;
+    border: 1px dashed rgba(var(--lux-accent-rgb), 0.2);
+    border-radius: var(--staff-builder-radius-panel, 16px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 16px;
+    align-items: start;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.1);
+}
+
+body.lux-route-staff #staff-content .staff-hub-workspace-head-copy {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-workspace-head-context {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-field-workspace-filter {
+    align-self: center;
+    font-size: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field-add-rail {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.08);
+    background: rgba(var(--lux-accent-rgb), 0.04);
+}
+
+body.lux-route-staff #staff-content .staff-hub-field-add-hero {
+    margin: 16px;
+    border-radius: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-fields.is-empty {
+    padding: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-add-hint {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--lux-text-muted);
+    line-height: 1.35;
+    text-align: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-list {
+    display: grid;
+    gap: 14px;
+    padding: 0 20px 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel {
+    display: grid;
+    gap: 0;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-new {
+    border-color: rgba(var(--lux-accent-rgb), 0.42);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.16);
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-incomplete {
+    border-color: color-mix(in srgb, var(--lux-warning, #f59e0b) 35%, transparent);
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-filterable {
+    border-color: color-mix(in srgb, var(--lux-accent-rgb) 28%, transparent);
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.1);
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-title-wrap {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-title-input {
+    font-size: 15px;
+    font-weight: 800;
+    min-height: 40px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-meta {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-filter-toggle {
+    white-space: nowrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-remove-btn {
+    min-width: 88px;
+    gap: 6px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-fields {
+    display: grid;
+    gap: 8px;
+    padding: 12px 16px;
+    max-height: min(52vh, 520px);
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 12px;
+    border-radius: 12px;
+    border: 1px dashed rgba(var(--lux-accent-rgb), 0.2);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lux-text-muted);
+    line-height: 1.4;
+}
+
+body.lux-route-staff #staff-content .staff-hub-section-builder-footer {
+    padding: 10px 16px 14px;
+    border-top: 1px solid rgba(var(--lux-accent-rgb), 0.08);
+    background: rgba(var(--lux-accent-rgb), 0.03);
+}
+
+@media (max-width: 900px) {
+    body.lux-route-staff #staff-content .staff-hub-section-builder-head {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-section-builder-filter-toggle,
+    body.lux-route-staff #staff-content .staff-hub-section-builder-actions {
+        grid-column: 1 / -1;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-section-builder-actions {
+        justify-content: flex-start;
+    }
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-filter-group-toggle {
+    flex: 1 1 100%;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card {
+    display: grid;
+    gap: 8px;
+    min-height: 188px;
+    padding: 18px;
+    border-radius: 16px;
+    color: var(--lux-text);
+    text-align: left;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 4px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-actions .lux-primary-btn,
+body.lux-route-staff #staff-content .staff-hub-builder-launch-actions .lux-secondary-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 120px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-input .staff-hub-builder-launch-icon {
+    background: rgba(59, 130, 246, 0.14);
+    color: rgba(59, 130, 246, 0.95);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-droplist .staff-hub-builder-launch-icon {
+    background: rgba(16, 185, 129, 0.14);
+    color: rgba(16, 185, 129, 0.95);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-empty {
+    border-style: dashed;
+    opacity: 0.96;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-incomplete {
+    border-color: rgba(201, 138, 26, 0.34);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-hint.is-warning {
+    color: var(--lux-warning, #c98a1a);
+    font-weight: 700;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-warning {
+    border-color: rgba(201, 138, 26, 0.34);
+    color: var(--lux-warning, #c98a1a);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-empty.is-blocking {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px dashed rgba(201, 138, 26, 0.34);
+    background: rgba(201, 138, 26, 0.08);
+    color: var(--lux-warning, #c98a1a);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-hint {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: rgba(var(--lux-accent-rgb), 0.92);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-empty .staff-hub-builder-launch-cta {
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: rgba(var(--lux-accent-rgb), 0.14);
+    color: rgba(var(--lux-accent-rgb), 0.95);
+    font-size: 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card strong {
+    font-size: 15px;
+    line-height: 1.25;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-stat {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.06);
+    font-size: 11px;
+    font-weight: 800;
+    font-style: normal;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-launch-stat.is-populated {
+    border-color: rgba(var(--lux-accent-rgb), 0.28);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-footer {
+    border-top: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-details {
+    padding: 0;
+}
+
+@media (min-width: 901px) {
+    body.lux-route-staff #staff-content .staff-hub-copy-bar-details .staff-hub-copy-bar {
+        display: grid !important;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-copy-bar-summary {
+        pointer-events: none;
+        cursor: default;
+    }
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 20px;
+    cursor: pointer;
+    list-style: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-summary::-webkit-details-marker {
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-summary strong {
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar {
+    display: grid;
+    gap: 12px;
+    padding: 0 20px 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-helper {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-toggles {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-copy-bar-action {
+    margin-left: auto;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-panel {
+    display: grid;
+    gap: 14px;
+    padding: 18px 20px;
+    min-height: 100%;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-list {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-card {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    font-size: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link {
+    border: 0;
+    background: transparent;
+    color: rgba(var(--lux-accent-rgb), 0.9);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link:hover,
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link:focus-visible {
+    text-decoration: underline;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-sep {
+    color: var(--lux-text-muted);
+    opacity: 0.7;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-current {
+    color: var(--lux-text-muted);
+    font-weight: 700;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-current.is-terminal {
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-inline-field {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-inline-field > span {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-inline-field.is-title input {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--lux-text);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-check input {
+    accent-color: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-copy {
+    display: grid;
+    gap: 10px;
+    flex: 1;
+    min-width: 220px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
+    background: rgba(var(--lux-accent-rgb), 0.1);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle {
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: rgba(var(--lux-accent-rgb), 0.88);
+    list-style: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle summary::-webkit-details-marker {
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-list {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-row {
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-head-copy {
+    display: grid;
+    gap: 2px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-head-copy strong {
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-head-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-badge.is-type {
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-badge.is-required {
+    border-color: rgba(239, 68, 68, 0.28);
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    align-items: end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-field-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-add-field {
+    justify-self: start;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-options-editor {
+    display: grid;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-options-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-option-table {
+    display: grid;
+    gap: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-option-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-header {
+    background: rgba(var(--lux-accent-rgb), 0.06);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-alt {
+    background: rgba(var(--lux-accent-rgb), 0.03);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-options-empty {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 16px;
+    text-align: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-options-empty p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-empty,
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-empty.is-inline {
+    padding: 20px 16px;
+    border-radius: 10px;
+    border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state.is-panel {
+    padding: 36px 24px;
+    border-radius: 14px;
+    border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state strong {
+    font-size: 15px;
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state p {
+    margin: 0;
+    max-width: 320px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-empty-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: rgba(var(--lux-accent-rgb), 0.9);
+    font-size: 18px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-schema-empty,
+body.lux-route-staff #staff-content .staff-hub-schema-empty {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-full,
+body.lux-route-staff #staff-content .staff-hub-field.is-full {
+    grid-column: 1 / -1;
+}
+
+body.lux-route-staff #staff-content .staff-hub-register-actions {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+    body.lux-route-staff #staff-content .staff-hub-builder-layout,
+    body.lux-route-staff #staff-content .staff-hub-builder-launch-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-builder-rail {
+        position: static;
+        max-height: none;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-copy-bar-details:not([open]) .staff-hub-copy-bar {
+        display: none;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-copy-bar-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-copy-bar-action {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-copy-bar-toggles {
+        width: 100%;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-builder-field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-builder-option-row {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-header {
+        display: none;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-builder-launch-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) minmax(0, auto);
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap:not([open]) .staff-hub-studio-preview {
+        display: none;
+    }
+}
+
+/* Form studio */
+body.lux-route-staff #staff-content .staff-hub-form-studio {
+    --staff-studio-chrome-offset: 420px;
+    --staff-studio-workspace-height: clamp(
+        380px,
+        calc(100vh - var(--staff-studio-chrome-offset)),
+        calc(100vh - 220px)
+    );
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: calc(100vh - 180px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-studio :is(
+    .staff-hub-builder-breadcrumb,
+    .staff-hub-studio-head,
+    .staff-hub-studio-tabs,
+    .staff-hub-studio-save-bar
+) {
+    flex-shrink: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-overview-hero {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 36px 24px;
+    margin: 0 20px 16px;
+    text-align: center;
+    border-radius: 16px;
+    border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-overview-hero p {
+    margin: 0;
+    max-width: 420px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-studio .staff-hub-studio-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-save-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 6px 16px;
+    border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.04);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-save-status {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-save-status.is-dirty {
+    color: var(--lux-warning, #c98a1a);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-save-status.is-clean {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: transparent;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-tab.is-active {
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 300px);
+    gap: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: var(--staff-studio-workspace-height);
+    max-height: none;
+    overflow: hidden;
+    align-items: stretch;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-layout > .staff-hub-studio-preview-wrap {
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    align-self: stretch;
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-studio.is-preview-only {
+    --staff-studio-chrome-offset: 220px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    min-height: 0;
+    height: var(--staff-studio-workspace-height);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only > .staff-hub-studio-preview {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only .staff-hub-studio-preview-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-editor {
+    padding: 0;
+    border-right: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-editor-layout {
+    display: grid;
+    grid-template-columns: minmax(176px, 192px) minmax(0, 1fr);
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 14px 12px;
+    border-right: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.03);
+    min-height: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-search {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-search-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-list {
+    --staff-studio-step-visible-count: 5;
+    --staff-studio-step-item-height: 52px;
+    --staff-studio-step-gap: 6px;
+    display: grid;
+    gap: var(--staff-studio-step-gap);
+    align-content: start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    padding-right: 2px;
+    scrollbar-width: thin;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: transparent;
+    color: var(--lux-text);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item:hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+    background: rgba(var(--lux-accent-rgb), 0.06);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-active {
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.14);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-incomplete {
+    border-color: rgba(201, 138, 26, 0.28);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-filtered-out {
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-badge {
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-title {
+    font-size: 12px;
+    font-weight: 800;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-meta {
+    font-size: 10px;
+    color: var(--lux-text-muted);
+    font-weight: 700;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-warning {
+    color: var(--lux-warning, #c98a1a);
+    font-size: 11px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-add {
+    width: 100%;
+    justify-content: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-wrap {
+    min-width: 0;
+    min-height: 0;
+    overflow: visible;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 16px 18px 18px;
+    scrollbar-width: thin;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    display: grid;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    background: linear-gradient(
+        180deg,
+        rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.98) 0%,
+        rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.94) 72%,
+        rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0) 100%
+    );
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(255, 255, 255, 0.94) 72%,
+        rgba(255, 255, 255, 0) 100%
+    );
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-head strong {
+    font-size: 15px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-section-toolbar {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-section-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-list {
+    display: grid;
+    gap: 8px;
+    overflow: visible;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-row {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    overflow: visible;
+    position: relative;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-dragging {
+    opacity: 0.55;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail:has(.staff-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail:has(.staff-hub-studio-field-menu[open]) {
+    position: relative;
+    z-index: 12;
+    overflow: visible;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-type-menu-open,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-field-menu-open {
+    position: relative;
+    z-index: 25;
+    overflow: visible;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-required {
+    border-color: rgba(239, 68, 68, 0.22);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(128px, auto) auto auto auto;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-btn {
+    min-width: 32px;
+    padding-inline: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-remove-pending {
+    border-color: rgba(201, 138, 26, 0.42);
+    box-shadow: inset 0 0 0 1px rgba(201, 138, 26, 0.12);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px dashed rgba(201, 138, 26, 0.34);
+    background: rgba(201, 138, 26, 0.08);
+    color: var(--lux-warning, #c98a1a);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-label-input {
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover {
+    position: relative;
+    min-width: 128px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] {
+    z-index: 24;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover summary::-webkit-details-marker {
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 128px;
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
+    background: linear-gradient(180deg, rgba(var(--lux-accent-rgb), 0.12), rgba(var(--lux-accent-rgb), 0.06));
+    color: var(--lux-text);
+    cursor: pointer;
+    list-style: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger:hover,
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] .staff-hub-studio-type-trigger {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.42);
+    box-shadow: 0 10px 24px rgba(var(--lux-accent-rgb), 0.14);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-icon {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    background: rgba(var(--lux-accent-rgb), 0.14);
+    color: rgba(var(--lux-accent-rgb), 0.95);
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-chevron {
+    font-size: 10px;
+    color: var(--lux-text-muted);
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] .staff-hub-studio-type-trigger-chevron {
+    transform: rotate(180deg);
+    color: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
+    --staff-studio-type-visible-options: 5;
+    --staff-studio-type-option-height: 40px;
+    --staff-studio-menu-width: 240px;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: auto;
+    transform: none;
+    z-index: 30;
+    width: var(--staff-studio-menu-width);
+    min-width: var(--staff-studio-menu-width);
+    max-width: min(260px, calc(100vw - 24px));
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.38);
+    background: linear-gradient(180deg, rgba(14, 22, 36, 0.98), rgba(8, 14, 26, 0.96));
+    box-shadow:
+        0 22px 48px rgba(4, 8, 18, 0.52),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover:not([open]) .staff-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu:not([open]) .staff-hub-studio-field-menu-panel {
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas.is-studio-patching,
+body.lux-route-staff #staff-content .staff-hub-form-studio.is-studio-patching {
+    visibility: hidden !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-canvas.staff-hub-form-studio {
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-form-settings .staff-hub-builder-canvas,
+body.lux-route-staff #staff-content .staff-hub-form-settings .staff-hub-form-studio {
+    animation: none !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-row:last-child .staff-hub-studio-type-popover[open] .staff-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row:last-child .staff-hub-studio-field-menu[open] .staff-hub-studio-field-menu-panel,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row:nth-last-child(-n+2) .staff-hub-studio-type-popover[open] .staff-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row:nth-last-child(-n+2) .staff-hub-studio-field-menu[open] .staff-hub-studio-field-menu-panel,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-flip-menu-up .staff-hub-studio-type-popover[open] .staff-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-flip-menu-up .staff-hub-studio-field-menu[open] .staff-hub-studio-field-menu-panel {
+    top: auto;
+    bottom: calc(100% + 8px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-menu-viewport {
+    display: grid;
+    gap: 4px;
+    max-height: calc(
+        var(--staff-studio-type-option-height) * var(--staff-studio-type-visible-options)
+        + 4px * (var(--staff-studio-type-visible-options) - 1)
+    );
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-type-menu,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
+    border-color: rgba(var(--lux-accent-rgb), 0.18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+    box-shadow:
+        0 18px 36px rgba(15, 23, 42, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.72) inset;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: var(--staff-studio-type-option-height);
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--lux-text);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-option:hover {
+    background: rgba(var(--lux-accent-rgb), 0.14);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-type-option.is-active {
+    background: rgba(var(--lux-accent-rgb), 0.22);
+    color: rgba(var(--lux-accent-rgb), 1);
+    box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.34);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-required-btn {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: transparent;
+    color: var(--lux-text-muted);
+    cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-required-btn.is-required {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu summary {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    cursor: pointer;
+    list-style: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu {
+    position: relative;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu[open] {
+    z-index: 24;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-viewport {
+    display: grid;
+    gap: 4px;
+    max-height: calc(
+        var(--staff-studio-type-option-height) * var(--staff-studio-type-visible-options)
+        + 4px * (var(--staff-studio-type-visible-options) - 1)
+    );
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button {
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--lux-text);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button:hover {
+    background: rgba(var(--lux-accent-rgb), 0.12);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button.is-danger {
+    color: #f87171;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-choices textarea {
+    min-height: 72px;
+    resize: vertical;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-hint {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--lux-text-muted);
+    font-size: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-advanced {
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-advanced-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-advanced-grid {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-rail {
+    padding: 0;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-hero {
+    justify-content: center;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.06);
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn.is-hero-btn {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-rail .staff-hub-studio-quick-btn {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn:hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.28);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-empty,
+body.lux-route-staff #staff-content .staff-hub-studio-field-empty {
+    padding: 20px 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+    border-radius: 12px;
+    border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-empty {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 32px 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-editor > .staff-hub-studio-empty {
+    margin: 16px 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap[open]::details-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > summary {
+    flex: 0 0 auto;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > .staff-hub-studio-preview {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-toggle {
+    display: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
+    color: rgba(var(--lux-accent-rgb), 0.9);
+    list-style: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-head {
+    padding: 10px 16px 6px;
+    border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    flex-shrink: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-profile-tabs {
+    margin: 0 12px 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    background: rgba(var(--lux-accent-rgb), 0.04);
+    flex-shrink: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-profile-tab {
+    min-width: 96px;
+    max-width: 180px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-meta {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+    font-weight: 700;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 16px 20px 24px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scroll-padding-bottom: 20px;
+    pointer-events: auto;
+    scrollbar-width: thin;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body input,
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body textarea,
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body button:not(.lux-picker-btn):not(.lux-picker-option) {
+    pointer-events: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body select,
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .lux-picker-btn,
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .lux-picker-field {
+    pointer-events: auto;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.is-studio-highlight {
+    border-color: rgba(var(--lux-accent-rgb), 0.42);
+    box-shadow:
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.22),
+        0 10px 24px rgba(var(--lux-accent-rgb), 0.12);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.lux-data-card {
+    overflow: visible;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 12px;
+    overflow: visible;
+    padding: 18px 18px 18px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10)) !important;
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.03)) !important;
+    box-shadow: none !important;
+    border-left: 3px solid rgba(var(--lux-accent-rgb), 0.34) !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section {
+    background: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.34)) !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head strong {
+    display: block;
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid.is-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid.is-one {
+    grid-template-columns: 1fr;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-section {
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 12px 12px 12px 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-section-head strong {
+    font-size: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-grid,
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-grid.is-two,
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-grid.is-one {
+    gap: 10px;
+    grid-template-columns: 1fr;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-error {
+    display: none;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section:last-child {
+    margin-bottom: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-field-complete-dot {
+    opacity: 0.45;
+}
+
+@media (min-width: 901px) {
+    body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > summary {
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap[open] {
+        min-height: 0;
+        max-height: min(50vh, 420px);
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-preview-toggle {
+        display: block;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-editor-layout {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: auto;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-step-nav {
+        grid-template-rows: auto auto auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+        padding: 12px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-step-nav-list {
+        display: flex;
+        gap: 8px;
+        max-height: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item {
+        flex: 0 0 auto;
+        min-width: 148px;
+        max-width: 220px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-step-detail {
+        padding: 14px 16px 16px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-field-main {
+        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-type-menu,
+    body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
+        --staff-studio-menu-width: 200px;
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-field-remove-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 640px) {
+    body.lux-route-staff #staff-content .staff-hub-studio-step-nav {
+        padding: 10px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-step-detail {
+        padding: 12px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-head {
+        padding: 14px 12px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-save-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-section-toolbar {
+        gap: 10px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-section-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-field-main {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-label-input {
+        flex: 1 1 calc(100% - 36px);
+        min-width: 0;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-field-menu {
+        margin-left: auto;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-quick-add {
+        gap: 6px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-studio-quick-btn {
+        flex: 1 1 calc(50% - 6px);
+        justify-content: center;
+    }
+}
+

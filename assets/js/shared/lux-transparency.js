@@ -582,11 +582,10 @@ const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
     '.lux-grid-widget', '.lux-admin-ops-card', '.lux-builder-card', '.lux-builder-section', '.lux-dashboard-section',
     '.lux-page-shell', '.surface-card', '.content-box', '.kiu-card', '.page-card', '.section-card', '.panel-card',
     '.dashboard-card', '.tabs-container', '.modal-content', '.page-hero', '.lux-modern-surface', '.lux-modern-table',
-    '.lux-utility-panel', '.lux-person-card', '.lux-stack', '#page-admin-scheduler .sch-rail-hero',
-    
-    '#page-admin-scheduler .sch-rail-section', '#page-admin-scheduler .sch-grid-shell',
-    '#page-admin-scheduler .lux-glass-dialog-card', '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
-    '#page-admin-scheduler .sch-grid-tag', '#page-admin-scheduler .sch-legend-pill',
+    '.lux-utility-panel', '.lux-person-card', '.lux-stack', '#page-admin-scheduler .sch-sidebar',
+    '#page-admin-scheduler .sch-grid-shell',
+    '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
+    '#page-admin-scheduler .sch-grid-tag',
     '#page-admin-scheduler .sch-empty-state', '#page-admin-scheduler .sch-grid-empty', '.lux-lms-group-card',
     '.lms-route-panel', '.lms-route-hero', '.portal-msg-page-top', '.portal-msg-panel', '.portal-msg-group-modal',
     '.admin-hero',
@@ -1124,6 +1123,10 @@ function updateTransparency(value, options = {}) {
             return;
         }
         if (el.closest?.('#schModalOverlay') || el.closest?.('#schPresetManagerOverlay')) {
+            stripInlineGlassPaint(el, transparencySignature);
+            return;
+        }
+        if (isLuxTransparencyExemptSubtree(el)) {
             stripInlineGlassPaint(el, transparencySignature);
             return;
         }

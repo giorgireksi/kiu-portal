@@ -13,6 +13,18 @@
         const saveDroplistOptionsLines = d.saveDroplistOptionsLines;
         const syncStudioPreviewFocus = d.syncStudioPreviewFocus;
         const parseOptionsFromLines = d.parseOptionsFromLines;
+        const contentRootEl = d.contentRootEl;
+        const ds = d.ds;
+        const filterStudioStepNav = d.filterStudioStepNav;
+        const markBuilderDirty = d.markBuilderDirty;
+        const notifyBlueprintSaved = d.notifyBlueprintSaved;
+        const sectionTitleDisplay = d.sectionTitleDisplay;
+        const updateStudioSaveStatus = d.updateStudioSaveStatus;
+        const syncFieldKeyFromLabel = d.syncFieldKeyFromLabel;
+        const scheduleDroplistOptionsSave = d.scheduleDroplistOptionsSave;
+        const droplistOptionsSaveTimers = d.droplistOptionsSaveTimers;
+        const reorderStaffFormSectionLocal = d.reorderStaffFormSectionLocal;
+        const reorderStaffFormFieldLocal = d.reorderStaffFormFieldLocal;
         void d;
     function handleBuilderInput(el, callbacks) {
         const inputType = ds(el, 'staffBuilderInput', 'studentBuilderInput');
@@ -40,7 +52,11 @@
 
         if (inputType === 'section-title' || inputType === 'section-description') {
             if (!data.sectionId || typeof window[H.updateSection] !== 'function') return;
-            const patch = inputType === 'section-title' ? { title: el.value } : { description: el.value };
+            let text = String(el.value ?? '').trim();
+            if (/[<>]/.test(text)) text = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            if (text.length > 160) text = text.slice(0, 160);
+            if (el.value !== text) el.value = text;
+            const patch = inputType === 'section-title' ? { title: text } : { description: text };
             const result = window[H.updateSection](data.typeId, null, data.sectionId, patch);
             if (result?.error) {
                 callbacks.onToast?.(result.error);
@@ -69,7 +85,18 @@
         }
 
         const patch = {};
-        if (inputType === 'label') patch.label = el.value;
+        if (inputType === 'label') {
+            let text = String(el.value ?? '').trim();
+            if (/[<>]/.test(text)) text = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            text = text.slice(0, 160) || 'New field';
+            const lower = text.toLowerCase();
+            const markers = ['admin workspace', 'staff form settings', 'staff directory', 'form blueprint', 'staff-hub-'];
+            let hits = 0;
+            markers.forEach((marker) => { if (lower.includes(marker)) hits += 1; });
+            if (hits >= 2 || (hits >= 1 && text.length > 48) || text.length > 120) text = 'New field';
+            patch.label = text;
+            if (el.value !== patch.label) el.value = patch.label;
+        }
         if (inputType === 'key') {
             patch.key = el.value;
             const locked = { ...(state.lockedFieldKeys || {}) };

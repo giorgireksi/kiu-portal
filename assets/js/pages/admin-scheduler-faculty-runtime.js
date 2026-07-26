@@ -26,13 +26,6 @@
             return localStorage.getItem('currentFaculty') || 'ECON';
         }
 
-        function normalizeFacultyDisplay(code) {
-            const normalized = code === 'all' ? 'all' : normalizeFacultyCode(code, getCurrentFaculty());
-            if (normalized === 'all') return 'All Faculties';
-            const profile = typeof getFacultyProfile === 'function' ? getFacultyProfile(normalized) : null;
-            return profile?.name || normalized;
-        }
-
         function getSchedulerWeekStart() {
             return getStoredWeekStart(SCHEDULER_WEEK_STORAGE_KEY);
         }
@@ -103,7 +96,6 @@
         const api = {
             mergeUniqueSubjects,
             deriveFaculty,
-            normalizeFacultyDisplay,
             getSchedulerWeekStart,
             normalizeSchedulerDayLabel,
             getSchedulerFacultyTone,

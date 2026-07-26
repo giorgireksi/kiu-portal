@@ -122,6 +122,31 @@
         return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
     }
 
+    function sanitizeFieldLabel(value, fallback = 'New field') {
+        let text = String(value ?? '').trim();
+        if (!text) return fallback;
+        if (!/[<>]/.test(text)) {
+            text = text.slice(0, 160);
+        } else {
+            text = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+        }
+        if (!text) return fallback;
+        if (text.length > 120) return fallback;
+        const lower = text.toLowerCase();
+        const markers = [
+            'admin workspace', 'staff form settings', 'staff directory', 'form blueprint',
+            'design registration forms', 'staff types', 'copy blueprint', 'staff-hub-', 'data-staff-'
+        ];
+        let hits = 0;
+        markers.forEach((marker) => { if (lower.includes(marker)) hits += 1; });
+        if (hits >= 2 || (hits >= 1 && text.length > 48)) return fallback;
+        return text;
+    }
+
+    function sanitizeBlueprintText(value, fallback = '') {
+        return sanitizeFieldLabel(value, fallback);
+    }
+
     function slugify(value) {
         return String(value || '')
             .trim()
@@ -154,7 +179,7 @@
         const base = {
             id: field?.id || makeId('fld'),
             key: slugify(field?.key || field?.label || `field_${index + 1}`),
-            label: String(field?.label || 'Untitled field').trim() || 'Untitled field',
+            label: sanitizeFieldLabel(field?.label, 'Untitled field'),
             required: Boolean(field?.required),
             help: String(field?.help || '').trim(),
             order: Number.isFinite(field?.order) ? field.order : index
@@ -180,10 +205,9 @@
 
     function resolveSectionTitle(section) {
         if (section && Object.prototype.hasOwnProperty.call(section, 'title')) {
-            return String(section.title).trim();
+            return sanitizeBlueprintText(section.title, '');
         }
-        const fallback = String(section?.title ?? 'Untitled section').trim();
-        return fallback || 'Untitled section';
+        return sanitizeBlueprintText(section?.title, 'Untitled section') || 'Untitled section';
     }
 
     function normalizeSection(section, index = 0, options = {}) {
@@ -365,13 +389,11 @@
         if (!H.multiType) {
             void typeId;
             if (!blueprint.schema) blueprint.schema = defaultStudentSchema();
-            if (!Array.isArray(blueprint.schema.sections)) blueprint.schema = migrateSchemaToV2(blueprint.schema);
+            blueprint.schema = migrateSchemaToV2(blueprint.schema);
             return blueprint.schema;
         }
         if (!blueprint.schemas[typeId]) blueprint.schemas[typeId] = emptySchema();
-        if (!Array.isArray(blueprint.schemas[typeId].sections)) {
-            blueprint.schemas[typeId] = migrateSchemaToV2(blueprint.schemas[typeId]);
-        }
+        blueprint.schemas[typeId] = migrateSchemaToV2(blueprint.schemas[typeId]);
         return blueprint.schemas[typeId];
     }
 
@@ -424,8 +446,8 @@
         const schema = ensureSchema(typeId);
         const section = findSection(schema, sectionId);
         if (!section) return { error: 'Section not found.' };
-        if (patch.title != null) section.title = String(patch.title).trim();
-        if (patch.description != null) section.description = String(patch.description).trim();
+        if (patch.title != null) section.title = sanitizeBlueprintText(patch.title, section.title || '');
+        if (patch.description != null) section.description = sanitizeBlueprintText(patch.description, '');
         if (patch.filterGroup != null) {
             section.filterGroup = Boolean(patch.filterGroup);
             if (section.filterGroup) {
@@ -506,7 +528,7 @@
         if (!section) return { error: 'Section not found.' };
         const field = section.fields.find((item) => item.id === fieldId);
         if (!field) return { error: 'Field not found.' };
-        if (patch.label != null) field.label = String(patch.label).trim() || field.label;
+        if (patch.label != null) field.label = sanitizeFieldLabel(patch.label, field.label || 'New field');
         if (patch.key != null) {
             const nextKey = slugify(patch.key);
             const duplicate = sortedSections(schema.sections).some((item) =>

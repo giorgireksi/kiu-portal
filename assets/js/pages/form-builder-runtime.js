@@ -224,6 +224,74 @@
         saveDroplistOptionsLines(active, callbacks, { refresh: false });
     }
 
+    const BUILDER_LABEL_CORRUPTION_MARKERS = [
+        'Admin workspace',
+        'Staff form settings',
+        'Staff directory',
+        'Form blueprint',
+        'Design registration forms',
+        'Staff types',
+        'Copy blueprint',
+        'staff-hub-',
+        'data-staff-',
+        'data-student-',
+        'lux-page-shell',
+        'id="staff-content"'
+    ];
+
+    function isCorruptedBuilderLabel(text) {
+        const value = String(text || '').trim();
+        if (!value) return false;
+        if (value.length > 120) return true;
+        const lower = value.toLowerCase();
+        let hits = 0;
+        BUILDER_LABEL_CORRUPTION_MARKERS.forEach((marker) => {
+            if (lower.includes(marker.toLowerCase())) hits += 1;
+        });
+        return hits >= 2 || (hits >= 1 && value.length > 48);
+    }
+
+    function sanitizeBuilderText(value, fallback = '') {
+        let text = String(value ?? '').trim();
+        if (!text) return fallback;
+        if (!/[<>]/.test(text)) {
+            text = text.slice(0, 160);
+        } else {
+            text = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+        }
+        if (!text || isCorruptedBuilderLabel(text)) return fallback;
+        return text;
+    }
+
+    function resolveBuilderLabelInput(el, data, fallback = 'New field') {
+        const field = getFieldFromSchema(data.typeId, data.bucket, data.sectionId, data.fieldId);
+        const schemaFallback = sanitizeBuilderText(field?.label, fallback);
+        const label = sanitizeBuilderText(el.value, schemaFallback);
+        if (el.value !== label) el.value = label;
+        return label;
+    }
+
+    function flushBuilderFieldInputs(root, callbacks) {
+        if (!root || typeof window[H.updateField] !== 'function') return;
+        root.querySelectorAll(('input[data-' + H.data + '-builder-input="label"]')).forEach((el) => {
+            if (el.tagName !== 'INPUT') return;
+            const data = datasetFromElement(el);
+            if (!data.typeId || !data.sectionId || !data.fieldId) return;
+            const bucket = data.bucket === 'droplist' ? 'droplist' : 'input';
+            const label = resolveBuilderLabelInput(el, data, 'New field');
+            window[H.updateField](data.typeId, bucket, data.sectionId, data.fieldId, { label });
+        });
+        root.querySelectorAll(('input[data-' + H.data + '-builder-input="section-title"]')).forEach((el) => {
+            if (el.tagName !== 'INPUT') return;
+            const data = datasetFromElement(el);
+            if (!data.typeId || !data.sectionId) return;
+            const title = sanitizeBuilderText(el.value, '');
+            if (el.value !== title) el.value = title;
+            window[H.updateSection](data.typeId, null, data.sectionId, { title });
+        });
+        flushFocusedDroplistOptions(root, callbacks);
+    }
+
     function getTypes() {
         return typeof window[H.getTypes] === 'function' ? window[H.getTypes]() : [];
     }
@@ -715,7 +783,6 @@
                     <div class="${H.hub}-builder-canvas-actions">
                         ${renderStudioSaveBar(state)}
                         <button class="lux-secondary-btn" type="button" data-${H.data}-builder-action="open-form-studio" data-${H.data}-type-id="${escapeHtml(selectedType.id)}">
-// --- READABILITY: Preview ---
                             <i class="fas fa-eye"></i> Preview form
                         </button>
                         ${selectedType.isBuiltin ? '' : `
@@ -835,7 +902,7 @@
 
     function renderFieldRemoveConfirmStrip(state, typeId, bucket, sectionId, field) {
         if (state.fieldRemovePendingId !== field.id) return '';
-        const label = String(field.label || 'this field').trim() || 'this field';
+        const label = sanitizeBuilderText(field.label, 'this field') || 'this field';
         return `
             <div class="${H.hub}-studio-field-remove-confirm">
                 <span>Remove “${escapeHtml(label)}” from this step? It will disappear from ${H.addEntityLabel}.</span>
@@ -871,7 +938,7 @@
                     <button class="${H.hub}-studio-drag" type="button" data-${H.data}-field-drag-handle aria-label="Reorder field">
                         <i class="fas fa-grip-lines" aria-hidden="true"></i>
                     </button>
-                    <input class="${H.hub}-control lux-control ${H.hub}-studio-label-input" type="text" value="${escapeHtml(field.label)}" placeholder="Field label" data-${H.data}-builder-input="label" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-bucket="${escapeHtml(bucket)}" data-${H.data}-section-id="${escapeHtml(sectionId)}" data-${H.data}-field-id="${escapeHtml(field.id)}">
+                    <input class="${H.hub}-control lux-control ${H.hub}-studio-label-input" type="text" value="${escapeHtml(sanitizeBuilderText(field.label, 'New field'))}" placeholder="Field label" data-${H.data}-builder-input="label" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-bucket="${escapeHtml(bucket)}" data-${H.data}-section-id="${escapeHtml(sectionId)}" data-${H.data}-field-id="${escapeHtml(field.id)}">
                     ${renderFieldTypePicker(typeId, bucket, sectionId, field)}
                     <button class="${H.hub}-studio-required-btn${requiredClass}" type="button" title="${field.required ? 'Required' : 'Optional'}" aria-label="${field.required ? 'Mark optional' : 'Mark required'}" data-${H.data}-builder-action="toggle-field-required" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-bucket="${escapeHtml(bucket)}" data-${H.data}-section-id="${escapeHtml(sectionId)}" data-${H.data}-field-id="${escapeHtml(field.id)}">
                         <i class="fas fa-asterisk" aria-hidden="true"></i>
@@ -1786,7 +1853,11 @@
         ? window.__kiuCreateFormBuilderActionsApi({
             H, NS, datasetFromElement, getTypes, getType,
             handleBuilderAction, saveDroplistOptionsLines,
-            syncStudioPreviewFocus, parseOptionsFromLines
+            syncStudioPreviewFocus, parseOptionsFromLines,
+            contentRootEl, ds, filterStudioStepNav, markBuilderDirty,
+            notifyBlueprintSaved, sectionTitleDisplay, updateStudioSaveStatus,
+            syncFieldKeyFromLabel, scheduleDroplistOptionsSave, droplistOptionsSaveTimers,
+            reorderStaffFormSectionLocal, reorderStaffFormFieldLocal
         })
         : null;
     if (!__fbActions) throw new Error('form-builder-actions-runtime missing');
@@ -1800,6 +1871,7 @@
         window.parseStaffFormOptionsFromLines = parseOptionsFromLines;
         window.slugifyStaffFormFieldKey = slugifyFieldKey;
         window.focusSectionCatalogTitle = focusCatalogTitle;
+        window.flushStaffBuilderFieldInputs = flushBuilderFieldInputs;
     } else {
         window.renderStudentFormSettings = renderStaffFormSettings;
         window.bindStudentFormBuilderEvents = bindStaffFormBuilderEvents;
@@ -1807,6 +1879,7 @@
         window.parseStudentFormOptionsFromLines = parseOptionsFromLines;
         window.slugifyStudentFormFieldKey = slugifyFieldKey;
         window.focusStudentSectionCatalogTitle = focusCatalogTitle;
+        window.flushStudentBuilderFieldInputs = flushBuilderFieldInputs;
     }
     window.syncStudioPreviewFocus = syncStudioPreviewFocus;
     window.getStudioPreviewScrollTopForSection = getStudioPreviewScrollTopForSection;

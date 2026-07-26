@@ -196,7 +196,6 @@
   select.lux-modern-field,
   textarea.lux-modern-field,
   .students-hub-control,
-  .lux-picker-btn,
   .lux-picker-panel ),
   [data-lux-transparency-exempt="1"] :is(
   .social-neo-input:not(.lux-control),
@@ -233,7 +232,7 @@
 :is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .students-hub-modal-foot, .staff-hub-modal-foot ) {
   background: var(--lux-panel-modal-foot-tint-light);
 }
-[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .sch-modal-foot *, .quiz-questions-head-row *, .sch-preset-manage-add-row *)) {
+[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .sch-modal-foot *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *)) {
   background: transparent;
   border: 1px solid var(--lux-modal-glass-border);
   box-shadow: none;
@@ -241,13 +240,24 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .sch-modal-foot *, .quiz-questions-head-row *, .sch-preset-manage-add-row *)) {
+[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .sch-modal-foot *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *)) {
   background: var(--lux-panel-cta-accent);
   border: 1px solid rgba(var(--lux-accent-rgb), 0.5);
   color: #fff;
   box-shadow: 0 4px 14px rgba(var(--lux-accent-rgb), 0.3);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+/* Scheduler modal fields — layout only; CTA chrome comes from global .lux-control / .lux-picker-btn--compact. */
+[data-lux-transparency-exempt="1"] .sch-modal :is(
+  .lux-control,
+  .lux-picker-btn--compact,
+  input:not([type='hidden']):not([type='checkbox']):not([type='radio']),
+  select,
+  textarea
+) {
+  width: 100%;
+  min-width: 0;
 }
 /* ── §3 light-mode popup text — full contrast (mirrors dark popup token aliasing) ── */
 :is(html.lux-light-mode, body.lux-light-mode) :is(

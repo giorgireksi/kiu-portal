@@ -56,24 +56,32 @@ function loadBuilderRuntime() {
 }
 
 describe('staff form blueprint save UX', () => {
-    
-/m)?.[0] ?? '';
+    it('keeps blueprint save bar wired and form settings on shared bare-lite layout', () => {
+        const staffHtml = readSource('staff.html');
+        const staffJs = readSource('assets/js/pages/staff-command-center.js');
+        const builderJs = readSource('assets/js/pages/form-builder-runtime.js');
+        const css = readBareSource('assets/css/lux-page-bare-lite.css');
+        const profileRowFn = builderJs.match(/function renderProfileNameRow[\s\S]*?^    }/m)?.[0] ?? '';
         expect(profileRowFn).toContain('remove-section');
         expect(builderJs).toContain('${H.hub}-profile-add');
+        expect(builderJs).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace">');
+        expect(builderJs).not.toContain('form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1"');
         expect(handleBuilderInputSkipsRefresh(builderJs)).toBe(true);
         expect(staffJs).toContain('builderDirty: false');
         expect(staffJs).toContain('builderLastSavedAt: null');
         expect(css).toContain('.staff-hub-studio-save-bar');
         expect(css).toContain('.staff-hub-studio-save-status.is-dirty');
         expect(css).toContain('.staff-hub-studio-save-status.is-clean');
+        const fouc = readBareSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toContain('.staff-hub-form-settings-head');
+        expect(fouc).toContain('.staff-hub-builder-rail');
+        expect(fouc).toContain('var(--lux-panel-fill)');
         expect(staffHtml).toContain('staff-form-builder-runtime.js');
         expect(readSource('assets/js/pages/staff-command-center.js')).toContain('ensureFormBuilderRuntime');
-        expect(readSource('assets/js/pages/staff-command-center.js')).toContain('form-builder-runtime.js?v=20260718-formlazy1');
+        expect(readSource('assets/js/pages/staff-command-center.js')).toContain('form-builder-runtime.js?v=');
         expect(staffHtml).not.toContain('staff-command-center.css');
         expectRetiredCss('staff-command-center.css');
     });
-
-    
 
     it('assigns unique keys when quick-adding fields with the same label', () => {
         const api = loadBlueprintApi();

@@ -488,7 +488,7 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="lux-panel staff-hub-info-card is-full lux-data-card" data-lux-glass-root="1">
+            <section class="staff-hub-info-card is-full lux-data-card">
                 <span>Admin actions</span>
                 <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced">
                     <button class="lux-secondary-btn" type="button" data-staff-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
@@ -534,7 +534,7 @@
                     ${tabs.map(([key, label]) => `<button class="staff-hub-tab lux-tab-btn staff-hub-profile-tab${activeTab === key ? ' is-active' : ''}" type="button" aria-pressed="${activeTab === key ? 'true' : 'false'}" data-staff-action="tab" data-staff-tab="${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('')}
                 </div>` : '';
         return `
-            <section class="lux-panel staff-hub-profile" data-lux-glass-root="1">
+            <section class="staff-hub-profile" data-lux-glass-root="1">
                 <div class="staff-hub-toolbar">
                     <button class="lux-secondary-btn" type="button" data-staff-action="back"><i class="fas fa-arrow-left"></i> Back to staff directory</button>
                     <div class="staff-hub-toolbar-actions">
@@ -643,14 +643,14 @@
         `;
 
         return `
-            <div class="lux-panel staff-hub-shell" data-lux-glass-root="1">
+            <div class="staff-hub-shell" data-lux-glass-root="1">
 
 
-                <section class="lux-soft-chrome staff-hub-controls staff-admin-controls staff-hub-controls--adaptive">
+                <section class="staff-hub-controls staff-admin-controls staff-hub-controls--adaptive">
                     ${directoryControlsMarkup}
                 </section>
 
-                <section class="lux-soft-chrome staff-hub-directory-panel">
+                <section class="staff-hub-directory-panel">
                     <div class="staff-hub-directory-head">
                         <div>
                             <div class="staff-hub-overline">Staff directory</div>
@@ -745,7 +745,7 @@
         }
         root.innerHTML = `
             <div class="staff-hub-modal-backdrop" data-staff-action="dismiss-modal">
-                <form class="staff-hub-modal" id="staff-command-form" novalidate data-staff-type-id="${escapeHtml(staffTypeId)}">
+                <form class="staff-hub-modal" id="staff-command-form" novalidate data-staff-type-id="${escapeHtml(staffTypeId)}" autocomplete="off">
                     <div class="staff-hub-modal-head">
                         <div class="staff-hub-modal-head-main">
                             <div class="staff-hub-modal-title-row">
@@ -1154,8 +1154,8 @@
         }
         if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
         const urls = [
-            'assets/js/pages/form-builder-actions-runtime.js?v=20260720-fbact1',
-            'assets/js/pages/form-builder-runtime.js?v=20260720-fbact1'
+            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix6',
+            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix6'
         ];
         __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
             const existing = document.querySelector(`script[src="${src}"]`);
@@ -1175,6 +1175,16 @@
         return __formBuilderRuntimePromise;
     }
 
+    function ensureStaffFormBuilderEventsBound() {
+        if (typeof window.bindStaffFormBuilderEvents !== 'function') return false;
+        if (window.__staffFormBuilderBound) return true;
+        window.bindStaffFormBuilderEvents({
+            ...getStaffBuilderCallbacks(),
+            onBackDirectory: () => backToDirectoryWorkspace()
+        });
+        return true;
+    }
+
     function openFormSettings(typeId = null) {
         const run = () => KiuCommandCenterUtils.openFormSettingsWorkspace({
             getState: getStaffState,
@@ -1192,6 +1202,7 @@
                 showToast('Form studio failed to load. Refresh and try again.');
                 return;
             }
+            ensureStaffFormBuilderEventsBound();
             run();
         });
     }
@@ -1480,12 +1491,7 @@
     function bindEvents() {
         if (window.__staffCommandBound) return;
         window.__staffCommandBound = true;
-        if (typeof bindStaffFormBuilderEvents === 'function') {
-            bindStaffFormBuilderEvents({
-                ...getStaffBuilderCallbacks(),
-                onBackDirectory: () => backToDirectoryWorkspace()
-            });
-        }
+        ensureStaffFormBuilderEventsBound();
 
         document.addEventListener('click', (event) => {
             const actionEl = event.target.closest('[data-staff-action]');
@@ -1567,20 +1573,40 @@
         window.addEventListener('hashchange', applyHashRoute);
     }
 
+    function ensureStaffContentHost() {
+        const app = document.getElementById('app-content');
+        const hosts = app ? Array.from(app.querySelectorAll('#staff-content')) : [];
+        let container = hosts[0] || document.getElementById('staff-content');
+        hosts.slice(1).forEach((node) => node.remove());
+        if (!container && app) {
+            container = document.createElement('div');
+            container.id = 'staff-content';
+            app.appendChild(container);
+        }
+        if (!container) return null;
+        container.classList.add('lux-page-shell', 'staff-command-root');
+        container.dataset.tab = container.dataset.tab || 'all';
+        container.dataset.luxLayoutOnly = '1';
+        return container;
+    }
+
     function renderStaffPage() {
         if (typeof ensureStaffFormBlueprint === 'function') ensureStaffFormBlueprint();
         const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
         const { records } = buildStaffRecords(facultyCode);
-        const container = document.getElementById('staff-content');
+        const container = ensureStaffContentHost();
         if (!container) return;
-        container.classList.add('staff-command-root');
         const state = getStaffState();
         const selected = activeSelection(records);
         if (state.workspace === 'form-settings' && typeof renderStaffFormSettings === 'function') {
+            if (typeof window.flushStaffBuilderFieldInputs === 'function') {
+                window.flushStaffBuilderFieldInputs(container, getStaffBuilderCallbacks());
+            }
             container.innerHTML = renderStaffFormSettings({
                 ...state,
                 selectedTypeId: state.formSettingsTypeId || state.selectedTypeId || 'professor'
             }, getStaffBuilderCallbacks());
+            ensureStaffFormBuilderEventsBound();
             if (typeof window.enhanceUniversalPickers === 'function') {
                 const formSettingsWorkspace = container.querySelector('.staff-hub-form-settings');
                 if (formSettingsWorkspace) window.enhanceUniversalPickers(formSettingsWorkspace);
@@ -1601,7 +1627,9 @@
         applyStaffHubProgressBars(container);
         renderModal(records, facultyCode);
         if (typeof queueEnglishLocalization === 'function') {
-            queueEnglishLocalization(container);
+            if (state.workspace !== 'form-settings') {
+                queueEnglishLocalization(container);
+            }
             const modalRoot = document.getElementById('staff-command-modal-root');
             if (modalRoot && !modalRoot.hasAttribute('hidden')) {
                 queueEnglishLocalization(modalRoot);

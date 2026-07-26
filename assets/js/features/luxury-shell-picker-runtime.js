@@ -922,7 +922,7 @@ function resolveExternalPickerLabel(select) {
         const labelNode = parent.querySelector('label');
         if (isExternalPickerLabelNode(labelNode)) return labelNode;
     }
-    const fieldShell = select.closest('.sch-input-group, .sch-control-group, .sch-rail-field, .lux-program-field, .lux-picker-field');
+    const fieldShell = select.closest('.sch-input-group, .sch-control-group, .lux-program-field, .lux-picker-field');
     if (fieldShell) {
         const captionLabel = fieldShell.querySelector(':scope > .lux-picker-label');
         if (captionLabel) {
@@ -1101,15 +1101,16 @@ function shouldEnhanceSelect(select) {
     return true;
 }
 
+function resolvePickerTriggerClass() {
+    return 'lux-picker-btn lux-universal-picker-btn lux-picker-btn--compact';
+}
+
 function enhanceUniversalPicker(select) {
     if (!shouldEnhanceSelect(select)) return;
     const parent = select.parentElement;
     if (!parent) return;
     const wrapper = document.createElement('div');
-    const railFieldShell = select.closest('.sch-rail-field, .lux-program-field, .sch-input-group');
-    wrapper.className = railFieldShell
-        ? 'lux-universal-picker-field'
-        : 'lux-picker-field lux-universal-picker-field';
+    wrapper.className = 'lux-picker-field lux-universal-picker-field';
     const panelId = select.id ? `${select.id}-lux-panel` : `lux-picker-panel-${Math.random().toString(36).slice(2, 10)}`;
     const buttonId = select.id ? `${select.id}-lux-btn` : `lux-picker-btn-${Math.random().toString(36).slice(2, 10)}`;
     const externalLabel = resolveExternalPickerLabel(select);
@@ -1118,7 +1119,7 @@ function enhanceUniversalPicker(select) {
 
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'lux-picker-btn lux-universal-picker-btn lux-picker-btn--compact';
+    button.className = resolvePickerTriggerClass(select);
     button.id = buttonId;
     button.setAttribute('aria-haspopup', 'listbox');
     button.setAttribute('aria-expanded', 'false');

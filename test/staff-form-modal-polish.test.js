@@ -9,7 +9,9 @@ describe('staff form modal polish', () => {
     it('staff hub modals use shared warmglass / lux-modals', () => {
         const html = readSource('staff.html');
         const css = readWarmglassCss();
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(html).toContain('lux-modals.css');
         expect(css).toContain('.staff-hub-modal');
+        expect(bare).toContain('#staff-command-modal-root .staff-hub-modal');
     });
 });

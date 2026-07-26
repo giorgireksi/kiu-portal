@@ -19,7 +19,7 @@ describe('staff route regressions', () => {
         expect(staffHtml).toContain('lux-page-bare');
         expect(staffHtml).toContain('lux-full-paint');
         expect(staffHtml).toContain('lux-route-staff');
-        expect(staffHtml).toContain('id="staff-content"');
+        expect(staffHtml).toContain('class="lux-page-shell staff-command-root"');
         expect(staffHtml).toContain('assets/js/pages/staff-command-center.js');
         expect(staffHtml).toContain('assets/js/theme-primer.js');
         expect(staffHtml).not.toContain('staff-command-center.css');
@@ -43,7 +43,14 @@ describe('staff route regressions', () => {
         expect(transparency).toContain('staff-hub-');
 
         expect(staffJs).toContain('staff-hub-shell');
-        expect(staffJs).toContain('staff-hub-directory-panel');
+        expect(staffJs).toContain('staff-hub-profile" data-lux-glass-root="1"');
+        expect(staffJs).toContain('staff-hub-form-settings');
+        expect(readSource('assets/js/pages/form-builder-runtime.js')).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace">');
+        expect(readSource('assets/js/pages/form-builder-runtime.js')).not.toContain('form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1"');
+        expect(staffJs).toContain('class="staff-hub-modal"');
+        expect(staffJs).toContain('autocomplete="off"');
+        expect(staffJs).not.toContain('lux-modern-surface');
+        expect(staffJs).not.toContain('lux-modern-button');
         expect(staffJs).toContain('lux-data-card');
         expect(staffJs).toContain('queueLuxuryTransparencyRefresh');
     });

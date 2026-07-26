@@ -3,22 +3,26 @@
 .lux-control {
   box-sizing: border-box;
   width: 100%;
-  min-height: var(--lux-field-min-height);
-  padding: 11px 14px;
-  border-width: var(--lux-field-border-width);
+  min-height: var(--lux-primary-btn-min-height, 46px);
+  padding: 0 18px;
+  border-width: var(--lux-btn-frame-width, 3.5px);
   border-style: solid;
-  border-color: var(--lux-field-border);
-  border-radius: var(--lux-field-radius);
-  background: var(--lux-field-fill);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
+  background: var(--lux-btn-well);
   background-clip: padding-box;
   background-origin: padding-box;
-  box-shadow: var(--lux-field-shadow);
+  box-shadow: var(--lux-btn-frame-shadow);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  color: var(--lux-text);
+  color: var(--lux-btn-label, var(--lux-text));
   font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
   font-family: inherit;
   outline: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 input.lux-control,
@@ -31,13 +35,18 @@ input[type="search"].lux-control::-webkit-search-decoration,
 input[type="search"].lux-control::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
-.lux-control::placeholder { color: var(--lux-text-muted); opacity: 0.6; }
+.lux-control::placeholder { color: var(--lux-text-muted); opacity: 0.72; }
 .lux-control:focus,
 .lux-control:focus-visible {
-  border-color: var(--lux-field-border);
-  background: var(--lux-field-fill-focus);
-  box-shadow: var(--lux-field-shadow-focus), var(--lux-field-focus-ring);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well-hover, var(--lux-btn-well));
+  box-shadow: var(--lux-btn-frame-shadow-hover);
   outline: none;
+}
+.lux-control:read-only,
+.lux-control[readonly] {
+  background: var(--lux-btn-well-soft);
+  cursor: default;
 }
 .lux-control:disabled,
 .lux-control.is-muted {
@@ -80,7 +89,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   color: var(--lux-text-soft);
   padding-left: 4px;
 }
-.lux-picker-field > .lux-picker-btn {
+.lux-picker-field > .lux-picker-btn:not(.lux-picker-btn--compact) {
   width: 100%;
   min-width: 0;
   justify-content: space-between;
@@ -91,19 +100,25 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 .lux-picker-field > .lux-picker-btn.lux-picker-btn--compact,
 .lux-picker-btn--compact {
   min-width: 0;
-  min-height: var(--lux-field-min-height);
-  padding: 11px 14px;
-  border-radius: var(--lux-field-radius);
-  border-width: var(--lux-field-border-width);
+  min-height: var(--lux-primary-btn-min-height, 46px);
+  padding: 0 18px;
+  border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
+  border-width: var(--lux-btn-frame-width, 3.5px);
   border-style: solid;
-  border-color: var(--lux-field-border);
-  background: var(--lux-field-fill);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well);
   background-clip: padding-box;
   background-origin: padding-box;
-  box-shadow: var(--lux-field-shadow);
+  box-shadow: var(--lux-btn-frame-shadow);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  color: var(--lux-btn-label, #f7fbff);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .lux-picker-field > .lux-picker-panel {
   left: 0;
@@ -158,7 +173,8 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   text-align: left;
   background: rgba(255, 255, 255, 0.04);
 }
-.lux-picker-btn:hover, .lux-picker-btn.is-active { border-color: rgba(var(--lux-accent-rgb), 0.38); }
+.lux-picker-btn:not(.lux-picker-btn--compact):hover,
+.lux-picker-btn:not(.lux-picker-btn--compact).is-active { border-color: rgba(var(--lux-accent-rgb), 0.38); }
 .lux-picker-caption {
   display: block;
   font-size: 10px;
@@ -174,14 +190,14 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   color: var(--lux-text);
   font-weight: 600;
 }
-.lux-picker-btn {
+.lux-picker-btn:not(.lux-picker-btn--compact) {
   transition: transform var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
-.lux-picker-btn:active {
+.lux-picker-btn:not(.lux-picker-btn--compact):active {
   transform: scale(0.97);
 }
-.lux-picker-btn.is-active,
-.lux-picker-btn[aria-expanded="true"] {
+.lux-picker-btn:not(.lux-picker-btn--compact).is-active,
+.lux-picker-btn:not(.lux-picker-btn--compact)[aria-expanded="true"] {
   transform: translateY(-1px);
 }
 .lux-picker-btn i {
@@ -197,19 +213,29 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 .lux-picker-btn--compact .lux-picker-value,
 .lux-picker-btn--compact strong {
   margin-top: 0;
-  font-size: 13px;
+  font-size: inherit;
   font-weight: inherit;
-  line-height: 1.2;
-  color: var(--lux-text);
+  line-height: inherit;
+  color: inherit;
+}
+.lux-picker-btn--compact i {
+  color: inherit;
+  opacity: 0.85;
 }
 .lux-picker-btn--compact:focus-visible {
-  border-color: var(--lux-field-border);
-  background: var(--lux-field-fill-focus);
-  box-shadow: var(--lux-field-shadow-focus), var(--lux-field-focus-ring);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well-hover, var(--lux-btn-well));
+  box-shadow: var(--lux-btn-frame-shadow-hover);
   outline: none;
+  transform: translateY(-2px);
 }
 .lux-picker-btn--compact:active {
-  transform: none;
+  transform: translateY(0) scale(0.985);
+}
+.lux-picker-btn--compact:active::after {
+  opacity: 0;
+  transition: none;
+  will-change: auto;
 }
 :root {
   --lux-picker-visible-options: 5;
@@ -415,7 +441,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-.lux-primary-btn::before, .lux-secondary-btn::before, .lux-ghost-btn::before {
+.lux-primary-btn::before, .lux-secondary-btn::before, .lux-ghost-btn::before, .lux-picker-btn--compact::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -427,7 +453,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   opacity: 1;
 }
 /* one-shot diagonal sheen */
-.lux-primary-btn::after, .lux-secondary-btn::after, .lux-ghost-btn::after {
+.lux-primary-btn::after, .lux-secondary-btn::after, .lux-ghost-btn::after, .lux-picker-btn--compact::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -441,7 +467,8 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 }
 .lux-primary-btn:is(:hover, :focus-visible)::after,
 .lux-secondary-btn:is(:hover, :focus-visible)::after,
-.lux-ghost-btn:is(:hover, :focus-visible)::after {
+.lux-ghost-btn:is(:hover, :focus-visible)::after,
+.lux-picker-btn--compact:is(:hover, :focus-visible, .is-active, [aria-expanded="true"])::after {
   will-change: transform;
   transform: translateX(130%) skewX(-14deg);
   opacity: 1;
@@ -465,7 +492,8 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   background-clip: padding-box;
   background-origin: padding-box;
 }
-.lux-primary-btn:hover::before, .lux-primary-btn:focus-visible::before {
+.lux-primary-btn:hover::before, .lux-primary-btn:focus-visible::before,
+.lux-picker-btn--compact:hover::before, .lux-picker-btn--compact:focus-visible::before, .lux-picker-btn--compact.is-active::before, .lux-picker-btn--compact[aria-expanded="true"]::before {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 28%, transparent 48%);
 }
 .lux-primary-btn:active { transform: translateY(0) scale(0.985); }
@@ -535,8 +563,8 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 28%, transparent 48%);
 }
 .lux-ghost-btn:active { transform: translateY(0) scale(0.985); }
-.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn { z-index: 0; }
-:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact { z-index: 0; }
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact, .lux-control) {
   text-shadow: none;
 }
 :is(html.lux-light-mode, body.lux-light-mode) .lux-ghost-btn,
@@ -544,10 +572,10 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 :is(html.lux-light-mode, body.lux-light-mode) .lux-ghost-btn:focus-visible {
   color: var(--lux-btn-ghost-label, var(--lux-text, #1d2633));
 }
-:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn)::before {
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact)::before {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 30%, transparent 52%);
 }
-:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn):is(:hover, :focus-visible)::before {
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact):is(:hover, :focus-visible, .is-active, [aria-expanded="true"])::before {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.28) 30%, transparent 52%);
 }
 html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"] .lux-secondary-btn, html[data-lux-transparency="0"] .lux-ghost-btn {
@@ -555,31 +583,28 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
   backdrop-filter: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn {
+  .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact {
     transition: none;
   }
-  .lux-primary-btn::after, .lux-secondary-btn::after, .lux-ghost-btn::after { display: none; }
-  .lux-primary-btn:hover, .lux-primary-btn:focus-visible, .lux-primary-btn:active, .lux-secondary-btn:hover, .lux-secondary-btn:focus-visible, .lux-secondary-btn:active, .lux-ghost-btn:hover, .lux-ghost-btn:focus-visible, .lux-ghost-btn:active {
+  .lux-primary-btn::after, .lux-secondary-btn::after, .lux-ghost-btn::after, .lux-picker-btn--compact::after { display: none; }
+  .lux-primary-btn:hover, .lux-primary-btn:focus-visible, .lux-primary-btn:active, .lux-secondary-btn:hover, .lux-secondary-btn:focus-visible, .lux-secondary-btn:active, .lux-ghost-btn:hover, .lux-ghost-btn:focus-visible, .lux-ghost-btn:active, .lux-picker-btn--compact:hover, .lux-picker-btn--compact:focus-visible, .lux-picker-btn--compact:active, .lux-picker-btn--compact.is-active, .lux-picker-btn--compact[aria-expanded="true"] {
     transform: none;
     filter: none;
   }
 }
-.lux-picker-btn {
+.lux-picker-btn:not(.lux-picker-btn--compact) {
   background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha)));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-.lux-picker-btn--compact {
-  background: var(--lux-field-fill);
-}
-.lux-picker-btn--compact::before,
-.lux-picker-btn--compact::after {
-  display: none;
-}
 .lux-picker-btn--compact:hover,
+.lux-picker-btn--compact:focus-visible,
 .lux-picker-btn--compact.is-active,
 .lux-picker-btn--compact[aria-expanded="true"] {
-  transform: none;
+  transform: translateY(-2px);
+  box-shadow: var(--lux-btn-frame-shadow-hover);
+  border-color: var(--lux-btn-border-solid, var(--lux-accent));
+  background: var(--lux-btn-well-hover, var(--lux-btn-well));
 }
 #lux-topbar .lux-topbar-shell :is(.lux-picker-btn, .lux-icon-btn),
 #page-home #lux-home-shell .lux-home-merged :is(.lux-picker-btn, .lux-icon-btn, .lux-quick-btn, .home-hover-chip) {
@@ -592,7 +617,7 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
   overflow: hidden;
   contain: paint;
 }
-.lux-picker-btn::before, .lux-icon-btn::before {
+.lux-picker-btn:not(.lux-picker-btn--compact)::before, .lux-icon-btn::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -602,7 +627,7 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
   opacity: 1;
 }
-.lux-picker-btn::after, .lux-icon-btn::after {
+.lux-picker-btn:not(.lux-picker-btn--compact)::after, .lux-icon-btn::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -614,11 +639,11 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
   opacity: 0;
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
 }
-.lux-picker-btn:hover::before, .lux-picker-btn.is-active::before, .lux-picker-btn[aria-expanded="true"]::before, .lux-picker-btn:focus-visible::before,
+.lux-picker-btn:not(.lux-picker-btn--compact):hover::before, .lux-picker-btn:not(.lux-picker-btn--compact).is-active::before, .lux-picker-btn:not(.lux-picker-btn--compact)[aria-expanded="true"]::before, .lux-picker-btn:not(.lux-picker-btn--compact):focus-visible::before,
 .lux-icon-btn:hover::before, .lux-icon-btn:focus-visible::before, .lux-icon-btn.is-active::before {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.07) 28%, transparent 48%);
 }
-.lux-picker-btn:hover::after, .lux-picker-btn.is-active::after, .lux-picker-btn[aria-expanded="true"]::after, .lux-picker-btn:focus-visible::after,
+.lux-picker-btn:not(.lux-picker-btn--compact):hover::after, .lux-picker-btn:not(.lux-picker-btn--compact).is-active::after, .lux-picker-btn:not(.lux-picker-btn--compact)[aria-expanded="true"]::after, .lux-picker-btn:not(.lux-picker-btn--compact):focus-visible::after,
 .lux-icon-btn:hover::after, .lux-icon-btn:focus-visible::after, .lux-icon-btn.is-active::after {
   will-change: transform;
   transform: translateX(130%) skewX(-14deg);
@@ -671,7 +696,8 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
 }
 .lux-icon-badge.is-zero { opacity: 0; transform: scale(0.8); pointer-events: none; }
 
-.lux-picker-btn:hover, .lux-picker-btn.is-active {
+.lux-picker-btn:not(.lux-picker-btn--compact):hover,
+.lux-picker-btn:not(.lux-picker-btn--compact).is-active {
   transform: translateY(-1px);
 }
 .lux-picker-btn:hover::after, .lux-picker-btn.is-active::after { opacity: 1; }
@@ -695,7 +721,7 @@ body.lux-light-mode .lux-picker-search-input, html.lux-light-mode body .lux-pick
   background: rgba(255, 255, 255, 0.78);
 }
 /* ── §3 full-paint CTA re-assert ── */
-body.lux-full-paint.lux-unified-shell .lux-primary-btn, body.lux-full-paint.lux-unified-shell .lux-secondary-btn {
+body.lux-full-paint.lux-unified-shell .lux-primary-btn, body.lux-full-paint.lux-unified-shell .lux-secondary-btn, body.lux-full-paint.lux-unified-shell .lux-picker-btn--compact, body.lux-full-paint.lux-unified-shell .lux-control {
   border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
   border-width: var(--lux-btn-frame-width, 3.5px);
   border-style: solid;

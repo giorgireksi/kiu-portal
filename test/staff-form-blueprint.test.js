@@ -65,6 +65,37 @@ describe('staff form blueprint system', () => {
         expect(copied.sections[0].fields[0].key).toBe('full_name');
     });
 
+    it('strips HTML from field labels and section titles on write and normalize', () => {
+        const api = loadBlueprintApi();
+        api.addStaffFormSection('professor', 'input', {
+            title: 'Profile<section>oops</section>',
+            description: 'Notes<div>x</div>'
+        });
+        const sectionId = api.getStaffFormSchema('professor').sections[0].id;
+        expect(api.getStaffFormSchema('professor').sections[0].title).toBe('Profile oops');
+        api.addStaffFormField('professor', 'input', sectionId, {
+            label: 'New field<section class="staff-hub-form-settings">bad</section>',
+            type: 'text'
+        });
+        const fieldId = api.getStaffFormSchema('professor').sections[0].fields[0].id;
+        expect(api.getStaffFormSchema('professor').sections[0].fields[0].label).toBe('New field bad');
+        api.updateStaffFormField('professor', 'input', sectionId, fieldId, {
+            label: '<strong>Email</strong>'
+        });
+        expect(api.getStaffFormSchema('professor').sections[0].fields[0].label).toBe('Email');
+    });
+
+    it('rejects page-dump text accidentally stored as field labels', () => {
+        const api = loadBlueprintApi();
+        api.addStaffFormSection('professor', 'input', { title: 'Profile' });
+        const sectionId = api.getStaffFormSchema('professor').sections[0].id;
+        api.addStaffFormField('professor', 'input', sectionId, {
+            label: 'New field Admin workspace Staff form settings 2 staff types Design registration forms',
+            type: 'text'
+        });
+        expect(api.getStaffFormSchema('professor').sections[0].fields[0].label).toBe('Untitled field');
+    });
+
     
 
 });

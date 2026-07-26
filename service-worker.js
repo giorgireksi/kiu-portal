@@ -9,7 +9,7 @@ const SHELL_ASSETS = [
   '/login.html',
   '/assets/css/lux-tokens.css?v=20260725-engstruct1',
 '/assets/css/lux-fouc-ht.css?v=20260725-engstruct1',
-  '/assets/css/lux-controls.css?v=20260725-fieldcta1',
+  '/assets/css/lux-controls.css?v=20260726-luxcontrolcta1',
   '/assets/css/mobile-shell-core.css?v=20260724-chromeshare1',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260725-engstruct1',

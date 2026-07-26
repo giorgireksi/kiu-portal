@@ -218,7 +218,12 @@ function restoreTeleportedNode(node) {
     if (!node || node.dataset.teleported !== 'true' || !node.dataset.originalParentId) return;
     const originalParent = document.getElementById(node.dataset.originalParentId);
     if (originalParent) {
-        originalParent.appendChild(node);
+        const nativeSelect = originalParent.querySelector('.lux-universal-native-select, select[data-lux-picker-enhanced="true"]');
+        if (nativeSelect) {
+            originalParent.insertBefore(node, nativeSelect);
+        } else {
+            originalParent.appendChild(node);
+        }
         node.style.position = '';
         node.style.top = '';
         node.style.left = '';

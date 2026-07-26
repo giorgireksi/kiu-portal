@@ -20,19 +20,36 @@ describe('lux field CTA chrome', () => {
     it('styles .lux-control with CTA frame tokens', () => {
         const controls = readSource('assets/css/lux-controls.css');
 
-        expect(controls).toMatch(/\.lux-control\s*\{[\s\S]*?border-color:\s*var\(--lux-field-border\)/);
-        expect(controls).toMatch(/\.lux-control\s*\{[\s\S]*?box-shadow:\s*var\(--lux-field-shadow\)/);
-        expect(controls).toMatch(/\.lux-control\s*\{[\s\S]*?background:\s*var\(--lux-field-fill\)/);
+        expect(controls).toMatch(/\.lux-control\s*\{[\s\S]*?border-color:\s*var\(--lux-btn-border-solid/);
+        expect(controls).toMatch(/\.lux-control\s*\{[\s\S]*?box-shadow:\s*var\(--lux-btn-frame-shadow\)/);
+        expect(controls).toMatch(/\.lux-control\s*\{[\s\S]*?background:\s*var\(--lux-btn-well\)/);
+        expect(controls).toMatch(/\.lux-control\s*\{[\s\S]*?border-radius:\s*var\(--lux-btn-pill-radius/);
         expect(controls).toContain('input[type="search"].lux-control::-webkit-search-decoration');
-        expect(controls).toMatch(/\.lux-control:focus-visible[\s\S]*?var\(--lux-field-shadow-focus\)/);
+        expect(controls).toMatch(/\.lux-control:focus-visible[\s\S]*?var\(--lux-btn-frame-shadow-hover\)/);
+        expect(controls).toMatch(/\.lux-control:read-only[\s\S]*?var\(--lux-btn-well-soft\)/);
     });
 
-    it('styles compact pickers with the same field tokens', () => {
+    it('styles compact pickers with primary CTA chrome', () => {
         const controls = readSource('assets/css/lux-controls.css');
 
-        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-color:\s*var\(--lux-field-border\)/);
-        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?background:\s*var\(--lux-field-fill\)/);
-        expect(controls).toMatch(/\.lux-picker-btn--compact:focus-visible[\s\S]*?var\(--lux-field-shadow-focus\)/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-radius:\s*var\(--lux-btn-pill-radius/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-color:\s*var\(--lux-btn-border-solid/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?background:\s*var\(--lux-btn-well\)/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact:focus-visible[\s\S]*?var\(--lux-btn-frame-shadow-hover\)/);
+    });
+
+    it('styles compact universal picker triggers like primary CTA buttons', () => {
+        const controls = readSource('assets/css/lux-controls.css');
+
+        expect(controls).toContain('.lux-picker-btn--compact');
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-radius:\s*var\(--lux-btn-pill-radius/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-color:\s*var\(--lux-btn-border-solid/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?padding:\s*0 18px/);
+        expect(controls).toContain('.lux-picker-field > .lux-picker-btn.lux-picker-btn--compact');
+        expect(controls).toMatch(/\.lux-picker-btn--compact:hover[\s\S]*?translateY\(-2px\)/);
+        expect(controls).toContain('.lux-picker-btn--compact::before');
+        expect(controls).toContain('.lux-picker-btn--compact::after');
+        expect(controls).not.toContain('.lux-picker-btn--field');
     });
 
     it('does not flatten .lux-control inside modal exempt subtrees', () => {
@@ -45,7 +62,7 @@ describe('lux field CTA chrome', () => {
         expect(luxControlExempt).not.toContain('var(--lux-modal-glass-input)');
         expect(luxControlExempt).not.toContain('var(--lux-modal-glass-border)');
         const controls = readSource('assets/css/lux-controls.css');
-        expect(controls).toMatch(/\.lux-control:focus-visible[\s\S]*?var\(--lux-field-shadow-focus\)/);
+        expect(controls).toMatch(/\.lux-control:focus-visible[\s\S]*?var\(--lux-btn-frame-shadow-hover\)/);
     });
 
     it('wires lux-controls cache bust on representative routes', () => {
@@ -68,7 +85,7 @@ describe('lux field CTA chrome', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toMatch(/#admin-curriculum-search[\s\S]*?padding-left:\s*36px/);
         expect(bare).toMatch(
-            /\.lux-admin-curriculum-search-wrap > i\s*\{[\s\S]*?bottom:\s*calc\(var\(--lux-field-min-height/
+            /\.lux-admin-curriculum-search-wrap > i\s*\{[\s\S]*?bottom:\s*calc\(var\(--lux-primary-btn-min-height/
         );
     });
 });

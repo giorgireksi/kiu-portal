@@ -509,6 +509,7 @@ return {
         if (node.closest?.('#course-selection-modal-bg')) return true;
         if (node.closest?.('#schModalOverlay')) return true;
         if (node.closest?.('#schPresetManagerOverlay')) return true;
+        if (node.closest?.('#staff-command-modal-root, #students-admin-modal-root')) return true;
         if (node.classList?.contains('palette-card')) return true;
         if (node.closest?.('#palette-list')) return true;
         if (node.classList?.contains('gb-lms-staff-roster-row')) return true;

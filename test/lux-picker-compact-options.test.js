@@ -40,15 +40,17 @@ describe('lux picker compact options', () => {
         expect(renderBody).toContain('subtitle ?');
     });
 
-    it('uses compact value-only universal picker trigger markup', () => {
+    it('uses compact CTA triggers everywhere including form shells', () => {
         const shellChrome = readSource(pickerRuntime);
         const enhanceBody = extractFunctionBody(shellChrome, 'enhanceUniversalPicker');
-        const syncBody = extractFunctionBody(shellChrome, 'syncUniversalPicker');
+        const resolveBody = extractFunctionBody(shellChrome, 'resolvePickerTriggerClass');
 
-        expect(enhanceBody).toContain('lux-picker-btn--compact');
+        expect(shellChrome).toContain('resolvePickerTriggerClass');
+        expect(shellChrome).toContain('lux-picker-btn--compact');
+        expect(shellChrome).not.toContain('lux-picker-btn--field');
+        expect(resolveBody).not.toContain('sch-input-group');
+        expect(enhanceBody).toContain('resolvePickerTriggerClass(select)');
         expect(enhanceBody).toContain('<strong class="lux-picker-value"></strong>');
-        expect(enhanceBody).not.toContain('lux-picker-caption');
-        expect(syncBody).not.toContain('captionNode');
     });
 
     it('renders single-line faculty, role, and semester picker options', () => {
@@ -72,15 +74,26 @@ describe('lux picker compact options', () => {
         expect(droplist).toContain('.lux-droplist-panel');
     });
 
-    it('styles compact universal picker triggers like lux-control fields', () => {
+    it('always wraps picker options in a scrollport to avoid droplist grid overlap', () => {
+        const picker = readSource('assets/js/features/luxury-shell-picker-runtime.js');
+        const buildBody = extractFunctionBody(picker, 'buildUniversalPickerPanel');
+
+        expect(picker).not.toContain('isSchedulerModalPicker');
+        expect(buildBody).toContain('<div class="lux-picker-panel-scrollport">${optionsMarkup}</div>');
+        expect(buildBody).toContain('<div class="lux-picker-options lux-picker-panel-scrollport">${optionsMarkup}</div>');
+        expect(buildBody).not.toMatch(/schedulerModal\s*\?\s*optionsMarkup/);
+    });
+
+    it('styles compact universal picker triggers like primary CTA buttons', () => {
         const controls = readSource('assets/css/lux-controls.css');
 
         expect(controls).toContain('.lux-picker-btn--compact');
-        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-radius:\s*var\(--lux-field-radius\)/);
-        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-color:\s*var\(--lux-field-border\)/);
-        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?padding:\s*11px 14px/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-radius:\s*var\(--lux-btn-pill-radius/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?border-color:\s*var\(--lux-btn-border-solid/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact\s*\{[\s\S]*?padding:\s*0 18px/);
         expect(controls).toContain('.lux-picker-field > .lux-picker-btn.lux-picker-btn--compact');
-        expect(controls).toMatch(/\.lux-picker-btn--compact::before[\s\S]*?display:\s*none/);
-        expect(controls).toMatch(/\.lux-picker-btn--compact::after[\s\S]*?display:\s*none/);
+        expect(controls).toMatch(/\.lux-picker-btn--compact:hover[\s\S]*?translateY\(-2px\)/);
+        expect(controls).toContain('.lux-picker-btn--compact::before');
+        expect(controls).toContain('.lux-picker-btn--compact::after');
     });
 });

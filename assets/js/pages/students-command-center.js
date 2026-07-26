@@ -476,7 +476,7 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="lux-panel students-hub-info-card is-full lux-data-card" data-lux-glass-root="1">
+            <section class="students-hub-info-card is-full lux-data-card">
                 <span>Admin actions</span>
                 <div class="students-hub-inline-actions students-hub-inline-actions--spaced">
                     <button class="lux-secondary-btn" type="button" data-student-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
@@ -542,7 +542,7 @@
                     ${tabs.map(([key, label]) => `<button class="students-hub-tab lux-tab-btn students-hub-profile-tab${activeTab === key ? ' is-active' : ''}" type="button" aria-pressed="${activeTab === key ? 'true' : 'false'}" data-student-action="tab" data-staff-tab="${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('')}
                 </div>` : '';
         return `
-            <section class="lux-panel students-hub-profile" data-lux-glass-root="1">
+            <section class="students-hub-profile" data-lux-glass-root="1">
                 <div class="students-hub-toolbar">
                     <button class="lux-secondary-btn" type="button" data-student-action="back"><i class="fas fa-arrow-left"></i> Back to student directory</button>
                     <div class="students-hub-toolbar-actions">
@@ -651,13 +651,13 @@
         `;
 
         return `
-            <div class="lux-panel students-hub-shell" data-lux-glass-root="1">
+            <div class="students-hub-shell" data-lux-glass-root="1">
 
-                <section class="lux-soft-chrome students-hub-controls students-admin-controls students-hub-controls--adaptive">
+                <section class="students-hub-controls students-admin-controls students-hub-controls--adaptive">
                     ${directoryControlsMarkup}
                 </section>
 
-                <section class="lux-soft-chrome students-hub-directory-panel">
+                <section class="students-hub-directory-panel">
                     <div class="students-hub-directory-head">
                         <div>
                             <div class="students-hub-overline">Student directory</div>
@@ -819,7 +819,7 @@
         }
         root.innerHTML = `
             <div class="students-hub-modal-backdrop" data-student-action="dismiss-modal">
-                <form class="students-hub-modal" id="students-admin-form" novalidate data-student-type-id="${escapeHtml(staffTypeId)}">
+                <form class="students-hub-modal" id="students-admin-form" novalidate data-student-type-id="${escapeHtml(staffTypeId)}" autocomplete="off">
                     <div class="students-hub-modal-head">
                         <div class="students-hub-modal-head-main">
                             <div class="students-hub-modal-title-row">
@@ -1232,8 +1232,8 @@
         }
         if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
         const urls = [
-            'assets/js/pages/form-builder-actions-runtime.js?v=20260720-fbact1',
-            'assets/js/pages/form-builder-runtime.js?v=20260720-fbact1'
+            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix6',
+            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix6'
         ];
         __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
             const existing = document.querySelector(`script[src="${src}"]`);
@@ -1253,6 +1253,16 @@
         return __formBuilderRuntimePromise;
     }
 
+    function ensureStudentFormBuilderEventsBound() {
+        if (typeof window.bindStudentFormBuilderEvents !== 'function') return false;
+        if (window.__staffFormBuilderBound) return true;
+        window.bindStudentFormBuilderEvents({
+            ...getStudentBuilderCallbacks(),
+            onBackDirectory: () => backToDirectoryWorkspace()
+        });
+        return true;
+    }
+
     function openFormSettings(typeId = null) {
         const run = () => KiuCommandCenterUtils.openFormSettingsWorkspace({
             getState: getStudentsState,
@@ -1270,6 +1280,7 @@
                 showToast('Form studio failed to load. Refresh and try again.');
                 return;
             }
+            ensureStudentFormBuilderEventsBound();
             run();
         });
     }
@@ -1599,12 +1610,7 @@
     function bindEvents() {
         if (window.__studentsCommandBound) return;
         window.__studentsCommandBound = true;
-        if (typeof bindStudentFormBuilderEvents === 'function') {
-            bindStudentFormBuilderEvents({
-                ...getStudentBuilderCallbacks(),
-                onBackDirectory: () => backToDirectoryWorkspace()
-            });
-        }
+        ensureStudentFormBuilderEventsBound();
 
         document.addEventListener('click', (event) => {
             const actionEl = event.target.closest('[data-student-action]');
@@ -1739,10 +1745,14 @@
         const state = getStudentsState();
         const selected = activeSelection(records);
         if (state.workspace === 'form-settings' && typeof renderStudentFormSettings === 'function') {
+            if (typeof window.flushStudentBuilderFieldInputs === 'function') {
+                window.flushStudentBuilderFieldInputs(container, getStudentBuilderCallbacks());
+            }
             container.innerHTML = renderStudentFormSettings({
                 ...state,
                 selectedTypeId: state.formSettingsTypeId || state.selectedTypeId || 'student'
             }, getStudentBuilderCallbacks());
+            ensureStudentFormBuilderEventsBound();
             if (typeof window.enhanceUniversalPickers === 'function') {
                 const formSettingsWorkspace = container.querySelector('.students-hub-form-settings');
                 if (formSettingsWorkspace) window.enhanceUniversalPickers(formSettingsWorkspace);
@@ -1763,7 +1773,9 @@
         applyStudentsHubProgressBars(container);
         renderModal(records, facultyCode);
         if (typeof queueEnglishLocalization === 'function') {
-            queueEnglishLocalization(container);
+            if (state.workspace !== 'form-settings') {
+                queueEnglishLocalization(container);
+            }
             const modalRoot = document.getElementById('students-admin-modal-root');
             if (modalRoot && !modalRoot.hasAttribute('hidden')) {
                 queueEnglishLocalization(modalRoot);

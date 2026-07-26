@@ -51,8 +51,11 @@
   --lux-panel-surface-soft: var(--lux-surface);
   --lux-panel-border: var(--lux-border);
   --lux-panel-border-soft: var(--lux-border);
+  --lux-elev-1: none;
   --lux-elev-2: none;
   --lux-elev-3: none;
+  --lux-panel-control: transparent;
+  --lux-soft-chrome-control: transparent;
   --lux-panel-shadow-soft: none;
   --lux-panel-shadow: none;
   --lux-btn-pill-radius: 0 22px 0 22px;
@@ -245,8 +248,11 @@ html.lux-light-mode, body.lux-light-mode {
     var(--lux-soft-chrome-rim-ring),
     var(--lux-soft-chrome-rim-glow),
     var(--lux-soft-chrome-shadow, var(--lux-elev-2));
+  --lux-elev-1: 0 8px 20px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --lux-elev-2: 0 14px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --lux-elev-3: 0 24px 58px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
+  --lux-panel-control: color-mix(in srgb, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))) 94%, transparent);
+  --lux-soft-chrome-control: color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent);
   --lux-panel-shadow-soft: var(--lux-elev-2);
   --lux-panel-shadow: var(--lux-elev-3);
 }
@@ -359,8 +365,11 @@ html.lux-light-mode, body.lux-light-mode {
     var(--lux-soft-chrome-rim-ring),
     var(--lux-soft-chrome-rim-glow),
     var(--lux-soft-chrome-shadow, var(--lux-elev-2));
+  --lux-elev-1: 0 6px 16px rgba(107, 91, 62, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.55);
   --lux-elev-2: 0 14px 30px rgba(107, 91, 62, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.62);
   --lux-elev-3: 0 22px 48px rgba(107, 91, 62, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.035);
+  --lux-panel-control: color-mix(in srgb, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.78)) 88%, rgba(var(--lux-accent-rgb), 0.04));
+  --lux-soft-chrome-control: color-mix(in srgb, var(--lux-panel-fill, rgba(250, 246, 240, 0.82)) 76%, transparent);
 }
 body.lux-full-paint {
   --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.72) 58%, var(--lux-border) );

@@ -21,6 +21,8 @@ function loadBuilderApi() {
     Object.assign(context, context.window);
     context.__KIU_FORM_BUILDER_NS__ = 'staff';
     if (context.window) context.window.__KIU_FORM_BUILDER_NS__ = 'staff';
+    vm.runInNewContext(readSource('assets/js/pages/form-builder-actions-runtime.js'), context);
+    Object.assign(context, context.window);
     vm.runInNewContext(readSource('assets/js/pages/form-builder-runtime.js'), context);
     Object.assign(context, context.window);
     context.ensureStaffFormBlueprint();

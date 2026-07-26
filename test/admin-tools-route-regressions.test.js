@@ -77,17 +77,28 @@ describe('admin tools route regressions.test', () => {
         expect(transparency).toContain('.lux-page-shell[data-lux-layout-only="1"]');
     });
 
-    it('staff and students-admin use outer glass-root panels; nested directory is soft-chrome only', () => {
+    it('staff and students-admin use merged glass-root shells with flat directory sections', () => {
         const staff = readSource('assets/js/pages/staff-command-center.js');
         const students = readSource('assets/js/pages/students-command-center.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(staff).toMatch(/staff-hub-shell"[^>]*data-lux-glass-root="1"/);
         expect(staff).toMatch(/staff-hub-profile"[^>]*data-lux-glass-root="1"/);
-        expect(staff).toContain('lux-soft-chrome staff-hub-directory-panel');
-        expect(staff).not.toMatch(/lux-panel staff-hub-directory-panel/);
+        expect(staff).toContain('staff-hub-directory-panel');
+        expect(staff).not.toContain('lux-soft-chrome staff-hub-directory-panel');
+        expect(staff).not.toMatch(/lux-panel staff-hub-shell/);
         expect(students).toMatch(/students-hub-shell"[^>]*data-lux-glass-root="1"/);
         expect(students).toMatch(/students-hub-profile"[^>]*data-lux-glass-root="1"/);
-        expect(students).toContain('lux-soft-chrome students-hub-directory-panel');
-        expect(students).not.toMatch(/lux-panel students-hub-directory-panel/);
+        expect(students).toContain('students-hub-directory-panel');
+        expect(students).not.toContain('lux-soft-chrome students-hub-directory-panel');
+        expect(students).not.toMatch(/lux-panel students-hub-shell/);
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toContain('.staff-hub-shell, .students-hub-shell)[data-lux-glass-root="1"]');
+        expect(fouc).toContain('.staff-hub-directory-panel');
+        expect(bare).toContain('.staff-hub-builder-layout');
+        expect(fouc).toContain('.staff-hub-form-settings-head');
+        expect(fouc).toContain('.staff-hub-builder-rail');
+        expect(bare).toContain('#staff-command-modal-root .staff-hub-modal');
+        expect(bare).toContain('#students-admin-modal-root .students-hub-modal');
     });
 
     it('bare-lite scopes admin-tools layout + registration workspace chrome via shared tokens', () => {
