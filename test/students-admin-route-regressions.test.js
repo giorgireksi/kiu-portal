@@ -41,7 +41,9 @@ describe('students admin route regressions.test', () => {
         expect(bare).toContain('.students-hub-directory-panel');
         expect(bare).toContain('.students-hub-controls-head');
         expect(bare).toContain('.students-hub-filter-deck-section--fields .students-hub-filter-deck-grid');
-        expect(bare).toContain('grid-template-columns: 1fr');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toContain('.students-hub-filter-deck');
+        expect(fouc).toContain('.students-hub-control');
         const directoryJs = readSource('assets/js/pages/directory-filters-runtime.js');
         expect(directoryJs).not.toContain('useCompactDeck');
         expect(directoryJs).toContain('filter-deck-section--fields');

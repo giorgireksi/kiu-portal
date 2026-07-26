@@ -1996,14 +1996,13 @@ body.lux-route-staff #staff-content .staff-hub-controls--adaptive,
 body.lux-route-students-admin #students-content .students-hub-controls--adaptive
 {
     display: grid;
-    gap: 12px;
-    padding: 18px 20px;
+    gap: 18px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-controls-head,
 body.lux-route-students-admin #students-content .students-hub-controls--adaptive .students-hub-controls-head
 {
-    gap: 12px;
+    gap: 18px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-section-copy,
@@ -2019,13 +2018,6 @@ body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-sec
 body.lux-route-students-admin #students-content .students-hub-controls--adaptive .students-hub-section-copy .students-hub-result-pill
 {
     margin-right: 0;
-}
-
-body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-filter-deck-section,
-body.lux-route-students-admin #students-content .students-hub-controls--adaptive .students-hub-filter-deck-section
-{
-    gap: 10px;
-    padding: 12px 14px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact
@@ -2148,15 +2140,8 @@ body.lux-route-students-admin #students-content .students-hub-filter-deck
 {
     display: grid;
     gap: 0;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
-    background: rgba(var(--lux-accent-rgb), 0.03);
-}
-
-body.lux-route-students-admin #students-content .students-hub-filter-deck
-{
     border-radius: 20px;
+    overflow: hidden;
 }
 
 body.lux-route-staff #staff-content .staff-hub-filter-deck-section,
@@ -2181,11 +2166,7 @@ body.lux-route-students-admin #students-content .students-hub-filter-deck-sectio
     align-items: end;
 }
 
-body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary
-{
-    grid-template-columns: minmax(280px, 1.4fr) minmax(160px, 0.9fr) minmax(160px, 0.9fr);
-}
-
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--fields .staff-hub-filter-deck-grid,
 body.lux-route-students-admin #students-content .students-hub-filter-deck-section--fields .students-hub-filter-deck-grid
 {
     grid-template-columns: 1fr;
@@ -2483,7 +2464,8 @@ body.lux-route-students-admin #students-content .students-hub-chip.is-muted
 
 body.lux-route-staff #staff-content .staff-hub-chip.is-clickable,
 body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"],
-body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"]
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"],
+body.lux-route-students-admin #students-content .students-hub-chip[data-student-action="clear-filter-chip"]
 {
     display: inline-flex;
     align-items: center;
@@ -2494,14 +2476,16 @@ body.lux-route-students-admin #students-content .students-hub-chip[data-staff-ac
 
 body.lux-route-staff #staff-content .staff-hub-chip.is-clickable span,
 body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"] span,
-body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] span
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] span,
+body.lux-route-students-admin #students-content .students-hub-chip[data-student-action="clear-filter-chip"] span
 {
     font-weight: 800;
 }
 
 body.lux-route-staff #staff-content .staff-hub-chip.is-clickable em,
 body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"] em,
-body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] em
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] em,
+body.lux-route-students-admin #students-content .students-hub-chip[data-student-action="clear-filter-chip"] em
 {
     font-style: normal;
     color: var(--lux-text-muted);
@@ -2510,7 +2494,8 @@ body.lux-route-students-admin #students-content .students-hub-chip[data-staff-ac
 
 body.lux-route-staff #staff-content .staff-hub-chip.is-clickable i,
 body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"] i,
-body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] i
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"] i,
+body.lux-route-students-admin #students-content .students-hub-chip[data-student-action="clear-filter-chip"] i
 {
     font-size: 10px;
     opacity: 0.72;
@@ -2518,7 +2503,8 @@ body.lux-route-students-admin #students-content .students-hub-chip[data-staff-ac
 
 body.lux-route-staff #staff-content .staff-hub-chip.is-clickable:hover,
 body.lux-route-staff #staff-content .staff-hub-chip[data-staff-action="clear-filter-chip"]:hover,
-body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"]:hover
+body.lux-route-students-admin #students-content .students-hub-chip[data-staff-action="clear-filter-chip"]:hover,
+body.lux-route-students-admin #students-content .students-hub-chip[data-student-action="clear-filter-chip"]:hover
 {
     background: var(--lux-hub-row-hover, rgba(var(--lux-accent-rgb), 0.10)) !important;
     border-color: rgba(var(--lux-accent-rgb), 0.28) !important;
@@ -2547,8 +2533,16 @@ body.lux-route-students-admin #students-content .students-hub-field--compact
 }
 
 body.lux-route-staff #staff-content .staff-hub-field label,
+body.lux-route-students-admin #students-content .students-hub-field label
+{
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--lux-text-muted);
+}
+
 body.lux-route-staff #staff-command-modal-root .staff-hub-field label,
-body.lux-route-students-admin #students-content .students-hub-field label,
 body.lux-route-students-admin #students-admin-modal-root .students-hub-field label
 {
     font-size: 11px;
