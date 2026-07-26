@@ -3750,23 +3750,28 @@ body.lux-route-staff #staff-content .staff-dir-stack-tight {
 
 /* === Staff route page shell layout === */
 body.lux-route-staff #staff-content,
-body.lux-route-staff #staff-content.staff-command-root {
+body.lux-route-students-admin #students-content,
+body.lux-route-staff #staff-content.staff-command-root,
+body.lux-route-students-admin #students-content.students-admin-root{
     position: relative;
     z-index: 1;
 }
 
-body.lux-route-staff .lux-page-shell {
+body.lux-route-staff .lux-page-shell,
+body.lux-route-students-admin .lux-page-shell{
     display: grid;
     gap: 18px;
 }
 
-/* === Dynamic staff form settings deck === */
-body.lux-route-staff #staff-content .staff-hub-form-settings {
+/* === Staff / students form settings deck === */
+body.lux-route-staff #staff-content .staff-hub-form-settings,
+body.lux-route-students-admin #students-content .students-hub-form-settings{
     display: grid;
     gap: 18px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-form-settings-head {
+body.lux-route-staff #staff-content .staff-hub-form-settings-head,
+body.lux-route-students-admin #students-content .students-hub-form-settings-head{
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -3774,25 +3779,29 @@ body.lux-route-staff #staff-content .staff-hub-form-settings-head {
     flex-wrap: wrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-form-settings-copy {
+body.lux-route-staff #staff-content .staff-hub-form-settings-copy,
+body.lux-route-students-admin #students-content .students-hub-form-settings-copy{
     display: grid;
     gap: 4px;
     max-width: 760px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-form-settings-copy strong {
+body.lux-route-staff #staff-content .staff-hub-form-settings-copy strong,
+body.lux-route-students-admin #students-content .students-hub-form-settings-copy strong{
     font-size: 18px;
     line-height: 1.2;
 }
 
-body.lux-route-staff #staff-content .staff-hub-form-settings-copy p {
+body.lux-route-staff #staff-content .staff-hub-form-settings-copy p,
+body.lux-route-students-admin #students-content .students-hub-form-settings-copy p{
     margin: 6px 0 0;
     font-size: 13px;
     line-height: 1.55;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-layout {
+body.lux-route-staff #staff-content .staff-hub-builder-layout,
+body.lux-route-students-admin #students-content .students-hub-builder-layout{
     display: grid;
     grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
     gap: 16px;
@@ -3800,7 +3809,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-layout {
     align-items: stretch;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-rail {
+body.lux-route-staff #staff-content .staff-hub-builder-rail,
+body.lux-route-students-admin #students-content .students-hub-builder-rail{
     display: grid;
     gap: 14px;
     padding: 16px;
@@ -3812,19 +3822,22 @@ body.lux-route-staff #staff-content .staff-hub-builder-rail {
     overflow: hidden;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-rail-head {
+body.lux-route-staff #staff-content .staff-hub-builder-rail-head,
+body.lux-route-students-admin #students-content .students-hub-builder-rail-head{
     display: grid;
     gap: 4px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-rail-title-row {
+body.lux-route-staff #staff-content .staff-hub-builder-rail-title-row,
+body.lux-route-students-admin #students-content .students-hub-builder-rail-title-row{
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-rail-count {
+body.lux-route-staff #staff-content .staff-hub-builder-rail-count,
+body.lux-route-students-admin #students-content .students-hub-builder-rail-count{
     display: inline-flex;
     align-items: center;
     padding: 2px 8px;
@@ -3835,19 +3848,22 @@ body.lux-route-staff #staff-content .staff-hub-builder-rail-count {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-rail-head strong {
+body.lux-route-staff #staff-content .staff-hub-builder-rail-head strong,
+body.lux-route-students-admin #students-content .students-hub-builder-rail-head strong{
     font-size: 16px;
     line-height: 1.2;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-rail-head p {
+body.lux-route-staff #staff-content .staff-hub-builder-rail-head p,
+body.lux-route-students-admin #students-content .students-hub-builder-rail-head p{
     margin: 0;
     font-size: 12px;
     line-height: 1.45;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-list {
+body.lux-route-staff #staff-content .staff-hub-builder-type-list,
+body.lux-route-students-admin #students-content .students-hub-builder-type-list{
     display: grid;
     gap: 8px;
     overflow: auto;
@@ -3856,7 +3872,9 @@ body.lux-route-staff #staff-content .staff-hub-builder-type-list {
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-type,
-body.lux-route-staff #staff-content .staff-hub-builder-type-btn {
+body.lux-route-students-admin #students-content .students-hub-builder-type,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn,
+body.lux-route-students-admin #students-content .students-hub-builder-type-btn{
     width: 100%;
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -3871,18 +3889,23 @@ body.lux-route-staff #staff-content .staff-hub-builder-type-btn {
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-type:hover,
-body.lux-route-staff #staff-content .staff-hub-builder-type-btn:hover {
+body.lux-route-students-admin #students-content .students-hub-builder-type:hover,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn:hover,
+body.lux-route-students-admin #students-content .students-hub-builder-type-btn:hover{
     border-color: rgba(var(--lux-accent-rgb), 0.22);
     transform: translateY(-1px);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-type.is-active,
-body.lux-route-staff #staff-content .staff-hub-builder-type-btn.is-active {
+body.lux-route-students-admin #students-content .students-hub-builder-type.is-active,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn.is-active,
+body.lux-route-students-admin #students-content .students-hub-builder-type-btn.is-active{
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     box-shadow: var(--lux-hub-active-rail-shadow, var(--lux-elev-2));
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-icon {
+body.lux-route-staff #staff-content .staff-hub-builder-type-icon,
+body.lux-route-students-admin #students-content .students-hub-builder-type-icon{
     display: grid;
     place-items: center;
     width: 36px;
@@ -3893,19 +3916,22 @@ body.lux-route-staff #staff-content .staff-hub-builder-type-icon {
     font-size: 14px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-copy {
+body.lux-route-staff #staff-content .staff-hub-builder-type-copy,
+body.lux-route-students-admin #students-content .students-hub-builder-type-copy{
     display: grid;
     gap: 2px;
     min-width: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-label {
+body.lux-route-staff #staff-content .staff-hub-builder-type-label,
+body.lux-route-students-admin #students-content .students-hub-builder-type-label{
     font-size: 13px;
     font-weight: 800;
     line-height: 1.2;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-status {
+body.lux-route-staff #staff-content .staff-hub-builder-type-status,
+body.lux-route-students-admin #students-content .students-hub-builder-type-status{
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -3913,29 +3939,34 @@ body.lux-route-staff #staff-content .staff-hub-builder-type-status {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-status.is-locked i {
+body.lux-route-staff #staff-content .staff-hub-builder-type-status.is-locked i,
+body.lux-route-students-admin #students-content .students-hub-builder-type-status.is-locked i{
     color: rgba(var(--lux-accent-rgb), 0.55);
     font-size: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-status.is-editable i {
+body.lux-route-staff #staff-content .staff-hub-builder-type-status.is-editable i,
+body.lux-route-students-admin #students-content .students-hub-builder-type-status.is-editable i{
     color: rgba(var(--lux-accent-rgb), 0.75);
     font-size: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type-stats {
+body.lux-route-staff #staff-content .staff-hub-builder-type-stats,
+body.lux-route-students-admin #students-content .students-hub-builder-type-stats{
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.02em;
     color: rgba(var(--lux-accent-rgb), 0.82);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-add-type {
+body.lux-route-staff #staff-content .staff-hub-builder-add-type,
+body.lux-route-students-admin #students-content .students-hub-builder-add-type{
     width: 100%;
     justify-content: center;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas{
     --staff-builder-radius-panel: 16px;
     --staff-builder-gap-zone: 16px;
     --staff-builder-type-display: 18px;
@@ -3946,7 +3977,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-canvas {
     min-height: 420px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-head {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-head,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-head{
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -3956,32 +3988,37 @@ body.lux-route-staff #staff-content .staff-hub-builder-canvas-head {
     border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-copy{
     display: grid;
     gap: 4px;
     max-width: 560px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy strong {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy strong,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-copy strong{
     font-size: var(--staff-builder-type-display, 18px);
     line-height: 1.2;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy p {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy p,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-copy p{
     margin: 0;
     font-size: 13px;
     line-height: 1.5;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-stats {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-stats,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-stats{
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-stat-pill {
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill,
+body.lux-route-students-admin #students-content .students-hub-builder-stat-pill{
     display: inline-flex;
     align-items: center;
     padding: 3px 10px;
@@ -3993,40 +4030,48 @@ body.lux-route-staff #staff-content .staff-hub-builder-stat-pill {
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-input {
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-input,
+body.lux-route-students-admin #students-content .students-hub-builder-stat-pill.is-input{
     border-color: rgba(59, 130, 246, 0.28);
     background: rgba(59, 130, 246, 0.1);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-droplist {
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-droplist,
+body.lux-route-students-admin #students-content .students-hub-builder-stat-pill.is-droplist{
     border-color: rgba(16, 185, 129, 0.28);
     background: rgba(16, 185, 129, 0.1);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-canvas-actions,
-body.lux-route-staff #staff-content .staff-hub-builder-panel-actions {
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-actions,
+body.lux-route-staff #staff-content .staff-hub-builder-panel-actions,
+body.lux-route-students-admin #students-content .students-hub-builder-panel-actions{
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-toolbar {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-toolbar,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-toolbar{
     padding: 0 20px 14px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-body {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-body,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-body{
     padding: 0 20px 18px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-panel {
+body.lux-route-staff #staff-content .staff-hub-profile-panel,
+body.lux-route-students-admin #students-content .students-hub-profile-panel{
     display: grid;
     gap: 12px;
     padding: 14px 16px;
     border-radius: var(--staff-builder-radius-panel, 16px);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-panel-head {
+body.lux-route-staff #staff-content .staff-hub-profile-panel-head,
+body.lux-route-students-admin #students-content .students-hub-profile-panel-head{
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
@@ -4034,26 +4079,30 @@ body.lux-route-staff #staff-content .staff-hub-profile-panel-head {
     gap: 12px 16px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-panel-copy {
+body.lux-route-staff #staff-content .staff-hub-profile-panel-copy,
+body.lux-route-students-admin #students-content .students-hub-profile-panel-copy{
     display: grid;
     gap: 4px;
     min-width: min(100%, 320px);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-panel-title-row {
+body.lux-route-staff #staff-content .staff-hub-profile-panel-title-row,
+body.lux-route-students-admin #students-content .students-hub-profile-panel-title-row{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-count {
+body.lux-route-staff #staff-content .staff-hub-profile-count,
+body.lux-route-students-admin #students-content .students-hub-profile-count{
     font-size: 12px;
     font-weight: 800;
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-type-pill {
+body.lux-route-staff #staff-content .staff-hub-profile-type-pill,
+body.lux-route-students-admin #students-content .students-hub-profile-type-pill{
     display: inline-flex;
     align-items: center;
     padding: 4px 10px;
@@ -4067,19 +4116,22 @@ body.lux-route-staff #staff-content .staff-hub-profile-type-pill {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-panel-head p {
+body.lux-route-staff #staff-content .staff-hub-profile-panel-head p,
+body.lux-route-students-admin #students-content .students-hub-profile-panel-head p{
     margin: 0;
     font-size: 12px;
     color: var(--lux-text-muted);
     line-height: 1.45;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-add {
+body.lux-route-staff #staff-content .staff-hub-profile-add,
+body.lux-route-students-admin #students-content .students-hub-profile-add{
     min-height: 38px;
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-list-shell {
+body.lux-route-staff #staff-content .staff-hub-profile-list-shell,
+body.lux-route-students-admin #students-content .students-hub-profile-list-shell{
     display: grid;
     gap: 6px;
     padding: 10px;
@@ -4088,7 +4140,8 @@ body.lux-route-staff #staff-content .staff-hub-profile-list-shell {
     background: rgba(var(--lux-accent-rgb), 0.03);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-list-columns {
+body.lux-route-staff #staff-content .staff-hub-profile-list-columns,
+body.lux-route-students-admin #students-content .students-hub-profile-list-columns{
     display: grid;
     grid-template-columns: 36px 32px minmax(0, 1fr) 120px 36px;
     gap: 10px;
@@ -4101,7 +4154,8 @@ body.lux-route-staff #staff-content .staff-hub-profile-list-columns {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-list {
+body.lux-route-staff #staff-content .staff-hub-profile-list,
+body.lux-route-students-admin #students-content .students-hub-profile-list{
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -4111,7 +4165,8 @@ body.lux-route-staff #staff-content .staff-hub-profile-list {
     padding-right: 2px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-row {
+body.lux-route-staff #staff-content .staff-hub-profile-row,
+body.lux-route-students-admin #students-content .students-hub-profile-row{
     display: grid;
     grid-template-columns: 36px 32px minmax(0, 1fr) 120px 36px;
     gap: 10px;
@@ -4125,32 +4180,41 @@ body.lux-route-staff #staff-content .staff-hub-profile-row {
     transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-row:hover {
+body.lux-route-staff #staff-content .staff-hub-profile-row:hover,
+body.lux-route-students-admin #students-content .students-hub-profile-row:hover{
     background: var(--lux-hub-row-hover, rgba(var(--lux-accent-rgb), 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-row.is-active {
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-active,
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-active{
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     background: rgba(var(--lux-accent-rgb), 0.09);
     box-shadow: var(--lux-hub-active-row-shadow, var(--lux-elev-1));
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-row.is-new {
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-new,
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-new{
     border-color: rgba(var(--lux-accent-rgb), 0.44);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-row.is-incomplete.is-active {
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-incomplete.is-active,
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-incomplete.is-active{
     border-color: color-mix(in srgb, var(--lux-warning, #f59e0b) 38%, rgba(var(--lux-accent-rgb), 0.34));
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-row.is-dragging {
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-dragging,
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-dragging{
     opacity: 0.55;
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-before::before,
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-drop-before::before,
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-after::after,
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-drop-after::after,
 body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-before::before,
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-after::after {
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-drop-before::before,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-after::after,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-drop-after::after{
     content: "";
     position: absolute;
     left: 8px;
@@ -4163,17 +4227,23 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-after::a
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-before::before,
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-before::before {
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-drop-before::before,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-before::before,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-drop-before::before{
     top: -6px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-drop-after::after,
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-after::after {
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-drop-after::after,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-drop-after::after,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-drop-after::after{
     bottom: -6px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-drag,
-body.lux-route-staff #staff-content .staff-hub-studio-drag {
+body.lux-route-students-admin #students-content .students-hub-profile-drag,
+body.lux-route-staff #staff-content .staff-hub-studio-drag,
+body.lux-route-students-admin #students-content .students-hub-studio-drag{
     display: grid;
     place-items: center;
     width: 32px;
@@ -4189,11 +4259,14 @@ body.lux-route-staff #staff-content .staff-hub-studio-drag {
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-drag:active,
-body.lux-route-staff #staff-content .staff-hub-studio-drag:active {
+body.lux-route-students-admin #students-content .students-hub-profile-drag:active,
+body.lux-route-staff #staff-content .staff-hub-studio-drag:active,
+body.lux-route-students-admin #students-content .students-hub-studio-drag:active{
     cursor: grabbing;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-index {
+body.lux-route-staff #staff-content .staff-hub-profile-index,
+body.lux-route-students-admin #students-content .students-hub-profile-index{
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4208,7 +4281,8 @@ body.lux-route-staff #staff-content .staff-hub-profile-index {
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-identity {
+body.lux-route-staff #staff-content .staff-hub-profile-identity,
+body.lux-route-students-admin #students-content .students-hub-profile-identity{
     display: grid;
     grid-template-columns: 32px minmax(0, 1fr);
     gap: 10px;
@@ -4216,7 +4290,8 @@ body.lux-route-staff #staff-content .staff-hub-profile-identity {
     min-width: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-avatar {
+body.lux-route-staff #staff-content .staff-hub-profile-avatar,
+body.lux-route-students-admin #students-content .students-hub-profile-avatar{
     display: grid;
     place-items: center;
     width: 32px;
@@ -4229,11 +4304,13 @@ body.lux-route-staff #staff-content .staff-hub-profile-avatar {
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-identity-copy {
+body.lux-route-staff #staff-content .staff-hub-profile-identity-copy,
+body.lux-route-students-admin #students-content .students-hub-profile-identity-copy{
     min-width: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-status-chip {
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip,
+body.lux-route-students-admin #students-content .students-hub-profile-status-chip{
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4247,25 +4324,29 @@ body.lux-route-staff #staff-content .staff-hub-profile-status-chip {
     white-space: nowrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-empty {
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-empty,
+body.lux-route-students-admin #students-content .students-hub-profile-status-chip.is-empty{
     border-color: rgba(201, 138, 26, 0.28);
     background: rgba(201, 138, 26, 0.1);
     color: var(--lux-warning, #c98a1a);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-draft {
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-draft,
+body.lux-route-students-admin #students-content .students-hub-profile-status-chip.is-draft{
     border-color: rgba(var(--lux-accent-rgb), 0.22);
     background: rgba(var(--lux-accent-rgb), 0.1);
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-complete {
+body.lux-route-staff #staff-content .staff-hub-profile-status-chip.is-complete,
+body.lux-route-students-admin #students-content .students-hub-profile-status-chip.is-complete{
     border-color: rgba(34, 197, 94, 0.24);
     background: rgba(34, 197, 94, 0.1);
     color: #86efac;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-name-input {
+body.lux-route-staff #staff-content .staff-hub-profile-name-input,
+body.lux-route-students-admin #students-content .students-hub-profile-name-input{
     min-height: 36px;
     font-size: 13px;
     font-weight: 700;
@@ -4276,13 +4357,17 @@ body.lux-route-staff #staff-content .staff-hub-profile-name-input {
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row:hover .staff-hub-profile-name-input,
+body.lux-route-students-admin #students-content .students-hub-profile-row:hover .students-hub-profile-name-input,
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-active .staff-hub-profile-name-input,
-body.lux-route-staff #staff-content .staff-hub-profile-row:focus-within .staff-hub-profile-name-input {
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-active .students-hub-profile-name-input,
+body.lux-route-staff #staff-content .staff-hub-profile-row:focus-within .staff-hub-profile-name-input,
+body.lux-route-students-admin #students-content .students-hub-profile-row:focus-within .students-hub-profile-name-input{
     border-color: var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
     background: rgba(var(--lux-accent-rgb), 0.05);
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-remove {
+body.lux-route-staff #staff-content .staff-hub-profile-remove,
+body.lux-route-students-admin #students-content .students-hub-profile-remove{
     min-width: 36px;
     min-height: 36px;
     padding: 0;
@@ -4292,12 +4377,16 @@ body.lux-route-staff #staff-content .staff-hub-profile-remove {
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row:hover .staff-hub-profile-remove,
+body.lux-route-students-admin #students-content .students-hub-profile-row:hover .students-hub-profile-remove,
 body.lux-route-staff #staff-content .staff-hub-profile-row:focus-within .staff-hub-profile-remove,
-body.lux-route-staff #staff-content .staff-hub-profile-remove:focus-visible {
+body.lux-route-students-admin #students-content .students-hub-profile-row:focus-within .students-hub-profile-remove,
+body.lux-route-staff #staff-content .staff-hub-profile-remove:focus-visible,
+body.lux-route-students-admin #students-content .students-hub-profile-remove:focus-visible{
     opacity: 1;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-empty {
+body.lux-route-staff #staff-content .staff-hub-profile-empty,
+body.lux-route-students-admin #students-content .students-hub-profile-empty{
     margin: 0;
     padding: 20px 16px;
     border-radius: 12px;
@@ -4305,12 +4394,14 @@ body.lux-route-staff #staff-content .staff-hub-profile-empty {
 }
 
 @media (max-width: 960px) {
-    body.lux-route-staff #staff-content .staff-hub-profile-list {
+body.lux-route-staff #staff-content .staff-hub-profile-list,
+body.lux-route-students-admin #students-content .students-hub-profile-list{
         max-height: none;
     }
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-field-workspace {
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace,
+body.lux-route-students-admin #students-content .students-hub-section-field-workspace{
     display: grid;
     gap: 0;
     overflow: hidden;
@@ -4319,32 +4410,41 @@ body.lux-route-staff #staff-content .staff-hub-section-field-workspace {
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-canvas:has(.staff-hub-studio-type-popover[open]),
-body.lux-route-staff #staff-content .staff-hub-builder-canvas:has(.staff-hub-studio-field-menu[open]) {
+body.lux-route-students-admin #students-content .students-hub-builder-canvas:has(.students-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-builder-canvas:has(.staff-hub-studio-field-menu[open]),
+body.lux-route-students-admin #students-content .students-hub-builder-canvas:has(.students-hub-studio-field-menu[open]){
     overflow: visible;
     position: relative;
     z-index: 2;
 }
 
 body.lux-route-staff #staff-content .staff-hub-section-field-workspace:has(.staff-hub-studio-type-popover[open]),
-body.lux-route-staff #staff-content .staff-hub-section-field-workspace:has(.staff-hub-studio-field-menu[open]) {
+body.lux-route-students-admin #students-content .students-hub-section-field-workspace:has(.students-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace:has(.staff-hub-studio-field-menu[open]),
+body.lux-route-students-admin #students-content .students-hub-section-field-workspace:has(.students-hub-studio-field-menu[open]){
     overflow: visible;
     position: relative;
     z-index: 3;
 }
 
 body.lux-route-staff #staff-content .staff-hub-section-builder-fields:has(.staff-hub-studio-type-popover[open]),
-body.lux-route-staff #staff-content .staff-hub-section-builder-fields:has(.staff-hub-studio-field-menu[open]) {
+body.lux-route-students-admin #students-content .students-hub-section-builder-fields:has(.students-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-section-builder-fields:has(.staff-hub-studio-field-menu[open]),
+body.lux-route-students-admin #students-content .students-hub-section-builder-fields:has(.students-hub-studio-field-menu[open]){
     overflow: visible;
 }
 
 body.lux-route-staff #staff-content .staff-hub-section-field-workspace.is-empty,
-body.lux-route-staff #staff-content .staff-hub-field-workspace-empty {
+body.lux-route-students-admin #students-content .students-hub-section-field-workspace.is-empty,
+body.lux-route-staff #staff-content .staff-hub-field-workspace-empty,
+body.lux-route-students-admin #students-content .students-hub-field-workspace-empty{
     padding: 32px 24px;
     border: 1px dashed rgba(var(--lux-accent-rgb), 0.2);
     border-radius: var(--staff-builder-radius-panel, 16px);
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-field-workspace-head {
+body.lux-route-staff #staff-content .staff-hub-section-field-workspace-head,
+body.lux-route-students-admin #students-content .students-hub-section-field-workspace-head{
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px 16px;
@@ -4353,39 +4453,46 @@ body.lux-route-staff #staff-content .staff-hub-section-field-workspace-head {
     border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.1);
 }
 
-body.lux-route-staff #staff-content .staff-hub-workspace-head-copy {
+body.lux-route-staff #staff-content .staff-hub-workspace-head-copy,
+body.lux-route-students-admin #students-content .students-hub-workspace-head-copy{
     display: grid;
     gap: 4px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-workspace-head-context {
+body.lux-route-staff #staff-content .staff-hub-workspace-head-context,
+body.lux-route-students-admin #students-content .students-hub-workspace-head-context{
     margin: 0;
     font-size: 13px;
     font-weight: 700;
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-field-workspace-filter {
+body.lux-route-staff #staff-content .staff-hub-field-workspace-filter,
+body.lux-route-students-admin #students-content .students-hub-field-workspace-filter{
     align-self: center;
     font-size: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-field-add-rail {
+body.lux-route-staff #staff-content .staff-hub-field-add-rail,
+body.lux-route-students-admin #students-content .students-hub-field-add-rail{
     padding: 10px 16px;
     border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.08);
     background: rgba(var(--lux-accent-rgb), 0.04);
 }
 
-body.lux-route-staff #staff-content .staff-hub-field-add-hero {
+body.lux-route-staff #staff-content .staff-hub-field-add-hero,
+body.lux-route-students-admin #students-content .students-hub-field-add-hero{
     margin: 16px;
     border-radius: 14px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-fields.is-empty {
+body.lux-route-staff #staff-content .staff-hub-section-builder-fields.is-empty,
+body.lux-route-students-admin #students-content .students-hub-section-builder-fields.is-empty{
     padding: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-add-hint {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-add-hint,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-add-hint{
     margin: 0;
     font-size: 10px;
     font-weight: 600;
@@ -4394,34 +4501,40 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-nav-add-hint {
     text-align: center;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-list {
+body.lux-route-staff #staff-content .staff-hub-section-builder-list,
+body.lux-route-students-admin #students-content .students-hub-section-builder-list{
     display: grid;
     gap: 14px;
     padding: 0 20px 18px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-panel {
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel,
+body.lux-route-students-admin #students-content .students-hub-section-builder-panel{
     display: grid;
     gap: 0;
     overflow: hidden;
     border-radius: 16px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-new {
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-new,
+body.lux-route-students-admin #students-content .students-hub-section-builder-panel.is-new{
     border-color: rgba(var(--lux-accent-rgb), 0.42);
     background: rgba(var(--lux-accent-rgb), 0.08);
     box-shadow: var(--lux-hub-inset-ring-soft, var(--lux-elev-1));
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-incomplete {
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-incomplete,
+body.lux-route-students-admin #students-content .students-hub-section-builder-panel.is-incomplete{
     border-color: color-mix(in srgb, var(--lux-warning, #f59e0b) 35%, transparent);
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-filterable {
+body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-filterable,
+body.lux-route-students-admin #students-content .students-hub-section-builder-panel.is-filterable{
     border-color: color-mix(in srgb, var(--lux-accent-rgb) 28%, transparent);
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-head {
+body.lux-route-staff #staff-content .staff-hub-section-builder-head,
+body.lux-route-students-admin #students-content .students-hub-section-builder-head{
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     align-items: center;
@@ -4430,7 +4543,8 @@ body.lux-route-staff #staff-content .staff-hub-section-builder-head {
     border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.1);
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-index {
+body.lux-route-staff #staff-content .staff-hub-section-builder-index,
+body.lux-route-students-admin #students-content .students-hub-section-builder-index{
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4445,29 +4559,34 @@ body.lux-route-staff #staff-content .staff-hub-section-builder-index {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-title-wrap {
+body.lux-route-staff #staff-content .staff-hub-section-builder-title-wrap,
+body.lux-route-students-admin #students-content .students-hub-section-builder-title-wrap{
     display: grid;
     gap: 4px;
     min-width: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-title-input {
+body.lux-route-staff #staff-content .staff-hub-section-builder-title-input,
+body.lux-route-students-admin #students-content .students-hub-section-builder-title-input{
     font-size: 15px;
     font-weight: 800;
     min-height: 40px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-meta {
+body.lux-route-staff #staff-content .staff-hub-section-builder-meta,
+body.lux-route-students-admin #students-content .students-hub-section-builder-meta{
     font-size: 11px;
     font-weight: 700;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-filter-toggle {
+body.lux-route-staff #staff-content .staff-hub-section-builder-filter-toggle,
+body.lux-route-students-admin #students-content .students-hub-section-builder-filter-toggle{
     white-space: nowrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-actions {
+body.lux-route-staff #staff-content .staff-hub-section-builder-actions,
+body.lux-route-students-admin #students-content .students-hub-section-builder-actions{
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
@@ -4475,12 +4594,14 @@ body.lux-route-staff #staff-content .staff-hub-section-builder-actions {
     justify-content: flex-end;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-remove-btn {
+body.lux-route-staff #staff-content .staff-hub-section-builder-remove-btn,
+body.lux-route-students-admin #students-content .students-hub-section-builder-remove-btn{
     min-width: 88px;
     gap: 6px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-fields {
+body.lux-route-staff #staff-content .staff-hub-section-builder-fields,
+body.lux-route-students-admin #students-content .students-hub-section-builder-fields{
     display: grid;
     gap: 8px;
     padding: 12px 16px;
@@ -4489,7 +4610,8 @@ body.lux-route-staff #staff-content .staff-hub-section-builder-fields {
     overscroll-behavior: contain;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-empty {
+body.lux-route-staff #staff-content .staff-hub-section-builder-empty,
+body.lux-route-students-admin #students-content .students-hub-section-builder-empty{
     display: flex;
     align-items: center;
     gap: 8px;
@@ -4502,39 +4624,47 @@ body.lux-route-staff #staff-content .staff-hub-section-builder-empty {
     line-height: 1.4;
 }
 
-body.lux-route-staff #staff-content .staff-hub-section-builder-footer {
+body.lux-route-staff #staff-content .staff-hub-section-builder-footer,
+body.lux-route-students-admin #students-content .students-hub-section-builder-footer{
     padding: 10px 16px 14px;
     border-top: 1px solid rgba(var(--lux-accent-rgb), 0.08);
     background: rgba(var(--lux-accent-rgb), 0.03);
 }
 
 @media (max-width: 900px) {
-    body.lux-route-staff #staff-content .staff-hub-section-builder-head {
+body.lux-route-staff #staff-content .staff-hub-section-builder-head,
+body.lux-route-students-admin #students-content .students-hub-section-builder-head{
         grid-template-columns: auto minmax(0, 1fr);
     }
 
     body.lux-route-staff #staff-content .staff-hub-section-builder-filter-toggle,
-    body.lux-route-staff #staff-content .staff-hub-section-builder-actions {
+    body.lux-route-students-admin #students-content .students-hub-section-builder-filter-toggle,
+body.lux-route-staff #staff-content .staff-hub-section-builder-actions,
+body.lux-route-students-admin #students-content .students-hub-section-builder-actions{
         grid-column: 1 / -1;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-section-builder-actions {
+body.lux-route-staff #staff-content .staff-hub-section-builder-actions,
+body.lux-route-students-admin #students-content .students-hub-section-builder-actions{
         justify-content: flex-start;
     }
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-filter-group-toggle {
+body.lux-route-staff #staff-content .staff-hub-studio-filter-group-toggle,
+body.lux-route-students-admin #students-content .students-hub-studio-filter-group-toggle{
     flex: 1 1 100%;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-grid {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-grid,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-grid{
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
     padding: 18px 20px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card{
     display: grid;
     gap: 8px;
     min-height: 188px;
@@ -4544,7 +4674,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-launch-card {
     text-align: left;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-actions {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-actions,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-actions{
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -4553,36 +4684,43 @@ body.lux-route-staff #staff-content .staff-hub-builder-launch-actions {
     padding-top: 4px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-input .staff-hub-builder-launch-icon {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-input .staff-hub-builder-launch-icon,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card.is-input .students-hub-builder-launch-icon{
     background: rgba(59, 130, 246, 0.14);
     color: rgba(59, 130, 246, 0.95);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-droplist .staff-hub-builder-launch-icon {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-droplist .staff-hub-builder-launch-icon,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card.is-droplist .students-hub-builder-launch-icon{
     background: rgba(16, 185, 129, 0.14);
     color: rgba(16, 185, 129, 0.95);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-empty {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-empty,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card.is-empty{
     border-style: dashed;
     opacity: 0.96;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-incomplete {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-incomplete,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card.is-incomplete{
     border-color: rgba(201, 138, 26, 0.34);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-hint.is-warning {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-hint.is-warning,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-hint.is-warning{
     color: var(--lux-warning, #c98a1a);
     font-weight: 700;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-warning {
+body.lux-route-staff #staff-content .staff-hub-builder-stat-pill.is-warning,
+body.lux-route-students-admin #students-content .students-hub-builder-stat-pill.is-warning{
     border-color: rgba(201, 138, 26, 0.34);
     color: var(--lux-warning, #c98a1a);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-empty.is-blocking {
+body.lux-route-staff #staff-content .staff-hub-studio-field-empty.is-blocking,
+body.lux-route-students-admin #students-content .students-hub-studio-field-empty.is-blocking{
     display: flex;
     align-items: flex-start;
     gap: 8px;
@@ -4596,13 +4734,15 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-empty.is-blocking {
     line-height: 1.45;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-hint {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-hint,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-hint{
     font-size: 11px;
     line-height: 1.4;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-footer {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-footer,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-footer{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -4611,7 +4751,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-launch-footer {
     flex-wrap: wrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-cta {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-cta,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-cta{
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -4620,11 +4761,13 @@ body.lux-route-staff #staff-content .staff-hub-builder-launch-cta {
     color: rgba(var(--lux-accent-rgb), 0.92);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-empty .staff-hub-builder-launch-cta {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-empty .staff-hub-builder-launch-cta,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card.is-empty .students-hub-builder-launch-cta{
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-icon {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-icon,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-icon{
     display: grid;
     place-items: center;
     width: 42px;
@@ -4635,19 +4778,22 @@ body.lux-route-staff #staff-content .staff-hub-builder-launch-icon {
     font-size: 16px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card strong {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card strong,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card strong{
     font-size: 15px;
     line-height: 1.25;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-card p {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-card p,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-card p{
     margin: 0;
     font-size: 12px;
     line-height: 1.45;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-stat {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-stat,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-stat{
     display: inline-flex;
     padding: 4px 10px;
     border-radius: 999px;
@@ -4659,32 +4805,38 @@ body.lux-route-staff #staff-content .staff-hub-builder-launch-stat {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-launch-stat.is-populated {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-stat.is-populated,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-stat.is-populated{
     border-color: rgba(var(--lux-accent-rgb), 0.28);
     background: rgba(var(--lux-accent-rgb), 0.12);
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas-footer {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas-footer,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas-footer{
     border-top: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-details {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-details,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-details{
     padding: 0;
 }
 
 @media (min-width: 901px) {
-    body.lux-route-staff #staff-content .staff-hub-copy-bar-details .staff-hub-copy-bar {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-details .staff-hub-copy-bar,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-details .students-hub-copy-bar{
         display: grid !important;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-copy-bar-summary {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-summary,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-summary{
         pointer-events: none;
         cursor: default;
     }
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-summary {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-summary,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-summary{
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -4693,36 +4845,42 @@ body.lux-route-staff #staff-content .staff-hub-copy-bar-summary {
     list-style: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-summary::-webkit-details-marker {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-summary::-webkit-details-marker,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-summary::-webkit-details-marker{
     display: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-summary strong {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-summary strong,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-summary strong{
     font-size: 14px;
     line-height: 1.25;
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar {
+body.lux-route-staff #staff-content .staff-hub-copy-bar,
+body.lux-route-students-admin #students-content .students-hub-copy-bar{
     display: grid;
     gap: 12px;
     padding: 0 20px 16px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-helper {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-helper,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-helper{
     margin: 0;
     font-size: 12px;
     line-height: 1.45;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-controls {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-controls,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-controls{
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     align-items: end;
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-toggles {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-toggles,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-toggles{
     display: inline-flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -4731,18 +4889,21 @@ body.lux-route-staff #staff-content .staff-hub-copy-bar-toggles {
     border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-copy-bar-action {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-action,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-action{
     margin-left: auto;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-panel {
+body.lux-route-staff #staff-content .staff-hub-builder-panel,
+body.lux-route-students-admin #students-content .students-hub-builder-panel{
     display: grid;
     gap: 14px;
     padding: 18px 20px;
     min-height: 100%;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-panel-head {
+body.lux-route-staff #staff-content .staff-hub-builder-panel-head,
+body.lux-route-students-admin #students-content .students-hub-builder-panel-head{
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -4750,19 +4911,22 @@ body.lux-route-staff #staff-content .staff-hub-builder-panel-head {
     flex-wrap: wrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-list {
+body.lux-route-staff #staff-content .staff-hub-builder-section-list,
+body.lux-route-students-admin #students-content .students-hub-builder-section-list{
     display: grid;
     gap: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-card {
+body.lux-route-staff #staff-content .staff-hub-builder-section-card,
+body.lux-route-students-admin #students-content .students-hub-builder-section-card{
     display: grid;
     gap: 10px;
     padding: 14px;
     border-radius: 14px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb {
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb,
+body.lux-route-students-admin #students-content .students-hub-builder-breadcrumb{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -4772,7 +4936,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb {
     font-size: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link {
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link,
+body.lux-route-students-admin #students-content .students-hub-builder-breadcrumb-link{
     border: 0;
     background: transparent;
     color: rgba(var(--lux-accent-rgb), 0.9);
@@ -4783,42 +4948,51 @@ body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link {
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link:hover,
-body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link:focus-visible {
+body.lux-route-students-admin #students-content .students-hub-builder-breadcrumb-link:hover,
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-link:focus-visible,
+body.lux-route-students-admin #students-content .students-hub-builder-breadcrumb-link:focus-visible{
     text-decoration: underline;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-sep {
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-sep,
+body.lux-route-students-admin #students-content .students-hub-builder-breadcrumb-sep{
     color: var(--lux-text-muted);
     opacity: 0.7;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-current {
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-current,
+body.lux-route-students-admin #students-content .students-hub-builder-breadcrumb-current{
     color: var(--lux-text-muted);
     font-weight: 700;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-current.is-terminal {
+body.lux-route-staff #staff-content .staff-hub-builder-breadcrumb-current.is-terminal,
+body.lux-route-students-admin #students-content .students-hub-builder-breadcrumb-current.is-terminal{
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-inline-field {
+body.lux-route-staff #staff-content .staff-hub-builder-inline-field,
+body.lux-route-students-admin #students-content .students-hub-builder-inline-field{
     display: grid;
     gap: 4px;
     min-width: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-inline-field > span {
+body.lux-route-staff #staff-content .staff-hub-builder-inline-field > span,
+body.lux-route-students-admin #students-content .students-hub-builder-inline-field > span{
     font-size: 11px;
     font-weight: 700;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-inline-field.is-title input {
+body.lux-route-staff #staff-content .staff-hub-builder-inline-field.is-title input,
+body.lux-route-students-admin #students-content .students-hub-builder-inline-field.is-title input{
     font-size: 15px;
     font-weight: 800;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-check {
+body.lux-route-staff #staff-content .staff-hub-builder-check,
+body.lux-route-students-admin #students-content .students-hub-builder-check{
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -4829,11 +5003,13 @@ body.lux-route-staff #staff-content .staff-hub-builder-check {
     white-space: nowrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-check input {
+body.lux-route-staff #staff-content .staff-hub-builder-check input,
+body.lux-route-students-admin #students-content .students-hub-builder-check input{
     accent-color: rgba(var(--lux-accent-rgb), 0.9);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-head {
+body.lux-route-staff #staff-content .staff-hub-builder-section-head,
+body.lux-route-students-admin #students-content .students-hub-builder-section-head{
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -4841,21 +5017,24 @@ body.lux-route-staff #staff-content .staff-hub-builder-section-head {
     flex-wrap: wrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-copy {
+body.lux-route-staff #staff-content .staff-hub-builder-section-copy,
+body.lux-route-students-admin #students-content .students-hub-builder-section-copy{
     display: grid;
     gap: 10px;
     flex: 1;
     min-width: 220px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-title-row {
+body.lux-route-staff #staff-content .staff-hub-builder-section-title-row,
+body.lux-route-students-admin #students-content .students-hub-builder-section-title-row{
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-badge {
+body.lux-route-staff #staff-content .staff-hub-builder-section-badge,
+body.lux-route-students-admin #students-content .students-hub-builder-section-badge{
     display: inline-flex;
     align-items: center;
     padding: 3px 10px;
@@ -4867,42 +5046,49 @@ body.lux-route-staff #staff-content .staff-hub-builder-section-badge {
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-actions {
+body.lux-route-staff #staff-content .staff-hub-builder-section-actions,
+body.lux-route-students-admin #students-content .students-hub-builder-section-actions{
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
     align-items: center;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle {
+body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle,
+body.lux-route-students-admin #students-content .students-hub-builder-section-desc-toggle{
     font-size: 12px;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle summary {
+body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle summary,
+body.lux-route-students-admin #students-content .students-hub-builder-section-desc-toggle summary{
     cursor: pointer;
     font-weight: 700;
     color: rgba(var(--lux-accent-rgb), 0.88);
     list-style: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle summary::-webkit-details-marker {
+body.lux-route-staff #staff-content .staff-hub-builder-section-desc-toggle summary::-webkit-details-marker,
+body.lux-route-students-admin #students-content .students-hub-builder-section-desc-toggle summary::-webkit-details-marker{
     display: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-list {
+body.lux-route-staff #staff-content .staff-hub-builder-field-list,
+body.lux-route-students-admin #students-content .students-hub-builder-field-list{
     display: grid;
     gap: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-row {
+body.lux-route-staff #staff-content .staff-hub-builder-field-row,
+body.lux-route-students-admin #students-content .students-hub-builder-field-row{
     display: grid;
     gap: 12px;
     padding: 12px;
     border-radius: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-head {
+body.lux-route-staff #staff-content .staff-hub-builder-field-head,
+body.lux-route-students-admin #students-content .students-hub-builder-field-head{
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -4912,23 +5098,27 @@ body.lux-route-staff #staff-content .staff-hub-builder-field-head {
     border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-head-copy {
+body.lux-route-staff #staff-content .staff-hub-builder-field-head-copy,
+body.lux-route-students-admin #students-content .students-hub-builder-field-head-copy{
     display: grid;
     gap: 2px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-head-copy strong {
+body.lux-route-staff #staff-content .staff-hub-builder-field-head-copy strong,
+body.lux-route-students-admin #students-content .students-hub-builder-field-head-copy strong{
     font-size: 14px;
     line-height: 1.25;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-head-badges {
+body.lux-route-staff #staff-content .staff-hub-builder-field-head-badges,
+body.lux-route-students-admin #students-content .students-hub-builder-field-head-badges{
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-badge {
+body.lux-route-staff #staff-content .staff-hub-builder-field-badge,
+body.lux-route-students-admin #students-content .students-hub-builder-field-badge{
     display: inline-flex;
     align-items: center;
     padding: 2px 8px;
@@ -4939,26 +5129,30 @@ body.lux-route-staff #staff-content .staff-hub-builder-field-badge {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-badge.is-type {
+body.lux-route-staff #staff-content .staff-hub-builder-field-badge.is-type,
+body.lux-route-students-admin #students-content .students-hub-builder-field-badge.is-type{
     border-color: rgba(var(--lux-accent-rgb), 0.22);
     background: rgba(var(--lux-accent-rgb), 0.08);
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-badge.is-required {
+body.lux-route-staff #staff-content .staff-hub-builder-field-badge.is-required,
+body.lux-route-students-admin #students-content .students-hub-builder-field-badge.is-required{
     border-color: rgba(239, 68, 68, 0.28);
     background: rgba(239, 68, 68, 0.1);
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-grid {
+body.lux-route-staff #staff-content .staff-hub-builder-field-grid,
+body.lux-route-students-admin #students-content .students-hub-builder-field-grid{
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     align-items: end;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-field-actions {
+body.lux-route-staff #staff-content .staff-hub-builder-field-actions,
+body.lux-route-students-admin #students-content .students-hub-builder-field-actions{
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
@@ -4966,17 +5160,20 @@ body.lux-route-staff #staff-content .staff-hub-builder-field-actions {
     justify-content: flex-end;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-add-field {
+body.lux-route-staff #staff-content .staff-hub-builder-add-field,
+body.lux-route-students-admin #students-content .students-hub-builder-add-field{
     justify-self: start;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-options-editor {
+body.lux-route-staff #staff-content .staff-hub-builder-options-editor,
+body.lux-route-students-admin #students-content .students-hub-builder-options-editor{
     display: grid;
     gap: 8px;
     padding-top: 4px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-options-head {
+body.lux-route-staff #staff-content .staff-hub-builder-options-head,
+body.lux-route-students-admin #students-content .students-hub-builder-options-head{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -4984,7 +5181,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-options-head {
     flex-wrap: wrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-option-table {
+body.lux-route-staff #staff-content .staff-hub-builder-option-table,
+body.lux-route-students-admin #students-content .students-hub-builder-option-table{
     display: grid;
     gap: 0;
     border-radius: 10px;
@@ -4992,7 +5190,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-option-table {
     border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-option-row {
+body.lux-route-staff #staff-content .staff-hub-builder-option-row,
+body.lux-route-students-admin #students-content .students-hub-builder-option-row{
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
     gap: 8px;
@@ -5000,7 +5199,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-option-row {
     padding: 8px 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-header {
+body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-header,
+body.lux-route-students-admin #students-content .students-hub-builder-option-row.is-header{
     background: rgba(var(--lux-accent-rgb), 0.06);
     font-size: 10px;
     font-weight: 800;
@@ -5009,11 +5209,13 @@ body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-header {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-alt {
+body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-alt,
+body.lux-route-students-admin #students-content .students-hub-builder-option-row.is-alt{
     background: rgba(var(--lux-accent-rgb), 0.03);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-options-empty {
+body.lux-route-staff #staff-content .staff-hub-builder-options-empty,
+body.lux-route-students-admin #students-content .students-hub-builder-options-empty{
     display: grid;
     justify-items: center;
     gap: 10px;
@@ -5021,14 +5223,17 @@ body.lux-route-staff #staff-content .staff-hub-builder-options-empty {
     text-align: center;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-options-empty p {
+body.lux-route-staff #staff-content .staff-hub-builder-options-empty p,
+body.lux-route-students-admin #students-content .students-hub-builder-options-empty p{
     margin: 0;
     font-size: 12px;
     color: var(--lux-text-muted);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-empty,
-body.lux-route-staff #staff-content .staff-hub-builder-empty-state {
+body.lux-route-students-admin #students-content .students-hub-builder-empty,
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state,
+body.lux-route-students-admin #students-content .students-hub-builder-empty-state{
     display: grid;
     justify-items: center;
     gap: 10px;
@@ -5037,31 +5242,36 @@ body.lux-route-staff #staff-content .staff-hub-builder-empty-state {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-empty.is-inline {
+body.lux-route-staff #staff-content .staff-hub-builder-empty.is-inline,
+body.lux-route-students-admin #students-content .students-hub-builder-empty.is-inline{
     padding: 20px 16px;
     border-radius: 10px;
     border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-empty-state.is-panel {
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state.is-panel,
+body.lux-route-students-admin #students-content .students-hub-builder-empty-state.is-panel{
     padding: 36px 24px;
     border-radius: 14px;
     border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-empty-state strong {
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state strong,
+body.lux-route-students-admin #students-content .students-hub-builder-empty-state strong{
     font-size: 15px;
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-empty-state p {
+body.lux-route-staff #staff-content .staff-hub-builder-empty-state p,
+body.lux-route-students-admin #students-content .students-hub-builder-empty-state p{
     margin: 0;
     max-width: 320px;
     font-size: 12px;
     line-height: 1.45;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-empty-icon {
+body.lux-route-staff #staff-content .staff-hub-builder-empty-icon,
+body.lux-route-students-admin #students-content .students-hub-builder-empty-icon{
     display: grid;
     place-items: center;
     width: 48px;
@@ -5073,7 +5283,9 @@ body.lux-route-staff #staff-content .staff-hub-builder-empty-icon {
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-schema-empty,
-body.lux-route-staff #staff-content .staff-hub-schema-empty {
+body.lux-route-students-admin #students-admin-modal-root .students-hub-schema-empty,
+body.lux-route-staff #staff-content .staff-hub-schema-empty,
+body.lux-route-students-admin #students-content .students-hub-schema-empty{
     display: grid;
     justify-items: center;
     gap: 10px;
@@ -5082,72 +5294,89 @@ body.lux-route-staff #staff-content .staff-hub-schema-empty {
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-full,
-body.lux-route-staff #staff-content .staff-hub-field.is-full {
+body.lux-route-students-admin #students-admin-modal-root .students-hub-field.is-full,
+body.lux-route-staff #staff-content .staff-hub-field.is-full,
+body.lux-route-students-admin #students-content .students-hub-field.is-full{
     grid-column: 1 / -1;
 }
 
-body.lux-route-staff #staff-content .staff-hub-register-actions {
+body.lux-route-staff #staff-content .staff-hub-register-actions,
+body.lux-route-students-admin #students-content .students-hub-register-actions{
     flex-wrap: wrap;
 }
 
 @media (max-width: 900px) {
     body.lux-route-staff #staff-content .staff-hub-builder-layout,
-    body.lux-route-staff #staff-content .staff-hub-builder-launch-grid {
+    body.lux-route-students-admin #students-content .students-hub-builder-layout,
+body.lux-route-staff #staff-content .staff-hub-builder-launch-grid,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-grid{
         grid-template-columns: 1fr;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-builder-rail {
+body.lux-route-staff #staff-content .staff-hub-builder-rail,
+body.lux-route-students-admin #students-content .students-hub-builder-rail{
         position: static;
         max-height: none;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-copy-bar-details:not([open]) .staff-hub-copy-bar {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-details:not([open]) .staff-hub-copy-bar,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-details:not([open]) .students-hub-copy-bar{
         display: none;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-copy-bar-controls {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-controls,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-controls{
         flex-direction: column;
         align-items: stretch;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-copy-bar-action {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-action,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-action{
         margin-left: 0;
         width: 100%;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-copy-bar-toggles {
+body.lux-route-staff #staff-content .staff-hub-copy-bar-toggles,
+body.lux-route-students-admin #students-content .students-hub-copy-bar-toggles{
         width: 100%;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-builder-field-grid {
+body.lux-route-staff #staff-content .staff-hub-builder-field-grid,
+body.lux-route-students-admin #students-content .students-hub-builder-field-grid{
         grid-template-columns: 1fr;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-builder-option-row {
+body.lux-route-staff #staff-content .staff-hub-builder-option-row,
+body.lux-route-students-admin #students-content .students-hub-builder-option-row{
         grid-template-columns: 1fr;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-header {
+body.lux-route-staff #staff-content .staff-hub-builder-option-row.is-header,
+body.lux-route-students-admin #students-content .students-hub-builder-option-row.is-header{
         display: none;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-builder-launch-footer {
+body.lux-route-staff #staff-content .staff-hub-builder-launch-footer,
+body.lux-route-students-admin #students-content .students-hub-builder-launch-footer{
         flex-direction: column;
         align-items: flex-start;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-layout {
+body.lux-route-staff #staff-content .staff-hub-studio-layout,
+body.lux-route-students-admin #students-content .students-hub-studio-layout{
         grid-template-columns: 1fr;
         grid-template-rows: minmax(0, 1fr) minmax(0, auto);
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap:not([open]) .staff-hub-studio-preview {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap:not([open]) .staff-hub-studio-preview,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-wrap:not([open]) .students-hub-studio-preview{
         display: none;
     }
 }
 
 /* Form studio */
-body.lux-route-staff #staff-content .staff-hub-form-studio {
+body.lux-route-staff #staff-content .staff-hub-form-studio,
+body.lux-route-students-admin #students-content .students-hub-form-studio{
     --staff-studio-chrome-offset: 420px;
     --staff-studio-workspace-height: clamp(
         380px,
@@ -5169,7 +5398,8 @@ body.lux-route-staff #staff-content .staff-hub-form-studio :is(
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-overview-hero {
+body.lux-route-staff #staff-content .staff-hub-builder-overview-hero,
+body.lux-route-students-admin #students-content .students-hub-builder-overview-hero{
     display: grid;
     justify-items: center;
     gap: 10px;
@@ -5180,7 +5410,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-overview-hero {
     border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-overview-hero p {
+body.lux-route-staff #staff-content .staff-hub-builder-overview-hero p,
+body.lux-route-students-admin #students-content .students-hub-builder-overview-hero p{
     margin: 0;
     max-width: 420px;
     font-size: 13px;
@@ -5188,7 +5419,8 @@ body.lux-route-staff #staff-content .staff-hub-builder-overview-hero p {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-form-studio .staff-hub-studio-head {
+body.lux-route-staff #staff-content .staff-hub-form-studio .staff-hub-studio-head,
+body.lux-route-students-admin #students-content .students-hub-form-studio .students-hub-studio-head{
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -5198,7 +5430,8 @@ body.lux-route-staff #staff-content .staff-hub-form-studio .staff-hub-studio-hea
     border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-save-bar {
+body.lux-route-staff #staff-content .staff-hub-studio-save-bar,
+body.lux-route-students-admin #students-content .students-hub-studio-save-bar{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -5209,28 +5442,33 @@ body.lux-route-staff #staff-content .staff-hub-studio-save-bar {
     background: rgba(var(--lux-accent-rgb), 0.04);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-save-status {
+body.lux-route-staff #staff-content .staff-hub-studio-save-status,
+body.lux-route-students-admin #students-content .students-hub-studio-save-status{
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.02em;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-save-status.is-dirty {
+body.lux-route-staff #staff-content .staff-hub-studio-save-status.is-dirty,
+body.lux-route-students-admin #students-content .students-hub-studio-save-status.is-dirty{
     color: var(--lux-warning, #c98a1a);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-save-status.is-clean {
+body.lux-route-staff #staff-content .staff-hub-studio-save-status.is-clean,
+body.lux-route-students-admin #students-content .students-hub-studio-save-status.is-clean{
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-tabs {
+body.lux-route-staff #staff-content .staff-hub-studio-tabs,
+body.lux-route-students-admin #students-content .students-hub-studio-tabs{
     display: flex;
     gap: 6px;
     padding: 8px 16px;
     border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-tab {
+body.lux-route-staff #staff-content .staff-hub-studio-tab,
+body.lux-route-students-admin #students-content .students-hub-studio-tab{
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -5244,13 +5482,15 @@ body.lux-route-staff #staff-content .staff-hub-studio-tab {
     cursor: pointer;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-tab.is-active {
+body.lux-route-staff #staff-content .staff-hub-studio-tab.is-active,
+body.lux-route-students-admin #students-content .students-hub-studio-tab.is-active{
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     background: rgba(var(--lux-accent-rgb), 0.12);
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-layout {
+body.lux-route-staff #staff-content .staff-hub-studio-layout,
+body.lux-route-students-admin #students-content .students-hub-studio-layout{
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(260px, 300px);
     gap: 0;
@@ -5262,7 +5502,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-layout {
     align-items: stretch;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-layout > .staff-hub-studio-preview-wrap {
+body.lux-route-staff #staff-content .staff-hub-studio-layout > .staff-hub-studio-preview-wrap,
+body.lux-route-students-admin #students-content .students-hub-studio-layout > .students-hub-studio-preview-wrap{
     min-height: 0;
     height: 100%;
     max-height: 100%;
@@ -5270,11 +5511,13 @@ body.lux-route-staff #staff-content .staff-hub-studio-layout > .staff-hub-studio
     align-self: stretch;
 }
 
-body.lux-route-staff #staff-content .staff-hub-form-studio.is-preview-only {
+body.lux-route-staff #staff-content .staff-hub-form-studio.is-preview-only,
+body.lux-route-students-admin #students-content .students-hub-form-studio.is-preview-only{
     --staff-studio-chrome-offset: 220px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only {
+body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only,
+body.lux-route-students-admin #students-content .students-hub-studio-layout.is-preview-only{
     display: flex;
     flex-direction: column;
     grid-template-columns: none;
@@ -5282,20 +5525,23 @@ body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only {
     height: var(--staff-studio-workspace-height);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only > .staff-hub-studio-preview {
+body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only > .staff-hub-studio-preview,
+body.lux-route-students-admin #students-content .students-hub-studio-layout.is-preview-only > .students-hub-studio-preview{
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only .staff-hub-studio-preview-body {
+body.lux-route-staff #staff-content .staff-hub-studio-layout.is-preview-only .staff-hub-studio-preview-body,
+body.lux-route-students-admin #students-content .students-hub-studio-layout.is-preview-only .students-hub-studio-preview-body{
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-editor {
+body.lux-route-staff #staff-content .staff-hub-studio-editor,
+body.lux-route-students-admin #students-content .students-hub-studio-editor{
     padding: 0;
     border-right: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
     overflow: hidden;
@@ -5306,7 +5552,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-editor {
     flex-direction: column;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-editor-layout {
+body.lux-route-staff #staff-content .staff-hub-studio-editor-layout,
+body.lux-route-students-admin #students-content .students-hub-studio-editor-layout{
     display: grid;
     grid-template-columns: minmax(176px, 192px) minmax(0, 1fr);
     flex: 1 1 auto;
@@ -5314,7 +5561,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-editor-layout {
     height: 100%;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav{
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
     gap: 10px;
@@ -5324,12 +5572,14 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-nav {
     min-height: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-search {
+body.lux-route-staff #staff-content .staff-hub-studio-step-search,
+body.lux-route-students-admin #students-content .students-hub-studio-step-search{
     display: grid;
     gap: 6px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-search-label {
+body.lux-route-staff #staff-content .staff-hub-studio-step-search-label,
+body.lux-route-students-admin #students-content .students-hub-studio-step-search-label{
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.04em;
@@ -5337,7 +5587,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-search-label {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-list {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-list,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-list{
     --staff-studio-step-visible-count: 5;
     --staff-studio-step-item-height: 52px;
     --staff-studio-step-gap: 6px;
@@ -5351,7 +5602,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-nav-list {
     scrollbar-width: thin;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-item{
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
@@ -5367,26 +5619,31 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item {
     transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item:hover {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item:hover,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-item:hover{
     border-color: rgba(var(--lux-accent-rgb), 0.24);
     background: rgba(var(--lux-accent-rgb), 0.06);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-active {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-active,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-item.is-active{
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     background: rgba(var(--lux-accent-rgb), 0.12);
     box-shadow: var(--lux-hub-inset-ring, var(--lux-elev-1));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-incomplete {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-incomplete,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-item.is-incomplete{
     border-color: rgba(201, 138, 26, 0.28);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-filtered-out {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-filtered-out,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-item.is-filtered-out{
     display: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-badge {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-badge,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-badge{
     padding: 3px 8px;
     border-radius: 999px;
     border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
@@ -5396,13 +5653,15 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-nav-badge {
     white-space: nowrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-copy {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-copy,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-copy{
     display: grid;
     gap: 2px;
     min-width: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-title {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-title,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-title{
     font-size: 12px;
     font-weight: 800;
     min-width: 0;
@@ -5411,23 +5670,27 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-nav-title {
     white-space: nowrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-meta {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-meta,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-meta{
     font-size: 10px;
     color: var(--lux-text-muted);
     font-weight: 700;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-warning {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-warning,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-warning{
     color: var(--lux-warning, #c98a1a);
     font-size: 11px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-nav-add {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-add,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-add{
     width: 100%;
     justify-content: center;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-detail-wrap {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-wrap,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail-wrap{
     min-width: 0;
     min-height: 0;
     overflow: visible;
@@ -5436,7 +5699,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-detail-wrap {
     flex-direction: column;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-detail {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail{
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -5445,7 +5709,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-detail {
     overflow: visible;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-detail-scroll {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-scroll,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail-scroll{
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
@@ -5454,7 +5719,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-detail-scroll {
     scrollbar-width: thin;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail-sticky{
     position: sticky;
     top: 0;
     z-index: 4;
@@ -5471,7 +5737,9 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky {
 }
 
 body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky {
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-studio-step-detail-sticky,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-studio-step-detail-sticky,
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-studio-step-detail-sticky{
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0.98) 0%,
@@ -5480,35 +5748,41 @@ html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-studio-step-d
     );
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-detail-head {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-head,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail-head{
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-step-detail-head strong {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail-head strong,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail-head strong{
     font-size: 15px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-section-toolbar {
+body.lux-route-staff #staff-content .staff-hub-studio-section-toolbar,
+body.lux-route-students-admin #students-content .students-hub-studio-section-toolbar{
     display: grid;
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-section-actions {
+body.lux-route-staff #staff-content .staff-hub-studio-section-actions,
+body.lux-route-students-admin #students-content .students-hub-studio-section-actions{
     display: flex;
     gap: 6px;
     justify-content: flex-end;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-list {
+body.lux-route-staff #staff-content .staff-hub-studio-field-list,
+body.lux-route-students-admin #students-content .students-hub-studio-field-list{
     display: grid;
     gap: 8px;
     overflow: visible;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-row {
+body.lux-route-staff #staff-content .staff-hub-studio-field-row,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row{
     display: grid;
     gap: 8px;
     padding: 10px;
@@ -5518,46 +5792,56 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-row {
     position: relative;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-dragging {
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-dragging,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-dragging{
     opacity: 0.55;
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-step-detail:has(.staff-hub-studio-type-popover[open]),
-body.lux-route-staff #staff-content .staff-hub-studio-step-detail:has(.staff-hub-studio-field-menu[open]) {
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail:has(.students-hub-studio-type-popover[open]),
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail:has(.staff-hub-studio-field-menu[open]),
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail:has(.students-hub-studio-field-menu[open]){
     position: relative;
     z-index: 12;
     overflow: visible;
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-type-menu-open,
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-field-menu-open {
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-type-menu-open,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-field-menu-open,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-field-menu-open{
     position: relative;
     z-index: 25;
     overflow: visible;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-required {
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-required,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-required{
     border-color: rgba(239, 68, 68, 0.22);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-main {
+body.lux-route-staff #staff-content .staff-hub-studio-field-main,
+body.lux-route-students-admin #students-content .students-hub-studio-field-main{
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) minmax(128px, auto) auto auto auto;
     align-items: center;
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-remove-btn {
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-btn,
+body.lux-route-students-admin #students-content .students-hub-studio-field-remove-btn{
     min-width: 32px;
     padding-inline: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-remove-pending {
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-remove-pending,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-remove-pending{
     border-color: rgba(201, 138, 26, 0.42);
     box-shadow: var(--lux-hub-warn-inset-ring, var(--lux-elev-1));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm {
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm,
+body.lux-route-students-admin #students-content .students-hub-studio-field-remove-confirm{
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -5573,31 +5857,37 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm {
     line-height: 1.45;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-remove-actions {
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-actions,
+body.lux-route-students-admin #students-content .students-hub-studio-field-remove-actions{
     display: inline-flex;
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-label-input {
+body.lux-route-staff #staff-content .staff-hub-studio-label-input,
+body.lux-route-students-admin #students-content .students-hub-studio-label-input{
     min-width: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-popover {
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover,
+body.lux-route-students-admin #students-content .students-hub-studio-type-popover{
     position: relative;
     min-width: 128px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] {
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open],
+body.lux-route-students-admin #students-content .students-hub-studio-type-popover[open]{
     z-index: 24;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-popover summary::-webkit-details-marker {
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover summary::-webkit-details-marker,
+body.lux-route-students-admin #students-content .students-hub-studio-type-popover summary::-webkit-details-marker{
     display: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-trigger {
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger,
+body.lux-route-students-admin #students-content .students-hub-studio-type-trigger{
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -5614,13 +5904,16 @@ body.lux-route-staff #staff-content .staff-hub-studio-type-trigger {
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-type-trigger:hover,
-body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] .staff-hub-studio-type-trigger {
+body.lux-route-students-admin #students-content .students-hub-studio-type-trigger:hover,
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] .staff-hub-studio-type-trigger,
+body.lux-route-students-admin #students-content .students-hub-studio-type-popover[open] .students-hub-studio-type-trigger{
     transform: translateY(-1px);
     border-color: rgba(var(--lux-accent-rgb), 0.42);
     box-shadow: var(--lux-hub-accent-lift-shadow, var(--lux-elev-2));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-icon {
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-icon,
+body.lux-route-students-admin #students-content .students-hub-studio-type-trigger-icon{
     display: grid;
     place-items: center;
     width: 22px;
@@ -5632,7 +5925,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-icon {
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-label {
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-label,
+body.lux-route-students-admin #students-content .students-hub-studio-type-trigger-label{
     flex: 1 1 auto;
     min-width: 0;
     font-size: 12px;
@@ -5643,20 +5937,24 @@ body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-label {
     text-overflow: ellipsis;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-chevron {
+body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-chevron,
+body.lux-route-students-admin #students-content .students-hub-studio-type-trigger-chevron{
     font-size: 10px;
     color: var(--lux-text-muted);
     flex-shrink: 0;
     transition: transform 0.15s ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] .staff-hub-studio-type-trigger-chevron {
+body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] .staff-hub-studio-type-trigger-chevron,
+body.lux-route-students-admin #students-content .students-hub-studio-type-popover[open] .students-hub-studio-type-trigger-chevron{
     transform: rotate(180deg);
     color: rgba(var(--lux-accent-rgb), 0.9);
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-type-menu,
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
+body.lux-route-students-admin #students-content .students-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu-panel{
     --staff-studio-type-visible-options: 5;
     --staff-studio-type-option-height: 40px;
     --staff-studio-menu-width: 240px;
@@ -5679,35 +5977,49 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-type-popover:not([open]) .staff-hub-studio-type-menu,
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu:not([open]) .staff-hub-studio-field-menu-panel {
+body.lux-route-students-admin #students-content .students-hub-studio-type-popover:not([open]) .students-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu:not([open]) .staff-hub-studio-field-menu-panel,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu:not([open]) .students-hub-studio-field-menu-panel{
     display: none;
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-canvas.is-studio-patching,
-body.lux-route-staff #staff-content .staff-hub-form-studio.is-studio-patching {
+body.lux-route-students-admin #students-content .students-hub-builder-canvas.is-studio-patching,
+body.lux-route-staff #staff-content .staff-hub-form-studio.is-studio-patching,
+body.lux-route-students-admin #students-content .students-hub-form-studio.is-studio-patching{
     visibility: hidden !important;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-canvas.staff-hub-form-studio {
+body.lux-route-staff #staff-content .staff-hub-builder-canvas.staff-hub-form-studio,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas.students-hub-form-studio{
     overflow: hidden;
 }
 
 body.lux-route-staff #staff-content .staff-hub-form-settings .staff-hub-builder-canvas,
-body.lux-route-staff #staff-content .staff-hub-form-settings .staff-hub-form-studio {
+body.lux-route-students-admin #students-content .students-hub-form-settings .students-hub-builder-canvas,
+body.lux-route-staff #staff-content .staff-hub-form-settings .staff-hub-form-studio,
+body.lux-route-students-admin #students-content .students-hub-form-settings .students-hub-form-studio{
     animation: none !important;
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-field-row:last-child .staff-hub-studio-type-popover[open] .staff-hub-studio-type-menu,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row:last-child .students-hub-studio-type-popover[open] .students-hub-studio-type-menu,
 body.lux-route-staff #staff-content .staff-hub-studio-field-row:last-child .staff-hub-studio-field-menu[open] .staff-hub-studio-field-menu-panel,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row:last-child .students-hub-studio-field-menu[open] .students-hub-studio-field-menu-panel,
 body.lux-route-staff #staff-content .staff-hub-studio-field-row:nth-last-child(-n+2) .staff-hub-studio-type-popover[open] .staff-hub-studio-type-menu,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row:nth-last-child(-n+2) .students-hub-studio-type-popover[open] .students-hub-studio-type-menu,
 body.lux-route-staff #staff-content .staff-hub-studio-field-row:nth-last-child(-n+2) .staff-hub-studio-field-menu[open] .staff-hub-studio-field-menu-panel,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row:nth-last-child(-n+2) .students-hub-studio-field-menu[open] .students-hub-studio-field-menu-panel,
 body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-flip-menu-up .staff-hub-studio-type-popover[open] .staff-hub-studio-type-menu,
-body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-flip-menu-up .staff-hub-studio-field-menu[open] .staff-hub-studio-field-menu-panel {
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-flip-menu-up .students-hub-studio-type-popover[open] .students-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-flip-menu-up .staff-hub-studio-field-menu[open] .staff-hub-studio-field-menu-panel,
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-flip-menu-up .students-hub-studio-field-menu[open] .students-hub-studio-field-menu-panel{
     top: auto;
     bottom: calc(100% + 8px);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-menu-viewport {
+body.lux-route-staff #staff-content .staff-hub-studio-type-menu-viewport,
+body.lux-route-students-admin #students-content .students-hub-studio-type-menu-viewport{
     display: grid;
     gap: 4px;
     max-height: calc(
@@ -5720,13 +6032,16 @@ body.lux-route-staff #staff-content .staff-hub-studio-type-menu-viewport {
 }
 
 body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-type-menu,
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-studio-type-menu,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel,
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-studio-field-menu-panel{
     border-color: rgba(var(--lux-accent-rgb), 0.18);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
     box-shadow: var(--lux-hub-popover-shadow-light, var(--lux-elev-2));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-option {
+body.lux-route-staff #staff-content .staff-hub-studio-type-option,
+body.lux-route-students-admin #students-content .students-hub-studio-type-option{
     display: flex;
     align-items: center;
     gap: 10px;
@@ -5744,17 +6059,20 @@ body.lux-route-staff #staff-content .staff-hub-studio-type-option {
     transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-option:hover {
+body.lux-route-staff #staff-content .staff-hub-studio-type-option:hover,
+body.lux-route-students-admin #students-content .students-hub-studio-type-option:hover{
     background: rgba(var(--lux-accent-rgb), 0.14);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-type-option.is-active {
+body.lux-route-staff #staff-content .staff-hub-studio-type-option.is-active,
+body.lux-route-students-admin #students-content .students-hub-studio-type-option.is-active{
     background: rgba(var(--lux-accent-rgb), 0.22);
     color: rgba(var(--lux-accent-rgb), 1);
     box-shadow: var(--lux-hub-inset-ring-strong, var(--lux-elev-1));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-required-btn {
+body.lux-route-staff #staff-content .staff-hub-studio-required-btn,
+body.lux-route-students-admin #students-content .students-hub-studio-required-btn{
     display: grid;
     place-items: center;
     width: 32px;
@@ -5766,13 +6084,15 @@ body.lux-route-staff #staff-content .staff-hub-studio-required-btn {
     cursor: pointer;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-required-btn.is-required {
+body.lux-route-staff #staff-content .staff-hub-studio-required-btn.is-required,
+body.lux-route-students-admin #students-content .students-hub-studio-required-btn.is-required{
     border-color: rgba(239, 68, 68, 0.35);
     background: rgba(239, 68, 68, 0.12);
     color: var(--lux-text);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu summary {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu summary,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu summary{
     display: grid;
     place-items: center;
     width: 32px;
@@ -5783,19 +6103,23 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-menu summary {
     list-style: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu summary::-webkit-details-marker {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu summary::-webkit-details-marker,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu summary::-webkit-details-marker{
     display: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu{
     position: relative;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu[open] {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu[open],
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu[open]{
     z-index: 24;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu-viewport {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-viewport,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu-viewport{
     display: grid;
     gap: 4px;
     max-height: calc(
@@ -5807,7 +6131,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-menu-viewport {
     scrollbar-width: thin;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu-panel button{
     padding: 8px 10px;
     border: 0;
     border-radius: 8px;
@@ -5819,27 +6144,32 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button {
     cursor: pointer;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button:hover {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button:hover,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu-panel button:hover{
     background: rgba(var(--lux-accent-rgb), 0.12);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button.is-danger {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel button.is-danger,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu-panel button.is-danger{
     color: #f87171;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-choices textarea {
+body.lux-route-staff #staff-content .staff-hub-studio-choices textarea,
+body.lux-route-students-admin #students-content .students-hub-studio-choices textarea{
     min-height: 72px;
     resize: vertical;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-hint {
+body.lux-route-staff #staff-content .staff-hub-studio-hint,
+body.lux-route-students-admin #students-content .students-hub-studio-hint{
     font-style: normal;
     font-weight: 600;
     color: var(--lux-text-muted);
     font-size: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-advanced {
+body.lux-route-staff #staff-content .staff-hub-studio-advanced,
+body.lux-route-students-admin #students-content .students-hub-studio-advanced{
     display: grid;
     gap: 10px;
     padding: 10px;
@@ -5847,36 +6177,42 @@ body.lux-route-staff #staff-content .staff-hub-studio-advanced {
     border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-advanced-head {
+body.lux-route-staff #staff-content .staff-hub-studio-advanced-head,
+body.lux-route-students-admin #students-content .students-hub-studio-advanced-head{
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-advanced-grid {
+body.lux-route-staff #staff-content .staff-hub-studio-advanced-grid,
+body.lux-route-students-admin #students-content .students-hub-studio-advanced-grid{
     display: grid;
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-add {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-add{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-rail {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-rail,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-add.is-rail{
     padding: 0;
     gap: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-hero {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-hero,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-add.is-hero{
     justify-content: center;
     gap: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-label {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-label,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-label{
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 0.04em;
@@ -5884,7 +6220,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-quick-label {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-btn {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn{
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -5898,24 +6235,29 @@ body.lux-route-staff #staff-content .staff-hub-studio-quick-btn {
     cursor: pointer;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-btn.is-hero-btn {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn.is-hero-btn,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn.is-hero-btn{
     min-height: 40px;
     padding: 8px 14px;
     font-size: 13px;
     border-radius: 10px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-rail .staff-hub-studio-quick-btn {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add.is-rail .staff-hub-studio-quick-btn,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-add.is-rail .students-hub-studio-quick-btn{
     min-height: 32px;
     font-size: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-btn:hover {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn:hover,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn:hover{
     border-color: rgba(var(--lux-accent-rgb), 0.28);
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-empty,
-body.lux-route-staff #staff-content .staff-hub-studio-field-empty {
+body.lux-route-students-admin #students-content .students-hub-studio-empty,
+body.lux-route-staff #staff-content .staff-hub-studio-field-empty,
+body.lux-route-students-admin #students-content .students-hub-studio-field-empty{
     padding: 20px 16px;
     text-align: center;
     font-size: 12px;
@@ -5924,18 +6266,21 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-empty {
     border: 1px dashed var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-empty {
+body.lux-route-staff #staff-content .staff-hub-studio-empty,
+body.lux-route-students-admin #students-content .students-hub-studio-empty{
     display: grid;
     justify-items: center;
     gap: 10px;
     padding: 32px 20px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-editor > .staff-hub-studio-empty {
+body.lux-route-staff #staff-content .staff-hub-studio-editor > .staff-hub-studio-empty,
+body.lux-route-students-admin #students-content .students-hub-studio-editor > .students-hub-studio-empty{
     margin: 16px 20px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-wrap{
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -5945,7 +6290,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap {
     overflow: hidden;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap[open]::details-content {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap[open]::details-content,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-wrap[open]::details-content{
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -5954,17 +6300,20 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap[open]::detail
     overflow: hidden;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > summary {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > summary,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-wrap > summary{
     flex: 0 0 auto;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > .staff-hub-studio-preview {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > .staff-hub-studio-preview,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-wrap > .students-hub-studio-preview{
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-toggle {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-toggle,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-toggle{
     display: none;
     padding: 12px 20px;
     cursor: pointer;
@@ -5974,7 +6323,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-toggle {
     list-style: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview {
+body.lux-route-staff #staff-content .staff-hub-studio-preview,
+body.lux-route-students-admin #students-content .students-hub-studio-preview{
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -5982,13 +6332,15 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview {
     overflow: hidden;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-head {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-head,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-head{
     padding: 10px 16px 6px;
     border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-profile-tabs {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-profile-tabs,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-profile-tabs{
     margin: 0 12px 8px;
     padding: 8px 10px;
     border-radius: 12px;
@@ -5997,12 +6349,14 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-profile-tabs {
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-profile-tab {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-profile-tab,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-profile-tab{
     min-width: 96px;
     max-width: 180px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-meta {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-meta,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-meta{
     margin: 4px 0 0;
     font-size: 12px;
     line-height: 1.45;
@@ -6010,7 +6364,8 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-meta {
     font-weight: 700;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body{
     flex: 1 1 auto;
     min-height: 0;
     padding: 16px 20px 24px;
@@ -6022,27 +6377,36 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-body {
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-preview-body input,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body input,
 body.lux-route-staff #staff-content .staff-hub-studio-preview-body textarea,
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body button:not(.lux-picker-btn):not(.lux-picker-option) {
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body textarea,
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body button:not(.lux-picker-btn):not(.lux-picker-option),
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body button:not(.lux-picker-btn):not(.lux-picker-option){
     pointer-events: none;
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-preview-body select,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body select,
 body.lux-route-staff #staff-content .staff-hub-studio-preview-body .lux-picker-btn,
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .lux-picker-field {
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .lux-picker-btn,
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .lux-picker-field,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .lux-picker-field{
     pointer-events: auto;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.is-studio-highlight {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.is-studio-highlight,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section.is-studio-highlight{
     border-color: rgba(var(--lux-accent-rgb), 0.42);
     box-shadow: var(--lux-hub-studio-highlight-shadow, var(--lux-elev-2));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.lux-data-card {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.lux-data-card,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section.lux-data-card{
     overflow: visible;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section{
     display: grid;
     gap: 16px;
     margin-bottom: 12px;
@@ -6057,102 +6421,124 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-fo
 }
 
 body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section {
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section,
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section{
     background: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.34)) !important;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section-head{
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head strong {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head strong,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section-head strong{
     display: block;
     font-size: 16px;
     line-height: 1.25;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head p {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section-head p,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section-head p{
     margin: 6px 0 0;
     font-size: 13px;
     line-height: 1.45;
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-grid{
     display: grid;
     gap: 14px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid.is-two {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid.is-two,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-grid.is-two{
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid.is-one {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-grid.is-one,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-grid.is-one{
     grid-template-columns: 1fr;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-section {
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-section,
+body.lux-route-students-admin #students-content .students-hub-studio-preview.is-compact .students-hub-studio-preview-body .students-hub-form-section{
     gap: 10px;
     margin-bottom: 8px;
     padding: 12px 12px 12px 14px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-section-head strong {
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-section-head strong,
+body.lux-route-students-admin #students-content .students-hub-studio-preview.is-compact .students-hub-studio-preview-body .students-hub-form-section-head strong{
     font-size: 14px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-grid,
+body.lux-route-students-admin #students-content .students-hub-studio-preview.is-compact .students-hub-studio-preview-body .students-hub-form-grid,
 body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-grid.is-two,
-body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-grid.is-one {
+body.lux-route-students-admin #students-content .students-hub-studio-preview.is-compact .students-hub-studio-preview-body .students-hub-form-grid.is-two,
+body.lux-route-staff #staff-content .staff-hub-studio-preview.is-compact .staff-hub-studio-preview-body .staff-hub-form-grid.is-one,
+body.lux-route-students-admin #students-content .students-hub-studio-preview.is-compact .students-hub-studio-preview-body .students-hub-form-grid.is-one{
     gap: 10px;
     grid-template-columns: 1fr;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-error {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-error,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-error{
     display: none;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section:last-child {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section:last-child,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-form-section:last-child{
     margin-bottom: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-field-complete-dot {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-field-complete-dot,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-body .students-hub-field-complete-dot{
     opacity: 0.45;
 }
 
 @media (min-width: 901px) {
-    body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > summary {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap > summary,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-wrap > summary{
         display: none;
     }
 }
 
 @media (max-width: 900px) {
-    body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap[open] {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-wrap[open],
+body.lux-route-students-admin #students-content .students-hub-studio-preview-wrap[open]{
         min-height: 0;
         max-height: min(50vh, 420px);
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-preview-toggle {
+body.lux-route-staff #staff-content .staff-hub-studio-preview-toggle,
+body.lux-route-students-admin #students-content .students-hub-studio-preview-toggle{
         display: block;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-editor-layout {
+body.lux-route-staff #staff-content .staff-hub-studio-editor-layout,
+body.lux-route-students-admin #students-content .students-hub-studio-editor-layout{
         grid-template-columns: minmax(0, 1fr);
         min-height: auto;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-step-nav {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav{
         grid-template-rows: auto auto auto;
         border-right: 0;
         border-bottom: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
         padding: 12px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-step-nav-list {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-list,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-list{
         display: flex;
         gap: 8px;
         max-height: none;
@@ -6162,87 +6548,105 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-fi
         scrollbar-width: thin;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav-item{
         flex: 0 0 auto;
         min-width: 148px;
         max-width: 220px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-step-detail {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail{
         padding: 14px 16px 16px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-field-main {
+body.lux-route-staff #staff-content .staff-hub-studio-field-main,
+body.lux-route-students-admin #students-content .students-hub-studio-field-main{
         grid-template-columns: auto minmax(0, 1fr) auto auto auto;
     }
 
     body.lux-route-staff #staff-content .staff-hub-studio-type-menu,
-    body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
+    body.lux-route-students-admin #students-content .students-hub-studio-type-menu,
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu-panel{
         --staff-studio-menu-width: 200px;
         left: auto;
         right: 0;
         transform: none;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm {
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm,
+body.lux-route-students-admin #students-content .students-hub-studio-field-remove-confirm{
         flex-direction: column;
         align-items: stretch;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-field-remove-actions {
+body.lux-route-staff #staff-content .staff-hub-studio-field-remove-actions,
+body.lux-route-students-admin #students-content .students-hub-studio-field-remove-actions{
         width: 100%;
         justify-content: flex-end;
     }
 }
 
 @media (max-width: 640px) {
-    body.lux-route-staff #staff-content .staff-hub-studio-step-nav {
+body.lux-route-staff #staff-content .staff-hub-studio-step-nav,
+body.lux-route-students-admin #students-content .students-hub-studio-step-nav{
         padding: 10px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-step-detail {
+body.lux-route-staff #staff-content .staff-hub-studio-step-detail,
+body.lux-route-students-admin #students-content .students-hub-studio-step-detail{
         padding: 12px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-head {
+body.lux-route-staff #staff-content .staff-hub-studio-head,
+body.lux-route-students-admin #students-content .students-hub-studio-head{
         padding: 14px 12px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-save-bar {
+body.lux-route-staff #staff-content .staff-hub-studio-save-bar,
+body.lux-route-students-admin #students-content .students-hub-studio-save-bar{
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-section-toolbar {
+body.lux-route-staff #staff-content .staff-hub-studio-section-toolbar,
+body.lux-route-students-admin #students-content .students-hub-studio-section-toolbar{
         gap: 10px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-section-actions {
+body.lux-route-staff #staff-content .staff-hub-studio-section-actions,
+body.lux-route-students-admin #students-content .students-hub-studio-section-actions{
         justify-content: flex-start;
         flex-wrap: wrap;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-field-main {
+body.lux-route-staff #staff-content .staff-hub-studio-field-main,
+body.lux-route-students-admin #students-content .students-hub-studio-field-main{
         display: flex;
         flex-wrap: wrap;
         align-items: center;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-label-input {
+body.lux-route-staff #staff-content .staff-hub-studio-label-input,
+body.lux-route-students-admin #students-content .students-hub-studio-label-input{
         flex: 1 1 calc(100% - 36px);
         min-width: 0;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-field-menu {
+body.lux-route-staff #staff-content .staff-hub-studio-field-menu,
+body.lux-route-students-admin #students-content .students-hub-studio-field-menu{
         margin-left: auto;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-quick-add {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-add,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-add{
         gap: 6px;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-studio-quick-btn {
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn{
         flex: 1 1 calc(50% - 6px);
         justify-content: center;
     }

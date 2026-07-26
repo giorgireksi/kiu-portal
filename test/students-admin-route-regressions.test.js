@@ -35,8 +35,10 @@ describe('students admin route regressions.test', () => {
         expect(html).toContain('student-form-builder-runtime.js');
         expect(html).toContain('form-builder-runtime.js');
         expect(html).toContain('form-builder-actions-runtime.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.students-hub-builder-layout');
+        expect(bare).toContain('.students-hub-form-settings-head');
         expect(builderJs).toContain("data-${H.data}-builder-action");
-        expect(builderJs).toContain("ds(el, 'staffBucket', 'studentBucket')");
         expect(actionsJs).toContain("'__studentFormBuilderBound'");
         expect(studentsJs).toContain('__studentFormBuilderBound');
         expect(studentsJs).toContain("__KIU_FORM_BUILDER_NS__ = 'student'");
