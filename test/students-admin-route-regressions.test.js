@@ -40,9 +40,11 @@ describe('students admin route regressions.test', () => {
         expect(bare).toContain('.students-hub-form-settings-head');
         expect(bare).toContain('.students-hub-directory-panel');
         expect(bare).toContain('.students-hub-controls-head');
+        expect(bare).toContain('.students-hub-filter-deck-section--fields .students-hub-filter-deck-grid');
+        expect(bare).toContain('grid-template-columns: 1fr');
         const directoryJs = readSource('assets/js/pages/directory-filters-runtime.js');
-        expect(directoryJs).toContain('${H.hub}-command-bar');
-        expect(directoryJs).toContain('${H.hub}-section-copy');
+        expect(directoryJs).not.toContain('useCompactDeck');
+        expect(directoryJs).toContain('filter-deck-section--fields');
         expect(builderJs).toContain("data-${H.data}-builder-action");
         expect(actionsJs).toContain("'__studentFormBuilderBound'");
         expect(studentsJs).toContain('__studentFormBuilderBound');

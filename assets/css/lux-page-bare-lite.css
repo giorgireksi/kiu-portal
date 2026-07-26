@@ -2028,8 +2028,7 @@ body.lux-route-students-admin #students-content .students-hub-controls--adaptive
     padding: 12px 14px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact,
-body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary.is-compact
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact
 {
     display: grid;
     grid-template-columns: minmax(220px, 1.35fr) repeat(auto-fit, minmax(150px, 1fr)) auto;
@@ -2037,20 +2036,17 @@ body.lux-route-students-admin #students-content .students-hub-filter-deck-sectio
     align-items: end;
 }
 
-body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact .staff-hub-active-filters,
-body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary.is-compact .students-hub-active-filters
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact .staff-hub-active-filters
 {
     grid-column: 1 / -1;
 }
 
-body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact .staff-hub-filter-deck-grid,
-body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary.is-compact .students-hub-filter-deck-grid
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact .staff-hub-filter-deck-grid
 {
     display: contents;
 }
 
-body.lux-route-staff #staff-content .staff-hub-filter-deck-link--compact,
-body.lux-route-students-admin #students-content .students-hub-filter-deck-link--compact
+body.lux-route-staff #staff-content .staff-hub-filter-deck-link--compact
 {
     align-self: end;
     justify-self: end;
@@ -2158,6 +2154,11 @@ body.lux-route-students-admin #students-content .students-hub-filter-deck
     background: rgba(var(--lux-accent-rgb), 0.03);
 }
 
+body.lux-route-students-admin #students-content .students-hub-filter-deck
+{
+    border-radius: 20px;
+}
+
 body.lux-route-staff #staff-content .staff-hub-filter-deck-section,
 body.lux-route-students-admin #students-content .students-hub-filter-deck-section
 {
@@ -2175,9 +2176,19 @@ body.lux-route-students-admin #students-content .students-hub-filter-deck-sectio
 body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary,
 body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary
 {
-    grid-template-columns: minmax(260px, 1.35fr) repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: minmax(260px, 1fr);
     gap: 14px;
     align-items: end;
+}
+
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary
+{
+    grid-template-columns: minmax(280px, 1.4fr) minmax(160px, 0.9fr) minmax(160px, 0.9fr);
+}
+
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section--fields .students-hub-filter-deck-grid
+{
+    grid-template-columns: 1fr;
 }
 
 body.lux-route-staff #staff-content .staff-hub-filter-deck-section--droplist-search,

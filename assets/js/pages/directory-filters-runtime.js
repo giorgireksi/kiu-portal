@@ -678,9 +678,6 @@
         const fieldFilterMarkup = blueprintFilters.map((filterDef) => renderFieldFilterSelect(filterDef, filters, esc)).join('');
         const filtersBodyMarkup = `<div class="${H.hub}-filter-deck-grid">${fieldFilterMarkup}</div>`;
         const hasActiveFieldFilters = blueprintFilters.some((filterDef) => (filterDef.options || []).length > 0);
-        const allFiltersPending = blueprintFilters.length > 0
-            && blueprintFilters.every((filterDef) => !(filterDef.options || []).length);
-        const useCompactDeck = allFiltersPending && blueprintFilters.length <= 4;
         const customizeLinkMarkup = isAdminSession ? `
                         <button class="${H.hub}-filter-deck-link" type="button" data-${H.data}-action="open-form-settings">
                             <i class="fas fa-sliders"></i> Customize in form settings
@@ -710,7 +707,7 @@
             </div>
         ` : '';
 
-        const blueprintSectionMarkup = !useCompactDeck && blueprintFilters.length ? `
+        const blueprintSectionMarkup = blueprintFilters.length ? `
             <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--fields">
                 <div class="${H.hub}-filter-deck-heading">
                     <span class="${H.hub}-filter-deck-kicker">Directory field filters</span>
@@ -718,7 +715,7 @@
                 </div>
                 ${filtersBodyMarkup}
             </div>
-        ` : (!useCompactDeck && isAdminSession ? `
+        ` : (isAdminSession ? `
             <div class="${H.hub}-filter-hint">
                 <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
                 <p><strong>No directory field filters yet.</strong> Add fields to staff form sections in form settings to surface them here once staff records include values.</p>
@@ -745,10 +742,6 @@
             ? chipsMarkup
             : `<span class="${H.hub}-chip lux-status-pill is-muted">No active filters</span>`;
 
-        const compactFieldMarkup = useCompactDeck
-            ? `${filtersBodyMarkup}${customizeLinkMarkup}`
-            : '';
-
         return `
             <div class="${H.hub}-controls-head">
                 <div class="${H.hub}-controls-copy">
@@ -770,7 +763,7 @@
             </div>
 
             <div class="${H.hub}-filter-deck">
-                <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--primary${useCompactDeck ? ' is-compact' : ''}">
+                <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--primary">
                     <div class="${H.hub}-search-wrap ${H.hub}-field">
                         <label for="${H.searchInputId}">Search directory</label>
                         <div class="${H.hub}-search-field">
@@ -778,7 +771,6 @@
                             <input class="${H.hub}-control lux-control" id="${H.searchInputId}" type="search" value="${esc(filters.query)}" placeholder="${H.searchPlaceholder}" />
                         </div>
                     </div>
-                    ${compactFieldMarkup}
                     ${NS === 'student' ? `
                     <div class="${H.hub}-field">
                         <label for="student-filter-mobility">Mobility</label>
