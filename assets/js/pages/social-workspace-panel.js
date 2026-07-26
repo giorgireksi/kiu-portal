@@ -747,7 +747,7 @@
                                     <div class="social-project-hub-search-row">
                                         <label class="social-project-hub-search">
                                             <i class="fas fa-search"></i>
-                                            <input class="social-neo-input" type="search" name="projectDiscoverSearch" value="${escape(text(runtime.ui?.projectDiscoverSearch || ''))}" placeholder="Search my projects, course, tags…">
+                                            <input class="social-neo-input lux-control" type="search" name="projectDiscoverSearch" value="${escape(text(runtime.ui?.projectDiscoverSearch || ''))}" placeholder="Search my projects, course, tags…">
                                         </label>
                                     </div>
                                     ${attentionTotal ? `
@@ -952,7 +952,7 @@
                         <div class="social-project-task-search-row">
                             <div class="social-project-task-search-input">
                                 <i class="fas fa-search" aria-hidden="true"></i>
-                                <input class="social-neo-input" type="search" name="projectTaskSearch" value="${escape(searchVal)}" placeholder="Search tasks…" autocomplete="off">
+                                <input class="social-neo-input lux-control" type="search" name="projectTaskSearch" value="${escape(searchVal)}" placeholder="Search tasks…" autocomplete="off">
                             </div>
                             <select class="social-neo-select social-neo-select-sm" name="projectTaskFilterPriority" data-lux-picker aria-label="Priority">
                                 <option value="all" ${priorityVal === 'all' ? 'selected' : ''}>Any priority</option>

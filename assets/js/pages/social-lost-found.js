@@ -112,7 +112,7 @@
                 <div class="social-neo-lost-found-hero-toolbar">
                     <label for="${escape(searchId)}">
                         <span class="social-neo-label">Search</span>
-                        <input class="social-neo-input" id="${escape(searchId)}" type="search" name="lostFoundSearch" placeholder="Search title, category, location, or author" value="${escape(searchValue)}">
+                        <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" name="lostFoundSearch" placeholder="Search title, category, location, or author" value="${escape(searchValue)}">
                     </label>
                 </div>
                 ${merged ? `
@@ -251,29 +251,29 @@
                     <section class="lux-glass-dialog-lost-found-create-section">
                         <label class="lux-glass-dialog-field" for="${escape(categoryId)}">
                             <span class="social-neo-label">Category</span>
-                            <input class="social-neo-input" id="${escape(categoryId)}" type="text" name="lostFoundCategory" placeholder="Wallet, laptop, ID card..." value="${escape(draft.category)}">
+                            <input class="social-neo-input lux-control" id="${escape(categoryId)}" type="text" name="lostFoundCategory" placeholder="Wallet, laptop, ID card..." value="${escape(draft.category)}">
                         </label>
                         <label class="lux-glass-dialog-field" for="${escape(titleId)}">
                             <span class="social-neo-label">Title</span>
-                            <input class="social-neo-input" id="${escape(titleId)}" type="text" name="lostFoundTitle" placeholder="Black backpack with silver zipper" value="${escape(draft.title)}" required>
+                            <input class="social-neo-input lux-control" id="${escape(titleId)}" type="text" name="lostFoundTitle" placeholder="Black backpack with silver zipper" value="${escape(draft.title)}" required>
                         </label>
                         <label class="lux-glass-dialog-field" for="${escape(descriptionId)}">
                             <span class="social-neo-label">Description</span>
-                            <textarea class="social-neo-textarea" id="${escape(descriptionId)}" rows="4" name="lostFoundDescription" placeholder="Add identifying details, contents, and any contact-safe clues.">${escape(draft.description)}</textarea>
+                            <textarea class="social-neo-textarea lux-control" id="${escape(descriptionId)}" rows="4" name="lostFoundDescription" placeholder="Add identifying details, contents, and any contact-safe clues.">${escape(draft.description)}</textarea>
                         </label>
                         <div class="social-neo-form-grid social-neo-form-grid-2">
                             <label class="lux-glass-dialog-field" for="${escape(locationId)}">
                                 <span class="social-neo-label">Last seen at</span>
-                                <input class="social-neo-input" id="${escape(locationId)}" type="text" name="lostFoundLocation" placeholder="Main library, 2nd floor" value="${escape(draft.locationText)}">
+                                <input class="social-neo-input lux-control" id="${escape(locationId)}" type="text" name="lostFoundLocation" placeholder="Main library, 2nd floor" value="${escape(draft.locationText)}">
                             </label>
                             <label class="lux-glass-dialog-field" for="${escape(dateId)}">
                                 <span class="social-neo-label">Date</span>
-                                <input class="social-neo-input" id="${escape(dateId)}" type="date" name="lostFoundDate" value="${escape(draft.eventDate)}">
+                                <input class="social-neo-input lux-control" id="${escape(dateId)}" type="date" name="lostFoundDate" value="${escape(draft.eventDate)}">
                             </label>
                         </div>
                         <label class="lux-glass-dialog-field" for="${escape(expiresAtId)}">
                             <span class="social-neo-label">Listing ends</span>
-                            <input class="social-neo-input" id="${escape(expiresAtId)}" type="datetime-local" name="lostFoundExpiresAt" min="${escape(expiresAtMin)}" value="${escape(toDateTimeLocalValue(draft.expiresAt))}" required>
+                            <input class="social-neo-input lux-control" id="${escape(expiresAtId)}" type="datetime-local" name="lostFoundExpiresAt" min="${escape(expiresAtMin)}" value="${escape(toDateTimeLocalValue(draft.expiresAt))}" required>
                             <span class="lux-glass-dialog-hint">The listing is removed automatically after this time.</span>
                         </label>
                         <div class="social-neo-inline social-neo-inline-gap-10-wrap">

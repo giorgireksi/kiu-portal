@@ -17,12 +17,34 @@
             PROJECT_HEALTH_OVERLAY_DIALOGS: window.PROJECT_HEALTH_OVERLAY_DIALOGS,
             workspaceDialogKeepsCenter: typeof window.workspaceDialogKeepsCenter === 'function' ? window.workspaceDialogKeepsCenter : () => false,
             isProjectTaskGraphStackActive: typeof window.isProjectTaskGraphStackActive === 'function' ? window.isProjectTaskGraphStackActive : () => false,
-            renderDialogOnlyNow, renderSocialPageNow, getSocialCenterScroller, scrollSocialCenterTo,
-            socialScrollLockActive, bindOverlayPortalEvents,
+            renderDialogOnlyNow,
+            renderSocialPageNow: (reason) => {
+                const fn = window.renderSocialPageNow || window.__kiuSocialLiteRenderPage;
+                return typeof fn === 'function' ? fn(reason) : undefined;
+            },
+            getSocialCenterScroller: (...args) => {
+                const fn = window.getSocialCenterScroller;
+                return typeof fn === 'function' ? fn(...args) : null;
+            },
+            scrollSocialCenterTo: (...args) => {
+                const fn = window.scrollSocialCenterTo;
+                return typeof fn === 'function' ? fn(...args) : undefined;
+            },
+            socialScrollLockActive: (...args) => {
+                const fn = window.socialScrollLockActive;
+                return typeof fn === 'function' ? fn(...args) : false;
+            },
+            bindOverlayPortalEvents: () => {
+                const fn = window.__kiuBindOverlayPortalEvents || window.bindOverlayPortalEvents;
+                if (typeof fn === 'function') fn();
+            },
             ensurePhotographyUploadFileSink: typeof window.ensurePhotographyUploadFileSink === 'function' ? window.ensurePhotographyUploadFileSink : () => {},
             bindPhotographyUploadDialogFileInput: typeof window.bindPhotographyUploadDialogFileInput === 'function' ? window.bindPhotographyUploadDialogFileInput : () => {},
             revokePhotographyUploadPreview: typeof window.revokePhotographyUploadPreview === 'function' ? window.revokePhotographyUploadPreview : () => {},
-            clearEventDraft,
+            clearEventDraft: (...args) => {
+                const fn = window.clearEventDraft || (window.KiuSocialChromeModel || {}).clearEventDraft;
+                return typeof fn === 'function' ? fn(...args) : undefined;
+            },
             clearPostComposeDraft: typeof window.clearPostComposeDraft === 'function' ? window.clearPostComposeDraft : () => {},
             getProjectTaskGraphHost: typeof window.getProjectTaskGraphHost === 'function' ? window.getProjectTaskGraphHost : () => null,
             readProjectTaskGraphPanFromScroll: typeof window.readProjectTaskGraphPanFromScroll === 'function' ? window.readProjectTaskGraphPanFromScroll : () => ({ x: 0, y: 0 }),
@@ -113,7 +135,7 @@
     const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260720-wsgsync1';
     const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260720-w18';
     const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260720-wsgrt1';
-    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260714-extract6';
+    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260726-socfix10';
     const DIRECTORY_REFRESH_MS = 180;
     const MAX_RENDER_ATTEMPTS = 24;
     const USER_ROLES_FALLBACK = {
@@ -136,6 +158,7 @@
     }
     const projectTaskDownstreamIds = window.projectTaskDownstreamIds || (window.KiuSocialTaskModel || {}).projectTaskDownstreamIds;
     const normalizeProjectTaskStatusId = window.normalizeProjectTaskStatusId || (window.KiuSocialTaskModel || {}).normalizeProjectTaskStatusId;
+    const buildSocialRenderSignature = window.buildSocialRenderSignature;
 
     /** Desk readiness from dependsOn (graph parents) — pure read. */
 
@@ -250,12 +273,9 @@
     let globalKeydownBound = false;
     let scrollLockMediaBound = false;
     let socialVisualViewportBound = false;
-    const SOCIAL_TAB_SCROLL_RESET_RE = /^(panel|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|feed-tab)$/;
-    const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
     let renderAttemptCount = 0;
     let photographySearchTimer = 0;
     const GROUP_INVITE_SEARCH_MS = 220;
-    let renderDebounceTimer = 0;
     let socialCommunityModulePromise = null;
     let socialAlertsModulePromise = null;
     let socialLostFoundModulePromise = null;
@@ -1321,39 +1341,10 @@
     const lostFoundSuggestionItems = window.lostFoundSuggestionItems || (window.KiuSocialFormModel || {}).lostFoundSuggestionItems;
 
 
-    /* Interactions + renderSocialPageNow: social-page-interactions-runtime.js */
-    const __socialInteractionsDeps = window.__kiuSocialPageInteractionsDeps = Object.assign(
-        window.__kiuSocialPageInteractionsDeps || {},
-        {
-            text, state, root, escape, currentUser, currentUserId,
-            activeDialog, openDialog, closeDialog, PANEL_KEY,
-            createSocialLazyStub, resolveSocialRenderPlan, shellIdentitySignature
-        }
-    );
-    const __socialInteractionsApi = typeof window.__kiuCreateSocialPageInteractionsApi === 'function'
-        ? window.__kiuCreateSocialPageInteractionsApi(__socialInteractionsDeps)
-        : {};
-    const {
-        reactionEmoji, reactionLabel, renderPostReactionMetrics, commentReactionType,
-        renderInlineReplyForm, renderCommentReactionButtons, patchPhotographyFollowButtons, refreshPhotographyPanelStage,
-        portfolioEditorFormRoot, capturePortfolioEditorSnapshot, restorePortfolioEditorSnapshot, patchPortfolioSaveStatus,
-        patchPortfolioStartedPill, patchPortfolioSectionToggle, patchPortfolioPublishVisibility, patchPortfolioSection,
-        syncPortfolioEditorInput, patchEventRsvpButtons, getSocialPageRecord, pageFollowerIdsFor,
-        pageAdminIdsFor, buildPageMembersList, shouldPatchPageComposeBlock, patchSocialFlash,
-        patchPageFollowState, patchPageComposeBlock, deleteCommentInline, readFileAsDataUrl,
-        setPanel, finalizeSetPanel, setActiveChat, focusFeed,
-        focusRestoreSelector, rememberInteractionAnchor, interactionAnchorNode, socialScrollLockMedia,
-        isSocialRouteDesktopScroll, socialScrollLockActive, getSocialCenterScroller, scrollSocialCenterTo,
-        scrollSocialCenterElementIntoView, bindFileInputs, renderFileChip, renderSectionCommandCenter,
-        renderSocialFlashStatus, renderSocialTopbarRegion, renderActivePanelMarkup, renderToastArea,
-        renderStoryViewer, renderStoryComposer, renderSocialPageNow,
-    } = __socialInteractionsApi;
-
     /* Shell / messages-inbox scroll / workspace-nav / group-leave: social-page-shell-runtime.js */
     const __socialShellDeps = window.__kiuSocialPageShellDeps = {
         text, state, root, escape, activeNavPanels, activeDialog,
         WORKSPACE_NAV_COLLAPSED_KEY, ROOT_ID, DIRECTORY_REFRESH_MS, GROUP_INVITE_SEARCH_MS,
-        getSocialCenterScroller, socialScrollLockActive, isSocialRouteDesktopScroll, scrollSocialCenterTo,
         ensureSocialOverlayPortal, socialOverlayLockArtifactsPresent, clearSocialOverlayLockArtifacts,
         shellIdentitySignature, currentUser, currentFacultyCode,
         createSocialLazyStub, hasSocialGroupsModule, ensureSocialGroupsModule
@@ -1380,6 +1371,121 @@
         normalizeGroupLeaveToken, buildGroupLeaveVerification, renderGroupLeaveDialog
     } = __socialShellApi;
 
+    /* Entity/compose + panel/shell: social-page-feed-runtime.js */
+    const normalizeComposerEntityLinks = window.normalizeComposerEntityLinks || (window.KiuSocialEntityModel || {}).normalizeComposerEntityLinks;
+    const postEntityLinks = window.postEntityLinks || (window.KiuSocialEntityModel || {}).postEntityLinks;
+    const resolveEntityLinkMeta = window.resolveEntityLinkMeta || (window.KiuSocialEntityModel || {}).resolveEntityLinkMeta;
+    const listAttachableEntities = window.listAttachableEntities || (window.KiuSocialEntityModel || {}).listAttachableEntities;
+    const __socialFeedDeps = window.__kiuSocialPageFeedDeps = {
+        accountSubtitle, activeDialog, activeNavPanels, avatar, buildProjectCreateContext,
+        buildProjectHealthPlanPickModel, clearProjectTabPaneCache, clearSurveyFlowState,
+        createSocialLazyStub, currentUser, currentUserId, displayName,
+        ensureSocialAlertsModule, ensureSocialCommunityModule, ensureSocialFeedModule,
+        ensureSocialGroupsModule, ensureSocialLostFoundModule, ensureSocialMessagesModule,
+        ensureSocialEventsModule, ensureSocialPagesModule, ensureSocialPhotographyModule, ensureSocialProfileModule,
+        ensureSocialSurveysModule, ensureSocialWorkspaceModule, escape, feedScopeOptions,
+        hasSocialAlertsModule, hasSocialCommunityModule, hasSocialFeedModule, hasSocialGroupsModule,
+        hasSocialEventsModule, hasSocialLostFoundModule, hasSocialMessagesModule, hasSocialPagesModule,
+        hasSocialPhotographyModule, hasSocialSurveysModule, hasSocialWorkspaceModule,
+        normalizeComposerEntityLinks, normalizeProjectTaskStatusId, openDialog, photographyPosts,
+        portfolioEntriesForViewer, postEntityLinks, queueDeferredModuleRender,
+        renderProjectHealthPlanCardHtml, renderProjectHealthPlanPickBodyHtml, resolveEntityLinkMeta,
+        root, state, text, PANEL_KEY, WORKSPACE_NAV_COLLAPSED_KEY,
+        renderSocialPageNow: (reason) => {
+            const fn = window.renderSocialPageNow || window.__kiuSocialLiteRenderPage;
+            return typeof fn === 'function' ? fn(reason) : undefined;
+        },
+    };
+    const __socialFeedApi = typeof window.__kiuCreateSocialPageFeedApi === 'function'
+        ? window.__kiuCreateSocialPageFeedApi(__socialFeedDeps)
+        : {};
+    const {
+        navigateToEntity, entityDetailEntity, entityDetailDescription, renderEntityDetailDialog,
+        renderComposerEntityChips, renderPostEntityLinks, clearPostComposeDraft,
+        patchPostComposeAttachDialog, renderPostComposeAttachDialog, patchPostComposeDialog,
+        renderSocialLuxHero, syncSocialVisualShell, renderFeedPanel, renderEventsPanel,
+        renderPost, renderPostComposeDialog, renderRelationshipActions,
+        renderPostComposeShareSection, renderPostComposeAttachResultsHtml,
+        renderCommunityPanel, renderProjectsWorkspacePanelClassic, renderLostFoundPanel, renderSurveysPanel,
+        renderPhotographyPanel, renderMessagesPanel, renderCommunityHero,
+        buildProjectCreateInviteContext, resolveActiveSocialProject, renderProjectTaskChecklistBlock,
+        parseTaskChecklistFromForm, syncTaskChecklistInput, getProjectHealthDialogCard,
+        patchProjectHealthPlanCard, taskMatchesPlanPickDueFilter, resolveTaskPackageId,
+        patchProjectHealthPlanPick, countProjectRisksForTask, projectRiskScaleRank, buildGroupCreateInviteContext,
+        renderGroupCreateInviteSection, findSocialGroupById, renderGroupDetailMemberLine,
+        renderGroupDetailDialog, renderGroupsPanel, renderPagesPanel, renderAlertsPanel,
+        renderProjectsPanel, renderProfilePageBody, renderShellPrimaryNav, renderMobileTabBar,
+        renderShellDrawer, getSocialWorkspaceNavRegion, animateSocialWorkspaceNavOpen,
+        closeSocialWorkspaceNavAnimated
+    } = __socialFeedApi;
+    Object.assign(__socialFeedDeps, { findSocialGroupById, navigateToEntity });
+
+    /* Interactions + renderSocialPageNow: social-page-interactions-runtime.js */
+    const __socialInteractionsDeps = window.__kiuSocialPageInteractionsDeps = Object.assign(
+        window.__kiuSocialPageInteractionsDeps || {},
+        {
+            text, state, root, escape, currentUser, currentUserId,
+            activeDialog, openDialog, closeDialog, PANEL_KEY, CHAT_KEY,
+            createSocialLazyStub, resolveSocialRenderPlan, shellIdentitySignature,
+            hasSocialFeedModule, ensureSocialFeedModule,
+            hasSocialPhotographyModule, ensureSocialPhotographyModule,
+            hasSocialGroupsModule, ensureSocialGroupsModule,
+            hasSocialPagesModule, ensureSocialPagesModule,
+            hasSocialEventsModule, ensureSocialEventsModule,
+            hasSocialMessagesModule, ensureSocialMessagesModule,
+            hasSocialProfileModule, ensureSocialProfileModule,
+            hasSocialLostFoundModule, ensureSocialLostFoundModule,
+            hasSocialSurveysModule, ensureSocialSurveysModule,
+            hasSocialWorkspaceModule, ensureSocialWorkspaceModule,
+            scheduleDirectoryPrefetch, scheduleDeferredDesktopModulePrefetch,
+            queueDeferredModuleRender, closeSocialWorkspaceNavAnimated,
+            renderFeedPanel, renderCommunityPanel, renderGroupsPanel,
+            renderProjectsWorkspacePanelClassic, renderProjectsPanel, renderPagesPanel,
+            renderEventsPanel, renderSurveysPanel, renderPhotographyPanel, renderLostFoundPanel,
+            renderMessagesPanel, renderAlertsPanel, renderProfilePageBody,
+            renderShellWorkspaceNav, renderShellDrawer, renderMobileTabBar,
+            revealShell, syncSocialVisualShell,
+            syncSocialScrollLayout, migrateSocialScrollOnLockChange,
+            scheduleSocialCenterScrollRepair, syncEventDescScrollRails,
+            scheduleDeferredWindowScrollRestore,
+            ensureSocialShell, applyShellIdentity, ensureWorkspaceNavCollapsedState,
+            syncWorkspaceNavCollapsedClass, isSocialTopbarSkippedPanel,
+            renderWorkspaceOwnedDialog, trySyncProjectTaskGraphStackDialog,
+            shouldRenderProjectTaskGraphStack, bindProjectTaskGraphDrag,
+            bindProjectTaskGraphResizeObserver,
+            syncOverlayPortalVisibility, pruneStaleSocialOverlayState, syncSurveyResultsDialog,
+            syncSocialOverlayLock,
+            bindPhotographyUploadDialogFileInput, focusCommentComposeInput,
+            lostFoundItems, normalizeLostFoundItem, surveyById
+        }
+    );
+    const __socialInteractionsApi = typeof window.__kiuCreateSocialPageInteractionsApi === 'function'
+        ? window.__kiuCreateSocialPageInteractionsApi(__socialInteractionsDeps)
+        : {};
+    const {
+        reactionEmoji, reactionLabel, renderPostReactionMetrics, commentReactionType,
+        renderInlineReplyForm, renderCommentReactionButtons, renderCommentThread, findCommentInThread,
+        renderCommentNode, patchCommentReactions, patchPostSaveButtons, patchPhotographyFeedReactions,
+        openInlineReply, closeInlineReply, patchCommentDialogCount,
+        patchPhotographyFollowButtons, refreshPhotographyPanelStage,
+        portfolioEditorFormRoot, capturePortfolioEditorSnapshot, restorePortfolioEditorSnapshot, patchPortfolioSaveStatus,
+        patchPortfolioStartedPill, patchPortfolioSectionToggle, patchPortfolioPublishVisibility, patchPortfolioSection,
+        syncPortfolioEditorInput, patchEventRsvpButtons, getSocialPageRecord, pageFollowerIdsFor,
+        pageAdminIdsFor, buildPageMembersList, shouldPatchPageComposeBlock, patchSocialFlash,
+        patchPageFollowState, patchPageComposeBlock, patchPostReactions, patchCommentReactionsByIds,
+        deleteCommentInline, readFileAsDataUrl,
+        setPanel, finalizeSetPanel, setActiveChat, focusFeed,
+        focusRestoreSelector, rememberInteractionAnchor, interactionAnchorNode, socialScrollLockMedia,
+        isSocialRouteDesktopScroll, socialScrollLockActive, getSocialCenterScroller, scrollSocialCenterTo,
+        scrollSocialCenterElementIntoView, bindFileInputs, renderFileChip, renderSectionCommandCenter,
+        renderSocialFlashStatus, renderSocialTopbarRegion, renderActivePanelMarkup, renderToastArea,
+        renderStoryViewer, renderStoryComposer, renderSocialPageNow,
+    } = __socialInteractionsApi;
+    Object.assign(__socialFeedDeps, { setPanel, renderFileChip, renderSocialPageNow });
+    window.getSocialCenterScroller = getSocialCenterScroller;
+    window.scrollSocialCenterTo = scrollSocialCenterTo;
+    window.socialScrollLockActive = socialScrollLockActive;
+
     // Survey + contiguous helpers: social-page-survey-runtime.js
     const __socialSurvey = typeof window.__kiuCreateSocialPageSurveyApi === 'function'
         ? window.__kiuCreateSocialPageSurveyApi({
@@ -1394,6 +1500,7 @@
             interactionAnchorNode, focusRestoreSelector,
             renderSocialPageNow: (...a) => renderSocialPageNow(...a),
             centerCanScroll, getSocialCenterScrollBudget,
+            root, normalizeSocialOverlayDialogRegion,
             SOCIAL_OVERLAY_PORTAL_ID
         })
         : {};
@@ -1411,48 +1518,21 @@
         getSocialCenterViewportHeight, socialCenterHasLiveScrollRoom, getSocialCenterContentScrollHeight,
         getSocialCenterMaxScroll, setSocialRegionMarkup, invalidateSocialRenderCache, enhanceSocialAccessibility
     } = __socialSurvey;
-    /* Entity/compose + panel/shell: social-page-feed-runtime.js (before hooks; deps bag filled later) */
-    const __socialFeedDeps = window.__kiuSocialPageFeedDeps = {
-        text, state, root, currentUser, currentUserId, escape, PANEL_KEY
-    };
-    const __socialFeedApi = typeof window.__kiuCreateSocialPageFeedApi === 'function'
-        ? window.__kiuCreateSocialPageFeedApi(__socialFeedDeps)
-        : {};
-    const {
-        navigateToEntity, entityDetailEntity, entityDetailDescription, renderEntityDetailDialog,
-        renderComposerEntityChips, renderPostEntityLinks, clearPostComposeDraft,
-        patchPostComposeAttachDialog, renderPostComposeAttachDialog, patchPostComposeDialog,
-        renderSocialLuxHero, syncSocialVisualShell, renderCommunityPanel,
-        renderProjectsWorkspacePanelClassic, renderLostFoundPanel, renderSurveysPanel,
-        renderPhotographyPanel, renderMessagesPanel, renderCommunityHero,
-        buildProjectCreateInviteContext, resolveActiveSocialProject, renderProjectTaskChecklistBlock,
-        parseTaskChecklistFromForm, syncTaskChecklistInput, getProjectHealthDialogCard,
-        patchProjectHealthPlanCard, taskMatchesPlanPickDueFilter, resolveTaskPackageId,
-        patchProjectHealthPlanPick, countProjectRisksForTask, buildGroupCreateInviteContext,
-        renderGroupCreateInviteSection, findSocialGroupById, renderGroupDetailMemberLine,
-        renderGroupDetailDialog, renderGroupsPanel, renderPagesPanel, renderAlertsPanel,
-        renderProjectsPanel, renderProfilePageBody, renderShellPrimaryNav, renderMobileTabBar,
-        renderShellDrawer, getSocialWorkspaceNavRegion, animateSocialWorkspaceNavOpen,
-        closeSocialWorkspaceNavAnimated
-    } = __socialFeedApi;
 
-    Object.assign(window.__kiuSocialPageShellDeps || {}, {
+    Object.assign(__socialShellDeps, {
+        getSocialCenterScroller, socialScrollLockActive, isSocialRouteDesktopScroll, scrollSocialCenterTo,
         getSocialCenterContentScrollHeight, getSocialCenterMaxScroll, getSocialCenterViewportHeight,
         socialCenterHasLiveScrollRoom, clearSocialCenterScrollBounds, restoreInteractionState,
         syncSocialVisualShell, renderSocialPageNow: (...a) => renderSocialPageNow(...a),
         invalidateSocialRenderCache
     });
 
-    Object.assign(window.__kiuSocialPageInteractionsDeps || {}, {
-        ensureSocialShell, applyShellIdentity, ensureWorkspaceNavCollapsedState, syncWorkspaceNavCollapsedClass,
-        isSocialTopbarSkippedPanel, syncSocialScrollLayout, queueDeferredModuleRender,
+    Object.assign(__socialInteractionsDeps, {
         messageAnchorId, invalidateSocialRenderCache, restoreInteractionState,
         getSocialCenterContentScrollHeight, getSocialCenterMaxScroll, getSocialCenterViewportHeight,
         socialCenterHasLiveScrollRoom, clearSocialCenterScrollBounds,
-        syncSocialVisualShell, renderShellWorkspaceNav, revealShell
+        captureInteractionState, setSocialRegionMarkup, enhanceSocialAccessibility
     });
-
-
 
 
     async function saveLostFoundItems(nextItems, reason = 'lost-found-save') {
@@ -1584,7 +1664,48 @@
 
 
     /* Wave 18: social-page-boot-runtime.js */
-    const __w18Deps = { bindPhotographyUploadDialogFileInput, openPhotographyUploadFilePicker, bindPhotographyUploadFileSinkChange, ensurePhotographyUploadFileSink, applyPhotographyUploadFile, renderPhotographyUploadDialogNow, renderDialogOnlyNow, workspaceDialogKeepsCenter, currentUserId, activeChats, activeChat, activeMessages, groupForChat, resolveProjectWorkspaceChat, ensureProjectWorkspaceChat, renderLinkedMessageText, hasSocialCommunityModule, ensureSocialCommunityModule, hasSocialAlertsModule, ensureSocialAlertsModule, hasSocialLostFoundModule, ensureSocialLostFoundModule, hasSocialPhotographyModule, ensureSocialPhotographyModule, hasSocialSurveysModule, ensureSocialSurveysModule, hasSocialMessagesModule, ensureSocialMessagesModule, hasSocialProfileModule, ensureSocialProfileModule, ensureSocialEventsModule, hasSocialEventsModule, ensureSocialGroupsModule, hasSocialGroupsModule, ensureSocialPagesModule, hasSocialPagesModule, createSocialLazyStub, createSocialWorkspaceStub, ensureSocialFeedModule, hasSocialFeedModule, scheduleDeferredDesktopModulePrefetch, scheduleDirectoryPrefetch, resolveSocialRenderPlan, saveLostFoundItems, socialHub, savedItems, savedPostRecords, currentSocialProfileSettings, isPostSaved, toggleSavedPost };
+    const __w18Deps = {
+        bound: false,
+        boundHost: null,
+        hostEventAbort: null,
+        globalKeydownBound: false,
+        scrollLockMediaBound: false,
+        socialVisualViewportBound: false,
+        renderAttemptCount: 0,
+        MAX_RENDER_ATTEMPTS,
+        SOCIAL_OVERLAY_PORTAL_ID,
+        SOCIAL_OVERLAY_SURFACE_SELECTOR,
+        accountSubtitle, activeDialog, activeNavPanels, avatar, buildProjectCreateContext,
+        buildProjectHealthPlanPickModel, clearProjectTabPaneCache, clearSurveyFlowState,
+        createSocialLazyStub, createSocialWorkspaceStub, currentUser, currentUserId, displayName,
+        ensureSocialAlertsModule, ensureSocialCommunityModule, ensureSocialFeedModule,
+        ensureSocialEventsModule, ensureSocialGroupsModule, ensureSocialLostFoundModule,
+        ensureSocialMessagesModule, ensureSocialPagesModule, ensureSocialPhotographyModule,
+        ensureSocialProfileModule, ensureSocialSurveysModule, ensureSocialWorkspaceModule,
+        escape, feedScopeOptions, hasSocialAlertsModule, hasSocialCommunityModule, hasSocialFeedModule,
+        hasSocialEventsModule, hasSocialGroupsModule, hasSocialLostFoundModule, hasSocialMessagesModule,
+        hasSocialPagesModule, hasSocialPhotographyModule, hasSocialProfileModule, hasSocialSurveysModule, hasSocialWorkspaceModule,
+        listAttachableEntities, normalizeComposerEntityLinks, normalizeProjectTaskStatusId, openDialog,
+        photographyPosts, portfolioEntriesForViewer, postEntityLinks, queueDeferredModuleRender,
+        renderFileChip, renderPostComposeAttachResultsHtml, renderPostComposeShareSection,
+        renderProjectHealthPlanCardHtml, renderProjectHealthPlanPickBodyHtml, renderSocialPageNow,
+        resolveEntityLinkMeta, root, setPanel, state, text, findSocialGroupById,
+        setWorkspaceNavCollapsed, closeSocialWorkspaceNavAnimated, navigateToEntity,
+        invalidateSocialRenderCache, pruneExpiredLostFoundItems, refreshPhotographyPanelStage,
+        shouldRestoreStackedDialog, restorePreviousDialog, closeDialog,
+        socialInteractionContains, syncCommentDraftFromTarget, rippleSurveySubmitButton, rippleSurveyChoiceLabel,
+        applyPhotographyUploadFile, ensureSocialOverlayPortal, ensurePhotographyUploadFileSink,
+        socialScrollLockMedia, socialScrollLockActive, syncSocialScrollLayout, migrateSocialScrollOnLockChange,
+        syncSocialVisualViewport, ensureSocialCenterScrollBounds, bindSocialCenterWheelForward, revealShell,
+        applyShellIdentity, ensureSocialRouteHost, guardStandaloneSocialRoute,
+        patchPostReactions, patchCommentReactionsByIds, patchEventRsvpButtons,
+        bindPhotographyUploadDialogFileInput, openPhotographyUploadFilePicker, bindPhotographyUploadFileSinkChange,
+        renderPhotographyUploadDialogNow, renderDialogOnlyNow, workspaceDialogKeepsCenter,
+        activeChats, activeChat, activeMessages, groupForChat, resolveProjectWorkspaceChat, ensureProjectWorkspaceChat,
+        renderLinkedMessageText, scheduleDeferredDesktopModulePrefetch, scheduleDirectoryPrefetch,
+        resolveSocialRenderPlan, saveLostFoundItems, socialHub, savedItems, savedPostRecords,
+        currentSocialProfileSettings, isPostSaved, toggleSavedPost
+    };
     const __w18PeelApi = typeof window.__kiuCreateSocialPageBootApi === 'function'
         ? window.__kiuCreateSocialPageBootApi(__w18Deps) : null;
     if (!__w18PeelApi) {
@@ -1592,6 +1713,8 @@
         return;
     }
     const { withBusy, bindOverlayCaptureClick, bindOverlayCaptureChange, bindOverlayPortalEvents, bindEvents, renderOrRetry, boot } = __w18PeelApi;
+    Object.assign(__socialInteractionsDeps, { bindEvents });
+    window.__kiuBindOverlayPortalEvents = bindOverlayPortalEvents;
 
     window.__kiuSocialCommunityHooks = window.__kiuSocialCommunityHooks || {};
         Object.assign(window.__kiuSocialCommunityHooks, {

@@ -613,30 +613,30 @@
                                     <strong>${formRisk ? 'Edit risk' : 'Add risk'}</strong>
                                     <span>Scope: ${escape(scopeBreadcrumb)} · ${formRisk ? 'Update this entry' : 'Record a new risk'}</span>
                                 </div>
-                                ${neoField('Description', `<textarea class="social-neo-textarea" id="${escape(descId)}" rows="3" name="projectRiskDescription" placeholder="What could happen and why it matters?" required autocomplete="off">${escape(text(formRisk?.description || ''))}</textarea>`, { forId: descId })}
+                                ${neoField('Description', `<textarea class="social-neo-textarea lux-control" id="${escape(descId)}" rows="3" name="projectRiskDescription" placeholder="What could happen and why it matters?" required autocomplete="off">${escape(text(formRisk?.description || ''))}</textarea>`, { forId: descId })}
                                 <div class="social-neo-form-grid social-neo-form-grid-2">
-                                    ${neoField('Likelihood', `<select class="social-neo-select" id="${escape(likelihoodId)}" name="projectRiskLikelihood" data-lux-picker>${renderProjectRiskScaleOptions('projectRiskLikelihood', formLikelihood, 'likelihood')}</select>`, { forId: likelihoodId })}
-                                    ${neoField('Impact', `<select class="social-neo-select" id="${escape(impactId)}" name="projectRiskImpact" data-lux-picker>${renderProjectRiskScaleOptions('projectRiskImpact', formImpact, 'impact')}</select>`, { forId: impactId })}
+                                    ${neoField('Likelihood', `<select class="social-neo-select lux-control" id="${escape(likelihoodId)}" name="projectRiskLikelihood" data-lux-picker>${renderProjectRiskScaleOptions('projectRiskLikelihood', formLikelihood, 'likelihood')}</select>`, { forId: likelihoodId })}
+                                    ${neoField('Impact', `<select class="social-neo-select lux-control" id="${escape(impactId)}" name="projectRiskImpact" data-lux-picker>${renderProjectRiskScaleOptions('projectRiskImpact', formImpact, 'impact')}</select>`, { forId: impactId })}
                                 </div>
                                 <p class="spr-exposure-hint">Score = Likelihood × Impact (1–5 each, max 25). High ≥ 15 · Medium ≥ 5.</p>
                                 <p class="spr-exposure-live" aria-live="polite">Risk score: <strong>${escape(formatProjectRiskScore(formExposureScore, formExposureTier))}</strong></p>
                                 <div class="social-neo-form-grid social-neo-form-grid-2">
                                     <label class="lux-glass-dialog-field" for="${escape(statusId)}">
                                         <span class="social-neo-label">Status</span>
-                                        <select class="social-neo-select" id="${escape(statusId)}" name="projectRiskStatus" data-lux-picker>
+                                        <select class="social-neo-select lux-control" id="${escape(statusId)}" name="projectRiskStatus" data-lux-picker>
                                             ${PROJECT_RISK_STATUS_OPTIONS.map((option) => `<option value="${escape(option)}" ${text(formRisk?.status || 'open') === option ? 'selected' : ''}>${escape(projectRiskOptionLabel(option))}</option>`).join('')}
                                         </select>
                                     </label>
                                     <label class="lux-glass-dialog-field" for="${escape(responseId)}">
                                         <span class="social-neo-label">Response</span>
-                                        <select class="social-neo-select" id="${escape(responseId)}" name="projectRiskResponse" data-lux-picker>
+                                        <select class="social-neo-select lux-control" id="${escape(responseId)}" name="projectRiskResponse" data-lux-picker>
                                             ${PROJECT_RISK_RESPONSE_OPTIONS.map((option) => `<option value="${escape(option)}" ${text(formRisk?.response || 'mitigate') === option ? 'selected' : ''}>${escape(projectRiskOptionLabel(option))}</option>`).join('')}
                                         </select>
                                     </label>
                                 </div>
                                 <label class="lux-glass-dialog-field" for="${escape(ownerId)}">
                                     <span class="social-neo-label">Owner</span>
-                                    <select class="social-neo-select" id="${escape(ownerId)}" name="projectRiskOwnerUserId" data-lux-picker>
+                                    <select class="social-neo-select lux-control" id="${escape(ownerId)}" name="projectRiskOwnerUserId" data-lux-picker>
                                         <option value="">Unassigned</option>
                                         ${memberSummaries.map((entry) => {
                                             const userId = text(entry?.userId || '');
@@ -645,7 +645,7 @@
                                         }).join('')}
                                     </select>
                                 </label>
-                                ${neoField('Mitigation', `<textarea class="social-neo-textarea" id="${escape(mitigationId)}" rows="2" name="projectRiskMitigation" placeholder="Planned response or controls" autocomplete="off">${escape(text(formRisk?.mitigation || ''))}</textarea>`, { forId: mitigationId })}
+                                ${neoField('Mitigation', `<textarea class="social-neo-textarea lux-control" id="${escape(mitigationId)}" rows="2" name="projectRiskMitigation" placeholder="Planned response or controls" autocomplete="off">${escape(text(formRisk?.mitigation || ''))}</textarea>`, { forId: mitigationId })}
                                 ${neoActions({ actionsClass: 'spr-compose-actions', cancelAction: 'project-risk-compose-cancel', submitLabel: formRisk ? 'Save risk' : 'Add risk', submitIcon: 'fas fa-check' })}
                             </form>` : '';
 

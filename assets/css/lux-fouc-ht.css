@@ -815,6 +815,18 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .sch-info-banner.lux-soft-chrome,
   .sch-empty-week-notice.lux-soft-chrome,
   .sch-grid-empty.lux-soft-chrome,
+  .alib-panel.lux-soft-chrome,
+  .library-catalog-filters-panel.lux-soft-chrome,
+  .social-neo-card,
+  .admin-library-catalog-card.lux-soft-chrome,
+  .orders-admin-panel.lux-soft-chrome,
+  .admin-orders-create-column.lux-soft-chrome,
+  .lux-status-pill,
+  .orders-admin-sent-item,
+  .orders-recipient-row,
+  .orders-recipient-list-shell,
+  .orders-admin-sent-empty,
+  .orders-recipient-list-empty,
   .staff-hub-table-wrap.lux-data-card,
   .students-hub-table-wrap.lux-data-card,
   .staff-hub-info-card.lux-data-card,
@@ -844,6 +856,48 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+}
+
+body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] .lux-status-pill {
+  border-radius: 999px;
+  min-height: 28px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+/* Admin orders create modal: nested soft-chrome without page glass root. */
+body.lux-route-admin-orders .admin-orders-create-column.lux-soft-chrome :is(
+  .orders-recipient-row,
+  .orders-recipient-list-shell,
+  .orders-recipient-list-empty
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-admin-orders :is(
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill {
+  border-radius: 999px;
+  min-height: 28px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: none;
 }
 
 /* Staff/students hub profile: flat sections inside one glass host (scheduler-merge pattern). */
@@ -882,8 +936,7 @@ body.lux-route-staff #staff-content :is(
   .staff-hub-form-settings-head,
   .staff-hub-builder-rail,
   .staff-hub-builder-canvas,
-  .staff-hub-builder-panel,
-  .staff-hub-filter-deck
+  .staff-hub-builder-panel
 ),
 body.lux-route-students-admin #students-content :is(
   .students-hub-controls,
@@ -891,8 +944,7 @@ body.lux-route-students-admin #students-content :is(
   .students-hub-form-settings-head,
   .students-hub-builder-rail,
   .students-hub-builder-canvas,
-  .students-hub-builder-panel,
-  .students-hub-filter-deck
+  .students-hub-builder-panel
 ) {
   position: relative;
   overflow: hidden;
@@ -904,42 +956,6 @@ body.lux-route-students-admin #students-content :is(
   -webkit-backdrop-filter: var(--lux-panel-blur-filter);
   color: var(--lux-text);
   background-clip: padding-box;
-}
-
-/* Hub directory deck: tier-3 controls + chips (shared staff/students). */
-body.lux-route-staff #staff-content :is(.staff-hub-controls, .staff-hub-directory-panel) :is(
-  .staff-hub-control,
-  .lux-control,
-  .lux-picker-btn
-),
-body.lux-route-students-admin #students-content :is(.students-hub-controls, .students-hub-directory-panel) :is(
-  .students-hub-control,
-  .lux-control,
-  .lux-picker-btn
-) {
-  background-color: var(--lux-hub-control-fill, var(--lux-panel-fill));
-  background-image: var(--lux-hub-control-surface, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
-  border: 1px solid var(--lux-hub-border-soft, var(--lux-panel-host-border));
-  box-shadow: var(--lux-hub-control-shadow, var(--lux-elev-1, none));
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-  color: var(--lux-text);
-  background-clip: padding-box;
-}
-
-body.lux-route-staff #staff-content :is(.staff-hub-controls, .staff-hub-directory-panel) :is(
-  .staff-hub-chip,
-  .lux-status-pill
-),
-body.lux-route-students-admin #students-content :is(.students-hub-controls, .students-hub-directory-panel) :is(
-  .students-hub-chip,
-  .lux-status-pill
-) {
-  background-color: var(--lux-hub-chip-fill, var(--lux-panel-fill));
-  background-image: var(--lux-hub-control-surface, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
-  border: 1px solid var(--lux-hub-border-soft, var(--lux-panel-host-border));
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
 }
 
 /* Directory: tier-2 matte table card inside directory panel. */
@@ -991,10 +1007,6 @@ body.lux-route-staff,
 body.lux-route-students-admin {
   --lux-hub-border-soft: rgba(255, 255, 255, 0.10);
   --lux-hub-border: rgba(var(--lux-accent-rgb), 0.22);
-  --lux-hub-control-fill: color-mix(in srgb, var(--lux-panel-fill) 88%, rgba(var(--lux-accent-rgb), 0.08));
-  --lux-hub-control-surface: var(--lux-panel-surface-soft, var(--lux-panel-surface));
-  --lux-hub-control-shadow: var(--lux-elev-1, none);
-  --lux-hub-chip-fill: color-mix(in srgb, var(--lux-panel-fill) 82%, rgba(var(--lux-accent-rgb), 0.06));
   --lux-hub-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
   --lux-hub-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
   --lux-hub-card-border: rgba(var(--lux-accent-rgb), 0.14);

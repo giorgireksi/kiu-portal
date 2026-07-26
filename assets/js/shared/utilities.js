@@ -1447,49 +1447,6 @@ if (typeof window.openLuxGlassDialogOverlay !== 'function') {
         finish();
     };
 
-    window.openLuxHubModalBackdrop = function openLuxHubModalBackdrop(backdrop) {
-        if (!backdrop) return;
-        backdrop.classList.remove('is-closing');
-        luxPopupScheduleOpen(() => backdrop.classList.add('is-open'));
-    };
-
-    window.closeLuxHubModalRoot = function closeLuxHubModalRoot(root, options = {}) {
-        if (!root) return;
-        const backdrop = root.querySelector('.students-hub-modal-backdrop, .staff-hub-modal-backdrop');
-        if (!backdrop) {
-            root.innerHTML = '';
-            root.hidden = true;
-            options.onDone?.();
-            return;
-        }
-        if (options.instant) {
-            root.innerHTML = '';
-            root.hidden = true;
-            options.onDone?.();
-            return;
-        }
-        if (backdrop.classList.contains('is-closing')) return;
-        backdrop.classList.remove('is-open');
-        backdrop.classList.add('is-closing');
-        let finished = false;
-        const done = () => {
-            if (finished) return;
-            finished = true;
-            backdrop.classList.remove('is-closing');
-            root.innerHTML = '';
-            root.hidden = true;
-            options.onDone?.();
-        };
-        const onEnd = (event) => {
-            if (event.target !== backdrop && event.target !== backdrop.firstElementChild) return;
-            done();
-        };
-        backdrop.addEventListener('transitionend', onEnd);
-        window.setTimeout(() => {
-            backdrop.removeEventListener('transitionend', onEnd);
-            done();
-        }, LUX_POPUP_CLOSE_MS + 50);
-    };
 }
 
 // ============================================

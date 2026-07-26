@@ -553,16 +553,41 @@ function setAdminOrdersCreateModalOpen(isOpen) {
     overlay.classList.toggle('active', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     syncAdminOrdersModalBodyLock();
-    if (isOpen && typeof window.queueLuxuryTransparencyRefresh === 'function') {
-        const scheduleRefresh = typeof window.requestAnimationFrame === 'function'
-            ? window.requestAnimationFrame.bind(window)
-            : (cb) => window.setTimeout(cb, 0);
-        scheduleRefresh(() => window.queueLuxuryTransparencyRefresh(window.__currentTransparency || 0));
+}
+
+function renderAdminOrdersCreateModalContents() {
+    ensureAdminOrdersModals();
+    const faculty = getCurrentFaculty();
+    const facultyLabel = getFacultyLabel(faculty);
+    const uiState = ensureAdminOrdersUiState(faculty);
+    const filteredRecipients = getFilteredAdminOrderRecipients(faculty);
+    const selectedRecipientSet = new Set((uiState.selectedRecipientIds || []).map(String));
+    const selectedRecipients = getTargetableOrderUsers(faculty).filter(user => selectedRecipientSet.has(String(user.id)));
+    const roleCounts = selectedRecipients.reduce((acc, recipient) => {
+        acc[recipient.role] = (acc[recipient.role] || 0) + 1;
+        return acc;
+    }, {});
+    const today = new Date().toISOString().slice(0, 10);
+    const recipientsPanel = document.getElementById('admin-orders-recipients-panel');
+    const composePanel = document.getElementById('admin-orders-compose-panel');
+
+    if (recipientsPanel) {
+        renderAdminOrdersRecipientsPanelRegions(
+            recipientsPanel,
+            facultyLabel,
+            uiState,
+            filteredRecipients,
+            selectedRecipientSet,
+            selectedRecipients
+        );
+    }
+    if (composePanel) {
+        renderAdminOrdersComposePanelRegions(composePanel, uiState, roleCounts, today, selectedRecipients.length);
     }
 }
 
 function openAdminOrdersCreateModal() {
-    renderAdminOrders();
+    renderAdminOrdersCreateModalContents();
     setAdminOrdersCreateModalOpen(true);
 }
 
@@ -711,7 +736,7 @@ function renderAdminOrdersCommandCard(container, uiState, selectedRecipients, ro
             <div class="orders-admin-command-copy">
                 <div class="lux-card-title">Create Official Order</div>
                 <div class="lux-card-copy">Dispatch institutional orders to all account types inside the current faculty.</div>
-                <div class="orders-admin-command-pills" data-admin-orders-command-pills="1"></div>
+                <div class="lux-pill-row orders-admin-command-pills" data-admin-orders-command-pills="1"></div>
                 <div class="orders-admin-command-draft" data-admin-orders-command-draft="1">${escapeHtml(draftHint)}</div>
             </div>
             <div class="orders-admin-command-actions">
@@ -989,10 +1014,72 @@ function bindOrdersWorkspaceDelegates() {
 }
 
 
+function ensureAdminOrdersModals() {
+    let createOverlay = document.getElementById('admin-orders-create-overlay');
+    if (!createOverlay) {
+        createOverlay = document.createElement('div');
+        createOverlay.id = 'admin-orders-create-overlay';
+        createOverlay.setAttribute('data-lux-modal-overlay', '');
+        createOverlay.setAttribute('aria-hidden', 'true');
+        createOverlay.innerHTML = `
+            <div class="admin-orders-create-modal modal-content" data-lux-transparency-exempt="1">
+                <div class="admin-orders-create-head">
+                    <div>
+                        <div class="lux-card-title">Create Official Order</div>
+                        <div class="lux-card-copy">Select recipients, compose the order, then publish to their Orders inbox.</div>
+                    </div>
+                    <button type="button" class="lux-secondary-btn" data-admin-orders-close-create-modal="true" aria-label="Close create order modal"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="admin-orders-create-grid">
+                    <section class="admin-orders-create-column admin-orders-create-column--recipients lux-soft-chrome" id="admin-orders-recipients-panel" aria-label="Select recipients"></section>
+                    <section class="admin-orders-create-column admin-orders-create-column--compose lux-soft-chrome" id="admin-orders-compose-panel" aria-label="Compose order"></section>
+                </div>
+                <div class="admin-orders-create-foot">
+                    <div class="lux-pill-row orders-compose-pills" id="admin-orders-create-footer-summary" data-admin-orders-count-pills-host="1"></div>
+                    <div class="admin-orders-create-foot-actions">
+                        <button type="button" class="lux-secondary-btn" data-admin-orders-close-create-modal="true">Cancel</button>
+                        <button type="button" class="lux-primary-btn" data-admin-orders-send="1"><i class="fas fa-paper-plane"></i> Publish Order</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(createOverlay);
+    }
+    createOverlay.className = 'modal-overlay admin-orders-modal-overlay';
+    const createModal = createOverlay.querySelector('.admin-orders-create-modal');
+    if (createModal) {
+        createModal.className = 'admin-orders-create-modal modal-content';
+        createModal.setAttribute('data-lux-transparency-exempt', '1');
+        createModal.removeAttribute('data-lux-btn-density');
+    }
+
+    let threadOverlay = document.getElementById('admin-orders-thread-overlay');
+    if (!threadOverlay) {
+        threadOverlay = document.createElement('div');
+        threadOverlay.id = 'admin-orders-thread-overlay';
+        threadOverlay.setAttribute('data-lux-modal-overlay', '');
+        threadOverlay.setAttribute('aria-hidden', 'true');
+        threadOverlay.innerHTML = `
+            <div class="admin-orders-thread-modal modal-content" data-lux-transparency-exempt="1">
+                <div id="admin-orders-thread-panel" aria-label="Order thread"></div>
+            </div>
+        `;
+        document.body.appendChild(threadOverlay);
+    }
+    threadOverlay.className = 'modal-overlay admin-orders-modal-overlay';
+    const threadModal = threadOverlay.querySelector('.admin-orders-thread-modal');
+    if (threadModal) {
+        threadModal.className = 'admin-orders-thread-modal modal-content';
+        threadModal.setAttribute('data-lux-transparency-exempt', '1');
+        threadModal.removeAttribute('data-lux-btn-density');
+    }
+}
+
 function renderAdminOrders() {
     const root = document.getElementById('admin-orders-root');
     if (!root) return;
     bindOrdersWorkspaceDelegates();
+    ensureAdminOrdersModals();
     if (getEffectiveUserRole() !== USER_ROLES.ADMIN) {
         renderOrdersInboxPage();
         return;
@@ -1022,11 +1109,15 @@ function renderAdminOrders() {
     const recipientFootprint = orders.reduce((count, order) => count + (order.recipientCount || order.recipientIds?.length || 0), 0);
 
     const shell = ensureAdminOrdersShell(root);
-    if (!shell.commandPanel || !shell.recipientsPanel || !shell.composePanel || !shell.ordersTablePanel || !shell.detailPanel) return;
+    if (!shell.commandPanel || !shell.ordersTablePanel || !shell.detailPanel) return;
 
     renderAdminOrdersCommandCard(shell.commandPanel, uiState, selectedRecipients, roleCounts);
-    renderAdminOrdersRecipientsPanelRegions(shell.recipientsPanel, facultyLabel, uiState, filteredRecipients, selectedRecipientSet, selectedRecipients);
-    renderAdminOrdersComposePanelRegions(shell.composePanel, uiState, roleCounts, today, selectedRecipients.length);
+    if (shell.recipientsPanel) {
+        renderAdminOrdersRecipientsPanelRegions(shell.recipientsPanel, facultyLabel, uiState, filteredRecipients, selectedRecipientSet, selectedRecipients);
+    }
+    if (shell.composePanel) {
+        renderAdminOrdersComposePanelRegions(shell.composePanel, uiState, roleCounts, today, selectedRecipients.length);
+    }
     setOrdersRegionMarkup(shell.ordersTablePanel, 'admin-filter', renderAdminOrdersFilterPanel(uiState, facultyLabel, filteredOrders.length, orders.length));
     renderAdminOrdersSentInboxPanel(shell.detailPanel, filteredOrders, uiState.selectedOrderId);
     return;
@@ -1037,7 +1128,7 @@ function ensureAdminOrdersShell(root) {
         root.innerHTML = `
             <div class="lux-page-shell orders-admin-shell" data-admin-orders-shell="1" data-lux-layout-only="1">
                 <div class="orders-admin-grid">
-                    <section class="lux-panel orders-admin-panel orders-admin-workspace-card" data-lux-glass-root="1">
+                    <section class="lux-panel orders-admin-panel orders-admin-workspace-card lux-soft-chrome" data-lux-glass-root="1">
                         <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--workspace">
                             <div class="orders-admin-workspace-section orders-admin-workspace-section--command" id="admin-orders-command-panel" aria-label="Create official order"></div>
                             <div class="orders-admin-workspace-divider" role="presentation"></div>
@@ -1050,6 +1141,9 @@ function ensureAdminOrdersShell(root) {
             </div>
         `;
     }
+
+    const workspacePanel = root.querySelector('.orders-admin-panel[data-lux-glass-root="1"]');
+    workspacePanel?.removeAttribute('data-lux-btn-density');
 
     return {
         commandPanel: root.querySelector('#admin-orders-command-panel'),
@@ -1162,7 +1256,7 @@ function mountAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiState
     }));
 
     const filterRow = createOrdersNode('div', {
-        className: 'orders-recipient-filter-row'
+        className: 'lux-pill-row orders-recipient-filter-row'
     });
     getAdminOrdersRecipientRoleFilters().forEach((role) => {
         filterRow.appendChild(createAdminOrdersRoleFilterButton(role, (uiState.roleFilter || 'all') === role));
@@ -1339,34 +1433,34 @@ function renderAdminOrdersFilterPanel(uiState, facultyLabel, filteredCount, tota
             <span class="lux-status-pill is-info">${filteredCount} matching</span>
         </div>
         <div class="orders-admin-filter-grid">
-            <div class="lux-field orders-admin-filter-field orders-admin-filter-field--wide">
-                <label>Search</label>
+            <label class="lux-picker-field orders-admin-filter-field orders-admin-filter-field--wide">
+                <span class="lux-picker-label">Search</span>
                 <input type="search" class="lux-control" value="${escapeHtml(filters.search || '')}" data-admin-orders-sent-search="1" placeholder="Search title, type, id, or description">
-            </div>
-            <div class="lux-field orders-admin-filter-field">
-                <label>Type</label>
+            </label>
+            <label class="lux-picker-field orders-admin-filter-field">
+                <span class="lux-picker-label">Type</span>
                 <select class="lux-control" data-lux-picker-label="Type" data-admin-orders-sent-filter="type">${typeOptions}</select>
-            </div>
-            <div class="lux-field orders-admin-filter-field">
-                <label>Status</label>
+            </label>
+            <label class="lux-picker-field orders-admin-filter-field">
+                <span class="lux-picker-label">Status</span>
                 <select class="lux-control" data-lux-picker-label="Status" data-admin-orders-sent-filter="status">${statusOptions}</select>
-            </div>
-            <div class="lux-field orders-admin-filter-field">
-                <label>Kind</label>
+            </label>
+            <label class="lux-picker-field orders-admin-filter-field">
+                <span class="lux-picker-label">Kind</span>
                 <select class="lux-control" data-lux-picker-label="Kind" data-admin-orders-sent-filter="kind">${kindOptions}</select>
-            </div>
-            <div class="lux-field orders-admin-filter-field">
-                <label>Recipients</label>
+            </label>
+            <label class="lux-picker-field orders-admin-filter-field">
+                <span class="lux-picker-label">Recipients</span>
                 <select class="lux-control" data-lux-picker-label="Recipients" data-admin-orders-sent-filter="recipientRole">${roleOptions}</select>
-            </div>
-            <div class="lux-field orders-admin-filter-field">
-                <label>From</label>
+            </label>
+            <label class="lux-picker-field orders-admin-filter-field">
+                <span class="lux-picker-label">From</span>
                 <input type="date" class="lux-control" value="${escapeHtml(filters.dateFrom || '')}" data-admin-orders-sent-filter="dateFrom">
-            </div>
-            <div class="lux-field orders-admin-filter-field">
-                <label>To</label>
+            </label>
+            <label class="lux-picker-field orders-admin-filter-field">
+                <span class="lux-picker-label">To</span>
                 <input type="date" class="lux-control" value="${escapeHtml(filters.dateTo || '')}" data-admin-orders-sent-filter="dateTo">
-            </div>
+            </label>
         </div>
         <div class="orders-admin-filter-foot">
             <span class="lux-status-pill is-muted">${totalCount} total in faculty</span>
@@ -1497,9 +1591,6 @@ function renderAdminOrderThreadPanelContent() {
     if (!panel || !order) return;
     panel.innerHTML = renderAdminOrderThreadShell(order);
     scrollAdminOrderThreadChatLog();
-    if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-        window.queueLuxuryTransparencyRefresh(window.__currentTransparency || 0);
-    }
 }
 
 function setAdminOrdersThreadModalOpen(isOpen) {
@@ -1508,12 +1599,6 @@ function setAdminOrdersThreadModalOpen(isOpen) {
     overlay.classList.toggle('active', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     syncAdminOrdersModalBodyLock();
-    if (isOpen && typeof window.queueLuxuryTransparencyRefresh === 'function') {
-        const scheduleRefresh = typeof window.requestAnimationFrame === 'function'
-            ? window.requestAnimationFrame.bind(window)
-            : (cb) => window.setTimeout(cb, 0);
-        scheduleRefresh(() => window.queueLuxuryTransparencyRefresh(window.__currentTransparency || 0));
-    }
 }
 
 function openAdminOrderThreadModal(orderId) {

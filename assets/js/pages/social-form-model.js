@@ -516,7 +516,7 @@ function filePreview(file) {
                 <strong>${escape(text(file.name || 'Attachment'))}</strong>
                 <span>${escape(text(file.type || 'File'))}</span>
             </div>
-            ${href ? `<a class="social-neo-link-btn" href="${escape(href)}" target="_blank" rel="noopener">Open</a>` : ''}
+            ${href ? `<a class="lux-ghost-btn" href="${escape(href)}" target="_blank" rel="noopener">Open</a>` : ''}
         </div>
     `;
 }

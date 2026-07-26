@@ -468,7 +468,7 @@ return {
         if (!node || node.nodeType !== 1) return true;
         if (/^(SCRIPT|STYLE|LINK|META|TITLE|NOSCRIPT|CANVAS|SVG|PATH)$/.test(node.tagName)) return true;
         if (node.closest('.lux-timetable-page, .social-neo, #social-neo-overlay-portal')) return true;
-        if (node.closest?.('#admin-orders-create-overlay')) return true;
+        if (node.closest?.('#admin-orders-create-overlay, #admin-orders-thread-overlay')) return true;
         if (node.classList?.contains('lms-session-marker-type-chip') || node.closest?.('.lms-session-marker-type-chips')) return true;
         if (document.body?.classList?.contains('lux-route-lms')) return true;
         if (node.closest('#page-lms, #page-lms-groups, #page-lms-inner, #lms-content-area')) return true;

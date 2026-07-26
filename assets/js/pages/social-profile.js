@@ -219,39 +219,39 @@
                     <form class="social-neo-profile-edit" data-form="edit-profile">
                         <div class="social-neo-profile-edit-field">
                             <label for="profileDisplayName">Display Name</label>
-                            <input class="social-neo-input" id="profileDisplayName" name="profileDisplayName" type="text" placeholder="How people know you on campus" value="${escape(runtime.ui.profileDisplayName || displayName(account))}">
+                            <input class="social-neo-input lux-control" id="profileDisplayName" name="profileDisplayName" type="text" placeholder="How people know you on campus" value="${escape(runtime.ui.profileDisplayName || displayName(account))}">
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileBio">Bio</label>
-                            <textarea class="social-neo-textarea" id="profileBio" name="profileBio" rows="4" placeholder="Tell people about yourself...">${escape(runtime.ui.profileBio || bio)}</textarea>
+                            <textarea class="social-neo-textarea lux-control" id="profileBio" name="profileBio" rows="4" placeholder="Tell people about yourself...">${escape(runtime.ui.profileBio || bio)}</textarea>
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileLocation">Location</label>
-                            <input class="social-neo-input" id="profileLocation" name="profileLocation" type="text" placeholder="City, Country" value="${escape(runtime.ui.profileLocation || text(account?.location || ''))}">
+                            <input class="social-neo-input lux-control" id="profileLocation" name="profileLocation" type="text" placeholder="City, Country" value="${escape(runtime.ui.profileLocation || text(account?.location || ''))}">
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileWebsite">Website</label>
-                            <input class="social-neo-input" id="profileWebsite" name="profileWebsite" type="url" placeholder="https://..." value="${escape(runtime.ui.profileWebsite || text(account?.website || ''))}">
+                            <input class="social-neo-input lux-control" id="profileWebsite" name="profileWebsite" type="url" placeholder="https://..." value="${escape(runtime.ui.profileWebsite || text(account?.website || ''))}">
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileBirthday">Birthday</label>
-                            <input class="social-neo-input" id="profileBirthday" name="profileBirthday" type="date" value="${escape(runtime.ui.profileBirthday || text(account?.birthday || ''))}">
+                            <input class="social-neo-input lux-control" id="profileBirthday" name="profileBirthday" type="date" value="${escape(runtime.ui.profileBirthday || text(account?.birthday || ''))}">
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileInterests">Interests</label>
-                            <input class="social-neo-input" id="profileInterests" name="profileInterests" type="text" placeholder="AI, robotics, economics" value="${escape(runtime.ui.profileInterests || (Array.isArray(account?.interests) ? account.interests.join(', ') : ''))}">
+                            <input class="social-neo-input lux-control" id="profileInterests" name="profileInterests" type="text" placeholder="AI, robotics, economics" value="${escape(runtime.ui.profileInterests || (Array.isArray(account?.interests) ? account.interests.join(', ') : ''))}">
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileAvailability">Availability</label>
-                            <input class="social-neo-input" id="profileAvailability" name="profileAvailability" type="text" placeholder="Weekdays after 15:00" value="${escape(runtime.ui.profileAvailability || text(account?.availability || ''))}">
+                            <input class="social-neo-input lux-control" id="profileAvailability" name="profileAvailability" type="text" placeholder="Weekdays after 15:00" value="${escape(runtime.ui.profileAvailability || text(account?.availability || ''))}">
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileOfficeHours">Office Hours</label>
-                            <input class="social-neo-input" id="profileOfficeHours" name="profileOfficeHours" type="text" placeholder="Tue 14:00-16:00 / Faculty Hub" value="${escape(runtime.ui.profileOfficeHours || text(account?.officeHours || ''))}">
+                            <input class="social-neo-input lux-control" id="profileOfficeHours" name="profileOfficeHours" type="text" placeholder="Tue 14:00-16:00 / Faculty Hub" value="${escape(runtime.ui.profileOfficeHours || text(account?.officeHours || ''))}">
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileVisibility">Profile Visibility</label>
-                            <select class="social-neo-select" id="profileVisibility" name="profileVisibility" data-lux-native data-lux-picker-enhanced="true">
+                            <select class="social-neo-select lux-control" id="profileVisibility" name="profileVisibility" data-lux-native data-lux-picker-enhanced="true">
                                 <option value="campus" ${(runtime.ui.profileVisibility || currentSocialProfileSettings(userId).visibility || 'campus') === 'campus' ? 'selected' : ''}>Campus only</option>
                                 <option value="connections" ${(runtime.ui.profileVisibility || currentSocialProfileSettings(userId).visibility || 'campus') === 'connections' ? 'selected' : ''}>Connections only</option>
                                 <option value="public" ${(runtime.ui.profileVisibility || currentSocialProfileSettings(userId).visibility || 'campus') === 'public' ? 'selected' : ''}>Public</option>
@@ -259,7 +259,7 @@
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileDefaultAudience">Default Post Audience</label>
-                            <select class="social-neo-select" id="profileDefaultAudience" name="profileDefaultAudience" data-lux-native data-lux-picker-enhanced="true">
+                            <select class="social-neo-select lux-control" id="profileDefaultAudience" name="profileDefaultAudience" data-lux-native data-lux-picker-enhanced="true">
                                 <option value="campus" ${(runtime.ui.profileDefaultAudience || currentSocialProfileSettings(userId).defaultAudience || 'campus') === 'campus' ? 'selected' : ''}>Campus</option>
                                 <option value="connections" ${(runtime.ui.profileDefaultAudience || currentSocialProfileSettings(userId).defaultAudience || 'campus') === 'connections' ? 'selected' : ''}>Connections</option>
                                 <option value="private" ${(runtime.ui.profileDefaultAudience || currentSocialProfileSettings(userId).defaultAudience || 'campus') === 'private' ? 'selected' : ''}>Only me</option>
@@ -267,7 +267,7 @@
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileDigestFrequency">Digest Frequency</label>
-                            <select class="social-neo-select" id="profileDigestFrequency" name="profileDigestFrequency" data-lux-native data-lux-picker-enhanced="true">
+                            <select class="social-neo-select lux-control" id="profileDigestFrequency" name="profileDigestFrequency" data-lux-native data-lux-picker-enhanced="true">
                                 <option value="daily" ${(runtime.ui.profileDigestFrequency || currentSocialProfileSettings(userId).digestFrequency || 'daily') === 'daily' ? 'selected' : ''}>Daily digest</option>
                                 <option value="weekly" ${(runtime.ui.profileDigestFrequency || currentSocialProfileSettings(userId).digestFrequency || 'daily') === 'weekly' ? 'selected' : ''}>Weekly digest</option>
                                 <option value="off" ${(runtime.ui.profileDigestFrequency || currentSocialProfileSettings(userId).digestFrequency || 'daily') === 'off' ? 'selected' : ''}>Off</option>
@@ -275,7 +275,7 @@
                         </div>
                         <div class="social-neo-profile-edit-field">
                             <label for="profileEventReminderLeadHours">Event Reminder Lead Time</label>
-                            <input class="social-neo-input" id="profileEventReminderLeadHours" name="profileEventReminderLeadHours" type="number" min="0" max="168" placeholder="24" value="${escape(String(runtime.ui.profileEventReminderLeadHours ?? currentSocialProfileSettings(userId).eventReminderLeadHours ?? 24))}">
+                            <input class="social-neo-input lux-control" id="profileEventReminderLeadHours" name="profileEventReminderLeadHours" type="number" min="0" max="168" placeholder="24" value="${escape(String(runtime.ui.profileEventReminderLeadHours ?? currentSocialProfileSettings(userId).eventReminderLeadHours ?? 24))}">
                         </div>
                         <div class="social-neo-profile-edit-actions">
                             <button class="lux-secondary-btn" type="button" data-action="profile-edit-cancel">Cancel</button>
@@ -387,7 +387,7 @@
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <form class="lux-glass-dialog-card" data-form="dialog-profile-cover" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Update cover photo', 'Paste an image URL or upload a file for your profile banner.') : ''}
-                    <input class="social-neo-input" name="coverImageUrl" type="url" placeholder="https://..." value="${escape(text(dialog.coverImage || ''))}">
+                    <input class="social-neo-input lux-control" name="coverImageUrl" type="url" placeholder="https://..." value="${escape(text(dialog.coverImage || ''))}">
                     ${renderFileChip(state().ui?.coverImageFile, 'Cover image ready')}
                     <div class="social-neo-inline social-neo-quick-actions">
                         <label class="lux-secondary-btn lux-secondary-btn-pointer">

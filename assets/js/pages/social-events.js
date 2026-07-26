@@ -112,7 +112,7 @@
                 </div>
                 <div class="social-neo-events-hero-grid">
                     ${tabs.map((tab) => `
-                        <button class="social-neo-events-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-events" data-events-tab="${escape(tab.tab)}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
+                        <button class="lux-secondary-btn social-neo-events-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-events" data-events-tab="${escape(tab.tab)}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
                             <span class="social-neo-events-hero-tab-icon"><i class="fas ${escape(tab.icon)}"></i></span>
                             <span class="social-neo-events-hero-tab-copy">
                                 <strong>${escape(tab.label)}</strong>
@@ -334,7 +334,7 @@
                             <div class="social-neo-inline social-neo-inline-column-end">
                                 ${group.membershipState === 'member' || group.membershipState === 'manager'
                                     ? `<button class="lux-primary-btn" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}">Open chat</button>
-                                       <button class="social-neo-link-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}">Leave</button>`
+                                       <button class="lux-ghost-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}">Leave</button>`
                                     : group.membershipState === 'pending'
                                         ? '<span class="social-neo-pill">Pending</span>'
                                         : `<button class="lux-primary-btn" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">${text(group.visibility) === 'private' ? 'Request to join' : 'Join'}</button>`
@@ -473,7 +473,7 @@
         const categoryField = isUniversity ? '' : `
             <label class="lux-glass-dialog-field" for="${escape(eventCategoryId)}">
                 <span class="social-neo-label">Category</span>
-                <select class="social-neo-select" id="${escape(eventCategoryId)}" name="eventCategory" data-lux-picker>
+                <select class="social-neo-select lux-control" id="${escape(eventCategoryId)}" name="eventCategory" data-lux-picker>
                     <option value="social" ${text(runtime.ui?.eventCategory || 'social') === 'social' ? 'selected' : ''}>Social</option>
                     <option value="academic" ${text(runtime.ui?.eventCategory) === 'academic' ? 'selected' : ''}>Academic</option>
                     <option value="club" ${text(runtime.ui?.eventCategory) === 'club' ? 'selected' : ''}>Club</option>
@@ -496,39 +496,39 @@
                     ${hiddenFields}
                     <label class="lux-glass-dialog-field" for="${escape(eventTitleId)}">
                         <span class="social-neo-label">Event title</span>
-                        <input class="social-neo-input" id="${escape(eventTitleId)}" type="text" name="eventTitle" placeholder="${isUniversity ? 'Official event title' : 'Event title'}" value="${escape(text(runtime.ui?.eventTitle || ''))}" required>
+                        <input class="social-neo-input lux-control" id="${escape(eventTitleId)}" type="text" name="eventTitle" placeholder="${isUniversity ? 'Official event title' : 'Event title'}" value="${escape(text(runtime.ui?.eventTitle || ''))}" required>
                     </label>
                     <label class="lux-glass-dialog-field" for="${escape(eventDescId)}">
                         <span class="social-neo-label">Description</span>
-                        <textarea class="social-neo-textarea" id="${escape(eventDescId)}" rows="4" name="eventDescription" placeholder="${isUniversity ? 'Explain the session, speakers, and what students should expect.' : 'What is happening, who should join, and what should people bring?'}">${escape(text(runtime.ui?.eventDescription || ''))}</textarea>
+                        <textarea class="social-neo-textarea lux-control" id="${escape(eventDescId)}" rows="4" name="eventDescription" placeholder="${isUniversity ? 'Explain the session, speakers, and what students should expect.' : 'What is happening, who should join, and what should people bring?'}">${escape(text(runtime.ui?.eventDescription || ''))}</textarea>
                     </label>
                     <div class="social-neo-form-grid social-neo-form-grid-2">
                         <label class="lux-glass-dialog-field" for="${escape(eventStartsAtId)}">
                             <span class="social-neo-label">Starts</span>
-                            <input class="social-neo-input" id="${escape(eventStartsAtId)}" type="datetime-local" name="eventStartsAt" value="${escape(text(runtime.ui?.eventStartsAt || ''))}" required>
+                            <input class="social-neo-input lux-control" id="${escape(eventStartsAtId)}" type="datetime-local" name="eventStartsAt" value="${escape(text(runtime.ui?.eventStartsAt || ''))}" required>
                         </label>
                         <label class="lux-glass-dialog-field" for="${escape(eventEndsAtId)}">
                             <span class="social-neo-label">Ends</span>
-                            <input class="social-neo-input" id="${escape(eventEndsAtId)}" type="datetime-local" name="eventEndsAt" value="${escape(text(runtime.ui?.eventEndsAt || ''))}">
+                            <input class="social-neo-input lux-control" id="${escape(eventEndsAtId)}" type="datetime-local" name="eventEndsAt" value="${escape(text(runtime.ui?.eventEndsAt || ''))}">
                         </label>
                     </div>
                     <div class="social-neo-form-grid social-neo-form-grid-2">
                         <label class="lux-glass-dialog-field" for="${escape(eventLocationId)}">
                             <span class="social-neo-label">${isUniversity ? 'Venue / room' : 'Location'}</span>
-                            <input class="social-neo-input" id="${escape(eventLocationId)}" type="text" name="eventLocation" placeholder="${isUniversity ? 'Auditorium A, Hall 3, Online...' : 'Library, Room 204, Courtyard, Zoom...'}" value="${escape(text(runtime.ui?.eventLocation || ''))}">
+                            <input class="social-neo-input lux-control" id="${escape(eventLocationId)}" type="text" name="eventLocation" placeholder="${isUniversity ? 'Auditorium A, Hall 3, Online...' : 'Library, Room 204, Courtyard, Zoom...'}" value="${escape(text(runtime.ui?.eventLocation || ''))}">
                         </label>
                         ${categoryField}
                     </div>
                     <div class="social-neo-form-grid social-neo-form-grid-3">
                         <label class="lux-glass-dialog-field" for="${escape(eventScopeId)}">
                             <span class="social-neo-label">Publish in</span>
-                            <select class="social-neo-select" id="${escape(eventScopeId)}" name="eventScope" data-lux-picker>
+                            <select class="social-neo-select lux-control" id="${escape(eventScopeId)}" name="eventScope" data-lux-picker>
                                 ${scopeOptions.map((option) => `<option value="${escape(`${option.type}:${option.id}`)}" ${selectedEventScope === `${option.type}:${option.id}` ? 'selected' : ''}>${escape(option.name)}</option>`).join('')}
                             </select>
                         </label>
                         <label class="lux-glass-dialog-field" for="${escape(eventJoinModeId)}">
                             <span class="social-neo-label">${isUniversity ? 'Access' : 'Join mode'}</span>
-                            <select class="social-neo-select" id="${escape(eventJoinModeId)}" name="eventJoinMode" data-lux-picker>
+                            <select class="social-neo-select lux-control" id="${escape(eventJoinModeId)}" name="eventJoinMode" data-lux-picker>
                                 <option value="open" ${text(runtime.ui?.eventJoinMode || 'open') === 'open' ? 'selected' : ''}>${isUniversity ? 'Open to all students' : 'Open to all'}</option>
                                 <option value="member-required" ${text(runtime.ui?.eventJoinMode) === 'member-required' ? 'selected' : ''}>${isUniversity ? 'Faculty members only' : 'Members only'}</option>
                                 <option value="invite-only" ${text(runtime.ui?.eventJoinMode) === 'invite-only' ? 'selected' : ''}>Invite only</option>
@@ -536,7 +536,7 @@
                         </label>
                         <label class="lux-glass-dialog-field" for="${escape(eventMaxSeatsId)}">
                             <span class="social-neo-label">Max seats</span>
-                            <input class="social-neo-input" id="${escape(eventMaxSeatsId)}" type="number" name="eventMaxSeats" min="1" placeholder="Unlimited" value="${escape(text(runtime.ui?.eventMaxSeats || ''))}">
+                            <input class="social-neo-input lux-control" id="${escape(eventMaxSeatsId)}" type="number" name="eventMaxSeats" min="1" placeholder="Unlimited" value="${escape(text(runtime.ui?.eventMaxSeats || ''))}">
                         </label>
                     </div>
                     <div class="social-neo-inline social-neo-events-toggle-row social-neo-inline-gap-14-wrap">

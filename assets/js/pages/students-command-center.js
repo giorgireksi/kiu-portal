@@ -736,32 +736,28 @@
             root.setAttribute('data-lux-transparency-exempt', '1');
         }
         const toneClass = `is-list-${escapeHtml(content.listKey || listKey)}`;
-        root.innerHTML = `
-            <div class="students-hub-modal-backdrop" data-student-action="dismiss-academic-subjects">
-                <div class="students-hub-modal students-hub-academic-subjects-modal ${toneClass}${content.isEmpty ? ' is-empty' : ''}" role="dialog" aria-modal="true" aria-labelledby="students-academic-subjects-title">
-                    <div class="students-hub-modal-head students-hub-academic-subjects-head">
-                        <div class="students-hub-modal-head-main">
-                            <div class="students-hub-modal-title-row">
-                                <h2 class="students-hub-modal-title" id="students-academic-subjects-title">
-                                    <span class="students-hub-academic-subjects-icon" aria-hidden="true"><i class="fas ${escapeHtml(content.icon || 'fa-book-open')}"></i></span>
-                                    ${escapeHtml(content.title)}
-                                    <span class="students-hub-academic-count">${escapeHtml(String(content.count))}</span>
-                                </h2>
-                            </div>
+        const headHtml = `
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head lux-hub-form-modal-head students-hub-academic-subjects-head">
+                        <div class="lux-glass-dialog-heading">
+                            <strong class="lux-glass-dialog-title" id="students-academic-subjects-title">
+                                <span class="students-hub-academic-subjects-icon" aria-hidden="true"><i class="fas ${escapeHtml(content.icon || 'fa-book-open')}"></i></span>
+                                ${escapeHtml(content.title)}
+                                <span class="students-hub-academic-count">${escapeHtml(String(content.count))}</span>
+                            </strong>
                         </div>
-                        <button class="students-hub-academic-subjects-close lux-secondary-btn" type="button" data-student-action="close-academic-subjects" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
-                    </div>
-                    <div class="students-hub-modal-body students-hub-academic-subjects-body">
-                        ${content.bodyHtml}
-                    </div>
-                </div>
-            </div>
-        `;
-        const hubBackdrop = root.querySelector('.students-hub-modal-backdrop');
-        if (hubBackdrop && typeof window.openLuxHubModalBackdrop === 'function') {
-            window.openLuxHubModalBackdrop(hubBackdrop);
-        } else {
-            hubBackdrop?.classList.add('is-open');
+                        <button class="students-hub-academic-subjects-close lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-student-action="close-academic-subjects" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    </div>`;
+        root.innerHTML = typeof renderLuxHubDialogModalOverlay === 'function'
+            ? renderLuxHubDialogModalOverlay({
+                dismissAttr: 'data-student-action="dismiss-academic-subjects"',
+                hookClass: `students-hub-academic-subjects-modal lux-glass-dialog-card--hub-dialog ${toneClass}${content.isEmpty ? ' is-empty' : ''}`,
+                headHtml,
+                bodyHtml: content.bodyHtml,
+                bodyClass: 'students-hub-academic-subjects-body lux-glass-dialog-body--hub-form'
+            })
+            : '';
+        if (typeof window.openLuxHubFormModalRoot === 'function') {
+            window.openLuxHubFormModalRoot(root);
         }
         if (options.restoreSearchFocus) {
             const search = root.querySelector('#academic-subjects-search');
@@ -817,40 +813,41 @@
         if (!root.hasAttribute('data-lux-transparency-exempt')) {
             root.setAttribute('data-lux-transparency-exempt', '1');
         }
-        root.innerHTML = `
-            <div class="students-hub-modal-backdrop" data-student-action="dismiss-modal">
-                <form class="students-hub-modal" id="students-admin-form" novalidate data-student-type-id="${escapeHtml(staffTypeId)}" autocomplete="off">
-                    <div class="students-hub-modal-head">
-                        <div class="students-hub-modal-head-main">
-                            <div class="students-hub-modal-title-row">
-                                <h2 class="students-hub-modal-title"><i class="fas ${titleIcon}" aria-hidden="true"></i> ${editing ? 'Edit Staff Profile' : 'Add Staff Member'}</h2>
-                                <span class="students-hub-modal-type-pill">${escapeHtml(staffType?.label || 'Staff')}</span>
-                            </div>
-                            <p class="students-hub-modal-copy">${editing
-                                ? `Update this ${escapeHtml(staffType?.label || 'staff')} profile using your configured form sections.`
-                                : `Create a new ${escapeHtml(staffType?.label || 'staff')} profile from the sections your administrators configured.`}</p>
-                        </div>
-                        <button class="lux-secondary-btn" type="button" data-student-action="close-modal" aria-label="Close modal"><i class="fas fa-times" aria-hidden="true"></i> Close</button>
-                    </div>
-                    <div class="students-hub-modal-body">
-                        ${bodyMarkup}
-                    </div>
-                    <div class="students-hub-modal-foot">
-                        ${renderModalStatus(completion, touched)}
-                        <div class="students-hub-modal-actions lux-btn-row-stack">
+        const subtitle = editing
+            ? `Update this ${staffType?.label || 'staff'} profile using your configured form sections.`
+            : `Create a new ${staffType?.label || 'staff'} profile from the sections your administrators configured.`;
+        const actionsHtml = `
                             <button class="lux-secondary-btn" type="button" data-student-action="close-modal">Cancel</button>
                             <button class="lux-secondary-btn" type="button" data-student-action="check-required-fields"><i class="fas fa-list-check" aria-hidden="true"></i> Check required fields</button>
                             <button class="lux-primary-btn" type="submit" ${schemaEmpty ? 'disabled' : ''}><i class="fas fa-check" aria-hidden="true"></i> ${editing ? 'Save Staff Profile' : 'Create Staff Profile'}</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        `;
-        const hubBackdrop = root.querySelector('.students-hub-modal-backdrop');
-        if (hubBackdrop && typeof window.openLuxHubModalBackdrop === 'function') {
-            window.openLuxHubModalBackdrop(hubBackdrop);
-        } else {
-            hubBackdrop?.classList.add('is-open');
+                        `;
+        const headHtml = typeof renderLuxHubFormModalHead === 'function'
+            ? renderLuxHubFormModalHead({
+                title: editing ? 'Edit Staff Profile' : 'Add Staff Member',
+                icon: titleIcon,
+                subtitle,
+                typePill: staffType?.label || 'Staff',
+                closeAttr: 'type="button" data-student-action="close-modal"'
+            })
+            : '';
+        const footHtml = typeof renderLuxHubFormModalFoot === 'function'
+            ? renderLuxHubFormModalFoot({
+                statusHtml: renderModalStatus(completion, touched),
+                actionsHtml
+            })
+            : '';
+        root.innerHTML = typeof renderLuxHubFormModalOverlay === 'function'
+            ? renderLuxHubFormModalOverlay({
+                dismissAttr: 'data-student-action="dismiss-modal"',
+                formId: 'students-admin-form',
+                formAttrs: `data-student-type-id="${escapeHtml(staffTypeId)}" autocomplete="off"`,
+                headHtml,
+                bodyHtml: bodyMarkup,
+                footHtml
+            })
+            : '';
+        if (typeof window.openLuxHubFormModalRoot === 'function') {
+            window.openLuxHubFormModalRoot(root);
         }
         if (typeof window.enhanceUniversalPickers === 'function') {
             window.enhanceUniversalPickers(root);
@@ -1217,8 +1214,8 @@
         state.modalRole = 'student';
         state.modalStudentTypeId = 'student';
         const root = document.getElementById('students-admin-modal-root');
-        if (root && typeof window.closeLuxHubModalRoot === 'function') {
-            window.closeLuxHubModalRoot(root);
+        if (root && typeof window.closeLuxHubFormModalRoot === 'function') {
+            window.closeLuxHubFormModalRoot(root);
             return;
         }
         renderModal([], typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON');

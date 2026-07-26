@@ -133,6 +133,16 @@
             if (typeof fn !== 'function') throw new Error('Missing dep: getSocialCenterScrollBudget');
             return fn.apply(this, a);
         }
+        function root(...a) {
+            const fn = d.root || window.root;
+            if (typeof fn !== 'function') throw new Error('Missing dep: root');
+            return fn.apply(this, a);
+        }
+        function normalizeSocialOverlayDialogRegion(...a) {
+            const fn = d.normalizeSocialOverlayDialogRegion || window.normalizeSocialOverlayDialogRegion;
+            if (typeof fn !== 'function') return undefined;
+            return fn.apply(this, a);
+        }
         const SOCIAL_OVERLAY_PORTAL_ID = d.SOCIAL_OVERLAY_PORTAL_ID ?? window.SOCIAL_OVERLAY_PORTAL_ID ?? 'kiu-social-overlay-portal';
 
 function messageAnchorId(chatId, messageId) {

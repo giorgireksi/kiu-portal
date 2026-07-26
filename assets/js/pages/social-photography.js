@@ -639,7 +639,7 @@
                                 ${commentAuthor ? avatar(commentAuthor, 'social-neo-avatar-sm') : ''}
                                 <div class="lux-glass-dialog-comment-compose-main">
                                     <div class="social-neo-inline social-neo-comment-compose-row">
-                                        <input class="social-neo-input" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="Add a comment..." aria-label="Add a comment" value="${escape(dialogCommentDraft)}">
+                                        <input class="social-neo-input lux-control" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="Add a comment..." aria-label="Add a comment" value="${escape(dialogCommentDraft)}">
                                         <button class="lux-primary-btn" type="submit">Post</button>
                                     </div>
                                 </div>
@@ -679,13 +679,13 @@
         } else if (step === 2) {
             body = `
                 <label class="social-photo-field social-photo-mono">Caption
-                    <textarea class="social-neo-textarea" name="photographyCaption" rows="3" placeholder="Describe this campus moment...">${escape(text(draft.caption || ''))}</textarea>
+                    <textarea class="social-neo-textarea lux-control" name="photographyCaption" rows="3" placeholder="Describe this campus moment...">${escape(text(draft.caption || ''))}</textarea>
                 </label>
                 <label class="social-photo-field social-photo-mono">Tags
-                    <input class="social-neo-input" type="text" name="photographyTags" value="${escape(text(draft.tags || ''))}" placeholder="sunset, library, quad">
+                    <input class="social-neo-input lux-control" type="text" name="photographyTags" value="${escape(text(draft.tags || ''))}" placeholder="sunset, library, quad">
                 </label>
                 <label class="social-photo-field social-photo-mono">Location
-                    <input class="social-neo-input" type="text" name="photographyLocation" value="${escape(text(draft.location || ''))}" placeholder="Library quad">
+                    <input class="social-neo-input lux-control" type="text" name="photographyLocation" value="${escape(text(draft.location || ''))}" placeholder="Library quad">
                 </label>
             `;
         } else {

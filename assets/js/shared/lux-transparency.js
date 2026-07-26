@@ -27,6 +27,12 @@ const SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS = [
     '.social-neo-call-video', '.lux-glass-dialog-card', '.lux-glass-dialog-card--project-create',
     '.lux-glass-dialog-preview', '.social-neo-toast', '.social-neo-mobile-tabbar', '.social-neo-mobile-tab',
     '.social-neo-shell-drawer', '.social-neo-shell-drawer-profile', '.social-neo-shell-drawer-nav-card',
+    '.social-neo-side-link', '.social-neo-workspace-nav-btn', '.social-neo-shell-nav-btn',
+    '.social-neo-feed-hero-tab', '.social-neo-events-hero-tab', '.social-neo-community-hero-tab',
+    '.social-neo-groups-hero-tab', '.social-neo-surveys-hero-tab', '.social-neo-composer-cta',
+    '.social-neo-feed-hero-stat', '.social-neo-feed-composer-zone', '.social-neo-composer-cta-card',
+    '.social-neo-community-hero', '.social-neo-community-hero-stat', '.social-neo-community-card',
+    '.social-neo-directory-filters',
     '.social-projects-hero', '.social-projects-hero-rich', '.social-project-create-card', '.social-project-card',
     '.social-project-metric-card', '.social-project-detail-hero', '.social-project-detail-hero-rich',
     '.social-project-tab-shell', '.social-project-inline-panel', '.social-project-chart-card',
@@ -44,7 +50,10 @@ const SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES = SOCIAL_NEO_TRANSPARENCY_SURFACE_
 const SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
     'social-neo-chat-item', 'social-neo-directory-item', 'social-neo-entity-card', 'social-neo-event-card',
     'social-neo-message', 'social-neo-comment-bubble', 'social-neo-time-group', 'social-neo-section-metric',
-    'social-neo-section-task', 'social-neo-events-hero-stat', 'social-neo-events-manage-item',
+    'social-neo-section-task', 'social-neo-events-hero-stat', 'social-neo-feed-hero-stat',
+    'social-neo-side-link', 'social-neo-workspace-nav-btn', 'social-neo-feed-hero-tab',
+    'social-neo-composer-cta', 'social-neo-community-hero-stat', 'social-neo-community-card',
+    'social-neo-events-manage-item',
     'social-neo-event-date-group', 'social-neo-event-feature-meta-item', 'social-neo-group-member-row',
     'social-neo-pages-wizard-step', 'social-neo-page-card', 'social-project-metric-card', 'social-project-mini-card',
     'social-project-activity-item', 'social-project-milestone-item', 'social-project-task-card',
@@ -105,6 +114,7 @@ const CSS_OWNED_CHIP_SELECTOR = [
     '.lux-pill',
     '.lux-primary-btn',
     '.lux-secondary-btn',
+    '.lux-destructive-btn',
     '.lux-data-card',
     '.lux-metric-card',
     '.lux-inline-card',
@@ -217,8 +227,12 @@ function isRouteOwnedSurface(el) {
     }
 
     if (document.body.classList.contains('lux-route-admin-orders')
-        && el.closest?.('#admin-orders-root, #modal-studio')) {
+        && el.closest?.('#admin-orders-root, #admin-orders-create-overlay, #admin-orders-thread-overlay, #modal-studio')) {
         if (hasOwnedClassPrefix(el, ['orders-', 'admin-orders-'])) return true;
+        if (el.matches?.(
+            '.lux-card-head, .lux-card-title, .lux-card-copy, .lux-control, ' +
+            '.lux-primary-btn, .lux-secondary-btn, .lux-picker-btn, .lux-status-pill'
+        )) return true;
     }
 
     if (document.body.classList.contains('lux-route-library') && el.closest?.('#page-library')) {
@@ -272,6 +286,12 @@ function shouldApplyDynamicBackground(el) {
         if (GLOBAL_DYNAMIC_PAINT_CLASSES.has(className)) return true;
     }
     if (document.body.classList.contains('lux-route-social')) {
+        if (el.classList.contains('lux-primary-btn')
+            || el.classList.contains('lux-secondary-btn')
+            || el.classList.contains('lux-ghost-btn')
+            || el.classList.contains('lux-destructive-btn')) {
+            return false;
+        }
         return isSocialPaintSurface(el) || isSocialBlurHost(el)
             || el.classList.contains('social-neo-card')
             || el.parentElement?.classList?.contains('social-neo-stat-grid')

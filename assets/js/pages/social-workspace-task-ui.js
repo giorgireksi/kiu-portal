@@ -241,17 +241,17 @@
                         <strong>Task</strong>
                         <span>${isEdit ? 'Update the work item.' : 'Name it. You can add detail later.'}</span>
                     </div>
-                    ${neoField('Task title', `<input class="social-neo-input" id="${escape(taskTitleId)}" type="text" name="projectTaskTitle" placeholder="What needs to be done?" value="${escape(titleValue)}" maxlength="120" required>`, { forId: taskTitleId })}
-                    ${typeof socialNeoFieldHtml === 'function' ? socialNeoFieldHtml(`Description <span class="social-neo-muted">(optional)</span>`, `<textarea class="social-neo-textarea" id="${escape(taskDescId)}" rows="${isEdit ? 3 : 2}" name="projectTaskDescription" placeholder="Context, acceptance criteria, or links..." maxlength="2000">${escape(descValue)}</textarea>`, { forId: taskDescId }) : ''}
+                    ${neoField('Task title', `<input class="social-neo-input lux-control" id="${escape(taskTitleId)}" type="text" name="projectTaskTitle" placeholder="What needs to be done?" value="${escape(titleValue)}" maxlength="120" required>`, { forId: taskTitleId })}
+                    ${typeof socialNeoFieldHtml === 'function' ? socialNeoFieldHtml(`Description <span class="social-neo-muted">(optional)</span>`, `<textarea class="social-neo-textarea lux-control" id="${escape(taskDescId)}" rows="${isEdit ? 3 : 2}" name="projectTaskDescription" placeholder="Context, acceptance criteria, or links..." maxlength="2000">${escape(descValue)}</textarea>`, { forId: taskDescId }) : ''}
                     ${isEdit ? '' : `
                     <label class="lux-glass-dialog-field" for="${escape(taskPackageId)}">
                         <span class="social-neo-label">Package</span>
-                        <select class="social-neo-select" id="${escape(taskPackageId)}" name="projectTaskPackageId" data-lux-picker>
+                        <select class="social-neo-select lux-control" id="${escape(taskPackageId)}" name="projectTaskPackageId" data-lux-picker>
                             ${packageOptions}
                         </select>
                     </label>
                     `}
-                    ${neoField('Column', `<select class="social-neo-select" id="${escape(taskStatusId)}" name="projectTaskStatus" data-lux-picker>${statusOptions}</select>`, { forId: taskStatusId })}
+                    ${neoField('Column', `<select class="social-neo-select lux-control" id="${escape(taskStatusId)}" name="projectTaskStatus" data-lux-picker>${statusOptions}</select>`, { forId: taskStatusId })}
                 </section>
             `;
 
@@ -259,22 +259,22 @@
                 <div class="social-project-task-priority-block">
                         <div class="social-project-task-priority-block-head">Impact × Effort</div>
                         <div class="social-project-task-priority-matrix-fields social-neo-form-grid social-neo-form-grid-2">
-                            ${neoField('Impact (1–5)', `<select class="social-neo-select" id="${escape(taskImpactId)}" name="projectTaskImpactScore" data-lux-picker>${scoreOptions(impactScoreValue)}</select>`, { forId: taskImpactId })}
-                            ${neoField('Effort (1–5)', `<select class="social-neo-select" id="${escape(taskEffortId)}" name="projectTaskEffortScore" data-lux-picker>${scoreOptions(effortScoreValue)}</select>`, { forId: taskEffortId })}
+                            ${neoField('Impact (1–5)', `<select class="social-neo-select lux-control" id="${escape(taskImpactId)}" name="projectTaskImpactScore" data-lux-picker>${scoreOptions(impactScoreValue)}</select>`, { forId: taskImpactId })}
+                            ${neoField('Effort (1–5)', `<select class="social-neo-select lux-control" id="${escape(taskEffortId)}" name="projectTaskEffortScore" data-lux-picker>${scoreOptions(effortScoreValue)}</select>`, { forId: taskEffortId })}
                             <div class="social-project-task-matrix-preview" data-lux-transparency-exempt="1">Score ${escape(String(matrixPreviewScore))} · ${escape(matrixPreviewLabel)}</div>
                         </div>
                     </div>
                 <section class="lux-glass-dialog-group-section">
                     ${neoSection('Duration (PERT)', 'Three-point estimate — drives the critical path.')}
                     <div class="social-neo-form-grid social-neo-form-grid-3">
-                        ${neoField('Optimistic (O)', `<input class="social-neo-input" id="${escape(taskTimeOptimisticId)}" type="number" min="0" step="0.5" name="projectTaskTimeOptimistic" placeholder="0" value="${escape(timeOptimisticValue)}">`, { forId: taskTimeOptimisticId })}
-                        ${neoField('Most likely (M)', `<input class="social-neo-input" id="${escape(taskTimeMostLikelyId)}" type="number" min="0" step="0.5" name="projectTaskTimeMostLikely" placeholder="0" value="${escape(timeMostLikelyValue)}">`, { forId: taskTimeMostLikelyId })}
-                        ${neoField('Pessimistic (P)', `<input class="social-neo-input" id="${escape(taskTimePessimisticId)}" type="number" min="0" step="0.5" name="projectTaskTimePessimistic" placeholder="0" value="${escape(timePessimisticValue)}">`, { forId: taskTimePessimisticId })}
+                        ${neoField('Optimistic (O)', `<input class="social-neo-input lux-control" id="${escape(taskTimeOptimisticId)}" type="number" min="0" step="0.5" name="projectTaskTimeOptimistic" placeholder="0" value="${escape(timeOptimisticValue)}">`, { forId: taskTimeOptimisticId })}
+                        ${neoField('Most likely (M)', `<input class="social-neo-input lux-control" id="${escape(taskTimeMostLikelyId)}" type="number" min="0" step="0.5" name="projectTaskTimeMostLikely" placeholder="0" value="${escape(timeMostLikelyValue)}">`, { forId: taskTimeMostLikelyId })}
+                        ${neoField('Pessimistic (P)', `<input class="social-neo-input lux-control" id="${escape(taskTimePessimisticId)}" type="number" min="0" step="0.5" name="projectTaskTimePessimistic" placeholder="0" value="${escape(timePessimisticValue)}">`, { forId: taskTimePessimisticId })}
                     </div>
                     <div class="social-neo-form-grid social-neo-form-grid-2">
                         <label class="lux-glass-dialog-field" for="${escape(taskTimeUnitId)}">
                             <span class="social-neo-label">Schedule unit</span>
-                            <select class="social-neo-select" id="${escape(taskTimeUnitId)}" name="projectTaskTimeUnit" data-lux-picker>
+                            <select class="social-neo-select lux-control" id="${escape(taskTimeUnitId)}" name="projectTaskTimeUnit" data-lux-picker>
                                 <option value="h" ${timeUnitValue === 'h' ? 'selected' : ''}>hours</option>
                                 <option value="d" ${timeUnitValue === 'd' ? 'selected' : ''}>days (8h workday)</option>
                             </select>
@@ -285,15 +285,15 @@
                 <section class="lux-glass-dialog-group-section">
                     ${neoSection('Planning', 'Optional start and due dates.')}
                     <div class="social-neo-form-grid social-neo-form-grid-2">
-                        ${neoField('Start date (optional)', `<input class="social-neo-input" id="${escape(taskStartId)}" type="datetime-local" name="projectTaskStartAt" value="${escape(startValue)}">`, { forId: taskStartId })}
-                        ${neoField('Due date', `<input class="social-neo-input" id="${escape(taskDueId)}" type="datetime-local" name="projectTaskDueAt" value="${escape(dueValue)}">`, { forId: taskDueId })}
+                        ${neoField('Start date (optional)', `<input class="social-neo-input lux-control" id="${escape(taskStartId)}" type="datetime-local" name="projectTaskStartAt" value="${escape(startValue)}">`, { forId: taskStartId })}
+                        ${neoField('Due date', `<input class="social-neo-input lux-control" id="${escape(taskDueId)}" type="datetime-local" name="projectTaskDueAt" value="${escape(dueValue)}">`, { forId: taskDueId })}
                     </div>
                 </section>
                 <section class="lux-glass-dialog-group-section">
                     ${neoSection('Budget', 'Planned task cost.')}
                     <label class="lux-glass-dialog-field" for="${escape(taskBudgetId)}">
                         <span class="social-neo-label">Planned task cost (${escape(budgetCurrency)})</span>
-                        <input class="social-neo-input" id="${escape(taskBudgetId)}" type="number" min="0" step="0.01" name="projectTaskBudgetEstimate" placeholder="0.00" value="${escape(budgetEstimateValue)}">
+                        <input class="social-neo-input lux-control" id="${escape(taskBudgetId)}" type="number" min="0" step="0.01" name="projectTaskBudgetEstimate" placeholder="0.00" value="${escape(budgetEstimateValue)}">
                     </label>
                 </section>
                 <section class="lux-glass-dialog-group-section">
@@ -301,11 +301,11 @@
                     <div class="social-neo-form-grid social-neo-form-grid-2">
                         <label class="lux-glass-dialog-field" for="${escape(taskActualTimeId)}">
                             <span class="social-neo-label"><i class="fas fa-stopwatch" aria-hidden="true"></i> Actual time (${escape(timeUnitValue === 'd' ? 'days' : 'hours')})</span>
-                            <input class="social-neo-input" id="${escape(taskActualTimeId)}" type="number" min="0" step="0.5" name="projectTaskActualTime" placeholder="0" value="${escape(actualTimeValue)}">
+                            <input class="social-neo-input lux-control" id="${escape(taskActualTimeId)}" type="number" min="0" step="0.5" name="projectTaskActualTime" placeholder="0" value="${escape(actualTimeValue)}">
                         </label>
                         <label class="lux-glass-dialog-field" for="${escape(taskActualCostId)}">
                             <span class="social-neo-label"><i class="fas fa-receipt" aria-hidden="true"></i> Actual cost (${escape(budgetCurrency)})</span>
-                            <input class="social-neo-input" id="${escape(taskActualCostId)}" type="number" min="0" step="0.01" name="projectTaskActualCost" placeholder="0.00" value="${escape(actualCostValue)}">
+                            <input class="social-neo-input lux-control" id="${escape(taskActualCostId)}" type="number" min="0" step="0.01" name="projectTaskActualCost" placeholder="0.00" value="${escape(actualCostValue)}">
                         </label>
                     </div>
                 </section>
@@ -313,7 +313,7 @@
                     ${neoSection('Ownership', 'Who delivers this task.')}
                     <label class="lux-glass-dialog-field" for="${escape(taskAssigneeId)}">
                         <span class="social-neo-label">Assignee</span>
-                        <select class="social-neo-select" id="${escape(taskAssigneeId)}" name="projectTaskAssigneeId" data-lux-picker>
+                        <select class="social-neo-select lux-control" id="${escape(taskAssigneeId)}" name="projectTaskAssigneeId" data-lux-picker>
                             ${assigneeOptions}
                         </select>
                     </label>

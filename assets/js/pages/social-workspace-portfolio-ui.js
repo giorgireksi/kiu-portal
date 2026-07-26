@@ -74,12 +74,12 @@
                     <div class="social-portfolio-search-row">
                         <label class="social-portfolio-search">
                             <i class="fas fa-search"></i>
-                            <input class="social-neo-input" type="search" name="projectDiscoverSearch" value="${escape(discoverSearch)}" placeholder="Search projects, skills, hashtags, people, or faculties">
+                            <input class="social-neo-input lux-control" type="search" name="projectDiscoverSearch" value="${escape(discoverSearch)}" placeholder="Search projects, skills, hashtags, people, or faculties">
                         </label>
-                        <select class="social-neo-select" name="projectDiscoverFaculty" data-lux-picker>
+                        <select class="social-neo-select lux-control" name="projectDiscoverFaculty" data-lux-picker>
                             ${facultyOptions.map((facultyCode) => `<option value="${escape(facultyCode)}" ${discoverFaculty === facultyCode ? 'selected' : ''}>${escape(facultyCode === 'all' ? 'All faculties' : facultyLabel(facultyCode))}</option>`).join('')}
                         </select>
-                        <select class="social-neo-select" name="projectDiscoverRole" data-lux-picker>
+                        <select class="social-neo-select lux-control" name="projectDiscoverRole" data-lux-picker>
                             ${PORTFOLIO_DISCOVER_ROLE_TARGETS.map(([value, label]) => `<option value="${escape(value)}" ${discoverRole === value ? 'selected' : ''}>${escape(label)}</option>`).join('')}
                         </select>
                     </div>
@@ -158,30 +158,30 @@
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-create">
                         <section class="lux-glass-dialog-portfolio-create-section">
                             <div class="social-neo-form-grid social-neo-form-grid-2">
-                                ${neoField('Title', `<input class="social-neo-input" type="text" name="projectName" value="${escape(text(runtime.ui?.projectName || ''))}" placeholder="Sustainable marketplace app" required>`)}
-                                ${neoField('Short summary', `<input class="social-neo-input" type="text" name="projectSummary" value="${escape(text(runtime.ui?.projectSummary || ''))}" placeholder="Two-line hook that makes people stop scrolling">`)}
+                                ${neoField('Title', `<input class="social-neo-input lux-control" type="text" name="projectName" value="${escape(text(runtime.ui?.projectName || ''))}" placeholder="Sustainable marketplace app" required>`)}
+                                ${neoField('Short summary', `<input class="social-neo-input lux-control" type="text" name="projectSummary" value="${escape(text(runtime.ui?.projectSummary || ''))}" placeholder="Two-line hook that makes people stop scrolling">`)}
                             </div>
-                            ${neoField('Description', `<textarea class="social-neo-textarea" name="projectDescription" rows="4" placeholder="Explain what you built, why it matters, what stage it is in, and what kind of collaboration or opportunity you want.">${escape(text(runtime.ui?.projectDescription || ''))}</textarea>`)}
+                            ${neoField('Description', `<textarea class="social-neo-textarea lux-control" name="projectDescription" rows="4" placeholder="Explain what you built, why it matters, what stage it is in, and what kind of collaboration or opportunity you want.">${escape(text(runtime.ui?.projectDescription || ''))}</textarea>`)}
                             <div class="social-neo-form-grid social-neo-form-grid-3">
-                                ${neoField('Hashtags', `<input class="social-neo-input" type="text" name="projectHashtags" value="${escape(text(runtime.ui?.projectHashtags || ''))}" placeholder="ai, startup, uiux">`)}
-                                ${neoField('Skill tags', `<input class="social-neo-input" type="text" name="projectSkillTags" value="${escape(text(runtime.ui?.projectSkillTags || ''))}" placeholder="react, branding, research">`)}
-                                ${neoField('Context', `<input class="social-neo-input" type="text" name="projectCourseTag" value="${escape(text(runtime.ui?.projectCourseTag || ''))}" placeholder="Capstone, thesis, startup, freelance">`)}
+                                ${neoField('Hashtags', `<input class="social-neo-input lux-control" type="text" name="projectHashtags" value="${escape(text(runtime.ui?.projectHashtags || ''))}" placeholder="ai, startup, uiux">`)}
+                                ${neoField('Skill tags', `<input class="social-neo-input lux-control" type="text" name="projectSkillTags" value="${escape(text(runtime.ui?.projectSkillTags || ''))}" placeholder="react, branding, research">`)}
+                                ${neoField('Context', `<input class="social-neo-input lux-control" type="text" name="projectCourseTag" value="${escape(text(runtime.ui?.projectCourseTag || ''))}" placeholder="Capstone, thesis, startup, freelance">`)}
                             </div>
-                            ${neoField('External links', `<textarea class="social-neo-textarea" name="projectExternalLinks" rows="3" placeholder="Prototype | https://...&#10;GitHub | https://...">${escape(text(runtime.ui?.projectExternalLinks || ''))}</textarea>`)}
+                            ${neoField('External links', `<textarea class="social-neo-textarea lux-control" name="projectExternalLinks" rows="3" placeholder="Prototype | https://...&#10;GitHub | https://...">${escape(text(runtime.ui?.projectExternalLinks || ''))}</textarea>`)}
                             <div class="social-neo-form-grid social-neo-form-grid-3">
                                 <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Status</span>
-                                    <select class="social-neo-select" name="projectStatus" data-lux-picker>
+                                    <select class="social-neo-select lux-control" name="projectStatus" data-lux-picker>
                                         ${['draft', 'published'].map((status) => `<option value="${escape(status)}" ${text(runtime.ui?.projectStatus || 'draft') === status ? 'selected' : ''}>${escape(status)}</option>`).join('')}
                                     </select>
                                 </label>
                                 <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Audience</span>
-                                    <select class="social-neo-select" name="projectVisibility" data-lux-picker>
+                                    <select class="social-neo-select lux-control" name="projectVisibility" data-lux-picker>
                                         ${roleTargets.map(([value, label]) => `<option value="${escape(value)}" ${text(runtime.ui?.projectVisibility || 'all_logged_in') === value ? 'selected' : ''}>${escape(label)}</option>`).join('')}
                                     </select>
                                 </label>
-                                ${neoField('Media upload', `<input class="social-neo-input" type="file" name="projectMediaFile" accept="image/*,.pdf,.ppt,.pptx,.doc,.docx,.zip,.fig,.sketch">`)}
+                                ${neoField('Media upload', `<input class="social-neo-input lux-control" type="file" name="projectMediaFile" accept="image/*,.pdf,.ppt,.pptx,.doc,.docx,.zip,.fig,.sketch">`)}
                             </div>
                             <div class="lux-glass-dialog-portfolio-create-faculties">
                                 <span class="social-neo-label">Faculty tags</span>
@@ -193,10 +193,10 @@
                             </div>
                             ${customAudienceOpen ? `
                                 <div class="social-neo-form-grid social-neo-form-grid-2">
-                                    ${neoField('Custom roles', `<input class="social-neo-input" type="text" name="projectVisibleRolesRaw" value="${escape((runtime.ui?.projectVisibleRoles || []).join(', '))}" placeholder="student, professor, ta">`)}
-                                    ${neoField('Custom faculties', `<input class="social-neo-input" type="text" name="projectVisibleFacultyCodesRaw" value="${escape((runtime.ui?.projectVisibleFacultyCodes || []).join(', '))}" placeholder="BUS, CS, LAW">`)}
-                                    ${neoField('Allowed user IDs', `<input class="social-neo-input" type="text" name="projectVisibleUserIds" value="${escape(text(runtime.ui?.projectVisibleUserIds || ''))}" placeholder="student-001, professor-014">`)}
-                                    ${neoField('Hidden user IDs', `<input class="social-neo-input" type="text" name="projectHiddenUserIds" value="${escape(text(runtime.ui?.projectHiddenUserIds || ''))}" placeholder="Optional direct exclusions">`)}
+                                    ${neoField('Custom roles', `<input class="social-neo-input lux-control" type="text" name="projectVisibleRolesRaw" value="${escape((runtime.ui?.projectVisibleRoles || []).join(', '))}" placeholder="student, professor, ta">`)}
+                                    ${neoField('Custom faculties', `<input class="social-neo-input lux-control" type="text" name="projectVisibleFacultyCodesRaw" value="${escape((runtime.ui?.projectVisibleFacultyCodes || []).join(', '))}" placeholder="BUS, CS, LAW">`)}
+                                    ${neoField('Allowed user IDs', `<input class="social-neo-input lux-control" type="text" name="projectVisibleUserIds" value="${escape(text(runtime.ui?.projectVisibleUserIds || ''))}" placeholder="student-001, professor-014">`)}
+                                    ${neoField('Hidden user IDs', `<input class="social-neo-input lux-control" type="text" name="projectHiddenUserIds" value="${escape(text(runtime.ui?.projectHiddenUserIds || ''))}" placeholder="Optional direct exclusions">`)}
                                 </div>
                             ` : ''}
                             ${mediaItems.length ? `

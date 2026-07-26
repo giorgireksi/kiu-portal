@@ -53,12 +53,12 @@
                             </div>
                             <div class="social-neo-grid-2">
                                 <label><span class="social-neo-label">Currency</span>
-                                    <select class="social-neo-select" name="projectBudgetCurrency" data-lux-picker>
+                                    <select class="social-neo-select lux-control" name="projectBudgetCurrency" data-lux-picker>
                                         <option value="USD" ${budgetCurrency === 'USD' ? 'selected' : ''}>USD — US Dollar</option>
                                         <option value="GEL" ${budgetCurrency === 'GEL' ? 'selected' : ''}>GEL — Georgian Lari</option>
                                     </select>
                                 </label>
-                                <label><span class="social-neo-label">Spend cap (0 = unset)</span><input class="social-neo-input" type="number" min="0" step="0.01" name="projectBudgetCap" value="${escape(String(budgetCapValue || 0))}"></label>
+                                <label><span class="social-neo-label">Spend cap (0 = unset)</span><input class="social-neo-input lux-control" type="number" min="0" step="0.01" name="projectBudgetCap" value="${escape(String(budgetCapValue || 0))}"></label>
                             </div>
                             <div class="social-neo-inline social-neo-inline-end"><button class="lux-primary-btn" type="submit"><i class="fas fa-check"></i> Save budget settings</button></div>
                         </form>
@@ -70,8 +70,8 @@
                         </div>
                         ${activeProject.viewerCanContribute ? `
                             <form data-form="project-budget-category-add" data-project-id="${escape(text(activeProject.id))}" class="social-neo-grid-3 social-project-budget-add-row">
-                                <label><span class="social-neo-label">Category title</span><input class="social-neo-input" type="text" name="projectBudgetCategoryTitle" placeholder="Materials" required></label>
-                                <label><span class="social-neo-label">Planned amount</span><input class="social-neo-input" type="number" min="0" step="0.01" name="projectBudgetCategoryPlanned" placeholder="0.00"></label>
+                                <label><span class="social-neo-label">Category title</span><input class="social-neo-input lux-control" type="text" name="projectBudgetCategoryTitle" placeholder="Materials" required></label>
+                                <label><span class="social-neo-label">Planned amount</span><input class="social-neo-input lux-control" type="number" min="0" step="0.01" name="projectBudgetCategoryPlanned" placeholder="0.00"></label>
                                 <div class="social-neo-inline social-neo-inline-end"><button class="lux-primary-btn" type="submit"><i class="fas fa-plus"></i> Add category</button></div>
                             </form>
                         ` : ''}
@@ -110,10 +110,10 @@
                         ${activeProject.viewerCanContribute ? `
                             <form data-form="project-budget-expense-add" data-project-id="${escape(text(activeProject.id))}" class="social-neo-stack social-project-budget-expense-add">
                                 <div class="social-neo-grid-3">
-                                    <label><span class="social-neo-label">Expense title</span><input class="social-neo-input" type="text" name="projectBudgetExpenseTitle" placeholder="Bus tickets" required></label>
-                                    <label><span class="social-neo-label">Amount</span><input class="social-neo-input" type="number" min="0" step="0.01" name="projectBudgetExpenseAmount" placeholder="0.00" required></label>
+                                    <label><span class="social-neo-label">Expense title</span><input class="social-neo-input lux-control" type="text" name="projectBudgetExpenseTitle" placeholder="Bus tickets" required></label>
+                                    <label><span class="social-neo-label">Amount</span><input class="social-neo-input lux-control" type="number" min="0" step="0.01" name="projectBudgetExpenseAmount" placeholder="0.00" required></label>
                                     <label><span class="social-neo-label">Category</span>
-                                        <select class="social-neo-select" name="projectBudgetExpenseCategoryId" data-lux-picker>
+                                        <select class="social-neo-select lux-control" name="projectBudgetExpenseCategoryId" data-lux-picker>
                                             <option value="">Uncategorized</option>
                                             ${budgetCategories.map((category) => `<option value="${escape(text(category.id))}">${escape(text(category.title))}</option>`).join('')}
                                         </select>

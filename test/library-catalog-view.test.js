@@ -47,6 +47,9 @@ describe('library catalog view', () => {
         expect(source).toContain('persistPagination: normalized === \'admin\'');
         expect(source).toContain('READONLY_SHELL_MARKUP');
         expect(source).toContain('data-library-catalog-shell="1"');
+        expect(source).toContain('data-lux-glass-root="1"');
+        expect(source).toContain('library-catalog-filters-panel lux-soft-chrome');
+        expect(source).toContain('admin-library-catalog-card lux-soft-chrome');
         expect(source).toContain('library-status-pill');
         expect(source).toContain('id="book-catalog-body"');
         expect(source).toContain('id="admin-library-catalog-tabs"');

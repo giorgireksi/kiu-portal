@@ -44,13 +44,18 @@ describe('index widget wave 2 regressions', () => {
     expect(chancelleryJs).toContain('class="lux-stat-card lux-strip-card surface-card"');
   });
 
-  it('keeps admin-orders aligned to the same index hero-side metric shell as orders', () => {
-    const source = readSource('assets/js/shared/orders-workspace.js');
+  it('keeps admin-orders workspace shell and create modal mount aligned to bare portal stack', () => {
+    const html = readSource('admin-orders.html');
+    const workspace = readSource('assets/js/shared/orders-workspace.js');
 
-    expect(source).toContain('id="admin-orders-hero-main" class="lux-hero-main"');
-    expect(source).toContain('id="admin-orders-hero-stats" class="lux-hero-side"');
-    expect(source).toContain('Admin-side distribution metrics in the same hero-side signal language used on the home dashboard.');
-    expect(source).toContain('Recipients covered');
+    expect(html).toContain('lux-modals.css');
+    expect(html).toContain('lux-entry-admin-orders');
+    expect(html).toContain('data-lux-transparency-exempt="1"');
+    expect(workspace).toContain('orders-admin-workspace-card lux-soft-chrome');
+    expect(workspace).toContain('ensureAdminOrdersModals');
+        expect(workspace).toContain('admin-orders-create-overlay');
+        expect(workspace).toContain('modal-overlay admin-orders-modal-overlay');
+        expect(workspace).toContain('admin-orders-thread-overlay');
   });
 
   it('keeps admin-library and timetable summary widgets aligned to index hero-side and strip-card classes', () => {
@@ -58,9 +63,9 @@ describe('index widget wave 2 regressions', () => {
     const timetableHtml = readSource('timetable.html');
 
     expect(adminLibraryHtml).toContain('class="admin-library-metric-row admin-library-metric-row--compact"');
-    expect(adminLibraryHtml).toContain('class="admin-library-metric-card wave2-summary-card"');
-    expect(adminLibraryHtml).toContain('class="lux-hero-side admin-library-hero-summary"');
-    expect(adminLibraryHtml).toContain('class="alib-panel alib-panel--entry"');
+    expect(adminLibraryHtml).toContain('class="alib-panel alib-panel--entry lux-soft-chrome"');
+    expect(adminLibraryHtml).toContain('class="lux-strip-card admin-library-catalog-card lux-soft-chrome"');
+    expect(adminLibraryHtml).not.toContain('admin-library-hero-summary');
     expect(timetableHtml).toContain('class="lux-timetable-hero-main lux-hero-main"');
     expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-hero-side"');
     expect(timetableHtml).not.toContain('class="lux-card lux-timetable-insight lux-timetable-next-compact"');

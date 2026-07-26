@@ -46,10 +46,76 @@ describe('social bare shell era', () => {
         expect(page).toMatch(/social-projects|social-workspace|SOCIAL_PROJECTS/);
     });
 
-    it('bare-lite keeps layout helpers without nuclear flatten', () => {
+    it('bare-lite keeps layout helpers without nuclear flatten on social route', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('Bare portal layout helpers');
         expect(bare).toContain('body.lux-page-bare');
-        expect(bare).not.toContain('backdrop-filter: none');
+        const socialBlock = bare.slice(bare.indexOf('body.lux-route-social'));
+        expect(socialBlock).not.toMatch(/backdrop-filter:\s*none\s*!important/);
+    });
+
+    it('loads portal persist runtime before api.js for session token helpers', () => {
+        const html = readSource('social.html');
+        expect(html).toContain('api-portal-persist-runtime.js');
+        expect(html.indexOf('api-portal-persist-runtime.js')).toBeLessThan(html.indexOf('assets/js/app/api.js'));
+    });
+
+    it('keeps social workspace layout in shared bare-lite CSS', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toMatch(/#page-social|\.lux-route-social/);
+        expect(bare).toContain('.social-neo-shell');
+        expect(bare).toContain('.social-neo-feed-hero-grid');
+        expect(bare).toContain('.social-neo-lost-found-hero');
+        expect(bare).toContain('.social-neo-workspace-rail-reveal');
+        expect(bare).toContain('.social-neo-side-link.is-active');
+        expect(bare).toContain('.social-neo-feed-hero-tab');
+        expect(bare).toContain('.is-focused');
+        expect(bare).toContain('.social-neo-section-head');
+        expect(bare).toContain('.social-neo-messages');
+        expect(bare).toContain('.sn-alerts-panel');
+        expect(bare).toContain('.social-project-overview-columns');
+    });
+
+    it('lost-found search uses lux-control', () => {
+        const lostFound = readSource('assets/js/pages/social-lost-found.js');
+        expect(lostFound).toMatch(/social-neo-input lux-control/);
+    });
+
+    it('social-feed.js avoids retired paint classes', () => {
+        const feed = readSource('assets/js/pages/social-feed.js');
+        expect(feed).not.toContain('lux-soft-chrome');
+        expect(feed).not.toContain('sn-mat-soft');
+    });
+
+    it('paints community directory and shared social primitives', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.social-neo-community-hero-stats');
+        expect(bare).toContain('.social-neo-directory-item.social-neo-community-card');
+        expect(bare).toContain('.social-neo-directory-filters');
+        expect(bare).toContain('.social-neo-pill');
+        expect(bare).toContain('.social-neo-avatar');
+        expect(bare).toContain('.social-neo-grid-2');
+        expect(bare).toContain('.social-neo-community-hero-toolbar');
+        expect(bare).toContain('.social-neo-community-hero-tab');
+    });
+
+    it('paints social dialect native buttons with token surfaces (not browser default white)', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toMatch(/button\.social-neo-side-link[\s\S]*appearance:\s*none/);
+        expect(bare).not.toMatch(/button\.social-neo-feed-hero-tab[\s\S]*--social-chip-fill/);
+        expect(bare).toContain('.lux-strip-card.surface-card');
+    });
+
+    it('feed hero tabs use shared lux-secondary-btn styling', () => {
+        const feed = readSource('assets/js/pages/social-feed.js');
+        expect(feed).toMatch(/lux-secondary-btn social-neo-feed-hero-tab/);
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('button:is(');
+        expect(bare).toMatch(/social-neo-feed-hero-tab[\s\S]*\.lux-secondary-btn/);
+    });
+
+    it('registers social-neo-card in fouc-ht nested matte allowlist', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toMatch(/\[data-lux-glass-root="1"\][\s\S]*\.social-neo-card/);
     });
 });

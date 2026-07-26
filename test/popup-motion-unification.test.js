@@ -47,12 +47,12 @@ describe('popup motion unification', () => {
         expect(session).toContain('renderLuxGlassDialogCard');
     });
 
-    it('drives hub command-center modals with shared popup motion tokens', () => {
+    it('drives hub command-center modals with shared portal overlay motion', () => {
         const modals = readSource('assets/css/lux-modals.css');
-        expect(modals).toMatch(/\.students-hub-modal-backdrop\.is-open[\s\S]*?opacity:\s*1/);
-        expect(modals).toMatch(/\.students-hub-modal-backdrop\.is-open > \.students-hub-modal[\s\S]*?scale\(1\)/);
-        const utilities = readSource('assets/js/shared/utilities.js');
-        expect(utilities).toContain('window.openLuxHubModalBackdrop');
-        expect(utilities).toContain('window.closeLuxHubModalRoot');
+        const dialog = readSource('assets/js/shared/lux-glass-dialog.js');
+        expect(modals).toMatch(/\.lms-glass-dialog-overlay[\s\S]*?\.is-open[\s\S]*?opacity:\s*1/);
+        expect(modals).toMatch(/\.lms-glass-dialog-overlay[\s\S]*?\.is-open > \*[\s\S]*?scale\(1\)/);
+        expect(dialog).toContain('window.openLuxHubFormModalRoot');
+        expect(dialog).toContain('window.closeLuxHubFormModalRoot');
     });
 });

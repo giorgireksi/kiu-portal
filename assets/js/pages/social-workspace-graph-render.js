@@ -1108,11 +1108,11 @@
                     ${linkFrom ? '<span class="social-neo-muted">Depends on selected source</span>' : ''}
                     <label class="social-project-task-graph-quick-create-field">
                         <span class="social-neo-label">Title</span>
-                        <input class="social-neo-input" type="text" name="projectTaskTitle" placeholder="Task title" value="${escape(titleValue)}" required>
+                        <input class="social-neo-input lux-control" type="text" name="projectTaskTitle" placeholder="Task title" value="${escape(titleValue)}" required>
                     </label>
                     <label class="social-project-task-graph-quick-create-field">
                         <span class="social-neo-label">Status</span>
-                        <select class="social-neo-select" name="projectTaskStatus" data-lux-picker>${statusOptions}</select>
+                        <select class="social-neo-select lux-control" name="projectTaskStatus" data-lux-picker>${statusOptions}</select>
                     </label>
                     <div class="social-project-task-graph-quick-create-actions">
                         <button class="lux-secondary-btn lux-secondary-btn-sm lux-glass-dialog-cancel-btn" type="button" data-action="project-task-graph-quick-create-cancel">Cancel</button>
@@ -1176,9 +1176,9 @@
             const formBody = canContribute ? `
                         <form class="social-project-task-graph-group-form" data-project-task-graph-group-form="1" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}">
                             <label class="social-neo-label" for="sptg-group-name-${escape(groupId)}">Name</label>
-                            <input class="social-neo-input" id="sptg-group-name-${escape(groupId)}" name="groupName" type="text" value="${escape(text(group?.name || ''))}" maxlength="120" required autocomplete="off" data-group-name-input="1">
+                            <input class="social-neo-input lux-control" id="sptg-group-name-${escape(groupId)}" name="groupName" type="text" value="${escape(text(group?.name || ''))}" maxlength="120" required autocomplete="off" data-group-name-input="1">
                             <label class="social-neo-label" for="sptg-group-assignee-${escape(groupId)}">Assigned to</label>
-                            <select class="social-neo-select" id="sptg-group-assignee-${escape(groupId)}" name="groupAssigneeUserId" data-lux-picker>
+                            <select class="social-neo-select lux-control" id="sptg-group-assignee-${escape(groupId)}" name="groupAssigneeUserId" data-lux-picker>
                                 ${assigneeOptions}
                             </select>
                             <label class="social-neo-label" for="sptg-group-desc-${escape(groupId)}">Notes</label>

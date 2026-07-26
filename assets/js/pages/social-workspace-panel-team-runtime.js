@@ -88,8 +88,8 @@
                         <summary class="social-project-team-invite-summary">Invite members</summary>
                         <div class="social-project-team-invite-body">
                             <div class="social-neo-directory-filters">
-                                <input class="social-neo-input" type="search" name="projectInviteSearch" value="${escape(text(runtime.ui?.projectInviteSearch || ''))}" placeholder="Search by name, faculty, role, or interests">
-                                <select class="social-neo-select" name="projectInviteFaculty" data-lux-picker>
+                                <input class="social-neo-input lux-control" type="search" name="projectInviteSearch" value="${escape(text(runtime.ui?.projectInviteSearch || ''))}" placeholder="Search by name, faculty, role, or interests">
+                                <select class="social-neo-select lux-control" name="projectInviteFaculty" data-lux-picker>
                                     <option value="all" ${inviteFaculty === 'all' ? 'selected' : ''}>All faculties</option>
                                     ${facultyOptions.map((facultyCode) => `<option value="${escape(facultyCode)}" ${inviteFaculty === facultyCode ? 'selected' : ''}>${escape(facultyCode)}</option>`).join('')}
                                 </select>

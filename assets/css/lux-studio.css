@@ -1,9 +1,9 @@
 /* Color & Motion Studio — self-contained fixed 50% glassmorph (ignores portal opacity slider). */
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) {
   --lux-studio-glass-border: rgba(255, 255, 255, 0.14);
-  --lux-studio-dialog-bg: var(--lux-frosted-glass-surface);
-  --lux-studio-dialog-border: var(--lux-frosted-glass-border);
-  --lux-studio-dialog-shadow: var(--lux-frosted-glass-shadow);
+  --lux-studio-dialog-bg: var(--lux-popup-shell-surface);
+  --lux-studio-dialog-border: var(--lux-popup-shell-border);
+  --lux-studio-dialog-shadow: var(--lux-popup-shell-shadow);
   --lux-studio-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.10);
   --lux-studio-chip-radius: 16px;
   --lux-studio-btn-radius: 14px;
@@ -90,8 +90,8 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
 ) {
   border: 1px solid var(--lux-studio-dialog-border);
   background: var(--lux-studio-dialog-bg);
-  backdrop-filter: var(--lux-frosted-glass-blur);
-  -webkit-backdrop-filter: var(--lux-frosted-glass-blur);
+  backdrop-filter: var(--lux-popup-shell-blur);
+  -webkit-backdrop-filter: var(--lux-popup-shell-blur);
   box-shadow: var(--lux-studio-dialog-shadow);
 }
 

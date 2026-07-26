@@ -27,12 +27,36 @@ describe('news bare shell', () => {
         const html = readSource('news.html');
         expect(html).toContain('lux-tokens.css');
         expect(html).toContain('lux-controls.css');
+        expect(html).toContain('lux-modals.css');
         expect(html).toContain('lux-shell.css');
+        expect(html).toContain('frostedpopup1');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('body.lux-page-bare');
-        expect(bare).not.toContain('backdrop-filter: none');
+        expect(bare).toContain('#portal-news-root .newsx-shell');
+        const newsBlock = bare.slice(bare.indexOf('/* ── News workspace'));
+        expect(newsBlock).not.toContain('--news-fade-');
         const shell = readSource('assets/css/lux-shell.css');
         expect(shell).toContain('--lux-panel-surface-soft');
         expect(shell).toContain('body.lux-page-bare .lux-page-shell');
+    });
+
+    it('dual-writes lux-soft-chrome on feed cards', () => {
+        const feed = readSource('assets/js/pages/news/news-feed-render.js');
+        expect(feed).toContain('lux-soft-chrome newsx-panel newsx-feed-card');
+    });
+
+    it('styles markdown and publisher editor chrome in shared CSS', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const modals = readSource('assets/css/lux-modals.css');
+        const controls = readSource('assets/css/lux-controls.css');
+        expect(bare).toContain('.newsx-card-body--rich :is(.newsx-md-h2');
+        expect(bare).toContain('a.newsx-attachment-chip');
+        expect(bare).toContain('.newsx-section-btn.lux-secondary-btn');
+        expect(bare).not.toMatch(/\.newsx-section-btn\s*\{[^}]*border-radius/);
+        expect(controls).toContain('.lux-select-card.lux-secondary-btn');
+        expect(modals).toContain('.newsx-publisher-modal .newsx-editor-ribbon');
+        expect(modals).toContain('.newsx-publisher-modal .newsx-rich-editor');
+        expect(modals).toContain('.newsx-publisher-modal :is(.newsx-publisher-radio-card, .lux-check-card');
+        expect(modals).toContain('.newsx-confirm-title');
     });
 });

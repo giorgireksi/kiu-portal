@@ -105,6 +105,23 @@ describe('social-workspace-panel', () => {
         expect(page).toMatch(/WEEK_PLAN_MODEL_URL[\s\S]*SCHEDULE_UI_URL[\s\S]*TAB_RUNTIME_URL[\s\S]*EVENTS_URL[\s\S]*PANEL_URL[\s\S]*GRAPH_RUNTIME_URL[\s\S]*DIALOGS_URL[\s\S]*GRAPH_RENDER_URL[\s\S]*TASK_UI_URL[\s\S]*PORTFOLIO_RUNTIME_URL[\s\S]*PORTFOLIO_UI_URL[\s\S]*PROJECT_CHROME_URL[\s\S]*DIALOG_ROUTE_URL[\s\S]*MODULE_URL/);
     });
 
+    it('panel factory avoids TDZ for renderTaskDependencyGraphPreview', () => {
+        const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
+        expect(workspace).toMatch(/renderTaskDependencyGraphPreview:\s*window\.renderTaskDependencyGraphPreview/);
+    });
+
+    it('graph runtime factory avoids TDZ for dialog-route stack helpers', () => {
+        const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
+        expect(workspace).toMatch(/renderStackedProjectTaskChild:\s*window\.renderStackedProjectTaskChild/);
+        expect(workspace).toMatch(/shouldRenderProjectHealthStack:\s*window\.shouldRenderProjectHealthStack/);
+    });
+
+    it('binds graph-model exports before re-exporting to KiuSocialWorkspace', () => {
+        const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
+        expect(workspace).toMatch(/const clampProjectTaskGraphCardHeight = window\.clampProjectTaskGraphCardHeight \|\| __swGraphBatch\.clampProjectTaskGraphCardHeight/);
+        expect(workspace).toMatch(/__kiuSwApi\.clampProjectTaskGraphCardHeight = clampProjectTaskGraphCardHeight/);
+    });
+
     it('keeps manager settings CTA markers in the panel module', () => {
         const panel = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-panel.js'), 'utf8');
         expect(panel).toContain('data-action="project-settings-open"');

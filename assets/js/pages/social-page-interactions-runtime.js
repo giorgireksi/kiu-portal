@@ -51,7 +51,9 @@
         function applyShellIdentity(...a) { return __lookup('applyShellIdentity')(...a); }
         function ensureWorkspaceNavCollapsedState(...a) { return __lookup('ensureWorkspaceNavCollapsedState')(...a); }
         function syncWorkspaceNavCollapsedClass(...a) { return __lookup('syncWorkspaceNavCollapsedClass')(...a); }
-        function getSocialPanelConfig(...a) { return __lookup('getSocialPanelConfig')(...a); }
+        function getSocialPanelConfig(...a) {
+            return __lookup('getSocialPanelConfig', (window.KiuSocialPanelModel || {}).getSocialPanelConfig)(...a);
+        }
         function clearProjectTabPaneCache(...a) { return __lookup('clearProjectTabPaneCache')(...a); }
         function projectTabPaneCacheKey(...a) { return __lookup('projectTabPaneCacheKey')(...a); }
         function isSocialTopbarSkippedPanel(...a) { return __lookup('isSocialTopbarSkippedPanel')(...a); }
@@ -68,8 +70,81 @@
         function ensureDirectChat(...a) { return __lookup('ensureDirectChat')(...a); }
         function upsertChat(...a) { return __lookup('upsertChat')(...a); }
         function ensureCallRuntime(...a) { return __lookup('ensureCallRuntime')(...a); }
+        function dep(name, fallback) {
+            return (...args) => __lookup(name, fallback)(...args);
+        }
+        const createSocialLazyStub = dep('createSocialLazyStub');
+        const hasSocialFeedModule = dep('hasSocialFeedModule');
+        const ensureSocialFeedModule = dep('ensureSocialFeedModule');
+        const hasSocialPhotographyModule = dep('hasSocialPhotographyModule');
+        const hasSocialGroupsModule = dep('hasSocialGroupsModule');
+        const ensureSocialGroupsModule = dep('ensureSocialGroupsModule');
+        const hasSocialPagesModule = dep('hasSocialPagesModule');
+        const ensureSocialPagesModule = dep('ensureSocialPagesModule');
+        const hasSocialEventsModule = dep('hasSocialEventsModule');
+        const ensureSocialEventsModule = dep('ensureSocialEventsModule');
+        const hasSocialMessagesModule = dep('hasSocialMessagesModule');
+        const ensureSocialMessagesModule = dep('ensureSocialMessagesModule');
+        const hasSocialProfileModule = dep('hasSocialProfileModule');
+        const ensureSocialProfileModule = dep('ensureSocialProfileModule');
+        const hasSocialLostFoundModule = dep('hasSocialLostFoundModule');
+        const ensureSocialLostFoundModule = dep('ensureSocialLostFoundModule');
+        const hasSocialSurveysModule = dep('hasSocialSurveysModule');
+        const ensureSocialSurveysModule = dep('ensureSocialSurveysModule');
+        const hasSocialWorkspaceModule = dep('hasSocialWorkspaceModule');
+        const ensureSocialWorkspaceModule = dep('ensureSocialWorkspaceModule');
+        const queueDeferredModuleRender = dep('queueDeferredModuleRender');
+        const closeSocialWorkspaceNavAnimated = dep('closeSocialWorkspaceNavAnimated');
+        const scheduleDirectoryPrefetch = dep('scheduleDirectoryPrefetch');
+        const scheduleDeferredDesktopModulePrefetch = dep('scheduleDeferredDesktopModulePrefetch');
+        const renderFeedPanel = dep('renderFeedPanel');
+        const renderCommunityPanel = dep('renderCommunityPanel');
+        const renderGroupsPanel = dep('renderGroupsPanel');
+        const renderProjectsWorkspacePanelClassic = dep('renderProjectsWorkspacePanelClassic');
+        const renderProjectsPanel = dep('renderProjectsPanel');
+        const renderPagesPanel = dep('renderPagesPanel');
+        const renderEventsPanel = dep('renderEventsPanel');
+        const renderSurveysPanel = dep('renderSurveysPanel');
+        const renderPhotographyPanel = dep('renderPhotographyPanel');
+        const renderLostFoundPanel = dep('renderLostFoundPanel');
+        const renderMessagesPanel = dep('renderMessagesPanel');
+        const renderAlertsPanel = dep('renderAlertsPanel');
+        const renderProfilePageBody = dep('renderProfilePageBody');
+        const renderShellWorkspaceNav = dep('renderShellWorkspaceNav');
+        const renderShellDrawer = dep('renderShellDrawer');
+        const renderMobileTabBar = dep('renderMobileTabBar');
+        const setSocialRegionMarkup = dep('setSocialRegionMarkup');
+        const revealShell = dep('revealShell');
+        const syncSocialVisualShell = dep('syncSocialVisualShell');
+        const captureInteractionState = dep('captureInteractionState');
+        const restoreInteractionState = dep('restoreInteractionState');
+        const scheduleSocialCenterScrollRepair = dep('scheduleSocialCenterScrollRepair');
+        const syncEventDescScrollRails = dep('syncEventDescScrollRails');
+        const syncSocialScrollLayout = dep('syncSocialScrollLayout');
+        const migrateSocialScrollOnLockChange = dep('migrateSocialScrollOnLockChange');
+        const scheduleDeferredWindowScrollRestore = dep('scheduleDeferredWindowScrollRestore');
+        const renderWorkspaceOwnedDialog = dep('renderWorkspaceOwnedDialog');
+        const bindPhotographyUploadDialogFileInput = dep('bindPhotographyUploadDialogFileInput');
+        const syncSurveyResultsDialog = dep('syncSurveyResultsDialog');
+        const trySyncProjectTaskGraphStackDialog = dep('trySyncProjectTaskGraphStackDialog');
+        const shouldRenderProjectTaskGraphStack = dep('shouldRenderProjectTaskGraphStack');
+        const bindProjectTaskGraphDrag = dep('bindProjectTaskGraphDrag');
+        const bindProjectTaskGraphResizeObserver = dep('bindProjectTaskGraphResizeObserver');
+        const syncOverlayPortalVisibility = dep('syncOverlayPortalVisibility');
+        const pruneStaleSocialOverlayState = dep('pruneStaleSocialOverlayState');
+        const bindEvents = dep('bindEvents');
+        const enhanceSocialAccessibility = dep('enhanceSocialAccessibility');
+        const focusCommentComposeInput = dep('focusCommentComposeInput');
+        const postKey = (...args) => __lookup('postKey', (window.KiuSocialChromeModel || {}).postKey)(...args);
+        const lostFoundItems = dep('lostFoundItems');
+        const normalizeLostFoundItem = dep('normalizeLostFoundItem');
+        const surveyById = dep('surveyById');
         const runtime = d.runtime || window.__kiuSocialLiteRuntime;
         const PANEL_KEY = d.PANEL_KEY ?? window.PANEL_KEY;
+        const CHAT_KEY = d.CHAT_KEY ?? window.CHAT_KEY ?? 'KIU_SOCIAL_ACTIVE_CHAT';
+        let renderDebounceTimer = 0;
+        const SOCIAL_TAB_SCROLL_RESET_RE = /^(panel|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|feed-tab)$/;
+        const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
         void d;
 
 function reactionEmoji(reactionType) {
@@ -664,7 +739,6 @@ function renderSectionCommandCenter(activePanel, activeConfig, runtime) {
     if (isSocialTopbarSkippedPanel(activePanel)) return '';
     return '';
 }
-const getSocialPanelConfig = window.getSocialPanelConfig || (window.KiuSocialPanelModel || {}).getSocialPanelConfig;
 function renderSocialFlashStatus(runtime) {
     const flash = runtime.flash?.message ? `
         <div class="social-neo-flash ${runtime.flash?.tone === 'danger' ? 'is-danger' : runtime.flash?.tone === 'success' ? 'is-success' : ''}">
@@ -785,8 +859,6 @@ const buildProjectsFingerprint = window.buildProjectsFingerprint || (window.KiuS
 const buildPortfolioFingerprint = window.buildPortfolioFingerprint || (window.KiuSocialFingerprintModel || {}).buildPortfolioFingerprint;
 const buildPhotographyUiFingerprint = window.buildPhotographyUiFingerprint || (window.KiuSocialFingerprintModel || {}).buildPhotographyUiFingerprint;
 const buildPagesFingerprint = window.buildPagesFingerprint || (window.KiuSocialFingerprintModel || {}).buildPagesFingerprint;
-const buildSocialRenderSignature = window.buildSocialRenderSignature || (window.KiuSocialFingerprintModel || {}).buildSocialRenderSignature;
-const isSocialForceRenderReason = window.isSocialForceRenderReason || (window.KiuSocialFingerprintModel || {}).isSocialForceRenderReason;
 function renderSocialPageNow(reason = 'manual') {
     clearTimeout(renderDebounceTimer);
     const renderCallback = () => {
@@ -1018,6 +1090,15 @@ function renderSocialPageNow(reason = 'manual') {
             commentReactionType,
             renderInlineReplyForm,
             renderCommentReactionButtons,
+            renderCommentThread,
+            findCommentInThread,
+            renderCommentNode,
+            patchCommentReactions,
+            patchPostSaveButtons,
+            patchPhotographyFeedReactions,
+            openInlineReply,
+            closeInlineReply,
+            patchCommentDialogCount,
             patchPhotographyFollowButtons,
             refreshPhotographyPanelStage,
             portfolioEditorFormRoot,
@@ -1038,6 +1119,8 @@ function renderSocialPageNow(reason = 'manual') {
             patchSocialFlash,
             patchPageFollowState,
             patchPageComposeBlock,
+            patchPostReactions,
+            patchCommentReactionsByIds,
             deleteCommentInline,
             readFileAsDataUrl,
             setPanel,

@@ -60,19 +60,19 @@ describe('legacy visual purge', () => {
         expect(offenders).toEqual([]);
     });
 
-    it('routes messenger modal chrome through warmglass tokens', () => {
+    it('routes messenger modal chrome through frosted popup shell tokens', () => {
         const portal = readSource('assets/css/layout-portal.css');
-        expect(portal).toMatch(/\.portal-msg-modal-window[\s\S]*?var\(--lux-warmglass-surface\)/);
-        expect(portal).toMatch(/\.portal-notif-modal-window[\s\S]*?var\(--lux-warmglass-surface\)/);
-        expect(portal).toMatch(/\.portal-call-window[\s\S]*?var\(--lux-warmglass-surface\)/);
+        expect(portal).toMatch(/\.portal-msg-modal-window[\s\S]*?var\(--lux-popup-shell-surface\)/);
+        expect(portal).toMatch(/\.portal-notif-modal-window[\s\S]*?var\(--lux-popup-shell-surface\)/);
+        expect(portal).toMatch(/\.portal-call-window[\s\S]*?var\(--lux-popup-shell-surface\)/);
         expect(portal).toMatch(/\.portal-msg-modal-backdrop[\s\S]*?backdrop-filter:\s*none/);
         expect(portal).toMatch(/\.portal-msg-modal-window[\s\S]*?var\(--lux-popup-slide-offset\)/);
     });
 
-    it('routes messenger dock and panel chrome through warmglass tokens', () => {
+    it('routes messenger dock shells through frosted popup shell tokens', () => {
         const portal = readSource('assets/css/layout-portal.css');
-        expect(portal).toMatch(/\.portal-msg-dock[\s\S]*?var\(--lux-warmglass-surface\)/);
-        expect(portal).toMatch(/\.portal-notif-dock[\s\S]*?var\(--lux-warmglass-surface\)/);
+        expect(portal).toMatch(/\.portal-msg-dock[\s\S]*?var\(--lux-popup-shell-surface\)/);
+        expect(portal).toMatch(/\.portal-notif-dock[\s\S]*?var\(--lux-popup-shell-surface\)/);
         expect(portal).toMatch(/\.portal-msg-panel[\s\S]*?var\(--lux-warmglass-surface\)/);
         expect(portal).not.toMatch(/rgba\(255,\s*255,\s*255,\s*0\.98\)/);
     });
@@ -85,13 +85,13 @@ describe('legacy visual purge', () => {
         expect(modals).toContain('.lux-glass-dialog-body');
         expect(modals).toContain('.lux-glass-dialog-actions');
         expect(modals).toMatch(/\.admin-reg-course-modal-overlay[\s\S]*?position:\s*fixed/);
-        expect(modals).toMatch(/\.admin-reg-course-modal-card[\s\S]*?var\(--lux-warmglass-surface\)/);
+        expect(modals).toMatch(/\.admin-reg-course-modal-card[\s\S]*?var\(--lux-popup-shell-surface\)/);
         expect(modals).toContain('.admin-reg-course-item');
     });
 
     it('exports hub modal motion helpers on window', () => {
-        const utilities = readSource('assets/js/shared/utilities.js');
-        expect(utilities).toContain('window.openLuxHubModalBackdrop');
-        expect(utilities).toContain('window.closeLuxHubModalRoot');
+        const dialog = readSource('assets/js/shared/lux-glass-dialog.js');
+        expect(dialog).toContain('window.openLuxHubFormModalRoot');
+        expect(dialog).toContain('window.closeLuxHubFormModalRoot');
     });
 });

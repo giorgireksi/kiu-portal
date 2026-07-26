@@ -172,16 +172,16 @@
                             <div class="${messageCardMetaClass}">
                                 <strong class="social-neo-message__sender">${escape(displayName(sender))}</strong>
                             </div>
-                            ${own ? `<button class="social-neo-link-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>` : ''}
+                            ${own ? `<button class="lux-ghost-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>` : ''}
                         </div>
                     ` : own ? `
                         <div class="${messageCardHeadClass}">
-                            <button class="social-neo-link-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>
+                            <button class="lux-ghost-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>
                         </div>
                     ` : ''}
                     ${message.text ? `<p>${renderLinkedMessageText(message.text)}</p>` : ''}
                     ${message.file ? filePreview(message.file) : ''}
-                    ${links.length ? `<div class="social-neo-link-row">${links.map((url) => `<a class="social-neo-link-btn" href="${escape(url)}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${escape(url.replace(/^https?:\/\//i, ''))}</a>`).join('')}</div>` : ''}
+                    ${links.length ? `<div class="social-neo-link-row">${links.map((url) => `<a class="lux-ghost-btn" href="${escape(url)}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${escape(url.replace(/^https?:\/\//i, ''))}</a>`).join('')}</div>` : ''}
                     <span>${escape(when(message.sentAt))}${own && seenByOthers.length ? ` • Seen by ${escape(seenByOthers.length)}` : ''}</span>
                 </article>
             `;

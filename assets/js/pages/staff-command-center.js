@@ -743,40 +743,41 @@
         if (!root.hasAttribute('data-lux-transparency-exempt')) {
             root.setAttribute('data-lux-transparency-exempt', '1');
         }
-        root.innerHTML = `
-            <div class="staff-hub-modal-backdrop" data-staff-action="dismiss-modal">
-                <form class="staff-hub-modal" id="staff-command-form" novalidate data-staff-type-id="${escapeHtml(staffTypeId)}" autocomplete="off">
-                    <div class="staff-hub-modal-head">
-                        <div class="staff-hub-modal-head-main">
-                            <div class="staff-hub-modal-title-row">
-                                <h2 class="staff-hub-modal-title"><i class="fas ${titleIcon}" aria-hidden="true"></i> ${editing ? 'Edit Staff Profile' : 'Add Staff Member'}</h2>
-                                <span class="staff-hub-modal-type-pill">${escapeHtml(staffType?.label || 'Staff')}</span>
-                            </div>
-                            <p class="staff-hub-modal-copy">${editing
-                                ? `Update this ${escapeHtml(staffType?.label || 'staff')} profile using your configured form sections.`
-                                : `Create a new ${escapeHtml(staffType?.label || 'staff')} profile from the sections your administrators configured.`}</p>
-                        </div>
-                        <button class="lux-secondary-btn" type="button" data-staff-action="close-modal" aria-label="Close modal"><i class="fas fa-times" aria-hidden="true"></i> Close</button>
-                    </div>
-                    <div class="staff-hub-modal-body">
-                        ${bodyMarkup}
-                    </div>
-                    <div class="staff-hub-modal-foot">
-                        ${renderModalStatus(completion, touched)}
-                        <div class="staff-hub-modal-actions lux-btn-row-stack">
+        const subtitle = editing
+            ? `Update this ${staffType?.label || 'staff'} profile using your configured form sections.`
+            : `Create a new ${staffType?.label || 'staff'} profile from the sections your administrators configured.`;
+        const actionsHtml = `
                             <button class="lux-secondary-btn" type="button" data-staff-action="close-modal">Cancel</button>
                             <button class="lux-secondary-btn" type="button" data-staff-action="check-required-fields"><i class="fas fa-list-check" aria-hidden="true"></i> Check required fields</button>
                             <button class="lux-primary-btn" type="submit" ${schemaEmpty ? 'disabled' : ''}><i class="fas fa-check" aria-hidden="true"></i> ${editing ? 'Save Staff Profile' : 'Create Staff Profile'}</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        `;
-        const hubBackdrop = root.querySelector('.staff-hub-modal-backdrop');
-        if (hubBackdrop && typeof window.openLuxHubModalBackdrop === 'function') {
-            window.openLuxHubModalBackdrop(hubBackdrop);
-        } else {
-            hubBackdrop?.classList.add('is-open');
+                        `;
+        const headHtml = typeof renderLuxHubFormModalHead === 'function'
+            ? renderLuxHubFormModalHead({
+                title: editing ? 'Edit Staff Profile' : 'Add Staff Member',
+                icon: titleIcon,
+                subtitle,
+                typePill: staffType?.label || 'Staff',
+                closeAttr: 'type="button" data-staff-action="close-modal"'
+            })
+            : '';
+        const footHtml = typeof renderLuxHubFormModalFoot === 'function'
+            ? renderLuxHubFormModalFoot({
+                statusHtml: renderModalStatus(completion, touched),
+                actionsHtml
+            })
+            : '';
+        root.innerHTML = typeof renderLuxHubFormModalOverlay === 'function'
+            ? renderLuxHubFormModalOverlay({
+                dismissAttr: 'data-staff-action="dismiss-modal"',
+                formId: 'staff-command-form',
+                formAttrs: `data-staff-type-id="${escapeHtml(staffTypeId)}" autocomplete="off"`,
+                headHtml,
+                bodyHtml: bodyMarkup,
+                footHtml
+            })
+            : '';
+        if (typeof window.openLuxHubFormModalRoot === 'function') {
+            window.openLuxHubFormModalRoot(root);
         }
         if (typeof window.enhanceUniversalPickers === 'function') {
             window.enhanceUniversalPickers(root);
@@ -1139,8 +1140,8 @@
         state.modalRole = 'professor';
         state.modalStaffTypeId = 'professor';
         const root = document.getElementById('staff-command-modal-root');
-        if (root && typeof window.closeLuxHubModalRoot === 'function') {
-            window.closeLuxHubModalRoot(root);
+        if (root && typeof window.closeLuxHubFormModalRoot === 'function') {
+            window.closeLuxHubFormModalRoot(root);
             return;
         }
         renderModal([], typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON');

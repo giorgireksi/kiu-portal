@@ -28,7 +28,7 @@ describe('staff route regressions', () => {
         expectRetiredCss('index-luxury.css');
         expect(existsSync(join(process.cwd(), 'assets/css/staff-command-center.css'))).toBe(false);
 
-        expect(modalsCss).toContain('.staff-hub-modal');
+        expect(modalsCss).toContain('.lux-glass-dialog-card--hub-form');
         expect(staffJs).toContain('renderStaffPage');
         expect(staffJs).toContain('staff-hub-shell');
         expect(staffJs).toContain('document.addEventListener(\'DOMContentLoaded\'');
@@ -47,7 +47,7 @@ describe('staff route regressions', () => {
         expect(staffJs).toContain('staff-hub-form-settings');
         expect(readSource('assets/js/pages/form-builder-runtime.js')).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace">');
         expect(readSource('assets/js/pages/form-builder-runtime.js')).not.toContain('form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1"');
-        expect(staffJs).toContain('class="staff-hub-modal"');
+        expect(staffJs).toContain('renderLuxHubFormModalOverlay');
         expect(staffJs).toContain('autocomplete="off"');
         expect(staffJs).not.toContain('lux-modern-surface');
         expect(staffJs).not.toContain('lux-modern-button');

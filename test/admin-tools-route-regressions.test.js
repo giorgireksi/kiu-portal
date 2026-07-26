@@ -99,8 +99,8 @@ describe('admin tools route regressions.test', () => {
         expect(bare).toContain('.staff-hub-filter-deck');
         expect(fouc).toContain('.staff-hub-form-settings-head');
         expect(fouc).toContain('.staff-hub-builder-rail');
-        expect(bare).toContain('#staff-command-modal-root .staff-hub-modal');
-        expect(bare).toContain('#students-admin-modal-root .students-hub-modal');
+        expect(bare).toContain('#staff-command-modal-root .lux-glass-dialog-card--hub-form');
+        expect(bare).toContain('#students-admin-modal-root .lux-glass-dialog-card--hub-form');
     });
 
     it('bare-lite scopes admin-tools layout + registration workspace chrome via shared tokens', () => {

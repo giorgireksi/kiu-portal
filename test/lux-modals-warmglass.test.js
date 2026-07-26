@@ -22,10 +22,10 @@ describe('global lux-modals warmglass', () => {
         const css = readSource('assets/css/lux-modals.css');
 
         expect(css).toContain('[data-lux-transparency-exempt="1"]');
-        expect(css).toContain('--lux-modal-glass-surface: var(--lux-warmglass-surface)');
-        expect(css).toContain('.students-hub-modal');
+        expect(css).toContain('--lux-modal-glass-surface: var(--lux-popup-shell-surface)');
+        expect(css).toContain('.lux-glass-dialog-card--hub-form');
         expect(css).toContain('.lux-glass-dialog-card');
-        expect(css).toContain('body:not(.lux-route-social)');
+        expect(css).toContain('.lux-bg-mode-params-dialog');
         expect(css).toContain('.lms-glass-dialog-overlay');
         expect(css).toContain('.lms-quiz-board-modal');
         expect(css).toContain('.lux-picker-panel');

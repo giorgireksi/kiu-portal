@@ -181,7 +181,7 @@ function __kiuFeedExpose(map) {
         const contextLine = `${accountSubtitle(author)} - ${feedReason(post, author)}`;
         const commentTotal = comments.length + Number(post.replyCount || 0);
         return `
-            <article class="social-neo-card sn-mat-soft social-neo-post-card ${post.isPinned ? 'is-pinned' : ''}">
+            <article class="social-neo-card social-neo-post-card ${post.isPinned ? 'is-pinned' : ''}">
                 <div class="social-neo-post-head">
                     <button class="social-neo-post-author social-neo-clickable" type="button" data-action="profile-view" data-user-id="${escape(text(author.id))}">
                         ${avatar(author)}
@@ -511,7 +511,7 @@ function __kiuFeedExpose(map) {
                 </div>
                 <div class="social-neo-feed-hero-grid">
                     ${tabs.map((tab) => `
-                        <button class="social-neo-feed-hero-tab ${activeFilter === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-feed" data-home-filter="${escape(tab.tab)}" aria-pressed="${activeFilter === tab.tab ? 'true' : 'false'}">
+                        <button class="lux-secondary-btn social-neo-feed-hero-tab ${activeFilter === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-feed" data-home-filter="${escape(tab.tab)}" aria-pressed="${activeFilter === tab.tab ? 'true' : 'false'}">
                             <span class="social-neo-feed-hero-tab-icon"><i class="fas ${escape(tab.icon)}"></i></span>
                             <span class="social-neo-feed-hero-tab-copy">
                                 <strong>${escape(tab.label)}</strong>
@@ -559,7 +559,7 @@ function __kiuFeedExpose(map) {
         /* ── Assemble the feed panel layout ── */
         return `
             <div class="social-neo-feed-shell">
-                <section class="social-neo-card sn-mat-soft social-neo-feed-header-card">
+                <section class="social-neo-card social-neo-feed-header-card">
                     ${renderFeedHero(runtime, homeFilter, feedHeroMetrics, focusOptions, feedScopeId)}
                     <div class="social-neo-feed-header-divider" aria-hidden="true"></div>
                     ${composerMarkup}
@@ -695,7 +695,7 @@ function __kiuFeedExpose(map) {
                         </div>
                         <label class="lux-glass-dialog-field social-neo-post-compose-attach-search" for="${escape(searchId)}">
                             <span class="social-neo-label">Search</span>
-                            <input class="social-neo-input" id="${escape(searchId)}" name="postComposeAttachSearch" type="search" value="${escape(search)}" placeholder="Filter by name…" autocomplete="off">
+                            <input class="social-neo-input lux-control" id="${escape(searchId)}" name="postComposeAttachSearch" type="search" value="${escape(search)}" placeholder="Filter by name…" autocomplete="off">
                         </label>
                     </div>
                     <div class="social-neo-post-compose-attach-meta">
@@ -737,7 +737,7 @@ function __kiuFeedExpose(map) {
                         </div>
                         <label class="lux-glass-dialog-field" for="${escape(composerTextId)}">
                             <span class="social-neo-label">Message</span>
-                            <textarea class="social-neo-textarea" id="${escape(composerTextId)}" name="composerText" rows="3" placeholder="What's on your mind, ${escape(firstName)}?" data-bind="composer-text">${escape(text(runtime.ui?.composerText || ''))}</textarea>
+                            <textarea class="social-neo-textarea lux-control" id="${escape(composerTextId)}" name="composerText" rows="3" placeholder="What's on your mind, ${escape(firstName)}?" data-bind="composer-text">${escape(text(runtime.ui?.composerText || ''))}</textarea>
                         </label>
                     </section>
                     <section class="lux-glass-dialog-group-section">
@@ -748,13 +748,13 @@ function __kiuFeedExpose(map) {
                         <div class="social-neo-form-grid social-neo-form-grid-2">
                             <label class="lux-glass-dialog-field" for="${escape(composerScopeId)}">
                                 <span class="social-neo-label">Posting as</span>
-                                <select class="social-neo-select" id="${escape(composerScopeId)}" name="composerScope" data-bind="composer-scope" data-lux-picker>
+                                <select class="social-neo-select lux-control" id="${escape(composerScopeId)}" name="composerScope" data-bind="composer-scope" data-lux-picker>
                                     ${scopeOptions.map((option) => `<option value="${escape(`${option.type}:${option.id}`)}" ${currentScopeType === option.type && currentScopeId === option.id ? 'selected' : ''}>${escape(option.name)}</option>`).join('')}
                                 </select>
                             </label>
                             <label class="lux-glass-dialog-field" for="${escape(composerAudienceId)}">
                                 <span class="social-neo-label">Audience</span>
-                                <select class="social-neo-select" id="${escape(composerAudienceId)}" name="composerAudience" data-bind="composer-audience" data-lux-picker>
+                                <select class="social-neo-select lux-control" id="${escape(composerAudienceId)}" name="composerAudience" data-bind="composer-audience" data-lux-picker>
                                     <option value="campus" ${currentAudience === 'campus' ? 'selected' : ''}>Campus</option>
                                     <option value="faculty" ${currentAudience === 'faculty' ? 'selected' : ''}>Faculty</option>
                                     <option value="connections" ${currentAudience === 'connections' ? 'selected' : ''}>Connections</option>
@@ -817,7 +817,7 @@ function __kiuFeedExpose(map) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-edit" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Edit post', 'Refine the post without leaving the feed.') : ''}
-                    <textarea class="social-neo-textarea" name="dialogBody" rows="6" placeholder="Update your post...">${escape(text(dialog.body || post.body || post.text || ''))}</textarea>
+                    <textarea class="social-neo-textarea lux-control" name="dialogBody" rows="6" placeholder="Update your post...">${escape(text(dialog.body || post.body || post.text || ''))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Save changes' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
@@ -827,7 +827,7 @@ function __kiuFeedExpose(map) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-share" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Share post', 'Add context before it goes back into the stream.') : ''}
-                    <textarea class="social-neo-textarea" name="dialogNote" rows="4" placeholder="Say something about this...">${escape(text(dialog.note || ''))}</textarea>
+                    <textarea class="social-neo-textarea lux-control" name="dialogNote" rows="4" placeholder="Say something about this...">${escape(text(dialog.note || ''))}</textarea>
                     <div class="lux-glass-dialog-preview">${escape(text(post.body || post.text || 'Original post'))}</div>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Share now' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
@@ -838,7 +838,7 @@ function __kiuFeedExpose(map) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-report" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report post', 'Explain what is wrong with this content.') : ''}
-                    <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
+                    <textarea class="social-neo-textarea lux-control" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Submit report' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
@@ -852,7 +852,7 @@ function __kiuFeedExpose(map) {
                 <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-comment-report" data-action="noop">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report comment', 'Explain what is wrong with this comment.') : ''}
                     <div class="lux-glass-dialog-preview">${escape(text(comment.body || comment.text || 'Comment'))}</div>
-                    <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
+                    <textarea class="social-neo-textarea lux-control" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Submit report' }) : ''}
                     <input type="hidden" name="postId" value="${escape(postKey(dialog.postId))}">
                     <input type="hidden" name="commentId" value="${escape(text(dialog.commentId))}">
@@ -1021,7 +1021,7 @@ function __kiuFeedExpose(map) {
                         ${avatar(commentAuthor, 'social-neo-avatar-sm')}
                         <div class="lux-glass-dialog-comment-compose-main">
                             <div class="social-neo-inline social-neo-comment-compose-row">
-                                <input class="social-neo-input" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="${escape(dialogCommentPlaceholder)}" aria-label="${escape(dialogCommentPlaceholder)}" value="${escape(dialogCommentDraft)}">
+                                <input class="social-neo-input lux-control" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="${escape(dialogCommentPlaceholder)}" aria-label="${escape(dialogCommentPlaceholder)}" value="${escape(dialogCommentDraft)}">
                                 <button class="lux-primary-btn" type="submit">${dialogCommentSubmitLabel}</button>
                             </div>
                         </div>

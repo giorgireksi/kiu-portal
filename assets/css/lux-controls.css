@@ -54,7 +54,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 }
 .lux-control select { cursor: pointer; }
 .lux-icon-btn, .lux-control-btn, .lux-mode-btn, .lux-bg-mode-btn { position: relative; overflow: hidden; }
-.lux-icon-btn:active, .lux-primary-btn:active, .lux-secondary-btn:active, .lux-ghost-btn:active, .lux-quick-btn:active {
+.lux-icon-btn:active, .lux-primary-btn:active, .lux-secondary-btn:active, .lux-destructive-btn:active, .lux-ghost-btn:active, .lux-quick-btn:active {
   transform: translateY(1px) scale(0.99);
 }
 .lux-user-chip-chevron {
@@ -399,6 +399,110 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   transform: translateX(130%) skewX(-14deg);
   opacity: 1;
 }
+/* Status pills — shared matte chip paint (CSS-owned; lux-transparency skips inline paint). */
+.lux-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-panel-border));
+  background: var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  color: var(--lux-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  white-space: nowrap;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+button.lux-status-pill {
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+.lux-status-pill.is-info {
+  border-color: rgba(var(--lux-accent-rgb), 0.24);
+  color: color-mix(in srgb, var(--lux-accent) 78%, #fff 22%);
+  background:
+    radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), 0.14), transparent 34%),
+    var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+.lux-status-pill.is-success {
+  border-color: rgba(32, 197, 124, 0.28);
+  color: #9bf3c8;
+  background:
+    linear-gradient(180deg, rgba(32, 197, 124, 0.14), rgba(32, 197, 124, 0.06)),
+    var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+.lux-status-pill.is-warning {
+  border-color: rgba(251, 191, 36, 0.28);
+  color: #fde68a;
+  background:
+    linear-gradient(180deg, rgba(251, 191, 36, 0.14), rgba(251, 191, 36, 0.06)),
+    var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+.lux-status-pill.is-muted {
+  border-color: var(--lux-soft-chrome-border-accent, var(--lux-panel-border));
+  color: var(--lux-text-muted);
+}
+/* Bare portal glass hosts + admin-orders: variant paint must beat nested chip SSOT. */
+body.lux-full-paint.lux-unified-shell.lux-page-bare :is(
+  [data-lux-glass-root="1"],
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill.is-info {
+  border-color: rgba(var(--lux-accent-rgb), 0.24);
+  color: color-mix(in srgb, var(--lux-accent) 78%, #fff 22%);
+  background:
+    radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), 0.14), transparent 34%),
+    var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+body.lux-full-paint.lux-unified-shell.lux-page-bare :is(
+  [data-lux-glass-root="1"],
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill.is-success {
+  border-color: rgba(32, 197, 124, 0.28);
+  color: #9bf3c8;
+  background:
+    linear-gradient(180deg, rgba(32, 197, 124, 0.14), rgba(32, 197, 124, 0.06)),
+    var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+body.lux-full-paint.lux-unified-shell.lux-page-bare :is(
+  [data-lux-glass-root="1"],
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill.is-warning {
+  border-color: rgba(251, 191, 36, 0.28);
+  color: #fde68a;
+  background:
+    linear-gradient(180deg, rgba(251, 191, 36, 0.14), rgba(251, 191, 36, 0.06)),
+    var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+body.lux-full-paint.lux-unified-shell.lux-page-bare :is(
+  [data-lux-glass-root="1"],
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill.is-muted {
+  border-color: var(--lux-soft-chrome-border-accent, var(--lux-panel-border));
+  color: var(--lux-text-muted);
+  background: var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+button.lux-status-pill:is(:hover, :focus-visible) {
+  transform: translateY(-1px);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+}
+button.lux-status-pill:active {
+  transform: translateY(0);
+}
 /* Schedule toolbar chips (timetable + admin-scheduler shared markup). */
 .schedule-chip,
 .lux-status-pill.lux-timetable-chip {
@@ -413,7 +517,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   color: var(--lux-accent, var(--lux-text));
 }
 /* polished clean well + metal frame */
-.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn {
+.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -441,7 +545,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-.lux-primary-btn::before, .lux-secondary-btn::before, .lux-ghost-btn::before, .lux-picker-btn--compact::before {
+.lux-primary-btn::before, .lux-secondary-btn::before, .lux-destructive-btn::before, .lux-ghost-btn::before, .lux-picker-btn--compact::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -453,7 +557,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   opacity: 1;
 }
 /* one-shot diagonal sheen */
-.lux-primary-btn::after, .lux-secondary-btn::after, .lux-ghost-btn::after, .lux-picker-btn--compact::after {
+.lux-primary-btn::after, .lux-secondary-btn::after, .lux-destructive-btn::after, .lux-ghost-btn::after, .lux-picker-btn--compact::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -467,6 +571,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 }
 .lux-primary-btn:is(:hover, :focus-visible)::after,
 .lux-secondary-btn:is(:hover, :focus-visible)::after,
+.lux-destructive-btn:is(:hover, :focus-visible)::after,
 .lux-ghost-btn:is(:hover, :focus-visible)::after,
 .lux-picker-btn--compact:is(:hover, :focus-visible, .is-active, [aria-expanded="true"])::after {
   will-change: transform;
@@ -528,7 +633,7 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   background-clip: padding-box;
   background-origin: padding-box;
 }
-.lux-secondary-btn:is(.active, .is-active, [aria-selected="true"], [aria-pressed="true"]) {
+.lux-secondary-btn:is(.active, .is-active, .is-focused, [aria-selected="true"], [aria-pressed="true"]) {
   color: var(--lux-btn-label, #f7fbff);
   border-color: var(--lux-btn-border-solid, var(--lux-accent));
   background: var(--lux-btn-well-hover, var(--lux-btn-well));
@@ -538,6 +643,43 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.07) 28%, transparent 48%);
 }
 .lux-secondary-btn:active { transform: translateY(0) scale(0.985); }
+.lux-secondary-btn-sm {
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12px;
+  gap: 6px;
+}
+.lux-destructive-btn {
+  min-height: var(--lux-secondary-btn-min-height, 44px);
+  color: #fecaca;
+  border-width: var(--lux-btn-frame-width, 3.5px);
+  border-style: solid;
+  border-color: var(--lux-btn-danger-border, #dc2626);
+  background: var(--lux-panel-cta-danger);
+  background-clip: padding-box;
+  background-origin: padding-box;
+  box-shadow: var(--lux-btn-frame-shadow);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.32);
+}
+.lux-destructive-btn:hover, .lux-destructive-btn:focus-visible {
+  transform: translateY(-2px);
+  color: #fff1f2;
+  border-color: var(--lux-btn-danger-border, #dc2626);
+  background: var(--lux-panel-cta-danger-hover, var(--lux-panel-cta-danger));
+  box-shadow: var(--lux-btn-frame-shadow-hover);
+}
+.lux-destructive-btn:hover::before, .lux-destructive-btn:focus-visible::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 28%, transparent 48%);
+}
+.lux-destructive-btn:active { transform: translateY(0) scale(0.985); }
+:is(html.lux-light-mode, body.lux-light-mode) .lux-destructive-btn {
+  color: #991b1b;
+  text-shadow: none;
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lux-destructive-btn:hover,
+:is(html.lux-light-mode, body.lux-light-mode) .lux-destructive-btn:focus-visible {
+  color: #7f1d1d;
+}
 .lux-ghost-btn {
   min-height: var(--lux-secondary-btn-min-height, 44px);
   color: var(--lux-btn-ghost-label, var(--lux-btn-label, #f7fbff));
@@ -563,8 +705,8 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 28%, transparent 48%);
 }
 .lux-ghost-btn:active { transform: translateY(0) scale(0.985); }
-.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact { z-index: 0; }
-:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact, .lux-control) {
+.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn, .lux-picker-btn--compact { z-index: 0; }
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn, .lux-picker-btn--compact, .lux-control) {
   text-shadow: none;
 }
 :is(html.lux-light-mode, body.lux-light-mode) .lux-ghost-btn,
@@ -572,13 +714,13 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 :is(html.lux-light-mode, body.lux-light-mode) .lux-ghost-btn:focus-visible {
   color: var(--lux-btn-ghost-label, var(--lux-text, #1d2633));
 }
-:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact)::before {
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn, .lux-picker-btn--compact)::before {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 30%, transparent 52%);
 }
-:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact):is(:hover, :focus-visible, .is-active, [aria-expanded="true"])::before {
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn, .lux-picker-btn--compact):is(:hover, :focus-visible, .is-active, [aria-expanded="true"])::before {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.28) 30%, transparent 52%);
 }
-html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"] .lux-secondary-btn, html[data-lux-transparency="0"] .lux-ghost-btn {
+html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"] .lux-secondary-btn, html[data-lux-transparency="0"] .lux-destructive-btn, html[data-lux-transparency="0"] .lux-ghost-btn {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -586,7 +728,7 @@ html[data-lux-transparency="0"] .lux-primary-btn, html[data-lux-transparency="0"
   .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn--compact {
     transition: none;
   }
-  .lux-primary-btn::after, .lux-secondary-btn::after, .lux-ghost-btn::after, .lux-picker-btn--compact::after { display: none; }
+  .lux-primary-btn::after, .lux-secondary-btn::after, .lux-destructive-btn::after, .lux-ghost-btn::after, .lux-picker-btn--compact::after { display: none; }
   .lux-primary-btn:hover, .lux-primary-btn:focus-visible, .lux-primary-btn:active, .lux-secondary-btn:hover, .lux-secondary-btn:focus-visible, .lux-secondary-btn:active, .lux-ghost-btn:hover, .lux-ghost-btn:focus-visible, .lux-ghost-btn:active, .lux-picker-btn--compact:hover, .lux-picker-btn--compact:focus-visible, .lux-picker-btn--compact:active, .lux-picker-btn--compact.is-active, .lux-picker-btn--compact[aria-expanded="true"] {
     transform: none;
     filter: none;
@@ -753,7 +895,7 @@ body.lux-full-paint.lux-unified-shell .lux-ghost-btn {
 }
 
 /* Shared dense CTA variant for high-frequency workspace actions. */
-body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn) {
   min-height: 40px;
   padding-inline: 16px;
   border-radius: 12px;
@@ -761,11 +903,11 @@ body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-pr
   box-shadow: none;
   text-shadow: none;
 }
-body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn)::before,
-body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn)::after {
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn)::before,
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn)::after {
   display: none;
 }
-body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn):is(:hover, :focus-visible) {
+body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-destructive-btn, .lux-ghost-btn):is(:hover, :focus-visible) {
   box-shadow: var(--lux-elev-1, 0 8px 20px rgba(0, 0, 0, 0.14));
 }
 
@@ -787,4 +929,14 @@ body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-pr
   .lux-btn-row-stack .lux-secondary-btn {
     width: 100%;
   }
+}
+
+/* Selectable list rows on shared CTA secondary buttons (news sections, orders, login tabs). */
+.lux-select-card.lux-secondary-btn,
+button.lux-select-card.lux-secondary-btn,
+label.lux-select-card.lux-secondary-btn {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 10px;
 }

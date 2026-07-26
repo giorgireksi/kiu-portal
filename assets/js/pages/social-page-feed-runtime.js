@@ -28,6 +28,7 @@
         const displayName = __dep('displayName');
         const ensureSocialAlertsModule = __dep('ensureSocialAlertsModule');
         const ensureSocialCommunityModule = __dep('ensureSocialCommunityModule');
+        const ensureSocialEventsModule = __dep('ensureSocialEventsModule');
         const ensureSocialFeedModule = __dep('ensureSocialFeedModule');
         const ensureSocialGroupsModule = __dep('ensureSocialGroupsModule');
         const ensureSocialLostFoundModule = __dep('ensureSocialLostFoundModule');
@@ -42,6 +43,7 @@
         const find = __dep('find');
         const hasSocialAlertsModule = __dep('hasSocialAlertsModule');
         const hasSocialCommunityModule = __dep('hasSocialCommunityModule');
+        const hasSocialEventsModule = __dep('hasSocialEventsModule');
         const hasSocialFeedModule = __dep('hasSocialFeedModule');
         const hasSocialGroupsModule = __dep('hasSocialGroupsModule');
         const hasSocialLostFoundModule = __dep('hasSocialLostFoundModule');
@@ -482,6 +484,18 @@
             ].filter(Boolean).join(' ');
             return `
                 <section class="${sectionClasses}">
+                    <div class="social-neo-community-hero-head">
+                        <div class="social-neo-community-hero-copy">
+                            <span class="social-neo-section-kicker">Campus directory</span>
+                            <h2>People, connections, and staff</h2>
+                            <p>Browse profiles, manage requests, and find faculty.</p>
+                        </div>
+                        <div class="social-neo-community-hero-actions">
+                            <button class="lux-secondary-btn" type="button" data-action="panel-community" data-community-tab="requests" aria-pressed="${activeTab === 'requests' ? 'true' : 'false'}">
+                                <i class="fas fa-user-check"></i> View requests
+                            </button>
+                        </div>
+                    </div>
                     <div class="social-neo-community-hero-stats">
                         ${stats.map((stat) => `
                             <article class="social-neo-community-hero-stat social-neo-events-hero-stat lux-strip-card surface-card">
@@ -492,7 +506,7 @@
                     </div>
                     <div class="social-neo-community-hero-grid">
                         ${tabs.map((tab) => `
-                            <button class="social-neo-community-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-community" data-community-tab="${escape(tab.tab)}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
+                            <button class="lux-secondary-btn social-neo-community-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-community" data-community-tab="${escape(tab.tab)}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
                                 <span class="social-neo-community-hero-tab-icon"><i class="fas ${escape(tab.icon)}"></i></span>
                                 <span class="social-neo-community-hero-tab-copy">
                                     <strong>${escape(tab.label)}</strong>
@@ -549,7 +563,7 @@
                         ${rows.length ? rows.map((item, index) => `
                             <label class="social-project-task-checklist-row">
                                 <input type="checkbox" name="projectTaskChecklistDone" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}" ${item.done ? 'checked' : ''}>
-                                <input class="social-neo-input" type="text" name="projectTaskChecklistLabel" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}" value="${escape(text(item.label || ''))}" placeholder="Step description">
+                                <input class="social-neo-input lux-control" type="text" name="projectTaskChecklistLabel" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}" value="${escape(text(item.label || ''))}" placeholder="Step description">
                                 <button class="lux-secondary-btn lux-secondary-btn-icon" type="button" title="Remove step" data-action="project-task-checklist-remove" data-project-id="${escape(text(project.id))}" data-checklist-id="${escape(text(item.id || `new-${index + 1}`))}"><i class="fas fa-times"></i></button>
                             </label>
                         `).join('') : `<div class="social-neo-empty social-project-task-checklist-empty">No steps yet. Add one to track progress on this task.</div>`}
@@ -903,8 +917,15 @@
             patchPostComposeAttachDialog,
             renderPostComposeAttachDialog,
             patchPostComposeDialog,
+            renderPostComposeShareSection,
+            renderPostComposeAttachResultsHtml,
             renderSocialLuxHero,
             syncSocialVisualShell,
+            renderFeedPanel,
+            renderEventsPanel,
+            renderPost,
+            renderPostComposeDialog,
+            renderRelationshipActions,
             renderCommunityPanel,
             renderProjectsWorkspacePanelClassic,
             renderLostFoundPanel,
@@ -923,6 +944,7 @@
             resolveTaskPackageId,
             patchProjectHealthPlanPick,
             countProjectRisksForTask,
+            projectRiskScaleRank,
             buildGroupCreateInviteContext,
             renderGroupCreateInviteSection,
             findSocialGroupById,

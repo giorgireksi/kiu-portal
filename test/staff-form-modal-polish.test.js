@@ -11,7 +11,8 @@ describe('staff form modal polish', () => {
         const css = readWarmglassCss();
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(html).toContain('lux-modals.css');
-        expect(css).toContain('.staff-hub-modal');
-        expect(bare).toContain('#staff-command-modal-root .staff-hub-modal');
+        expect(html).toContain('lux-glass-dialog.js');
+        expect(css).toContain('.lux-glass-dialog-card--hub-form');
+        expect(bare).toContain('#staff-command-modal-root .lux-glass-dialog-card--hub-form');
     });
 });

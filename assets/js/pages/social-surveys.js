@@ -173,7 +173,7 @@
                 </div>
                 <div class="social-neo-surveys-hero-grid social-neo-surveys-hero-grid--lanes">
                     ${laneTabs.map((entry) => `
-                        <button class="social-neo-surveys-hero-tab ${activeLane === entry.lane ? 'is-focused' : ''}" type="button"
+                        <button class="lux-secondary-btn social-neo-surveys-hero-tab ${activeLane === entry.lane ? 'is-focused' : ''}" type="button"
                                 data-action="surveys-lane-${escape(entry.lane)}" aria-pressed="${activeLane === entry.lane ? 'true' : 'false'}">
                             <span class="social-neo-surveys-hero-tab-icon"><i class="fas ${escape(entry.icon)}"></i></span>
                             <span class="social-neo-surveys-hero-tab-copy">
@@ -185,7 +185,7 @@
                 </div>
                 <div class="social-neo-surveys-hero-grid">
                     ${tabs.map((entry) => `
-                        <button class="social-neo-surveys-hero-tab ${activeTab === entry.tab ? 'is-focused' : ''}" type="button"
+                        <button class="lux-secondary-btn social-neo-surveys-hero-tab ${activeTab === entry.tab ? 'is-focused' : ''}" type="button"
                                 data-action="panel-surveys" data-surveys-tab="${escape(entry.tab)}" aria-pressed="${activeTab === entry.tab ? 'true' : 'false'}">
                             <span class="social-neo-surveys-hero-tab-icon"><i class="fas ${escape(entry.icon)}"></i></span>
                             <span class="social-neo-surveys-hero-tab-copy">
@@ -198,7 +198,7 @@
                 <div class="social-neo-surveys-hero-toolbar">
                     <label for="${escape(searchId)}">
                         <span class="social-neo-label">Search</span>
-                        <input class="social-neo-input" id="${escape(searchId)}" type="search" name="surveysSearch" placeholder="Search title, organizer, or audience" value="${escape(searchValue)}">
+                        <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" name="surveysSearch" placeholder="Search title, organizer, or audience" value="${escape(searchValue)}">
                     </label>
                 </div>
                 ${merged ? `
@@ -317,7 +317,7 @@
             const required = questionRequiredAttr(question);
             const maxLength = questionMaxLengthAttr(question);
             const savedText = escape(text(savedAnswer?.textValue || ''));
-            return `<textarea class="social-neo-textarea" name="survey-q-${escape(qId)}" rows="4" data-question-id="${escape(qId)}" data-text="1" placeholder="Your answer"${required}${maxLength}>${savedText}</textarea>`;
+            return `<textarea class="social-neo-textarea lux-control" name="survey-q-${escape(qId)}" rows="4" data-question-id="${escape(qId)}" data-text="1" placeholder="Your answer"${required}${maxLength}>${savedText}</textarea>`;
         }
         return '';
     }
@@ -713,7 +713,7 @@
                 <div class="social-neo-survey-choice-list social-neo-survey-question-options-list">
                     ${options.map((option, optionIndex) => `
                         <div class="social-neo-survey-choice-row social-neo-survey-question-option-row ${optionsRemovable ? '' : 'social-neo-survey-choice-row--no-remove'}">
-                            <input class="social-neo-input" type="text" name="surveyQuestionOption-${escape(String(index))}" value="${escape(text(option?.label || ''))}" placeholder="Choice ${escape(String(optionIndex + 1))}" required>
+                            <input class="social-neo-input lux-control" type="text" name="surveyQuestionOption-${escape(String(index))}" value="${escape(text(option?.label || ''))}" placeholder="Choice ${escape(String(optionIndex + 1))}" required>
                             ${optionsRemovable ? `
                                 <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-question-option-remove" data-question-index="${escape(String(index))}" data-option-index="${escape(String(optionIndex))}" aria-label="Remove choice">
                                     <i class="fas fa-trash"></i>
@@ -761,7 +761,7 @@
                 </div>
                 <label class="lux-glass-dialog-field" for="${escape(typeId)}">
                     <span class="social-neo-label">Question type</span>
-                    <select class="social-neo-select" id="${escape(typeId)}" name="surveyQuestionType-${escape(String(index))}" data-lux-picker>
+                    <select class="social-neo-select lux-control" id="${escape(typeId)}" name="surveyQuestionType-${escape(String(index))}" data-lux-picker>
                         <option value="single_choice" ${questionType === 'single_choice' ? 'selected' : ''}>Single choice</option>
                         <option value="multiple_choice" ${questionType === 'multiple_choice' ? 'selected' : ''}>Multiple choice</option>
                         <option value="yes_no" ${questionType === 'yes_no' ? 'selected' : ''}>Yes / No</option>
@@ -771,11 +771,11 @@
                 </label>
                 <label class="lux-glass-dialog-field" for="${escape(promptId)}">
                     <span class="social-neo-label">Question text</span>
-                    <input class="social-neo-input" id="${escape(promptId)}" type="text" name="surveyQuestionPrompt-${escape(String(index))}" value="${escape(text(question.prompt))}" placeholder="What should we ask?" required>
+                    <input class="social-neo-input lux-control" id="${escape(promptId)}" type="text" name="surveyQuestionPrompt-${escape(String(index))}" value="${escape(text(question.prompt))}" placeholder="What should we ask?" required>
                 </label>
                 <label class="social-neo-survey-question-help" for="${escape(helpId)}">
                     <span class="social-neo-label">Helper text (optional)</span>
-                    <input class="social-neo-input" id="${escape(helpId)}" type="text" name="surveyQuestionHelp-${escape(String(index))}" value="${escape(text(question.helpText))}" placeholder="Optional guidance for respondents">
+                    <input class="social-neo-input lux-control" id="${escape(helpId)}" type="text" name="surveyQuestionHelp-${escape(String(index))}" value="${escape(text(question.helpText))}" placeholder="Optional guidance for respondents">
                 </label>
                 ${surveyQuestionNeedsOptions(questionType) ? renderSurveyChoiceRows(question, index) : ''}
                 ${questionType === 'rating' ? `
@@ -784,13 +784,13 @@
                         <div class="social-neo-form-grid-2 social-neo-survey-question-config-grid">
                             <label class="lux-glass-dialog-field" for="${escape(minRatingId)}">
                                 <span class="social-neo-label">From</span>
-                                <select class="social-neo-select" id="${escape(minRatingId)}" name="surveyQuestionMinRating-${escape(String(index))}" data-lux-picker>
+                                <select class="social-neo-select lux-control" id="${escape(minRatingId)}" name="surveyQuestionMinRating-${escape(String(index))}" data-lux-picker>
                                     ${ratingValues.map((value) => `<option value="${escape(String(value))}" ${minRating === value ? 'selected' : ''}>${escape(String(value))}</option>`).join('')}
                                 </select>
                             </label>
                             <label class="lux-glass-dialog-field" for="${escape(maxRatingId)}">
                                 <span class="social-neo-label">To</span>
-                                <select class="social-neo-select" id="${escape(maxRatingId)}" name="surveyQuestionMaxRating-${escape(String(index))}" data-lux-picker>
+                                <select class="social-neo-select lux-control" id="${escape(maxRatingId)}" name="surveyQuestionMaxRating-${escape(String(index))}" data-lux-picker>
                                     ${ratingValues.map((value) => `<option value="${escape(String(value))}" ${maxRating === value ? 'selected' : ''}>${escape(String(value))}</option>`).join('')}
                                 </select>
                             </label>
@@ -800,7 +800,7 @@
                 ${surveyQuestionIsText(questionType) ? `
                     <label class="social-neo-survey-question-max-length" for="${escape(maxLengthId)}">
                         <span class="social-neo-label">Max length</span>
-                        <input class="social-neo-input" id="${escape(maxLengthId)}" type="number" name="surveyQuestionMaxLength-${escape(String(index))}" min="50" max="5000" value="${escape(String(maxLength))}">
+                        <input class="social-neo-input lux-control" id="${escape(maxLengthId)}" type="number" name="surveyQuestionMaxLength-${escape(String(index))}" min="50" max="5000" value="${escape(String(maxLength))}">
                     </label>
                 ` : ''}
                 <label class="social-neo-checkbox social-neo-survey-question-required">
@@ -951,7 +951,7 @@
                     <div class="social-neo-form-grid-2 social-neo-surveys-create-settings-grid">
                         <label class="lux-glass-dialog-field" for="${escape(scopeId)}">
                             <span class="social-neo-label">Publish as</span>
-                            <select class="social-neo-select" id="${escape(scopeId)}" name="surveyScope" data-lux-picker>
+                            <select class="social-neo-select lux-control" id="${escape(scopeId)}" name="surveyScope" data-lux-picker>
                                 ${scopeOptions.map((scope) => {
                                     const value = `${text(scope.type)}:${text(scope.id)}`;
                                     return `<option value="${escape(value)}" ${selectedScope === value ? 'selected' : ''}>${escape(text(scope.name))}</option>`;
@@ -960,17 +960,17 @@
                         </label>
                         <label class="lux-glass-dialog-field">
                             <span class="social-neo-label">Audience</span>
-                            <select class="social-neo-select" name="surveyAudience" data-lux-picker>
+                            <select class="social-neo-select lux-control" name="surveyAudience" data-lux-picker>
                                 ${audienceOptions.map((option) => `<option value="${escape(option.value)}" ${selectedAudience === option.value ? 'selected' : ''}>${escape(option.label)}</option>`).join('')}
                             </select>
                         </label>
                         <label class="lux-glass-dialog-field" for="${escape(closesAtId)}">
                             <span class="social-neo-label">Closes</span>
-                            <input class="social-neo-input" id="${escape(closesAtId)}" type="datetime-local" name="surveyClosesAt" min="${escape(closesAtMin)}" value="${escape(selectedClosesAt)}" required>
+                            <input class="social-neo-input lux-control" id="${escape(closesAtId)}" type="datetime-local" name="surveyClosesAt" min="${escape(closesAtMin)}" value="${escape(selectedClosesAt)}" required>
                         </label>
                         <label class="lux-glass-dialog-field">
                             <span class="social-neo-label">Results visibility</span>
-                            <select class="social-neo-select" name="surveyResultsVisibility" data-lux-picker>
+                            <select class="social-neo-select lux-control" name="surveyResultsVisibility" data-lux-picker>
                                 ${resultsOptions.map((option) => `<option value="${escape(option.value)}" ${selectedResultsVisibility === option.value ? 'selected' : ''}>${escape(option.label)}</option>`).join('')}
                             </select>
                         </label>
@@ -990,11 +990,11 @@
                 <div class="social-neo-surveys-hero-toolbar social-neo-surveys-create-toolbar--split">
                     <label for="${escape(titleId)}">
                         <span class="social-neo-label">Title</span>
-                        <input class="social-neo-input" id="${escape(titleId)}" type="text" name="surveyTitle" placeholder="${escape(titlePlaceholder)}" value="${escape(draftTitle)}" required>
+                        <input class="social-neo-input lux-control" id="${escape(titleId)}" type="text" name="surveyTitle" placeholder="${escape(titlePlaceholder)}" value="${escape(draftTitle)}" required>
                     </label>
                     <label for="${escape(descriptionId)}">
                         <span class="social-neo-label">Description</span>
-                        <textarea class="social-neo-textarea" id="${escape(descriptionId)}" rows="2" name="surveyDescription" placeholder="Explain why you are collecting responses and how they will be used.">${escape(draftDescription)}</textarea>
+                        <textarea class="social-neo-textarea lux-control" id="${escape(descriptionId)}" rows="2" name="surveyDescription" placeholder="Explain why you are collecting responses and how they will be used.">${escape(draftDescription)}</textarea>
                     </label>
                 </div>
                 <div class="social-neo-surveys-create-questions">${renderSurveyCreateQuestionsMarkup()}</div>

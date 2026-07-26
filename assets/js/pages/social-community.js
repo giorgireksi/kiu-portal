@@ -160,7 +160,7 @@
             const completeness = personProfileCompleteness(account);
             const showInvite = inviteEligibleGroups().length > 0 && connectionStatusFor(account?.id).state !== 'incoming';
             return `
-                <article class="social-neo-card social-neo-directory-item social-neo-card-pad-16 social-neo-community-card" data-user-id="${escape(text(account.id))}">
+                <article class="social-neo-directory-item social-neo-community-card" data-user-id="${escape(text(account.id))}">
                     <div class="social-neo-person social-neo-person-start-gap-12 social-neo-community-person">
                         ${avatar(account)}
                         <div class="social-neo-field-flex-1-260 social-neo-community-copy">
@@ -239,15 +239,17 @@
         `;
 
         const renderDirectoryBody = (items, options = {}) => `
-            <div class="social-neo-directory-filters">
-                <input class="social-neo-input" id="${escape(directorySearchId)}" name="directorySearch" type="search" placeholder="Search people..." data-bind="directory-search" value="${escape(text(runtime.ui?.directorySearch || ''))}">
-                <select class="social-neo-select" id="${escape(directoryRoleId)}" name="directoryRole" data-bind="directory-role" data-lux-picker>
-                    <option value="all" ${text(runtime.ui?.directoryRole || 'all') === 'all' ? 'selected' : ''}>All roles</option>
-                    <option value="student" ${text(runtime.ui?.directoryRole) === 'student' ? 'selected' : ''}>Students</option>
-                    <option value="professor" ${text(runtime.ui?.directoryRole) === 'professor' ? 'selected' : ''}>Professors</option>
-                    <option value="ta" ${text(runtime.ui?.directoryRole) === 'ta' ? 'selected' : ''}>Teaching Assistants</option>
-                    <option value="admin" ${text(runtime.ui?.directoryRole) === 'admin' ? 'selected' : ''}>Admins</option>
-                </select>
+            <div class="social-neo-community-hero-toolbar">
+                <div class="social-neo-directory-filters">
+                    <input class="social-neo-input lux-control" id="${escape(directorySearchId)}" name="directorySearch" type="search" placeholder="Search people..." data-bind="directory-search" value="${escape(text(runtime.ui?.directorySearch || ''))}">
+                    <select class="social-neo-select lux-control" id="${escape(directoryRoleId)}" name="directoryRole" data-bind="directory-role" data-lux-picker>
+                        <option value="all" ${text(runtime.ui?.directoryRole || 'all') === 'all' ? 'selected' : ''}>All roles</option>
+                        <option value="student" ${text(runtime.ui?.directoryRole) === 'student' ? 'selected' : ''}>Students</option>
+                        <option value="professor" ${text(runtime.ui?.directoryRole) === 'professor' ? 'selected' : ''}>Professors</option>
+                        <option value="ta" ${text(runtime.ui?.directoryRole) === 'ta' ? 'selected' : ''}>Teaching Assistants</option>
+                        <option value="admin" ${text(runtime.ui?.directoryRole) === 'admin' ? 'selected' : ''}>Admins</option>
+                    </select>
+                </div>
             </div>
             <div class="social-neo-directory">
                 ${items.length ? items.map((account) => renderPersonCard(account, options)).join('') : `<div class="social-neo-empty">${escape(options.emptyText || 'No people matched the current filter.')}</div>`}

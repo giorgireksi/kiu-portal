@@ -66,6 +66,12 @@
     }
 
     function initAdminOrdersPage() {
+        if (typeof schedulePortalShellReadyReveal === 'function') {
+            schedulePortalShellReadyReveal();
+        } else if (typeof markPortalShellReady === 'function') {
+            markPortalShellReady();
+        }
+
         bindAdminOrdersStudioControls();
         document.body.classList.remove('role-student');
         document.body.classList.add('role-admin');
@@ -84,14 +90,6 @@
         }
 
         ensureAdminOrdersContent();
-        window.addEventListener('load', ensureAdminOrdersContent, { once: true });
-
-        setTimeout(() => {
-            if (typeof window.updateTransparency === 'function') {
-                const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '13';
-                window.updateTransparency(parseInt(saved, 10));
-            }
-        }, 300);
     }
 
     window.bindAdminOrdersStudioControls = bindAdminOrdersStudioControls;

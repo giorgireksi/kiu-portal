@@ -15,8 +15,8 @@
     };
 
     const READONLY_SHELL_MARKUP = `
-        <div class="library-catalog-workspace" data-library-catalog-shell="1">
-            <section class="library-catalog-filters-panel">
+        <div class="library-catalog-workspace" data-library-catalog-shell="1" data-lux-glass-root="1">
+            <section class="library-catalog-filters-panel lux-soft-chrome">
                 <div class="lux-card-head">
                     <div>
                         <div class="lux-card-title">Browse Catalog</div>
@@ -52,7 +52,7 @@
                     </label>
                 </div>
             </section>
-            <section class="lux-strip-card admin-library-catalog-card" aria-label="Shared catalog">
+            <section class="lux-strip-card admin-library-catalog-card lux-soft-chrome" aria-label="Shared catalog">
                 <div class="admin-library-catalog-head">
                     <div class="admin-library-catalog-tabs-rail lux-scroll-rail lux-scroll-rail--horizontal" data-lux-scroll-rail data-admin-library-catalog-tabs-rail="true" data-lux-scroll-axis="horizontal">
                         <div class="lux-scroll-rail__controls admin-library-catalog-tabs-rail__controls admin-library-catalog-tabs-rail__controls--start" hidden aria-hidden="true">

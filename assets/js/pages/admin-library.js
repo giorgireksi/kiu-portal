@@ -311,6 +311,37 @@ function runWhenPortalBootstrapReady(callback) {
     wait();
 }
 
+const DEFERRED_ADMIN_LIBRARY_SCRIPT_URLS = [
+    'assets/js/shared/lux-scroll-rail.js?v=20260622-scrollrail1'
+];
+
+function loadDeferredAdminLibraryScripts() {
+    if (window.__kiuAdminLibraryDeferredScriptsPromise) {
+        return window.__kiuAdminLibraryDeferredScriptsPromise;
+    }
+    window.__kiuAdminLibraryDeferredScriptsPromise = DEFERRED_ADMIN_LIBRARY_SCRIPT_URLS.reduce((chain, src) => {
+        const normalizedSrc = String(src || '').split('?')[0];
+        return chain.then(() => new Promise((resolve) => {
+            if (document.querySelector(`script[src^="${normalizedSrc}"]`)) {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.defer = true;
+            script.onload = () => resolve();
+            script.onerror = () => resolve();
+            document.body.appendChild(script);
+        }));
+    }, Promise.resolve()).then(() => {
+        if (typeof window.syncLibraryCatalogTabsRail === 'function') {
+            window.syncLibraryCatalogTabsRail();
+        }
+    });
+    return window.__kiuAdminLibraryDeferredScriptsPromise;
+}
+window.loadDeferredAdminLibraryScripts = loadDeferredAdminLibraryScripts;
+
 let adminLibraryPendingRemoveSchemaFieldId = null;
 
 function clearSchemaFieldPendingRemove() {
@@ -1065,16 +1096,30 @@ function bootAdminLibraryPage() {
         initPalette();
     }
 
+    ensureAdminLibraryRouteVisualState();
+    ensureAdminLibraryState();
+    renderAdminLibrary();
+
+    const deferHeavyScripts = () => {
+        loadDeferredAdminLibraryScripts().catch(() => null);
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(deferHeavyScripts, { timeout: 1200 });
+    } else {
+        window.setTimeout(deferHeavyScripts, 0);
+    }
+
     runWhenPortalBootstrapReady(() => {
-        ensureAdminLibraryState();
-        renderAdminLibrary();
-        ensureAdminLibraryRouteVisualState();
+        if (typeof window.renderAdminLibraryAfterBootstrap === 'function') {
+            window.renderAdminLibraryAfterBootstrap();
+        } else {
+            ensureAdminLibraryState();
+            renderAdminLibrary();
+        }
         if (typeof syncTopbar === 'function') {
             syncTopbar();
         }
     });
-
-    ensureAdminLibraryRouteVisualState();
 }
 
 window.bootAdminLibraryPage = bootAdminLibraryPage;

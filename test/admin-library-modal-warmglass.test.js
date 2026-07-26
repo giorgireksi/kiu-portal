@@ -9,8 +9,9 @@ describe('admin library modal warmglass regressions', () => {
         expect(css).toContain('.admin-library-modal');
         expect(css).toContain('--lux-modal-glass-section: var(--lux-warmglass-section)');
         expect(css).toContain('--lux-modal-glass-input: var(--lux-warmglass-input)');
-        expect(css).toContain('--lux-modal-glass-border: var(--lux-warmglass-border)');
-        expect(css).toContain('--lux-modal-glass-blur: var(--lux-warmglass-blur)');
+        expect(css).toContain('--lux-modal-glass-border: var(--lux-popup-shell-border)');
+        expect(css).toContain('--lux-modal-glass-blur: var(--lux-popup-shell-blur)');
+        expect(css).toContain('--lux-modal-glass-surface: var(--lux-popup-shell-surface)');
         expect(tokens).toContain('--lux-warmglass-section: rgba(255, 255, 255, 0.42)');
         expect(tokens).toContain('--lux-warmglass-input: rgba(255, 255, 255, 0.52)');
         expect(tokens).toContain('--lux-warmglass-border: rgba(77, 52, 31, 0.12)');

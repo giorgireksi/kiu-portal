@@ -6,7 +6,7 @@ describe('news publisher warmglass regressions (bare-shell era)', () => {
         const css = readWarmglassCss();
 
         expect(css).toContain('.newsx-publisher-modal');
-        expect(css).toContain('--lux-modal-glass-surface: var(--lux-warmglass-surface)');
+        expect(css).toContain('--lux-modal-glass-surface: var(--lux-popup-shell-surface)');
         expect(css).toContain('[data-lux-modal-overlay].active:not([aria-hidden=\'true\'])');
         expect(css).toContain('--lux-warmglass-overlay-light');
     });

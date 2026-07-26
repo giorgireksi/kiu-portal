@@ -130,6 +130,52 @@
     const resolveProjectTaskGraphContext = window.resolveProjectTaskGraphContext || __swGraphBatch.resolveProjectTaskGraphContext;
     const buildProjectTaskGraphLayout = window.buildProjectTaskGraphLayout || __swGraphBatch.buildProjectTaskGraphLayout;
     const readProjectTaskGraphPan = window.readProjectTaskGraphPan || __swGraphBatch.readProjectTaskGraphPan;
+    const clampProjectTaskGraphCardHeight = window.clampProjectTaskGraphCardHeight || __swGraphBatch.clampProjectTaskGraphCardHeight;
+    const estimateProjectTaskGraphCardHeight = window.estimateProjectTaskGraphCardHeight || __swGraphBatch.estimateProjectTaskGraphCardHeight;
+    const normalizeProjectTaskGraphMode = window.normalizeProjectTaskGraphMode || __swGraphBatch.normalizeProjectTaskGraphMode;
+    const projectTaskGraphVisibleEdges = window.projectTaskGraphVisibleEdges || __swGraphBatch.projectTaskGraphVisibleEdges;
+    const buildProjectTaskGraphModel = window.buildProjectTaskGraphModel || __swGraphBatch.buildProjectTaskGraphModel;
+    const layoutProjectTaskGraphByStatus = window.layoutProjectTaskGraphByStatus || __swGraphBatch.layoutProjectTaskGraphByStatus;
+    const compareProjectTaskGraphNodes = window.compareProjectTaskGraphNodes || __swGraphBatch.compareProjectTaskGraphNodes;
+    const hashProjectTaskGraphSeed = window.hashProjectTaskGraphSeed || __swGraphBatch.hashProjectTaskGraphSeed;
+    const projectTaskGraphPseudoRandom = window.projectTaskGraphPseudoRandom || __swGraphBatch.projectTaskGraphPseudoRandom;
+    const getProjectTaskGraphMetrics = window.getProjectTaskGraphMetrics || __swGraphBatch.getProjectTaskGraphMetrics;
+    const computeProjectTaskGraphStageSize = window.computeProjectTaskGraphStageSize || __swGraphBatch.computeProjectTaskGraphStageSize;
+    const computeProjectTaskGraphNodeDegree = window.computeProjectTaskGraphNodeDegree || __swGraphBatch.computeProjectTaskGraphNodeDegree;
+    const projectTaskGraphBoxRepulse = window.projectTaskGraphBoxRepulse || __swGraphBatch.projectTaskGraphBoxRepulse;
+    const resolveProjectTaskGraphCardOverlaps = window.resolveProjectTaskGraphCardOverlaps || __swGraphBatch.resolveProjectTaskGraphCardOverlaps;
+    const layoutProjectTaskGraphForce = window.layoutProjectTaskGraphForce || __swGraphBatch.layoutProjectTaskGraphForce;
+    const projectTaskGraphLayoutUsesSavedPositions = window.projectTaskGraphLayoutUsesSavedPositions || __swGraphBatch.projectTaskGraphLayoutUsesSavedPositions;
+    const projectTaskGraphRectsOverlap = window.projectTaskGraphRectsOverlap || __swGraphBatch.projectTaskGraphRectsOverlap;
+    const projectTaskGraphContentBounds = window.projectTaskGraphContentBounds || __swGraphBatch.projectTaskGraphContentBounds;
+    const clampProjectTaskGraphZoom = window.clampProjectTaskGraphZoom || __swGraphBatch.clampProjectTaskGraphZoom;
+    const computeProjectTaskGraphContentFitView = window.computeProjectTaskGraphContentFitView || __swGraphBatch.computeProjectTaskGraphContentFitView;
+    const computeProjectTaskGraphFitZoom = window.computeProjectTaskGraphFitZoom || __swGraphBatch.computeProjectTaskGraphFitZoom;
+    const computeProjectTaskGraphPreviewZoom = window.computeProjectTaskGraphPreviewZoom || __swGraphBatch.computeProjectTaskGraphPreviewZoom;
+    const projectTaskGraphCubicEdgePath = window.projectTaskGraphCubicEdgePath || __swGraphBatch.projectTaskGraphCubicEdgePath;
+    const projectTaskGraphBoxAnchor = window.projectTaskGraphBoxAnchor || __swGraphBatch.projectTaskGraphBoxAnchor;
+    const getProjectTaskGraphDocks = window.getProjectTaskGraphDocks || __swGraphBatch.getProjectTaskGraphDocks;
+    const projectTaskGraphDockAlongSide = window.projectTaskGraphDockAlongSide || __swGraphBatch.projectTaskGraphDockAlongSide;
+    const selectProjectTaskGraphDockPair = window.selectProjectTaskGraphDockPair || __swGraphBatch.selectProjectTaskGraphDockPair;
+    const projectTaskGraphPushOutOfRect = window.projectTaskGraphPushOutOfRect || __swGraphBatch.projectTaskGraphPushOutOfRect;
+    const normalizeProjectTaskGraphStatusId = window.normalizeProjectTaskGraphStatusId || __swGraphBatch.normalizeProjectTaskGraphStatusId;
+    const projectTaskGraphStatusEdgeColor = window.projectTaskGraphStatusEdgeColor || __swGraphBatch.projectTaskGraphStatusEdgeColor;
+    const projectTaskGraphEdgePath = window.projectTaskGraphEdgePath || __swGraphBatch.projectTaskGraphEdgePath;
+    const projectTaskGraphEdgeAnchors = window.projectTaskGraphEdgeAnchors || __swGraphBatch.projectTaskGraphEdgeAnchors;
+    const projectTaskGraphObstacleList = window.projectTaskGraphObstacleList || __swGraphBatch.projectTaskGraphObstacleList;
+    const formatProjectTaskGraphNodeLabel = window.formatProjectTaskGraphNodeLabel || __swGraphBatch.formatProjectTaskGraphNodeLabel;
+    const projectTaskGraphPortRole = window.projectTaskGraphPortRole || __swGraphBatch.projectTaskGraphPortRole;
+    const resolveProjectTaskGraphWireEndpoints = window.resolveProjectTaskGraphWireEndpoints || __swGraphBatch.resolveProjectTaskGraphWireEndpoints;
+    const projectTaskDependsOnIds = window.projectTaskDependsOnIds || __swGraphBatch.projectTaskDependsOnIds;
+    const isProjectTaskGraphGroupId = window.isProjectTaskGraphGroupId || __swGraphBatch.isProjectTaskGraphGroupId;
+    const projectGroupDependsOnIds = window.projectGroupDependsOnIds || __swGraphBatch.projectGroupDependsOnIds;
+    const projectGroupBlocksIds = window.projectGroupBlocksIds || __swGraphBatch.projectGroupBlocksIds;
+    const isProjectTaskGraphGroupComplete = window.isProjectTaskGraphGroupComplete || __swGraphBatch.isProjectTaskGraphGroupComplete;
+    const isProjectGraphDependencyOpen = window.isProjectGraphDependencyOpen || __swGraphBatch.isProjectGraphDependencyOpen;
+    const projectTaskGraphContentViewBox = window.projectTaskGraphContentViewBox || __swGraphBatch.projectTaskGraphContentViewBox;
+    const resolveProjectTaskGraphPanSlack = window.resolveProjectTaskGraphPanSlack || __swGraphBatch.resolveProjectTaskGraphPanSlack;
+    const clampProjectTaskGraphPan = window.clampProjectTaskGraphPan || __swGraphBatch.clampProjectTaskGraphPan;
+    const projectTaskGraphScrollOffsets = window.projectTaskGraphScrollOffsets || __swGraphBatch.projectTaskGraphScrollOffsets;
 
 
 
@@ -440,8 +486,8 @@
         formatTaskScheduleDisplay,
         formatTaskTime,
         formatTaskTimeVariance,
-        getProjectTaskGraphGroups: typeof getProjectTaskGraphGroups === 'function' ? getProjectTaskGraphGroups : window.getProjectTaskGraphGroups,
-        isProjectTaskGraphGroupId: typeof isProjectTaskGraphGroupId === 'function' ? isProjectTaskGraphGroupId : window.isProjectTaskGraphGroupId,
+        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
+        isProjectTaskGraphGroupId: window.isProjectTaskGraphGroupId,
         neoActions,
         neoField,
         neoHeadHtml,
@@ -449,7 +495,7 @@
         normalizeProjectTaskStatusId,
         normalizeTaskTime,
         projectPlanHorizonLabel,
-        projectTaskDependsOnIds: typeof projectTaskDependsOnIds === 'function' ? projectTaskDependsOnIds : window.projectTaskDependsOnIds,
+        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
         projectTaskDownstreamIds,
         projectTaskGraphStackedBackdropClass: typeof projectTaskGraphStackedBackdropClass === 'function' ? projectTaskGraphStackedBackdropClass : window.projectTaskGraphStackedBackdropClass,
         readProjectWeekPlan,
@@ -507,8 +553,8 @@
         formatProjectScheduleHours,
         formatProjectTaskBudgetEstimate,
         formatTaskTime,
-        getProjectTaskGraphGroups: typeof getProjectTaskGraphGroups === 'function' ? getProjectTaskGraphGroups : window.getProjectTaskGraphGroups,
-        isProjectTaskGraphGroupId: typeof isProjectTaskGraphGroupId === 'function' ? isProjectTaskGraphGroupId : window.isProjectTaskGraphGroupId,
+        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
+        isProjectTaskGraphGroupId: window.isProjectTaskGraphGroupId,
         neoActions,
         neoField,
         neoHead,
@@ -517,7 +563,7 @@
         normalizeTaskScore1to5,
         normalizeTaskTime,
         normalizeTaskTimeUnit,
-        projectTaskDependsOnIds: typeof projectTaskDependsOnIds === 'function' ? projectTaskDependsOnIds : window.projectTaskDependsOnIds,
+        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
         projectTaskDownstreamIds,
         projectTaskGraphStackedBackdropClass: typeof projectTaskGraphStackedBackdropClass === 'function' ? projectTaskGraphStackedBackdropClass : window.projectTaskGraphStackedBackdropClass,
         resolveActiveSocialProject,
@@ -588,13 +634,13 @@
         formatProjectScheduleDate,
         formatProjectScheduleHours,
         formatProjectTaskBudgetEstimate,
-        getProjectTaskGraphGroups,
+        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
         hasSocialMessagesModule,
         isAccountOnline,
         isStaffAccount,
         normalizeProjectTaskStatusId,
         orderDeskTasksByDependency,
-        projectTaskDependsOnIds,
+        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
         projectTaskDownstreamIds,
         queueDeferredModuleRender,
         readDeskSavedViews,
@@ -607,7 +653,7 @@
         renderProjectTaskDeskCard,
         renderProjectWorkspaceNavButtons,
         renderSocialPageNow,
-        renderTaskDependencyGraphPreview,
+        renderTaskDependencyGraphPreview: window.renderTaskDependencyGraphPreview,
         renderWorkspaceHero,
         resolveDeskTaskReadiness,
         resolveProjectWorkspaceChat,
@@ -681,29 +727,29 @@
         formatProjectScheduleHours,
         formatProjectTaskBudgetEstimate,
         formatProjectTaskGraphCheckpointWhen,
-        formatProjectTaskGraphNodeLabel: typeof formatProjectTaskGraphNodeLabel === 'function' ? formatProjectTaskGraphNodeLabel : window.formatProjectTaskGraphNodeLabel,
+        formatProjectTaskGraphNodeLabel: window.formatProjectTaskGraphNodeLabel,
         formatTaskCostVariance,
         formatTaskScheduleDisplay,
         formatTaskTime,
         getProjectTaskGraphGroupLinkSummary,
-        getProjectTaskGraphGroups: typeof getProjectTaskGraphGroups === 'function' ? getProjectTaskGraphGroups : window.getProjectTaskGraphGroups,
+        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
         getProjectTaskGraphPositions: typeof getProjectTaskGraphPositions === 'function' ? getProjectTaskGraphPositions : window.getProjectTaskGraphPositions,
-        isProjectTaskGraphGroupId: typeof isProjectTaskGraphGroupId === 'function' ? isProjectTaskGraphGroupId : window.isProjectTaskGraphGroupId,
+        isProjectTaskGraphGroupId: window.isProjectTaskGraphGroupId,
         neoActions,
         neoHead,
-        normalizeProjectTaskGraphStatusId: typeof normalizeProjectTaskGraphStatusId === 'function' ? normalizeProjectTaskGraphStatusId : window.normalizeProjectTaskGraphStatusId,
+        normalizeProjectTaskGraphStatusId: window.normalizeProjectTaskGraphStatusId,
         normalizeTaskTime,
         normalizeTaskTimeUnit,
-        projectGroupBlocksIds: typeof projectGroupBlocksIds === 'function' ? projectGroupBlocksIds : window.projectGroupBlocksIds,
-        projectGroupDependsOnIds: typeof projectGroupDependsOnIds === 'function' ? projectGroupDependsOnIds : window.projectGroupDependsOnIds,
-        projectTaskDependsOnIds: typeof projectTaskDependsOnIds === 'function' ? projectTaskDependsOnIds : window.projectTaskDependsOnIds,
+        projectGroupBlocksIds: window.projectGroupBlocksIds,
+        projectGroupDependsOnIds: window.projectGroupDependsOnIds,
+        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
         projectTaskGraphEdgeFanMap,
-        projectTaskGraphEdgePath: typeof projectTaskGraphEdgePath === 'function' ? projectTaskGraphEdgePath : window.projectTaskGraphEdgePath,
+        projectTaskGraphEdgePath: window.projectTaskGraphEdgePath,
         projectTaskGraphMineOnlyActive,
         projectTaskGraphShowCritical,
         projectTaskGraphShowFlow,
         projectTaskGraphShowInferred,
-        projectTaskGraphStatusEdgeColor: typeof projectTaskGraphStatusEdgeColor === 'function' ? projectTaskGraphStatusEdgeColor : window.projectTaskGraphStatusEdgeColor,
+        projectTaskGraphStatusEdgeColor: window.projectTaskGraphStatusEdgeColor,
         readProjectTaskGraphCheckpoints: typeof readProjectTaskGraphCheckpoints === 'function' ? readProjectTaskGraphCheckpoints : window.readProjectTaskGraphCheckpoints,
         readProjectTaskGraphPan,
         renderProjectWorkspaceNavButtons,
@@ -823,11 +869,11 @@
         renderProjectTaskGraphEdgeGroupsHtml,
         renderProjectTaskGraphGroupEdgesHtml,
         renderProjectTaskGraphQuickCreatePopover,
-        renderStackedProjectTaskChild,
+        renderStackedProjectTaskChild: window.renderStackedProjectTaskChild,
         resolveActiveSocialProject,
         resolveProjectTaskGraphContext,
         resolveProjectTaskGraphGroupBox,
-        shouldRenderProjectHealthStack,
+        shouldRenderProjectHealthStack: window.shouldRenderProjectHealthStack,
         state,
         text,
         uniqueStrings,
@@ -1290,7 +1336,7 @@
         portfolioCollectDocumentFromUi,
         portfolioMakeId,
         projectRiskScaleRank,
-        projectTaskDependsOnIds,
+        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
         projectTaskGraphLayoutUsesSavedPositions,
         projectTaskGraphMineOnlyActive,
         projectTaskGraphShowCritical,

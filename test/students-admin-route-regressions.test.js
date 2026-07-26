@@ -40,10 +40,15 @@ describe('students admin route regressions.test', () => {
         expect(bare).toContain('.students-hub-form-settings-head');
         expect(bare).toContain('.students-hub-directory-panel');
         expect(bare).toContain('.students-hub-controls-head');
-        expect(bare).toContain('.students-hub-filter-deck-section--fields .students-hub-filter-deck-grid');
+        expect(bare).toMatch(/students-hub-filter-deck-grid[\s\S]*display:\s*grid/);
+        expect(bare).toMatch(/students-hub-controls[\s\S]*lux-picker-field > \.lux-picker-btn--compact/);
+        expect(bare).not.toMatch(/filter-deck-grid[\s\S]*border-width:\s*1px[\s\S]*box-shadow:\s*none/);
+        expect(bare).toContain('repeat(auto-fill, minmax(170px, 1fr))');
+        expect(bare).toContain('background: rgba(var(--lux-accent-rgb), 0.03)');
+        expect(bare).not.toMatch(/filter-deck-section--fields[\s\S]*grid-template-columns:\s*1fr/);
         const fouc = readSource('assets/css/lux-fouc-ht.css');
-        expect(fouc).toContain('.students-hub-filter-deck');
-        expect(fouc).toContain('.students-hub-control');
+        expect(fouc).toContain('.students-hub-controls');
+        expect(fouc).not.toMatch(/\.students-hub-filter-deck[\s\S]*?backdrop-filter:\s*var\(--lux-panel-blur-filter\)/);
         const directoryJs = readSource('assets/js/pages/directory-filters-runtime.js');
         expect(directoryJs).not.toContain('useCompactDeck');
         expect(directoryJs).toContain('filter-deck-section--fields');

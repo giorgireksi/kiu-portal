@@ -1052,6 +1052,21 @@ body.lux-light-mode :is(.portal-msg-modal-window, .portal-msg-group-modal, .port
 ) {
   color: #000;
 }
+/* Global 50% frosted popup / overlay panel shells. */
+:is(
+  .portal-msg-modal-window,
+  .portal-notif-modal-window,
+  .portal-call-window,
+  .portal-msg-group-modal,
+  .portal-msg-dock,
+  .portal-notif-dock
+) {
+  border: 1px solid var(--lux-popup-shell-border);
+  background: var(--lux-popup-shell-surface);
+  box-shadow: var(--lux-popup-shell-shadow);
+  backdrop-filter: var(--lux-popup-shell-blur);
+  -webkit-backdrop-filter: var(--lux-popup-shell-blur);
+}
 @media (max-width: 1180px) {
   .portal-msg-shell { grid-template-columns: 1fr; }
   .portal-msg-panel, .portal-msg-thread-panel { min-height: 380px; }

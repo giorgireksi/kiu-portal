@@ -19,6 +19,14 @@ describe('social-page-survey-runtime peel', () => {
         expect(survey).toContain('__KIU_SOCIAL_PAGE_SURVEY_LOADED');
     });
 
+    it('wires normalizeSocialOverlayDialogRegion and root into survey factory deps', () => {
+        const page = readSource('assets/js/pages/social-page.js');
+        const survey = readSource('assets/js/pages/social-page-survey-runtime.js');
+        expect(survey).toMatch(/function normalizeSocialOverlayDialogRegion/);
+        expect(page).toMatch(/__kiuCreateSocialPageSurveyApi\([\s\S]*normalizeSocialOverlayDialogRegion/);
+        expect(page).toMatch(/__kiuCreateSocialPageSurveyApi\([\s\S]*\broot,/);
+    });
+
     it('loads before social-page.js on social.html', () => {
         const html = readSource('social.html');
         expect(html).toContain('social-page-survey-runtime.js');
