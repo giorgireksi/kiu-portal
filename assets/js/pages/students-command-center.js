@@ -1226,13 +1226,14 @@
 
     let __formBuilderRuntimePromise = null;
     function ensureFormBuilderRuntime() {
+        window.__KIU_FORM_BUILDER_NS__ = 'student';
         if (typeof window.renderStudentFormSettings === 'function' || typeof window.bindStudentFormBuilderEvents === 'function') {
             return Promise.resolve(true);
         }
         if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
         const urls = [
-            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix10',
-            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix10'
+            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix11',
+            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix11'
         ];
         __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
             const existing = document.querySelector(`script[src="${src}"]`);
@@ -1254,7 +1255,7 @@
 
     function ensureStudentFormBuilderEventsBound() {
         if (typeof window.bindStudentFormBuilderEvents !== 'function') return false;
-        if (window.__staffFormBuilderBound) return true;
+        if (window.__studentFormBuilderBound) return true;
         window.bindStudentFormBuilderEvents({
             ...getStudentBuilderCallbacks(),
             onBackDirectory: () => backToDirectoryWorkspace()
@@ -1309,11 +1310,8 @@
                     if (patched) {
                         const container = document.getElementById('students-content');
                         if (container) applyStudentsHubProgressBars(container);
-                        if (typeof queueLuxuryTransparencyRefresh === 'function') {
-                            const formSettings = container?.querySelector('.students-hub-form-settings');
-                            queueLuxuryTransparencyRefresh(undefined, {
-                                roots: formSettings ? [formSettings] : undefined
-                            });
+                        if (typeof queueLuxuryTransparencyRefresh === 'function' && state.workspace !== 'form-settings') {
+                            queueLuxuryTransparencyRefresh();
                         }
                         return;
                     }
@@ -1780,11 +1778,8 @@
                 queueEnglishLocalization(modalRoot);
             }
         }
-        if (typeof queueLuxuryTransparencyRefresh === 'function') {
-            const transparencyRoots = state.workspace === 'form-settings'
-                ? [container.querySelector('.students-hub-form-settings')].filter(Boolean)
-                : undefined;
-            queueLuxuryTransparencyRefresh(undefined, { roots: transparencyRoots });
+        if (typeof queueLuxuryTransparencyRefresh === 'function' && state.workspace !== 'form-settings') {
+            queueLuxuryTransparencyRefresh();
         }
         if (selected && state.profileTab !== 'mobility' && state.profileTab !== 'admin') {
             const sections = typeof getRecordProfileSections === 'function' ? getRecordProfileSections(selected) : [];

@@ -178,13 +178,13 @@ function isRouteOwnedSurface(el) {
     }
 
     if (document.body.classList.contains('lux-route-staff') && el.closest?.('#staff-content')) {
-        if (hasOwnedClassPrefix(el, ['staff-hub-'])) return true;
+        if (hasOwnedClassPrefix(el, ['staff-hub-']) || el.closest?.('.staff-hub-form-settings')) return true;
     }
 
     if (document.body.classList.contains('lux-route-students-admin')
         && el.closest?.('#students-content')
         && !el.closest?.('#students-admin-lms-modal')) {
-        if (hasOwnedClassPrefix(el, ['students-hub-'])) return true;
+        if (hasOwnedClassPrefix(el, ['students-hub-']) || el.closest?.('.students-hub-form-settings')) return true;
     }
 
     if (document.body.classList.contains('lux-route-study-card')

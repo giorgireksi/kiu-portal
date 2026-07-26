@@ -26,4 +26,19 @@ describe('students admin route regressions.test', () => {
         expect(shell).toContain('body.lux-page-bare .lux-page-shell');
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');
     });
+
+    it('eager-loads student form builder with student namespace (not staff data attrs)', () => {
+        const html = readSource('students-admin.html');
+        const builderJs = readSource('assets/js/pages/form-builder-runtime.js');
+        const studentsJs = readSource('assets/js/pages/students-command-center.js');
+        const actionsJs = readSource('assets/js/pages/form-builder-actions-runtime.js');
+        expect(html).toContain('student-form-builder-runtime.js');
+        expect(html).toContain('form-builder-runtime.js');
+        expect(html).toContain('form-builder-actions-runtime.js');
+        expect(builderJs).toContain("data-${H.data}-builder-action");
+        expect(builderJs).toContain("ds(el, 'staffBucket', 'studentBucket')");
+        expect(actionsJs).toContain("'__studentFormBuilderBound'");
+        expect(studentsJs).toContain('__studentFormBuilderBound');
+        expect(studentsJs).toContain("__KIU_FORM_BUILDER_NS__ = 'student'");
+    });
 });

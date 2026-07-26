@@ -1298,12 +1298,12 @@
     function datasetFromElement(el) {
         return {
             typeId: ds(el, 'staffTypeId', 'studentTypeId') || '',
-            bucket: el.dataset.staffBucket || 'input',
+            bucket: ds(el, 'staffBucket', 'studentBucket') || 'input',
             sectionId: ds(el, 'staffSectionId', 'studentSectionId') || '',
             fieldId: ds(el, 'staffFieldId', 'studentFieldId') || '',
-            fieldType: el.dataset.staffFieldType || '',
-            builderTab: el.dataset.staffBuilderTab || '',
-            optionIndex: Number.parseInt(el.dataset.staffOptionIndex ?? '', 10)
+            fieldType: ds(el, 'staffFieldType', 'studentFieldType') || '',
+            builderTab: ds(el, 'staffBuilderTab', 'studentBuilderTab') || '',
+            optionIndex: Number.parseInt(ds(el, 'staffOptionIndex', 'studentOptionIndex') ?? '', 10)
         };
     }
 

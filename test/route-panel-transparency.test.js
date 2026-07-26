@@ -37,6 +37,8 @@ describe('route panel transparency parity', () => {
         expect(transparencySource).toContain("document.body.classList.contains('lux-route-social')");
         expect(transparencySource).toContain("document.body.classList.contains('lux-route-staff')");
         expect(transparencySource).toContain("document.body.classList.contains('lux-route-students-admin')");
+        expect(transparencySource).toContain('.students-hub-form-settings');
+        expect(transparencySource).toContain('.staff-hub-form-settings');
     });
 
     it('paints students-admin content instead of skipping the paint loop', () => {
@@ -53,9 +55,10 @@ describe('route panel transparency parity', () => {
         );
     });
 
-    it('refreshes transparency after students-admin render', () => {
+    it('refreshes transparency after students-admin render (except form-settings CSS-owned workspace)', () => {
         const studentsAdminJs = readSource('assets/js/pages/students-command-center.js');
-        expect(studentsAdminJs).toContain('queueLuxuryTransparencyRefresh(undefined, { roots: transparencyRoots })');
+        expect(studentsAdminJs).toContain("state.workspace !== 'form-settings'");
+        expect(studentsAdminJs).toContain('queueLuxuryTransparencyRefresh()');
     });
 
     it('forces a deferred transparency refresh during initial and restored page loads', () => {

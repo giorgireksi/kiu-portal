@@ -125,7 +125,7 @@
     }
 
     function handleBuilderCopyChange(el, callbacks) {
-        const copyKey = el.dataset.staffBuilderCopy;
+        const copyKey = ds(el, 'staffBuilderCopy', 'studentBuilderCopy');
         if (!copyKey) return;
         const patch = {};
         if (copyKey === 'source') patch.copySourceTypeId = el.value || null;
@@ -319,8 +319,9 @@
     }
 
     function bindStaffFormBuilderEvents(callbacks = {}) {
-        if (window.__staffFormBuilderBound) return;
-        window.__staffFormBuilderBound = true;
+        const boundKey = NS === 'staff' ? '__staffFormBuilderBound' : '__studentFormBuilderBound';
+        if (window[boundKey]) return;
+        window[boundKey] = true;
 
         const root = contentRootEl();
         if (!root) return;

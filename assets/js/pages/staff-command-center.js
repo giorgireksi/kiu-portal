@@ -1154,8 +1154,8 @@
         }
         if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
         const urls = [
-            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix10',
-            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix10'
+            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix11',
+            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix11'
         ];
         __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
             const existing = document.querySelector(`script[src="${src}"]`);
@@ -1232,11 +1232,8 @@
                     if (patched) {
                         const container = document.getElementById('staff-content');
                         if (container) applyStaffHubProgressBars(container);
-                        if (typeof queueLuxuryTransparencyRefresh === 'function') {
-                            const formSettings = container?.querySelector('.staff-hub-form-settings');
-                            queueLuxuryTransparencyRefresh(undefined, {
-                                roots: formSettings ? [formSettings] : undefined
-                            });
+                        if (typeof queueLuxuryTransparencyRefresh === 'function' && state.workspace !== 'form-settings') {
+                            queueLuxuryTransparencyRefresh();
                         }
                         return;
                     }
@@ -1635,11 +1632,8 @@
                 queueEnglishLocalization(modalRoot);
             }
         }
-        if (typeof queueLuxuryTransparencyRefresh === 'function') {
-            const transparencyRoots = state.workspace === 'form-settings'
-                ? [container.querySelector('.staff-hub-form-settings')].filter(Boolean)
-                : undefined;
-            queueLuxuryTransparencyRefresh(undefined, { roots: transparencyRoots });
+        if (typeof queueLuxuryTransparencyRefresh === 'function' && state.workspace !== 'form-settings') {
+            queueLuxuryTransparencyRefresh();
         }
         if (document.documentElement?.classList.contains('kiu-shell-loading')) {
             document.documentElement.classList.remove('kiu-shell-loading');
