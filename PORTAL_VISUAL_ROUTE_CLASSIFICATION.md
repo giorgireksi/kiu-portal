@@ -7,3 +7,9 @@
 - [`docs/visual-ssot.md`](docs/visual-ssot.md)
 
 Retired dedicated `*-route.css` paint skins are denylisted in [`test/helpers/bare-shell-css.js`](test/helpers/bare-shell-css.js) (`RETIRED_ROUTE_CSS`). Bare portals use shared paint + `lux-page-bare-lite` layout; auth/redirects stay thin.
+
+## Quick reference (special-surface hubs)
+
+| Route | Category | Dedicated CSS | Mobile shell |
+|-------|----------|---------------|--------------|
+| `staff.html` | `special-surface` | `assets/css/lux-page-bare-lite.css` | `shared-standalone` |

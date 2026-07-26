@@ -678,6 +678,14 @@
         const fieldFilterMarkup = blueprintFilters.map((filterDef) => renderFieldFilterSelect(filterDef, filters, esc)).join('');
         const filtersBodyMarkup = `<div class="${H.hub}-filter-deck-grid">${fieldFilterMarkup}</div>`;
         const hasActiveFieldFilters = blueprintFilters.some((filterDef) => (filterDef.options || []).length > 0);
+        const allFiltersPending = blueprintFilters.length > 0
+            && blueprintFilters.every((filterDef) => !(filterDef.options || []).length);
+        const useCompactDeck = allFiltersPending && blueprintFilters.length <= 4;
+        const customizeLinkMarkup = isAdminSession ? `
+                        <button class="${H.hub}-filter-deck-link ${H.hub}-filter-deck-link--compact" type="button" data-${H.data}-action="open-form-settings">
+                            <i class="fas fa-sliders"></i> Customize in form settings
+                        </button>
+                    ` : '';
 
         const droplistSearchMarkup = hasActiveFieldFilters ? `
             <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--droplist-search">
@@ -702,19 +710,15 @@
             </div>
         ` : '';
 
-        const blueprintSectionMarkup = blueprintFilters.length ? `
+        const blueprintSectionMarkup = !useCompactDeck && blueprintFilters.length ? `
             <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--fields">
                 <div class="${H.hub}-filter-deck-heading">
                     <span class="${H.hub}-filter-deck-kicker">Directory field filters</span>
-                    ${isAdminSession ? `
-                        <button class="${H.hub}-filter-deck-link" type="button" data-${H.data}-action="open-form-settings">
-                            <i class="fas fa-sliders"></i> Customize in form settings
-                        </button>
-                    ` : ''}
+                    ${customizeLinkMarkup}
                 </div>
                 ${filtersBodyMarkup}
             </div>
-        ` : (isAdminSession ? `
+        ` : (!useCompactDeck && isAdminSession ? `
             <div class="${H.hub}-filter-hint">
                 <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
                 <p><strong>No directory field filters yet.</strong> Add fields to staff form sections in form settings to surface them here once staff records include values.</p>
@@ -735,39 +739,42 @@
                     aria-label="Remove ${esc(label)} filter"
                 ><span>${esc(label)}</span><em>${esc(value)}</em><i class="fas fa-xmark" aria-hidden="true"></i></button>
             `).join('')
-            : `<span class="${H.hub}-chip lux-status-pill is-muted">No active filters</span>`;
+            : '';
+
+        const activeFiltersMarkup = chipsMarkup
+            ? `<div class="${H.hub}-active-filters" aria-label="Active filters">${chipsMarkup}</div>`
+            : '';
+
+        const compactFieldMarkup = useCompactDeck
+            ? `${filtersBodyMarkup}${customizeLinkMarkup}`
+            : '';
 
         return `
             <div class="${H.hub}-controls-head">
                 <div class="${H.hub}-controls-copy">
                     <div class="${H.hub}-overline"><i class="fas fa-filter"></i> Directory controls</div>
-                    <h2 class="${H.hub}-section-title">${H.sectionTitle}</h2>
-                    <p class="${H.hub}-section-copy">
+                    <h2 class="${H.hub}-section-title">
+                        ${H.sectionTitle}
                         <span class="${H.hub}-result-pill">${visibleCount} result${visibleCount === 1 ? '' : 's'}</span>
-                        Search the roster and apply directory field filters configured in form settings.
-                    </p>
+                    </h2>
                 </div>
-                ${isAdminSession ? `<div class="${H.hub}-inline-actions ${H.hub}-register-actions">
+                ${isAdminSession ? `<div class="${H.hub}-inline-actions ${H.hub}-register-actions lux-btn-row-stack">
                     <button class="lux-secondary-btn" type="button" data-${H.data}-action="export-csv"><i class="fas fa-table"></i> Export CSV</button>
                     ${renderStaffTypeCreateButtons(isAdminSession)}
                 </div>` : ''}
             </div>
 
-            <div class="${H.hub}-command-bar">
-                <div class="${H.hub}-active-filters" aria-label="Active filters">
-                    ${chipsMarkup}
-                </div>
-            </div>
-
             <div class="${H.hub}-filter-deck">
-                <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--primary">
+                <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--primary${useCompactDeck ? ' is-compact' : ''}">
+                    ${activeFiltersMarkup}
                     <div class="${H.hub}-search-wrap ${H.hub}-field">
-                        <label for="staff-search">Search directory</label>
+                        <label for="${H.searchInputId}">Search directory</label>
                         <div class="${H.hub}-search-field">
                             <i class="fas fa-search" aria-hidden="true"></i>
-                            <input class="${H.hub}-control lux-control" id="staff-search" type="search" value="${esc(filters.query)}" placeholder="${H.searchPlaceholder}" />
+                            <input class="${H.hub}-control lux-control" id="${H.searchInputId}" type="search" value="${esc(filters.query)}" placeholder="${H.searchPlaceholder}" />
                         </div>
                     </div>
+                    ${compactFieldMarkup}
                     ${NS === 'student' ? `
                     <div class="${H.hub}-field">
                         <label for="student-filter-mobility">Mobility</label>

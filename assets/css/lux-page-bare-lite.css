@@ -58,6 +58,12 @@ body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: gr
 
 /* ── Bare host contract (paint → lux-fouc-ht / lux-controls) ── */
 
+body.lux-unified-shell.lux-page-bare {
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Layout-only shells: spacing wrapper — real glass hosts use data-lux-glass-root="1" */
 body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
   background: transparent;
@@ -1892,6 +1898,53 @@ body.lux-route-students-admin #students-content .students-hub-hero-toolbar .stud
     font-size: 11px;
 }
 
+/* === Hub typography + text readability (staff + students global) === */
+body.lux-route-staff #staff-content .staff-hub-kicker,
+body.lux-route-staff #staff-content .staff-hub-overline,
+body.lux-route-students-admin #students-content .students-hub-overline
+{
+    color: rgba(var(--lux-accent-rgb), 0.88);
+}
+
+body.lux-route-staff #staff-content .staff-hub-focus-card h2,
+body.lux-route-staff #staff-content .staff-hub-section-title,
+body.lux-route-students-admin #students-content .students-hub-focus-card h2,
+body.lux-route-students-admin #students-content .students-hub-section-title
+{
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-focus-card p,
+body.lux-route-staff #staff-content .staff-hub-section-copy,
+body.lux-route-staff #staff-content .staff-hub-mini-copy,
+body.lux-route-students-admin #students-content .students-hub-section-copy,
+body.lux-route-students-admin #students-content .students-hub-mini-copy
+{
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-text-muted,
+body.lux-route-students-admin #students-content .students-hub-text-muted
+{
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-meta,
+body.lux-route-students-admin #students-content .students-hub-meta
+{
+    color: var(--lux-text-muted);
+}
+
 /* === Controls layout === */
 body.lux-route-staff #staff-content .staff-hub-controls,
 body.lux-route-students-admin #students-content .students-hub-controls
@@ -1940,7 +1993,66 @@ body.lux-route-staff #staff-content .staff-hub-controls--adaptive,
 body.lux-route-students-admin #students-content .students-hub-controls--adaptive
 {
     display: grid;
-    gap: 18px;
+    gap: 12px;
+    padding: 18px 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-controls-head,
+body.lux-route-students-admin #students-content .students-hub-controls--adaptive .students-hub-controls-head
+{
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-section-title,
+body.lux-route-students-admin #students-content .students-hub-controls--adaptive .students-hub-section-title
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-result-pill,
+body.lux-route-students-admin #students-content .students-hub-controls--adaptive .students-hub-result-pill
+{
+    margin-right: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls--adaptive .staff-hub-filter-deck-section,
+body.lux-route-students-admin #students-content .students-hub-controls--adaptive .students-hub-filter-deck-section
+{
+    gap: 10px;
+    padding: 12px 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary.is-compact
+{
+    display: grid;
+    grid-template-columns: minmax(220px, 1.35fr) repeat(auto-fit, minmax(150px, 1fr)) auto;
+    gap: 10px 12px;
+    align-items: end;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact .staff-hub-active-filters,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary.is-compact .students-hub-active-filters
+{
+    grid-column: 1 / -1;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-section--primary.is-compact .staff-hub-filter-deck-grid,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-section--primary.is-compact .students-hub-filter-deck-grid
+{
+    display: contents;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-deck-link--compact,
+body.lux-route-students-admin #students-content .students-hub-filter-deck-link--compact
+{
+    align-self: end;
+    justify-self: end;
+    margin-bottom: 2px;
+    white-space: nowrap;
 }
 
 body.lux-route-staff #staff-content .staff-hub-controls-copy,
@@ -1984,7 +2096,7 @@ body.lux-route-students-admin #students-content .students-hub-saved-views
     border-radius: 16px;
     background: var(--lux-hub-card-bg, transparent);
     border: 1px solid var(--lux-hub-card-border, rgba(var(--lux-accent-rgb), 0.14));
-    box-shadow: var(--lux-hub-card-shadow, none);
+    box-shadow: var(--lux-hub-card-shadow, var(--lux-elev-1));
 }
 
 body.lux-route-staff #staff-content .staff-hub-saved-view-btn,
@@ -2037,8 +2149,10 @@ body.lux-route-students-admin #students-content .students-hub-filter-deck
 {
     display: grid;
     gap: 0;
-    border-radius: 20px;
+    border-radius: 16px;
     overflow: hidden;
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: rgba(var(--lux-accent-rgb), 0.03);
 }
 
 body.lux-route-staff #staff-content .staff-hub-filter-deck-section,
@@ -2309,6 +2423,44 @@ body.lux-route-students-admin #students-content .students-hub-review-btn
     white-space: nowrap;
 }
 
+body.lux-route-staff #staff-content .staff-hub-chip.is-success,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-success,
+body.lux-route-students-admin #students-content .students-hub-chip.is-success,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-success
+{
+    border-color: rgba(32, 197, 124, 0.28);
+    background: rgba(32, 197, 124, 0.14);
+    color: #76e6ae;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-warning,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-warning,
+body.lux-route-students-admin #students-content .students-hub-chip.is-warning,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-warning
+{
+    border-color: rgba(244, 162, 97, 0.28);
+    background: rgba(244, 162, 97, 0.14);
+    color: #ffd1a4;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-danger,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-danger,
+body.lux-route-students-admin #students-content .students-hub-chip.is-danger,
+body.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-danger
+{
+    border-color: rgba(248, 113, 113, 0.28);
+    background: rgba(248, 113, 113, 0.14);
+    color: #ffd2d2;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-chip.is-warning,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-chip.is-warning,
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-chip.is-warning,
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-chip.is-warning
+{
+    color: #7e4e1a;
+}
+
 body.lux-route-staff #staff-content .staff-hub-chip.is-muted,
 body.lux-route-students-admin #students-content .students-hub-chip.is-muted
 {
@@ -2382,10 +2534,14 @@ body.lux-route-students-admin #students-content .students-hub-field--compact
 
 body.lux-route-staff #staff-content .staff-hub-field label,
 body.lux-route-staff #staff-command-modal-root .staff-hub-field label,
+body.lux-route-students-admin #students-content .students-hub-field label,
 body.lux-route-students-admin #students-admin-modal-root .students-hub-field label
 {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.82);
 }
 
 body.lux-route-staff #staff-content textarea.staff-hub-control,
@@ -2445,12 +2601,34 @@ body.lux-route-students-admin #students-content .students-hub-table th
     font-weight: 900;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.76);
+    background: rgba(var(--lux-accent-rgb), 0.06);
+}
+
+body.lux-route-staff #staff-content .staff-hub-table td,
+body.lux-route-students-admin #students-content .students-hub-table td
+{
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-table td strong,
+body.lux-route-students-admin #students-content .students-hub-table td strong
+{
+    font-weight: 800;
+    color: var(--lux-text);
 }
 
 body.lux-route-staff #staff-content .staff-hub-table tbody tr,
 body.lux-route-students-admin #students-content .students-hub-table tbody tr
 {
     transition: background 0.18s ease, transform 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table .staff-hub-inline-actions,
+body.lux-route-students-admin #students-content .students-hub-table .students-hub-inline-actions
+{
+    flex-wrap: nowrap;
+    white-space: nowrap;
 }
 
 body.lux-route-staff #staff-content .staff-hub-row-button,
@@ -3387,18 +3565,6 @@ body.lux-route-students-admin #students-admin-modal-root .students-hub-modal-act
         align-items: stretch;
     }
 
-    body.lux-route-staff #staff-content .staff-hub-hero .lux-primary-btn,
-    body.lux-route-staff #staff-content .staff-hub-hero .lux-secondary-btn,
-    body.lux-route-staff #staff-content .staff-hub-controls .lux-primary-btn,
-    body.lux-route-staff #staff-content .staff-hub-controls .lux-secondary-btn,
-    body.lux-route-staff #staff-content .staff-hub-toolbar .lux-primary-btn,
-    body.lux-route-staff #staff-content .staff-hub-toolbar .lux-secondary-btn,
-    body.lux-route-staff #staff-command-modal-root .lux-primary-btn,
-    body.lux-route-staff #staff-command-modal-root .lux-secondary-btn {
-        width: 100%;
-        justify-content: center;
-    }
-
     body.lux-route-staff #staff-command-modal-root .staff-hub-modal-backdrop {
         padding: 0;
     }
@@ -3713,7 +3879,7 @@ body.lux-route-staff #staff-content .staff-hub-builder-type-btn:hover {
 body.lux-route-staff #staff-content .staff-hub-builder-type.is-active,
 body.lux-route-staff #staff-content .staff-hub-builder-type-btn.is-active {
     border-color: rgba(var(--lux-accent-rgb), 0.34);
-    box-shadow: inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.88), 0 8px 20px rgba(var(--lux-accent-rgb), 0.1);
+    box-shadow: var(--lux-hub-active-rail-shadow, var(--lux-elev-2));
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-type-icon {
@@ -3966,7 +4132,7 @@ body.lux-route-staff #staff-content .staff-hub-profile-row:hover {
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-active {
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     background: rgba(var(--lux-accent-rgb), 0.09);
-    box-shadow: inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.72);
+    box-shadow: var(--lux-hub-active-row-shadow, var(--lux-elev-1));
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-new {
@@ -4244,7 +4410,7 @@ body.lux-route-staff #staff-content .staff-hub-section-builder-panel {
 body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-new {
     border-color: rgba(var(--lux-accent-rgb), 0.42);
     background: rgba(var(--lux-accent-rgb), 0.08);
-    box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.16);
+    box-shadow: var(--lux-hub-inset-ring-soft, var(--lux-elev-1));
 }
 
 body.lux-route-staff #staff-content .staff-hub-section-builder-panel.is-incomplete {
@@ -4385,13 +4551,6 @@ body.lux-route-staff #staff-content .staff-hub-builder-launch-actions {
     align-items: center;
     margin-top: auto;
     padding-top: 4px;
-}
-
-body.lux-route-staff #staff-content .staff-hub-builder-launch-actions .lux-primary-btn,
-body.lux-route-staff #staff-content .staff-hub-builder-launch-actions .lux-secondary-btn {
-    flex: 1 1 auto;
-    justify-content: center;
-    min-width: 120px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-launch-card.is-input .staff-hub-builder-launch-icon {
@@ -5216,7 +5375,7 @@ body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item:hover {
 body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-active {
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     background: rgba(var(--lux-accent-rgb), 0.12);
-    box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.14);
+    box-shadow: var(--lux-hub-inset-ring, var(--lux-elev-1));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-step-nav-item.is-incomplete {
@@ -5395,7 +5554,7 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-remove-btn {
 
 body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-remove-pending {
     border-color: rgba(201, 138, 26, 0.42);
-    box-shadow: inset 0 0 0 1px rgba(201, 138, 26, 0.12);
+    box-shadow: var(--lux-hub-warn-inset-ring, var(--lux-elev-1));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-field-remove-confirm {
@@ -5458,7 +5617,7 @@ body.lux-route-staff #staff-content .staff-hub-studio-type-trigger:hover,
 body.lux-route-staff #staff-content .staff-hub-studio-type-popover[open] .staff-hub-studio-type-trigger {
     transform: translateY(-1px);
     border-color: rgba(var(--lux-accent-rgb), 0.42);
-    box-shadow: 0 10px 24px rgba(var(--lux-accent-rgb), 0.14);
+    box-shadow: var(--lux-hub-accent-lift-shadow, var(--lux-elev-2));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-type-trigger-icon {
@@ -5514,11 +5673,9 @@ body.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
     border-radius: 14px;
     border: 1px solid rgba(var(--lux-accent-rgb), 0.38);
     background: linear-gradient(180deg, rgba(14, 22, 36, 0.98), rgba(8, 14, 26, 0.96));
-    box-shadow:
-        0 22px 48px rgba(4, 8, 18, 0.52),
-        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--lux-hub-popover-shadow, var(--lux-elev-3));
+    backdrop-filter: var(--lux-hub-popover-blur, var(--lux-panel-blur-filter));
+    -webkit-backdrop-filter: var(--lux-hub-popover-blur, var(--lux-panel-blur-filter));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-type-popover:not([open]) .staff-hub-studio-type-menu,
@@ -5566,9 +5723,7 @@ body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-type-menu,
 body.lux-light-mode.lux-route-staff #staff-content .staff-hub-studio-field-menu-panel {
     border-color: rgba(var(--lux-accent-rgb), 0.18);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
-    box-shadow:
-        0 18px 36px rgba(15, 23, 42, 0.12),
-        0 0 0 1px rgba(255, 255, 255, 0.72) inset;
+    box-shadow: var(--lux-hub-popover-shadow-light, var(--lux-elev-2));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-type-option {
@@ -5596,7 +5751,7 @@ body.lux-route-staff #staff-content .staff-hub-studio-type-option:hover {
 body.lux-route-staff #staff-content .staff-hub-studio-type-option.is-active {
     background: rgba(var(--lux-accent-rgb), 0.22);
     color: rgba(var(--lux-accent-rgb), 1);
-    box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.34);
+    box-shadow: var(--lux-hub-inset-ring-strong, var(--lux-elev-1));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-required-btn {
@@ -5880,9 +6035,7 @@ body.lux-route-staff #staff-content .staff-hub-studio-preview-body .lux-picker-f
 
 body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.is-studio-highlight {
     border-color: rgba(var(--lux-accent-rgb), 0.42);
-    box-shadow:
-        0 0 0 1px rgba(var(--lux-accent-rgb), 0.22),
-        0 10px 24px rgba(var(--lux-accent-rgb), 0.12);
+    box-shadow: var(--lux-hub-studio-highlight-shadow, var(--lux-elev-2));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-preview-body .staff-hub-form-section.lux-data-card {

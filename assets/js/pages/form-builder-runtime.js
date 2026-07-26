@@ -38,7 +38,8 @@
             addType: 'addStaffFormType',
             updateSection: 'updateStaffFormSection',
             moveSection: 'moveStaffFormSection',
-            deleteField: 'deleteStaffFormField',
+            removeSection: 'removeStaffFormSection',
+            removeField: 'removeStaffFormField',
         }
         : {
             escapeHtml: 'studentFormEscapeHtml',
@@ -64,7 +65,8 @@
             addType: 'addStudentFormType',
             updateSection: 'updateStudentFormSection',
             moveSection: 'moveStudentFormSection',
-            deleteField: 'deleteStudentFormField',
+            removeSection: 'removeStudentFormSection',
+            removeField: 'removeStudentFormField',
         };
 
     function ds(el, camelStaff, camelStudent) {
@@ -1508,8 +1510,8 @@
     }
 
     function confirmRemoveBlueprintField(typeId, bucket, sectionId, fieldId, state, callbacks) {
-        const result = typeof removeStaffFormField === 'function'
-            ? rewindow[H.moveField](typeId, bucket, sectionId, fieldId)
+        const result = typeof window[H.removeField] === 'function'
+            ? window[H.removeField](typeId, bucket, sectionId, fieldId)
             : { error: 'Blueprint API unavailable.' };
         if (result?.error) {
             callbacks.onToast?.(result.error);
@@ -1643,8 +1645,8 @@
                 if (!window.confirm('Remove this section and all of its fields?')) return;
                 const sections = getSchemaSections(typeId);
                 const nextActiveSectionId = neighborSectionIdAfterRemove(sections, data.sectionId);
-                const result = typeof removeStaffFormSection === 'function'
-                    ? rewindow[H.moveSection](typeId, null, data.sectionId)
+                const result = typeof window[H.removeSection] === 'function'
+                    ? window[H.removeSection](typeId, null, data.sectionId)
                     : { error: 'Blueprint API unavailable.' };
                 if (result?.error) {
                     callbacks.onToast?.(result.error);

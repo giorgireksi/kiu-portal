@@ -132,7 +132,8 @@ describe('staff mobile runtime regressions', () => {
         expect(commandCenter).toContain('function renderStaffPage()');
         expect(commandCenter).toContain('function openProfRegistration(role)');
         expect(commandCenter).toContain('function staffTabSwitch(tab)');
-        expect(commandCenter).toMatch(/staff-hub-shell"[^>]*data-lux-glass-root="1"/);
+        expect(commandCenter).toContain('staff-hub-shell');
+        expect(commandCenter).not.toMatch(/staff-hub-shell"[^>]*data-lux-glass-root="1"/);
         expect(commandCenter).not.toMatch(/lux-panel staff-hub-shell/);
         expect(commandCenter).toContain('queueLuxuryTransparencyRefresh');
     });

@@ -768,3 +768,23 @@ body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-pr
 body.lux-full-paint.lux-unified-shell [data-lux-btn-density="dense"] :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn):is(:hover, :focus-visible) {
   box-shadow: var(--lux-elev-1, 0 8px 20px rgba(0, 0, 0, 0.14));
 }
+
+/* Hub / modal action rows: shared layout for stacked CTAs on narrow viewports. */
+.lux-btn-row-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.lux-btn-row-stack .lux-primary-btn,
+.lux-btn-row-stack .lux-secondary-btn {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 120px;
+}
+@media (max-width: 900px) {
+  .lux-btn-row-stack .lux-primary-btn,
+  .lux-btn-row-stack .lux-secondary-btn {
+    width: 100%;
+  }
+}

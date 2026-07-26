@@ -77,24 +77,26 @@ describe('admin tools route regressions.test', () => {
         expect(transparency).toContain('.lux-page-shell[data-lux-layout-only="1"]');
     });
 
-    it('staff and students-admin use merged glass-root shells with flat directory sections', () => {
+    it('staff and students-admin use separate tier-1 hub panels (asd8 directory layout)', () => {
         const staff = readSource('assets/js/pages/staff-command-center.js');
         const students = readSource('assets/js/pages/students-command-center.js');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
-        expect(staff).toMatch(/staff-hub-shell"[^>]*data-lux-glass-root="1"/);
+        expect(staff).toContain('staff-hub-shell');
+        expect(staff).not.toMatch(/staff-hub-shell"[^>]*data-lux-glass-root="1"/);
         expect(staff).toMatch(/staff-hub-profile"[^>]*data-lux-glass-root="1"/);
         expect(staff).toContain('staff-hub-directory-panel');
         expect(staff).not.toContain('lux-soft-chrome staff-hub-directory-panel');
         expect(staff).not.toMatch(/lux-panel staff-hub-shell/);
-        expect(students).toMatch(/students-hub-shell"[^>]*data-lux-glass-root="1"/);
+        expect(students).toContain('students-hub-shell');
+        expect(students).not.toMatch(/students-hub-shell"[^>]*data-lux-glass-root="1"/);
         expect(students).toMatch(/students-hub-profile"[^>]*data-lux-glass-root="1"/);
         expect(students).toContain('students-hub-directory-panel');
         expect(students).not.toContain('lux-soft-chrome students-hub-directory-panel');
         expect(students).not.toMatch(/lux-panel students-hub-shell/);
         const fouc = readSource('assets/css/lux-fouc-ht.css');
-        expect(fouc).toContain('.staff-hub-shell, .students-hub-shell)[data-lux-glass-root="1"]');
+        expect(fouc).toContain('.staff-hub-controls');
         expect(fouc).toContain('.staff-hub-directory-panel');
-        expect(bare).toContain('.staff-hub-builder-layout');
+        expect(bare).toContain('.staff-hub-filter-deck');
         expect(fouc).toContain('.staff-hub-form-settings-head');
         expect(fouc).toContain('.staff-hub-builder-rail');
         expect(bare).toContain('#staff-command-modal-root .staff-hub-modal');

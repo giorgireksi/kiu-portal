@@ -478,7 +478,7 @@
             </div>
             <section class="students-hub-info-card is-full lux-data-card">
                 <span>Admin actions</span>
-                <div class="students-hub-inline-actions students-hub-inline-actions--spaced">
+                <div class="students-hub-inline-actions students-hub-inline-actions--spaced lux-btn-row-stack">
                     <button class="lux-secondary-btn" type="button" data-student-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
                     <button class="lux-secondary-btn" type="button" data-student-action="toggle-login" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-power-off"></i> Toggle login</button>
                     <button class="lux-secondary-btn" type="button" data-student-action="mark-reviewed" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-clipboard-check"></i> Mark reviewed</button>
@@ -543,7 +543,7 @@
                 </div>` : '';
         return `
             <section class="students-hub-profile" data-lux-glass-root="1">
-                <div class="students-hub-toolbar">
+                <div class="students-hub-toolbar lux-btn-row-stack">
                     <button class="lux-secondary-btn" type="button" data-student-action="back"><i class="fas fa-arrow-left"></i> Back to student directory</button>
                     <div class="students-hub-toolbar-actions">
                         <button class="lux-primary-btn" type="button" data-student-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit profile</button>
@@ -627,7 +627,7 @@
                         ${renderProgress(completion.percent, `${completion.percent}% · ${completion.missing.length ? `${completion.missing.length} missing` : 'complete'}`)}
                     </td>
                     <td>
-                        <div class="students-hub-inline-actions">
+                        <div class="students-hub-inline-actions lux-btn-row-stack">
                             <button class="lux-primary-btn" type="button" data-student-action="select" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> View</button>
                             <button class="lux-secondary-btn" type="button" data-student-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit</button>
                             ${record.status === 'Archived'
@@ -642,7 +642,7 @@
                 <i class="fas fa-users-slash fa-2x" aria-hidden="true"></i>
                 <strong>${records.length ? 'No students match these filters.' : 'No student records yet.'}</strong>
                 <span>${records.length ? 'Try clearing filters, searching another program, or including archived records.' : 'Start by registering your first student.'}</span>
-                <div class="students-hub-inline-actions">
+                <div class="students-hub-inline-actions lux-btn-row-stack">
                     ${records.length
                         ? '<button class="lux-secondary-btn" type="button" data-student-action="clear-filters">Clear filters</button>'
                         : renderPrimaryCreateButton(state, 'Register student')}
@@ -651,7 +651,7 @@
         `;
 
         return `
-            <div class="students-hub-shell" data-lux-glass-root="1">
+            <div class="students-hub-shell">
 
                 <section class="students-hub-controls students-admin-controls students-hub-controls--adaptive">
                     ${directoryControlsMarkup}
@@ -664,7 +664,7 @@
                             <h2 class="students-hub-section-title">Operational records</h2>
                             <p class="students-hub-section-copy">Open full profile pages, review readiness, and act on enrollment or account issues directly from the table.</p>
                         </div>
-                        <div class="students-hub-inline-actions">
+                        <div class="students-hub-inline-actions lux-btn-row-stack">
                             <button class="lux-secondary-btn" type="button" data-student-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
                         </div>
                     </div>
@@ -837,9 +837,8 @@
                     </div>
                     <div class="students-hub-modal-foot">
                         ${renderModalStatus(completion, touched)}
-                        <div class="students-hub-modal-actions">
+                        <div class="students-hub-modal-actions lux-btn-row-stack">
                             <button class="lux-secondary-btn" type="button" data-student-action="close-modal">Cancel</button>
-// --- READABILITY: Roster ---
                             <button class="lux-secondary-btn" type="button" data-student-action="check-required-fields"><i class="fas fa-list-check" aria-hidden="true"></i> Check required fields</button>
                             <button class="lux-primary-btn" type="submit" ${schemaEmpty ? 'disabled' : ''}><i class="fas fa-check" aria-hidden="true"></i> ${editing ? 'Save Staff Profile' : 'Create Staff Profile'}</button>
                         </div>
@@ -1232,8 +1231,8 @@
         }
         if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
         const urls = [
-            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix6',
-            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix6'
+            'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix10',
+            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix10'
         ];
         __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
             const existing = document.querySelector(`script[src="${src}"]`);
