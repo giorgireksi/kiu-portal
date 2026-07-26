@@ -682,7 +682,7 @@
             && blueprintFilters.every((filterDef) => !(filterDef.options || []).length);
         const useCompactDeck = allFiltersPending && blueprintFilters.length <= 4;
         const customizeLinkMarkup = isAdminSession ? `
-                        <button class="${H.hub}-filter-deck-link ${H.hub}-filter-deck-link--compact" type="button" data-${H.data}-action="open-form-settings">
+                        <button class="${H.hub}-filter-deck-link" type="button" data-${H.data}-action="open-form-settings">
                             <i class="fas fa-sliders"></i> Customize in form settings
                         </button>
                     ` : '';
@@ -742,8 +742,8 @@
             : '';
 
         const activeFiltersMarkup = chipsMarkup
-            ? `<div class="${H.hub}-active-filters" aria-label="Active filters">${chipsMarkup}</div>`
-            : '';
+            ? chipsMarkup
+            : `<span class="${H.hub}-chip lux-status-pill is-muted">No active filters</span>`;
 
         const compactFieldMarkup = useCompactDeck
             ? `${filtersBodyMarkup}${customizeLinkMarkup}`
@@ -753,20 +753,24 @@
             <div class="${H.hub}-controls-head">
                 <div class="${H.hub}-controls-copy">
                     <div class="${H.hub}-overline"><i class="fas fa-filter"></i> Directory controls</div>
-                    <h2 class="${H.hub}-section-title">
-                        ${H.sectionTitle}
+                    <h2 class="${H.hub}-section-title">${H.sectionTitle}</h2>
+                    <p class="${H.hub}-section-copy">
                         <span class="${H.hub}-result-pill">${visibleCount} result${visibleCount === 1 ? '' : 's'}</span>
-                    </h2>
+                        ${H.sectionCopy}
+                    </p>
                 </div>
-                ${isAdminSession ? `<div class="${H.hub}-inline-actions ${H.hub}-register-actions lux-btn-row-stack">
+                ${isAdminSession ? `<div class="${H.hub}-inline-actions ${H.hub}-register-actions">
                     <button class="lux-secondary-btn" type="button" data-${H.data}-action="export-csv"><i class="fas fa-table"></i> Export CSV</button>
                     ${renderStaffTypeCreateButtons(isAdminSession)}
                 </div>` : ''}
             </div>
 
+            <div class="${H.hub}-command-bar">
+                <div class="${H.hub}-active-filters" aria-label="Active filters">${activeFiltersMarkup}</div>
+            </div>
+
             <div class="${H.hub}-filter-deck">
                 <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--primary${useCompactDeck ? ' is-compact' : ''}">
-                    ${activeFiltersMarkup}
                     <div class="${H.hub}-search-wrap ${H.hub}-field">
                         <label for="${H.searchInputId}">Search directory</label>
                         <div class="${H.hub}-search-field">

@@ -38,6 +38,11 @@ describe('students admin route regressions.test', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('.students-hub-builder-layout');
         expect(bare).toContain('.students-hub-form-settings-head');
+        expect(bare).toContain('.students-hub-directory-panel');
+        expect(bare).toContain('.students-hub-controls-head');
+        const directoryJs = readSource('assets/js/pages/directory-filters-runtime.js');
+        expect(directoryJs).toContain('${H.hub}-command-bar');
+        expect(directoryJs).toContain('${H.hub}-section-copy');
         expect(builderJs).toContain("data-${H.data}-builder-action");
         expect(actionsJs).toContain("'__studentFormBuilderBound'");
         expect(studentsJs).toContain('__studentFormBuilderBound');

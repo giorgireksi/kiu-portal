@@ -627,7 +627,7 @@
                         ${renderProgress(completion.percent, `${completion.percent}% · ${completion.missing.length ? `${completion.missing.length} missing` : 'complete'}`)}
                     </td>
                     <td>
-                        <div class="students-hub-inline-actions lux-btn-row-stack">
+                        <div class="students-hub-inline-actions">
                             <button class="lux-primary-btn" type="button" data-student-action="select" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> View</button>
                             <button class="lux-secondary-btn" type="button" data-student-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit</button>
                             ${record.status === 'Archived'
@@ -664,7 +664,7 @@
                             <h2 class="students-hub-section-title">Operational records</h2>
                             <p class="students-hub-section-copy">Open full profile pages, review readiness, and act on enrollment or account issues directly from the table.</p>
                         </div>
-                        <div class="students-hub-inline-actions lux-btn-row-stack">
+                        <div class="students-hub-inline-actions">
                             <button class="lux-secondary-btn" type="button" data-student-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
                         </div>
                     </div>
