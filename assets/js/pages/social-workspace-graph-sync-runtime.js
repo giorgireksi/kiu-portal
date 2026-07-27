@@ -20,7 +20,6 @@
             __swGraphBatch,
             activeDialog,
             applyProjectTaskGraphSavedPositions,
-            buildProjectTaskGraphCanvasMarkup,
             buildProjectTaskGraphLayout,
             clearProjectTabPaneCache,
             clearProjectTabPaneCacheKey,
@@ -35,7 +34,6 @@
             projectTaskGraphCheckpointStorageKey,
             projectTaskGraphCheckpointsStorageKey,
             projectTaskGraphEdgeFanMap,
-            projectTaskGraphEdgePath,
             projectTaskGraphGroupMembershipWouldCycle,
             projectTaskGraphGroupsStorageKey,
             projectTaskGraphMineOnlyActive,
@@ -48,11 +46,6 @@
             readProjectTaskGraphPan,
             rebuildActiveProjectTabPaneIfPreviewHost,
             renderDialogOnlyNow,
-            renderProjectTaskGraphDetailRailContent,
-            renderProjectTaskGraphEdgeGroupsHtml,
-            renderProjectTaskGraphGroupEdgesHtml,
-            renderProjectTaskGraphQuickCreatePopover,
-            renderStackedProjectTaskChild,
             resolveActiveSocialProject,
             resolveProjectTaskGraphContext,
             resolveProjectTaskGraphGroupBox,
@@ -65,6 +58,50 @@
             when,
             withBusy
         } = deps;
+
+        const clampProjectTaskGraphZoom = deps.clampProjectTaskGraphZoom || __swGraphBatch.clampProjectTaskGraphZoom;
+        const clampProjectTaskGraphPan = deps.clampProjectTaskGraphPan || __swGraphBatch.clampProjectTaskGraphPan;
+        const resolveProjectTaskGraphPanSlack = deps.resolveProjectTaskGraphPanSlack || __swGraphBatch.resolveProjectTaskGraphPanSlack;
+        const projectTaskGraphScrollOffsets = deps.projectTaskGraphScrollOffsets || __swGraphBatch.projectTaskGraphScrollOffsets;
+        const projectTaskGraphEdgePath = typeof deps.projectTaskGraphEdgePath === 'function'
+            ? deps.projectTaskGraphEdgePath
+            : (__swGraphBatch.projectTaskGraphEdgePath || window.projectTaskGraphEdgePath);
+        const normalizeProjectTaskGraphMode = deps.normalizeProjectTaskGraphMode || __swGraphBatch.normalizeProjectTaskGraphMode;
+        const computeProjectTaskGraphStageSize = deps.computeProjectTaskGraphStageSize || __swGraphBatch.computeProjectTaskGraphStageSize;
+        const projectTaskGraphLayoutUsesSavedPositions = deps.projectTaskGraphLayoutUsesSavedPositions || __swGraphBatch.projectTaskGraphLayoutUsesSavedPositions;
+        const projectTaskDependsOnIds = deps.projectTaskDependsOnIds || __swGraphBatch.projectTaskDependsOnIds;
+        const isProjectTaskGraphGroupId = deps.isProjectTaskGraphGroupId || __swGraphBatch.isProjectTaskGraphGroupId;
+        const projectGroupDependsOnIds = deps.projectGroupDependsOnIds || __swGraphBatch.projectGroupDependsOnIds;
+        const projectGroupBlocksIds = deps.projectGroupBlocksIds || __swGraphBatch.projectGroupBlocksIds;
+
+        function resolveGraphRenderDep(name) {
+            const impl = deps[name];
+            if (typeof impl === "function") return impl;
+            const ws = window.KiuSocialWorkspace;
+            if (ws && typeof ws[name] === "function") return ws[name];
+            if (typeof window[name] === "function") return window[name];
+            return undefined;
+        }
+        function buildProjectTaskGraphCanvasMarkup(...args) {
+            const impl = resolveGraphRenderDep("buildProjectTaskGraphCanvasMarkup");
+            return typeof impl === "function" ? impl(...args) : "";
+        }
+        function renderProjectTaskGraphDetailRailContent(...args) {
+            const impl = resolveGraphRenderDep("renderProjectTaskGraphDetailRailContent");
+            return typeof impl === "function" ? impl(...args) : "";
+        }
+        function renderProjectTaskGraphEdgeGroupsHtml(...args) {
+            const impl = resolveGraphRenderDep("renderProjectTaskGraphEdgeGroupsHtml");
+            return typeof impl === "function" ? impl(...args) : "";
+        }
+        function renderProjectTaskGraphGroupEdgesHtml(...args) {
+            const impl = resolveGraphRenderDep("renderProjectTaskGraphGroupEdgesHtml");
+            return typeof impl === "function" ? impl(...args) : "";
+        }
+        function renderProjectTaskGraphQuickCreatePopover(...args) {
+            const impl = resolveGraphRenderDep("renderProjectTaskGraphQuickCreatePopover");
+            return typeof impl === "function" ? impl(...args) : "";
+        }
 
         function bindProjectTaskGraphDrag(...a) {
             const impl = deps.bindProjectTaskGraphDrag;
@@ -105,6 +142,11 @@
             const impl = deps.updateProjectTaskGraphGroup;
             if (typeof impl === "function") return impl(...a);
             if (typeof window.updateProjectTaskGraphGroup === "function") return window.updateProjectTaskGraphGroup(...a);
+        }
+        function removeProjectGraphDependency(...a) {
+            const impl = deps.removeProjectGraphDependency;
+            if (typeof impl === "function") return impl(...a);
+            if (typeof window.removeProjectGraphDependency === "function") return window.removeProjectGraphDependency(...a);
         }
 
         let projectTaskGraphEdgeRaf = 0;

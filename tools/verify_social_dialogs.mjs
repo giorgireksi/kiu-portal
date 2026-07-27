@@ -292,6 +292,13 @@ const DIALOG_CASES = [
         ready: () => Boolean(document.querySelector('[data-action="page-create-open"]'))
     },
     {
+        id: 'group-create',
+        action: 'group-create-open',
+        panel: 'groups',
+        card: '.lux-glass-dialog-card--group-create',
+        ready: () => Boolean(document.querySelector('[data-action="group-create-open"]'))
+    },
+    {
         id: 'portfolio-editor',
         action: 'portfolio-create-open',
         panel: 'projects',
@@ -315,7 +322,7 @@ async function waitForSocialReady(page) {
 }
 
 async function clickPanel(page, panel) {
-    const selector = `.social-neo-shell-nav-btn[data-action="panel-${panel}"]`;
+    const selector = `.social-neo-workspace-nav-btn[data-action="panel-${panel}"]`;
     await page.locator(selector).first().waitFor({ state: 'visible', timeout: 15000 });
     await page.locator(selector).first().evaluate((node) => node.click());
 }

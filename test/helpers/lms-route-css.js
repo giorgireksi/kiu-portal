@@ -29,6 +29,7 @@ export function expectLmsRouteCssLinks(html) {
     expect(html).not.toMatch(/assets\/css\/lms-route\.css(\?|"|')/);
     expect(html).toMatch(/lux-shell\.css/);
     expect(html).toMatch(/lux-page-bare-lite\.css/);
+    expect(html).toMatch(/lux-layout-primitives\.css/);
     expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
     expect(html).toMatch(/\blux-page-bare\b/);
     expect(html).toMatch(/\blux-full-paint\b/);

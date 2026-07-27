@@ -15,13 +15,13 @@
     </script>
     <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260726-panelctrl1">
     <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxcontrolcta1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
     <link rel="stylesheet" href="assets/css/lux-droplist.css?v=20260725-legacypurge1">
-    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260726-presetcta1">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260728-schmodal1">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-wave2host1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260726-sessiontext1">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260728-schmodal1">
     <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260725-ssot1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260726-schedclean2">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260728-schmodal1">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
 </head>
@@ -153,8 +153,8 @@
 <!-- CREATE SESSION MODAL -->
 <template id="sch-modal-template">
     <div class="sch-modal-overlay" id="schModalOverlay" data-admin-scheduler-modal-overlay="true" data-lux-transparency-exempt="1" hidden aria-hidden="true">
-        <div class="sch-modal" data-lux-glass-root="1" role="dialog" aria-modal="true" aria-labelledby="sch-modal-title">
-            <div class="sch-modal-head sch-modal-head-accent">
+        <div class="sch-modal" role="dialog" aria-modal="true" aria-labelledby="sch-modal-title">
+            <div class="sch-modal-head">
                 <div>
                     <div class="sch-modal-mode-chip" id="sch-modal-mode-chip">Create</div>
                     <div class="sch-modal-title" id="sch-modal-title"><i class="fas fa-calendar-plus"></i> New Class Session</div>
@@ -301,8 +301,8 @@
 <!-- MANAGE SCHEDULER PRESETS (groups / rooms) -->
 <template id="sch-preset-manager-template">
     <div class="sch-modal-overlay" id="schPresetManagerOverlay" data-admin-scheduler-preset-overlay="true" data-lux-transparency-exempt="1" hidden>
-        <div class="sch-modal sch-modal-narrow" data-lux-glass-root="1">
-            <div class="sch-modal-head sch-modal-head-accent">
+        <div class="sch-modal sch-modal-narrow">
+            <div class="sch-modal-head">
                 <div>
                     <div class="sch-modal-mode-chip" id="sch-preset-manage-chip">Presets</div>
                     <div class="sch-modal-title" id="sch-preset-manage-title"><i class="fas fa-users"></i> Manage Groups</div>

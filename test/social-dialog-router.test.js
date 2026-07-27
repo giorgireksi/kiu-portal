@@ -73,9 +73,12 @@ describe('social-dialog-router', () => {
         expect(renderDialog()).toBe('');
 
         const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
+        const interactions = readFileSync(join(process.cwd(), 'assets/js/pages/social-page-interactions-runtime.js'), 'utf8');
         const html = readFileSync(join(process.cwd(), 'social.html'), 'utf8');
         expect(page).not.toMatch(/function\s+renderDialog\s*\(/);
-        expect(page).toContain('createKiuSocialDialogRenderer');
+        expect(page).toContain('invokeRenderDialog');
+        expect(page).toContain('window.__kiuRenderDialog');
+        expect(interactions).toContain('createKiuSocialDialogRenderer');
         expect(html).toContain('social-dialog-router.js');
         expect(html.indexOf('social-dialog-router.js')).toBeLessThan(html.indexOf('social-page.js'));
     });

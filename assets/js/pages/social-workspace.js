@@ -1,6 +1,5 @@
 (function initSocialWorkspaceModule() {
     if (window.__KIU_SOCIAL_WORKSPACE_MODULE_LOADED) return;
-    window.__KIU_SOCIAL_WORKSPACE_MODULE_LOADED = true;
 
     const __kiuSwApi = window.KiuSocialWorkspace || {};
     window.KiuSocialWorkspace = __kiuSwApi;
@@ -78,15 +77,16 @@
     const projectTaskGraphGroupMembershipWouldCycle = window.projectTaskGraphGroupMembershipWouldCycle || (window.KiuSocialWorkspaceGraphModel || {}).projectTaskGraphGroupMembershipWouldCycle;
 
 
-    // Desk/graph pure helpers: social-workspace-graph-model.js
+    // Desk/graph pure helpers: social-workspace-graph-model.js (+ desk peel in graph-desk-model.js)
+    const __graphDeskModel = window.KiuSocialWorkspaceGraphDeskModel || {};
     const __graphModel2 = window.KiuSocialWorkspaceGraphModel || {};
     const resolveDeskTaskReadiness = window.resolveDeskTaskReadiness || __graphModel2.resolveDeskTaskReadiness;
-    const orderDeskTasksByDependency = window.orderDeskTasksByDependency || __graphModel2.orderDeskTasksByDependency;
-    const buildDeskTaskForest = window.buildDeskTaskForest || __graphModel2.buildDeskTaskForest;
-    const projectTaskGraphWouldCycle = window.projectTaskGraphWouldCycle || __graphModel2.projectTaskGraphWouldCycle;
-    const collectProjectTaskGraphGroupDescendantTaskIds = window.collectProjectTaskGraphGroupDescendantTaskIds || __graphModel2.collectProjectTaskGraphGroupDescendantTaskIds;
-    const collectProjectTaskGraphGroupAbsorbedTaskIds = window.collectProjectTaskGraphGroupAbsorbedTaskIds || __graphModel2.collectProjectTaskGraphGroupAbsorbedTaskIds;
-    const computeProjectTaskGraphGroupRollup = window.computeProjectTaskGraphGroupRollup || __graphModel2.computeProjectTaskGraphGroupRollup;
+    const orderDeskTasksByDependency = window.orderDeskTasksByDependency || __graphDeskModel.orderDeskTasksByDependency || __graphModel2.orderDeskTasksByDependency;
+    const buildDeskTaskForest = window.buildDeskTaskForest || __graphDeskModel.buildDeskTaskForest || __graphModel2.buildDeskTaskForest;
+    const projectTaskGraphWouldCycle = window.projectTaskGraphWouldCycle || __graphDeskModel.projectTaskGraphWouldCycle || __graphModel2.projectTaskGraphWouldCycle;
+    const collectProjectTaskGraphGroupDescendantTaskIds = window.collectProjectTaskGraphGroupDescendantTaskIds || __graphDeskModel.collectProjectTaskGraphGroupDescendantTaskIds || __graphModel2.collectProjectTaskGraphGroupDescendantTaskIds;
+    const collectProjectTaskGraphGroupAbsorbedTaskIds = window.collectProjectTaskGraphGroupAbsorbedTaskIds || __graphDeskModel.collectProjectTaskGraphGroupAbsorbedTaskIds || __graphModel2.collectProjectTaskGraphGroupAbsorbedTaskIds;
+    const computeProjectTaskGraphGroupRollup = window.computeProjectTaskGraphGroupRollup || __graphDeskModel.computeProjectTaskGraphGroupRollup || __graphModel2.computeProjectTaskGraphGroupRollup;
     const scoreProjectTaskGraphDockPair = window.scoreProjectTaskGraphDockPair || __graphModel2.scoreProjectTaskGraphDockPair;
     const getProjectTaskGraphGroupLinkSummary = window.getProjectTaskGraphGroupLinkSummary || __graphModel2.getProjectTaskGraphGroupLinkSummary;
 
@@ -159,7 +159,7 @@
     const selectProjectTaskGraphDockPair = window.selectProjectTaskGraphDockPair || __swGraphBatch.selectProjectTaskGraphDockPair;
     const projectTaskGraphPushOutOfRect = window.projectTaskGraphPushOutOfRect || __swGraphBatch.projectTaskGraphPushOutOfRect;
     const normalizeProjectTaskGraphStatusId = window.normalizeProjectTaskGraphStatusId || __swGraphBatch.normalizeProjectTaskGraphStatusId;
-    const projectTaskGraphStatusEdgeColor = window.projectTaskGraphStatusEdgeColor || __swGraphBatch.projectTaskGraphStatusEdgeColor;
+    const projectTaskGraphStatusEdgeColor = __swGraphBatch.projectTaskGraphStatusEdgeColor || window.projectTaskGraphStatusEdgeColor;
     const projectTaskGraphEdgePath = window.projectTaskGraphEdgePath || __swGraphBatch.projectTaskGraphEdgePath;
     const projectTaskGraphEdgeAnchors = window.projectTaskGraphEdgeAnchors || __swGraphBatch.projectTaskGraphEdgeAnchors;
     const projectTaskGraphObstacleList = window.projectTaskGraphObstacleList || __swGraphBatch.projectTaskGraphObstacleList;
@@ -176,6 +176,25 @@
     const resolveProjectTaskGraphPanSlack = window.resolveProjectTaskGraphPanSlack || __swGraphBatch.resolveProjectTaskGraphPanSlack;
     const clampProjectTaskGraphPan = window.clampProjectTaskGraphPan || __swGraphBatch.clampProjectTaskGraphPan;
     const projectTaskGraphScrollOffsets = window.projectTaskGraphScrollOffsets || __swGraphBatch.projectTaskGraphScrollOffsets;
+
+    // Pure schedule / PERT helpers: social-workspace-schedule-model.js (loaded before tab-runtime)
+    const __scheduleModel = window.KiuSocialWorkspaceScheduleModel || {};
+    const computePertExpected = window.computePertExpected || __scheduleModel.computePertExpected;
+    const taskHasPert = window.taskHasPert || __scheduleModel.taskHasPert;
+    const resolveTaskScheduleEstimate = window.resolveTaskScheduleEstimate || __scheduleModel.resolveTaskScheduleEstimate;
+    const taskDurationHours = window.taskDurationHours || __scheduleModel.taskDurationHours;
+    const taskScheduleRemainingHours = window.taskScheduleRemainingHours || __scheduleModel.taskScheduleRemainingHours;
+    const sumProjectOpenWorkHours = window.sumProjectOpenWorkHours || __scheduleModel.sumProjectOpenWorkHours;
+    const sumProjectActualHours = window.sumProjectActualHours || __scheduleModel.sumProjectActualHours;
+    const formatProjectScheduleHours = window.formatProjectScheduleHours || __scheduleModel.formatProjectScheduleHours;
+    const formatProjectScheduleFloat = window.formatProjectScheduleFloat || __scheduleModel.formatProjectScheduleFloat;
+    const formatTaskScheduleDisplay = window.formatTaskScheduleDisplay || __scheduleModel.formatTaskScheduleDisplay;
+    const projectScheduleCalendarDate = window.projectScheduleCalendarDate || __scheduleModel.projectScheduleCalendarDate;
+    const formatProjectScheduleDate = window.formatProjectScheduleDate || __scheduleModel.formatProjectScheduleDate;
+    const PROJECT_SCHEDULE_FLOAT_TITLE = window.PROJECT_SCHEDULE_FLOAT_TITLE
+        || __scheduleModel.PROJECT_SCHEDULE_FLOAT_TITLE
+        || 'Schedule float (how much this can slip without delaying project finish). Not the task duration. Work time: 8h = 1d. Duration is the separate estimate/PERT pill.';
+    const computeProjectSchedule = window.computeProjectSchedule || __scheduleModel.computeProjectSchedule;
 
 
 
@@ -253,7 +272,9 @@
     const PROJECT_TASK_GRAPH_CHECKPOINT_MAX = 12;
     const PROJECT_TASK_GRAPH_MIN_ZOOM = 0.12;
     const PROJECT_TASK_GRAPH_MAX_ZOOM = 1.6;
-    const PROJECT_TASK_STATUS_EDGE_COLOR = {
+    const PROJECT_TASK_STATUS_EDGE_COLOR = window.PROJECT_TASK_STATUS_EDGE_COLOR
+        || __swGraphBatch.PROJECT_TASK_STATUS_EDGE_COLOR
+        || {
         todo: '#3b82f6',
         'in-progress': '#f59e0b',
         blocked: '#f43f5e',
@@ -280,33 +301,10 @@
 
     /* ── Schedule + desk pure helpers ── */
 
-
-
     /** Legacy alias */
 
 
     /** Nested forest for droplist tree UI (parent → child → grandchild …). */
-
-
-    // Pure schedule / PERT helpers: social-workspace-schedule-model.js (loaded first)
-    const __scheduleModel = window.KiuSocialWorkspaceScheduleModel || {};
-    const computePertExpected = window.computePertExpected || __scheduleModel.computePertExpected;
-    const taskHasPert = window.taskHasPert || __scheduleModel.taskHasPert;
-    const resolveTaskScheduleEstimate = window.resolveTaskScheduleEstimate || __scheduleModel.resolveTaskScheduleEstimate;
-    const taskDurationHours = window.taskDurationHours || __scheduleModel.taskDurationHours;
-    const taskScheduleRemainingHours = window.taskScheduleRemainingHours || __scheduleModel.taskScheduleRemainingHours;
-    const sumProjectOpenWorkHours = window.sumProjectOpenWorkHours || __scheduleModel.sumProjectOpenWorkHours;
-    const sumProjectActualHours = window.sumProjectActualHours || __scheduleModel.sumProjectActualHours;
-    const formatProjectScheduleHours = window.formatProjectScheduleHours || __scheduleModel.formatProjectScheduleHours;
-    const formatProjectScheduleFloat = window.formatProjectScheduleFloat || __scheduleModel.formatProjectScheduleFloat;
-    const formatTaskScheduleDisplay = window.formatTaskScheduleDisplay || __scheduleModel.formatTaskScheduleDisplay;
-    const projectScheduleCalendarDate = window.projectScheduleCalendarDate || __scheduleModel.projectScheduleCalendarDate;
-    const formatProjectScheduleDate = window.formatProjectScheduleDate || __scheduleModel.formatProjectScheduleDate;
-    const PROJECT_SCHEDULE_FLOAT_TITLE = window.PROJECT_SCHEDULE_FLOAT_TITLE
-        || __scheduleModel.PROJECT_SCHEDULE_FLOAT_TITLE
-        || 'Schedule float (how much this can slip without delaying project finish). Not the task duration. Work time: 8h = 1d. Duration is the separate estimate/PERT pill.';
-
-    const computeProjectSchedule = window.computeProjectSchedule || __scheduleModel.computeProjectSchedule;
 
 
     // Week-plan + action predicates: social-workspace-week-plan-model.js
@@ -442,6 +440,7 @@
         portfolioDraftExists,
         portfolioEntriesForViewer,
         portfolioMatchesRoleFilter,
+        PORTFOLIO_DISCOVER_ROLE_TARGETS,
         roleLabel,
         state,
         text,
@@ -466,363 +465,6 @@
     __kiuSwApi.renderPortfolioHero = renderPortfolioHero;
     __kiuSwApi.renderPortfolioCreateDialog = renderPortfolioCreateDialog;
 
-    /* ── Task detail / risk / health dialogs: social-workspace-dialogs.js ── */
-    const __wsDialogsApi = (typeof (window.createKiuSocialWorkspaceDialogsApi || window.__kiuCreateSocialWorkspaceDialogsApi) === 'function'
-        ? (window.__kiuCreateSocialWorkspaceDialogsApi || window.createKiuSocialWorkspaceDialogsApi)({
-        PROJECT_RISK_RESPONSE_OPTIONS,
-        PROJECT_RISK_STATUS_OPTIONS,
-        PROJECT_TASK_COLUMNS,
-        __riskModel,
-        accountById,
-        avatar,
-        computeProjectSchedule,
-        controlId,
-        displayName,
-        escape,
-        formatProjectScheduleDate,
-        formatProjectScheduleHours,
-        formatProjectTaskBudgetEstimate,
-        formatTaskCostVariance,
-        formatTaskScheduleDisplay,
-        formatTaskTime,
-        formatTaskTimeVariance,
-        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
-        isProjectTaskGraphGroupId: window.isProjectTaskGraphGroupId,
-        neoActions,
-        neoField,
-        neoHeadHtml,
-        normalizeProjectPlanHorizon,
-        normalizeProjectTaskStatusId,
-        normalizeTaskTime,
-        projectPlanHorizonLabel,
-        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
-        projectTaskDownstreamIds,
-        projectTaskGraphStackedBackdropClass: typeof projectTaskGraphStackedBackdropClass === 'function' ? projectTaskGraphStackedBackdropClass : window.projectTaskGraphStackedBackdropClass,
-        readProjectWeekPlan,
-        resolveActiveSocialProject,
-        resolveDeskTaskReadiness,
-        resolveProjectTaskPriorityDisplay,
-        resolveTaskPackageId,
-        resolveTaskScheduleEstimate,
-        sumProjectActualHours,
-        sumProjectOpenWorkHours,
-        taskDurationHours,
-        taskHasPert,
-        text,
-        when,
-        })
-        : null);
-    const buildProjectHealthPlanPickModel = __wsDialogsApi?.buildProjectHealthPlanPickModel;
-    const buildProjectRiskCountByTaskId = __wsDialogsApi?.buildProjectRiskCountByTaskId;
-    const formatProjectRiskScore = __wsDialogsApi?.formatProjectRiskScore;
-    const projectRiskExposureScore = __wsDialogsApi?.projectRiskExposureScore;
-    const projectRiskExposureTiers = __wsDialogsApi?.projectRiskExposureTiers;
-    const projectRiskIsActiveStatus = __wsDialogsApi?.projectRiskIsActiveStatus;
-    const projectRiskLinkedTaskIdList = __wsDialogsApi?.projectRiskLinkedTaskIdList;
-    const projectRiskLinksTask = __wsDialogsApi?.projectRiskLinksTask;
-    const projectRiskOptionLabel = __wsDialogsApi?.projectRiskOptionLabel;
-    const projectRiskRegisterSummary = __wsDialogsApi?.projectRiskRegisterSummary;
-    const projectRiskScaleOptionLabel = __wsDialogsApi?.projectRiskScaleOptionLabel;
-    const projectRiskScaleRank = __wsDialogsApi?.projectRiskScaleRank;
-    const renderProjectHealthDialog = __wsDialogsApi?.renderProjectHealthDialog;
-    const renderProjectHealthPlanCardHtml = __wsDialogsApi?.renderProjectHealthPlanCardHtml;
-    const renderProjectHealthPlanPickBodyHtml = __wsDialogsApi?.renderProjectHealthPlanPickBodyHtml;
-    const renderProjectHealthPlanPickDialog = __wsDialogsApi?.renderProjectHealthPlanPickDialog;
-    const renderProjectHealthPlanPickRailHtml = __wsDialogsApi?.renderProjectHealthPlanPickRailHtml;
-    const renderProjectHealthPlanPickResultsHtml = __wsDialogsApi?.renderProjectHealthPlanPickResultsHtml;
-    const renderProjectHealthPlanPickToolbarHtml = __wsDialogsApi?.renderProjectHealthPlanPickToolbarHtml;
-    const renderProjectRiskDialog = __wsDialogsApi?.renderProjectRiskDialog;
-    const renderProjectRiskScaleOptions = __wsDialogsApi?.renderProjectRiskScaleOptions;
-    const renderProjectTaskDetailModal = __wsDialogsApi?.renderProjectTaskDetailModal;
-    const sortProjectRisksForRegister = __wsDialogsApi?.sortProjectRisksForRegister;
-
-    /* ── Task form / desk / board UI: social-workspace-task-ui.js ── */
-    const __wsTaskUiApi = (typeof (window.createKiuSocialWorkspaceTaskUiApi || window.__kiuCreateSocialWorkspaceTaskUiApi) === 'function'
-        ? (window.__kiuCreateSocialWorkspaceTaskUiApi || window.createKiuSocialWorkspaceTaskUiApi)({
-        PROJECT_TASK_COLUMNS,
-        accountById,
-        activeDialog,
-        avatar,
-        buildProjectTaskInspectorFields,
-        computeTaskMatrixBucket,
-        computeTaskMatrixScore,
-        controlId,
-        countNum,
-        displayName,
-        escape,
-        formatProjectScheduleHours,
-        formatProjectTaskBudgetEstimate,
-        formatTaskTime,
-        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
-        isProjectTaskGraphGroupId: window.isProjectTaskGraphGroupId,
-        neoActions,
-        neoField,
-        neoHead,
-        neoHeadHtml,
-        neoSection,
-        normalizeTaskScore1to5,
-        normalizeTaskTime,
-        normalizeTaskTimeUnit,
-        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
-        projectTaskDownstreamIds,
-        projectTaskGraphStackedBackdropClass: typeof projectTaskGraphStackedBackdropClass === 'function' ? projectTaskGraphStackedBackdropClass : window.projectTaskGraphStackedBackdropClass,
-        resolveActiveSocialProject,
-        resolveDeskTaskReadiness,
-        resolveTaskScheduleEstimate,
-        socialNeoFieldHtml,
-        state,
-        taskHasPert,
-        text,
-        toDateTimeLocalValue,
-        uniqueStrings,
-        when,
-        })
-        : null);
-    const renderProjectTaskDeleteConfirmDialog = __wsTaskUiApi?.renderProjectTaskDeleteConfirmDialog;
-    const renderProjectTaskCreateDialog = __wsTaskUiApi?.renderProjectTaskCreateDialog;
-    const renderProjectTaskFormFields = __wsTaskUiApi?.renderProjectTaskFormFields;
-    const renderDeskTaskTreeForest = __wsTaskUiApi?.renderDeskTaskTreeForest;
-    const renderProjectTaskDeskCard = __wsTaskUiApi?.renderProjectTaskDeskCard;
-    const renderProjectTaskCard = __wsTaskUiApi?.renderProjectTaskCard;
-    const renderProjectTaskColumnList = __wsTaskUiApi?.renderProjectTaskColumnList;
-    const renderProjectColumnTasksModal = __wsTaskUiApi?.renderProjectColumnTasksModal;
-
-    __kiuSwApi.renderProjectTaskDeleteConfirmDialog = renderProjectTaskDeleteConfirmDialog;
-    __kiuSwApi.renderProjectTaskCreateDialog = renderProjectTaskCreateDialog;
-    __kiuSwApi.renderProjectTaskFormFields = renderProjectTaskFormFields;
-    __kiuSwApi.renderProjectTaskDetailModal = renderProjectTaskDetailModal;
-    __kiuSwApi.renderProjectHealthDialog = renderProjectHealthDialog;
-    __kiuSwApi.renderProjectHealthPlanCardHtml = renderProjectHealthPlanCardHtml;
-    __kiuSwApi.renderProjectHealthPlanPickDialog = renderProjectHealthPlanPickDialog;
-    __kiuSwApi.renderProjectHealthPlanPickBodyHtml = renderProjectHealthPlanPickBodyHtml;
-    __kiuSwApi.buildProjectHealthPlanPickModel = buildProjectHealthPlanPickModel;
-    __kiuSwApi.renderProjectRiskDialog = renderProjectRiskDialog;
-    __kiuSwApi.renderProjectRiskScaleOptions = renderProjectRiskScaleOptions;
-    __kiuSwApi.projectRiskRegisterSummary = projectRiskRegisterSummary;
-    __kiuSwApi.sortProjectRisksForRegister = sortProjectRisksForRegister;
-    __kiuSwApi.projectRiskExposureScore = projectRiskExposureScore;
-    __kiuSwApi.projectRiskOptionLabel = projectRiskOptionLabel;
-    __kiuSwApi.projectRiskScaleRank = projectRiskScaleRank;
-    __kiuSwApi.projectRiskScaleOptionLabel = projectRiskScaleOptionLabel;
-    __kiuSwApi.formatProjectRiskScore = formatProjectRiskScore;
-    __kiuSwApi.projectRiskExposureTiers = projectRiskExposureTiers;
-    __kiuSwApi.projectRiskIsActiveStatus = projectRiskIsActiveStatus;
-    __kiuSwApi.projectRiskLinkedTaskIdList = projectRiskLinkedTaskIdList;
-    __kiuSwApi.projectRiskLinksTask = projectRiskLinksTask;
-    __kiuSwApi.buildProjectRiskCountByTaskId = buildProjectRiskCountByTaskId;
-
-
-    // Classic panel: social-workspace-panel.js (loaded before this module)
-    const __wsPanelApi = (typeof (window.createKiuSocialWorkspacePanelApi || window.__kiuCreateSocialWorkspacePanelApi) === 'function'
-        ? (window.__kiuCreateSocialWorkspacePanelApi || window.createKiuSocialWorkspacePanelApi)({
-        PROJECT_TASK_COLUMNS,
-        accountById,
-        accountSubtitle,
-        avatar,
-        buildDeskTaskForest,
-        clearProjectTabPaneCache,
-        computeProjectSchedule,
-        computeProjectTaskGraphGroupRollup,
-        countNum,
-        currentFacultyCode,
-        currentUserId,
-        displayName,
-        ensureProjectWorkspaceChat,
-        ensureSocialMessagesModule,
-        escape,
-        filterProjectBoardTasks,
-        formatProjectScheduleDate,
-        formatProjectScheduleHours,
-        formatProjectTaskBudgetEstimate,
-        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
-        hasSocialMessagesModule,
-        isAccountOnline,
-        isStaffAccount,
-        normalizeProjectTaskStatusId,
-        orderDeskTasksByDependency,
-        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
-        projectTaskDownstreamIds,
-        queueDeferredModuleRender,
-        readDeskSavedViews,
-        renderDeskTaskTreeForest,
-        renderMessagesThreadShell: typeof __kiuSwApi.renderMessagesThreadShell === 'function' ? window.renderMessagesThreadShell : () => '',
-        renderProjectPlanVsBaselineStrip,
-        renderProjectProgressHoursStrip,
-        renderProjectTaskCard,
-        renderProjectTaskColumnList,
-        renderProjectTaskDeskCard,
-        renderProjectWorkspaceNavButtons,
-        renderSocialPageNow,
-        renderTaskDependencyGraphPreview: window.renderTaskDependencyGraphPreview,
-        renderWorkspaceHero,
-        resolveDeskTaskReadiness,
-        resolveProjectWorkspaceChat,
-        resolveTaskScheduleEstimate,
-        root,
-        setActiveChat,
-        socialNeoEmpty,
-        socialNeoEmptyHero,
-        state,
-        taskActivityMs,
-        text,
-        uniqueStrings,
-        when,
-        })
-        : null);
-    const renderProjectsWorkspacePanelClassic = __wsPanelApi?.renderProjectsWorkspacePanelClassic
-        || (() => socialNeoEmptyHero
-            ? socialNeoEmptyHero('fas fa-diagram-project', 'Projects unavailable', 'Workspace panel module failed to load.')
-            : '');
-
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       PAGES PANEL - Facebook-style page discovery & management
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-    // Export classic hub + desk/card renderers before graph/portfolio append stacks so
-    // source-lock tests can bound classic with window.renderProjectsWorkspacePanelClassic.
-    __kiuSwApi.renderProjectsWorkspacePanelClassic = renderProjectsWorkspacePanelClassic;
-    __kiuSwApi.renderProjectTaskDeskCard = renderProjectTaskDeskCard;
-    __kiuSwApi.renderDeskTaskTreeForest = renderDeskTaskTreeForest;
-    __kiuSwApi.renderProjectTaskCard = renderProjectTaskCard;
-    __kiuSwApi.renderProjectTaskColumnList = renderProjectTaskColumnList;
-    __kiuSwApi.renderProjectColumnTasksModal = renderProjectColumnTasksModal;
-
-    /* ── Workspace-owned dialog routing (project / portfolio / graph stack) ── */
-
-    /* ── Workspace-owned dialog routing: social-workspace-dialog-route.js ── */
-
-
-    /* ── Task graph render stack (preview / fullscreen / SVG / inspectors) ── */
-
-    /* ── Task graph render stack: social-workspace-graph-render.js ── */
-    const __wsGraphRenderApi = (typeof (window.createKiuSocialWorkspaceGraphRenderApi || window.__kiuCreateSocialWorkspaceGraphRenderApi) === 'function'
-        ? (window.__kiuCreateSocialWorkspaceGraphRenderApi || window.createKiuSocialWorkspaceGraphRenderApi)({
-        PROJECT_TASK_COLUMNS,
-        PROJECT_TASK_GRAPH_CARD_COMPACT_H,
-        PROJECT_TASK_GRAPH_CARD_COMPACT_W,
-        PROJECT_TASK_GRAPH_CARD_H,
-        PROJECT_TASK_GRAPH_CARD_W,
-        PROJECT_TASK_GRAPH_CHECKPOINT_MAX,
-        PROJECT_TASK_GRAPH_FO_PAD,
-        PROJECT_TASK_GRAPH_MAX_ZOOM,
-        PROJECT_TASK_GRAPH_MIN_ZOOM,
-        PROJECT_TASK_GROUP_NODE_H: typeof PROJECT_TASK_GROUP_NODE_H !== 'undefined' ? PROJECT_TASK_GROUP_NODE_H : window.PROJECT_TASK_GROUP_NODE_H,
-        PROJECT_TASK_GROUP_NODE_W: typeof PROJECT_TASK_GROUP_NODE_W !== 'undefined' ? PROJECT_TASK_GROUP_NODE_W : window.PROJECT_TASK_GROUP_NODE_W,
-        accountById,
-        applyProjectTaskGraphSavedPositions,
-        avatar,
-        buildProjectTaskGraphLayout,
-        buildProjectTaskInspectorFields,
-        collectProjectTaskGraphGroupBoxes: typeof collectProjectTaskGraphGroupBoxes === 'function' ? collectProjectTaskGraphGroupBoxes : window.collectProjectTaskGraphGroupBoxes,
-        computeProjectSchedule,
-        computeProjectTaskGraphGroupRollup,
-        computeProjectTaskGraphMapSchedule,
-        countNum,
-        displayName,
-        ensureProjectTaskGraphPositionsLoaded: typeof ensureProjectTaskGraphPositionsLoaded === 'function' ? ensureProjectTaskGraphPositionsLoaded : window.ensureProjectTaskGraphPositionsLoaded,
-        escape,
-        filterProjectTaskGraphVisibleTasks,
-        formatProjectScheduleDate,
-        formatProjectScheduleFloat,
-        formatProjectScheduleHours,
-        formatProjectTaskBudgetEstimate,
-        formatProjectTaskGraphCheckpointWhen,
-        formatProjectTaskGraphNodeLabel: window.formatProjectTaskGraphNodeLabel,
-        formatTaskCostVariance,
-        formatTaskScheduleDisplay,
-        formatTaskTime,
-        getProjectTaskGraphGroupLinkSummary,
-        getProjectTaskGraphGroups: window.getProjectTaskGraphGroups,
-        getProjectTaskGraphPositions: typeof getProjectTaskGraphPositions === 'function' ? getProjectTaskGraphPositions : window.getProjectTaskGraphPositions,
-        isProjectTaskGraphGroupId: window.isProjectTaskGraphGroupId,
-        neoActions,
-        neoHead,
-        normalizeProjectTaskGraphStatusId: window.normalizeProjectTaskGraphStatusId,
-        normalizeTaskTime,
-        normalizeTaskTimeUnit,
-        projectGroupBlocksIds: window.projectGroupBlocksIds,
-        projectGroupDependsOnIds: window.projectGroupDependsOnIds,
-        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
-        projectTaskGraphEdgeFanMap,
-        projectTaskGraphEdgePath: window.projectTaskGraphEdgePath,
-        projectTaskGraphMineOnlyActive,
-        projectTaskGraphShowCritical,
-        projectTaskGraphShowFlow,
-        projectTaskGraphShowInferred,
-        projectTaskGraphStatusEdgeColor: window.projectTaskGraphStatusEdgeColor,
-        readProjectTaskGraphCheckpoints: typeof readProjectTaskGraphCheckpoints === 'function' ? readProjectTaskGraphCheckpoints : window.readProjectTaskGraphCheckpoints,
-        readProjectTaskGraphPan,
-        renderProjectWorkspaceNavButtons,
-        resolveActiveSocialProject,
-        resolveProjectTaskGraphContext,
-        resolveProjectTaskGraphGroupBox,
-        resolveProjectTaskGraphScheduleScope,
-        resolveProjectTaskPriorityDisplay,
-        resolveTaskScheduleEstimate,
-        state,
-        taskDurationHours,
-        taskHasPert,
-        text,
-        when,
-        })
-        : null);
-    const buildProjectTaskGraphCanvasMarkup = __wsGraphRenderApi?.buildProjectTaskGraphCanvasMarkup;
-    const renderProjectTaskGraphCanvas = __wsGraphRenderApi?.renderProjectTaskGraphCanvas;
-    const renderProjectTaskGraphCardNode = __wsGraphRenderApi?.renderProjectTaskGraphCardNode;
-    const renderProjectTaskGraphDetailRailContent = __wsGraphRenderApi?.renderProjectTaskGraphDetailRailContent;
-    const renderProjectTaskGraphDetailRailPlaceholder = __wsGraphRenderApi?.renderProjectTaskGraphDetailRailPlaceholder;
-    const renderProjectTaskGraphEdgeGroupsHtml = __wsGraphRenderApi?.renderProjectTaskGraphEdgeGroupsHtml;
-    const renderProjectTaskGraphFullscreen = __wsGraphRenderApi?.renderProjectTaskGraphFullscreen;
-    const renderProjectTaskGraphGroupDependencyEdgesHtml = __wsGraphRenderApi?.renderProjectTaskGraphGroupDependencyEdgesHtml;
-    const renderProjectTaskGraphGroupEdgesHtml = __wsGraphRenderApi?.renderProjectTaskGraphGroupEdgesHtml;
-    const renderProjectTaskGraphGroupInspector = __wsGraphRenderApi?.renderProjectTaskGraphGroupInspector;
-    const renderProjectTaskGraphGroupNode = __wsGraphRenderApi?.renderProjectTaskGraphGroupNode;
-    const renderProjectTaskGraphHealth = __wsGraphRenderApi?.renderProjectTaskGraphHealth;
-    const renderProjectTaskGraphHistoryDialog = __wsGraphRenderApi?.renderProjectTaskGraphHistoryDialog;
-    const renderProjectTaskGraphInspector = __wsGraphRenderApi?.renderProjectTaskGraphInspector;
-    const renderProjectTaskGraphLegend = __wsGraphRenderApi?.renderProjectTaskGraphLegend;
-    const renderProjectTaskGraphQuickCreatePopover = __wsGraphRenderApi?.renderProjectTaskGraphQuickCreatePopover;
-    const renderProjectTaskGraphRailOverview = __wsGraphRenderApi?.renderProjectTaskGraphRailOverview;
-    const renderProjectTaskGraphScheduleHelpDialog = __wsGraphRenderApi?.renderProjectTaskGraphScheduleHelpDialog;
-    const renderProjectTaskGraphScheduleOverview = __wsGraphRenderApi?.renderProjectTaskGraphScheduleOverview;
-    const renderProjectTaskGraphStatusMini = __wsGraphRenderApi?.renderProjectTaskGraphStatusMini;
-    const renderProjectTaskGraphSvg = __wsGraphRenderApi?.renderProjectTaskGraphSvg;
-    const renderProjectTaskGraphTools = __wsGraphRenderApi?.renderProjectTaskGraphTools;
-    const renderTaskDependencyGraphPreview = __wsGraphRenderApi?.renderTaskDependencyGraphPreview;
-
-    __kiuSwApi.renderTaskDependencyGraphPreview = renderTaskDependencyGraphPreview;
-    __kiuSwApi.renderProjectTaskGraphFullscreen = renderProjectTaskGraphFullscreen;
-    __kiuSwApi.renderProjectTaskGraphHistoryDialog = renderProjectTaskGraphHistoryDialog;
-    __kiuSwApi.renderProjectTaskGraphScheduleHelpDialog = renderProjectTaskGraphScheduleHelpDialog;
-    __kiuSwApi.renderProjectTaskGraphEdgeGroupsHtml = renderProjectTaskGraphEdgeGroupsHtml;
-    __kiuSwApi.renderProjectTaskGraphGroupEdgesHtml = renderProjectTaskGraphGroupEdgesHtml;
-    __kiuSwApi.renderProjectTaskGraphGroupDependencyEdgesHtml = renderProjectTaskGraphGroupDependencyEdgesHtml;
-    __kiuSwApi.buildProjectTaskGraphCanvasMarkup = buildProjectTaskGraphCanvasMarkup;
-    __kiuSwApi.renderProjectTaskGraphQuickCreatePopover = renderProjectTaskGraphQuickCreatePopover;
-    __kiuSwApi.renderProjectTaskGraphDetailRailContent = renderProjectTaskGraphDetailRailContent;
-    __kiuSwApi.renderProjectTaskGraphSvg = renderProjectTaskGraphSvg;
-    __kiuSwApi.renderProjectTaskGraphCanvas = renderProjectTaskGraphCanvas;
-    __kiuSwApi.renderProjectTaskGraphHealth = renderProjectTaskGraphHealth;
-    __kiuSwApi.renderProjectTaskGraphInspector = renderProjectTaskGraphInspector;
-    __kiuSwApi.renderProjectTaskGraphTools = renderProjectTaskGraphTools;
-    __kiuSwApi.renderProjectTaskGraphLegend = renderProjectTaskGraphLegend;
-    __kiuSwApi.renderProjectTaskGraphStatusMini = renderProjectTaskGraphStatusMini;
-
-    /* ── Portfolio panel body (discover + mine + profile block + editor shell) ── */
-
-    __kiuSwApi.renderProjectsPanel = renderProjectsPanel;
-    __kiuSwApi.renderMyPortfolioPanel = renderMyPortfolioPanel;
-    __kiuSwApi.renderPortfolioEditorDialog = renderPortfolioEditorDialog;
-    __kiuSwApi.renderPortfolioCustomBuilderOverlay = renderPortfolioCustomBuilderOverlay;
-    __kiuSwApi.renderPortfolioProfileBlock = renderPortfolioProfileBlock;
-
-    __kiuSwApi.renderProjectsWorkspacePanelClassic = renderProjectsWorkspacePanelClassic;
-    __kiuSwApi.renderProjectTaskDeskCard = renderProjectTaskDeskCard;
-    __kiuSwApi.renderDeskTaskTreeForest = renderDeskTaskTreeForest;
-    __kiuSwApi.renderProjectTaskCard = renderProjectTaskCard;
-    __kiuSwApi.renderProjectTaskColumnList = renderProjectTaskColumnList;
-    __kiuSwApi.renderProjectColumnTasksModal = renderProjectColumnTasksModal;
-
     /* ── Task graph runtime: social-workspace-graph-runtime.js ── */
     const __wsGraphRtApi = (typeof (window.createKiuSocialWorkspaceGraphRuntimeApi || window.__kiuCreateSocialWorkspaceGraphRuntimeApi) === 'function'
         ? (window.__kiuCreateSocialWorkspaceGraphRuntimeApi || window.createKiuSocialWorkspaceGraphRuntimeApi)({
@@ -838,7 +480,6 @@
         __swGraphBatch,
         activeDialog,
         applyProjectTaskGraphSavedPositions,
-        buildProjectTaskGraphCanvasMarkup,
         buildProjectTaskGraphLayout,
         clearProjectTabPaneCache,
         clearProjectTabPaneCacheKey,
@@ -860,20 +501,29 @@
         projectTaskGraphShowCritical,
         projectTaskGraphShowFlow,
         projectTaskGraphShowInferred,
+        projectTaskGraphSyncStorageKey,
         projectTaskGraphViewStorageKey,
         projectTaskGraphWouldCycle,
         readProjectTaskGraphPan,
         rebuildActiveProjectTabPaneIfPreviewHost,
+        refreshProjectTasksTabBody,
+        refreshProjectTasksTabPane,
         renderDialogOnlyNow,
-        renderProjectTaskGraphDetailRailContent,
-        renderProjectTaskGraphEdgeGroupsHtml,
-        renderProjectTaskGraphGroupEdgesHtml,
-        renderProjectTaskGraphQuickCreatePopover,
-        renderStackedProjectTaskChild: window.renderStackedProjectTaskChild,
+        renderProjectTaskGraphDetailRailContent: window.renderProjectTaskGraphDetailRailContent,
+        renderProjectTaskGraphEdgeGroupsHtml: window.renderProjectTaskGraphEdgeGroupsHtml,
+        renderProjectTaskGraphGroupEdgesHtml: window.renderProjectTaskGraphGroupEdgesHtml,
+        renderProjectTaskGraphQuickCreatePopover: window.renderProjectTaskGraphQuickCreatePopover,
+        renderStackedProjectTaskChild: (...args) => {
+            const fn = window.__kiuSwApi?.renderStackedProjectTaskChild || window.renderStackedProjectTaskChild;
+            return typeof fn === 'function' ? fn(...args) : '';
+        },
         resolveActiveSocialProject,
         resolveProjectTaskGraphContext,
         resolveProjectTaskGraphGroupBox,
-        shouldRenderProjectHealthStack: window.shouldRenderProjectHealthStack,
+        shouldRenderProjectHealthStack: (...args) => {
+            const fn = window.__kiuSwApi?.shouldRenderProjectHealthStack || window.shouldRenderProjectHealthStack;
+            return typeof fn === 'function' ? fn(...args) : false;
+        },
         state,
         text,
         uniqueStrings,
@@ -972,6 +622,7 @@
     const syncProjectTaskGraphSidebar = __wsGraphRtApi?.syncProjectTaskGraphSidebar;
     const toggleProjectTaskGraphGroupMember = __wsGraphRtApi?.toggleProjectTaskGraphGroupMember;
     const trySyncProjectTaskGraphStackDialog = __wsGraphRtApi?.trySyncProjectTaskGraphStackDialog;
+    const syncProjectTaskGraphStackSlotState = __wsGraphRtApi?.syncProjectTaskGraphStackSlotState;
     const updateProjectTaskGraphGroup = __wsGraphRtApi?.updateProjectTaskGraphGroup;
     const updateProjectTaskGraphLinkPreview = __wsGraphRtApi?.updateProjectTaskGraphLinkPreview;
     const wrapProjectTaskGraphStack = __wsGraphRtApi?.wrapProjectTaskGraphStack;
@@ -983,6 +634,7 @@
     __kiuSwApi.getProjectTaskGraphStackAnchorDialog = getProjectTaskGraphStackAnchorDialog;
     __kiuSwApi.wrapProjectTaskGraphStack = wrapProjectTaskGraphStack;
     __kiuSwApi.trySyncProjectTaskGraphStackDialog = trySyncProjectTaskGraphStackDialog;
+    __kiuSwApi.syncProjectTaskGraphStackSlotState = syncProjectTaskGraphStackSlotState;
     __kiuSwApi.projectTaskGraphStackedBackdropClass = projectTaskGraphStackedBackdropClass;
     __kiuSwApi.resolveProjectTaskGraphNodeFromTarget = resolveProjectTaskGraphNodeFromTarget;
     __kiuSwApi.projectTaskDependsOnIds = projectTaskDependsOnIds;
@@ -1151,6 +803,381 @@
     __kiuSwApi.markProjectTaskGraphPreviewStale = markProjectTaskGraphPreviewStale;
     __kiuSwApi.notifyProjectTaskGraphSurfaceChanged = notifyProjectTaskGraphSurfaceChanged;
 
+    /* ── Task detail / risk / health dialogs: social-workspace-dialogs.js ── */
+    const __wsDialogsApi = (typeof (window.createKiuSocialWorkspaceDialogsApi || window.__kiuCreateSocialWorkspaceDialogsApi) === 'function'
+        ? (window.__kiuCreateSocialWorkspaceDialogsApi || window.createKiuSocialWorkspaceDialogsApi)({
+        PROJECT_RISK_RESPONSE_OPTIONS,
+        PROJECT_RISK_STATUS_OPTIONS,
+        PROJECT_TASK_COLUMNS,
+        PROJECT_TASK_STATUS_EDGE_COLOR,
+        __riskModel,
+        accountById,
+        avatar,
+        computeProjectSchedule,
+        controlId,
+        displayName,
+        escape,
+        formatProjectScheduleDate,
+        formatProjectScheduleHours,
+        formatProjectTaskBudgetEstimate,
+        formatTaskCostVariance,
+        formatTaskScheduleDisplay,
+        formatTaskTime,
+        formatTaskTimeVariance,
+        getProjectTaskGraphGroups,
+        isProjectTaskGraphGroupId,
+        neoActions,
+        neoField,
+        neoHeadHtml,
+        normalizeProjectPlanHorizon,
+        normalizeProjectTaskStatusId,
+        normalizeTaskTime,
+        projectPlanHorizonLabel,
+        projectTaskDependsOnIds,
+        projectTaskDownstreamIds,
+        projectTaskGraphStackedBackdropClass,
+        readProjectWeekPlan,
+        resolveActiveSocialProject,
+        resolveDeskTaskReadiness,
+        resolveProjectTaskPriorityDisplay,
+        resolveTaskPackageId,
+        resolveTaskScheduleEstimate,
+        sumProjectActualHours,
+        sumProjectOpenWorkHours,
+        taskDurationHours,
+        taskHasPert,
+        text,
+        when,
+        })
+        : null);
+    const buildProjectHealthPlanPickModel = __wsDialogsApi?.buildProjectHealthPlanPickModel;
+    const buildProjectRiskCountByTaskId = __wsDialogsApi?.buildProjectRiskCountByTaskId;
+    const formatProjectRiskScore = __wsDialogsApi?.formatProjectRiskScore;
+    const projectRiskExposureScore = __wsDialogsApi?.projectRiskExposureScore;
+    const projectRiskExposureTiers = __wsDialogsApi?.projectRiskExposureTiers;
+    const projectRiskIsActiveStatus = __wsDialogsApi?.projectRiskIsActiveStatus;
+    const projectRiskLinkedTaskIdList = __wsDialogsApi?.projectRiskLinkedTaskIdList;
+    const projectRiskLinksTask = __wsDialogsApi?.projectRiskLinksTask;
+    const projectRiskOptionLabel = __wsDialogsApi?.projectRiskOptionLabel;
+    const projectRiskRegisterSummary = __wsDialogsApi?.projectRiskRegisterSummary;
+    const projectRiskScaleOptionLabel = __wsDialogsApi?.projectRiskScaleOptionLabel;
+    const projectRiskScaleRank = __wsDialogsApi?.projectRiskScaleRank;
+    const renderProjectHealthDialog = __wsDialogsApi?.renderProjectHealthDialog;
+    const renderProjectHealthPlanCardHtml = __wsDialogsApi?.renderProjectHealthPlanCardHtml;
+    const renderProjectHealthPlanPickBodyHtml = __wsDialogsApi?.renderProjectHealthPlanPickBodyHtml;
+    const renderProjectHealthPlanPickDialog = __wsDialogsApi?.renderProjectHealthPlanPickDialog;
+    const renderProjectHealthPlanPickRailHtml = __wsDialogsApi?.renderProjectHealthPlanPickRailHtml;
+    const renderProjectHealthPlanPickResultsHtml = __wsDialogsApi?.renderProjectHealthPlanPickResultsHtml;
+    const renderProjectHealthPlanPickToolbarHtml = __wsDialogsApi?.renderProjectHealthPlanPickToolbarHtml;
+    const renderProjectRiskDialog = __wsDialogsApi?.renderProjectRiskDialog;
+    const renderProjectRiskScaleOptions = __wsDialogsApi?.renderProjectRiskScaleOptions;
+    const renderProjectTaskDetailModal = __wsDialogsApi?.renderProjectTaskDetailModal;
+    const sortProjectRisksForRegister = __wsDialogsApi?.sortProjectRisksForRegister;
+
+    /* ── Task form / desk / board UI: social-workspace-task-ui.js ── */
+    const __wsTaskUiApi = (typeof (window.createKiuSocialWorkspaceTaskUiApi || window.__kiuCreateSocialWorkspaceTaskUiApi) === 'function'
+        ? (window.__kiuCreateSocialWorkspaceTaskUiApi || window.createKiuSocialWorkspaceTaskUiApi)({
+        PROJECT_TASK_COLUMNS,
+        accountById,
+        activeDialog,
+        avatar,
+        buildProjectTaskInspectorFields,
+        computeTaskMatrixBucket,
+        computeTaskMatrixScore,
+        controlId,
+        countNum,
+        displayName,
+        escape,
+        formatProjectScheduleHours,
+        formatProjectTaskBudgetEstimate,
+        formatTaskTime,
+        getProjectTaskGraphGroups,
+        isProjectTaskGraphGroupId,
+        neoActions,
+        neoField,
+        neoHead,
+        neoHeadHtml,
+        neoSection,
+        normalizeTaskScore1to5,
+        normalizeTaskTime,
+        normalizeTaskTimeUnit,
+        projectTaskDependsOnIds,
+        projectTaskDownstreamIds,
+        projectTaskGraphStackedBackdropClass,
+        resolveActiveSocialProject,
+        resolveDeskTaskReadiness,
+        resolveTaskScheduleEstimate,
+        socialNeoFieldHtml,
+        state,
+        taskHasPert,
+        text,
+        toDateTimeLocalValue,
+        uniqueStrings,
+        when,
+        })
+        : null);
+    const renderProjectTaskDeleteConfirmDialog = __wsTaskUiApi?.renderProjectTaskDeleteConfirmDialog;
+    const renderProjectTaskCreateDialog = __wsTaskUiApi?.renderProjectTaskCreateDialog;
+    const renderProjectTaskFormFields = __wsTaskUiApi?.renderProjectTaskFormFields;
+    const renderDeskTaskTreeForest = __wsTaskUiApi?.renderDeskTaskTreeForest;
+    const renderProjectTaskDeskCard = __wsTaskUiApi?.renderProjectTaskDeskCard;
+    const renderProjectTaskCard = __wsTaskUiApi?.renderProjectTaskCard;
+    const renderProjectTaskColumnList = __wsTaskUiApi?.renderProjectTaskColumnList;
+    const renderProjectColumnTasksModal = __wsTaskUiApi?.renderProjectColumnTasksModal;
+
+    __kiuSwApi.renderProjectTaskDeleteConfirmDialog = renderProjectTaskDeleteConfirmDialog;
+    __kiuSwApi.renderProjectTaskCreateDialog = renderProjectTaskCreateDialog;
+    __kiuSwApi.renderProjectTaskFormFields = renderProjectTaskFormFields;
+    __kiuSwApi.renderProjectTaskDetailModal = renderProjectTaskDetailModal;
+    __kiuSwApi.renderProjectHealthDialog = renderProjectHealthDialog;
+    __kiuSwApi.renderProjectHealthPlanCardHtml = renderProjectHealthPlanCardHtml;
+    __kiuSwApi.renderProjectHealthPlanPickDialog = renderProjectHealthPlanPickDialog;
+    __kiuSwApi.renderProjectHealthPlanPickBodyHtml = renderProjectHealthPlanPickBodyHtml;
+    __kiuSwApi.buildProjectHealthPlanPickModel = buildProjectHealthPlanPickModel;
+    __kiuSwApi.renderProjectRiskDialog = renderProjectRiskDialog;
+    __kiuSwApi.renderProjectRiskScaleOptions = renderProjectRiskScaleOptions;
+    __kiuSwApi.projectRiskRegisterSummary = projectRiskRegisterSummary;
+    __kiuSwApi.sortProjectRisksForRegister = sortProjectRisksForRegister;
+    __kiuSwApi.projectRiskExposureScore = projectRiskExposureScore;
+    __kiuSwApi.projectRiskOptionLabel = projectRiskOptionLabel;
+    __kiuSwApi.projectRiskScaleRank = projectRiskScaleRank;
+    __kiuSwApi.projectRiskScaleOptionLabel = projectRiskScaleOptionLabel;
+    __kiuSwApi.formatProjectRiskScore = formatProjectRiskScore;
+    __kiuSwApi.projectRiskExposureTiers = projectRiskExposureTiers;
+    __kiuSwApi.projectRiskIsActiveStatus = projectRiskIsActiveStatus;
+    __kiuSwApi.projectRiskLinkedTaskIdList = projectRiskLinkedTaskIdList;
+    __kiuSwApi.projectRiskLinksTask = projectRiskLinksTask;
+    __kiuSwApi.buildProjectRiskCountByTaskId = buildProjectRiskCountByTaskId;
+
+
+    // Classic panel: social-workspace-panel.js (loaded before this module)
+    const __wsPanelApi = (typeof (window.createKiuSocialWorkspacePanelApi || window.__kiuCreateSocialWorkspacePanelApi) === 'function'
+        ? (window.__kiuCreateSocialWorkspacePanelApi || window.createKiuSocialWorkspacePanelApi)({
+        PROJECT_TASK_COLUMNS,
+        accountById,
+        accountSubtitle,
+        avatar,
+        buildDeskTaskForest,
+        clearProjectTabPaneCache,
+        computeProjectSchedule,
+        computeProjectTaskGraphGroupRollup,
+        countNum,
+        currentFacultyCode,
+        currentUserId,
+        displayName,
+        ensureProjectWorkspaceChat,
+        ensureSocialMessagesModule,
+        escape,
+        filterProjectBoardTasks,
+        formatProjectScheduleDate,
+        formatProjectScheduleHours,
+        formatProjectTaskBudgetEstimate,
+        getProjectTaskGraphGroups,
+        hasSocialMessagesModule,
+        isAccountOnline,
+        isStaffAccount,
+        normalizeProjectTaskStatusId,
+        orderDeskTasksByDependency,
+        projectTaskDependsOnIds: window.projectTaskDependsOnIds,
+        projectTaskDownstreamIds,
+        queueDeferredModuleRender,
+        readDeskSavedViews,
+        renderDeskTaskTreeForest,
+        renderMessagesThreadShell: typeof __kiuSwApi.renderMessagesThreadShell === 'function' ? window.renderMessagesThreadShell : () => '',
+        renderProjectPlanVsBaselineStrip,
+        renderProjectProgressHoursStrip,
+        renderProjectTaskCard,
+        renderProjectTaskColumnList,
+        renderProjectTaskDeskCard,
+        renderProjectWorkspaceNavButtons,
+        renderSocialPageNow,
+        renderTaskDependencyGraphPreview: (...args) => {
+            const fn = window.renderTaskDependencyGraphPreview
+                || (window.KiuSocialWorkspace || {}).renderTaskDependencyGraphPreview;
+            return typeof fn === 'function' ? fn(...args) : '';
+        },
+        renderWorkspaceHero,
+        resolveDeskTaskReadiness,
+        resolveProjectWorkspaceChat,
+        resolveTaskScheduleEstimate,
+        root,
+        setActiveChat,
+        socialNeoEmpty,
+        socialNeoEmptyHero,
+        state,
+        taskActivityMs,
+        text,
+        uniqueStrings,
+        when,
+        })
+        : null);
+    const renderProjectsWorkspacePanelClassic = __wsPanelApi?.renderProjectsWorkspacePanelClassic
+        || (() => socialNeoEmptyHero
+            ? socialNeoEmptyHero('fas fa-diagram-project', 'Projects unavailable', 'Workspace panel module failed to load.')
+            : '');
+
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       PAGES PANEL - Facebook-style page discovery & management
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+    // Export classic hub + desk/card renderers before graph/portfolio append stacks so
+    // source-lock tests can bound classic with window.renderProjectsWorkspacePanelClassic.
+    __kiuSwApi.renderProjectsWorkspacePanelClassic = renderProjectsWorkspacePanelClassic;
+    __kiuSwApi.renderProjectTaskDeskCard = renderProjectTaskDeskCard;
+    __kiuSwApi.renderDeskTaskTreeForest = renderDeskTaskTreeForest;
+    __kiuSwApi.renderProjectTaskCard = renderProjectTaskCard;
+    __kiuSwApi.renderProjectTaskColumnList = renderProjectTaskColumnList;
+    __kiuSwApi.renderProjectColumnTasksModal = renderProjectColumnTasksModal;
+
+    /* ── Workspace-owned dialog routing (project / portfolio / graph stack) ── */
+
+    /* ── Workspace-owned dialog routing: social-workspace-dialog-route.js ── */
+
+
+    /* ── Task graph render stack (preview / fullscreen / SVG / inspectors) ── */
+
+    /* ── Task graph render stack: social-workspace-graph-render.js ── */
+    const __wsGraphRenderApi = (typeof (window.createKiuSocialWorkspaceGraphRenderApi || window.__kiuCreateSocialWorkspaceGraphRenderApi) === 'function'
+        ? (window.__kiuCreateSocialWorkspaceGraphRenderApi || window.createKiuSocialWorkspaceGraphRenderApi)({
+        PROJECT_TASK_COLUMNS,
+        PROJECT_TASK_GRAPH_CARD_COMPACT_H,
+        PROJECT_TASK_GRAPH_CARD_COMPACT_W,
+        PROJECT_TASK_GRAPH_CARD_H,
+        PROJECT_TASK_GRAPH_CARD_W,
+        PROJECT_TASK_GRAPH_CHECKPOINT_MAX,
+        PROJECT_TASK_GRAPH_FO_PAD,
+        PROJECT_TASK_GRAPH_MAX_ZOOM,
+        PROJECT_TASK_GRAPH_MIN_ZOOM,
+        PROJECT_TASK_GROUP_NODE_H: __swGraphBatch.PROJECT_TASK_GROUP_NODE_H || 228,
+        PROJECT_TASK_GROUP_NODE_W: __swGraphBatch.PROJECT_TASK_GROUP_NODE_W || 264,
+        PROJECT_SCHEDULE_FLOAT_TITLE,
+        accountById,
+        applyProjectTaskGraphSavedPositions,
+        avatar,
+        buildProjectTaskGraphLayout,
+        buildProjectTaskGraphModel,
+        buildProjectTaskInspectorFields,
+        clampProjectTaskGraphZoom,
+        collectProjectTaskGraphGroupBoxes,
+        computeProjectSchedule,
+        computeProjectTaskGraphFitZoom,
+        computeProjectTaskGraphGroupRollup,
+        computeProjectTaskGraphMapSchedule,
+        computeProjectTaskGraphStageSize,
+        countNum,
+        displayName,
+        ensureProjectTaskGraphPositionsLoaded,
+        escape,
+        filterProjectTaskGraphVisibleTasks,
+        formatProjectScheduleDate,
+        formatProjectScheduleFloat,
+        formatProjectScheduleHours,
+        formatProjectTaskBudgetEstimate,
+        formatProjectTaskGraphCheckpointWhen,
+        formatProjectTaskGraphNodeLabel,
+        formatTaskCostVariance,
+        formatTaskScheduleDisplay,
+        formatTaskTime,
+        getProjectTaskGraphGroupLinkSummary,
+        getProjectTaskGraphGroups,
+        getProjectTaskGraphPositions,
+        isProjectTaskGraphGroupId,
+        neoActions,
+        neoHead,
+        normalizeProjectTaskGraphMode,
+        normalizeProjectTaskGraphStatusId,
+        normalizeTaskTime,
+        normalizeTaskTimeUnit,
+        projectGroupBlocksIds,
+        projectGroupDependsOnIds,
+        projectTaskDependsOnIds,
+        projectTaskGraphEdgeFanMap,
+        projectTaskGraphEdgePath,
+        projectTaskGraphLayoutUsesSavedPositions,
+        projectTaskGraphMineOnlyActive,
+        projectTaskGraphObstacleList,
+        projectTaskGraphShowCritical,
+        projectTaskGraphShowFlow,
+        projectTaskGraphShowInferred,
+        projectTaskGraphStatusEdgeColor,
+        projectTaskGraphContentViewBox,
+        readProjectTaskGraphCheckpoints,
+        readProjectTaskGraphPan,
+        renderProjectWorkspaceNavButtons,
+        resolveActiveSocialProject,
+        resolveProjectTaskGraphContext,
+        resolveProjectTaskGraphGroupBox,
+        resolveProjectTaskGraphPanSlack,
+        resolveProjectTaskGraphScheduleScope,
+        resolveProjectTaskPriorityDisplay,
+        resolveTaskScheduleEstimate,
+        state,
+        taskDurationHours,
+        taskHasPert,
+        text,
+        when,
+        })
+        : null);
+    const buildProjectTaskGraphCanvasMarkup = __wsGraphRenderApi?.buildProjectTaskGraphCanvasMarkup;
+    const renderProjectTaskGraphCanvas = __wsGraphRenderApi?.renderProjectTaskGraphCanvas;
+    const renderProjectTaskGraphCardNode = __wsGraphRenderApi?.renderProjectTaskGraphCardNode;
+    const renderProjectTaskGraphDetailRailContent = __wsGraphRenderApi?.renderProjectTaskGraphDetailRailContent;
+    const renderProjectTaskGraphDetailRailPlaceholder = __wsGraphRenderApi?.renderProjectTaskGraphDetailRailPlaceholder;
+    const renderProjectTaskGraphEdgeGroupsHtml = __wsGraphRenderApi?.renderProjectTaskGraphEdgeGroupsHtml;
+    const renderProjectTaskGraphFullscreen = __wsGraphRenderApi?.renderProjectTaskGraphFullscreen;
+    const renderProjectTaskGraphGroupDependencyEdgesHtml = __wsGraphRenderApi?.renderProjectTaskGraphGroupDependencyEdgesHtml;
+    const renderProjectTaskGraphGroupEdgesHtml = __wsGraphRenderApi?.renderProjectTaskGraphGroupEdgesHtml;
+    const renderProjectTaskGraphGroupInspector = __wsGraphRenderApi?.renderProjectTaskGraphGroupInspector;
+    const renderProjectTaskGraphGroupNode = __wsGraphRenderApi?.renderProjectTaskGraphGroupNode;
+    const renderProjectTaskGraphHealth = __wsGraphRenderApi?.renderProjectTaskGraphHealth;
+    const renderProjectTaskGraphHistoryDialog = __wsGraphRenderApi?.renderProjectTaskGraphHistoryDialog;
+    const renderProjectTaskGraphInspector = __wsGraphRenderApi?.renderProjectTaskGraphInspector;
+    const renderProjectTaskGraphLegend = __wsGraphRenderApi?.renderProjectTaskGraphLegend;
+    const renderProjectTaskGraphQuickCreatePopover = __wsGraphRenderApi?.renderProjectTaskGraphQuickCreatePopover;
+    const renderProjectTaskGraphRailOverview = __wsGraphRenderApi?.renderProjectTaskGraphRailOverview;
+    const renderProjectTaskGraphScheduleHelpDialog = __wsGraphRenderApi?.renderProjectTaskGraphScheduleHelpDialog;
+    const renderProjectTaskGraphScheduleOverview = __wsGraphRenderApi?.renderProjectTaskGraphScheduleOverview;
+    const renderProjectTaskGraphStatusMini = __wsGraphRenderApi?.renderProjectTaskGraphStatusMini;
+    const renderProjectTaskGraphSvg = __wsGraphRenderApi?.renderProjectTaskGraphSvg;
+    const renderProjectTaskGraphTools = __wsGraphRenderApi?.renderProjectTaskGraphTools;
+    const renderTaskDependencyGraphPreview = __wsGraphRenderApi?.renderTaskDependencyGraphPreview;
+
+    __kiuSwApi.renderTaskDependencyGraphPreview = renderTaskDependencyGraphPreview;
+    if (typeof renderTaskDependencyGraphPreview === 'function') {
+        window.renderTaskDependencyGraphPreview = renderTaskDependencyGraphPreview;
+    }
+    __kiuSwApi.renderProjectTaskGraphFullscreen = renderProjectTaskGraphFullscreen;
+    __kiuSwApi.renderProjectTaskGraphHistoryDialog = renderProjectTaskGraphHistoryDialog;
+    __kiuSwApi.renderProjectTaskGraphScheduleHelpDialog = renderProjectTaskGraphScheduleHelpDialog;
+    __kiuSwApi.renderProjectTaskGraphEdgeGroupsHtml = renderProjectTaskGraphEdgeGroupsHtml;
+    __kiuSwApi.renderProjectTaskGraphGroupEdgesHtml = renderProjectTaskGraphGroupEdgesHtml;
+    __kiuSwApi.renderProjectTaskGraphGroupDependencyEdgesHtml = renderProjectTaskGraphGroupDependencyEdgesHtml;
+    __kiuSwApi.buildProjectTaskGraphCanvasMarkup = buildProjectTaskGraphCanvasMarkup;
+    __kiuSwApi.renderProjectTaskGraphQuickCreatePopover = renderProjectTaskGraphQuickCreatePopover;
+    __kiuSwApi.renderProjectTaskGraphDetailRailContent = renderProjectTaskGraphDetailRailContent;
+    __kiuSwApi.renderProjectTaskGraphSvg = renderProjectTaskGraphSvg;
+    __kiuSwApi.renderProjectTaskGraphCanvas = renderProjectTaskGraphCanvas;
+    __kiuSwApi.renderProjectTaskGraphHealth = renderProjectTaskGraphHealth;
+    __kiuSwApi.renderProjectTaskGraphInspector = renderProjectTaskGraphInspector;
+    __kiuSwApi.renderProjectTaskGraphTools = renderProjectTaskGraphTools;
+    __kiuSwApi.renderProjectTaskGraphLegend = renderProjectTaskGraphLegend;
+    __kiuSwApi.renderProjectTaskGraphStatusMini = renderProjectTaskGraphStatusMini;
+
+    /* ── Portfolio panel body (discover + mine + profile block + editor shell) ── */
+
+    __kiuSwApi.renderProjectsPanel = renderProjectsPanel;
+    __kiuSwApi.renderMyPortfolioPanel = renderMyPortfolioPanel;
+    __kiuSwApi.renderPortfolioEditorDialog = renderPortfolioEditorDialog;
+    __kiuSwApi.renderPortfolioCustomBuilderOverlay = renderPortfolioCustomBuilderOverlay;
+    __kiuSwApi.renderPortfolioProfileBlock = renderPortfolioProfileBlock;
+
+    __kiuSwApi.renderProjectsWorkspacePanelClassic = renderProjectsWorkspacePanelClassic;
+    __kiuSwApi.renderProjectTaskDeskCard = renderProjectTaskDeskCard;
+    __kiuSwApi.renderDeskTaskTreeForest = renderDeskTaskTreeForest;
+    __kiuSwApi.renderProjectTaskCard = renderProjectTaskCard;
+    __kiuSwApi.renderProjectTaskColumnList = renderProjectTaskColumnList;
+    __kiuSwApi.renderProjectColumnTasksModal = renderProjectColumnTasksModal;
+
     /* schedule/desk helper exports for page stubs */
     __kiuSwApi.readProjectWeekPlansStore = readProjectWeekPlansStore;
     __kiuSwApi.readProjectWeekPlan = readProjectWeekPlan;
@@ -1229,6 +1256,7 @@
         renderProjectTaskGraphHistoryDialog,
         renderProjectTaskGraphScheduleHelpDialog,
         resolveActiveSocialProject,
+        getProjectTaskGraphStackAnchorDialog,
         shouldRenderProjectTaskGraphStack,
         state,
         text,
@@ -1303,9 +1331,11 @@
         getProjectTaskGraphCheckpointById,
         getProjectTaskGraphHost,
         getProjectTaskGraphPositions,
+        getProjectTaskGraphStackAnchorDialog,
         hydrateMyPortfolioDocument,
         invalidateSocialRenderCache,
         isProjectTaskGraphGroupId,
+        isProjectTaskGraphStackActive,
         isSocialWorkspaceChangeTarget,
         isSocialWorkspaceClickAction,
         isSocialWorkspaceInputTarget,
@@ -1372,6 +1402,7 @@
         setPortalSocialProjectBaseline: typeof setPortalSocialProjectBaseline === 'function' ? setPortalSocialProjectBaseline : window.setPortalSocialProjectBaseline,
         setPortalSocialProjectMembership: typeof setPortalSocialProjectMembership === 'function' ? setPortalSocialProjectMembership : window.setPortalSocialProjectMembership,
         setProjectTaskGraphPositions,
+        shouldRenderProjectTaskGraphStack,
         state,
         syncPortfolioEditorInput,
         syncProjectTaskGraphEdgesOnly,
@@ -1405,9 +1436,19 @@
     __kiuSwApi.handleSocialWorkspaceChange = handleSocialWorkspaceChange;
     __kiuSwApi.isSocialWorkspaceChangeTarget = isSocialWorkspaceChangeTarget;
 
+    window.handleSocialWorkspaceClick = handleSocialWorkspaceClick;
+    window.handleSocialWorkspaceSubmit = handleSocialWorkspaceSubmit;
+    window.handleSocialWorkspaceInput = handleSocialWorkspaceInput;
+    window.handleSocialWorkspaceChange = handleSocialWorkspaceChange;
+    window.isSocialWorkspaceClickAction = isSocialWorkspaceClickAction;
+    window.isSocialWorkspaceSubmitForm = isSocialWorkspaceSubmitForm;
+    window.isSocialWorkspaceInputTarget = isSocialWorkspaceInputTarget;
+    window.isSocialWorkspaceChangeTarget = isSocialWorkspaceChangeTarget;
+
     window.__kiuCreateSocialWorkspaceApi = function createKiuSocialWorkspaceApi(deps) {
         void deps;
         return window.KiuSocialWorkspace || __kiuSwApi;
     };
 
+    window.__KIU_SOCIAL_WORKSPACE_MODULE_LOADED = true;
 })();

@@ -33,7 +33,7 @@ describe('admin library route regressions.test', () => {
     it('loads shared panel SSOT stack with library layout CSS', () => {
         const html = readSource('admin-library.html');
         expect(html).toContain('frostedpopup1');
-        expect(html).toContain('libcss2');
+        expect(html).toContain('libcss5');
         expect(html).not.toContain('admin-library-route.css');
         expect(html).toContain('lux-soft-chrome');
         expect(html).toContain('admin-library-shell');

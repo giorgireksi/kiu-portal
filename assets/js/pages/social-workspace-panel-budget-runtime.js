@@ -11,14 +11,16 @@
             ensureSocialMessagesModule, hasSocialMessagesModule,
             ensureProjectWorkspaceChat, resolveProjectWorkspaceChat,
             renderMessagesThreadShell, setActiveChat, queueDeferredModuleRender,
-            renderSocialPageNow, currentUserId
+            renderSocialPageNow, currentUserId,
+            activeProject, countNum, renderProgressRing, renderMetricCard, when
         } = deps;
-            const formatBudgetMoney = (amount, currency = '') => {
-                const value = Number(amount || 0);
-                const rounded = Math.round(value * 100) / 100;
-                const suffix = currency ? ` ${currency}` : '';
-                return `${rounded.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}`;
-            };
+        const formatBudgetMoney = (amount, currency = '') => {
+            const value = Number(amount || 0);
+            const rounded = Math.round(value * 100) / 100;
+            const suffix = currency ? ` ${currency}` : '';
+            return `${rounded.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}`;
+        };
+        const renderBudgetTab = () => {
             const budgetCurrency = text(activeProject?.budgetCurrency || '') || 'USD';
             const budgetSpent = countNum(activeProject?.budgetSpentTotal);
             const budgetPlanned = countNum(activeProject?.budgetPlannedTotal);
@@ -31,7 +33,7 @@
             const budgetCategories = Array.isArray(activeProject?.budgetCategories) ? activeProject.budgetCategories : [];
             const budgetExpenses = Array.isArray(activeProject?.budgetExpenses) ? activeProject.budgetExpenses : [];
             const budgetByCategory = Array.isArray(activeProject?.budgetByCategory) ? activeProject.budgetByCategory : [];
-            const renderBudgetTab = () => `
+            return `
                 <section class="social-neo-stack">
                     <div class="social-project-dashboard-grid">
                         ${renderProgressRing(budgetUtilization, 'Budget used', `${formatBudgetMoney(budgetSpent, budgetCurrency)} of ${formatBudgetMoney(budgetBase, budgetCurrency)}`, '#f97316')}
@@ -164,6 +166,7 @@
                     </section>
                 </section>
             `;
+        };
 
         return { formatBudgetMoney, renderBudgetTab };
     };

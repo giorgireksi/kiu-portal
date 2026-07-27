@@ -14,7 +14,7 @@ const CSS_DIR = path.resolve(__dirname, '../assets/css');
 // After HEAD structure restore + fade→panel aliases only (no exact-dup merges).
 // Ratcheted down after 2026-07 hard-clean (LMS+timetable skins archived out of live path).
 // Ratcheted down after 2026-07 mobile/layout/base legacy chrome diet.
-const BASELINE = { boxShadow: 135, backdropFilter: 83 };
+const BASELINE = { boxShadow: 129, backdropFilter: 26 };
 
 function listLiveCssFiles(dir) {
   const out = [];
@@ -42,8 +42,8 @@ function countRaw(prop, tokenRe) {
 }
 
 // Accept panel/elev SSOT and route/home fade aliases that chain to them.
-const boxShadow = countRaw('box-shadow', /var\(--(?:lux-(?:panel|elev|shell|droplist)|[a-z0-9]+-fade-|home-fade)/);
-const backdropFilter = countRaw('backdrop-filter', /var\(--(?:lux-(?:panel|surface|shell|warmglass|droplist)|[a-z0-9]+-fade-|home-fade)/);
+const boxShadow = countRaw('box-shadow', /var\(--(?:lux-(?:panel|elev|shell|droplist|popup|frosted|modal|warmglass)|[a-z0-9]+-fade-|home-fade)/);
+const backdropFilter = countRaw('backdrop-filter', /var\(--(?:lux-(?:panel|surface|shell|warmglass|droplist|popup|frosted|modal)|[a-z0-9]+-fade-|home-fade)/);
 
 let failed = false;
 for (const [k, cur] of [['boxShadow', boxShadow], ['backdropFilter', backdropFilter]]) {

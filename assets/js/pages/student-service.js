@@ -212,6 +212,10 @@ const {
 
 function ssForwardToLoadedModule(hasModule, ensureModule, name, localFn, args, fallback) {
     if (typeof hasModule === 'function' && hasModule()) {
+        const impl = typeof resolveStudentServiceExportImpl === 'function'
+            ? resolveStudentServiceExportImpl(name)
+            : undefined;
+        if (typeof impl === 'function' && impl !== localFn) return impl.apply(null, args);
         const w = window[name];
         if (typeof w === 'function' && w !== localFn) return w.apply(null, args);
     }
@@ -246,7 +250,6 @@ function ssForwardToLoadedModule(hasModule, ensureModule, name, localFn, args, f
     if (typeof closeStudentServiceTicketThreadModal === 'function') (window.KiuStudentService||(window.KiuStudentService={})).closeStudentServiceTicketThreadModal = closeStudentServiceTicketThreadModal;
     if (typeof closeStudentServiceInlineReply === 'function') (window.KiuStudentService||(window.KiuStudentService={})).closeStudentServiceInlineReply = closeStudentServiceInlineReply;
     if (typeof updateStudentServiceQuestionThreadActiveCards === 'function') (window.KiuStudentService||(window.KiuStudentService={})).updateStudentServiceQuestionThreadActiveCards = updateStudentServiceQuestionThreadActiveCards;
-    if (typeof renderStudentServicePage === 'function') (window.KiuStudentService||(window.KiuStudentService={})).renderStudentServicePage = window.renderStudentServicePage = renderStudentServicePage;
     (window.KiuStudentService||(window.KiuStudentService={})).STUDENT_SERVICE_LANES = STUDENT_SERVICE_LANES;
     (window.KiuStudentService||(window.KiuStudentService={})).STUDENT_SERVICE_UI_PREFS_KEY = STUDENT_SERVICE_UI_PREFS_KEY;
     (window.KiuStudentService||(window.KiuStudentService={})).STUDENT_SERVICE_CATEGORIES = STUDENT_SERVICE_CATEGORIES;
@@ -635,7 +638,30 @@ function getStudentServiceSubjectOptions() {
 }
 
 function getStudentServiceDraftTicket() {
-    return ssForwardToLoadedModule(hasStudentServiceTicketsModule, ensureStudentServiceTicketsModule, 'getStudentServiceDraftTicket', getStudentServiceDraftTicket, arguments, null);
+    const resolved = ssForwardToLoadedModule(
+        hasStudentServiceTicketsModule,
+        ensureStudentServiceTicketsModule,
+        'getStudentServiceDraftTicket',
+        getStudentServiceDraftTicket,
+        arguments,
+        null
+    );
+    if (resolved && typeof resolved === 'object') return resolved;
+    const ui = ensureStudentServiceUiState();
+    if (ui.draftTicket && typeof ui.draftTicket === 'object') return ui.draftTicket;
+    const fallback = typeof buildStudentServiceDefaultDraftTicket === 'function'
+        ? buildStudentServiceDefaultDraftTicket()
+        : null;
+    return fallback && typeof fallback === 'object'
+        ? fallback
+        : {
+            serviceArea: 'general',
+            category: 'General Question',
+            title: '',
+            message: '',
+            subjectValue: '',
+            relatedContextLabel: ''
+        };
 }
 
 function syncStudentServiceDraftTicketFromDom() {
@@ -916,7 +942,7 @@ function getStudentServiceFilteredStaffTickets(tickets, currentUser, options = {
 }
 
 function buildStudentServiceStudentInboxFilterLayout() {
-    return ssForwardToLoadedModule(hasStudentServiceFiltersModule, ensureStudentServiceFiltersModule, 'buildStudentServiceStudentInboxFilterLayout', buildStudentServiceStudentInboxFilterLayout, arguments, null);
+    return ssForwardToLoadedModule(hasStudentServiceFiltersModule, ensureStudentServiceFiltersModule, 'buildStudentServiceStudentInboxFilterLayout', buildStudentServiceStudentInboxFilterLayout, arguments, { version: 1, filters: [] });
 }
 
 function renderStudentServiceStudentInboxFiltersMarkup(ui, visibleTickets, currentUser) {
@@ -926,7 +952,7 @@ function renderStudentServiceStudentInboxFiltersMarkup(ui, visibleTickets, curre
 function getStudentServiceFilteredStudentTickets(tickets, currentUser, options = {}) {
     const ui = ensureStudentServiceUiState();
     const layout = options.layout || buildStudentServiceStudentInboxFilterLayout();
-    const filters = (layout.filters || []).filter(filter => filter.enabled);
+    const filters = (layout?.filters || []).filter(filter => filter?.enabled);
     return (Array.isArray(tickets) ? tickets : [])
         .filter(ticket => filters.every(filter => ticketMatchesStudentServiceInboxFilter(ticket, filter, ui, currentUser)))
         .sort((a, b) => ssParseTime(b.updatedAt || b.createdAt) - ssParseTime(a.updatedAt || a.createdAt));
@@ -1373,7 +1399,10 @@ const setStudentServiceAnswerFeedback = window.setStudentServiceAnswerFeedback;
     if (typeof getStudentServiceCurrentUser === 'function') (window.KiuStudentService||(window.KiuStudentService={})).getStudentServiceCurrentUser = getStudentServiceCurrentUser;
     if (typeof getStudentServiceFilteredQuestions === 'function') (window.KiuStudentService||(window.KiuStudentService={})).getStudentServiceFilteredQuestions = getStudentServiceFilteredQuestions;
     if (typeof getStudentServiceLane === 'function') (window.KiuStudentService||(window.KiuStudentService={})).getStudentServiceLane = getStudentServiceLane;
-    if (typeof getStudentServicePublishedInboxFilterLayout === 'function') (window.KiuStudentService||(window.KiuStudentService={})).getStudentServicePublishedInboxFilterLayout = getStudentServicePublishedInboxFilterLayout;
+    if (typeof getStudentServicePublishedInboxFilterLayout === 'function') {
+        (window.KiuStudentService||(window.KiuStudentService={})).getStudentServicePublishedInboxFilterLayout = getStudentServicePublishedInboxFilterLayout;
+        window.getStudentServicePublishedInboxFilterLayout = getStudentServicePublishedInboxFilterLayout;
+    }
     if (typeof getStudentServiceSupportArea === 'function') (window.KiuStudentService||(window.KiuStudentService={})).getStudentServiceSupportArea = getStudentServiceSupportArea;
     if (typeof getStudentServiceVisibleArticles === 'function') (window.KiuStudentService||(window.KiuStudentService={})).getStudentServiceVisibleArticles = getStudentServiceVisibleArticles;
     if (typeof getStudentServiceVisibleQuestions === 'function') (window.KiuStudentService||(window.KiuStudentService={})).getStudentServiceVisibleQuestions = getStudentServiceVisibleQuestions;
@@ -1442,6 +1471,16 @@ deleteStudentServiceArticle,
     handleStudentServiceQaThreadClick,
     bootstrapStudentServicePage
 } = __ssvcPage;
+
+if (typeof renderStudentServicePage === 'function') {
+    (window.KiuStudentService || (window.KiuStudentService = {})).renderStudentServicePage = window.renderStudentServicePage = renderStudentServicePage;
+}
+if (typeof syncStudentServiceWorkspaceBackendSession === 'function') {
+    window.syncStudentServiceWorkspaceBackendSession = syncStudentServiceWorkspaceBackendSession;
+}
+if (typeof canShowStudentServiceArticleEditorActions === 'function') {
+    window.canShowStudentServiceArticleEditorActions = canShowStudentServiceArticleEditorActions;
+}
 
 Object.assign(__ssvcModulesDeps, {
     handleStudentServiceQaThreadClick,

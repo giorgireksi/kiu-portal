@@ -63,11 +63,13 @@
 
         function syncProjectTabPills(pillRow, activeTab) {
             if (!pillRow) return;
-            pillRow.querySelectorAll('.social-project-tab-pill[data-project-tab]').forEach((pill) => {
+            pillRow.querySelectorAll('.social-project-hero-tab[data-project-tab]').forEach((pill) => {
                 const tabId = text(pill.getAttribute('data-project-tab'));
                 const isActive = tabId === activeTab;
                 pill.classList.toggle('is-active', isActive);
+                pill.classList.toggle('is-focused', isActive);
                 pill.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                pill.setAttribute('aria-pressed', isActive ? 'true' : 'false');
                 pill.setAttribute('tabindex', isActive ? '0' : '-1');
             });
         }
@@ -320,7 +322,7 @@
             const shell = host.querySelector('.social-projects-shell');
             const activeProjectId = text(runtime?.ui?.activeProjectId || '');
             if (!panel || !pillRow || !activeProjectId) return false;
-            const liveProjectId = text(pillRow.querySelector('.social-project-tab-pill')?.getAttribute('data-project-id') || '');
+            const liveProjectId = text(pillRow.querySelector('.social-project-hero-tab')?.getAttribute('data-project-id') || '');
             if (liveProjectId !== activeProjectId) return false;
             const activeTab = text(runtime?.ui?.projectTab || 'overview') || 'overview';
             const currentTab = text(panel.getAttribute('data-project-tab') || '');

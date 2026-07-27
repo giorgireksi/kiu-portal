@@ -103,9 +103,9 @@
                 ? `${cat.label}, ${count > 9 ? '9 plus' : count} unread`
                 : cat.label;
             const countBadge = count > 0
-                ? `<span class="social-neo-tab-badge">${escape(badgeLabel)}</span>`
+                ? `<span class="lux-tab-badge">${escape(badgeLabel)}</span>`
                 : '';
-            return `<button class="social-neo-tab${isActive ? ' is-active' : ''}" type="button"
+            return `<button class="lux-tab-btn lux-tab-btn--icon${isActive ? ' is-active' : ''}" type="button"
                 data-action="panel-alerts" data-alerts-filter="${escape(cat.id)}"
                 data-category="${escape(cat.id)}"
                 aria-selected="${isActive ? 'true' : 'false'}"
@@ -130,14 +130,14 @@
         let actionBtns = '';
 
         if (routeData.chatId) {
-            actionBtns += `<button class="sn-alert-card-action sn-alert-card-action--primary" type="button" data-action="notification-open-chat" data-chat-id="${escape(text(routeData.chatId))}" data-notification-id="${escape(notificationKey)}"><i class="fas fa-comment-dots" aria-hidden="true"></i><span>Open chat</span></button>`;
+            actionBtns += `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="notification-open-chat" data-chat-id="${escape(text(routeData.chatId))}" data-notification-id="${escape(notificationKey)}"><i class="fas fa-comment-dots" aria-hidden="true"></i><span>Open chat</span></button>`;
         } else if (routeData.groupId) {
-            actionBtns += `<button class="sn-alert-card-action sn-alert-card-action--primary" type="button" data-action="notification-open-group" data-group-id="${escape(text(routeData.groupId))}" data-notification-id="${escape(notificationKey)}"><i class="fas fa-user-group" aria-hidden="true"></i><span>Open group</span></button>`;
+            actionBtns += `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="notification-open-group" data-group-id="${escape(text(routeData.groupId))}" data-notification-id="${escape(notificationKey)}"><i class="fas fa-user-group" aria-hidden="true"></i><span>Open group</span></button>`;
         } else {
-            actionBtns += `<button class="sn-alert-card-action sn-alert-card-action--primary" type="button" data-action="notification-follow" data-notification-id="${escape(notificationKey)}"><i class="fas fa-arrow-right" aria-hidden="true"></i><span>${escape(primaryActionLabel(routePage, routeData))}</span></button>`;
+            actionBtns += `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="notification-follow" data-notification-id="${escape(notificationKey)}"><i class="fas fa-arrow-right" aria-hidden="true"></i><span>${escape(primaryActionLabel(routePage, routeData))}</span></button>`;
         }
         if (!notification.read) {
-            actionBtns += `<button class="sn-alert-card-action sn-alert-card-action--ghost" type="button" data-action="notification-mark-read" data-notification-id="${escape(notificationKey)}"><i class="fas fa-check" aria-hidden="true"></i><span>Mark read</span></button>`;
+            actionBtns += `<button class="lux-ghost-btn lux-secondary-btn-sm" type="button" data-action="notification-mark-read" data-notification-id="${escape(notificationKey)}"><i class="fas fa-check" aria-hidden="true"></i><span>Mark read</span></button>`;
         }
 
         return `
@@ -158,7 +158,7 @@
                     </div>
                 </div>
                 <aside class="sn-alert-card__aside">
-                    <button class="sn-alert-card-dismiss" type="button" data-action="notification-remove" data-notification-id="${escape(notificationKey)}" aria-label="Remove notification"><i class="fas fa-times" aria-hidden="true"></i></button>
+                    <button class="lux-ghost-btn lux-secondary-btn-icon sn-alert-card-dismiss" type="button" data-action="notification-remove" data-notification-id="${escape(notificationKey)}" aria-label="Remove notification"><i class="fas fa-times" aria-hidden="true"></i></button>
                     <time datetime="${escape(time.iso)}" title="${escape(time.fullLabel)}">${escape(time.relative)}</time>
                     ${notification.read ? '' : `<span class="sn-alert-card-dot" aria-label="Unread"></span>`}
                 </aside>
@@ -225,13 +225,13 @@
                         </div>
                         <div class="sn-alerts-header__actions">
                             ${visibleNotifications.length ? `
-                                <button class="sn-alerts-clear-visible" type="button" data-action="notification-clear-visible">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm sn-alerts-clear-visible" type="button" data-action="notification-clear-visible">
                                     <i class="fas fa-trash-can"></i>
                                     <span>Clear all</span>
                                 </button>
                             ` : ''}
                             ${unreadInFilter > 0 ? `
-                                <button class="sn-alerts-mark-read" type="button" data-action="notification-mark-category-read" data-category="${escape(markCategory)}">
+                                <button class="lux-secondary-btn lux-secondary-btn-sm sn-alerts-mark-read" type="button" data-action="notification-mark-category-read" data-category="${escape(markCategory)}">
                                     <i class="fas fa-check-double"></i>
                                     <span>${escape(markLabel)}</span>
                                 </button>
@@ -239,7 +239,7 @@
                         </div>
                     </div>
                     <div class="sn-alerts-header__filters">
-                        <div class="sn-alerts-category-filters" role="tablist" aria-label="Filter notifications by category">
+                        <div class="lux-tab-strip lux-tab-strip--segmented sn-alerts-category-filters" role="tablist" aria-label="Filter notifications by category">
                             ${renderPillBar(activeFilter, counts)}
                         </div>
                     </div>
@@ -252,7 +252,7 @@
                 </div>
                 ${isAdmin ? `
                     <div class="sn-alerts-moderation">
-                        <button class="sn-alerts-mod-toggle" type="button" data-action="alerts-moderation-toggle">
+                        <button class="lux-secondary-btn sn-alerts-mod-toggle" type="button" data-action="alerts-moderation-toggle">
                             <i class="fas fa-shield-halved"></i>
                             <span>Moderation queue</span>
                             <span class="sn-alerts-mod-count">${escape(String(openReports.length))}</span>

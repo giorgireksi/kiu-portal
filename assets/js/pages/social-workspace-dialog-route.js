@@ -34,6 +34,7 @@
             renderProjectTaskGraphHistoryDialog,
             renderProjectTaskGraphScheduleHelpDialog,
             resolveActiveSocialProject,
+            getProjectTaskGraphStackAnchorDialog,
             shouldRenderProjectTaskGraphStack,
             state,
             text,
@@ -83,12 +84,23 @@
             </div>`;
         }
 
+        function renderGraphStackLayers(runtime, childMarkup) {
+            const graphDialog = getProjectTaskGraphStackAnchorDialog(runtime)
+                || (runtime.ui?.previousDialog?.type === 'project-task-graph' ? runtime.ui.previousDialog : null);
+            if (!graphDialog) return childMarkup || '';
+            return wrapProjectTaskGraphStack(
+                renderProjectTaskGraphFullscreen(runtime, graphDialog),
+                childMarkup
+            );
+        }
+
         function renderHealthStackLayers(runtime, childMarkup) {
             const healthDialog = runtime.ui?.previousDialog;
             if (!healthDialog || text(healthDialog.type) !== 'project-health') return childMarkup || '';
             const healthMarkup = renderProjectHealthDialog(runtime, healthDialog);
             const stacked = wrapProjectHealthStack(healthMarkup, childMarkup);
-            const graphParent = healthDialog.__restorePrevious;
+            const graphParent = getProjectTaskGraphStackAnchorDialog(runtime)
+                || healthDialog.__restorePrevious;
             if (graphParent && text(graphParent.type) === 'project-task-graph') {
                 return wrapProjectTaskGraphStack(
                     renderProjectTaskGraphFullscreen(runtime, graphParent),
@@ -98,15 +110,19 @@
             return stacked;
         }
 
+        function shouldWrapGraphStackChild(runtime, kind = '') {
+            if (!text(kind)) return false;
+            if (shouldRenderProjectTaskGraphStack(runtime, kind)) return true;
+            if (runtime.ui?.previousDialog?.type === 'project-task-graph') return true;
+            return Boolean(getProjectTaskGraphStackAnchorDialog(runtime));
+        }
+
         function maybeWrapStackedProjectDialog(runtime, kind, childMarkup) {
             if (shouldRenderProjectHealthStack(runtime, kind)) {
                 return renderHealthStackLayers(runtime, childMarkup);
             }
-            if (shouldRenderProjectTaskGraphStack(runtime, kind)) {
-                return wrapProjectTaskGraphStack(
-                    renderProjectTaskGraphFullscreen(runtime, runtime.ui.previousDialog),
-                    childMarkup
-                );
+            if (shouldWrapGraphStackChild(runtime, kind)) {
+                return renderGraphStackLayers(runtime, childMarkup);
             }
             return childMarkup;
         }
@@ -163,19 +179,22 @@
                 return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskCreateDialog(runtime, dialog));
             }
             if (kind === 'project-task-graph') {
-                return renderProjectTaskGraphFullscreen(runtime, dialog);
+                return wrapProjectTaskGraphStack(
+                    renderProjectTaskGraphFullscreen(runtime, dialog),
+                    ''
+                );
             }
             if (kind === 'project-task-graph-history') {
                 const child = renderProjectTaskGraphHistoryDialog(runtime, dialog);
-                if (shouldRenderProjectTaskGraphStack(runtime, kind)) {
-                    return wrapProjectTaskGraphStack(renderProjectTaskGraphFullscreen(runtime, runtime.ui.previousDialog), child);
+                if (shouldWrapGraphStackChild(runtime, kind)) {
+                    return renderGraphStackLayers(runtime, child);
                 }
                 return child;
             }
             if (kind === 'project-task-graph-schedule-help') {
                 const child = renderProjectTaskGraphScheduleHelpDialog(runtime, dialog);
-                if (shouldRenderProjectTaskGraphStack(runtime, kind)) {
-                    return wrapProjectTaskGraphStack(renderProjectTaskGraphFullscreen(runtime, runtime.ui.previousDialog), child);
+                if (shouldWrapGraphStackChild(runtime, kind)) {
+                    return renderGraphStackLayers(runtime, child);
                 }
                 return child;
             }
@@ -210,8 +229,8 @@
             }
             if (kind === 'project-health') {
                 const child = renderProjectHealthDialog(runtime, dialog);
-                if (shouldRenderProjectTaskGraphStack(runtime, kind)) {
-                    return wrapProjectTaskGraphStack(renderProjectTaskGraphFullscreen(runtime, runtime.ui.previousDialog), child);
+                if (shouldWrapGraphStackChild(runtime, kind)) {
+                    return renderGraphStackLayers(runtime, child);
                 }
                 return child;
             }

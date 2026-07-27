@@ -40,7 +40,7 @@
         const optionUpdateFunc = mode === 'bank' ? 'updateExamBankQuestionOption' : 'updateExamQuestionOption';
         const optionSyncFunc = mode === 'bank' ? 'syncExamBankQuestionOption' : 'syncExamQuestionOption';
         return `
-            <article class="ex2-question-card">
+            <article class="ex2-question-card lux-soft-chrome">
                 <div class="ex2-question-head">
                     <div>
                         <div class="ex2-status ex2-question-card-status is-neutral">Q${index + 1}</div>
@@ -105,7 +105,7 @@
         const resolved = resolveVariantQuestions(variant, bank);
         const totalScore = resolved.reduce((s, entry) => s + (entry.question.score || 1), 0);
         return `
-            <article class="ex2-question-card">
+            <article class="ex2-question-card lux-soft-chrome">
                 <div class="ex2-question-head">
                     <div>
                         <div class="ex2-status ex2-question-card-status is-neutral">${escapeHtml(variant.label)}</div>
@@ -199,7 +199,7 @@
                 <div class="ex2-panel-head ex2-panel-head--flush">
                     <div><h3 class="ex2-builder-section-title">Question Bank (${total} questions Â· ${totalScore} points)</h3><p class="ex2-builder-section-copy">Each question is a multiple-choice item. Navigate using the controls below.</p></div>
                 </div>
-                <div class="ex2-qnav-bar">
+                <div class="ex2-qnav-bar lux-soft-chrome">
                     <div class="ex2-qnav-controls">
                         <button type="button" class="ex2-btn is-secondary" ${page <= 0 ? 'disabled' : ''} data-exam-call="navigateBankQuestion" data-exam-args='[${page - 1}]' title="Previous question"><i class="fas fa-chevron-left"></i></button>
                         <div class="ex2-qnav-indicator">
@@ -230,7 +230,7 @@
                 <div class="ex2-panel-head ex2-panel-head--flush">
                     <div><h3 class="ex2-builder-section-title">Exam Variants (${variants.length})</h3><p class="ex2-builder-section-copy">Auto-generate variants from your ${bank.length}-question bank, or create them manually.</p></div>
                 </div>
-                <div class="ex2-auto-gen-box">
+                <div class="ex2-auto-gen-box lux-soft-chrome">
                     <div class="ex2-side-kicker">Auto-Generate Variants</div>
                     <div class="ex2-form-grid ex2-form-grid--mt-12">
                         <label class="ex2-field">
@@ -332,7 +332,7 @@
 
     function renderSummaryChip(label, value) {
         return `
-            <span class="ex2-summary-chip">
+            <span class="ex2-summary-chip lux-soft-chrome">
                 <span class="ex2-summary-chip-label">${escapeHtml(label)}</span>
                 <strong class="ex2-summary-chip-value">${escapeHtml(value)}</strong>
             </span>

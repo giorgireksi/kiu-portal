@@ -203,7 +203,7 @@ function ensureSubjectSemesterParityHint() {
     const hint = document.getElementById('new-subject-semester-parity-hint');
     const hiddenSemesters = document.getElementById('new-subject-semesters');
     if (!hint) return;
-    hint.classList.add('lux-admin-tools-parity-callout');
+    hint.classList.add('registration-structured-help', 'lux-admin-tools-parity-callout');
 
     let exceptionWrap = document.getElementById('new-subject-semester-parity-exception-wrap');
     if (!exceptionWrap) {

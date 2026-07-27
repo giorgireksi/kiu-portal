@@ -40,6 +40,12 @@ describe('social workspace messaging regressions', () => {
             .toContain("portalRequest('/api/messenger/message'");
         expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
             .not.toMatch(/function refreshNotifications\(\.\.\.a\) \{ return __lookup\('refreshNotifications'\)/);
+        expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
+            .toMatch(/function fetchAccountsByIds\(\.\.\.a\) \{ return __lookup\('fetchAccountsByIds'\)/);
+        expect(runtime).toMatch(/fetchAccountsByIds, refreshFeed, ensureActiveChat/);
+        expect(runtime).toMatch(/ensureCallMedia, attachLocalCallPreview/);
+        expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
+            .toMatch(/function ensureCallMedia\(\.\.\.a\) \{ return __lookup\('ensureCallMedia'\)/);
         expect(readSource('assets/js/pages/social-page-boot-runtime.js').indexOf('__kiuCreateSocialPageBootApi'))
             .toBeLessThan(readSource('assets/js/pages/social-page-boot-runtime.js').indexOf('__KIU_SOCIAL_PAGE_BOOT_LOADED = true'));
 

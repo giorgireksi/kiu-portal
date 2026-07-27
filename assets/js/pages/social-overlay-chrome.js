@@ -16,6 +16,7 @@
         const PROJECT_HEALTH_OVERLAY_DIALOGS = deps.PROJECT_HEALTH_OVERLAY_DIALOGS || new Set();
         const workspaceDialogKeepsCenter = deps.workspaceDialogKeepsCenter || (() => false);
         const isProjectTaskGraphStackActive = deps.isProjectTaskGraphStackActive || (() => false);
+        const getProjectTaskGraphStackAnchorDialog = deps.getProjectTaskGraphStackAnchorDialog || (() => null);
         const renderDialogOnlyNow = deps.renderDialogOnlyNow || (() => {});
         const renderSocialPageNow = deps.renderSocialPageNow || (() => {});
         const getSocialCenterScroller = deps.getSocialCenterScroller || (() => null);
@@ -69,9 +70,10 @@
         }
 
         function clearStaleSocialOverlayDom() {
+            const staleSelector = `${SOCIAL_OVERLAY_SURFACE_SELECTOR}, .social-project-task-graph-stack`;
             SOCIAL_OVERLAY_REGION_IDS.forEach((regionId) => {
                 const node = document.getElementById(regionId);
-                if (!node?.querySelector(SOCIAL_OVERLAY_SURFACE_SELECTOR)) return;
+                if (!node?.querySelector(staleSelector)) return;
                 node.innerHTML = '';
                 delete node.__kiuLastMarkup;
             });
@@ -87,8 +89,7 @@
             const hasStoryComposer = Boolean(document.getElementById('social-neo-story-composer-region')?.querySelector('.social-neo-story-composer'));
 
             if (runtime.ui.socialDialog && !hasDialogSurface) {
-                runtime.ui.socialDialog = null;
-                runtime.ui.coverImageFile = null;
+                return;
             }
             if (runtime.ui.storyViewerOpen && !hasStoryViewer) {
                 runtime.ui.storyViewerOpen = false;
@@ -97,15 +98,28 @@
             if (runtime.ui.storyComposerOpen && !hasStoryComposer) {
                 runtime.ui.storyComposerOpen = false;
             }
+            if (!runtime.ui.socialDialog && !runtime.ui.storyViewerOpen && !runtime.ui.storyComposerOpen) {
+                if (runtime.ui.projectTaskGraphStackAnchor || runtime.ui.previousDialog) {
+                    runtime.ui.projectTaskGraphStackAnchor = null;
+                    runtime.ui.previousDialog = null;
+                }
+                if (socialOverlayPortalHasContent()) {
+                    clearStaleSocialOverlayDom();
+                }
+            }
         }
+
+        const SOCIAL_CALL_OVERLAY_ID = 'social-neo-call-overlay';
 
         function socialInteractionContains(node) {
             if (!node) return false;
             const rootHost = root();
             const portal = document.getElementById(SOCIAL_OVERLAY_PORTAL_ID);
+            const callOverlay = document.getElementById(SOCIAL_CALL_OVERLAY_ID);
             return Boolean(
                 (rootHost && rootHost.contains(node))
                 || (portal && portal.contains(node))
+                || (callOverlay && callOverlay.contains(node))
                 || node.closest?.('[data-project-task-graph-context-menu]')
             );
         }
@@ -209,10 +223,7 @@
         function syncOverlayPortalVisibility() {
             const portal = document.getElementById(SOCIAL_OVERLAY_PORTAL_ID);
             if (!portal) return;
-            const hasContent = SOCIAL_OVERLAY_REGION_IDS.some((regionId) => {
-                const node = document.getElementById(regionId);
-                return Boolean(text(node?.innerHTML || '').trim());
-            });
+            const hasContent = socialOverlayPortalHasContent();
             portal.hidden = !hasContent;
             portal.setAttribute('aria-hidden', hasContent ? 'false' : 'true');
             if (hasContent) scheduleSocialOverlayTransparencyRefresh();
@@ -282,11 +293,47 @@
             'post-compose-attach'
         ]);
 
+        const PROJECT_HEALTH_GRAPH_SUB_OVERLAYS = new Set([
+            'project-task-detail',
+            'project-task-edit',
+            'project-task-create',
+            'project-task-delete',
+            'project-settings',
+            'project-health-plan-pick'
+        ]);
+
+        function shouldReplaceGraphStackChild(type, currentDialog, graphAnchor) {
+            if (!graphAnchor || text(graphAnchor.type) !== 'project-task-graph') return false;
+            const nextKind = text(type);
+            const currentKind = text(currentDialog?.type || '');
+            if (!PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(nextKind)) return false;
+            if (!currentDialog || !PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(currentKind)) return false;
+            if (currentKind === 'project-health' && PROJECT_HEALTH_GRAPH_SUB_OVERLAYS.has(nextKind)) return false;
+            return true;
+        }
+
+        function resetGraphStackedDialogUiWhenLeaving(ui, kind = '') {
+            const leaving = text(kind);
+            if (leaving === 'project-task-graph-history') {
+                ui.projectTaskGraphHistoryPendingDeleteId = '';
+            }
+        }
+
+        function resolveGraphStackAnchorDialog(ui) {
+            return getProjectTaskGraphStackAnchorDialog(state())
+                || (ui.previousDialog?.type === 'project-task-graph' ? ui.previousDialog : null)
+                || (ui.projectTaskGraphStackAnchor?.type === 'project-task-graph' ? ui.projectTaskGraphStackAnchor : null);
+        }
+
         function shouldRestoreStackedDialog(type = '') {
             const kind = text(type);
             if (STACKED_DIALOG_KINDS.has(kind)) return true;
             if (PROJECT_HEALTH_OVERLAY_DIALOGS.has(kind)
                 && state().ui?.previousDialog?.type === 'project-health') {
+                return true;
+            }
+            if (PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(kind)
+                && state().ui?.previousDialog) {
                 return true;
             }
             return false;
@@ -298,10 +345,18 @@
             }
             const ui = state().ui;
             const currentDialog = ui.socialDialog || null;
+            const graphAnchorForSwitch = resolveGraphStackAnchorDialog(ui);
+            if (PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(text(type))) {
+                ui.projectTaskGraphQuickCreate = { open: false };
+            }
             if (type === 'project-task-graph') {
                 ui.projectTaskGraphStackAnchor = { type, ...payload };
             }
-            if (currentDialog?.type === 'project-health' && PROJECT_HEALTH_OVERLAY_DIALOGS.has(type)) {
+            if (shouldReplaceGraphStackChild(type, currentDialog, graphAnchorForSwitch)) {
+                if (currentDialog?.type) resetGraphStackedDialogUiWhenLeaving(ui, currentDialog.type);
+                ui.previousDialog = { ...graphAnchorForSwitch };
+                ui.projectTaskGraphStackAnchor = { ...graphAnchorForSwitch };
+            } else if (currentDialog?.type === 'project-health' && PROJECT_HEALTH_OVERLAY_DIALOGS.has(type)) {
                 // Stack popup above Health; keep graph (or other) parent under Health for later restore.
                 ui.previousDialog = {
                     ...currentDialog,
@@ -314,18 +369,29 @@
                 ui.previousDialog = { ...currentDialog };
             } else if (!STACKED_DIALOG_KINDS.has(type) && !(currentDialog?.type === 'project-health' && PROJECT_HEALTH_OVERLAY_DIALOGS.has(type))) {
                 const keepGraphAnchor = PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(type)
-                    && ui.previousDialog?.type === 'project-task-graph'
-                    && PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(currentDialog?.type);
+                    && getProjectTaskGraphStackAnchorDialog(state())?.type === 'project-task-graph'
+                    && currentDialog
+                    && (currentDialog?.type === 'project-task-graph'
+                        || PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(currentDialog?.type));
                 if (!keepGraphAnchor) ui.previousDialog = null;
             }
+            if (PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(type)) {
+                const graphAnchor = getProjectTaskGraphStackAnchorDialog(state());
+                if (graphAnchor?.type === 'project-task-graph') {
+                    ui.projectTaskGraphStackAnchor = { ...graphAnchor };
+                    if (currentDialog?.type === 'project-task-graph' && !ui.previousDialog) {
+                        ui.previousDialog = { ...currentDialog };
+                    }
+                }
+            }
             ui.socialDialog = { type, ...payload };
+            ensureSocialOverlayPortal();
             const activePanel = text(state().ui?.activePanel || '');
             if (workspaceDialogKeepsCenter(type) && ['projects', 'workspace'].includes(activePanel)) {
                 renderDialogOnlyNow();
             } else {
                 renderSocialPageNow(`dialog-${type}`);
             }
-            ensureSocialOverlayPortal();
             bindOverlayPortalEvents();
             ensurePhotographyUploadFileSink();
             bindPhotographyUploadDialogFileInput();
@@ -333,7 +399,13 @@
                 syncSocialOverlayLock();
                 syncOverlayPortalVisibility();
                 focusSocialDialog();
-                if (type === 'post-comments' || type === 'photography-comments') relayoutCommentTrunks();
+                if (type === 'post-comments' || type === 'photography-comments' || type === 'comment-delete') {
+                    relayoutCommentTrunks();
+                    requestAnimationFrame(() => {
+                        relayoutCommentTrunks();
+                        requestAnimationFrame(() => relayoutCommentTrunks());
+                    });
+                }
                 if (type === 'survey-results') syncSurveyResultsDialog();
             });
         }
@@ -352,11 +424,20 @@
 
         function closeDialog() {
             const ui = state().ui;
-            if (!ui.socialDialog) return;
+            if (!ui.socialDialog) {
+                if (ui.projectTaskGraphStackAnchor || socialOverlayPortalHasContent()) {
+                    ui.projectTaskGraphStackAnchor = null;
+                    ui.previousDialog = null;
+                    clearStaleSocialOverlayDom();
+                    renderDialogOnlyNow();
+                    window.requestAnimationFrame(() => syncSocialOverlayLock());
+                }
+                return;
+            }
             const closingType = text(ui.socialDialog?.type || '');
             const closingProjectId = text(ui.socialDialog?.projectId || ui.activeProjectId || '');
             const parentDialog = ui.previousDialog || null;
-            if (parentDialog?.type === 'project-task-graph' && PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(closingType)) {
+            if (parentDialog && PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(closingType)) {
                 if (closingType === 'project-task-detail') ui.projectTaskChecklist = [];
                 if (closingType === 'project-task-create' || closingType === 'project-task-edit') {
                     ui.projectTaskDependsOnIds = [];
@@ -371,6 +452,7 @@
             }
             ui.socialDialog = null;
             ui.previousDialog = null;
+            ui.projectTaskGraphStackAnchor = null;
             ui.coverImageFile = null;
             ui.groupLeaveStep = 1;
             if (closingType === 'photography-upload') {
@@ -430,6 +512,7 @@
             const parent = ui.previousDialog || null;
             if (!parent || !parent.type) {
                 ui.previousDialog = null;
+                ui.projectTaskGraphStackAnchor = null;
                 closeDialog();
                 return;
             }
@@ -441,8 +524,19 @@
             delete clean.__restorePrevious;
             ui.previousDialog = nested;
             ui.socialDialog = clean;
-            const activePanel = text(ui.activePanel || '');
             const parentType = text(clean.type || '');
+            if (parentType === 'project-task-graph') {
+                const region = document.getElementById('lux-glass-dialog-region');
+                const stack = region?.querySelector('.social-project-task-graph-stack');
+                const childSlot = region?.querySelector('[data-project-task-graph-child-slot="1"]');
+                if (childSlot) {
+                    childSlot.innerHTML = '';
+                    childSlot.hidden = true;
+                    delete region.__kiuLastMarkup;
+                }
+                stack?.classList.remove('social-project-task-graph-stack--child-open');
+            }
+            const activePanel = text(ui.activePanel || '');
             if ((parentType === 'project-task-graph' || parentType === 'project-health' || workspaceDialogKeepsCenter(parentType))
                 && ['projects', 'workspace'].includes(activePanel)) {
                 renderDialogOnlyNow();

@@ -8,8 +8,13 @@
 
     window.__kiuCreateSocialWorkspacePanelTeamApi = function createKiuSocialWorkspacePanelTeamApi(deps) {
         if (!deps || typeof deps !== 'object') throw new Error('panel team deps required');
-        const d = deps;
-        void d;
+        const {
+            escape, text, displayName, avatar, accountById, accountSubtitle, isStaffAccount,
+            countNum, formatProjectScheduleHours,
+            activeProject, runtime, memberSummaries, pendingMembers, nextOwner, roleLabels,
+            facultyMix, roleMix, inviteFaculty, facultyOptions, filteredInviteCandidates,
+            renderTeamMemberCard, scrollList
+        } = deps;
 
         const renderTeamWorkloadAside = () => {
             const list = Array.isArray(activeProject?.workloadByMember) ? activeProject.workloadByMember.slice(0, 6) : [];

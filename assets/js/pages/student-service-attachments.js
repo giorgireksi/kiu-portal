@@ -2,6 +2,9 @@
     if (window.__KIU_STUDENT_SERVICE_ATTACHMENTS_MODULE_LOADED) return;
     window.__KIU_STUDENT_SERVICE_ATTACHMENTS_MODULE_LOADED = true;
 
+    const STUDENT_SERVICE_MAX_ATTACHMENTS = 5;
+    const STUDENT_SERVICE_ATTACHMENT_ACCEPT = 'image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.zip,.txt';
+
     function normalizeStudentServiceAttachmentRecord(file = {}, index = 0) {
         if (!file || typeof file !== 'object') return null;
         const storageKey = String(file.storageKey || file.id || '').trim();
@@ -48,6 +51,23 @@
         return Array.isArray(ensureStudentServiceDraftAttachments(ui)[composerId]) ? ui.draftAttachments[composerId] : [];
     }
 
+    function syncStudentServiceAttachmentPickerUi(composerId) {
+        const toolbar = document.querySelector(`[data-student-service-attachment-toolbar="${composerId}"]`);
+        if (!toolbar) {
+            renderStudentServicePage();
+            return;
+        }
+        const drafts = getStudentServiceDraftAttachments(composerId);
+        const chipsMarkup = renderStudentServiceAttachmentChipsMarkup(composerId, drafts);
+        const chipsHost = toolbar.querySelector(`[data-student-service-attachment-chips="${composerId}"]`);
+        if (chipsMarkup) {
+            if (chipsHost) chipsHost.outerHTML = chipsMarkup;
+            else toolbar.insertAdjacentHTML('beforeend', chipsMarkup);
+        } else if (chipsHost) {
+            chipsHost.remove();
+        }
+    }
+
     function addStudentServiceDraftAttachment(composerId, file) {
         if (!file) return;
         const ui = ensureStudentServiceUiState();
@@ -67,7 +87,7 @@
                 dataUrl: String(reader.result || '')
             });
             drafts[composerId] = current.slice(0, STUDENT_SERVICE_MAX_ATTACHMENTS);
-            renderStudentServicePage();
+            syncStudentServiceAttachmentPickerUi(composerId);
         };
         reader.readAsDataURL(file);
     }
@@ -77,7 +97,7 @@
         const drafts = ensureStudentServiceDraftAttachments(ui);
         const current = Array.isArray(drafts[composerId]) ? drafts[composerId] : [];
         drafts[composerId] = current.filter(item => String(item.id || '') !== String(attachmentId || ''));
-        renderStudentServicePage();
+        syncStudentServiceAttachmentPickerUi(composerId);
     }
 
     function clearStudentServiceDraftAttachments(composerId) {
@@ -218,6 +238,7 @@
     window.renderStudentServiceAttachmentGalleryMarkup = renderStudentServiceAttachmentGalleryMarkup;
     window.renderStudentServiceAttachmentChipsMarkup = renderStudentServiceAttachmentChipsMarkup;
     window.renderStudentServiceAttachmentPickerMarkup = renderStudentServiceAttachmentPickerMarkup;
+    window.syncStudentServiceAttachmentPickerUi = syncStudentServiceAttachmentPickerUi;
     window.pickStudentServiceAttachments = pickStudentServiceAttachments;
     window.getStudentServiceAnswerComposerId = getStudentServiceAnswerComposerId;
 })();

@@ -351,6 +351,10 @@ describe('Wave 18 headroom peels (≤1850)', () => {
                 expect(source).toContain(peel.factory);
                 expect(source).toContain('Object.assign(window, api)');
                 expect(source).toContain(peel.marker);
+                if (peel.name === 'lms-exam-session') {
+                    expect(source).not.toContain('bindLmsDelegatedMarkupActions()');
+                    expect(readSource(peel.host)).toContain('bindLmsDelegatedMarkupActions()');
+                }
             });
 
             it('keeps host ≤1850 and peel under headroom', () => {
@@ -376,5 +380,16 @@ describe('Wave 18 headroom peels (≤1850)', () => {
         }
         walk(root);
         expect(large).toEqual([]);
+    });
+
+    it('loads api-portal-persist-runtime before api.js on every route that uses api.js', () => {
+        const htmlFiles = readdirSync(process.cwd()).filter((name) => name.endsWith('.html'));
+        htmlFiles.forEach((file) => {
+            const html = readSource(file);
+            if (!html.includes('assets/js/app/api.js')) return;
+            expect(html, file).toContain('api-portal-persist-runtime.js');
+            expect(html.indexOf('api-portal-persist-runtime.js'), file)
+                .toBeLessThan(html.indexOf('assets/js/app/api.js'));
+        });
     });
 });

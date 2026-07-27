@@ -98,7 +98,7 @@
         const studentCount = cohort.students.length;
         const showSplit = selected && draft.roomCapacity && studentCount > parseInt(draft.roomCapacity, 10);
         return `
-            <article class="ex2-cohort-card${selected ? ' is-selected' : ''}">
+            <article class="ex2-cohort-card lux-soft-chrome${selected ? ' is-selected' : ''}">
                 <label class="ex2-cohort-check">
                     <input id="exam-cohort-${escapeHtml(toFieldToken(cohort.key))}" name="exam_cohort_${escapeHtml(toFieldToken(cohort.key))}" type="checkbox" ${selected ? 'checked' : ''} data-exam-change-call="toggleExamCohort" data-exam-change-args='["${escapeHtml(cohort.key)}","$checked"]'>
                     <span class="ex2-cohort-check-label">${escapeHtml(cohort.label)}</span>
@@ -110,7 +110,7 @@
                     ${cohort.courseLabels.slice(0, 3).map((label) => `<span class="ex2-tag">${escapeHtml(label)}</span>`).join('')}
                 </div>
                 ${showSplit ? `
-                    <div class="ex2-split-box">
+                    <div class="ex2-split-box lux-soft-chrome">
                         <div class="ex2-side-kicker"><i class="fas fa-scissors"></i> Room Split Required</div>
                         <p class="ex2-copy-muted ex2-copy-muted--mt-6">${studentCount} students exceed room capacity (${draft.roomCapacity}). Split into sub-groups:</p>
                         <div class="ex2-form-grid ex2-form-grid--mt-8">
@@ -143,7 +143,7 @@
         const status = getSelectedSessionStatus(session);
         const isPublished = session.published === true;
         return `
-            <article class="ex2-session-card">
+            <article class="ex2-session-card lux-soft-chrome">
                 <div class="ex2-session-head">
                     <div class="ex2-session-head-main">
                         <div class="ex2-status ex2-session-status-chip is-${escapeHtml(status)}">${escapeHtml(status)}</div>
@@ -157,9 +157,9 @@
                     </div>
                 </div>
                 <div class="ex2-mini-grid">
-                    <div class="ex2-session-stat-card"><strong class="ex2-session-stat-value">${escapeHtml(formatShortDate(session.startAt))}</strong><span class="ex2-session-stat-label">Date</span></div>
-                    <div class="ex2-session-stat-card"><strong class="ex2-session-stat-value">${escapeHtml(String(getAssignedStudentIds(session).length))}</strong><span class="ex2-session-stat-label">Students</span></div>
-                    <div class="ex2-session-stat-card"><strong class="ex2-session-stat-value">${escapeHtml(String(getSessionObserverNames(session).length))}</strong><span class="ex2-session-stat-label">Proctors</span></div>
+                    <div class="ex2-session-stat-card lux-soft-chrome"><strong class="ex2-session-stat-value">${escapeHtml(formatShortDate(session.startAt))}</strong><span class="ex2-session-stat-label">Date</span></div>
+                    <div class="ex2-session-stat-card lux-soft-chrome"><strong class="ex2-session-stat-value">${escapeHtml(String(getAssignedStudentIds(session).length))}</strong><span class="ex2-session-stat-label">Students</span></div>
+                    <div class="ex2-session-stat-card lux-soft-chrome"><strong class="ex2-session-stat-value">${escapeHtml(String(getSessionObserverNames(session).length))}</strong><span class="ex2-session-stat-label">Proctors</span></div>
                 </div>
                 <div class="ex2-card-copy ex2-session-card-copy">${escapeHtml(getSessionRoomLabel(session))} Â· ${escapeHtml(formatDateTime(session.startAt))} - ${escapeHtml(formatDateTime(session.endAt))}</div>
             </article>
@@ -201,7 +201,7 @@
             const showReturn = opts.showReturn !== false;
             const note = String(template.revisionNote || '').trim();
             return `
-                <article class="ex2-rq-card" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'>
+                <article class="ex2-rq-card lux-soft-chrome" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'>
                     <div class="ex2-rq-card-top">
                         <span class="ex2-status-dot is-${escapeHtml(status)}">${escapeHtml(status.replace(/_/g, ' '))}</span>
                         <span class="ex2-rq-card-age">${escapeHtml(timeAgo(template.updatedAt || template.createdAt))}</span>
@@ -229,7 +229,7 @@
             const count = items.length;
             const bodyCollapsed = collapsible && collapsed;
             return `
-                <section class="ex2-rq-column is-${tone}${bodyCollapsed ? ' is-collapsed' : ''}${!count && !bodyCollapsed ? ' is-empty' : ''}">
+                <section class="ex2-rq-column lux-soft-chrome is-${tone}${bodyCollapsed ? ' is-collapsed' : ''}${!count && !bodyCollapsed ? ' is-empty' : ''}">
                     <header class="ex2-rq-column-head">
                         <div class="ex2-rq-column-title">
                             <i class="fas ${icon}"></i>
@@ -250,7 +250,7 @@
         const total = groups.awaiting.length + groups.returned.length + groups.approved.length;
 
         return `
-            <section class="ex2-panel ex2-rq-console">
+            <section class="ex2-panel lux-soft-chrome ex2-rq-console">
                 <div class="lux-panel-head ex2-rq-console-head">
                     <div>
                         <h2 class="lux-panel-title"><i class="fas fa-clipboard-check ex2-heading-icon"></i>Review Queue</h2>
@@ -324,7 +324,7 @@
         const collisions = detectScheduleCollisions(draft, todaySessions);
         return `
             <div class="ex2-two-col">
-                <section class="ex2-panel">
+                <section class="ex2-panel lux-soft-chrome">
                     <div class="lux-panel-head">
                         <div>
                             <h2 class="lux-panel-title"><i class="fas fa-calendar-plus ex2-heading-icon"></i>Schedule Builder</h2>
@@ -336,7 +336,7 @@
                         </div>
                     </div>
                     <div class="ex2-form-grid">
-                        <label class="ex2-field ex2-field-span">
+                        <label class="ex2-field ex2-field-span ex2-field--picker">
                             <span class="ex2-field-label">Approved Template</span>
                             <select class="ex2-select" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["templateId","$value"]'>
                                 <option value="">Choose template</option>
@@ -360,14 +360,14 @@
                     <div class="ex2-divider ex2-divider--20"></div>
                     <h3 class="ex2-summary-title">Session Summary</h3>
                     <div class="ex2-mini-grid">
-                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${uniqueStrings(draft.selectedCohortKeys || []).length}</strong><span class="ex2-session-summary-label">Groups</span></div>
-                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${selectedStudents.length}</strong><span class="ex2-session-summary-label">Students</span></div>
-                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${draft.roomCapacity || 'âˆž'}</strong><span class="ex2-session-summary-label">Capacity</span></div>
-                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${escapeHtml(formatCountdown(draft.startAt))}</strong><span class="ex2-session-summary-label">Countdown</span></div>
+                        <div class="ex2-session-summary-card lux-soft-chrome"><strong class="ex2-session-summary-value">${uniqueStrings(draft.selectedCohortKeys || []).length}</strong><span class="ex2-session-summary-label">Groups</span></div>
+                        <div class="ex2-session-summary-card lux-soft-chrome"><strong class="ex2-session-summary-value">${selectedStudents.length}</strong><span class="ex2-session-summary-label">Students</span></div>
+                        <div class="ex2-session-summary-card lux-soft-chrome"><strong class="ex2-session-summary-value">${draft.roomCapacity || 'âˆž'}</strong><span class="ex2-session-summary-label">Capacity</span></div>
+                        <div class="ex2-session-summary-card lux-soft-chrome"><strong class="ex2-session-summary-value">${escapeHtml(formatCountdown(draft.startAt))}</strong><span class="ex2-session-summary-label">Countdown</span></div>
                     </div>
                     ${template && template.examType === 'digital' ? '<div class="ex2-digital-pin"><div class="ex2-digital-pin-label">Digital Exam PIN</div><div class="ex2-digital-pin-value">' + generateExamPIN(draft) + '</div></div>' : ''}
                 </section>
-                <section class="ex2-panel">
+                <section class="ex2-panel lux-soft-chrome">
                     <div class="lux-panel-head">
                         <div>
                             <h2 class="lux-panel-title"><i class="fas fa-users-rectangle ex2-heading-icon"></i>Student Groups</h2>
@@ -376,18 +376,18 @@
                         ${template ? '<div class="ex2-inline-actions"><button type="button" class="ex2-btn is-ghost" data-exam-call="selectAllExamCohorts"><i class="fas fa-check-double"></i> All</button><button type="button" class="ex2-btn is-ghost" data-exam-call="clearExamCohorts"><i class="fas fa-eraser"></i> Clear</button></div>' : ''}
                     </div>
                     <div class="ex2-cohort-grid">
-                        ${cohorts.length ? cohorts.map((cohort) => renderCohortCard(cohort, draft)).join('') : '<div class="ex2-empty-state ex2-schedule-groups-empty"><i class="fas fa-users-slash"></i><p class="ex2-empty-state-copy">No groups available for this subject.</p></div>'}
+                        ${cohorts.length ? cohorts.map((cohort) => renderCohortCard(cohort, draft)).join('') : '<div class="ex2-empty-state lux-soft-chrome ex2-schedule-groups-empty"><i class="fas fa-users-slash"></i><p class="ex2-empty-state-copy">No groups available for this subject.</p></div>'}
                     </div>
                 </section>
             </div>
-            <section class="ex2-panel">
+            <section class="ex2-panel lux-soft-chrome">
                 <div class="lux-panel-head">
                     <div>
                         <h2 class="lux-panel-title"><i class="fas fa-list-check ex2-heading-icon"></i>Scheduled Sessions</h2>
                         <p class="lux-panel-copy">Published sessions are visible to students on their timetable.</p>
                     </div>
                 </div>
-                ${todaySessions.length ? '<div class="ex2-timeline">' + todaySessions.map((session) => renderSessionBoardCard(session)).join('') + '</div>' : '<div class="ex2-empty-state ex2-schedule-sessions-empty"><i class="fas fa-calendar-xmark"></i><p class="ex2-empty-state-copy">No sessions scheduled yet.</p></div>'}
+                ${todaySessions.length ? '<div class="ex2-timeline">' + todaySessions.map((session) => renderSessionBoardCard(session)).join('') + '</div>' : '<div class="ex2-empty-state lux-soft-chrome ex2-schedule-sessions-empty"><i class="fas fa-calendar-xmark"></i><p class="ex2-empty-state-copy">No sessions scheduled yet.</p></div>'}
             </section>
         `;
     };

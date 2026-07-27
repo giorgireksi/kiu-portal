@@ -279,16 +279,16 @@
                 data-group-id="${safeHtml(groupId)}"
                 data-lms-subject-card="true">
                 <div class="lux-card-body">
-                    <div class="lms-clean-card-kicker"><i class="${safeHtml(icon)}"></i> ${safeHtml(kickerLabel)}</div>
-                    <div class="lms-clean-card-title">${safeHtml(subjectName)}</div>
+                    <div class="lux-section-kicker lms-clean-card-kicker"><i class="${safeHtml(icon)}"></i> ${safeHtml(kickerLabel)}</div>
+                    <div class="lux-subject-row__title lms-clean-card-title">${safeHtml(subjectName)}</div>
                     ${buildLmsSubjectMetaBadges(subject)}
                     ${metaHtml}
                 </div>
             </button>`;
         }).join('') || `<div class="lms-route-empty lms-route-empty--full-span">
             <div class="lms-route-empty-icon"><i class="fas fa-book-open"></i></div>
-            <div class="lms-route-empty-title lms-route-copy-mt-12">${isStudent ? 'No enrolled subjects yet' : 'No subjects yet'}</div>
-            <div class="lms-route-empty-copy">${isStudent
+            <div class="lux-empty-state__title lms-route-empty-title lms-route-copy-mt-12">${isStudent ? 'No enrolled subjects yet' : 'No subjects yet'}</div>
+            <div class="lux-empty-state__copy lms-route-empty-copy">${isStudent
                 ? 'Register for subjects on the Registration page. After you choose your group, they will appear here for the matching semester.'
                 : `Publish subjects for the ${safeHtml(facultyLabel)} faculty from the admin workspace, then they appear here automatically.`}</div>
         </div>`;

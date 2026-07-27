@@ -210,12 +210,12 @@ function buildStudentRegistrationViewSignature(tabId, faculty, safeData, selecte
 
 function createStudentRegistrationRenderErrorNode() {
     const wrapper = document.createElement('div');
-    wrapper.className = 'registration-render-error';
+    wrapper.className = 'registration-render-error home-hover-chip';
     const title = document.createElement('div');
-    title.className = 'registration-render-error-title';
+    title.className = 'registration-render-error-title lux-card-title';
     title.textContent = 'Student registration view could not load correctly.';
     const copy = document.createElement('div');
-    copy.className = 'registration-render-error-copy';
+    copy.className = 'registration-render-error-copy lux-card-copy';
     copy.textContent = 'The page hit saved data that needs cleanup. The renderer has been hardened, so refresh once and try again.';
     wrapper.append(title, copy);
     return wrapper;
@@ -223,7 +223,7 @@ function createStudentRegistrationRenderErrorNode() {
 
 function createRegistrationEmptyStateNode(message) {
     const empty = document.createElement('div');
-    empty.className = 'registration-empty-state';
+    empty.className = 'registration-empty-state home-hover-chip';
     empty.textContent = message;
     return empty;
 }
@@ -233,10 +233,10 @@ function buildStudentRegistrationSectionHeadNode(meta) {
     head.className = 'registration-section-head';
     const copy = document.createElement('div');
     const title = document.createElement('div');
-    title.className = 'registration-section-title';
+    title.className = 'registration-section-title lux-card-title';
     title.textContent = meta.title;
     const subtitle = document.createElement('div');
-    subtitle.className = 'registration-section-copy';
+    subtitle.className = 'registration-section-copy lux-card-copy';
     subtitle.textContent = meta.subtitle;
     copy.append(title, subtitle);
     head.appendChild(copy);
@@ -249,7 +249,7 @@ function buildStudentModuleChoiceNode(module, tabId, selectedId, courseContext, 
     const progress = formatEctsProgress(module.maxEcts || 0, completed);
 
     const label = document.createElement('label');
-    label.className = `registration-module-choice${active ? ' is-active' : ''}`;
+    label.className = `registration-module-choice home-hover-chip${active ? ' is-active' : ''}`;
     const left = document.createElement('span');
     left.className = 'registration-module-choice-left';
     const input = document.createElement('input');
@@ -274,7 +274,7 @@ function buildStudentModuleChoiceNode(module, tabId, selectedId, courseContext, 
 function buildStudentProgramChoiceNode(program, tabId, selectedId) {
     const active = program.id === selectedId;
     const label = document.createElement('label');
-    label.className = `registration-module-choice${active ? ' is-active' : ''}`;
+    label.className = `registration-module-choice home-hover-chip${active ? ' is-active' : ''}`;
     const left = document.createElement('span');
     left.className = 'registration-module-choice-left';
     const input = document.createElement('input');
@@ -318,12 +318,12 @@ function buildStudentRegistrationSelectedViewNode() {
         const first = items[0] || {};
         const sectionSummary = items.map((item) => `${item.groupName || item.groupId || 'Section'}${item.day ? ` / ${item.day}` : ''}${item.time ? ` ${item.time}` : ''}`).join(', ');
         const card = document.createElement('div');
-        card.className = 'registration-state-card';
+        card.className = 'registration-state-card home-hover-chip';
         const title = document.createElement('div');
-        title.className = 'registration-state-title';
+        title.className = 'registration-state-title lux-card-title';
         title.textContent = first.courseName || courseId;
         const code = document.createElement('div');
-        code.className = 'registration-state-meta';
+        code.className = 'registration-state-meta lux-card-meta';
         code.textContent = courseId;
         const summary = document.createElement('div');
         summary.className = 'registration-state-summary';
@@ -353,15 +353,15 @@ function buildStudentRegistrationHistoryViewNode() {
         const semester = entry?.semester != null ? `Semester ${entry.semester}` : '';
         const ects = entry?.ects != null ? `${entry.ects} ECTS` : '';
         const card = document.createElement('div');
-        card.className = 'registration-state-card';
+        card.className = 'registration-state-card home-hover-chip';
         const row = document.createElement('div');
         row.className = 'registration-history-row';
         const left = document.createElement('div');
         const title = document.createElement('div');
-        title.className = 'registration-state-title registration-state-title--compact';
+        title.className = 'registration-state-title registration-state-title--compact lux-card-title';
         title.textContent = courseName || courseId;
         const code = document.createElement('div');
-        code.className = 'registration-state-meta';
+        code.className = 'registration-state-meta lux-card-meta';
         code.textContent = courseId;
         left.append(title, code);
         const meta = document.createElement('div');
@@ -441,7 +441,7 @@ function buildStudentCourseRowNode(courseRef, idx, fac, courseContext) {
     );
 
     const row = document.createElement('div');
-    row.className = 'registration-course-row';
+    row.className = 'registration-course-row home-hover-chip';
 
     const index = document.createElement('div');
     index.className = 'registration-course-index';
@@ -450,10 +450,10 @@ function buildStudentCourseRowNode(courseRef, idx, fac, courseContext) {
     const main = document.createElement('div');
     main.className = 'registration-course-row-main';
     const title = document.createElement('div');
-    title.className = 'registration-course-title';
+    title.className = 'registration-course-title lux-card-title';
     title.textContent = courseMeta.name || 'Untitled Subject';
     const subtitle = document.createElement('div');
-    subtitle.className = 'registration-course-subtitle';
+    subtitle.className = 'registration-course-subtitle lux-card-meta';
     subtitle.textContent = courseId || '';
     main.append(title, subtitle);
 
@@ -483,7 +483,7 @@ function renderStudentCourseRows(courseList, fac, courseContext) {
     const rows = courseList || [];
     if (rows.length === 0) {
         const empty = document.createElement('div');
-        empty.className = 'registration-course-empty';
+        empty.className = 'registration-course-empty registration-empty-state home-hover-chip';
         empty.textContent = 'No subjects assigned';
         return empty;
     }
@@ -519,10 +519,10 @@ function renderStudentModulePaneHtml(module, tabId, fac, courseContext, subtitle
     const heading = document.createElement('div');
     heading.className = 'registration-module-pane-heading';
     const title = document.createElement('div');
-    title.className = 'registration-module-pane-title';
+    title.className = 'registration-module-pane-title lux-card-title';
     title.textContent = module.name || 'Module';
     const copy = document.createElement('div');
-    copy.className = 'registration-module-pane-copy';
+    copy.className = 'registration-module-pane-copy lux-card-copy';
     copy.textContent = subtitle;
     heading.append(title, copy);
     const chip = document.createElement('div');
@@ -583,7 +583,7 @@ function renderStudentTrackPaneHtml(program, tabId, fac, courseContext) {
 
     const groups = program.modules || [];
     const card = document.createElement('div');
-    card.className = 'registration-track-card';
+    card.className = 'registration-track-card home-hover-chip';
     const head = document.createElement('div');
     head.className = 'registration-track-card-head';
     const heading = document.createElement('div');
@@ -673,12 +673,12 @@ function renderStudentRegStructures(tabId = 'prog') {
         const meta = tabConfig
             ? {
                 title: tabConfig.label,
-                subtitle: STUDENT_REGISTRATION_SECTION_META[tabId]?.subtitle
+                subtitle: window.STUDENT_REGISTRATION_SECTION_META?.[tabId]?.subtitle
                     || `Use the ${tabConfig.label.toLowerCase()} structure created by admin and choose only eligible subjects.`,
                 listTitle: tabConfig.listTitle || `${tabConfig.label} Programs`,
                 paneSubtitle: tabConfig.paneSubtitle || `${tabConfig.label} Subjects`
             }
-            : (STUDENT_REGISTRATION_SECTION_META[tabId] || STUDENT_REGISTRATION_SECTION_META.prog);
+            : (window.STUDENT_REGISTRATION_SECTION_META?.[tabId] || window.STUDENT_REGISTRATION_SECTION_META?.prog);
         const usesModuleLayout = typeof isStudentRegistrationModuleLayoutTab === 'function'
             ? isStudentRegistrationModuleLayoutTab(tabId, fac)
             : (tabId === 'prog' || tabId === 'free');
@@ -700,11 +700,11 @@ function renderStudentRegStructures(tabId = 'prog') {
             const shellGrid = document.createElement('div');
             shellGrid.className = 'registration-shell-grid';
             const listCard = document.createElement('div');
-            listCard.className = 'registration-module-list-card';
+            listCard.className = 'registration-module-list-card home-hover-chip';
             const listHead = document.createElement('div');
             listHead.className = 'registration-module-list-head';
             const listTitle = document.createElement('div');
-            listTitle.className = 'registration-module-list-title';
+            listTitle.className = 'registration-module-list-title lux-card-title';
             listTitle.textContent = meta.listTitle;
             const listCount = document.createElement('span');
             listCount.className = 'registration-module-list-count';
@@ -723,7 +723,7 @@ function renderStudentRegStructures(tabId = 'prog') {
                 listCard.append(listHead, list);
                 const pane = document.createElement('div');
                 pane.id = `student-${tabId}-pane`;
-                pane.className = 'registration-module-pane-card';
+                pane.className = 'registration-module-pane-card home-hover-chip';
                 pane.replaceChildren(renderStudentModulePaneHtml(selectedModule, tabId, fac, courseContext, meta.paneSubtitle));
                 shellGrid.append(listCard, pane);
                 fragment.appendChild(shellGrid);
@@ -734,11 +734,11 @@ function renderStudentRegStructures(tabId = 'prog') {
             const shellGrid = document.createElement('div');
             shellGrid.className = 'registration-shell-grid';
             const listCard = document.createElement('div');
-            listCard.className = 'registration-module-list-card';
+            listCard.className = 'registration-module-list-card home-hover-chip';
             const listHead = document.createElement('div');
             listHead.className = 'registration-module-list-head';
             const listTitle = document.createElement('div');
-            listTitle.className = 'registration-module-list-title';
+            listTitle.className = 'registration-module-list-title lux-card-title';
             listTitle.textContent = meta.listTitle;
             const listCount = document.createElement('span');
             listCount.className = 'registration-module-list-count';
@@ -757,7 +757,7 @@ function renderStudentRegStructures(tabId = 'prog') {
                 listCard.append(listHead, list);
                 const pane = document.createElement('div');
                 pane.id = `student-${tabId}-pane`;
-                pane.className = 'registration-module-pane-card';
+                pane.className = 'registration-module-pane-card home-hover-chip';
                 pane.replaceChildren(renderStudentTrackPaneHtml(selectedProgram, tabId, fac, courseContext));
                 shellGrid.append(listCard, pane);
                 fragment.appendChild(shellGrid);

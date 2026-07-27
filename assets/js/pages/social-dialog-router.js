@@ -51,13 +51,19 @@
             const runtime = state();
             const kind = text(dialog.type);
 
+            if (kind === 'photography-upload') {
+                if (deps.hasSocialPhotographyModule()
+                    && typeof window.renderPhotographyUploadDialog === 'function') {
+                    return window.renderPhotographyUploadDialog(dialog);
+                }
+                deps.ensureSocialPhotographyModule()
+                    .then(() => queueDeferredModuleRender('photography-module'))
+                    .catch(() => null);
+                return '';
+            }
             if (kind === 'photography-comments' && deps.hasSocialPhotographyModule()
                 && typeof window.renderPhotographyCommentsDialog === 'function') {
                 return window.renderPhotographyCommentsDialog(dialog);
-            }
-            if (kind === 'photography-upload' && deps.hasSocialPhotographyModule()
-                && typeof window.renderPhotographyUploadDialog === 'function') {
-                return window.renderPhotographyUploadDialog(dialog);
             }
 
             if (kindOwned('GROUP_OWNED_DIALOG_KINDS', GROUP_FALLBACK, kind)) {

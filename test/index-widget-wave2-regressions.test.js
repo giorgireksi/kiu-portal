@@ -40,8 +40,9 @@ describe('index widget wave 2 regressions', () => {
     expect(facultyHtml).toContain('class="lux-faculty-hero-focus lux-hero-side"');
     expect(gradebookJs).toContain('class="gb-staff-stat-grid lux-strip-grid lux-strip-grid--adaptive"');
     expect(gradebookJs).toContain('class="lux-strip-card surface-card"><span>Students</span>');
-    expect(chancelleryJs).toContain('class="lux-stat-grid lux-strip-grid lux-strip-grid--adaptive lux-chancellery-stats-grid"');
-    expect(chancelleryJs).toContain('class="lux-stat-card lux-strip-card surface-card"');
+    expect(chancelleryJs).toContain('class="lux-strip-grid lux-strip-grid--adaptive lux-chancellery-finance-grid"');
+    expect(chancelleryJs).toContain('class="lux-stat-card lux-strip-card home-hover-chip lux-chancellery-finance-card"');
+    expect(chancelleryJs).not.toContain('class="lux-stat-card lux-strip-card surface-card"');
   });
 
   it('keeps admin-orders workspace shell and create modal mount aligned to bare portal stack', () => {

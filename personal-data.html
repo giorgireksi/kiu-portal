@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260725-frosted1">
     <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxcontrolcta1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-wave2host1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260725-frosted1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260725-wave2host1">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260727-pdshare1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260727-pdshare1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260727-pdshare1">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
 </head>
@@ -24,16 +25,16 @@
     <!-- MAIN CONTENT -->
     <main id="app-content">
         <div id="page-personal-data" class="page-section active-page lux-page-shell" data-lux-layout-only="1">
-            <section class="page-hero personal-data-hero lux-hero lux-summary-surface--hero">
+            <section class="page-hero personal-data-hero lux-hero" aria-label="Personal data hero">
                 <div class="personal-data-hero-copy lux-hero-main">
-                    <div class="page-hero-kicker"><i class="far fa-id-card"></i> Personal Data</div>
-                    <div class="page-hero-title personal-data-hero-title">Official Student Record</div>
+                    <div class="lux-section-kicker lux-page-kicker"><i class="far fa-id-card"></i> Personal Data</div>
+                    <div class="page-hero-title personal-data-hero-title lux-page-title">Official Student Record</div>
                 </div>
             </section>
 
-            <div class="filter-shell personal-data-command personal-data-toolbar">
+            <div class="filter-shell personal-data-command personal-data-toolbar home-hover-chip">
                 <div class="personal-data-command-context personal-data-toolbar-copy">
-                    <div class="filter-shell-title"><i class="fas fa-graduation-cap"></i> Program Context</div>
+                    <div class="lux-section-kicker filter-shell-title">Program Context</div>
                     <p>Current academic program used for this record.</p>
                     <select id="program-context-select" class="lux-control" aria-label="Program context"><option>Program</option></select>
                 </div>
@@ -46,8 +47,8 @@
 
             <div class="personal-data-workspace personal-data-layout" data-lux-glass-root="1">
                 <aside class="personal-data-rail" aria-label="Student profile">
-                    <section class="profile-card surface-card lux-summary-surface lux-summary-surface--panel personal-data-identity-card">
-                        <div class="personal-data-card-kicker"><i class="far fa-id-badge"></i> Identity</div>
+                    <section class="profile-card personal-data-identity-card home-hover-chip" aria-label="Student identity">
+                        <div class="lux-section-kicker personal-data-card-kicker"><i class="far fa-id-badge"></i> Identity</div>
                         <div class="personal-data-profile-row">
                             <div class="personal-data-avatar-shell">
                                 <img loading="lazy" id="personal-data-avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Profile">
@@ -57,12 +58,12 @@
                                 <div class="lux-status-pill lux-status-pill--dot is-success" id="personal-data-status">Active</div>
                             </div>
                         </div>
-                        <div id="personal-data-program" class="personal-data-card-copy">Loading...</div>
+                        <div id="personal-data-program" class="lux-card-copy personal-data-card-copy">Loading...</div>
 
                         <div class="pd-divider"></div>
 
                         <div class="pd-block">
-                            <div class="personal-data-card-kicker"><i class="far fa-address-card"></i> Contact &amp; IDs</div>
+                            <div class="lux-section-kicker personal-data-card-kicker"><i class="far fa-address-card"></i> Contact &amp; IDs</div>
                             <div class="pd-contact-grid">
                                 <div class="pd-contact-row"><span>Student ID</span><strong id="personal-data-id">-</strong></div>
                                 <div class="pd-contact-row"><span>ID number</span><strong id="personal-data-national-id">—</strong></div>
@@ -75,7 +76,7 @@
                         <div class="pd-divider"></div>
 
                         <div class="pd-block pd-security">
-                            <div class="personal-data-card-kicker"><i class="fas fa-lock"></i> Security</div>
+                            <div class="lux-section-kicker personal-data-card-kicker"><i class="fas fa-lock"></i> Security</div>
                             <form id="personal-data-password-form" class="pd-password-form" autocomplete="off">
                                 <label class="pd-field"><span>Current password</span>
                                     <input type="password" name="currentPassword" autocomplete="current-password" required></label>
@@ -91,39 +92,39 @@
                 </aside>
 
                 <div class="personal-data-main">
-                    <section class="surface-card lux-summary-surface lux-summary-surface--panel personal-data-merged" aria-labelledby="personal-data-overview-heading">
+                    <section class="personal-data-merged" aria-labelledby="personal-data-overview-heading">
                         <div class="personal-data-section-head">
-                            <div class="personal-data-card-kicker" id="personal-data-overview-heading"><i class="fas fa-chart-line"></i> Academic Snapshot</div>
-                            <div id="personal-data-level-heading" class="personal-data-level-heading">Loading...</div>
-                            <p class="personal-data-card-copy">Current academic progress and standing at a glance.</p>
+                            <div class="lux-section-kicker personal-data-card-kicker" id="personal-data-overview-heading"><i class="fas fa-chart-line"></i> Academic Snapshot</div>
+                            <div id="personal-data-level-heading" class="lux-card-title personal-data-level-heading">Loading...</div>
+                            <p class="lux-card-copy personal-data-card-copy">Current academic progress and standing at a glance.</p>
                         </div>
                         <div class="kpi-row lux-strip-grid lux-strip-grid--adaptive personal-data-kpi-row">
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-layer-group"></i></div>
                                 <div>
-                                    <div class="personal-data-kpi-label">Semester</div>
-                                    <div class="personal-data-kpi-value" id="personal-data-kpi-semester">-</div>
+                                    <div class="lux-card-meta personal-data-kpi-label">Semester</div>
+                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-semester">-</div>
                                 </div>
                             </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-chart-simple"></i></div>
                                 <div>
-                                    <div class="personal-data-kpi-label">GPA</div>
-                                    <div class="personal-data-kpi-value" id="personal-data-kpi-gpa">-</div>
+                                    <div class="lux-card-meta personal-data-kpi-label">GPA</div>
+                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-gpa">-</div>
                                 </div>
                             </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-award"></i></div>
                                 <div>
-                                    <div class="personal-data-kpi-label">ECTS</div>
-                                    <div class="personal-data-kpi-value" id="personal-data-kpi-ects">-</div>
+                                    <div class="lux-card-meta personal-data-kpi-label">ECTS</div>
+                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-ects">-</div>
                                 </div>
                             </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-shield-alt"></i></div>
                                 <div>
-                                    <div class="personal-data-kpi-label">Standing</div>
-                                    <div class="personal-data-kpi-value" id="personal-data-kpi-average">-</div>
+                                    <div class="lux-card-meta personal-data-kpi-label">Standing</div>
+                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-average">-</div>
                                 </div>
                             </div>
                         </div>
@@ -135,8 +136,8 @@
                         <div class="pd-divider"></div>
 
                         <div class="personal-data-section-head">
-                            <div class="personal-data-card-kicker" id="personal-data-subjects-heading"><i class="fas fa-book-open"></i> Subjects &amp; Enrollments</div>
-                            <p class="personal-data-card-copy">Subjects you are studying now, the staff running them, and any subjects awaiting a retake.</p>
+                            <div class="lux-section-kicker personal-data-card-kicker" id="personal-data-subjects-heading"><i class="fas fa-book-open"></i> Subjects &amp; Enrollments</div>
+                            <p class="lux-card-copy personal-data-card-copy">Subjects you are studying now, the staff running them, and any subjects awaiting a retake.</p>
                         </div>
                         <div id="personal-data-subjects-root" class="personal-data-subjects-root" aria-live="polite">
                             <div class="personal-data-subjects-loading">Loading subjects...</div>
@@ -153,6 +154,7 @@
 <script defer src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
 <script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
 <script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
+<script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260720-w18"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604822068"></script>

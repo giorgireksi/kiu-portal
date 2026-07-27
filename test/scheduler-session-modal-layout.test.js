@@ -23,6 +23,7 @@ describe('scheduler session modal layout regressions', () => {
     it('uses shared droplist/controls SSOT; admin-scheduler-route.css stays retired', () => {
         const droplist = readSource('assets/css/lux-droplist.css');
         const controls = readSource('assets/css/lux-controls.css');
+        const modals = readSource('assets/css/lux-modals.css');
         const html = readSource('admin-scheduler.html');
 
         expectRetiredCss('admin-scheduler-route.css');
@@ -31,5 +32,7 @@ describe('scheduler session modal layout regressions', () => {
         expect(droplist).toContain('.lux-droplist-panel');
         expect(controls).toContain('.lux-picker-panel.is-closing');
         expect(html).toContain('lux-controls.css');
+        expect(modals).toContain('[data-lux-transparency-exempt="1"] #schModalOverlay .sch-form-section');
+        expect(modals).toContain('--lux-panel-modal-section');
     });
 });

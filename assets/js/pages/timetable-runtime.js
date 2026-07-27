@@ -349,7 +349,7 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
     toolbar.className = 'schedule-toolbar';
 
     const toggle = document.createElement('div');
-    toggle.className = 'schedule-view-switcher lux-timetable-view-switcher';
+    toggle.className = 'schedule-view-switcher lux-timetable-view-switcher home-hover-chip';
     toggle.setAttribute('role', 'group');
     toggle.setAttribute('aria-label', 'Schedule View');
 
@@ -357,7 +357,7 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
     toggle.appendChild(buildViewButton('timetable', 'Timetable', 'fa-table-cells-large', view));
 
     const weekNav = document.createElement('div');
-    weekNav.className = 'schedule-week-nav lux-timetable-week-nav';
+    weekNav.className = 'schedule-week-nav lux-timetable-week-nav home-hover-chip';
     weekNav.innerHTML = localizeHtmlMarkup(`
         <button type="button" class="schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="-1" aria-label="Previous Week">
             <i class="fas fa-chevron-left"></i>
@@ -374,11 +374,11 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
     toggleRow.appendChild(toggle);
 
     const overviewRow = document.createElement('div');
-    overviewRow.className = 'schedule-overview-row lux-timetable-overview-row';
+    overviewRow.className = 'schedule-overview-row lux-timetable-overview-row home-hover-chip';
     overviewRow.innerHTML = localizeHtmlMarkup(`
-        <span class="schedule-chip lux-status-pill lux-timetable-chip"><i class="fas fa-layer-group"></i> ${overview.sessionCount} sessions</span>
-        <span class="schedule-chip lux-status-pill lux-timetable-chip"><i class="fas fa-calendar-week"></i> ${overview.dayCount} active days</span>
-        <span class="schedule-chip lux-status-pill lux-timetable-chip"><i class="far fa-clock"></i> ${overview.totalHours.toFixed(1)} planned hours</span>
+        <span class="schedule-chip lux-status-pill is-muted lux-timetable-chip"><i class="fas fa-layer-group"></i> ${overview.sessionCount} sessions</span>
+        <span class="schedule-chip lux-status-pill is-muted lux-timetable-chip"><i class="fas fa-calendar-week"></i> ${overview.dayCount} active days</span>
+        <span class="schedule-chip lux-status-pill is-muted lux-timetable-chip"><i class="far fa-clock"></i> ${overview.totalHours.toFixed(1)} planned hours</span>
         <span class="schedule-chip schedule-chip-soft lux-status-pill lux-timetable-chip"><i class="fas fa-user-clock"></i> ${escapeHtml(roleLabel)}</span>
     `);
 
@@ -822,7 +822,7 @@ function showScheduleSurfaceEmpty(container, markup, emptyClassName = 'schedule-
     const regions = ensureScheduleSurfaceRegions(container);
     regions.frame.hidden = true;
     regions.empty.hidden = false;
-    regions.empty.className = emptyClassName;
+    regions.empty.className = `home-hover-chip ${emptyClassName}`.trim();
     regions.empty.innerHTML = localizeHtmlMarkup(markup);
     return regions;
 }
@@ -837,7 +837,7 @@ function showScheduleSurfaceFrame(container) {
 }
 
 function renderScheduleSessionDaySection(section, entry, dayItems, facultyActionsEnabled) {
-    section.className = 'schedule-day-section lux-timetable-day-section';
+    section.className = 'schedule-day-section lux-timetable-day-section home-hover-chip';
     section.dataset.scheduleDay = entry.en.toLowerCase();
     section.innerHTML = localizeHtmlMarkup(`
         <div class="schedule-day-heading lux-timetable-day-heading">
@@ -854,7 +854,7 @@ function renderScheduleSessionDaySection(section, entry, dayItems, facultyAction
                     const markerMeta = marker ? getScheduleSessionMarkerTypeMeta(marker.type) : null;
                     const markerClass = marker ? ` has-session-marker marker-${scheduleMarkerClassToken(marker.type)}` : '';
                     return `
-                    <article class="schedule-session-card lux-timetable-session-card${markerClass}">
+                    <article class="schedule-session-card lux-timetable-session-card home-hover-chip${markerClass}">
                         <div class="schedule-session-card-header lux-timetable-session-card-header">
                             <div>
                                 <div class="schedule-session-code-row lux-timetable-session-code-row">
@@ -912,11 +912,9 @@ function renderScheduleSessionsView(container, items, options = {}) {
 
     if (!normalizedItems.length) {
         showScheduleSurfaceEmpty(container, `
-            <div class="schedule-empty-state">
-                <div class="schedule-empty-icon"><i class="fas fa-calendar-xmark"></i></div>
-                <div class="schedule-empty-title">${escapeHtml(options.emptyTitle || 'No sessions scheduled for this week')}</div>
-                <div class="schedule-empty-copy">${escapeHtml(options.emptyMessage || `Nothing is assigned for ${formatWeekRangeLabel(weekStart)} yet.`)}</div>
-            </div>
+            <div class="schedule-empty-icon"><i class="fas fa-calendar-xmark"></i></div>
+            <div class="lux-empty-state__title schedule-empty-title">${escapeHtml(options.emptyTitle || 'No sessions scheduled for this week')}</div>
+            <div class="lux-empty-state__copy schedule-empty-copy">${escapeHtml(options.emptyMessage || `Nothing is assigned for ${formatWeekRangeLabel(weekStart)} yet.`)}</div>
         `, 'schedule-empty-state');
         return;
     }

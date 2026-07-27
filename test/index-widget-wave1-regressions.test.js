@@ -92,7 +92,8 @@ describe('index widget wave 1 regressions', () => {
 
     expect(source).toContain('class="personal-data-hero-copy lux-hero-main"');
     expect(source).toContain('class="kpi-row lux-strip-grid lux-strip-grid--adaptive personal-data-kpi-row"');
-    expect(source).toContain('class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
+    expect(source).toContain('class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip"');
+    expect(source).not.toContain('lux-summary-surface--panel');
     expect(source).not.toContain('class="personal-data-record-grid lux-strip-grid lux-strip-grid--adaptive"');
     expect(source).not.toContain('class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
   });

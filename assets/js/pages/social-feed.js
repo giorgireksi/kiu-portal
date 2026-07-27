@@ -88,6 +88,8 @@ function __kiuFeedExpose(map) {
         updatePortalSocialPost
     } = hooks;
 
+    const pendingCommentReactions = new Set();
+
     if (
         typeof state !== 'function'
         || typeof currentUser !== 'function'
@@ -727,7 +729,7 @@ function __kiuFeedExpose(map) {
             ? `<span class="lux-glass-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
             : '';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--post-compose lux-glass-dialog-card--project-create lux-glass-dialog-card sn-mat-modal" data-form="post-compose" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--post-compose lux-glass-dialog-card--project-create lux-glass-dialog-card lux-glass-dialog-card--social-glass sn-mat-modal" data-form="post-compose" data-action="noop" data-lux-transparency-exempt="1">
                 ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create post', 'Write an update, add photos, then attach campus items to share on Home.', { icon: 'fas fa-pen' }) : ''}
                 <div class="lux-glass-dialog-body lux-glass-dialog-body--project-create">
                     <section class="lux-glass-dialog-group-section">
@@ -800,6 +802,175 @@ function __kiuFeedExpose(map) {
         'comment-delete'
     ]);
 
+    function renderPostCommentsDialog(runtime, dialog, post, options = {}) {
+        if (!post) return '';
+        const stacked = Boolean(options.stacked);
+        const commentAuthor = currentUser();
+        const dialogComments = Array.isArray(post.comments) ? post.comments : [];
+        const dialogNormalizedPostId = postKey(post);
+        const dialogCommentDraft = String(runtime.ui?.commentDraftByPost?.[dialogNormalizedPostId] || '');
+        const dialogCommentInputId = controlId('commentBody', dialogNormalizedPostId);
+        const dialogCommentPlaceholder = 'Write a comment...';
+        const dialogCommentSubmitLabel = 'Comment';
+        const dialogCommentTotal = dialogComments.length + Number(post.replyCount || 0);
+        const dialogPostAuthor = post.authorUserId ? (accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId }) : commentAuthor;
+        const dialogPostReactionCounts = post?.reactionCounts || {};
+        const dialogPostReactionTotal = Object.values(dialogPostReactionCounts).reduce((sum, count) => sum + Number(count || 0), 0);
+        const dialogPostMedia = Array.isArray(post.media) ? post.media : [];
+        const dialogSharedPost = post.sharedPost;
+        const dialogScopeBadge = post.scopeType === 'page'
+            ? `Page - ${text(post.scopeName || 'Page')}`
+            : post.scopeType === 'group'
+                ? `Group - ${text(post.scopeName || 'Group')}`
+                : 'Profile';
+        const dialogSubtitle = dialogCommentTotal
+            ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'} on this post.`
+            : 'Be the first to reply to this post.';
+        const backdropClass = stacked
+            ? 'lux-glass-dialog-backdrop lux-glass-dialog-backdrop--comments-anchor'
+            : 'lux-glass-dialog-backdrop';
+        return `<div class="${backdropClass}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Comments"${stacked ? ' aria-hidden="true"' : ''}>
+            <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--comments lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel sns-comments-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head lux-studio-head social-neo-surveys-hero-head">
+                    <div class="social-neo-surveys-hero-copy">
+                        <span class="social-neo-section-kicker">Post</span>
+                        <h2>Comments</h2>
+                        <p class="lux-glass-dialog-comment-subtitle">${escape(dialogSubtitle)}</p>
+                    </div>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats social-neo-dialog-comment-stats">
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogPostReactionTotal))}</strong><span>Reactions</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogCommentTotal))}</strong><span>Comments</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(dialogScopeBadge)}</strong><span>Scope</span></article>
+                </div>
+                <div class="lux-glass-dialog-comment-scroll">
+                <div class="lux-glass-dialog-comment-preview">
+                    <div class="lux-glass-dialog-comment-post-head">
+                        <div class="social-neo-person social-neo-person-start-gap-10">
+                            ${avatar(dialogPostAuthor, 'social-neo-avatar-sm')}
+                            <div>
+                                <strong>${escape(displayName(dialogPostAuthor))}</strong>
+                                <span class="social-neo-muted">${escape(accountSubtitle(dialogPostAuthor))} &middot; ${escape(when(post.createdAt))}</span>
+                            </div>
+                        </div>
+                        <span class="social-neo-pill social-neo-post-scope-badge">${escape(dialogScopeBadge)}</span>
+                    </div>
+                    ${text(post.body || post.text || '') ? `<div class="lux-glass-dialog-comment-post-body">${escape(text(post.body || post.text || ''))}</div>` : ''}
+                    ${dialogPostMedia.map((media) => filePreview(media)).join('')}
+                    ${dialogSharedPost ? `
+                        <div class="social-neo-shared">
+                            <span class="social-neo-pill">Shared post</span>
+                            <strong>${escape(displayName(dialogSharedPost.authorUserId))}</strong>
+                            <p>${escape(dialogSharedPost.body || dialogSharedPost.text || 'Original post')}</p>
+                        </div>
+                    ` : ''}
+                    ${(dialogPostReactionTotal || dialogCommentTotal) ? `
+                        <div class="lux-glass-dialog-comment-post-metrics">
+                            ${renderPostReactionMetrics(dialogPostReactionCounts)}
+                            ${dialogCommentTotal ? `<span class="social-neo-post-metric">${escape(dialogCommentTotal)} comment${dialogCommentTotal === 1 ? '' : 's'}</span>` : ''}
+                            ${Number(post.shareCount || 0) > 0 ? `<span class="social-neo-post-metric">${escape(post.shareCount)} share${post.shareCount !== 1 ? 's' : ''}</span>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="lux-glass-dialog-comment-thread" id="lux-glass-dialog-comment-thread">
+                    ${dialogComments.length ? renderCommentThread(dialogComments, post, 'dialog') : '<div class="social-neo-empty">No comments yet. Be the first to reply.</div>'}
+                </div>
+                </div>
+                <form class="lux-glass-dialog-comment-compose sns-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
+                    ${avatar(commentAuthor, 'social-neo-avatar-sm')}
+                    <div class="lux-glass-dialog-comment-compose-main">
+                        <div class="social-neo-inline social-neo-comment-compose-row">
+                            <input class="social-neo-input lux-control" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="${escape(dialogCommentPlaceholder)}" aria-label="${escape(dialogCommentPlaceholder)}" value="${escape(dialogCommentDraft)}">
+                            <button class="lux-primary-btn" type="submit">${dialogCommentSubmitLabel}</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="postId" value="${escape(dialogNormalizedPostId)}">
+                </form>
+            </div>
+        </div>`;
+    }
+
+    function renderCommentDeleteConfirmDialog(runtime, dialog, post, options = {}) {
+        const stacked = Boolean(options.stacked);
+        const backdropClass = stacked
+            ? 'lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child lux-glass-dialog-backdrop--comment-delete'
+            : 'lux-glass-dialog-backdrop';
+        if (!post) {
+            // eslint-disable-next-line no-console
+            console.warn('[comment-delete] post not in feed', { postId: dialog.postId, feedSize: Array.isArray(state().feed) ? state().feed.length : 0 });
+            return `<div class="${backdropClass}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Delete comment">
+                <div class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal lux-studio-panel" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                        <div class="lux-glass-dialog-heading">
+                            <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                            <div class="social-neo-delete-confirm-title">
+                                <strong class="lux-glass-dialog-title">Delete comment</strong>
+                                <span class="lux-glass-dialog-subtitle">Post unavailable.</span>
+                            </div>
+                        </div>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="social-neo-delete-confirm-preview social-neo-delete-confirm-preview--empty">
+                        <p>The post for this comment could not be located. Cancel and refresh.</p>
+                    </div>
+                    <div class="social-neo-delete-confirm-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    </div>
+                </div>
+            </div>`;
+        }
+        const targetComment = findCommentInThread(post.comments, dialog.commentId);
+        const commentAuthor = targetComment
+            ? (accountById(targetComment.authorUserId) || { id: targetComment.authorUserId, displayName: targetComment.authorName || targetComment.authorUserId })
+            : null;
+        const previewText = targetComment
+            ? text(targetComment.body || targetComment.text || 'This comment has no text.')
+            : 'This comment could not be located. Cancel and try again.';
+        const previewAuthor = commentAuthor
+            ? `<div class="social-neo-delete-confirm-author">
+                    ${avatar(commentAuthor, 'social-neo-avatar-sm')}
+                    <div class="social-neo-delete-confirm-author-meta">
+                        <strong>${escape(displayName(commentAuthor))}</strong>
+                        <span>${escape(when(targetComment.createdAt))}</span>
+                    </div>
+               </div>`
+            : '';
+        const debugNote = targetComment
+            ? ''
+            : `<div class="social-neo-delete-confirm-debug">debug: postId=${escape(text(post.id))} commentId=${escape(text(dialog.commentId))}</div>`;
+        if (!targetComment) {
+            // eslint-disable-next-line no-console
+            console.warn('[comment-delete] comment lookup missed', { postId: post.id, commentId: dialog.commentId, commentCount: Array.isArray(post.comments) ? post.comments.length : 0 });
+        }
+        return `<div class="${backdropClass}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Delete comment">
+            <form class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal lux-studio-panel" data-form="dialog-comment-delete" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                        <div class="social-neo-delete-confirm-title">
+                            <strong class="lux-glass-dialog-title">Delete comment</strong>
+                            <span class="lux-glass-dialog-subtitle">This cannot be undone.</span>
+                        </div>
+                    </div>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="social-neo-delete-confirm-preview">
+                    ${previewAuthor}
+                    <blockquote class="social-neo-delete-confirm-quote">${escape(previewText)}</blockquote>
+                    ${debugNote}
+                </div>
+                <div class="social-neo-delete-confirm-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-btn-danger lux-glass-dialog-submit-btn" type="submit" ${targetComment ? '' : 'disabled'}>Delete comment</button>
+                </div>
+                <input type="hidden" name="postId" value="${escape(text(post.id))}">
+                <input type="hidden" name="commentId" value="${escape(text(targetComment?.id || dialog.commentId || ''))}">
+            </form>
+        </div>`;
+    }
+
     function renderFeedOwnedDialog(runtime, dialog) {
         if (!dialog) return '';
         const kind = text(dialog.type);
@@ -861,79 +1032,17 @@ function __kiuFeedExpose(map) {
             </div>`;
         }
         if (kind === 'comment-delete') {
-            if (!post) {
-                // eslint-disable-next-line no-console
-                console.warn('[comment-delete] post not in feed', { postId: dialog.postId, feedSize: Array.isArray(state().feed) ? state().feed.length : 0 });
-                return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                    <div class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal">
-                        <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
-                            <div class="lux-glass-dialog-heading">
-                                <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
-                                <div class="social-neo-delete-confirm-title">
-                                    <strong class="lux-glass-dialog-title">Delete comment</strong>
-                                    <span class="lux-glass-dialog-subtitle">Post unavailable.</span>
-                                </div>
-                            </div>
-                            <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="social-neo-delete-confirm-preview social-neo-delete-confirm-preview--empty">
-                            <p>The post for this comment could not be located. Cancel and refresh.</p>
-                        </div>
-                        <div class="social-neo-delete-confirm-actions">
-                            <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        </div>
-                    </div>
-                </div>`;
+            const stacked = text(runtime?.ui?.previousDialog?.type || '') === 'post-comments';
+            const deleteMarkup = renderCommentDeleteConfirmDialog(runtime, dialog, post, { stacked });
+            if (stacked) {
+                const parent = runtime?.ui?.previousDialog;
+                const parentPost = (Array.isArray(state().feed) ? state().feed : [])
+                    .find((item) => postKey(item) === postKey(parent?.postId));
+                if (parentPost) {
+                    return `<div class="social-comments-dialog-stack">${renderPostCommentsDialog(runtime, parent, parentPost, { stacked: true })}${deleteMarkup}</div>`;
+                }
             }
-            const targetComment = findCommentInThread(post.comments, dialog.commentId);
-            const commentAuthor = targetComment
-                ? (accountById(targetComment.authorUserId) || { id: targetComment.authorUserId, displayName: targetComment.authorName || targetComment.authorUserId })
-                : null;
-            const previewText = targetComment
-                ? text(targetComment.body || targetComment.text || 'This comment has no text.')
-                : 'This comment could not be located. Cancel and try again.';
-            const previewAuthor = commentAuthor
-                ? `<div class="social-neo-delete-confirm-author">
-                        ${avatar(commentAuthor, 'social-neo-avatar-sm')}
-                        <div class="social-neo-delete-confirm-author-meta">
-                            <strong>${escape(displayName(commentAuthor))}</strong>
-                            <span>${escape(when(targetComment.createdAt))}</span>
-                        </div>
-                   </div>`
-                : '';
-            const debugNote = targetComment
-                ? ''
-                : `<div class="social-neo-delete-confirm-debug">debug: postId=${escape(text(post.id))} commentId=${escape(text(dialog.commentId))}</div>`;
-            if (!targetComment) {
-                // eslint-disable-next-line no-console
-                console.warn('[comment-delete] comment lookup missed', { postId: post.id, commentId: dialog.commentId, commentCount: Array.isArray(post.comments) ? post.comments.length : 0 });
-            }
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal" data-form="dialog-comment-delete" data-action="noop">
-                    <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
-                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
-                        <div class="lux-glass-dialog-heading">
-                            <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
-                            <div class="social-neo-delete-confirm-title">
-                                <strong class="lux-glass-dialog-title">Delete comment</strong>
-                                <span class="lux-glass-dialog-subtitle">This cannot be undone.</span>
-                            </div>
-                        </div>
-                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
-                    </div>
-                    <div class="social-neo-delete-confirm-preview">
-                        ${previewAuthor}
-                        <blockquote class="social-neo-delete-confirm-quote">${escape(previewText)}</blockquote>
-                        ${debugNote}
-                    </div>
-                    <div class="social-neo-delete-confirm-actions">
-                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="lux-primary-btn lux-btn-danger lux-glass-dialog-submit-btn" type="submit" ${targetComment ? '' : 'disabled'}>Delete comment</button>
-                    </div>
-                    <input type="hidden" name="postId" value="${escape(text(post.id))}">
-                    <input type="hidden" name="commentId" value="${escape(text(targetComment?.id || dialog.commentId || ''))}">
-                </form>
-            </div>`;
+            return deleteMarkup;
         }
         if (kind === 'post-delete' && post) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
@@ -946,89 +1055,7 @@ function __kiuFeedExpose(map) {
             </div>`;
         }
         if (kind === 'post-comments' && post) {
-            const commentAuthor = currentUser();
-            const dialogComments = Array.isArray(post.comments) ? post.comments : [];
-            const dialogNormalizedPostId = postKey(post);
-            const dialogCommentDraft = String(runtime.ui?.commentDraftByPost?.[dialogNormalizedPostId] || '');
-            const dialogCommentInputId = controlId('commentBody', dialogNormalizedPostId);
-            // Replies are composed inline beneath each comment (Reddit-style); the
-            // bottom composer is always a top-level "add a comment" box.
-            const dialogCommentPlaceholder = 'Write a comment...';
-            const dialogCommentSubmitLabel = 'Comment';
-            const dialogCommentTotal = dialogComments.length + Number(post.replyCount || 0);
-            const dialogPostAuthor = post.authorUserId ? (accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId }) : commentAuthor;
-            const dialogPostReactionCounts = post?.reactionCounts || {};
-            const dialogPostReactionTotal = Object.values(dialogPostReactionCounts).reduce((sum, count) => sum + Number(count || 0), 0);
-            const dialogPostMedia = Array.isArray(post.media) ? post.media : [];
-            const dialogSharedPost = post.sharedPost;
-            const dialogScopeBadge = post.scopeType === 'page'
-                ? `Page - ${text(post.scopeName || 'Page')}`
-                : post.scopeType === 'group'
-                    ? `Group - ${text(post.scopeName || 'Group')}`
-                    : 'Profile';
-            const dialogSubtitle = dialogCommentTotal
-                ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'} on this post.`
-                : 'Be the first to reply to this post.';
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Comments">
-                <div class="lux-glass-dialog-card lux-glass-dialog-card--comments sn-mat-modal" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
-                        <div class="social-neo-surveys-hero-copy">
-                            <span class="social-neo-section-kicker">Post</span>
-                            <h2>Comments</h2>
-                            <p>${escape(dialogSubtitle)}</p>
-                        </div>
-                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
-                    </div>
-                    <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats lux-glass-dialog-comment-stats">
-                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogPostReactionTotal))}</strong><span>Reactions</span></article>
-                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogCommentTotal))}</strong><span>Comments</span></article>
-                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(dialogScopeBadge)}</strong><span>Scope</span></article>
-                    </div>
-                    <div class="lux-glass-dialog-comment-scroll">
-                    <div class="lux-glass-dialog-comment-preview">
-                        <div class="lux-glass-dialog-comment-post-head">
-                            <div class="social-neo-person social-neo-person-start-gap-10">
-                                ${avatar(dialogPostAuthor, 'social-neo-avatar-sm')}
-                                <div>
-                                    <strong>${escape(displayName(dialogPostAuthor))}</strong>
-                                    <span class="social-neo-muted">${escape(accountSubtitle(dialogPostAuthor))} &middot; ${escape(when(post.createdAt))}</span>
-                                </div>
-                            </div>
-                            <span class="social-neo-pill social-neo-post-scope-badge">${escape(dialogScopeBadge)}</span>
-                        </div>
-                        ${text(post.body || post.text || '') ? `<div class="lux-glass-dialog-comment-post-body">${escape(text(post.body || post.text || ''))}</div>` : ''}
-                        ${dialogPostMedia.map((media) => filePreview(media)).join('')}
-                        ${dialogSharedPost ? `
-                            <div class="social-neo-shared">
-                                <span class="social-neo-pill">Shared post</span>
-                                <strong>${escape(displayName(dialogSharedPost.authorUserId))}</strong>
-                                <p>${escape(dialogSharedPost.body || dialogSharedPost.text || 'Original post')}</p>
-                            </div>
-                        ` : ''}
-                        ${(dialogPostReactionTotal || dialogCommentTotal) ? `
-                            <div class="lux-glass-dialog-comment-post-metrics">
-                                ${renderPostReactionMetrics(dialogPostReactionCounts)}
-                                ${dialogCommentTotal ? `<span class="social-neo-post-metric">${escape(dialogCommentTotal)} comment${dialogCommentTotal === 1 ? '' : 's'}</span>` : ''}
-                                ${Number(post.shareCount || 0) > 0 ? `<span class="social-neo-post-metric">${escape(post.shareCount)} share${post.shareCount !== 1 ? 's' : ''}</span>` : ''}
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="lux-glass-dialog-comment-thread" id="lux-glass-dialog-comment-thread">
-                        ${dialogComments.length ? renderCommentThread(dialogComments, post, 'dialog') : '<div class="social-neo-empty">No comments yet. Be the first to reply.</div>'}
-                    </div>
-                    </div>
-                    <form class="lux-glass-dialog-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
-                        ${avatar(commentAuthor, 'social-neo-avatar-sm')}
-                        <div class="lux-glass-dialog-comment-compose-main">
-                            <div class="social-neo-inline social-neo-comment-compose-row">
-                                <input class="social-neo-input lux-control" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="${escape(dialogCommentPlaceholder)}" aria-label="${escape(dialogCommentPlaceholder)}" value="${escape(dialogCommentDraft)}">
-                                <button class="lux-primary-btn" type="submit">${dialogCommentSubmitLabel}</button>
-                            </div>
-                        </div>
-                        <input type="hidden" name="postId" value="${escape(dialogNormalizedPostId)}">
-                    </form>
-                </div>
-            </div>`;
+            return renderPostCommentsDialog(runtime, dialog, post);
         }
         return '';
     }
@@ -1288,11 +1315,6 @@ function __kiuFeedExpose(map) {
         if (action === 'comment-delete') {
             const delPostId = postKey(trigger.getAttribute('data-post-id'));
             const delCommentId = text(trigger.getAttribute('data-comment-id'));
-            // In the comments modal, delete in place — no confirm dialog means no
-            // overlay re-render and no flicker.
-            if (isCommentDialog()) {
-                return withBusy(() => deleteCommentInline(delPostId, delCommentId));
-            }
             return openDialog('comment-delete', { postId: delPostId, commentId: delCommentId });
         }
 

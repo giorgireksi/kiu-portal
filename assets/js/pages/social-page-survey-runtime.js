@@ -685,7 +685,7 @@ function setSocialRegionMarkup(node, markup) {
     if (!node) return;
     if (node.id === 'lux-glass-dialog-region') normalizeSocialOverlayDialogRegion();
     const nextMarkup = String(markup || '');
-    if (node.__kiuLastMarkup === nextMarkup) return;
+    if (node.__kiuLastMarkup === nextMarkup && !(nextMarkup === '' && String(node.innerHTML || '').trim())) return;
     node.innerHTML = nextMarkup;
     node.__kiuLastMarkup = nextMarkup;
 }

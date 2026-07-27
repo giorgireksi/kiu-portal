@@ -17,6 +17,6 @@ export const LUX_DROPLIST_TOKEN_NAMES = {
 
 export const LUX_DROPLIST_CACHE_BUST = '20260726-teleportfix1';
 export const LUX_ATMOSPHERE_CACHE_BUST = '20260723-gpuperf4p';
-export const LUX_CONTROLS_CSS_CACHE_BUST = '20260726-luxcontrolcta1';
+export const LUX_CONTROLS_CSS_CACHE_BUST = '20260726-luxtab2';
 export const LUX_DROPLIST_CSS_CACHE_BUST = '20260725-pickerscroll2';
 export const LUX_PICKER_RUNTIME_CACHE_BUST = '20260726-pickeroverlap1';

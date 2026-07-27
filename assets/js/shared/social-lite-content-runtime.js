@@ -31,6 +31,12 @@
         function applyOptimisticPostReaction(...a) { return __lookup('applyOptimisticPostReaction')(...a); }
         function ensureDirectChat(...a) { return __lookup('ensureDirectChat')(...a); }
         function ensureCallRuntime(...a) { return __lookup('ensureCallRuntime')(...a); }
+        function ensureCallMedia(...a) { return __lookup('ensureCallMedia')(...a); }
+        function attachLocalCallPreview(...a) { return __lookup('attachLocalCallPreview')(...a); }
+        function teardownPeerConnection(...a) { return __lookup('teardownPeerConnection')(...a); }
+        function stopCallMedia(...a) { return __lookup('stopCallMedia')(...a); }
+        function finalizeCall(...a) { return __lookup('finalizeCall')(...a); }
+        function resolveRemoteUserIdForChat(...a) { return __lookup('resolveRemoteUserIdForChat')(...a); }
         function readFileAsDataUrl(...a) { return __lookup('readFileAsDataUrl')(...a); }
         function fileUrl(...a) { return __lookup('fileUrl')(...a); }
         function isImageFile(...a) { return __lookup('isImageFile')(...a); }
@@ -44,6 +50,9 @@
         function unique(...a) { return __lookup('unique')(...a); }
         function chatTitle(...a) { return __lookup('chatTitle')(...a); }
         function markChatMessagesRead(...a) { return __lookup('markChatMessagesRead')(...a); }
+        function fetchAccountsByIds(...a) { return __lookup('fetchAccountsByIds')(...a); }
+        function refreshFeed(...a) { return __lookup('refreshFeed')(...a); }
+        function ensureActiveChat(...a) { return __lookup('ensureActiveChat')(...a); }
         const runtime = d.runtime || window.__kiuSocialLiteRuntime;
         void d;
 
@@ -1051,6 +1060,7 @@ async function startCall(chatId) {
         runtime.calls = runtime.calls.filter((call) => text(call.chatId) !== text(payload.call.chatId));
         runtime.calls.unshift(payload.call);
         runtime.ui.callOpen = true;
+        runtime.ui.callOverlayMinimized = false;
         runtime.ui.activeCallChatId = text(payload.call.chatId);
         runtime.ui.callMode = 'outgoing';
         runtime.ui.activeCallRemoteUserId = remoteUserId;
@@ -1077,6 +1087,7 @@ async function acceptCall(chatId) {
         runtime.calls = runtime.calls.filter((call) => text(call.chatId) !== text(payload.call.chatId));
         runtime.calls.unshift(payload.call);
         runtime.ui.callOpen = true;
+        runtime.ui.callOverlayMinimized = false;
         runtime.ui.activeCallChatId = text(payload.call.chatId);
         runtime.ui.activeCallRemoteUserId = remoteUserId;
         runtime.ui.callMode = 'connecting';
@@ -1101,7 +1112,16 @@ async function declineCall(chatId) {
     });
     teardownPeerConnection();
     stopCallMedia();
+    if (payload?.call) upsertCall(payload.call, true);
+    else if (Array.isArray(runtime.calls)) {
+        runtime.calls = runtime.calls.map((entry) => (
+            text(entry.chatId) === text(chatId)
+                ? { ...entry, status: 'declined', active: false }
+                : entry
+        ));
+    }
     runtime.ui.callOpen = false;
+    runtime.ui.callOverlayMinimized = false;
     runtime.ui.activeCallChatId = '';
     runtime.ui.activeCallRemoteUserId = '';
     runtime.ui.callMode = '';
@@ -1140,6 +1160,7 @@ async function joinGroupCall(chatId) {
     if (payload?.call) {
         upsertCall(payload.call, true);
         runtime.ui.callOpen = true;
+        runtime.ui.callOverlayMinimized = false;
         runtime.ui.activeCallChatId = text(payload.call.chatId);
         runtime.ui.callMode = 'group';
         runtime.ui.activeCallRemoteUserId = '';
@@ -1165,6 +1186,7 @@ async function leaveGroupCall(chatId) {
     teardownPeerConnection();
     stopCallMedia();
     runtime.ui.callOpen = false;
+    runtime.ui.callOverlayMinimized = false;
     runtime.ui.activeCallChatId = '';
     runtime.ui.activeCallRemoteUserId = '';
     runtime.ui.callMode = '';

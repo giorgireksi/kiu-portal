@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import vm from 'vm';
@@ -43,6 +43,14 @@ function loadEvents(extraDeps = {}) {
     };
     sandbox.window.window = sandbox.window;
     sandbox.window.localStorage = sandbox.localStorage;
+    vm.runInNewContext(
+        readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-events-input-runtime.js'), 'utf8'),
+        sandbox
+    );
+    vm.runInNewContext(
+        readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-events-submit-runtime.js'), 'utf8'),
+        sandbox
+    );
     vm.runInNewContext(
         readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-events.js'), 'utf8'),
         sandbox
@@ -113,5 +121,37 @@ describe('social-workspace-events', () => {
 
     it('ignores non-workspace click actions', () => {
         expect(api.handleSocialWorkspaceClick('post-react', { getAttribute: () => '' })).toBe(false);
+    });
+
+    it('opens task graph when stack anchor is stale instead of restoring', () => {
+        const restorePreviousDialog = vi.fn();
+        const openDialog = vi.fn();
+        ({ api, runtime } = loadEvents({
+            restorePreviousDialog,
+            openDialog,
+            isProjectTaskGraphStackActive: () => false,
+            getProjectTaskGraphStackAnchorDialog: () => null,
+            resolveActiveSocialProject: () => ({ id: 'p1', tasks: [] }),
+            buildProjectTaskGraphModel: () => ({ nodes: [], edges: [] }),
+            computeProjectTaskGraphStageSize: () => ({ stageWidth: 800, stageHeight: 600 }),
+            buildProjectTaskGraphLayout: () => ({ nodes: [] }),
+            projectTaskGraphLayoutUsesSavedPositions: () => false,
+            loadProjectTaskGraphView: () => null,
+            collectProjectTaskGraphGroupBoxes: () => [],
+            computeProjectTaskGraphContentFitView: () => ({ zoom: 1, pan: { x: 0, y: 0 } }),
+            saveProjectTaskGraphView: () => {},
+            ensureProjectTaskGraphPositionsLoaded: () => {},
+            PROJECT_TASK_GRAPH_MIN_ZOOM: 0.25
+        }));
+        runtime.ui.socialDialog = null;
+        runtime.ui.previousDialog = null;
+        runtime.ui.projectTaskGraphStackAnchor = { type: 'project-task-graph', projectId: 'p1' };
+        runtime.ui.activeProjectId = 'p1';
+        api.handleSocialWorkspaceClick('project-task-graph-open', {
+            getAttribute: (name) => (name === 'data-project-id' ? 'p1' : '')
+        });
+        expect(runtime.ui.projectTaskGraphStackAnchor).toBe(null);
+        expect(restorePreviousDialog).not.toHaveBeenCalled();
+        expect(openDialog).toHaveBeenCalledWith('project-task-graph', { projectId: 'p1' });
     });
 });

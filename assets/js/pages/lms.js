@@ -1698,3 +1698,4 @@ function buildLmsQuizSubmissionResponseSummary(questionResults = []) {
         needsManualReview: written.some(item => item.needsManualReview === true)
     };
 }
+bindLmsDelegatedMarkupActions();

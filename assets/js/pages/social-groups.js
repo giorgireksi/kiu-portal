@@ -1,6 +1,5 @@
 (function initSocialGroupsModule() {
     if (window.__KIU_SOCIAL_GROUPS_MODULE_LOADED) return;
-    window.__KIU_SOCIAL_GROUPS_MODULE_LOADED = true;
 
     const hooks = window.__kiuSocialGroupsHooks || {};
     const {
@@ -46,7 +45,8 @@
         leavePortalGroupCall,
         closeDialog,
         createPortalSocialGroup,
-        readFileAsDataUrl
+        readFileAsDataUrl,
+        chatTitle
     } = hooks;
 
     if (
@@ -93,8 +93,37 @@
         || typeof closeDialog !== 'function'
         || typeof createPortalSocialGroup !== 'function'
         || typeof readFileAsDataUrl !== 'function'
+        || typeof chatTitle !== 'function'
     ) {
         throw new Error('Social groups hooks are unavailable.');
+    }
+
+    window.__KIU_SOCIAL_GROUPS_MODULE_LOADED = true;
+
+    function chatNotificationPreference(chat) {
+        try {
+            return text(localStorage.getItem(`KIU_SOCIAL_CHAT_NOTIFY_${text(chat?.id)}`) || 'all') || 'all';
+        } catch (error) {
+            return 'all';
+        }
+    }
+
+    function setChatNotificationPreference(chatId, value) {
+        try {
+            localStorage.setItem(`KIU_SOCIAL_CHAT_NOTIFY_${text(chatId)}`, text(value || 'all') || 'all');
+        } catch (error) {}
+    }
+
+    function managedGroupsForDirectInvite(peerId) {
+        const peer = text(peerId);
+        if (!peer) return [];
+        const groups = Array.isArray(state().social?.groups) ? state().social.groups : [];
+        return groups.filter((group) => {
+            if (!group?.isManager) return false;
+            const memberIds = Array.isArray(group.memberIds) ? group.memberIds : [];
+            const pendingIds = Array.isArray(group.pendingMemberIds) ? group.pendingMemberIds : [];
+            return !memberIds.some((id) => text(id) === peer) && !pendingIds.some((id) => text(id) === peer);
+        });
     }
 
     function renderGroupsHero(runtime, groups, activeTab, options = {}) {
@@ -676,15 +705,22 @@
         if (kind === 'group-panel-media' || kind === 'group-panel-members' || kind === 'group-panel-files' || kind === 'group-panel-links' || kind === 'group-panel-invite' || kind === 'group-panel-settings') {
             const panelChat = activeChats().find((c) => text(c.id) === text(dialog.chatId));
             const panelGroup = panelChat ? groupForChat(panelChat) : null;
-            if (!panelChat || !panelGroup) return '';
-            const panelMemberIds = Array.isArray(panelGroup.memberIds) ? panelGroup.memberIds : [];
-            const panelPendingIds = Array.isArray(panelGroup.pendingMemberIds) ? panelGroup.pendingMemberIds : [];
+            if (!panelChat) return '';
+            const isDirectThread = !panelGroup;
+            const panelMemberIds = isDirectThread
+                ? (Array.isArray(panelChat.members) ? panelChat.members : [])
+                : (Array.isArray(panelGroup.memberIds) ? panelGroup.memberIds : []);
+            const panelPendingIds = isDirectThread ? [] : (Array.isArray(panelGroup.pendingMemberIds) ? panelGroup.pendingMemberIds : []);
             const panelAssets = groupMessageAssets(panelChat);
-            const panelIsAdmin = Boolean(panelGroup.isManager);
+            const panelIsAdmin = isDirectThread ? false : Boolean(panelGroup.isManager);
             const panelCurrentUserId = currentUserId();
-            const panelGroupName = text(panelGroup.name || panelChat.title || 'Group');
+            const panelTitle = text(panelGroup?.name || chatTitle(panelChat) || 'Conversation');
+            const panelPeerId = isDirectThread
+                ? panelMemberIds.find((memberId) => text(memberId) !== panelCurrentUserId) || ''
+                : '';
+            const panelPeer = panelPeerId ? (accountById(panelPeerId) || { id: panelPeerId }) : null;
             const panelShellOpen = (extraClass = '') => `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                    <div class="social-neo-card lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card${extraClass ? ` ${extraClass}` : ''}" data-action="noop" data-lux-transparency-exempt="1">`;
+                    <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card lux-glass-dialog-card--social-glass${extraClass ? ` ${extraClass}` : ''}" data-action="noop" data-lux-transparency-exempt="1">`;
             const panelShellClose = `</div>
                 </div>`;
             const panelHeroHead = (kicker, title, subtitle) => `<div class="lux-glass-dialog-head social-neo-surveys-hero-head">
@@ -705,13 +741,15 @@
             };
             if (kind === 'group-panel-media') {
                 const mediaCount = panelAssets.media.length;
+                const mediaContextLabel = isDirectThread ? 'Conversation' : 'Group';
+                const mediaRoleLabel = isDirectThread ? 'Direct' : (panelIsAdmin ? 'Admin' : 'Member');
                 return `${panelShellOpen('lux-glass-dialog-card--panel-media')}
-                    ${panelHeroHead('Shared media', 'Photos &amp; images', `Media shared in ${escape(panelGroupName)}. Tap an item to jump to the message.`)}
+                    ${panelHeroHead('Shared media', 'Photos &amp; images', `Media shared in ${escape(panelTitle)}. Tap an item to jump to the message.`)}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(mediaCount)), 'Images')}
-                            ${panelStat(escape(panelGroupName), 'Group')}
-                            ${panelStat(panelIsAdmin ? 'Admin' : 'Member', 'Your role')}
+                            ${panelStat(escape(panelTitle), mediaContextLabel)}
+                            ${panelStat(mediaRoleLabel, 'Your role')}
                         </div>
                         <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
                             <div class="lux-glass-dialog-group-section-head">
@@ -731,29 +769,35 @@
                 ${panelShellClose}`;
             }
             if (kind === 'group-panel-members') {
+                const membersHero = isDirectThread
+                    ? panelHeroHead('Conversation members', 'Members', `People in this direct conversation with ${escape(panelTitle)}.`)
+                    : panelHeroHead('Group members', 'Members', `People in ${escape(panelTitle)}. View profiles, message, or manage join requests.`);
+                const membersSubtitle = isDirectThread
+                    ? `${escape(String(panelMemberIds.length))} people in this conversation.`
+                    : `${escape(String(panelMemberIds.length))} people currently in this group.`;
                 return `${panelShellOpen('lux-glass-dialog-card--panel-members')}
-                    ${panelHeroHead('Group members', 'Members', `People in ${escape(panelGroupName)}. View profiles, message, or manage join requests.`)}
+                    ${membersHero}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelMemberIds.length)), 'Active')}
                             ${panelStat(escape(String(panelPendingIds.length)), 'Pending')}
-                            ${panelStat(panelIsAdmin ? 'Admin' : 'Member', 'Your role')}
+                            ${panelStat(isDirectThread ? 'Direct' : (panelIsAdmin ? 'Admin' : 'Member'), 'Your role')}
                         </div>
                         <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
                             <div class="lux-glass-dialog-group-section-head">
-                                <strong>Active members</strong>
-                                <span>${escape(String(panelMemberIds.length))} people currently in this group.</span>
+                                <strong>${isDirectThread ? 'Participants' : 'Active members'}</strong>
+                                <span>${membersSubtitle}</span>
                             </div>
                             <div class="lux-glass-dialog-member-list">
                             ${panelMemberIds.map((memberId) => {
                                 const member = accountById(memberId) || { id: memberId };
                                 const isSelf = text(memberId) === panelCurrentUserId;
-                                const isAdmin = text(panelGroup.createdBy) === text(memberId) || text(memberId) === text(panelGroup.managerId || '');
+                                const isAdmin = !isDirectThread && (text(panelGroup.createdBy) === text(memberId) || text(memberId) === text(panelGroup.managerId || ''));
                                 return `<div class="lux-glass-dialog-member-row">
                                     <div class="social-neo-person">
                                         ${avatar(member, 'social-neo-avatar-sm')}
                                         <div class="lux-glass-dialog-member-info">
-                                            <strong>${escape(displayName(member))}${isAdmin ? ' <span class="social-neo-pill social-neo-pill-accent">Admin</span>' : ''}</strong>
+                                            <strong>${escape(displayName(member))}${isSelf ? ' <span class="social-neo-pill">You</span>' : ''}${isAdmin ? ' <span class="social-neo-pill social-neo-pill-accent">Admin</span>' : ''}</strong>
                                             <span>${escape(accountSubtitle(member))}</span>
                                         </div>
                                     </div>
@@ -767,7 +811,7 @@
                             }).join('') || '<div class="social-neo-empty">No members found.</div>'}
                             </div>
                         </section>
-                        ${panelIsAdmin ? `<section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section lux-glass-dialog-member-pending">
+                        ${!isDirectThread && panelIsAdmin ? `<section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section lux-glass-dialog-member-pending">
                             <div class="lux-glass-dialog-group-section-head">
                                 <strong>Pending requests</strong>
                                 <span>${escape(String(panelPendingIds.length))} waiting for approval.</span>
@@ -813,7 +857,7 @@
                     return 'fa-file';
                 };
                 return `${panelShellOpen('lux-glass-dialog-card--panel-files')}
-                    ${panelHeroHead('Shared files', 'Files', `Documents and attachments in ${escape(panelGroupName)}.`)}
+                    ${panelHeroHead('Shared files', 'Files', `Documents and attachments in ${escape(panelTitle)}.`)}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelAssets.files.length)), 'Total')}
@@ -851,13 +895,15 @@
             }
             if (kind === 'group-panel-links') {
                 const linkCount = panelAssets.links.length;
+                const linksContextLabel = isDirectThread ? 'Conversation' : 'Group';
+                const linksRoleLabel = isDirectThread ? 'Direct' : (panelIsAdmin ? 'Admin' : 'Member');
                 return `${panelShellOpen('lux-glass-dialog-card--panel-links')}
-                    ${panelHeroHead('Shared links', 'Links', `URLs shared in ${escape(panelGroupName)}.`)}
+                    ${panelHeroHead('Shared links', 'Links', `URLs shared in ${escape(panelTitle)}.`)}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(linkCount)), 'Links')}
-                            ${panelStat(escape(panelGroupName), 'Group')}
-                            ${panelStat(panelIsAdmin ? 'Admin' : 'Member', 'Your role')}
+                            ${panelStat(escape(panelTitle), linksContextLabel)}
+                            ${panelStat(linksRoleLabel, 'Your role')}
                         </div>
                         <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
                             <div class="lux-glass-dialog-group-section-head">
@@ -885,6 +931,45 @@
                 ${panelShellClose}`;
             }
             if (kind === 'group-panel-invite') {
+                if (isDirectThread) {
+                    const inviteGroups = managedGroupsForDirectInvite(panelPeerId);
+                    const peerName = panelPeer ? displayName(panelPeer) : panelTitle;
+                    return `${panelShellOpen('lux-glass-dialog-card--panel-invite')}
+                    ${panelHeroHead('Invite to group', 'Invite', `Add ${escape(peerName)} to one of your groups or start a new group together.`)}
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
+                        <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
+                            ${panelStat(escape(String(inviteGroups.length)), 'Groups')}
+                            ${panelStat(escape(peerName), 'Person')}
+                            ${panelStat('Direct', 'Conversation')}
+                        </div>
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
+                                <strong>Create a group</strong>
+                                <span>Start a new group with ${escape(peerName)} already invited.</span>
+                            </div>
+                            <button class="lux-primary-btn" type="button" data-action="group-create-with-peer" data-user-id="${escape(text(panelPeerId))}"><i class="fas fa-layer-group"></i> Create group with ${escape(peerName)}</button>
+                        </section>
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
+                                <strong>Add to your groups</strong>
+                                <span>Invite ${escape(peerName)} to a group you manage.</span>
+                            </div>
+                            ${inviteGroups.length ? `<div class="lux-glass-dialog-member-list">${inviteGroups.map((group) => `
+                                <div class="lux-glass-dialog-member-row">
+                                    <div class="social-neo-person">
+                                        <div class="social-neo-group-card-icon social-neo-group-card-avatar">${groupAvatar(group)}</div>
+                                        <div class="lux-glass-dialog-member-info">
+                                            <strong>${escape(text(group.name || 'Group'))}</strong>
+                                            <span>${escape(String((Array.isArray(group.memberIds) ? group.memberIds : []).length))} members</span>
+                                        </div>
+                                    </div>
+                                    <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="group-thread-invite-add" data-group-id="${escape(text(group.id))}" data-user-id="${escape(text(panelPeerId))}"><i class="fas fa-user-plus"></i> Invite</button>
+                                </div>
+                            `).join('')}</div>` : '<div class="social-neo-empty">You do not manage any groups where this person can be invited yet.</div>'}
+                        </section>
+                    </div>
+                ${panelShellClose}`;
+                }
                 const inviteSearch = text(runtime.ui?.groupThreadInviteSearchByChat?.[text(dialog.chatId)] || '').trim().toLowerCase();
                 const inviteFaculty = text(runtime.ui?.groupThreadInviteFacultyByChat?.[text(dialog.chatId)] || 'all') || 'all';
                 const memberSet = new Set(panelMemberIds.map((id) => text(id)));
@@ -900,7 +985,7 @@
                     return haystack.includes(inviteSearch);
                 }).slice(0, 40);
                 return `${panelShellOpen('lux-glass-dialog-card--panel-invite')}
-                    ${panelHeroHead('Invite people', 'Invite', `Grow ${escape(panelGroupName)} by inviting campus connections.`)}
+                    ${panelHeroHead('Invite people', 'Invite', `Grow ${escape(panelTitle)} by inviting campus connections.`)}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelMemberIds.length)), 'Members')}
@@ -941,8 +1026,48 @@
                 ${panelShellClose}`;
             }
             if (kind === 'group-panel-settings') {
+                if (isDirectThread) {
+                    return `${panelShellOpen('lux-glass-dialog-card--panel-settings')}
+                    ${panelHeroHead('Conversation settings', 'Settings', `Notifications and actions for your chat with ${escape(panelTitle)}.`)}
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
+                        <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
+                            ${panelStat(escape(String(panelMemberIds.length)), 'Participants')}
+                            ${panelStat('Direct', 'Type')}
+                            ${panelStat(escape(panelTitle), 'With')}
+                        </div>
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
+                                <strong>Notifications</strong>
+                                <span>Choose what alerts you receive from this conversation.</span>
+                            </div>
+                            <label class="lux-glass-dialog-field">
+                                <span class="social-neo-label">Preference</span>
+                                <select class="social-neo-select lux-control" data-bind="chat-thread-notify" data-chat-id="${escape(text(panelChat.id))}" data-lux-picker>
+                                    <option value="all" ${chatNotificationPreference(panelChat) === 'all' ? 'selected' : ''}>All messages</option>
+                                    <option value="mentions" ${chatNotificationPreference(panelChat) === 'mentions' ? 'selected' : ''}>Mentions only</option>
+                                    <option value="mute" ${chatNotificationPreference(panelChat) === 'mute' ? 'selected' : ''}>Mute</option>
+                                </select>
+                            </label>
+                        </section>
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
+                                <strong>Profile</strong>
+                                <span>Open ${escape(panelTitle)}&rsquo;s campus profile.</span>
+                            </div>
+                            ${panelPeerId ? `<button class="lux-secondary-btn" type="button" data-action="profile-view" data-user-id="${escape(text(panelPeerId))}"><i class="fas fa-user"></i> View profile</button>` : ''}
+                        </section>
+                        <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
+                                <strong>Hide conversation</strong>
+                                <span>Remove this chat from your inbox without deleting messages.</span>
+                            </div>
+                            <button class="lux-secondary-btn" type="button" data-action="chat-hide-open" data-chat-id="${escape(text(panelChat.id))}"><i class="fas fa-eye-slash"></i> Hide conversation</button>
+                        </section>
+                    </div>
+                ${panelShellClose}`;
+                }
                 return `${panelShellOpen('lux-glass-dialog-card--panel-settings')}
-                    ${panelHeroHead('Group settings', 'Settings', `Notifications and details for ${escape(panelGroupName)}.`)}
+                    ${panelHeroHead('Group settings', 'Settings', `Notifications and details for ${escape(panelTitle)}.`)}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
                             ${panelStat(escape(String(panelMemberIds.length)), 'Members')}
@@ -1041,6 +1166,13 @@
     function handleSocialGroupsClick(action, trigger) {
         if (!isSocialGroupsClickAction(action)) return false;
         if (action === 'group-create-open') {
+            setPanel('groups');
+            return openDialog('group-create');
+        }
+
+        if (action === 'group-create-with-peer') {
+            const userId = text(trigger.getAttribute('data-user-id'));
+            state().ui.groupInviteSelectedIds = userId ? [userId] : [];
             setPanel('groups');
             return openDialog('group-create');
         }
@@ -1437,7 +1569,7 @@
         if (!target || typeof target.matches !== 'function') return false;
         try {
 
-        if (target.matches('[data-bind="group-thread-invite-faculty"], [data-bind="group-thread-notify"]')) return true;
+        if (target.matches('[data-bind="group-thread-invite-faculty"], [data-bind="group-thread-notify"], [data-bind="chat-thread-notify"]')) return true;
         if (target.closest && target.closest('form[data-form="create-group"], form[data-form="group-settings"]')) return true;
         if (target.name === 'groupAvatarFile' || target.name === 'groupBannerFile') return true;
 
@@ -1456,6 +1588,11 @@
         if (target.matches('[data-bind="group-thread-notify"]')) {
             setGroupNotificationPreference(target.getAttribute('data-group-id'), target.value);
             renderSocialPageNow('group-thread-notify');
+            return;
+        }
+        if (target.matches('[data-bind="chat-thread-notify"]')) {
+            setChatNotificationPreference(target.getAttribute('data-chat-id'), target.value);
+            renderSocialPageNow('chat-thread-notify');
             return;
         }
         if (target.matches('form[data-form="create-group"] [name="groupVisibility"]')) runtime.ui.groupVisibility = text(target.value || 'public') || 'public';

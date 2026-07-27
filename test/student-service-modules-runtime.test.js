@@ -35,6 +35,21 @@ describe('student-service-modules-runtime peel', () => {
             .toBeLessThan(html.indexOf('assets/js/pages/student-service.js'));
     });
 
+    it('resolves lazy module exports from KiuStudentService before window forwards', () => {
+        const modules = readSource('assets/js/pages/student-service-modules-runtime.js');
+        const resolveBlock = modules.split('function resolveStudentServiceExportImpl(name)')[1]?.split('window.resolveStudentServiceExportImpl')[0] || '';
+        expect(resolveBlock.indexOf('const bag = window.KiuStudentService'))
+            .toBeLessThan(resolveBlock.indexOf('const direct = window[name]'));
+    });
+
+    it('prefers window hub exports over stale bag stubs when checking module readiness', () => {
+        const modules = readSource('assets/js/pages/student-service-modules-runtime.js');
+        expect(modules).toContain('function liveStudentServiceExport(name, stub)');
+        expect(modules).toContain("liveStudentServiceExport('renderStudentServiceStudentHub', STUDENT_SERVICE_STUDENT_HUB_STUB)");
+        expect(modules).toContain('window.renderStudentServiceStudentQaHub !== studentQaHubStub');
+        expect(modules).toContain('delete window.__KIU_STUDENT_SERVICE_QA_THREAD_LOADED');
+    });
+
     it('keeps host under the Structure 10 line ceiling', () => {
         expect(lineCount('assets/js/pages/student-service.js')).toBeLessThanOrEqual(2999);
         expect(lineCount('assets/js/pages/student-service-modules-runtime.js')).toBeLessThanOrEqual(700);

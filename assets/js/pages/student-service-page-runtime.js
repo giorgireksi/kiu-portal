@@ -22,6 +22,27 @@ function __kiuSspExpose(map) {
         const USER_ROLES = d.USER_ROLES ?? window.USER_ROLES;
         const STUDENT_SERVICE_RUNTIME = d.STUDENT_SERVICE_RUNTIME ?? window.STUDENT_SERVICE_RUNTIME;
         const STUDENT_SERVICE_API_PATHS = d.STUDENT_SERVICE_API_PATHS ?? window.STUDENT_SERVICE_API_PATHS;
+        function __kiuSspResolveDep(name) {
+            return function __kiuSspDepForward(...args) {
+                const fromDeps = d[name];
+                if (typeof fromDeps === 'function' && fromDeps !== __kiuSspDepForward) {
+                    return fromDeps.apply(this, args);
+                }
+                const kiu = window.KiuStudentService?.[name];
+                if (typeof kiu === 'function' && kiu !== __kiuSspDepForward) {
+                    return kiu.apply(this, args);
+                }
+                const model = window.KiuStudentServiceModel?.[name];
+                if (typeof model === 'function' && model !== __kiuSspDepForward) {
+                    return model.apply(this, args);
+                }
+                const globalFn = window[name];
+                if (typeof globalFn === 'function' && globalFn !== __kiuSspDepForward) {
+                    return globalFn.apply(this, args);
+                }
+                throw new Error('Missing dep: ' + name);
+            };
+        }
         function bindStudentServiceDelegatedInteractions(...a) {
             const fn = d.bindStudentServiceDelegatedInteractions || window.bindStudentServiceDelegatedInteractions;
             if (typeof fn !== 'function') throw new Error('Missing dep: bindStudentServiceDelegatedInteractions');
@@ -32,11 +53,7 @@ function __kiuSspExpose(map) {
             if (typeof fn !== 'function') throw new Error('Missing dep: bindStudentServiceRealtimeRefreshListener');
             return fn.apply(this, a);
         }
-        function buildStudentServiceArticleFingerprint(...a) {
-            const fn = d.buildStudentServiceArticleFingerprint || window.buildStudentServiceArticleFingerprint;
-            if (typeof fn !== 'function') throw new Error('Missing dep: buildStudentServiceArticleFingerprint');
-            return fn.apply(this, a);
-        }
+        const buildStudentServiceArticleFingerprint = __kiuSspResolveDep('buildStudentServiceArticleFingerprint');
         function buildStudentServiceChromeSignature(...a) {
             const fn = d.buildStudentServiceChromeSignature || window.buildStudentServiceChromeSignature;
             if (typeof fn !== 'function') throw new Error('Missing dep: buildStudentServiceChromeSignature');
@@ -52,11 +69,7 @@ function __kiuSspExpose(map) {
             if (typeof fn !== 'function') throw new Error('Missing dep: canCurrentUserModerateStudentService');
             return fn.apply(this, a);
         }
-        function canShowStudentServiceArticleEditorActions(...a) {
-            const fn = d.canShowStudentServiceArticleEditorActions || window.canShowStudentServiceArticleEditorActions;
-            if (typeof fn !== 'function') throw new Error('Missing dep: canShowStudentServiceArticleEditorActions');
-            return fn.apply(this, a);
-        }
+        const canShowStudentServiceArticleEditorActions = __kiuSspResolveDep('canShowStudentServiceArticleEditorActions');
         function closeStudentServiceDeleteConfirm(...a) {
             const fn = d.closeStudentServiceDeleteConfirm || window.closeStudentServiceDeleteConfirm;
             if (typeof fn !== 'function') throw new Error('Missing dep: closeStudentServiceDeleteConfirm');
@@ -122,11 +135,7 @@ function __kiuSspExpose(map) {
             if (typeof fn !== 'function') throw new Error('Missing dep: getStudentServiceLane');
             return fn.apply(this, a);
         }
-        function getStudentServicePublishedInboxFilterLayout(...a) {
-            const fn = d.getStudentServicePublishedInboxFilterLayout || window.getStudentServicePublishedInboxFilterLayout;
-            if (typeof fn !== 'function') throw new Error('Missing dep: getStudentServicePublishedInboxFilterLayout');
-            return fn.apply(this, a);
-        }
+        const getStudentServicePublishedInboxFilterLayout = __kiuSspResolveDep('getStudentServicePublishedInboxFilterLayout');
         function getStudentServiceSupportArea(...a) {
             const fn = d.getStudentServiceSupportArea || window.getStudentServiceSupportArea;
             if (typeof fn !== 'function') throw new Error('Missing dep: getStudentServiceSupportArea');
@@ -257,11 +266,7 @@ function __kiuSspExpose(map) {
             if (typeof fn !== 'function') throw new Error('Missing dep: shouldDeferStudentServiceStudentHubUntilBootstrap');
             return fn.apply(this, a);
         }
-        function syncStudentServiceWorkspaceBackendSession(...a) {
-            const fn = d.syncStudentServiceWorkspaceBackendSession || window.syncStudentServiceWorkspaceBackendSession;
-            if (typeof fn !== 'function') throw new Error('Missing dep: syncStudentServiceWorkspaceBackendSession');
-            return fn.apply(this, a);
-        }
+        const syncStudentServiceWorkspaceBackendSession = __kiuSspResolveDep('syncStudentServiceWorkspaceBackendSession');
         async function deleteStudentServiceArticle(articleId) {
             const normalizedArticleId = String(articleId || '').trim();
             if (!normalizedArticleId || !canShowStudentServiceArticleEditorActions()) return;
@@ -628,7 +633,9 @@ function __kiuSspExpose(map) {
         function renderStudentServicePage() {
             const container = document.getElementById('page-student-service');
             if (!container) return;
-            preloadStudentServiceWorkspaceModules();
+            if (typeof window.preloadStudentServiceWorkspaceModules === 'function') {
+                window.preloadStudentServiceWorkspaceModules();
+            }
             ensureStudentServiceStores();
             if (shouldBootstrapStudentServiceWorkspace() && !STUDENT_SERVICE_RUNTIME.loaded && !STUDENT_SERVICE_RUNTIME.bootstrapPromise && typeof kiuPortalFetch === 'function') {
                 scheduleStudentServiceBootstrap();
@@ -774,19 +781,15 @@ function __kiuSspExpose(map) {
             getStudentServiceAnswerComposerId,
             openStudentServiceGuidanceModal,
             closeStudentServiceGuidanceModal,
-            fetchStudentServiceBootstrap,
-            applyStudentServiceBootstrap,
-            preloadStudentServiceWorkspaceModules,
+            fetchStudentServiceBootstrap: window.fetchStudentServiceBootstrap,
+            applyStudentServiceBootstrap: window.applyStudentServiceBootstrap,
+            preloadStudentServiceWorkspaceModules: window.preloadStudentServiceWorkspaceModules,
         });
         window.__kiuRelayoutStudentServiceCommentTrunks = relayoutStudentServiceCommentTrunks;
         __kiuSspExpose({
             getStudentServiceEffectiveInboxFilterLayout,
             getStudentServicePublicInboxFilterLayout,
-            getStudentServicePublishedInboxFilterLayout,
             invalidateStudentServiceRenderSignature,
-            syncStudentServiceWorkspaceBackendSession,
-            canShowStudentServiceArticleEditorActions,
-            buildStudentServiceArticleFingerprint,
             pickStudentHubFeaturedArticle,
             resolveStudentHubArticle,
             getStudentServiceFilteredStaffTickets,

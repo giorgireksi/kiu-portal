@@ -30,4 +30,22 @@ describe('social-workspace-graph-desk-model peel', () => {
         expect(ensureBlock.indexOf('SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL'))
             .toBeLessThan(ensureBlock.indexOf('SOCIAL_WORKSPACE_GRAPH_MODEL_URL'));
     });
+
+    it('graph-model forwards desk rollup helpers to KiuSocialWorkspaceGraphDeskModel', () => {
+        const model = readSource('assets/js/pages/social-workspace-graph-model.js');
+        expect(model).toContain('const __graphDeskPeer = () => window.KiuSocialWorkspaceGraphDeskModel || {}');
+        expect(model).toContain('__graphDeskPeer().computeProjectTaskGraphGroupRollup?.(...a)');
+    });
+
+    it('workspace passes group node sizes from graph-model to graph-render', () => {
+        const workspace = readSource('assets/js/pages/social-workspace.js');
+        expect(workspace).toMatch(/PROJECT_TASK_GROUP_NODE_W: __swGraphBatch\.PROJECT_TASK_GROUP_NODE_W \|\| 264/);
+        expect(workspace).toMatch(/PROJECT_TASK_GROUP_NODE_H: __swGraphBatch\.PROJECT_TASK_GROUP_NODE_H \|\| 228/);
+    });
+
+    it('graph-render falls back to graph-model group node sizes', () => {
+        const render = readSource('assets/js/pages/social-workspace-graph-render.js');
+        expect(render).toContain('const GROUP_NODE_W = Number(PROJECT_TASK_GROUP_NODE_W)');
+        expect(render).toContain('__swGraphBatch.PROJECT_TASK_GROUP_NODE_W');
+    });
 });

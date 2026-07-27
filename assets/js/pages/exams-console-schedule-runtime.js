@@ -268,7 +268,7 @@ function unpublishExamSession(sessionId) {
     renderConsole('body');
 };
 
-/* Collision and split visuals now live in assets/css/exam-studio.css. */
+/* Collision and split visuals: lux-page-bare-lite.css (body.lux-route-exams #admin-exams-root). */
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    QUIZ EXPORT â€” PDF & DOCX

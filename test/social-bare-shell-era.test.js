@@ -64,7 +64,9 @@ describe('social bare shell era', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toMatch(/#page-social|\.lux-route-social/);
         expect(bare).toContain('.social-neo-shell');
-        expect(bare).toContain('.social-neo-feed-hero-grid');
+        expect(bare).toContain('.social-neo-events-shell--merged');
+        expect(bare).toContain('.social-neo-events-content');
+        expect(bare).toContain('.social-neo-event-feature');
         expect(bare).toContain('.social-neo-lost-found-hero');
         expect(bare).toContain('.social-neo-workspace-rail-reveal');
         expect(bare).toContain('.social-neo-side-link.is-active');
@@ -72,8 +74,35 @@ describe('social bare shell era', () => {
         expect(bare).toContain('.is-focused');
         expect(bare).toContain('.social-neo-section-head');
         expect(bare).toContain('.social-neo-messages');
+        expect(bare).toContain('.social-neo-messages__inbox-header');
+        expect(bare).toContain('.social-neo-chat-item.is-active');
+        expect(bare).toContain('.social-neo-msg-compose-row');
+        expect(bare).toContain('.social-neo-messages__thread-shell');
         expect(bare).toContain('.sn-alerts-panel');
+        expect(bare).toContain('.sn-alert-card::before');
         expect(bare).toContain('.social-project-overview-columns');
+        expect(bare).toContain('.social-project-hub-layout');
+        expect(bare).toContain('.social-neo-workspace-hero-stats');
+        expect(bare).toContain('.social-neo-portfolio-hero-stats');
+        expect(bare).toContain('.social-portfolio-search-row');
+        expect(bare).toContain('.social-portfolio-feed');
+        expect(bare).toContain('.social-portfolio-card');
+        expect(bare).toContain('.portfolio-panel-tab');
+        expect(bare).toContain('.social-neo-pages-hero-grid');
+        expect(bare).toContain('.social-neo-pages-grid');
+        expect(bare).toContain('.social-neo-pages-empty-state');
+        expect(bare).toContain('.social-neo-page-card-rich');
+        expect(bare).toContain('.social-photo-tab-segment');
+        expect(bare).toContain('.social-photo-content-stage');
+        expect(bare).toContain('.social-photo-grid-tile');
+    });
+
+    it('pages hero uses lux-secondary-btn like other social heroes', () => {
+        const pages = readSource('assets/js/pages/social-pages.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(pages).toContain('lux-secondary-btn social-neo-pages-hero-tab');
+        expect(pages).not.toContain('lux-tab-btn--rich');
+        expect(bare).toMatch(/\.social-neo-pages-hero-grid[\s\S]*?grid-template-columns:\s*repeat\(2/);
     });
 
     it('lost-found search uses lux-control', () => {
@@ -114,8 +143,74 @@ describe('social bare shell era', () => {
         expect(bare).toMatch(/social-neo-feed-hero-tab[\s\S]*\.lux-secondary-btn/);
     });
 
+    it('photography tabs use shared lux button classes', () => {
+        const photo = readSource('assets/js/pages/social-photography.js');
+        expect(photo).toMatch(/lux-secondary-btn-sm social-photo-tab/);
+        expect(photo).toMatch(/lux-primary-btn.*social-photo-tab|social-photo-tab.*lux-primary-btn/);
+    });
+
+    it('lux-page-bare-lite.css has balanced braces', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        let depth = 0;
+        for (const ch of bare) {
+            if (ch === '{') depth += 1;
+            if (ch === '}') depth -= 1;
+            expect(depth).toBeGreaterThanOrEqual(0);
+        }
+        expect(depth).toBe(0);
+    });
+
     it('registers social-neo-card in fouc-ht nested matte allowlist', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toMatch(/\[data-lux-glass-root="1"\][\s\S]*\.social-neo-card/);
+    });
+
+    it('social shells use fouc-ht hover SSOT (not bare-lite panel paint)', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const cardBlock = bare.slice(
+            bare.indexOf('body.lux-route-social .social-neo-card'),
+            bare.indexOf('body.lux-route-social .social-neo-flash')
+        );
+        expect(cardBlock).not.toContain('--lux-panel-surface');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toContain('body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal)');
+        expect(fouc).toContain('.social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field))');
+        expect(fouc).toContain('[class*="-hub-section"]');
+        expect(fouc).toContain('.social-neo-empty');
+        expect(fouc).toContain('.social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))');
+        expect(fouc).toContain('.social-neo-messages__inbox');
+        expect(fouc).toContain('.social-neo-messages__thread-shell');
+        expect(fouc).not.toMatch(/Social soft-chrome shells[\s\S]*\.social-neo-chat-item/);
+        expect(fouc).not.toContain('.social-neo-call-card');
+        expect(bare).toContain('--msg-stream-bg');
+        expect(fouc).toContain('var(--home-chip-hover-lift, -3px)');
+    });
+
+    it('keeps social overlay portal and dialog backdrop fixed above the page', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toMatch(/#social-neo-overlay-portal[\s\S]*position:\s*fixed/);
+        expect(modals).toMatch(/\.lux-glass-dialog-backdrop[\s\S]*position:\s*fixed/);
+    });
+
+    it('paints social glass-dialog popups with shared lux modal layout', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.lux-glass-dialog-card--social-glass');
+        expect(modals).toContain('.lux-glass-dialog-invite-columns');
+        expect(modals).toContain('.lux-glass-dialog-group-section');
+    });
+
+    it('uses shared frosted popup shell tokens for social-glass cards', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        const section7b = modals.slice(modals.indexOf('§7b social overlay'));
+        expect(section7b).not.toContain('--lux-modal-glass-surface: var(--lux-warmglass-surface)');
+        expect(section7b).toMatch(/\.lux-glass-dialog-card--social-glass[\s\S]*background:\s*var\(--lux-popup-shell-surface/);
+        expect(modals).toMatch(/\.lux-glass-dialog-card:not\(\.lux-glass-dialog-card--social-glass\)/);
+        expect(modals).toContain('.lux-glass-dialog-card--social-glass *');
+    });
+
+    it('shields social overlay portal from transparency inline paint', () => {
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        expect(transparency).toContain('#social-neo-overlay-portal');
+        expect(transparency).not.toMatch(/SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS = \[[\s\S]*?'\.lux-glass-dialog-card'/);
     });
 });

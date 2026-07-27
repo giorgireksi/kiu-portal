@@ -776,12 +776,13 @@
     }
 
     /* Desk/forest/rollup: social-workspace-graph-desk-model.js (loaded first). */
-    const orderDeskTasksByDependency = (...a) => window.orderDeskTasksByDependency?.(...a) ?? [];
-    const buildDeskTaskForest = (...a) => window.buildDeskTaskForest?.(...a) ?? [];
-    const projectTaskGraphWouldCycle = (...a) => window.projectTaskGraphWouldCycle?.(...a) ?? false;
-    const collectProjectTaskGraphGroupDescendantTaskIds = (...a) => window.collectProjectTaskGraphGroupDescendantTaskIds?.(...a) ?? [];
-    const collectProjectTaskGraphGroupAbsorbedTaskIds = (...a) => window.collectProjectTaskGraphGroupAbsorbedTaskIds?.(...a) ?? [];
-    const computeProjectTaskGraphGroupRollup = (...a) => window.computeProjectTaskGraphGroupRollup?.(...a) ?? null;
+    const __graphDeskPeer = () => window.KiuSocialWorkspaceGraphDeskModel || {};
+    const orderDeskTasksByDependency = (...a) => window.orderDeskTasksByDependency?.(...a) ?? __graphDeskPeer().orderDeskTasksByDependency?.(...a) ?? [];
+    const buildDeskTaskForest = (...a) => window.buildDeskTaskForest?.(...a) ?? __graphDeskPeer().buildDeskTaskForest?.(...a) ?? [];
+    const projectTaskGraphWouldCycle = (...a) => window.projectTaskGraphWouldCycle?.(...a) ?? __graphDeskPeer().projectTaskGraphWouldCycle?.(...a) ?? false;
+    const collectProjectTaskGraphGroupDescendantTaskIds = (...a) => window.collectProjectTaskGraphGroupDescendantTaskIds?.(...a) ?? __graphDeskPeer().collectProjectTaskGraphGroupDescendantTaskIds?.(...a) ?? [];
+    const collectProjectTaskGraphGroupAbsorbedTaskIds = (...a) => window.collectProjectTaskGraphGroupAbsorbedTaskIds?.(...a) ?? __graphDeskPeer().collectProjectTaskGraphGroupAbsorbedTaskIds?.(...a) ?? [];
+    const computeProjectTaskGraphGroupRollup = (...a) => window.computeProjectTaskGraphGroupRollup?.(...a) ?? __graphDeskPeer().computeProjectTaskGraphGroupRollup?.(...a) ?? null;
 
     function scoreProjectTaskGraphDockPair(fromPos, toPos, sideFrom, sideTo, meta = {}) {
         const fromDocks = getProjectTaskGraphDocks(fromPos);

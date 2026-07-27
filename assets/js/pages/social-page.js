@@ -9,14 +9,37 @@
     // Workspace lazy-export stubs: social-workspace-stubs.js
     const __installKiuSocialWorkspaceStubs = window.installKiuSocialWorkspaceStubs || (() => ({}));
 
+    const PROJECT_TASK_GRAPH_STACKED_DIALOGS = new Set([
+        'project-task-detail',
+        'project-task-edit',
+        'project-task-create',
+        'project-task-delete',
+        'project-health',
+        'project-risk',
+        'project-task-graph-history',
+        'project-task-graph-schedule-help'
+    ]);
+    const PROJECT_HEALTH_OVERLAY_DIALOGS = new Set([
+        'project-task-detail',
+        'project-task-edit',
+        'project-task-create',
+        'project-task-delete',
+        'project-settings',
+        'project-risk',
+        'project-health-plan-pick'
+    ]);
+    window.PROJECT_TASK_GRAPH_STACKED_DIALOGS = PROJECT_TASK_GRAPH_STACKED_DIALOGS;
+    window.PROJECT_HEALTH_OVERLAY_DIALOGS = PROJECT_HEALTH_OVERLAY_DIALOGS;
+
     // Overlay portal + dialog open/close/lock chrome: social-overlay-chrome.js
     const __overlay = (typeof window.createKiuSocialOverlayChromeApi === 'function'
         ? window.createKiuSocialOverlayChromeApi({
             text, state, root,
-            PROJECT_TASK_GRAPH_STACKED_DIALOGS: window.PROJECT_TASK_GRAPH_STACKED_DIALOGS,
-            PROJECT_HEALTH_OVERLAY_DIALOGS: window.PROJECT_HEALTH_OVERLAY_DIALOGS,
+            PROJECT_TASK_GRAPH_STACKED_DIALOGS,
+            PROJECT_HEALTH_OVERLAY_DIALOGS,
             workspaceDialogKeepsCenter: typeof window.workspaceDialogKeepsCenter === 'function' ? window.workspaceDialogKeepsCenter : () => false,
             isProjectTaskGraphStackActive: typeof window.isProjectTaskGraphStackActive === 'function' ? window.isProjectTaskGraphStackActive : () => false,
+            getProjectTaskGraphStackAnchorDialog: typeof window.getProjectTaskGraphStackAnchorDialog === 'function' ? window.getProjectTaskGraphStackAnchorDialog : () => null,
             renderDialogOnlyNow,
             renderSocialPageNow: (reason) => {
                 const fn = window.renderSocialPageNow || window.__kiuSocialLiteRenderPage;
@@ -52,7 +75,10 @@
             persistProjectTaskGraphView: typeof window.persistProjectTaskGraphView === 'function' ? window.persistProjectTaskGraphView : () => {},
             clearProjectTabPaneCache: typeof window.clearProjectTabPaneCache === 'function' ? window.clearProjectTabPaneCache : () => {},
             rebuildActiveProjectTabPaneIfPreviewHost: typeof window.rebuildActiveProjectTabPaneIfPreviewHost === 'function' ? window.rebuildActiveProjectTabPaneIfPreviewHost : () => {},
-            relayoutCommentTrunks: typeof window.relayoutCommentTrunks === 'function' ? window.relayoutCommentTrunks : () => {}
+            relayoutCommentTrunks: (scope) => {
+                const fn = window.relayoutCommentTrunks || window.__kiuRelayoutCommentTrunks;
+                if (typeof fn === 'function') fn(scope);
+            }
         })
         : {});
     const {
@@ -118,24 +144,43 @@
     }
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260714-community-click1';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
-    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260714-lf-click1';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260714-photo-click1';
-    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260714-surveys-click1';
+    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260726-socfix35';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260726-socfix35';
+    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260726-socfix35';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
-    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260714-messages-click1';
+    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260727-socshell13';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
-    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260714-events-click1';
-    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260714-groups-click1';
-    const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260720-h2feed1';
-    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260720-h2feed1';
-    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260714-pages-click1';
-    const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260719-wsdesk1';
-    const SOCIAL_WORKSPACE_GRAPH_MODEL_URL = 'assets/js/pages/social-workspace-graph-model.js?v=20260719-wsgraph1';
-    const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260720-wsgsync1';
-    const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260720-w18';
-    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260720-wsgrt1';
-    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260726-socfix10';
+    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260726-socfix35';
+    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260726-socfix35';
+    const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260726-socstack59';
+    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260726-socstack59';
+    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260726-socfix36';
+    const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260726-socfix20';
+    const SOCIAL_WORKSPACE_GRAPH_MODEL_URL = 'assets/js/pages/social-workspace-graph-model.js?v=20260726-socfix20';
+    const SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL = 'assets/js/pages/social-workspace-portfolio-model.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL = 'assets/js/pages/social-workspace-week-plan-model.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260726-socfix19';
+    const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_SCHEDULE_UI_URL = 'assets/js/pages/social-workspace-schedule-ui.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
+    const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260726-socfix17';
+    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260726-socstack47';
+    const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
+    const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
+    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260726-socfix44';
+    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260726-socstack48';
+    const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260726-socstack47';
+    const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260726-socstack50';
+    const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260726-socstack48';
+    const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260726-socfix35';
+    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260726-socfix35';
+    const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260726-socstack47';
+    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260726-socstack50';
     const DIRECTORY_REFRESH_MS = 180;
     const MAX_RENDER_ATTEMPTS = 24;
     const USER_ROLES_FALLBACK = {
@@ -242,9 +287,15 @@
     }
     function assertUniqueProjectTaskTitle(project, title, { excludeTaskId = '' } = {}) {
         const want = text(title);
-        if (!want) throw new Error('Task title is required.');
+        if (!want) {
+            const error = new Error('Task title is required.');
+            error.userFacing = true;
+            throw error;
+        }
         if (projectHasTaskTitle(project, want, { excludeTaskId })) {
-            throw new Error(`A task named “${want}” already exists in this project.`);
+            const error = new Error(`A task named “${want}” already exists in this project.`);
+            error.userFacing = true;
+            throw error;
         }
         return want;
     }
@@ -267,8 +318,7 @@
         'project-health-plan-pick'
     ]);
 
-    let bound = false;
-    let boundHost = null;
+    const socialEventBinding = { bound: false, boundHost: null, hostEventAbort: null };
     let lastSocialRoot = null;
     let globalKeydownBound = false;
     let scrollLockMediaBound = false;
@@ -287,8 +337,6 @@
     let socialDirectoryPrefetchScheduled = false;
     let socialRouteGuardianBound = false;
     let socialRouteGuardianInterval = 0;
-    let hostEventAbort = null;
-    const pendingCommentReactions = new Set();
     function isStandaloneSocialRoute() {
         const pathname = String(window.location?.pathname || '').toLowerCase();
         return pathname.endsWith('/social.html') || pathname.endsWith('social.html');
@@ -328,8 +376,8 @@
             document.body.dataset.luxPage = 'social';
             document.body.dataset.luxEntry = 'social';
             document.body.dataset.luxFamily = 'social';
-            bound = false;
-            boundHost = null;
+            socialEventBinding.bound = false;
+            socialEventBinding.boundHost = null;
             bindEvents();
         }
         return socialRoot;
@@ -351,8 +399,8 @@
                 if (!ensureSocialRouteHost()) return;
             }
             lastSocialRoot = document.getElementById(ROOT_ID);
-            bound = false;
-            boundHost = null;
+            socialEventBinding.bound = false;
+            socialEventBinding.boundHost = null;
             bindEvents();
             guardianRenderInProgress = true;
             renderSocialPageNow('social-route-guardian');
@@ -539,6 +587,10 @@
         renderPhotographyUploadDialogNow();
     }
 
+    function invokeRenderDialog() {
+        const fn = window.__kiuRenderDialog;
+        return typeof fn === 'function' ? fn() : '';
+    }
     // Render the upload wizard straight into the dialog region, bypassing the
     // debounced renderSocialPageNow pipeline. Background polling renders were
     // racing the debounce timer and swallowing wizard updates (file pick / step
@@ -547,7 +599,7 @@
         if (text(activeDialog()?.type || '') !== 'photography-upload') return;
         const region = socialDialogRegion();
         if (!region) return;
-        setSocialRegionMarkup(region, renderDialog());
+        setSocialRegionMarkup(region, invokeRenderDialog());
         bindPhotographyUploadDialogFileInput();
     }
     function renderDialogOnlyNow() {
@@ -555,17 +607,26 @@
         if (!host) return;
         const shell = ensureSocialShell(host);
         const runtime = state();
-        const stackSynced = trySyncProjectTaskGraphStackDialog(shell.dialog, runtime);
+        let stackSynced = trySyncProjectTaskGraphStackDialog(shell.dialog, runtime);
         if (!stackSynced) {
-            setSocialRegionMarkup(shell.dialog, renderDialog());
+            setSocialRegionMarkup(shell.dialog, invokeRenderDialog());
+        }
+        const activeKind = text(activeDialog()?.type || '');
+        if (shouldRenderProjectTaskGraphStack(runtime, activeKind)
+            && !shell.dialog?.querySelector('[data-project-task-graph-anchor="1"]')) {
+            delete shell.dialog.__kiuLastMarkup;
+            setSocialRegionMarkup(shell.dialog, invokeRenderDialog());
+            stackSynced = false;
         }
         bindPhotographyUploadDialogFileInput();
+        if (typeof syncProjectTaskGraphStackSlotState === 'function') {
+            syncProjectTaskGraphStackSlotState(shell.dialog);
+        }
         if (typeof window.enhanceUniversalPickers === 'function') {
             try { window.enhanceUniversalPickers(shell.dialog); } catch (error) {}
         }
         syncOverlayPortalVisibility();
         bindEvents();
-        const activeKind = text(activeDialog()?.type || '');
         if (!stackSynced && (activeKind === 'project-task-graph' || shouldRenderProjectTaskGraphStack(runtime, activeKind))) {
             bindProjectTaskGraphDrag();
             bindProjectTaskGraphResizeObserver();
@@ -909,6 +970,16 @@
         });
         return socialProfileModulePromise;
     }
+    function waitForDynamicScript(existing) {
+        if (!existing) return Promise.resolve();
+        if (existing.readyState === 'complete' || existing.readyState === 'loaded') {
+            return Promise.resolve();
+        }
+        return new Promise((resolve) => {
+            existing.addEventListener('load', () => resolve(), { once: true });
+            existing.addEventListener('error', () => resolve(), { once: true });
+        });
+    }
     function ensureSocialEventsModule() {
         if (window.__KIU_SOCIAL_EVENTS_MODULE_LOADED
             && typeof window.renderEventsPanel === 'function'
@@ -918,12 +989,7 @@
             return Promise.resolve();
         }
         const existing = document.querySelector(`script[src="${SOCIAL_EVENTS_MODULE_URL}"]`);
-        if (existing) {
-            return new Promise((resolve) => {
-                existing.addEventListener('load', () => resolve(), { once: true });
-                existing.addEventListener('error', () => resolve(), { once: true });
-            });
-        }
+        if (existing) return waitForDynamicScript(existing);
         return new Promise((resolve) => {
             const script = document.createElement('script');
             script.src = SOCIAL_EVENTS_MODULE_URL;
@@ -951,18 +1017,13 @@
             return Promise.resolve();
         }
         const existing = document.querySelector(`script[src="${SOCIAL_GROUPS_MODULE_URL}"]`);
-        if (existing) {
-            return new Promise((resolve) => {
-                existing.addEventListener('load', () => resolve(), { once: true });
-                existing.addEventListener('error', () => resolve(), { once: true });
-            });
-        }
-        return new Promise((resolve) => {
+        if (existing) return waitForDynamicScript(existing);
+        return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = SOCIAL_GROUPS_MODULE_URL;
             script.defer = true;
             script.onload = () => resolve();
-            script.onerror = () => resolve();
+            script.onerror = () => reject(new Error('Social groups module could not be loaded.'));
             document.head.appendChild(script);
         });
     }
@@ -986,12 +1047,7 @@
             return Promise.resolve();
         }
         const existing = document.querySelector(`script[src="${SOCIAL_PAGES_MODULE_URL}"]`);
-        if (existing) {
-            return new Promise((resolve) => {
-                existing.addEventListener('load', () => resolve(), { once: true });
-                existing.addEventListener('error', () => resolve(), { once: true });
-            });
-        }
+        if (existing) return waitForDynamicScript(existing);
         return new Promise((resolve) => {
             const script = document.createElement('script');
             script.src = SOCIAL_PAGES_MODULE_URL;
@@ -1014,29 +1070,40 @@
         if (hasSocialWorkspaceModule()) {
             return Promise.resolve();
         }
-        // Deferred workspace bundle: desk model + graph model load before the runtime bundle.
-        const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260720-wsev1';
-        const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260720-wsev1';
-        const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260720-wsev1';
-        const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260720-wspb1';
-        const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260720-w18';
-        const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260720-wspb1';
+        // Deferred workspace bundle: models → UI peels → panel → coordinator (see engineering-a-plus-frontend-js.md).
         const __wsChain = [
+            SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL,
+            SOCIAL_WORKSPACE_HEALTH_MODEL_URL,
             SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL,
             SOCIAL_WORKSPACE_GRAPH_MODEL_URL,
+            SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL,
+            SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL,
             SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL,
             SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL,
-            SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL,
+            SOCIAL_WORKSPACE_SCHEDULE_UI_URL,
+            SOCIAL_WORKSPACE_TAB_RUNTIME_URL,
             SOCIAL_WORKSPACE_EVENTS_INPUT_URL,
             SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL,
             SOCIAL_WORKSPACE_EVENTS_URL,
             SOCIAL_WORKSPACE_PANEL_BUDGET_URL,
             SOCIAL_WORKSPACE_PANEL_TEAM_URL,
             SOCIAL_WORKSPACE_PANEL_URL,
+            SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL,
+            SOCIAL_WORKSPACE_DIALOGS_URL,
+            SOCIAL_WORKSPACE_GRAPH_RENDER_URL,
+            SOCIAL_WORKSPACE_TASK_UI_URL,
+            SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL,
+            SOCIAL_WORKSPACE_PORTFOLIO_UI_URL,
+            SOCIAL_WORKSPACE_PROJECT_CHROME_URL,
+            SOCIAL_WORKSPACE_DIALOG_ROUTE_URL,
             SOCIAL_WORKSPACE_MODULE_URL
         ];
         return __wsChain.reduce((chain, url) => chain.then(() => new Promise((resolve) => {
-            if (document.querySelector(`script[src="${url}"]`)) { resolve(); return; }
+            const existing = document.querySelector(`script[src="${url}"]`);
+            if (existing) {
+                waitForDynamicScript(existing).then(resolve);
+                return;
+            }
             const script = document.createElement('script');
             script.src = url;
             script.defer = true;
@@ -1046,10 +1113,11 @@
         })), Promise.resolve());
     }
         function hasSocialWorkspaceModule() {
-        const sw = window.KiuSocialWorkspace || {};
         const live = (name, stub) => {
-            const impl = typeof sw[name] === 'function' ? sw[name] : window[name];
-            return typeof impl === 'function' && impl !== stub;
+            const impl = resolveSocialExportImpl(name);
+            const workspaceImpl = (window.KiuSocialWorkspace || {})[name];
+            const resolved = typeof workspaceImpl === 'function' ? workspaceImpl : impl;
+            return typeof resolved === 'function' && resolved !== stub;
         };
         return Boolean(window.__KIU_SOCIAL_WORKSPACE_MODULE_LOADED
             && live('renderProjectCreateDialog', renderProjectCreateDialog)
@@ -1124,7 +1192,7 @@
     const {
         readProjectWeekPlansStore, readProjectWeekPlan, writeProjectWeekPlan, addToProjectWeekPlan, addManyToProjectWeekPlan, removeFromProjectWeekPlan,
         normalizeProjectWeekPlanWindow, shouldRenderProjectTaskGraphStack, shouldRenderProjectHealthStack, renderWorkspaceOwnedDialog, isProjectTaskGraphStackActive, getProjectTaskGraphStackAnchorDialog,
-        wrapProjectTaskGraphStack, wrapProjectHealthStack, renderHealthStackLayers, maybeWrapStackedProjectDialog, renderStackedProjectTaskChild, trySyncProjectTaskGraphStackDialog,
+        wrapProjectTaskGraphStack, wrapProjectHealthStack, renderHealthStackLayers, maybeWrapStackedProjectDialog, renderStackedProjectTaskChild, trySyncProjectTaskGraphStackDialog, syncProjectTaskGraphStackSlotState,
         projectTaskGraphStackedBackdropClass, resolveProjectTaskGraphNodeFromTarget, sortProjectBoardTasksByPriority, filterProjectBoardTasks, projectTaskDependsOnIds, resolveDeskTaskReadiness,
         orderDeskTasksByDependency, buildDeskTaskForest, buildProjectTaskInspectorFields, syncProjectTaskMatrixPreview, computePertExpected, taskHasPert,
         resolveTaskScheduleEstimate, resolveProjectTaskPriorityDisplay, clampProjectTaskGraphCardHeight, estimateProjectTaskGraphCardHeight, measureProjectTaskGraphCardHeights, normalizeProjectTaskGraphMode,
@@ -1408,12 +1476,15 @@
         renderPostComposeShareSection, renderPostComposeAttachResultsHtml,
         renderCommunityPanel, renderProjectsWorkspacePanelClassic, renderLostFoundPanel, renderSurveysPanel,
         renderPhotographyPanel, renderMessagesPanel, renderCommunityHero,
+        renderWorkspaceHero, renderPortfolioHero, renderProjectTaskFormFields,
         buildProjectCreateInviteContext, resolveActiveSocialProject, renderProjectTaskChecklistBlock,
         parseTaskChecklistFromForm, syncTaskChecklistInput, getProjectHealthDialogCard,
         patchProjectHealthPlanCard, taskMatchesPlanPickDueFilter, resolveTaskPackageId,
         patchProjectHealthPlanPick, countProjectRisksForTask, projectRiskScaleRank, buildGroupCreateInviteContext,
         renderGroupCreateInviteSection, findSocialGroupById, renderGroupDetailMemberLine,
-        renderGroupDetailDialog, renderGroupsPanel, renderPagesPanel, renderAlertsPanel,
+        renderGroupDetailDialog, renderGroupsPanel, renderGroupsHero, renderGroupCreateDialog,
+        renderEventsHero, renderEventCreateDialog, renderPagesHero, renderPageCreateDialog,
+        renderPagesPanel, renderAlertsPanel,
         renderProjectsPanel, renderProfilePageBody, renderShellPrimaryNav, renderMobileTabBar,
         renderShellDrawer, getSocialWorkspaceNavRegion, animateSocialWorkspaceNavOpen,
         closeSocialWorkspaceNavAnimated
@@ -1450,11 +1521,12 @@
             scheduleDeferredWindowScrollRestore,
             ensureSocialShell, applyShellIdentity, ensureWorkspaceNavCollapsedState,
             syncWorkspaceNavCollapsedClass, isSocialTopbarSkippedPanel,
-            renderWorkspaceOwnedDialog, trySyncProjectTaskGraphStackDialog,
+            renderWorkspaceOwnedDialog, trySyncProjectTaskGraphStackDialog, syncProjectTaskGraphStackSlotState,
             shouldRenderProjectTaskGraphStack, bindProjectTaskGraphDrag,
             bindProjectTaskGraphResizeObserver,
             syncOverlayPortalVisibility, pruneStaleSocialOverlayState, syncSurveyResultsDialog,
-            syncSocialOverlayLock,
+            syncSocialOverlayLock, socialDialogRegion,
+            clearProjectTabPaneCache, projectTabPaneCacheKey,
             bindPhotographyUploadDialogFileInput, focusCommentComposeInput,
             lostFoundItems, normalizeLostFoundItem, surveyById
         }
@@ -1665,9 +1737,7 @@
 
     /* Wave 18: social-page-boot-runtime.js */
     const __w18Deps = {
-        bound: false,
-        boundHost: null,
-        hostEventAbort: null,
+        eventBinding: socialEventBinding,
         globalKeydownBound: false,
         scrollLockMediaBound: false,
         socialVisualViewportBound: false,
@@ -1772,7 +1842,7 @@
         openDialog, renderSocialPageNow, withBusy, setPortalSocialGroupMembership, respondPortalSocialGroupMembership,
         openPortalSocialGroupChat, setActiveChat, invalidateSocialRenderCache, reportPortalSocialContent, updatePortalSocialGroup,
         removePortalSocialGroupMember, searchGroupMessages, invitePortalSocialGroupMember, joinPortalGroupCall, leavePortalGroupCall,
-        closeDialog, createPortalSocialGroup, readFileAsDataUrl
+        closeDialog, createPortalSocialGroup, readFileAsDataUrl, chatTitle
     });
 
     window.__kiuSocialPagesHooks = window.__kiuSocialPagesHooks || {};
@@ -1870,7 +1940,7 @@
         openDialog, renderSocialPageNow, withBusy, root, setActiveChat,
         hidePortalMessengerChat, openPortalDirectChat, startPortalCall, acceptPortalCall, declinePortalCall,
         endPortalCall, togglePortalCallMic, togglePortalCallCamera, closeDialog, sendPortalMessage,
-        deletePortalChatMessage, invalidateSocialRenderCache, activeChat
+        deletePortalChatMessage, invalidateSocialRenderCache, activeChat, leavePortalGroupCall
     });
 
     window.__kiuSocialDocsHooks = window.__kiuSocialDocsHooks || {};

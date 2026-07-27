@@ -593,7 +593,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
             if (!hint) {
                 hint = document.createElement('div');
                 hint.id = 'new-subject-semester-parity-hint';
-                hint.className = 'lux-card-meta lux-admin-tools-parity-hint lux-admin-tools-parity-callout';
+                hint.className = 'registration-structured-help lux-admin-tools-parity-callout';
                 hintAnchor.insertAdjacentElement('afterend', hint);
             } else {
                 hint.classList.add('lux-admin-tools-parity-callout');
@@ -968,8 +968,8 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         registrationRuntimeAsset('assets/js/pages/curriculum-semester-picker.js'),
         'assets/js/pages/curriculum-library-scroll.js?v=20260606-scrollrail1',
         'assets/js/pages/student-registration-eligibility-runtime.js?v=20260725-portalmodal2',
-        'assets/js/pages/student-registration-choice-runtime.js?v=20260724-peelfix1',
-        'assets/js/pages/student-registration.js?v=20260724-peelfix1',
+        'assets/js/pages/student-registration-choice-runtime.js?v=20260727-peelfix2',
+        'assets/js/pages/student-registration.js?v=20260727-peelfix2',
         'assets/js/pages/admin-registration-track.js?v=20260725-legacycta1',
         'assets/js/pages/admin-registration-seats-runtime.js?v=20260719-regseats1',
         'assets/js/pages/admin-registration-cms-runtime.js?v=20260724-peelfix2',
@@ -981,8 +981,8 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         registrationRuntimeAsset('assets/js/pages/registration-shared.js'),
         registrationRuntimeAsset('assets/js/pages/registration-enrollment.js'),
         registrationRuntimeAsset('assets/js/pages/student-registration-eligibility-runtime.js'),
-        'assets/js/pages/student-registration-choice-runtime.js?v=20260724-peelfix1',
-        'assets/js/pages/student-registration.js?v=20260724-peelfix1',
+        'assets/js/pages/student-registration-choice-runtime.js?v=20260727-peelfix2',
+        'assets/js/pages/student-registration.js?v=20260727-peelfix2',
         registrationRuntimeAsset('assets/js/pages/registration-student-route.js')
     ];
     let registrationRuntimeLoadPromise = null;

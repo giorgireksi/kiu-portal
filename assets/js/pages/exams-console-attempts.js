@@ -146,7 +146,7 @@
         const activity = selectedSession ? buildSessionActivity(selectedSession) : null;
         return `
             <div class="ex2-two-col">
-                <section class="ex2-panel">
+                <section class="ex2-panel lux-soft-chrome">
                     <div class="lux-panel-head">
                         <div>
                             <h2 class="lux-panel-title">Live Monitoring</h2>
@@ -155,17 +155,17 @@
                     </div>
                     <div class="ex2-list">
                         ${sessions.length ? sessions.map((session) => `
-                            <button type="button" class="ex2-select-card${selectedSession?.id === session.id ? ' is-selected' : ''}" data-exam-call="selectExamSession" data-exam-args='["${escapeHtml(session.id)}","live"]'>
+                            <button type="button" class="ex2-select-card lux-soft-chrome${selectedSession?.id === session.id ? ' is-selected' : ''}" data-exam-call="selectExamSession" data-exam-args='["${escapeHtml(session.id)}","live"]'>
                                 <div>
                                     <strong class="ex2-select-card-title">${escapeHtml(session.subjectName || session.title || 'Exam')}</strong>
                                     <span class="ex2-select-card-copy">${escapeHtml(formatDateTime(session.startAt))}</span>
                                 </div>
                                 <div class="ex2-select-card-state">${escapeHtml(getSelectedSessionStatus(session))}</div>
                             </button>
-                        `).join('') : `<div class="ex2-empty"><div class="ex2-empty-copy">No scheduled or live exam sessions are available.</div></div>`}
+                        `).join('') : `<div class="ex2-empty-state lux-soft-chrome"><i class="fas fa-tower-broadcast"></i><p class="ex2-empty-state-copy">No scheduled or live exam sessions are available.</p></div>`}
                     </div>
                 </section>
-                <section class="ex2-panel">
+                <section class="ex2-panel lux-soft-chrome">
                     ${selectedSession ? `
                         <div class="lux-panel-head">
                             <div>
@@ -176,19 +176,19 @@
                         </div>
                         ${activity ? `
                             <div class="ex2-mini-grid">
-                                <div class="ex2-activity-metric"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.not_started))}</strong><span class="ex2-activity-metric-label">Not started</span></div>
-                                <div class="ex2-activity-metric"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.checked_in))}</strong><span class="ex2-activity-metric-label">Checked in</span></div>
-                                <div class="ex2-activity-metric"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.in_progress))}</strong><span class="ex2-activity-metric-label">In progress</span></div>
-                                <div class="ex2-activity-metric"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.submitted))}</strong><span class="ex2-activity-metric-label">Submitted</span></div>
-                                <div class="ex2-activity-metric"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.flagged))}</strong><span class="ex2-activity-metric-label">Flagged</span></div>
+                                <div class="ex2-activity-metric lux-soft-chrome"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.not_started))}</strong><span class="ex2-activity-metric-label">Not started</span></div>
+                                <div class="ex2-activity-metric lux-soft-chrome"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.checked_in))}</strong><span class="ex2-activity-metric-label">Checked in</span></div>
+                                <div class="ex2-activity-metric lux-soft-chrome"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.in_progress))}</strong><span class="ex2-activity-metric-label">In progress</span></div>
+                                <div class="ex2-activity-metric lux-soft-chrome"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.submitted))}</strong><span class="ex2-activity-metric-label">Submitted</span></div>
+                                <div class="ex2-activity-metric lux-soft-chrome"><strong class="ex2-activity-metric-value">${escapeHtml(String(activity.flagged))}</strong><span class="ex2-activity-metric-label">Flagged</span></div>
                             </div>
                         ` : ''}
-                        ${attemptsStore?.loading ? `<div class="ex2-empty"><div class="ex2-empty-copy">Loading attempt activity...</div></div>` : ''}
+                        ${attemptsStore?.loading ? `<div class="ex2-empty-state lux-soft-chrome"><p class="ex2-empty-state-copy">Loading attempt activity...</p></div>` : ''}
                         ${attemptsStore?.error ? `<div class="ex2-warning"><i class="fas fa-triangle-exclamation"></i> ${escapeHtml(attemptsStore.error)}</div>` : ''}
                         <div class="ex2-attempt-list">
                             ${renderAttemptRows(selectedSession, 'live')}
                         </div>
-                    ` : `<div class="ex2-empty"><div class="ex2-empty-copy">Choose a session to inspect live activity.</div></div>`}
+                    ` : `<div class="ex2-empty-state lux-soft-chrome"><i class="fas fa-mouse-pointer"></i><p class="ex2-empty-state-copy">Choose a session to inspect live activity.</p></div>`}
                 </section>
             </div>
         `;
@@ -202,7 +202,7 @@
         const attemptsStore = selectedSession ? getAttemptStore(selectedSession.id) : null;
         return `
             <div class="ex2-two-col">
-                <section class="ex2-panel">
+                <section class="ex2-panel lux-soft-chrome">
                     <div class="lux-panel-head">
                         <div>
                             <h2 class="lux-panel-title">Results Queue</h2>
@@ -211,17 +211,17 @@
                     </div>
                     <div class="ex2-list">
                         ${sessions.length ? sessions.map((session) => `
-                            <button type="button" class="ex2-select-card${selectedSession?.id === session.id ? ' is-selected' : ''}" data-exam-call="selectExamSession" data-exam-args='["${escapeHtml(session.id)}","results"]'>
+                            <button type="button" class="ex2-select-card lux-soft-chrome${selectedSession?.id === session.id ? ' is-selected' : ''}" data-exam-call="selectExamSession" data-exam-args='["${escapeHtml(session.id)}","results"]'>
                                 <div>
                                     <strong class="ex2-select-card-title">${escapeHtml(session.subjectName || session.title || 'Exam')}</strong>
                                     <span class="ex2-select-card-copy">${escapeHtml(formatDateTime(session.startAt))}</span>
                                 </div>
                                 <div class="ex2-select-card-state">${escapeHtml(getSelectedSessionStatus(session))}</div>
                             </button>
-                        `).join('') : `<div class="ex2-empty"><div class="ex2-empty-copy">No completed or live sessions are available for grading yet.</div></div>`}
+                        `).join('') : `<div class="ex2-empty-state lux-soft-chrome"><i class="fas fa-chart-column"></i><p class="ex2-empty-state-copy">No completed or live sessions are available for grading yet.</p></div>`}
                     </div>
                 </section>
-                <section class="ex2-panel">
+                <section class="ex2-panel lux-soft-chrome">
                     ${selectedSession ? `
                         <div class="lux-panel-head">
                             <div>
@@ -230,12 +230,12 @@
                             </div>
                             <button type="button" class="ex2-btn is-ghost" data-exam-call="refreshExamAttempts" data-exam-args='["${escapeHtml(selectedSession.id)}"]'><i class="fas fa-rotate"></i> Refresh</button>
                         </div>
-                        ${attemptsStore?.loading ? `<div class="ex2-empty"><div class="ex2-empty-copy">Loading graded attempts...</div></div>` : ''}
+                        ${attemptsStore?.loading ? `<div class="ex2-empty-state lux-soft-chrome"><p class="ex2-empty-state-copy">Loading graded attempts...</p></div>` : ''}
                         ${attemptsStore?.error ? `<div class="ex2-warning"><i class="fas fa-triangle-exclamation"></i> ${escapeHtml(attemptsStore.error)}</div>` : ''}
                         <div class="ex2-attempt-list">
                             ${renderAttemptRows(selectedSession, 'results')}
                         </div>
-                    ` : `<div class="ex2-empty"><div class="ex2-empty-copy">Choose a session to review scores and manual answers.</div></div>`}
+                    ` : `<div class="ex2-empty-state lux-soft-chrome"><i class="fas fa-mouse-pointer"></i><p class="ex2-empty-state-copy">Choose a session to review scores and manual answers.</p></div>`}
                 </section>
             </div>
         `;

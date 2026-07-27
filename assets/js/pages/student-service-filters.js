@@ -886,4 +886,6 @@
     __kiuSsApi.resetStudentServicePersonalInboxFilterLayoutFromEditor = resetStudentServicePersonalInboxFilterLayoutFromEditor;
     __kiuSsApi.buildStudentServiceStudentInboxFilterLayout = buildStudentServiceStudentInboxFilterLayout;
     __kiuSsApi.renderStudentServiceStudentInboxFiltersMarkup = renderStudentServiceStudentInboxFiltersMarkup;
+    window.getStudentServicePublishedInboxFilterLayout = getStudentServicePublishedInboxFilterLayout;
+    window.renderStudentServiceInboxFiltersMarkup = renderStudentServiceInboxFiltersMarkup;
 })();

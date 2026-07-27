@@ -51,6 +51,10 @@ function loadGraphRuntime(extraDeps = {}) {
         sandbox
     );
     vm.runInNewContext(
+        readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-graph-layout-runtime.js'), 'utf8'),
+        sandbox
+    );
+    vm.runInNewContext(
         readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-graph-runtime.js'), 'utf8'),
         sandbox
     );
@@ -117,5 +121,97 @@ describe('social-workspace-graph-runtime', () => {
     it('reports stacked dialogs inactive without open dialog', () => {
         expect(api.shouldRenderProjectTaskGraphStack(runtime)).toBe(false);
         expect(api.isProjectTaskGraphStackActive(runtime)).toBe(false);
+    });
+
+    it('detects graph stack from stack anchor and nested previousDialog', () => {
+        const stacked = new Set(['project-task-graph-history', 'project-health']);
+        ({ api, runtime } = loadGraphRuntime({
+            PROJECT_TASK_GRAPH_STACKED_DIALOGS: stacked,
+            activeDialog: () => runtime.ui?.socialDialog || null
+        }));
+        runtime.ui.projectTaskGraphStackAnchor = { type: 'project-task-graph', projectId: 'p1' };
+        runtime.ui.socialDialog = { type: 'project-task-graph-history', projectId: 'p1' };
+        expect(api.shouldRenderProjectTaskGraphStack(runtime, 'project-task-graph-history')).toBe(true);
+        expect(api.isProjectTaskGraphStackActive(runtime)).toBe(true);
+
+        runtime.ui.projectTaskGraphStackAnchor = null;
+        runtime.ui.previousDialog = {
+            type: 'project-health',
+            projectId: 'p1',
+            __restorePrevious: { type: 'project-task-graph', projectId: 'p1' }
+        };
+        expect(api.shouldRenderProjectTaskGraphStack(runtime, 'project-task-graph-history')).toBe(true);
+
+        runtime.ui.socialDialog = null;
+        runtime.ui.previousDialog = null;
+        runtime.ui.projectTaskGraphStackAnchor = { type: 'project-task-graph', projectId: 'p1' };
+        expect(api.getProjectTaskGraphStackAnchorDialog(runtime)).toBe(null);
+        expect(api.isProjectTaskGraphStackActive(runtime)).toBe(false);
+    });
+
+    it('requires full rebuild when stacked child has no graph anchor in DOM', () => {
+        const stacked = new Set(['project-task-graph-history']);
+        ({ api, runtime } = loadGraphRuntime({
+            PROJECT_TASK_GRAPH_STACKED_DIALOGS: stacked,
+            renderStackedProjectTaskChild: () => '<div class="lux-glass-dialog-backdrop"></div>',
+            activeDialog: () => runtime.ui?.socialDialog || null
+        }));
+        runtime.ui.projectTaskGraphStackAnchor = { type: 'project-task-graph', projectId: 'p1' };
+        runtime.ui.socialDialog = { type: 'project-task-graph-history', projectId: 'p1' };
+        const region = {
+            querySelector(sel) {
+                if (sel.includes('child-slot')) return { innerHTML: '' };
+                return null;
+            },
+            __kiuLastMarkup: 'x'
+        };
+        expect(api.trySyncProjectTaskGraphStackDialog(region, runtime)).toBe(false);
+    });
+
+    it('clears graph child slot when graph is the active dialog', () => {
+        ({ api, runtime } = loadGraphRuntime({
+            activeDialog: () => runtime.ui?.socialDialog || null
+        }));
+        const stack = { classList: { toggle() {} } };
+        const childSlot = {
+            innerHTML: '<div class="lux-glass-dialog-backdrop"></div>',
+            hidden: false,
+            querySelector(sel) {
+                if (!this.innerHTML.trim()) return null;
+                if (sel.includes('lux-glass-dialog-backdrop')) return {};
+                return null;
+            }
+        };
+        const region = {
+            querySelector(sel) {
+                if (sel.includes('social-project-task-graph-stack')) return stack;
+                if (sel.includes('child-slot')) return childSlot;
+                if (sel.includes('anchor')) return {
+                    querySelector: () => ({ classList: { contains: () => true } })
+                };
+                return null;
+            },
+            __kiuLastMarkup: 'x'
+        };
+        runtime.ui.socialDialog = { type: 'project-task-graph', projectId: 'p1' };
+        expect(api.trySyncProjectTaskGraphStackDialog(region, runtime)).toBe(true);
+        expect(childSlot.innerHTML).toBe('');
+        expect(childSlot.hidden).toBe(true);
+        expect(region.__kiuLastMarkup).toBeUndefined();
+    });
+
+    it('syncProjectTaskGraphStackSlotState hides empty child slot', () => {
+        ({ api } = loadGraphRuntime());
+        const stack = { classList: { toggle() {} } };
+        const childSlot = { innerHTML: '', hidden: false, querySelector: () => null };
+        const region = {
+            querySelector(sel) {
+                if (sel.includes('social-project-task-graph-stack')) return stack;
+                if (sel.includes('child-slot')) return childSlot;
+                return null;
+            }
+        };
+        expect(api.syncProjectTaskGraphStackSlotState(region)).toBe(false);
+        expect(childSlot.hidden).toBe(true);
     });
 });

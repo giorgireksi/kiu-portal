@@ -239,7 +239,7 @@
             </section>
         ` : '';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--lost-found-create lux-glass-dialog-card" data-form="lost-found-item" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--lost-found-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="lost-found-item" data-action="noop" data-lux-transparency-exempt="1">
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
                         <strong class="lux-glass-dialog-title"><i class="fas fa-magnifying-glass-location" aria-hidden="true"></i> ${editItem ? 'Edit listing' : 'Post item'}</strong>

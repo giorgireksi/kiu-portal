@@ -615,7 +615,7 @@ function renderChancelleryRequestList(requests, selectedCaseId) {
             const kindMeta = CHANCELLERY_REQUEST_KIND_META[request.requestKind] || CHANCELLERY_REQUEST_KIND_META.legacy;
             const selected = request.id === selectedCaseId;
             return `
-                <button type="button" data-chancellery-select-case="${escapeChancelleryHtml(request.id)}" class="lux-queue-item lux-chancellery-queue-item${selected ? ' is-selected' : ''}">
+                <button type="button" data-chancellery-select-case="${escapeChancelleryHtml(request.id)}" class="lux-queue-item lux-chancellery-queue-item home-hover-chip${selected ? ' is-selected' : ''}">
                     <div class="lux-queue-head lux-chancellery-queue-head">
                         <div class="lux-chancellery-queue-copy">
                             <div class="lux-chancellery-queue-tag-row">
@@ -644,7 +644,7 @@ function renderChancelleryComposeForm(subjects) {
         <div class="lux-chancellery-compose-form">
             <div class="lux-card-head lux-chancellery-card-head">
                 <div>
-                    <div class="lux-page-kicker"><i class="fas fa-file-circle-plus"></i> New request</div>
+                    <div class="lux-section-kicker lux-page-kicker"><i class="fas fa-file-circle-plus"></i> New request</div>
                     <div class="lux-card-title lux-chancellery-card-title">Submit appeal or retake</div>
                 </div>
             </div>
@@ -711,7 +711,7 @@ function renderChancelleryCaseDetailPanel(request, options = {}) {
     return `
         <div class="lux-card-head lux-chancellery-card-head">
             <div>
-                <div class="lux-page-kicker"><i class="fas fa-timeline"></i> ${headKicker}</div>
+                <div class="lux-section-kicker lux-page-kicker"><i class="fas fa-timeline"></i> ${headKicker}</div>
                 <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(request.subjectName)}</div>
                 <div class="lux-inline-meta lux-chancellery-inline-meta">
                     ${metaLine.map(item => `<span>${escapeChancelleryHtml(item)}</span>`).join('')}
@@ -788,7 +788,7 @@ function renderChancelleryCommandBar({ role, uiState, count, subjectOptions = []
         return renderChancelleryFilterSelect(filter.id, filter.label, filters[filter.id], options);
     }).join('');
     return `
-        <div class="filter-shell lux-chancellery-command-bar" data-lux-visual-skip="1">
+        <div class="filter-shell lux-chancellery-command-bar home-hover-chip" data-lux-visual-skip="1">
             ${showCompose ? `
                 <button type="button" class="lux-primary-btn" data-chancellery-action="show-compose">
                     <i class="fas fa-plus"></i> New request
@@ -808,21 +808,19 @@ function renderChancelleryCommandBar({ role, uiState, count, subjectOptions = []
 function renderChancelleryWorkspace({ listTitle, listCopy, requests, selectedRequest, rightMarkup }) {
     return `
         <div class="lux-chancellery-workspace">
-            <div class="lux-card lux-chancellery-main-panel">
-                <div class="lux-card-body lux-chancellery-workspace-split">
-                    <section class="lux-chancellery-list-panel">
-                        <div class="lux-actions-between lux-chancellery-actions-between">
-                            <div>
-                                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(listTitle)}</div>
-                                ${listCopy ? `<div class="lux-card-copy">${escapeChancelleryHtml(listCopy)}</div>` : ''}
-                            </div>
+            <div class="lux-chancellery-workspace-split">
+                <section class="lux-chancellery-list-panel home-hover-chip">
+                    <div class="lux-actions-between lux-chancellery-actions-between">
+                        <div>
+                            <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(listTitle)}</div>
+                            ${listCopy ? `<div class="lux-card-copy lux-chancellery-card-copy">${escapeChancelleryHtml(listCopy)}</div>` : ''}
                         </div>
-                        <div class="lux-chancellery-list-region">${renderChancelleryRequestList(requests, selectedRequest?.id || '')}</div>
-                    </section>
-                    <section class="lux-chancellery-detail-panel">
-                        <div class="lux-chancellery-detail-body">${rightMarkup}</div>
-                    </section>
-                </div>
+                    </div>
+                    <div class="lux-chancellery-list-region">${renderChancelleryRequestList(requests, selectedRequest?.id || '')}</div>
+                </section>
+                <section class="lux-chancellery-detail-panel home-hover-chip">
+                    <div class="lux-chancellery-detail-body">${rightMarkup}</div>
+                </section>
             </div>
         </div>
     `;
@@ -855,17 +853,17 @@ function renderChancelleryStudentFinancePanel() {
     const tone = balance > 0 ? 'warning' : 'success';
     return `
         <div class="lux-strip-grid lux-strip-grid--adaptive lux-chancellery-finance-grid">
-            <div class="lux-stat-card lux-strip-card surface-card lux-chancellery-subcard">
-                <div class="lux-stat-label">Balance</div>
-                <div id="finance-current-balance" class="lux-stat-value">${balance.toLocaleString()} GEL</div>
+            <div class="lux-stat-card lux-strip-card home-hover-chip lux-chancellery-finance-card">
+                <div class="lux-card-meta lux-chancellery-stat-label">Balance</div>
+                <div id="finance-current-balance" class="lux-card-title lux-chancellery-stat-value">${balance.toLocaleString()} GEL</div>
             </div>
-            <div class="lux-stat-card lux-strip-card surface-card lux-chancellery-subcard">
-                <div class="lux-stat-label">Status</div>
+            <div class="lux-stat-card lux-strip-card home-hover-chip lux-chancellery-finance-card">
+                <div class="lux-card-meta lux-chancellery-stat-label">Status</div>
                 <div id="finance-status-note" class="lux-status-pill lux-chancellery-finance-pill is-${tone}">${escapeChancelleryHtml(statusLabel)}</div>
             </div>
-            <div class="lux-stat-card lux-strip-card surface-card lux-chancellery-subcard">
-                <div class="lux-stat-label">Note</div>
-                <div class="lux-meta">Read-only tuition snapshot. Appeals stay on the other tab.</div>
+            <div class="lux-stat-card lux-strip-card home-hover-chip lux-chancellery-finance-card">
+                <div class="lux-card-meta lux-chancellery-stat-label">Note</div>
+                <div class="lux-card-copy lux-chancellery-finance-note">Read-only tuition snapshot. Appeals stay on the other tab.</div>
             </div>
         </div>
     `;
@@ -913,12 +911,12 @@ function ensureChancelleryShell(root) {
 
 function renderChancelleryHero({ isStudent, uiState, headingTitle, headingCopy, heroStatusLabel, heroRows }) {
     return `
-        <section class="lux-card lux-chancellery-hero-card lux-summary-surface lux-summary-surface--hero">
-            <div class="lux-card-body lux-hero-stage lux-chancellery-hero-stage">
+        <section class="page-hero lux-hero lux-chancellery-hero-card" aria-label="Chancellery hero">
+            <div class="lux-hero-stage lux-chancellery-hero-stage">
                 <div class="lux-hero-main lux-chancellery-hero-main">
-                    <div class="lux-page-kicker"><i class="fas fa-scale-balanced"></i> Chancellery</div>
-                    <div class="page-hero-title">${headingTitle}</div>
-                    <div class="page-hero-copy">${headingCopy}</div>
+                    <div class="lux-section-kicker lux-page-kicker"><i class="fas fa-scale-balanced"></i> Chancellery</div>
+                    <div class="page-hero-title lux-page-title">${headingTitle}</div>
+                    <div class="page-hero-copy lux-page-copy">${headingCopy}</div>
                     ${isStudent ? `
                         <div class="lux-card-actions lux-chancellery-hero-actions">
                             <button type="button" id="chan-tab-appeals" class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab !== 'finance' ? 'active' : ''}" data-chancellery-tab="appeals" role="tab" aria-selected="${uiState.tab !== 'finance' ? 'true' : 'false'}">
@@ -930,7 +928,7 @@ function renderChancelleryHero({ isStudent, uiState, headingTitle, headingCopy, 
                         </div>
                     ` : ''}
                 </div>
-                <aside class="lux-hero-side lux-chancellery-hero-side lux-focus-panel" aria-label="Chancellery case load">
+                <aside class="lux-hero-side lux-chancellery-hero-side lux-timetable-hero-focus lux-focus-panel home-hover-chip" aria-label="Chancellery case load">
                     <div class="lux-focus-panel__head">
                         <div class="lux-focus-panel__kicker">Case load</div>
                         ${getChancelleryStatusPill(heroStatusLabel).replace(

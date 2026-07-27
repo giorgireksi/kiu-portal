@@ -44,7 +44,7 @@ describe('admin tools route regressions.test', () => {
         expect(keep).toContain("el?.getAttribute?.('data-lux-layout-only') === '1'");
         expect(keep).toContain("el?.getAttribute?.('data-lux-glass-root') === '1'");
         expect(keep).not.toContain("el.classList.contains('lux-admin-tools-index-subpanel')");
-        expect(markup.match(/data-lux-glass-root="1"/g)).toHaveLength(3);
+        expect(markup.match(/data-lux-glass-root="1"/g)).toHaveLength(2);
         expect(markup).toMatch(/class="lux-control" id="admin-curriculum-search"/);
         expect(markup).toMatch(/class="lux-control" id="filter-curriculum-semester"/);
         expect(transparency).not.toContain("#lux-admin-tools-shell .admin-reg-tab");
@@ -105,6 +105,8 @@ describe('admin tools route regressions.test', () => {
 
     it('bare-lite scopes admin-tools layout + registration workspace chrome via shared tokens', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const markup = readSource('assets/js/features/index-admin-tools.plain.js');
         // Page-shell demotion via layout-only attribute (not per-route CSS)
         expect(bare).toContain('.lux-page-shell[data-lux-layout-only="1"]');
         // Layout rules
@@ -127,6 +129,24 @@ describe('admin tools route regressions.test', () => {
         expect(bare).not.toMatch(/\.lux-secondary-btn/);
         expect(bare).not.toMatch(/\.lux-ghost-btn/);
         expect(bare).not.toContain('--lux-btn-pill-radius');
+        expect(bare).toContain('#kiu-subject-builder-modal .lux-glass-dialog-title');
+        expect(bare).toContain('#kiu-subject-builder-modal .lux-admin-tools-submit-row');
+        expect(bare).not.toMatch(/#curriculum-subject-builder-card\s*\{[^}]*padding:\s*0/);
+        expect(fouc).toContain('[data-lux-glass-root="1"]:not(.lux-glass-dialog-card)');
+        expect(fouc).not.toContain('body.lux-route-admin-tools #kiu-subject-builder-modal [data-lux-glass-root="1"]');
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toMatch(/#kiu-subject-builder-modal > \.lux-glass-dialog-card[\s\S]*max-width:\s*560px/);
+        expect(modals).not.toContain('#kiu-subject-builder-modal > .lux-glass-dialog-card--event-create');
+        expect(modals).toContain('.registration-antireq-option');
+        expect(modals).toContain('.lux-admin-tools-antireq-selected');
+        expect(modals).toContain('[data-lux-transparency-exempt="1"] .lux-glass-dialog-body--event-create');
+        expect(modals).toContain('#kiu-subject-builder-modal.is-open > .lux-glass-dialog-card');
+        expect(bare).toContain('#kiu-subject-builder-modal .lux-semester-mode-segment');
+        expect(bare).toMatch(/#kiu-subject-builder-modal \.social-neo-form-grid-2[\s\S]*grid-template-columns:\s*1fr/);
+        expect(markup).toContain('class="lux-glass-dialog-preview"');
+        expect(markup).not.toContain('lux-glass-dialog-preview home-hover-chip');
+        expect(markup).toContain('registration-structured-help lux-admin-tools-parity-callout');
+        expect(markup).not.toMatch(/data-form="create-subject"[^>]*data-lux-glass-root="1"/);
     });
 
     it('admin-tools surface uses lux CTAs only — no orphan neo / edit-staff / icon-action', () => {
@@ -172,5 +192,8 @@ describe('admin tools route regressions.test', () => {
         expect(fouc).not.toContain('lux-admin-curriculum-ops-tile');
         expect(bare).not.toContain('--home-desk-glass-surface');
         expect(bare).not.toContain('lux-admin-curriculum-ops-tile');
+        expect(bare).toContain('#curriculum-subject-panel-region .lux-program-subject-card');
+        expect(bare).toContain('.lux-admin-curriculum-shell .curriculum-library-detail-actions');
+        expect(bare).toContain('#lux-admin-tools-shell .lux-admin-curriculum-shell');
     });
 });

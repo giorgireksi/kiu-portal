@@ -48,7 +48,8 @@ function loadGraphRender(extraDeps = {}) {
     const m = source.match(/const \{\n(?<body>.*?)\n        \} = deps;/s);
     for (const name of m.groups.body.split(',').map((s) => s.trim()).filter(Boolean)) {
         if (!(name in deps)) {
-            if (name.startsWith('PROJECT_')) deps[name] = name.includes('ZOOM') || name.includes('PAD') || name.includes('MAX') || name.includes('W') || name.includes('H') || name.includes('CARD') || name.includes('NODE') || name.includes('CHECKPOINT') ? 40 : [];
+            if (name.startsWith('PROJECT_')) deps[name] = name.includes('TITLE') ? 'Schedule float title'
+                : name.includes('ZOOM') || name.includes('PAD') || name.includes('MAX') || name.includes('W') || name.includes('H') || name.includes('CARD') || name.includes('NODE') || name.includes('CHECKPOINT') ? 40 : [];
             else if (name.startsWith('render') || name.startsWith('neo') || name.startsWith('format') || name.startsWith('build')) deps[name] = stub;
             else deps[name] = stubFn;
         }
@@ -86,5 +87,40 @@ describe('social-workspace-graph-render', () => {
     it('renders legend markup', () => {
         const html = api.renderProjectTaskGraphLegend();
         expect(html).toContain('social-project-task-graph');
+    });
+
+    it('wires graph-model deps for task map preview', () => {
+        const peel = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-graph-render.js'), 'utf8');
+        const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
+        const graphRenderBlock = workspace.slice(workspace.indexOf('/* ── Task graph render stack: social-workspace-graph-render.js ── */'));
+        for (const name of [
+            'buildProjectTaskGraphModel',
+            'computeProjectTaskGraphStageSize',
+            'PROJECT_SCHEDULE_FLOAT_TITLE',
+            'projectTaskGraphLayoutUsesSavedPositions',
+            'projectTaskGraphContentViewBox',
+            'normalizeProjectTaskGraphMode'
+        ]) {
+            expect(peel).toMatch(new RegExp(`\\b${name}\\b`));
+            expect(graphRenderBlock).toMatch(new RegExp(`\\b${name}\\b`));
+        }
+    });
+
+    it('renders task map preview empty state when graph-model deps are wired', () => {
+        ({ api } = loadGraphRender({
+            buildProjectTaskGraphModel: () => ({ explicitEdges: [], edges: [] }),
+            computeProjectTaskGraphStageSize: () => ({ stageWidth: 800, stageHeight: 600 }),
+            projectTaskGraphLayoutUsesSavedPositions: () => false,
+            projectTaskGraphContentViewBox: () => ({ bounds: {}, viewBox: '0 0 800 600' }),
+            projectTaskGraphShowInferred: () => false,
+            projectTaskGraphShowFlow: () => false,
+            projectTaskDependsOnIds: () => [],
+            buildProjectTaskGraphLayout: () => ({ nodes: [], edges: [] }),
+            getProjectTaskGraphPositions: () => ({}),
+            collectProjectTaskGraphGroupBoxes: () => [],
+            computeProjectSchedule: () => ({})
+        }));
+        const html = api.renderTaskDependencyGraphPreview({ id: 'p1', tasks: [] }, { ui: {} });
+        expect(html).toContain('No tasks yet');
     });
 });

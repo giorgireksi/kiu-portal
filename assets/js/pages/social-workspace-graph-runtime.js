@@ -49,10 +49,13 @@
             projectTaskGraphShowCritical,
             projectTaskGraphShowFlow,
             projectTaskGraphShowInferred,
+            projectTaskGraphSyncStorageKey,
             projectTaskGraphViewStorageKey,
             projectTaskGraphWouldCycle,
             readProjectTaskGraphPan,
             rebuildActiveProjectTabPaneIfPreviewHost,
+            refreshProjectTasksTabBody,
+            refreshProjectTasksTabPane,
             renderDialogOnlyNow,
             renderProjectTaskGraphDetailRailContent,
             renderProjectTaskGraphEdgeGroupsHtml,
@@ -85,33 +88,121 @@
         const taskGraphSyncTimers = new Map();
         const taskGraphSyncPending = new Map();
 
+        function loadTaskGraphSyncMarker(projectId) {
+            if (typeof projectTaskGraphSyncStorageKey !== 'function') return '';
+            try {
+                return text(localStorage.getItem(projectTaskGraphSyncStorageKey(projectId)) || '');
+            } catch (error) {
+                return '';
+            }
+        }
+
+        function saveTaskGraphSyncMarker(projectId, iso = '') {
+            if (typeof projectTaskGraphSyncStorageKey !== 'function') return;
+            const marker = text(iso || '');
+            if (!marker) return;
+            try {
+                localStorage.setItem(projectTaskGraphSyncStorageKey(text(projectId)), marker);
+            } catch (error) {}
+        }
+
+        function refreshDeskAfterGraphMembership(projectId = '') {
+            try {
+                const runtime = state();
+                const id = text(projectId || runtime?.ui?.activeProjectId || '');
+                if (!id) return;
+                const panel = text(runtime?.ui?.activePanel || '');
+                const tab = text(runtime?.ui?.projectTab || '');
+                if ((panel === 'workspace' || panel === 'projects') && tab === 'tasks' && text(runtime?.ui?.activeProjectId) === id) {
+                    if (typeof refreshProjectTasksTabBody === 'function') {
+                        refreshProjectTasksTabBody('task-graph-group-member');
+                    } else if (typeof refreshProjectTasksTabPane === 'function') {
+                        refreshProjectTasksTabPane('task-graph-group-member');
+                    }
+                }
+            } catch (error) {}
+        }
+
+        function getProjectTaskGraphStackAnchorDialog(runtime = state()) {
+            if (runtime.ui?.socialDialog?.type === 'project-task-graph') return runtime.ui.socialDialog;
+            const hasLiveStack = Boolean(runtime.ui?.socialDialog || runtime.ui?.previousDialog);
+            if (!hasLiveStack) return null;
+            if (runtime.ui?.projectTaskGraphStackAnchor?.type === 'project-task-graph') {
+                return runtime.ui.projectTaskGraphStackAnchor;
+            }
+            let cursor = runtime.ui?.previousDialog || null;
+            while (cursor) {
+                if (text(cursor.type) === 'project-task-graph') return cursor;
+                cursor = cursor.__restorePrevious || null;
+            }
+            return null;
+        }
+
         function shouldRenderProjectTaskGraphStack(runtime, kind = '') {
-            return runtime.ui?.previousDialog?.type === 'project-task-graph'
-                && PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(text(kind));
+            if (!PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(text(kind))) return false;
+            return Boolean(getProjectTaskGraphStackAnchorDialog(runtime));
         }
 
         function isProjectTaskGraphStackActive(runtime = state()) {
             const activeKind = text(activeDialog()?.type || '');
+            if (!activeKind) return false;
             if (activeKind === 'project-task-graph') return true;
-            if (shouldRenderProjectTaskGraphStack(runtime, activeKind)) return true;
-            return runtime.ui?.projectTaskGraphStackAnchor?.type === 'project-task-graph';
+            return shouldRenderProjectTaskGraphStack(runtime, activeKind);
         }
 
-        function getProjectTaskGraphStackAnchorDialog(runtime = state()) {
-            if (runtime.ui?.previousDialog?.type === 'project-task-graph') return runtime.ui.previousDialog;
-            if (runtime.ui?.projectTaskGraphStackAnchor?.type === 'project-task-graph') return runtime.ui.projectTaskGraphStackAnchor;
-            if (runtime.ui?.socialDialog?.type === 'project-task-graph') return runtime.ui.socialDialog;
-            return null;
+        function graphStackAnchorHasFullscreenMap(anchor) {
+            if (!anchor) return false;
+            return Boolean(anchor.querySelector?.(
+                '.lux-glass-dialog-backdrop--project-task-graph, .lux-glass-dialog-card--project-task-graph-fullscreen'
+            ));
+        }
+
+        function projectTaskGraphChildSlotHasPopup(childSlot) {
+            if (!childSlot) return false;
+            return Boolean(childSlot.querySelector(
+                ':scope > .lux-glass-dialog-backdrop, :scope > .social-project-health-stack .lux-glass-dialog-backdrop'
+            ));
+        }
+
+        function syncProjectTaskGraphStackSlotState(dialogRegion) {
+            if (!dialogRegion) return false;
+            const stack = dialogRegion.querySelector('.social-project-task-graph-stack');
+            const childSlot = dialogRegion.querySelector('[data-project-task-graph-child-slot="1"]');
+            if (!stack || !childSlot) return false;
+            const hasChild = projectTaskGraphChildSlotHasPopup(childSlot);
+            stack.classList.toggle('social-project-task-graph-stack--child-open', hasChild);
+            childSlot.hidden = !hasChild;
+            if (!hasChild && childSlot.innerHTML.trim()) {
+                childSlot.innerHTML = '';
+                delete dialogRegion.__kiuLastMarkup;
+            }
+            return hasChild;
         }
 
         function wrapProjectTaskGraphStack(graphMarkup, childMarkup) {
             if (!graphMarkup && !childMarkup) return '';
             if (!graphMarkup) return childMarkup || '';
             const childSlot = childMarkup || '';
-            return `<div class="social-project-task-graph-stack">
+            const childOpen = Boolean(String(childSlot || '').trim());
+            return `<div class="social-project-task-graph-stack${childOpen ? ' social-project-task-graph-stack--child-open' : ''}">
                 <div class="social-project-task-graph-anchor" data-project-task-graph-anchor="1">${graphMarkup}</div>
-                <div class="social-project-task-graph-child-slot" data-project-task-graph-child-slot="1">${childSlot}</div>
+                <div class="social-project-task-graph-child-slot" data-project-task-graph-child-slot="1"${childOpen ? '' : ' hidden'}>${childSlot}</div>
             </div>`;
+        }
+
+        function clearProjectTaskGraphChildSlot(dialogRegion) {
+            if (!dialogRegion) return false;
+            const childSlot = dialogRegion.querySelector('[data-project-task-graph-child-slot="1"]');
+            if (!childSlot) return false;
+            const hadChild = projectTaskGraphChildSlotHasPopup(childSlot) || Boolean(childSlot.innerHTML.trim());
+            if (!hadChild) {
+                syncProjectTaskGraphStackSlotState(dialogRegion);
+                return false;
+            }
+            childSlot.innerHTML = '';
+            delete dialogRegion.__kiuLastMarkup;
+            syncProjectTaskGraphStackSlotState(dialogRegion);
+            return true;
         }
 
         function trySyncProjectTaskGraphStackDialog(dialogRegion, runtime = state()) {
@@ -119,16 +210,29 @@
             const activeKind = text(activeDialog()?.type || '');
             const anchor = dialogRegion.querySelector('[data-project-task-graph-anchor="1"]');
             const childSlot = dialogRegion.querySelector('[data-project-task-graph-child-slot="1"]');
+            const loneGraph = dialogRegion.querySelector(':scope > .lux-glass-dialog-backdrop--project-task-graph');
+            const hasStack = dialogRegion.querySelector(':scope > .social-project-task-graph-stack');
 
-            if (activeKind === 'project-task-graph' && anchor && childSlot) {
-                childSlot.innerHTML = '';
-                delete dialogRegion.__kiuLastMarkup;
-                return true;
+            if (activeKind === 'project-task-graph') {
+                if (loneGraph && !hasStack) return false;
+                if (anchor && childSlot) {
+                    clearProjectTaskGraphChildSlot(dialogRegion);
+                    return true;
+                }
             }
 
-            if (shouldRenderProjectTaskGraphStack(runtime, activeKind) && anchor && childSlot) {
-                childSlot.innerHTML = renderStackedProjectTaskChild(runtime, activeKind);
+            if (shouldRenderProjectTaskGraphStack(runtime, activeKind)) {
+                if (loneGraph && !hasStack) return false;
+                if (!anchor || !childSlot || !graphStackAnchorHasFullscreenMap(anchor)) return false;
+                if (projectTaskGraphChildSlotHasPopup(childSlot) || String(childSlot.innerHTML || '').trim()) {
+                    childSlot.innerHTML = '';
+                    delete dialogRegion.__kiuLastMarkup;
+                }
+                const childMarkup = renderStackedProjectTaskChild(runtime, activeKind);
+                if (!String(childMarkup || '').trim()) return false;
+                childSlot.innerHTML = childMarkup;
                 delete dialogRegion.__kiuLastMarkup;
+                syncProjectTaskGraphStackSlotState(dialogRegion);
                 return true;
             }
 
@@ -1014,6 +1118,7 @@
         const __graphSyncApi = typeof window.__kiuCreateSocialWorkspaceGraphSyncApi === "function"
             ? window.__kiuCreateSocialWorkspaceGraphSyncApi({
                 ...deps,
+                projectTaskGraphEdgePath,
                 get bindProjectTaskGraphDrag() { return typeof bindProjectTaskGraphDrag === "function" ? bindProjectTaskGraphDrag : window.bindProjectTaskGraphDrag; },
                 get getProjectTaskGraphGroups() { return typeof getProjectTaskGraphGroups === "function" ? getProjectTaskGraphGroups : window.getProjectTaskGraphGroups; },
                 get getProjectTaskGraphPositions() { return typeof getProjectTaskGraphPositions === "function" ? getProjectTaskGraphPositions : window.getProjectTaskGraphPositions; },
@@ -1022,6 +1127,7 @@
                 get readProjectTaskGraphPortCenter() { return typeof readProjectTaskGraphPortCenter === "function" ? readProjectTaskGraphPortCenter : window.readProjectTaskGraphPortCenter; },
                 get resolveProjectTaskGraphNodeFromTarget() { return typeof resolveProjectTaskGraphNodeFromTarget === "function" ? resolveProjectTaskGraphNodeFromTarget : window.resolveProjectTaskGraphNodeFromTarget; },
                 get updateProjectTaskGraphGroup() { return typeof updateProjectTaskGraphGroup === "function" ? updateProjectTaskGraphGroup : window.updateProjectTaskGraphGroup; },
+                get removeProjectGraphDependency() { return typeof removeProjectGraphDependency === "function" ? removeProjectGraphDependency : window.removeProjectGraphDependency; },
             })
             : {};
         const {
@@ -1581,7 +1687,8 @@
                     graphX: coords.x,
                     graphY: coords.y,
                     title: '',
-                    status: 'todo'
+                    status: 'todo',
+                    error: ''
                 };
                 refreshProjectTaskGraphDialog(['quickCreate']);
             };
@@ -1698,8 +1805,7 @@
         }
 
         function isProjectTaskGraphDialogOpen(runtime = state()) {
-            return text(activeDialog()?.type || '') === 'project-task-graph'
-                || text(runtime?.ui?.projectTaskGraphStackAnchor?.type || '') === 'project-task-graph';
+            return isProjectTaskGraphStackActive(runtime);
         }
 
         /** Soft signal for overview map preview — do not wipe all project tab panes. */
@@ -1833,6 +1939,8 @@
             syncProjectTaskGraphSidebar,
             toggleProjectTaskGraphGroupMember,
             trySyncProjectTaskGraphStackDialog,
+            clearProjectTaskGraphChildSlot,
+            syncProjectTaskGraphStackSlotState,
             updateProjectTaskGraphGroup,
             updateProjectTaskGraphLinkPreview,
             wrapProjectTaskGraphStack,

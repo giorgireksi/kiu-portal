@@ -193,7 +193,11 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).toContain('assets/js/shared/lux-scroll-rail.js?v=20260608-scrollrail2');
         expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2');
         expect(studentServiceHtml).toContain('assets/js/shared/student-service-api-paths.js?v=20260626-ssvc-inbox-filters');
-        expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260720-ssops1');
+        expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260728-ssrender3');
+        expect(studentServiceHtml).toContain('student-service-bootstrap-runtime.js?v=20260727-ssboot2');
+        expect(studentServiceHtml).toContain('student-service-page-runtime.js?v=20260728-ssboot3');
+        expect(studentServiceHtml.indexOf('student-service-bootstrap-runtime.js'))
+            .toBeLessThan(studentServiceHtml.indexOf('student-service-page-runtime.js'));
         expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260626-ssvc-inbox-filters');
         expect(studentServiceHtml).toContain('initStandaloneStudentServiceRoute');
         expect(studentServiceHtml).toContain('bootStandaloneDesktopRoute');
@@ -507,6 +511,9 @@ describe('Q&A hub interaction render guardrails', () => {
         expect(source).toContain('data-student-service-question-composer-toggle="open"><i class="fas fa-pen"></i> Ask');
         // Composer markup owns the Ask opener after Q&A domain extract.
         expect(qaModule).toContain('data-student-service-question-composer-toggle="open"');
+        expect(qaModule).toContain('window.openStudentServiceQuestionComposerModal = openStudentServiceQuestionComposerModal');
+        expect(readAsset('assets/js/pages/student-service.js')).toContain('resolveStudentServiceExportImpl(name)');
+        expect(readAsset('assets/js/pages/student-service-events.js')).toContain('ensureStudentServiceQaModule().then(openComposer)');
     });
 
     it('recovers stale Q&A loading bodies and routes staff QA through the guarded feed entry', () => {

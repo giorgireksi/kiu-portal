@@ -1,58 +1,53 @@
 import { describe, expect, it } from 'vitest';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
-describe('LMS soft-panel subjects-stage (matte + borders)', () => {
-    it('does not rewrite focus panel block', () => {
+describe('LMS hero + subjects shared CSS parity', () => {
+    it('keeps focus panel structure in lux-focus-panel.css', () => {
         const focusCss = readSource('assets/css/lux-focus-panel.css');
-        // Route owns fill only; structure lives in shared lux-focus-panel.css
-        expect(css).toContain('LMS focus panel');
-        expect(css).toContain('.lms-hero-focus.lux-hero-side');
-        expect(css).toContain('structure in lux-focus-panel.css');
+        expect(focusCss).toContain('.lms-hero-focus.lux-hero-side');
         expect(focusCss).toContain('.lms-hero-focus.lux-hero-side::before');
-        expect(css.indexOf('soft-panel subjects-stage')).toBeGreaterThan(
-            css.indexOf('LMS focus panel')
+        expect(focusCss).toContain('.lms-hero-focus-head');
+    });
+
+    it('uses layout-only LMS block in bare-lite (no retired fade tokens)', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const lmsBlock = bare.split('/* ── LMS route')[1]?.split('/* ── Staff / students hub')[0] || '';
+        expect(lmsBlock).toContain('body.lux-route-lms .lms-clean-subject-grid');
+        expect(lmsBlock).toContain('body.lux-route-lms .lms-student-semester-bar');
+        expect(lmsBlock).not.toMatch(/backdrop-filter/);
+        expect(bare).not.toContain('--lms-fade-');
+        expect(bare).not.toContain('soft-panel subjects-stage');
+        expect(bare).not.toContain('EXPERIMENT soft-panel v2');
+    });
+
+    it('matte paints subjects stage inside page-hero and glass hosts', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toMatch(
+            /body\.lux-route-lms \.page-hero :is\([\s\S]*\.lms-clean-subjects[\s\S]*var\(--lux-soft-chrome-surface\)/
+        );
+        expect(fouc).toContain('.lms-clean-subjects--merged');
+        expect(fouc).toContain('.lux-lms-subject-card');
+        expect(fouc).toMatch(
+            /\.lms-route-empty[\s\S]{0,600}backdrop-filter:\s*none/
         );
     });
 
-    it('restores borders and matte on stage / empty / cards', () => {
-        const stage = css.slice(css.indexOf('soft-panel subjects-stage'));
-        expect(stage).toContain('var(--lms-glass-fill-soft)');
-        expect(stage).toMatch(
-            /\.lms-route-empty[\s\S]{0,500}border:\s*1px solid color-mix/
-        );
-        expect(stage).not.toMatch(
-            /soft-panel subjects-stage[\s\S]{0,800}\.lms-route-empty[\s\S]{0,200}background:\s*transparent/
-        );
-        expect(stage).toMatch(
-            /\.lux-lms-subject-card[\s\S]{0,400}border:\s*1px solid color-mix/
-        );
-        expect(stage).toContain('lms-student-semester-bar');
-        expect(css).not.toContain('EXPERIMENT soft-panel v2');
-        expect(css).not.toContain('EXPERIMENT soft-panel v3');
-    });
-
-    it('documents soft-panel subjects-stage as sole semester/subjects fill owner', () => {
-        const stage = css.slice(css.indexOf('soft-panel subjects-stage'));
-        expect(stage).toContain('OWNER (catalog semester + subjects matte)');
-        expect(stage).toContain('#lms-student-semester-bar');
-        // Cascade-dead soft-band / tile-fill rewrites before EOF must stay deleted
-        expect(css).not.toContain('Semester bar — soft band');
-        expect(css).not.toContain('Subject tiles — softer than hero shell, no nested blur');
-        expect(css).not.toContain('Empty well — calm, not a second glass monument');
-    });
-
-    it('cache-busts LMS route CSS', () => {
+    it('cache-busts LMS shared stack and hero focus markup', () => {
         const html = readSource('lms.html');
         expectLmsRouteCssLinks(html);
+        expect(html).toContain('lmsshare2');
         expect(html).toMatch(/class="lms-hero-focus lux-hero-side[^"]*"/);
-        expect(html).toContain('lms-hero-focus');
-        expect(html).toContain('lux-hero-side');
+        expect(html).toContain('lux-section-kicker lms-clean-kicker');
+        expect(html).toContain('lux-page-title');
+        expect(html).toContain('lux-page-copy');
+        expect(html).toContain('lux-card-title');
+        expect(html).toContain('lux-card-copy');
         expect(html).toMatch(/lux-focus-panel\.css/);
     });
 });

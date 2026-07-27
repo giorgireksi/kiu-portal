@@ -92,7 +92,7 @@ describe('lux-focus-panel portal contract', () => {
             'lms-hero-focus lux-hero-side lux-focus-panel'
         );
         expect(readSource('assets/js/shared/orders-inbox.js')).toContain('orders-inbox-hero-side lux-focus-panel');
-        expect(readSource('assets/js/pages/chancellery.js')).toContain('lux-chancellery-hero-side lux-focus-panel');
+        expect(readSource('assets/js/pages/chancellery.js')).toContain('lux-chancellery-hero-side lux-timetable-hero-focus lux-focus-panel');
         expect(readSource('assets/js/pages/study-card-page.js')).toContain('lux-hero-side lux-focus-panel');
         // student-service hero focus dual-write deferred to Phase 4 (workspace redesign removed aside)
         expect(readSource('registration.html')).toContain('lux-hero-side registration-hero-aside lux-focus-panel');

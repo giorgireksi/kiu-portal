@@ -144,7 +144,8 @@ describe('registration CMS persistence', () => {
         expect(registration).toContain('function addCurriculumLibraryModule');
         expect(bundle).not.toContain('id="new-subject-semester"');
         expect(bundle).toContain('id="new-subject-semesters"');
-        expect(bundle).toContain('initCurriculumSemesterPicker');
+        expect(bundle).toContain('ensureCurriculumSemesterPickerInitialized');
+        expect(registration).toContain('ensureCurriculumSemesterPickerInitialized');
     });
 
     it('invalidates student registration view cache when CMS changes', () => {
@@ -155,7 +156,8 @@ describe('registration CMS persistence', () => {
         expect(studentRegistration).toContain('window.invalidateStudentRegistrationViewCache = invalidateStudentRegistrationViewCache');
         expect(choiceRuntime).toContain("addEventListener('kiu:registration-cms-changed'");
         expect(choiceRuntime).toContain('renderStudentRegStructures(activeTab)');
-        expect(choiceRuntime).toContain('buildStudentRegistrationFacultyHintNode');
+        expect(choiceRuntime).toContain('window.STUDENT_REGISTRATION_SECTION_META = STUDENT_REGISTRATION_SECTION_META');
+        expect(studentRegistration).toContain('window.STUDENT_REGISTRATION_SECTION_META');
     });
 
     it('counts trackData entries when deciding CMS bucket richness', () => {

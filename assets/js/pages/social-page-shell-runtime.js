@@ -108,7 +108,7 @@
             const collapsed = ensureWorkspaceNavCollapsedState();
             syncWorkspaceNavCollapsedClass(collapsed);
             return `
-                <button type="button" class="social-neo-workspace-rail-reveal" data-action="workspace-nav-expand" aria-label="Show workspace navigation" title="Show navigation">
+                <button type="button" class="lux-secondary-btn lux-secondary-btn-sm social-neo-workspace-rail-reveal" data-action="workspace-nav-expand" aria-label="Show workspace navigation" title="Show navigation">
                     <i class="fas fa-angles-right" aria-hidden="true"></i>
                     <span>Nav</span>
                 </button>
@@ -126,7 +126,7 @@
                         </div>
                         <div class="social-neo-sidebar-nav social-neo-workspace-nav-list">
                             ${panels.map((panel) => `
-                                <button class="social-neo-side-link social-neo-workspace-nav-btn ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
+                                <button class="lux-secondary-btn social-neo-side-link social-neo-workspace-nav-btn ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
                                     <span class="social-neo-side-main">
                                         <span class="social-neo-side-icon" data-panel-tone="${escape(panel.id)}"><i class="fas ${escape(panel.icon)}"></i></span>
                                         <span class="social-neo-side-copy">
@@ -524,7 +524,7 @@
         function queueDeferredModuleRender(reason) {
             invalidateSocialRenderCache({ center: true });
             const host = root();
-            if (host) host.__kiuForceCenterOnly = true;
+            if (host && !activeDialog()) host.__kiuForceCenterOnly = true;
             renderSocialPageNow(reason);
         }
         function applyShellIdentity(force = false) {

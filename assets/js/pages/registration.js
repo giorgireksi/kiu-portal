@@ -1197,6 +1197,9 @@ function openCurriculumSubjectBuilderModalShell(modal, focusSelector) {
             window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
         }
     }
+    if (typeof window.ensureCurriculumSemesterPickerInitialized === 'function') {
+        window.ensureCurriculumSemesterPickerInitialized();
+    }
     openLuxPortalModalAfterAppend(modal, { focusSelector });
 }
 

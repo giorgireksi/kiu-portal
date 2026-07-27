@@ -12,10 +12,10 @@
     window.__kiuSsApi = __kiuSsApi;
 
     function resolveStudentServiceExportImpl(name) {
-        const direct = window[name];
-        if (typeof direct === 'function') return direct;
         const bag = window.KiuStudentService || {};
         if (typeof bag[name] === 'function') return bag[name];
+        const direct = window[name];
+        if (typeof direct === 'function') return direct;
         const nested = [bag.qa, bag.filters, bag.tickets, bag.attachments, bag.service];
         for (let i = 0; i < nested.length; i += 1) {
             const part = nested[i];
@@ -42,12 +42,12 @@
         const setStudentServiceMarkup = __dep('setStudentServiceMarkup');
         const ssEscape = __dep('ssEscape', { optional: true });
 
-        const STUDENT_SERVICE_QA_THREAD_URL = 'assets/js/pages/student-service-qa-thread-runtime.js?v=20260720-ssqathr1';
-        const STUDENT_SERVICE_QA_STAFF_URL = 'assets/js/pages/student-service-qa-staff-runtime.js?v=20260720-w18';
-        const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260720-ssqathr1';
-        const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260717-ssvcfix1';
-        const STUDENT_SERVICE_FILTERS_MODULE_URL = 'assets/js/pages/student-service-filters.js?v=20260714-ssvc-filters1';
-        const STUDENT_SERVICE_ATTACHMENTS_MODULE_URL = 'assets/js/pages/student-service-attachments.js?v=20260714-ssvc-attach1';
+        const STUDENT_SERVICE_QA_THREAD_URL = 'assets/js/pages/student-service-qa-thread-runtime.js?v=20260728-ssqathr3';
+        const STUDENT_SERVICE_QA_STAFF_URL = 'assets/js/pages/student-service-qa-staff-runtime.js?v=20260728-ssqastaff3';
+        const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260728-ssqa5';
+        const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260728-sssvc4';
+        const STUDENT_SERVICE_FILTERS_MODULE_URL = 'assets/js/pages/student-service-filters.js?v=20260728-ssvc-filters2';
+        const STUDENT_SERVICE_ATTACHMENTS_MODULE_URL = 'assets/js/pages/student-service-attachments.js?v=20260728-ssvc-attach3';
         const STUDENT_SERVICE_TICKETS_MODULE_URL = 'assets/js/pages/student-service-tickets.js?v=20260714-ssvc-tickets1';
 
         let studentServiceQaModulePromise = null;
@@ -62,19 +62,27 @@
         let STUDENT_SERVICE_STAFF_QA_FEED_STUB = null;
         let STUDENT_SERVICE_STAFF_WORKBENCH_STUB = null;
 
+        function liveStudentServiceExport(name, stub) {
+            const windowImpl = window[name];
+            if (typeof windowImpl === 'function' && windowImpl !== stub) return true;
+            const impl = resolveStudentServiceExportImpl(name);
+            return typeof impl === 'function' && impl !== stub;
+        }
+
         function hasStudentServiceQaModule() {
-            const live = (name, stub) => {
-                const impl = resolveStudentServiceExportImpl(name);
-                return typeof impl === 'function' && impl !== stub;
-            };
+            const studentQaHubStub = STUDENT_SERVICE_STUDENT_QA_HUB_STUB;
+            const staffQaFeedStub = STUDENT_SERVICE_STAFF_QA_FEED_STUB;
+            const pageThreadClickStub = d.handleStudentServiceQaThreadClick;
             return Boolean(
-                STUDENT_SERVICE_STUDENT_QA_HUB_STUB
-                && STUDENT_SERVICE_STAFF_QA_FEED_STUB
-                && window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED
-                && live('renderStudentServiceStudentQaHub', STUDENT_SERVICE_STUDENT_QA_HUB_STUB)
-                && live('renderStudentServiceStaffQaFeed', STUDENT_SERVICE_STAFF_QA_FEED_STUB)
-                && live('handleStudentServiceQaThreadClick', d.handleStudentServiceQaThreadClick)
-                && live('renderStudentServiceQuestionFeed', d.renderStudentServiceQuestionFeed)
+                studentQaHubStub
+                && staffQaFeedStub
+                && typeof window.renderStudentServiceStudentQaHub === 'function'
+                && typeof window.renderStudentServiceStaffQaFeed === 'function'
+                && window.renderStudentServiceStudentQaHub !== studentQaHubStub
+                && window.renderStudentServiceStaffQaFeed !== staffQaFeedStub
+                && typeof window.renderStudentServiceQuestionFeed === 'function'
+                && typeof window.handleStudentServiceQaThreadClick === 'function'
+                && (!pageThreadClickStub || window.handleStudentServiceQaThreadClick !== pageThreadClickStub)
             );
         }
 
@@ -92,7 +100,11 @@
         function removeStaleStudentServiceLazyScript(script, moduleKind = '') {
             if (!script?.parentNode) return;
             script.remove();
-            if (moduleKind === 'qa') delete window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED;
+            if (moduleKind === 'qa') {
+                delete window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED;
+                delete window.__KIU_STUDENT_SERVICE_QA_THREAD_LOADED;
+                delete window.__KIU_STUDENT_SERVICE_QA_STAFF_LOADED;
+            }
             if (moduleKind === 'service') delete window.__KIU_STUDENT_SERVICE_SERVICE_MODULE_LOADED;
             if (moduleKind === 'filters') delete window.__KIU_STUDENT_SERVICE_FILTERS_MODULE_LOADED;
             if (moduleKind === 'attachments') delete window.__KIU_STUDENT_SERVICE_ATTACHMENTS_MODULE_LOADED;
@@ -112,7 +124,7 @@
                 }
                 reject(new Error(errorMessage));
             };
-            queueMicrotask(() => attempt(8));
+            queueMicrotask(() => attempt(32));
         }
 
         function scheduleStudentServiceModuleRerenderIfNeeded() {
@@ -154,7 +166,7 @@
                 qaUrls.reduce((chain, src) => chain.then(() => new Promise((res, rej) => {
                     let existing = document.querySelector(`script[src="${src}"]`);
                     if (existing) {
-                        if (existing.dataset.kiuLoaded === '1' || isStudentServiceLazyScriptExecuted(existing, isReady)) {
+                        if (isReady()) {
                             res();
                             return;
                         }
@@ -230,18 +242,14 @@
         }
 
         function hasStudentServiceServiceModule() {
-            const live = (name, stub) => {
-                const impl = resolveStudentServiceExportImpl(name);
-                return typeof impl === 'function' && impl !== stub;
-            };
             return Boolean(
                 STUDENT_SERVICE_STUDENT_HUB_STUB
                 && STUDENT_SERVICE_MY_TICKETS_HUB_STUB
                 && STUDENT_SERVICE_RESPONDER_SERVICE_LANE_STUB
                 && window.__KIU_STUDENT_SERVICE_SERVICE_MODULE_LOADED
-                && live('renderStudentServiceStudentHub', STUDENT_SERVICE_STUDENT_HUB_STUB)
-                && live('renderStudentServiceMyTicketsHub', STUDENT_SERVICE_MY_TICKETS_HUB_STUB)
-                && live('renderStudentServiceResponderServiceLane', STUDENT_SERVICE_RESPONDER_SERVICE_LANE_STUB)
+                && liveStudentServiceExport('renderStudentServiceStudentHub', STUDENT_SERVICE_STUDENT_HUB_STUB)
+                && liveStudentServiceExport('renderStudentServiceMyTicketsHub', STUDENT_SERVICE_MY_TICKETS_HUB_STUB)
+                && liveStudentServiceExport('renderStudentServiceResponderServiceLane', STUDENT_SERVICE_RESPONDER_SERVICE_LANE_STUB)
             );
         }
 
@@ -303,14 +311,10 @@
         let studentServiceFiltersModuleLastErrorAt = 0;
 
         function hasStudentServiceFiltersModule() {
-            const live = (name, stub) => {
-                const impl = resolveStudentServiceExportImpl(name);
-                return typeof impl === 'function' && (!stub || impl !== stub);
-            };
             return Boolean(
                 window.__KIU_STUDENT_SERVICE_FILTERS_MODULE_LOADED
-                && live('getStudentServicePublishedInboxFilterLayout', d.getStudentServicePublishedInboxFilterLayout)
-                && live('renderStudentServiceInboxFiltersMarkup', d.renderStudentServiceInboxFiltersMarkup)
+                && liveStudentServiceExport('getStudentServicePublishedInboxFilterLayout', d.getStudentServicePublishedInboxFilterLayout)
+                && liveStudentServiceExport('renderStudentServiceInboxFiltersMarkup', d.renderStudentServiceInboxFiltersMarkup)
             );
         }
 

@@ -53,6 +53,99 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   opacity: 0.72;
 }
 .lux-control select { cursor: pointer; }
+
+/* ── §1b lux-checkbox ── */
+.lux-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+:is(.lux-checkbox, .social-neo-checkbox) {
+  display: inline-grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 36px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--lux-text);
+  position: relative;
+  user-select: none;
+}
+:is(.lux-checkbox, .social-neo-checkbox) input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  grid-column: 1;
+  grid-row: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+:is(.lux-checkbox, .social-neo-checkbox)::before {
+  content: "";
+  grid-column: 1;
+  grid-row: 1;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: var(--lux-field-border-width, 3.5px) solid var(--lux-field-border, var(--lux-btn-border-solid));
+  background: var(--lux-panel-control, var(--lux-field-fill));
+  box-shadow: var(--lux-field-shadow);
+  box-sizing: border-box;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  pointer-events: none;
+}
+:is(.lux-checkbox, .social-neo-checkbox) > span {
+  grid-column: 2;
+  grid-row: 1;
+}
+:is(.lux-checkbox, .social-neo-checkbox):has(input[type="checkbox"]:checked)::before {
+  border-color: color-mix(in srgb, var(--lux-accent) 72%, transparent);
+  background-color: color-mix(in srgb, var(--lux-accent) 78%, #fff);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23fff' d='M6.2 11.6 2.8 8.2l1.4-1.4 2 2 6-6 1.4 1.4z'/%3E%3C/svg%3E");
+  background-size: 12px 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+:is(.lux-checkbox, .social-neo-checkbox):has(input[type="checkbox"]:focus-visible) {
+  outline: none;
+  border-radius: 8px;
+  box-shadow: var(--lux-field-focus-ring);
+}
+:is(.lux-checkbox, .social-neo-checkbox):has(input[type="checkbox"]:disabled) {
+  opacity: 0.55;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+.lux-checkbox--chip {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--lux-modal-glass-border, var(--lux-border));
+  background: var(--lux-panel-control);
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.lux-checkbox--chip:hover:not(:has(input[type="checkbox"]:disabled)) {
+  border-color: color-mix(in srgb, var(--lux-text) 18%, var(--lux-border));
+}
+.lux-checkbox--chip:has(input[type="checkbox"]:checked) {
+  border-color: rgba(var(--lux-accent-rgb), 0.38);
+  background: color-mix(in srgb, var(--lux-accent) 14%, var(--lux-panel-control));
+}
+.lux-checkbox--chip:has(input[type="checkbox"]:focus-visible) {
+  border-radius: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.lux-checkbox, .social-neo-checkbox)::before,
+  .lux-checkbox--chip {
+    transition: none;
+  }
+}
+
 .lux-icon-btn, .lux-control-btn, .lux-mode-btn, .lux-bg-mode-btn { position: relative; overflow: hidden; }
 .lux-icon-btn:active, .lux-primary-btn:active, .lux-secondary-btn:active, .lux-destructive-btn:active, .lux-ghost-btn:active, .lux-quick-btn:active {
   transform: translateY(1px) scale(0.99);
@@ -135,18 +228,137 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
 }
 .lux-tab-strip {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
   border-radius: 24px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  background: color-mix(in srgb, var(--lux-text) 4%, var(--lux-panel-control, var(--lux-panel-fill)));
+  min-width: 0;
+}
+.lux-tab-strip--segmented {
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
 }
 .lux-tab-fill { flex: 1; }
 .lux-tab-btn {
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 48px;
   padding: 12px 18px;
   border-radius: 18px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--lux-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
   text-align: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  margin: 0;
+  box-shadow: none;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+.lux-tab-strip--segmented .lux-tab-btn {
+  min-height: 40px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+}
+.lux-tab-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--lux-accent) 8%, var(--lux-panel-control));
+  color: var(--lux-text);
+}
+.lux-tab-btn:is(.is-active, .active, [aria-pressed="true"], [aria-selected="true"]) {
+  background: color-mix(in srgb, var(--lux-accent) 18%, var(--lux-panel-control));
+  border-color: color-mix(in srgb, var(--lux-accent) 24%, var(--lux-border));
+  color: var(--lux-accent);
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--lux-text) 6%, transparent);
+}
+.lux-tab-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--lux-field-focus-ring);
+}
+.lux-tab-btn:is(.is-active, .active, [aria-pressed="true"], [aria-selected="true"]):focus-visible {
+  box-shadow: var(--lux-field-focus-ring), inset 0 1px 0 color-mix(in srgb, var(--lux-text) 6%, transparent);
+}
+.lux-tab-btn--rich {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+.lux-tab-btn--rich > i {
+  font-size: 11px;
+  opacity: 0.85;
+}
+.lux-tab-btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.lux-tab-btn--icon > i {
+  font-size: 12px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+.lux-tab-btn:is(.is-active, .active, [aria-pressed="true"], [aria-selected="true"]).lux-tab-btn--icon > i {
+  opacity: 1;
+}
+.lux-tab-btn__copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.lux-tab-btn__label {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.2;
+  color: inherit;
+}
+.lux-tab-btn__helper {
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 500;
+  color: var(--lux-text-muted);
+}
+.lux-tab-btn:is(.is-active, .active, [aria-pressed="true"], [aria-selected="true"]) .lux-tab-btn__helper {
+  color: var(--lux-text-secondary, var(--lux-text-muted));
+}
+:is(.lux-tab-badge, .social-neo-tab-badge) {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-accent) 22%, transparent);
+  color: var(--lux-accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+.lux-tab-strip--segmented .lux-tab-btn:not(.is-active):not(.active):not([aria-pressed="true"]):not([aria-selected="true"]) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lux-tab-strip--segmented .lux-tab-btn:not(.is-active):not(.active):not([aria-pressed="true"]):not([aria-selected="true"]) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lux-tab-btn { transition: none; }
 }
 .wave2-action-btn {
   display: inline-flex;

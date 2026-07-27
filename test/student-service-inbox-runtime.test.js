@@ -26,4 +26,14 @@ describe('student-service-inbox-runtime peel', () => {
         expect(html.indexOf('student-service-inbox-runtime.js'))
             .toBeLessThan(html.indexOf('assets/js/pages/student-service.js'));
     });
+
+    it('falls back to inbox defaults when module forwards return null', () => {
+        const inbox = readSource('assets/js/pages/student-service-inbox-runtime.js');
+        expect(inbox).toContain('function resolveStudentServiceDefaultDraftQuestion()');
+        expect(inbox).toContain('function resolveStudentServiceDefaultDraftTicket()');
+        expect(inbox).toContain('function buildStudentServiceInboxDefaultDraftTicket()');
+        expect(inbox).toContain('draftTicket: resolveStudentServiceDefaultDraftTicket()');
+        expect(inbox).toContain('ui.draftTicket = resolveStudentServiceDefaultDraftTicket()');
+        expect(inbox).toContain("__ssModuleForward('Filters', 'getStudentServicePublishedInboxFilterLayout', () => ({ version: 1, filters: [] }))");
+    });
 });

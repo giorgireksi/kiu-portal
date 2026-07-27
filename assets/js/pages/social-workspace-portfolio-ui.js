@@ -28,6 +28,7 @@
             portfolioDraftExists,
             portfolioEntriesForViewer,
             portfolioMatchesRoleFilter,
+            PORTFOLIO_DISCOVER_ROLE_TARGETS,
             roleLabel,
             state,
             text,
@@ -84,9 +85,9 @@
                         </select>
                     </div>
                     <div class="social-portfolio-tag-row">
-                        <button class="lux-secondary-btn ${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="">All tags</button>
+                        <button class="${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="">All tags</button>
                         ${tagOptions.map((tag) => `
-                            <button class="lux-secondary-btn ${discoverTag === text(tag).toLowerCase() ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">
+                            <button class="${discoverTag === text(tag).toLowerCase() ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">
                                 #${escape(text(tag).replace(/^#/, ''))}
                             </button>
                         `).join('')}
@@ -105,7 +106,7 @@
                     </div>
                     <div class="social-neo-portfolio-hero-stats">
                         ${stats.map((stat) => `
-                            <article class="social-neo-portfolio-hero-stat social-neo-events-hero-stat lux-strip-card surface-card">
+                            <article class="social-neo-portfolio-hero-stat lux-strip-card surface-card">
                                 <strong>${escape(String(stat.value))}</strong>
                                 <span>${escape(stat.label)}</span>
                             </article>
@@ -114,7 +115,7 @@
                     <div class="social-neo-portfolio-hero-tabs-row">
                         <div class="portfolio-panel-tabs social-neo-portfolio-hero-tabs" role="tablist" aria-label="Portfolio views">
                             ${portfolioPanelTabs.map((tab) => `
-                                <button class="lux-secondary-btn portfolio-panel-tab ${portfolioPanelTab === tab.tab ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" role="tab" data-action="portfolio-panel-tab" ${tab.attrs} aria-selected="${portfolioPanelTab === tab.tab ? 'true' : 'false'}" aria-pressed="${portfolioPanelTab === tab.tab ? 'true' : 'false'}">
+                                <button class="${portfolioPanelTab === tab.tab ? 'lux-primary-btn' : 'lux-secondary-btn'} portfolio-panel-tab" type="button" role="tab" data-action="portfolio-panel-tab" ${tab.attrs} aria-selected="${portfolioPanelTab === tab.tab ? 'true' : 'false'}" aria-pressed="${portfolioPanelTab === tab.tab ? 'true' : 'false'}">
                                     <strong>${escape(tab.label)}</strong>
                                     <span>${escape(tab.helper)}</span>
                                 </button>
@@ -153,7 +154,7 @@
                 : 'Present completed work as a polished campus showcase entry.';
             const submitLabel = editing ? 'Save portfolio entry' : 'Publish portfolio card';
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-create lux-glass-dialog-card" data-form="${editing ? 'portfolio-settings' : 'create-portfolio'}" ${editing ? `data-project-id="${escape(editing)}"` : ''} data-action="noop" data-lux-transparency-exempt="1">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="${editing ? 'portfolio-settings' : 'create-portfolio'}" ${editing ? `data-project-id="${escape(editing)}"` : ''} data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHead(title, subtitle, { icon: 'fas fa-briefcase' })}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-create">
                         <section class="lux-glass-dialog-portfolio-create-section">
@@ -237,7 +238,7 @@
         }
 
         function renderPortfolioEditorDialog() {
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close"><div class="lux-glass-dialog-card lux-glass-dialog-card--portfolio-editor" data-action="noop" data-lux-transparency-exempt="1">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close"><div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-editor lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-editor-topbar">
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>

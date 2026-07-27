@@ -315,7 +315,24 @@
                 return withBusy(async () => {
                     const projectId = text(form.projectId?.value);
                     const project = resolveActiveSocialProject(runtime, projectId);
-                    const title = assertUniqueProjectTaskTitle(project, form.projectTaskTitle?.value);
+                    const prevQuick = runtime.ui?.projectTaskGraphQuickCreate || {};
+                    let title = '';
+                    try {
+                        title = assertUniqueProjectTaskTitle(project, form.projectTaskTitle?.value);
+                    } catch (error) {
+                        runtime.ui.projectTaskGraphQuickCreate = {
+                            open: true,
+                            x: prevQuick.x,
+                            y: prevQuick.y,
+                            graphX: prevQuick.graphX,
+                            graphY: prevQuick.graphY,
+                            title: text(form.projectTaskTitle?.value),
+                            status: text(form.projectTaskStatus?.value || prevQuick.status || 'todo') || 'todo',
+                            error: error?.message || 'Could not add task.'
+                        };
+                        refreshProjectTaskGraphDialog(['quickCreate']);
+                        throw error;
+                    }
                     const status = text(form.projectTaskStatus?.value || 'todo') || 'todo';
                     const graphX = Number(form.graphX?.value) || 120;
                     const graphY = Number(form.graphY?.value) || 120;

@@ -63,4 +63,62 @@ describe('social-workspace-dialog-route', () => {
     it('returns empty for unknown dialog kinds', () => {
         expect(api.renderWorkspaceOwnedDialog({ ui: {} }, { type: 'not-a-thing' })).toBe('');
     });
+
+    it('wraps history on graph using stack anchor when previousDialog is graph', () => {
+        const { api: routeApi, runtime } = loadRoute({
+            shouldRenderProjectTaskGraphStack: () => true,
+            getProjectTaskGraphStackAnchorDialog: () => ({ type: 'project-task-graph', projectId: 'p1' }),
+            renderProjectTaskGraphHistoryDialog: () => '<child-history/>',
+            renderProjectTaskGraphFullscreen: () => '<graph-fullscreen/>',
+            wrapProjectTaskGraphStack: (graph, child) => `<stack>${graph}${child}</stack>`
+        });
+        runtime.ui.previousDialog = { type: 'project-task-graph', projectId: 'p1' };
+        const html = routeApi.renderWorkspaceOwnedDialog(runtime, { type: 'project-task-graph-history', projectId: 'p1' });
+        expect(html).toContain('<stack>');
+        expect(html).toContain('<graph-fullscreen/>');
+        expect(html).toContain('<child-history/>');
+    });
+
+    it('wraps history on graph when previousDialog still has legacy health chain', () => {
+        const { api: routeApi, runtime } = loadRoute({
+            shouldRenderProjectTaskGraphStack: () => true,
+            getProjectTaskGraphStackAnchorDialog: () => ({ type: 'project-task-graph', projectId: 'p1' }),
+            renderProjectTaskGraphHistoryDialog: () => '<child-history/>',
+            renderProjectTaskGraphFullscreen: () => '<graph-fullscreen/>',
+            wrapProjectTaskGraphStack: (graph, child) => `<stack>${graph}${child}</stack>`
+        });
+        runtime.ui.previousDialog = {
+            type: 'project-health',
+            projectId: 'p1',
+            __restorePrevious: { type: 'project-task-graph', projectId: 'p1' }
+        };
+        const html = routeApi.renderWorkspaceOwnedDialog(runtime, { type: 'project-task-graph-history', projectId: 'p1' });
+        expect(html).toContain('<stack>');
+        expect(html).toContain('<graph-fullscreen/>');
+        expect(html).toContain('<child-history/>');
+    });
+
+    it('wraps fullscreen graph in stack shell on open', () => {
+        const { api: routeApi } = loadRoute({
+            renderProjectTaskGraphFullscreen: () => '<graph-fullscreen/>',
+            wrapProjectTaskGraphStack: (graph, child) => `<stack anchor>${graph}</stack><slot>${child}</slot>`
+        });
+        const html = routeApi.renderWorkspaceOwnedDialog({ ui: {} }, { type: 'project-task-graph', projectId: 'p1' });
+        expect(html).toContain('<graph-fullscreen/>');
+        expect(html).toContain('<stack anchor>');
+    });
+
+    it('wraps health when previousDialog is graph even without stack flag', () => {
+        const { api: routeApi, runtime } = loadRoute({
+            shouldRenderProjectTaskGraphStack: () => false,
+            getProjectTaskGraphStackAnchorDialog: () => null,
+            renderProjectHealthDialog: () => '<child-health/>',
+            renderProjectTaskGraphFullscreen: () => '<graph-fullscreen/>',
+            wrapProjectTaskGraphStack: (graph, child) => `<stack>${graph}${child}</stack>`
+        });
+        runtime.ui.previousDialog = { type: 'project-task-graph', projectId: 'p1' };
+        const html = routeApi.renderWorkspaceOwnedDialog(runtime, { type: 'project-health', projectId: 'p1' });
+        expect(html).toContain('<stack>');
+        expect(html).toContain('<child-health/>');
+    });
 });

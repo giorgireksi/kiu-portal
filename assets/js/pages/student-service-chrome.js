@@ -46,10 +46,10 @@ function buildStudentServiceLaneMetrics(role, currentUser, visibleArticles, visi
 
 function renderStudentServiceChooserHeader() {
     return `
-        <section class="student-service-command-bar-shell student-service-command-bar-shell--chooser">
+        <section class="student-service-command-bar-shell student-service-command-bar-shell--chooser home-hover-chip" aria-label="Student Service">
             <div class="student-service-command-bar">
-                <strong class="student-service-command-bar-title">Student Service</strong>
-                <span class="student-service-command-bar-metrics">Choose how you want help</span>
+                <strong class="student-service-command-bar-title lux-page-title">Student Service</strong>
+                <span class="student-service-command-bar-metrics lux-page-copy">Choose how you want help</span>
             </div>
         </section>
     `;
@@ -115,7 +115,7 @@ function renderStudentServiceCommandBar(role, selectedLane, ui, metrics) {
         : (role === USER_ROLES.STUDENT_SERVICE ? 'Student Service Workspace' : 'Student Service');
     if (selectedLane === 'qa') {
         return `
-            <section class="student-service-command-bar-shell student-service-command-bar-shell--qa" data-student-service-command-bar="true">
+            <section class="student-service-command-bar-shell student-service-command-bar-shell--qa home-hover-chip" data-student-service-command-bar="true">
                 <div class="student-service-command-bar student-service-command-bar--qa">
                     <div class="student-service-command-bar-top">
                         <div class="student-service-command-bar-main">
@@ -134,10 +134,10 @@ function renderStudentServiceCommandBar(role, selectedLane, ui, metrics) {
         ? `<div class="student-service-command-bar-actions">${modeTabs}</div>`
         : '';
     return `
-        <section class="student-service-command-bar-shell" data-student-service-command-bar="true">
+        <section class="student-service-command-bar-shell home-hover-chip" data-student-service-command-bar="true">
             <div class="student-service-command-bar">
                 <div class="student-service-command-bar-main">
-                    <strong class="student-service-command-bar-title">${ssEscape(title)}</strong>
+                    <strong class="student-service-command-bar-title lux-page-title">${ssEscape(title)}</strong>
                     ${laneTabs}
                 </div>
                 <div class="student-service-command-bar-meta">
@@ -278,25 +278,25 @@ function renderStudentServiceLaneChooser(role, currentUser, visibleArticles, vis
         <div class="student-service-lane-chooser">
             <section class="student-service-zone student-service-zone-chooser">
                 <div class="student-service-lane-choice-grid" role="group" aria-label="Choose Student Service lane">
-                    <button type="button" class="student-service-lane-choice-card student-service-lane-choice-card--service" data-student-service-lane="service">
-                        <div class="student-service-lane-choice-kicker">Private support</div>
-                        <div class="student-service-lane-choice-title">Student Service</div>
-                        <div class="student-service-lane-choice-copy">${ssEscape(serviceCopy)}</div>
+                    <button type="button" class="student-service-lane-choice-card student-service-lane-choice-card--service home-hover-chip" data-student-service-lane="service">
+                        <div class="student-service-lane-choice-kicker lux-section-kicker lux-page-kicker">Private support</div>
+                        <div class="student-service-lane-choice-title lux-page-title">Student Service</div>
+                        <div class="student-service-lane-choice-copy lux-page-copy">${ssEscape(serviceCopy)}</div>
                         <div class="student-service-lane-choice-stats">
-                            <span>${metrics.servicePrimaryCount} ${role === USER_ROLES.STUDENT ? 'my tickets' : 'active tickets'}</span>
-                            <span>${metrics.totalArticles.length} guidance articles</span>
+                            <span class="lux-pill home-hover-chip">${metrics.servicePrimaryCount} ${role === USER_ROLES.STUDENT ? 'my tickets' : 'active tickets'}</span>
+                            <span class="lux-pill home-hover-chip">${metrics.totalArticles.length} guidance articles</span>
                         </div>
                         <span class="student-service-lane-choice-cta">Open Student Service <i class="fas fa-arrow-right"></i></span>
                     </button>
-                    <button type="button" class="student-service-lane-choice-card student-service-lane-choice-card--qa" data-student-service-lane="qa">
-                        <div class="student-service-lane-choice-kicker">Public answers</div>
-                        <div class="student-service-lane-choice-title">Q&A</div>
-                        <div class="student-service-lane-choice-copy">${ssEscape(qaCopy)}</div>
+                    <button type="button" class="student-service-lane-choice-card student-service-lane-choice-card--qa home-hover-chip" data-student-service-lane="qa">
+                        <div class="student-service-lane-choice-kicker lux-section-kicker lux-page-kicker">Public answers</div>
+                        <div class="student-service-lane-choice-title lux-page-title">Q&amp;A</div>
+                        <div class="student-service-lane-choice-copy lux-page-copy">${ssEscape(qaCopy)}</div>
                         <div class="student-service-lane-choice-stats">
-                            <span>${metrics.publishedQuestions} published questions</span>
-                            <span>${metrics.qaPrimaryCount} ${role === USER_ROLES.STUDENT ? 'my questions' : 'unanswered'}</span>
+                            <span class="lux-pill home-hover-chip">${metrics.publishedQuestions} published questions</span>
+                            <span class="lux-pill home-hover-chip">${metrics.qaPrimaryCount} ${role === USER_ROLES.STUDENT ? 'my questions' : 'unanswered'}</span>
                         </div>
-                        <span class="student-service-lane-choice-cta">Open Q&A <i class="fas fa-arrow-right"></i></span>
+                        <span class="student-service-lane-choice-cta">Open Q&amp;A <i class="fas fa-arrow-right"></i></span>
                     </button>
                 </div>
             </section>

@@ -173,7 +173,7 @@
                 const pts = list.map((entry, index) => {
                     const x = Math.round(index * step);
                     const y = Math.round(height - ((countNum(entry?.count) / maxValue) * (height - 20)) - 10);
-                    return { formatBudgetMoney, renderBudgetTab };
+                    return { x, y, count: countNum(entry?.count) };
                 });
                 const polyline = pts.map((p) => `${p.x},${p.y}`).join(' ');
                 const areaPath = `M${pts[0].x},${height} ` + pts.map((p) => `L${p.x},${p.y}`).join(' ') + ` L${pts[pts.length - 1].x},${height} Z`;
@@ -182,8 +182,8 @@
                         <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true" class="social-project-sparkline-svg">
                             <defs>
                                 <linearGradient id="spark-area-gradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.28"/>
-                                    <stop offset="100%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.02"/>
+                                    <stop offset="0%" stop-color="var(--lux-accent, #7c6cff)" stop-opacity="0.28"/>
+                                    <stop offset="100%" stop-color="var(--lux-accent, #7c6cff)" stop-opacity="0.02"/>
                                 </linearGradient>
                             </defs>
                             <path d="${areaPath}" fill="url(#spark-area-gradient)"/>
@@ -217,7 +217,7 @@
                 const pts = list.map((entry, index) => {
                     const x = Math.round(index * step);
                     const y = Math.round(height - ((countNum(entry?.count) / maxValue) * (height - 8)) - 4);
-                    return { formatBudgetMoney, renderBudgetTab };
+                    return { x, y, count: countNum(entry?.count) };
                 });
                 const polyline = pts.map((p) => `${p.x},${p.y}`).join(' ');
                 const areaPath = `M${pts[0].x},${height} ` + pts.map((p) => `L${p.x},${p.y}`).join(' ') + ` L${pts[pts.length - 1].x},${height} Z`;
@@ -225,12 +225,12 @@
                     <svg class="social-project-mini-sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
                         <defs>
                             <linearGradient id="mini-spark-grad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.3"/>
-                                <stop offset="100%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.02"/>
+                                <stop offset="0%" stop-color="var(--lux-accent, #7c6cff)" stop-opacity="0.3"/>
+                                <stop offset="100%" stop-color="var(--lux-accent, #7c6cff)" stop-opacity="0.02"/>
                             </linearGradient>
                         </defs>
                         <path d="${areaPath}" fill="url(#mini-spark-grad)"/>
-                        <polyline points="${polyline}" fill="none" stroke="var(--sn-proj-accent,#c8822a)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                        <polyline points="${polyline}" fill="none" stroke="var(--lux-accent, #7c6cff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
                     </svg>
                 `;
             };
@@ -694,7 +694,7 @@
                         .map((task) => {
                             const dueMs = Number.isFinite(Date.parse(text(task?.dueAt || ''))) ? Date.parse(text(task.dueAt)) : null;
                             const overdue = Boolean(dueMs && dueMs < Date.now());
-                            return { formatBudgetMoney, renderBudgetTab };
+                            return { projectId, project, task, dueMs, overdue };
                         });
                 }).sort((left, right) => {
                     if (left.overdue !== right.overdue) return left.overdue ? -1 : 1;
@@ -761,7 +761,7 @@
                                     ` : ''}
                                     <div class="social-project-hub-scope" role="tablist" aria-label="Project scope">
                                         ${scopeChips.map(([value, label]) => `
-                                            <button class="lux-secondary-btn ${hubScope === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-scope" data-scope="${escape(value)}" aria-pressed="${hubScope === value ? 'true' : 'false'}">${escape(label)}</button>
+                                            <button class="${hubScope === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-scope" data-scope="${escape(value)}" aria-pressed="${hubScope === value ? 'true' : 'false'}">${escape(label)}</button>
                                         `).join('')}
                                     </div>
                                     <div class="social-project-hub-filterbar">
@@ -769,7 +769,7 @@
                                             <span class="social-project-hub-filter-label">Status</span>
                                             <div class="social-project-hub-filter-pills">
                                                 ${statusPills.map(([value, label]) => `
-                                                    <button class="lux-secondary-btn ${hubStatus === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-status" data-status="${escape(value)}">${escape(label)}${value !== 'all' ? ` (${escape(String(hubStatusCounts[value] || 0))})` : ''}</button>
+                                                    <button class="${hubStatus === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-status" data-status="${escape(value)}">${escape(label)}${value !== 'all' ? ` (${escape(String(hubStatusCounts[value] || 0))})` : ''}</button>
                                                 `).join('')}
                                             </div>
                                         </div>
@@ -782,10 +782,10 @@
                                         <div class="social-project-hub-filter-group social-project-hub-filter-group--skills">
                                             <span class="social-project-hub-filter-label">Skills</span>
                                             <div class="social-project-hub-filter-pills">
-                                                <button class="lux-secondary-btn ${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-skill" data-tag="">All</button>
+                                                <button class="${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-skill" data-tag="">All</button>
                                                 ${hubSkillOptions.map((skill) => {
                                                     const value = text(skill).toLowerCase();
-                                                    return `<button class="lux-secondary-btn ${discoverTag === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-skill" data-tag="${escape(value)}">${escape(skill)}</button>`;
+                                                    return `<button class="${discoverTag === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-skill" data-tag="${escape(value)}">${escape(skill)}</button>`;
                                                 }).join('')}
                                             </div>
                                         </div>
@@ -798,8 +798,8 @@
                                                     <span>${escape(String(hubProjects.length))} matching</span>
                                                 </div>
                                                 <div class="social-project-hub-view-toggle" role="group" aria-label="Hub view mode">
-                                                    <button class="lux-secondary-btn ${hubViewMode === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-view" data-view="grid"><i class="fas fa-th-large"></i> Grid</button>
-                                                    <button class="lux-secondary-btn ${hubViewMode === 'list' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-view" data-view="list"><i class="fas fa-list"></i> List</button>
+                                                    <button class="${hubViewMode === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-view" data-view="grid"><i class="fas fa-th-large"></i> Grid</button>
+                                                    <button class="${hubViewMode === 'list' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-view" data-view="list"><i class="fas fa-list"></i> List</button>
                                                 </div>
                                             </div>
                                             ${hubProjects.length
@@ -1010,7 +1010,13 @@
             const roleMix = Array.isArray(activeProject?.roleMix) ? activeProject.roleMix : [];
             /* Wave 18: social-workspace-panel-team-runtime.js */
             const __teamApi = typeof window.__kiuCreateSocialWorkspacePanelTeamApi === 'function'
-                ? window.__kiuCreateSocialWorkspacePanelTeamApi(deps) : null;
+                ? window.__kiuCreateSocialWorkspacePanelTeamApi({
+                    escape, text, displayName, avatar, accountById, accountSubtitle, isStaffAccount,
+                    countNum, formatProjectScheduleHours,
+                    activeProject, runtime, memberSummaries, pendingMembers, nextOwner, roleLabels,
+                    facultyMix, roleMix, inviteFaculty, facultyOptions, filteredInviteCandidates,
+                    renderTeamMemberCard, scrollList
+                }) : null;
             if (!__teamApi) throw new Error('social-workspace-panel-team-runtime.js missing');
             const { renderTeamWorkloadAside, renderTeamTab } = __teamApi;
 
@@ -1697,7 +1703,8 @@
                     ensureSocialMessagesModule, hasSocialMessagesModule,
                     ensureProjectWorkspaceChat, resolveProjectWorkspaceChat,
                     renderMessagesThreadShell, setActiveChat, queueDeferredModuleRender,
-                    renderSocialPageNow, currentUserId
+                    renderSocialPageNow, currentUserId,
+                    activeProject, countNum, renderProgressRing, renderMetricCard, when
                 })
                 : null;
             if (!__budgetApi) throw new Error('social-workspace-panel-budget-runtime missing');
@@ -1727,17 +1734,18 @@
                 ['tasks', 'Tasks', 'fa-list-check', `${activeProject.openTaskCount || 0} open`],
                 ['chat', 'Chat', 'fa-comments', 'Backed by group chat'],
                 ['activity', 'Activity', 'fa-wave-square', `${activeProject.activityCount || 0} events`],
-                ['budget', 'Budget', 'fa-wallet', `${budgetUtilization}% used`]
+                ['budget', 'Budget', 'fa-wallet', `${countNum(activeProject?.budgetUtilizationPercent)}% used`]
             ];
             const tabMap = Object.fromEntries(tabItems.map(([tabId, label, icon, note]) => [tabId, { label, icon, note }]));
             const renderProjectTabPill = (tabId) => {
                 const item = tabMap[tabId];
                 if (!item) return '';
                 const isActive = activeTab === tabId;
+                const activeClass = isActive ? 'is-focused is-active' : '';
                 return `
-                    <button class="social-project-tab-pill ${isActive ? 'is-active' : ''}" type="button" role="tab" aria-selected="${isActive ? 'true' : 'false'}" tabindex="${isActive ? '0' : '-1'}" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="${escape(tabId)}">
-                        <i class="fas ${escape(item.icon)}"></i>
-                        <span>
+                    <button class="lux-secondary-btn social-project-hero-tab ${activeClass}" type="button" role="tab" aria-selected="${isActive ? 'true' : 'false'}" aria-pressed="${isActive ? 'true' : 'false'}" tabindex="${isActive ? '0' : '-1'}" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="${escape(tabId)}">
+                        <span class="social-project-hero-tab-icon"><i class="fas ${escape(item.icon)}" aria-hidden="true"></i></span>
+                        <span class="social-project-hero-tab-copy">
                             <strong>${escape(item.label)}</strong>
                             <small>${escape(item.note)}</small>
                         </span>
@@ -1794,9 +1802,7 @@
                                 ${renderSparkline(activeProject?.activityBuckets || [])}
                             </article>
                         </div>
-                    </section>
-                    <section class="social-neo-card social-project-tab-shell">
-                        <div class="social-project-tab-row social-project-tab-row-rich" role="tablist" aria-label="Project sections">
+                        <div class="social-project-hero-grid social-project-tab-row social-project-tab-row-rich" role="tablist" aria-label="Project sections">
                             ${tabItems.map(([tabId]) => renderProjectTabPill(tabId)).join('')}
                         </div>
                     </section>

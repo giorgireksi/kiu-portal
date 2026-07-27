@@ -1248,7 +1248,7 @@
         return `
             <div class="ex2-workspace-stats">
                 ${getWorkspaceStatChips().map(chip => `
-                    <div class="ex2-stat-chip${chip.tone ? ` ${chip.tone}` : ''}">
+                    <div class="ex2-stat-chip lux-soft-chrome${chip.tone ? ` ${chip.tone}` : ''}">
                         <strong>${chip.value}</strong>
                         <span>${escapeHtml(chip.label)}</span>
                     </div>
@@ -1312,7 +1312,7 @@
 
         return `
             <div class="ex2-workspace-section">
-                <div class="ex2-panel-head">
+                <div class="lux-panel-head ex2-panel-head">
                     <div>
                         <h2><i class="fas ${isAdmin ? 'fa-folder-open' : 'fa-wand-magic-sparkles'} ex2-panel-title-icon"></i>${isAdmin ? 'All Templates' : 'Quiz Builder'}</h2>
                         <p>${isAdmin ? 'All faculty exam templates across the university.' : 'Create question banks, generate variants, and collaborate.'}</p>
@@ -1464,8 +1464,6 @@
         getScheduleDraftIssues,
         getSessions,
         buildSubjectAutoCohorts,
-        detectScheduleCollisions,
-        generateExamPIN,
         formatCountdown,
         formatDateTime,
         formatShortDate,
@@ -1561,7 +1559,7 @@
         executeReturnForRevisionInternal, getExamProtectedSessionKeys, findExamAttemptEntry,
     } = __examsWorkspaceApi;
     Object.assign(__examsWorkspaceDeps, {
-        escapeHtml, text, toFieldToken, hasExamsBuilderModule, ensureExamsBuilderModule,
+        escapeHtml, toFieldToken, hasExamsBuilderModule, ensureExamsBuilderModule,
         hasExamsAdminModule, ensureExamsAdminModule, hasExamsAttemptsModule, ensureExamsAttemptsModule,
         formatDateTime, getRole, getFacultyLabelSafe, persistState, clampPositiveInt,
         saveQuestionDefaultsForSubject, renderCourseYearOptions, getTemplateById, getSessionById,
@@ -1580,6 +1578,10 @@
         clearExamCohorts, editExamSession, detectScheduleCollisions, generateExamPIN,
         hasExamsExportModule, ensureExamsExportModule, splitCohort, publishExamSession, unpublishExamSession
     } = __examsScheduleApi;
+    Object.assign(window.__kiuExamsAdminHooks, {
+        detectScheduleCollisions,
+        generateExamPIN
+    });
     Object.assign(window, {
         previewStudentExamPortal, createLocalExamTestSession, toggleExamCohort, selectAllExamCohorts,
         clearExamCohorts, editExamSession, splitCohort, publishExamSession, unpublishExamSession

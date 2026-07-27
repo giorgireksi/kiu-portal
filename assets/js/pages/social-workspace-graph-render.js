@@ -21,15 +21,20 @@
             PROJECT_TASK_GRAPH_MIN_ZOOM,
             PROJECT_TASK_GROUP_NODE_H,
             PROJECT_TASK_GROUP_NODE_W,
+            PROJECT_SCHEDULE_FLOAT_TITLE,
             accountById,
             applyProjectTaskGraphSavedPositions,
             avatar,
             buildProjectTaskGraphLayout,
+            buildProjectTaskGraphModel,
             buildProjectTaskInspectorFields,
+            clampProjectTaskGraphZoom,
             collectProjectTaskGraphGroupBoxes,
             computeProjectSchedule,
+            computeProjectTaskGraphFitZoom,
             computeProjectTaskGraphGroupRollup,
             computeProjectTaskGraphMapSchedule,
+            computeProjectTaskGraphStageSize,
             countNum,
             displayName,
             ensureProjectTaskGraphPositionsLoaded,
@@ -50,6 +55,7 @@
             isProjectTaskGraphGroupId,
             neoActions,
             neoHead,
+            normalizeProjectTaskGraphMode,
             normalizeProjectTaskGraphStatusId,
             normalizeTaskTime,
             normalizeTaskTimeUnit,
@@ -58,17 +64,21 @@
             projectTaskDependsOnIds,
             projectTaskGraphEdgeFanMap,
             projectTaskGraphEdgePath,
+            projectTaskGraphLayoutUsesSavedPositions,
             projectTaskGraphMineOnlyActive,
+            projectTaskGraphObstacleList,
             projectTaskGraphShowCritical,
             projectTaskGraphShowFlow,
             projectTaskGraphShowInferred,
             projectTaskGraphStatusEdgeColor,
+            projectTaskGraphContentViewBox,
             readProjectTaskGraphCheckpoints,
             readProjectTaskGraphPan,
             renderProjectWorkspaceNavButtons,
             resolveActiveSocialProject,
             resolveProjectTaskGraphContext,
             resolveProjectTaskGraphGroupBox,
+            resolveProjectTaskGraphPanSlack,
             resolveProjectTaskGraphScheduleScope,
             resolveProjectTaskPriorityDisplay,
             resolveTaskScheduleEstimate,
@@ -78,10 +88,13 @@
             text,
             when
         } = deps;
+        const __swGraphBatch = deps.__swGraphBatch || window.KiuSocialWorkspaceGraphModel || {};
+        const GROUP_NODE_W = Number(PROJECT_TASK_GROUP_NODE_W) || Number(__swGraphBatch.PROJECT_TASK_GROUP_NODE_W) || 264;
+        const GROUP_NODE_H = Number(PROJECT_TASK_GROUP_NODE_H) || Number(__swGraphBatch.PROJECT_TASK_GROUP_NODE_H) || 228;
 
         function renderProjectTaskGraphGroupNode(project, group, position, options = {}) {
-            const w = PROJECT_TASK_GROUP_NODE_W;
-            const h = PROJECT_TASK_GROUP_NODE_H;
+            const w = GROUP_NODE_W;
+            const h = GROUP_NODE_H;
             const foPad = PROJECT_TASK_GRAPH_FO_PAD;
             const cx = Math.round(Number(position?.x) || 0);
             const cy = Math.round(Number(position?.y) || 0);
@@ -541,7 +554,7 @@
                 const id = text(group.id);
                 const livePos = live && live[id];
                 if (livePos && Number.isFinite(Number(livePos.x))) {
-                    return { x: Number(livePos.x), y: Number(livePos.y), w: PROJECT_TASK_GROUP_NODE_W, h: PROJECT_TASK_GROUP_NODE_H };
+                    return { x: Number(livePos.x), y: Number(livePos.y), w: GROUP_NODE_W, h: GROUP_NODE_H };
                 }
                 return resolveProjectTaskGraphGroupBox(group, layout, saved, {
                     statusLayout: text(layout?.layoutKind || '') === 'status' || options.statusLayout === true,
@@ -587,8 +600,8 @@
                 const live = options.livePositions && typeof options.livePositions === 'object' ? options.livePositions : null;
                 const id = text(group.id);
                 const p = (live && live[id]) || saved[id];
-                if (p && Number.isFinite(p.x)) return { x: p.x, y: p.y, w: PROJECT_TASK_GROUP_NODE_W, h: PROJECT_TASK_GROUP_NODE_H };
-                return { x: Number(group.x) || 0, y: Number(group.y) || 0, w: PROJECT_TASK_GROUP_NODE_W, h: PROJECT_TASK_GROUP_NODE_H };
+                if (p && Number.isFinite(p.x)) return { x: p.x, y: p.y, w: GROUP_NODE_W, h: GROUP_NODE_H };
+                return { x: Number(group.x) || 0, y: Number(group.y) || 0, w: GROUP_NODE_W, h: GROUP_NODE_H };
             });
             const taskPos = ctx.taskPos || ((id) => {
                 const live = options.livePositions && typeof options.livePositions === 'object' ? options.livePositions : null;
@@ -609,7 +622,7 @@
             let out = '';
             const emptyGroupIds = new Set(
                 groups
-                    .filter((g) => computeProjectTaskGraphGroupRollup(g, project).count === 0)
+                    .filter((g) => (computeProjectTaskGraphGroupRollup(g, project)?.count ?? 0) === 0)
                     .map((g) => text(g.id))
                     .filter(Boolean)
             );
@@ -850,7 +863,7 @@
                         ? Object.keys(entry.taskGraphPositions).length
                         : 0;
                     return `
-                        <div class="sptg-history-row${pending ? ' is-pending-delete' : ''}${index === 0 ? ' is-latest' : ''}" data-snapshot-id="${escape(sid)}">
+                        <div class="sptg-history-row lux-control-btn${pending ? ' is-pending-delete' : ''}${index === 0 ? ' is-latest' : ''}" data-snapshot-id="${escape(sid)}">
                             <div class="sptg-history-row-meta">
                                 <strong>${escape(entry.label || when)}</strong>
                                 <span class="social-neo-muted">${groupCount} package${groupCount === 1 ? '' : 's'} · ${posCount} positions${index === 0 ? ' · latest' : ''}</span>
@@ -867,9 +880,9 @@
                 : `<div class="social-neo-empty sptg-history-empty">No saves yet. Click <strong>Save</strong> on the map to create one.</div>`;
             return `
                 <div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Map save history">
-                    <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass sptg-history-dialog" data-action="noop" data-lux-transparency-exempt="1">
-                        ${neoHead('Map save history', `${text(project?.name || 'Project')} · up to ${PROJECT_TASK_GRAPH_CHECKPOINT_MAX} saves`, { icon: 'fas fa-clock-rotate-left' })}
-                        <div class="lux-glass-dialog-body sptg-history-list">
+                    <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass sptg-history-dialog lux-studio-panel" data-action="noop" data-lux-transparency-exempt="1">
+                        ${neoHead('Map save history', `${text(project?.name || 'Project')} · up to ${PROJECT_TASK_GRAPH_CHECKPOINT_MAX} saves`, { icon: 'fas fa-clock-rotate-left', headClass: 'lux-studio-head' })}
+                        <div class="lux-glass-dialog-body sptg-history-list lux-studio-body">
                             ${rows}
                         </div>
                         ${neoActions({
@@ -899,16 +912,16 @@
                 ['Backward pass', 'Walks from the project end back to the start to compute latest start and latest finish.']
             ];
             const rows = terms.map(([term, meaning]) => `
-                <div class="sptg-schedule-help-row">
+                <div class="sptg-schedule-help-row lux-control-btn">
                     <strong>${escape(term)}</strong>
                     <p>${escape(meaning)}</p>
                 </div>
             `).join('');
             return `
                 <div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Schedule terms">
-                    <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass sptg-schedule-help-dialog" data-action="noop" data-lux-transparency-exempt="1">
-                        ${neoHead('Schedule terms', `${text(project?.name || 'Project')} · critical path method (CPM)`, { icon: 'fas fa-circle-question' })}
-                        <div class="lux-glass-dialog-body sptg-schedule-help-list" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass sptg-schedule-help-dialog lux-studio-panel" data-action="noop" data-lux-transparency-exempt="1">
+                        ${neoHead('Schedule terms', `${text(project?.name || 'Project')} · critical path method (CPM)`, { icon: 'fas fa-circle-question', headClass: 'lux-studio-head' })}
+                        <div class="lux-glass-dialog-body sptg-schedule-help-list lux-studio-body" data-lux-transparency-exempt="1">
                             ${rows}
                         </div>
                         ${neoActions({
@@ -1096,6 +1109,7 @@
             const graphY = Math.round(Number(quick.graphY ?? quick.y) || 120);
             const titleValue = text(quick.title || '');
             const statusValue = text(quick.status || 'todo') || 'todo';
+            const quickError = text(quick.error || '');
             const linkFrom = text(runtime.ui?.projectTaskGraphLinkFrom || '');
             const statusOptions = PROJECT_TASK_COLUMNS.map((column) => `<option value="${escape(column.id)}" ${statusValue === column.id ? 'selected' : ''}>${escape(column.label)}</option>`).join('');
             return `
@@ -1106,9 +1120,10 @@
                     ${linkFrom ? `<input type="hidden" name="dependsOnTaskId" value="${escape(linkFrom)}">` : ''}
                     <strong>Quick add task</strong>
                     ${linkFrom ? '<span class="social-neo-muted">Depends on selected source</span>' : ''}
+                    ${quickError ? `<p class="social-project-task-graph-quick-create-error" role="alert">${escape(quickError)}</p>` : ''}
                     <label class="social-project-task-graph-quick-create-field">
                         <span class="social-neo-label">Title</span>
-                        <input class="social-neo-input lux-control" type="text" name="projectTaskTitle" placeholder="Task title" value="${escape(titleValue)}" required>
+                        <input class="social-neo-input lux-control" type="text" name="projectTaskTitle" placeholder="Task title" value="${escape(titleValue)}" required${quickError ? ' aria-invalid="true"' : ''}>
                     </label>
                     <label class="social-project-task-graph-quick-create-field">
                         <span class="social-neo-label">Status</span>

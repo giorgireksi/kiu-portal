@@ -65,6 +65,10 @@ function loadPortfolioUi(extraDeps = {}) {
         portfolioDraftExists: () => false,
         portfolioEntriesForViewer: () => [],
         portfolioMatchesRoleFilter: () => true,
+        PORTFOLIO_DISCOVER_ROLE_TARGETS: [
+            ['all', 'All audiences'],
+            ['students_only', 'Students'],
+        ],
         ...extraDeps
     };
 
@@ -101,7 +105,17 @@ describe('social-workspace-portfolio-ui', () => {
         expect(workspace).not.toMatch(/function\s+renderProjectsPanel\s*\(/);
         expect(workspace).toContain('createKiuSocialWorkspacePortfolioUiApi');
         expect(page).toContain('SOCIAL_WORKSPACE_PORTFOLIO_UI_URL');
+        expect(workspace).toMatch(/PORTFOLIO_DISCOVER_ROLE_TARGETS,\n        roleLabel/);
         expect(page).toMatch(/TASK_UI_URL[\s\S]*PORTFOLIO_RUNTIME_URL[\s\S]*PORTFOLIO_UI_URL[\s\S]*PROJECT_CHROME_URL[\s\S]*DIALOG_ROUTE_URL[\s\S]*MODULE_URL/);
+    });
+
+    it('renders discover role filter options from deps', () => {
+        const html = api.renderPortfolioHero({ ui: {} }, {
+            portfolioPanelTab: 'discover',
+            facultyOptions: ['all', 'ECON'],
+        });
+        expect(html).toContain('All audiences');
+        expect(html).toContain('name="projectDiscoverRole"');
     });
 
     it('renders portfolio create dialog shell', () => {

@@ -54,6 +54,7 @@
         acceptPortalCall,
         declinePortalCall,
         endPortalCall,
+        leavePortalGroupCall,
         togglePortalCallMic,
         togglePortalCallCamera,
         closeDialog,
@@ -113,6 +114,7 @@
         || typeof acceptPortalCall !== 'function'
         || typeof declinePortalCall !== 'function'
         || typeof endPortalCall !== 'function'
+        || typeof leavePortalGroupCall !== 'function'
         || typeof togglePortalCallMic !== 'function'
         || typeof togglePortalCallCamera !== 'function'
         || typeof closeDialog !== 'function'
@@ -139,7 +141,32 @@
         const isGroupThread = Boolean(text(chat?.type || '') === 'group' && group);
         const activeGroupPanel = text(runtime.ui?.groupThreadPanelByChat?.[chat.id] || '');
         const searchQuery = text(runtime.ui?.groupThreadSearchByChat?.[chat.id] || '');
-        const searchResults = isGroupThread ? searchGroupMessages(chat, searchQuery) : [];
+        const searchResults = searchGroupMessages(chat, searchQuery);
+        const peerId = (Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId()) || '';
+        const peer = accountById(peerId) || { id: peerId, displayName: chatTitle(chat) };
+        const threadToolbarLabel = isGroupThread ? 'Group thread tools' : 'Conversation tools';
+        const renderThreadToolbar = () => `
+                        <div class="social-neo-group-thread-toolbar is-compact" role="toolbar" aria-label="${escape(threadToolbarLabel)}">
+                            <button class="social-neo-btn ${activeGroupPanel === 'search' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="search" aria-label="Search" title="Search"><i class="fas fa-search"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'media' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="media" aria-label="Media" title="Media"><i class="fas fa-image"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'members' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="members" aria-label="Members" title="Members"><i class="fas fa-users"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'files' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="files" aria-label="Files" title="Files"><i class="fas fa-folder-open"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'links' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="links" aria-label="Links" title="Links"><i class="fas fa-link"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'invite' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="invite" aria-label="Invite" title="Invite"><i class="fas fa-user-plus"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'settings' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="settings" aria-label="Settings" title="Settings"><i class="fas fa-sliders"></i></button>
+                        </div>`;
+        const renderThreadSearchBar = () => activeGroupPanel === 'search' ? `
+                        <div class="social-neo-search-bar" role="search" aria-label="Search in conversation">
+                            <i class="fas fa-search social-neo-search-bar-icon" aria-hidden="true"></i>
+                            <input class="social-neo-search-bar-input" type="search" data-bind="group-thread-search" data-chat-id="${escape(text(chat.id))}" placeholder="Search messages..." value="${escape(searchQuery)}" autofocus>
+                            ${searchQuery && searchResults.length ? `<span class="social-neo-search-bar-counter">${escape(searchIndex + 1)} of ${escape(searchResults.length)}</span>` : searchQuery ? '<span class="social-neo-search-bar-counter social-neo-search-bar-counter-empty">0 results</span>' : ''}
+                            ${searchResults.length > 1 ? `
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" type="button" data-action="group-thread-search-prev" data-chat-id="${escape(text(chat.id))}" aria-label="Previous match" title="Previous"><i class="fas fa-chevron-up"></i></button>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" type="button" data-action="group-thread-search-next" data-chat-id="${escape(text(chat.id))}" aria-label="Next match" title="Next"><i class="fas fa-chevron-down"></i></button>
+                            ` : ''}
+                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" type="button" data-action="group-thread-search-clear" data-chat-id="${escape(text(chat.id))}" aria-label="Close search" title="Close"><i class="fas fa-times"></i></button>
+                        </div>
+                        ` : '';
         const searchIndex = Number(runtime.ui?.groupThreadSearchIndexByChat?.[chat.id] || 0);
         const searchMatchMessageIds = new Set(searchResults.map((r) => text(r.message?.id || '')));
         const searchActiveMessageId = searchResults.length && searchIndex < searchResults.length ? text(searchResults[searchIndex]?.message?.id || '') : '';
@@ -167,173 +194,118 @@
             const isSearchActive = searchActiveMessageId === text(message.id);
             return `
                 <article class="social-neo-message ${own ? 'is-own' : ''} ${jumpMessageId === text(message.id) ? 'is-highlighted' : ''} ${isSearchMatch ? 'is-search-match' : ''} ${isSearchActive ? 'is-search-active' : ''}" id="${escape(messageAnchorId(chat.id, message.id))}" data-msg-id="${escape(text(message.id))}">
-                    ${isGroupThread ? `
-                        <div class="${messageCardHeadClass}">
-                            <div class="${messageCardMetaClass}">
-                                <strong class="social-neo-message__sender">${escape(displayName(sender))}</strong>
-                            </div>
-                            ${own ? `<button class="lux-ghost-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>` : ''}
+                    <div class="${messageCardHeadClass}">
+                        <div class="${messageCardMetaClass}">
+                            <strong class="social-neo-message__sender">${escape(displayName(sender))}</strong>
                         </div>
-                    ` : own ? `
-                        <div class="${messageCardHeadClass}">
-                            <button class="lux-ghost-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>
-                        </div>
-                    ` : ''}
+                        ${own ? `<button class="social-neo-link-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>` : ''}
+                    </div>
                     ${message.text ? `<p>${renderLinkedMessageText(message.text)}</p>` : ''}
                     ${message.file ? filePreview(message.file) : ''}
-                    ${links.length ? `<div class="social-neo-link-row">${links.map((url) => `<a class="lux-ghost-btn" href="${escape(url)}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${escape(url.replace(/^https?:\/\//i, ''))}</a>`).join('')}</div>` : ''}
+                    ${links.length ? `<div class="social-neo-link-row">${links.map((url) => `<a class="social-neo-link-btn" href="${escape(url)}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${escape(url.replace(/^https?:\/\//i, ''))}</a>`).join('')}</div>` : ''}
                     <span>${escape(when(message.sentAt))}${own && seenByOthers.length ? ` • Seen by ${escape(seenByOthers.length)}` : ''}</span>
                 </article>
             `;
         };
         const renderGroupCallCard = () => {
             if (!call || text(call.mode || '') !== 'group' || text(call.chatId) !== text(chat.id)) return '';
+            const ui = runtime.ui || {};
+            if (ui.callOpen && inCurrentCall) {
+                if (!ui.callOverlayMinimized) return '';
+                return `
+                    <div class="social-neo-call-card social-neo-call-card-group is-minimized-hint">
+                        <div class="social-neo-section-head">
+                            <div>
+                                <strong>Group call in progress</strong>
+                                <span>${escape(text(ui.callMessage || 'Tap to reopen the call window.'))}</span>
+                            </div>
+                            <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="call-overlay-expand"><i class="fas fa-up-right-and-down-left-from-center"></i> Open call</button>
+                        </div>
+                    </div>
+                `;
+            }
+            if (!call.active) return '';
             return `
                 <div class="social-neo-call-card social-neo-call-card-group">
                     <div class="social-neo-section-head">
                         <div>
                             <strong>Group call room</strong>
-                            <span>${escape(text(runtime.ui?.callMessage || (call.active ? 'Group call live.' : 'No active call.')))}</span>
+                            <span>${escape(text(ui.callMessage || 'Group call live.'))}</span>
                         </div>
                         <div class="social-neo-inline">
-                            ${call.active && !inCurrentCall ? `<button class="lux-primary-btn" type="button" data-action="group-call-join" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-phone-volume"></i> Join</button>` : ''}
-                            ${call.active && inCurrentCall ? `<button class="lux-secondary-btn" type="button" data-action="group-call-leave" data-chat-id="${escape(text(chat.id))}">Leave</button>` : ''}
+                            ${!inCurrentCall ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-call-join" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-phone-volume"></i> Join</button>` : `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="group-call-leave" data-chat-id="${escape(text(chat.id))}">Leave</button>`}
                         </div>
                     </div>
                     <div class="social-neo-badge-row">
                         ${currentParticipants.map((participant) => `<span class="social-neo-pill">${escape(displayName(participant))}</span>`).join('') || '<span class="social-neo-pill">No participants yet</span>'}
                     </div>
-                    ${state().ui?.callOpen && text(state().ui?.activeCallChatId) === text(chat.id) ? `
-                        <div class="social-neo-call-stage social-neo-call-stage-group">
-                            <div class="social-neo-call-video">
-                                <video id="portal-call-local-video" autoplay playsinline muted></video>
-                                <span>Your camera</span>
-                            </div>
-                            <div class="social-neo-call-video is-placeholder">
-                                <div class="social-neo-call-placeholder">
-                                    <i class="fas fa-users"></i>
-                                    <span>Participants join this room live</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="social-neo-inline">
-                            <button class="lux-secondary-btn" type="button" data-action="call-mic">${state().ui?.callMicEnabled ? 'Mute mic' : 'Unmute mic'}</button>
-                            <button class="lux-secondary-btn" type="button" data-action="call-camera">${state().ui?.callCameraEnabled ? 'Hide camera' : 'Show camera'}</button>
-                        </div>
-                    ` : ''}
                 </div>
             `;
         };
+        const renderDirectCallHint = () => {
+            if (isGroupThread || !call || text(call.chatId) !== text(chat.id)) return '';
+            const ui = runtime.ui || {};
+            if (!ui.callOpen || !ui.callOverlayMinimized) return '';
+            return `
+                        <div class="social-neo-call-card is-minimized-hint">
+                            <div class="social-neo-section-head">
+                                <div>
+                                    <strong>Call in progress</strong>
+                                    <span>${escape(text(ui.callMessage || 'Tap to reopen the call window.'))}</span>
+                                </div>
+                                <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="call-overlay-expand"><i class="fas fa-up-right-and-down-left-from-center"></i> Open call</button>
+                            </div>
+                        </div>
+                    `;
+        };
+        const directSubtitle = [accountPresenceLabel(peer), accountSubtitle(peer)].filter(Boolean).join(' · ');
         return `
             <section class="social-neo-messages__thread-shell">
                 <div class="social-neo-messages__thread-chrome">
-                    ${isGroupThread ? `
-                        <div class="social-neo-thread-head social-neo-messages__thread-head is-group">
-                            ${bannerUrl ? `
-                                <div class="social-neo-thread-head__banner" aria-hidden="true">
-                                    <img src="${escape(bannerUrl)}" alt="">
-                                    <span class="social-neo-thread-head__banner-overlay"></span>
-                                </div>
-                            ` : ''}
-                            <div class="social-neo-thread-head__main">
-                                <div class="social-neo-person">
-                                    ${groupAvatar(group, 'social-neo-avatar-md')}
-                                    <div class="social-neo-thread-head__meta">
-                                        <strong>${escape(text(group.name || chatTitle(chat)))}</strong>
-                                        <span class="social-neo-thread-head__subtitle">${escape(memberIds.length)} members${group.description ? ` · ${escape(truncateText(group.description))}` : ''}</span>
-                                    </div>
-                                </div>
-                                <div class="social-neo-inline social-neo-messages__thread-actions">
-                                    ${activeMessages(chat).length > 8 ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i></button>` : ''}
-                                    <button class="lux-secondary-btn ${call && text(call.mode || '') === 'group' && call.active && !inCurrentCall ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="${call && text(call.mode || '') === 'group' && call.active && inCurrentCall ? 'group-call-leave' : 'group-call-join'}" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> ${call && text(call.mode || '') === 'group' && call.active ? (inCurrentCall ? 'Leave' : 'Join') : 'Call'}</button>
-                                </div>
+                    <div class="social-neo-thread-head social-neo-messages__thread-head ${isGroupThread ? 'is-group' : 'is-direct'}">
+                        ${isGroupThread && bannerUrl ? `
+                            <div class="social-neo-thread-head__banner" aria-hidden="true">
+                                <img src="${escape(bannerUrl)}" alt="">
+                                <span class="social-neo-thread-head__banner-overlay"></span>
                             </div>
-                        </div>
-                        <div class="social-neo-group-thread-toolbar is-compact" role="toolbar" aria-label="Group thread tools">
-                            <button class="lux-secondary-btn ${activeGroupPanel === 'search' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="search" aria-label="Search" title="Search"><i class="fas fa-search"></i></button>
-                            <button class="lux-secondary-btn ${activeGroupPanel === 'media' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="media" aria-label="Media" title="Media"><i class="fas fa-image"></i></button>
-                            <button class="lux-secondary-btn ${activeGroupPanel === 'members' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="members" aria-label="Members" title="Members"><i class="fas fa-users"></i></button>
-                            <button class="lux-secondary-btn ${activeGroupPanel === 'files' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="files" aria-label="Files" title="Files"><i class="fas fa-folder-open"></i></button>
-                            <button class="lux-secondary-btn ${activeGroupPanel === 'links' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="links" aria-label="Links" title="Links"><i class="fas fa-link"></i></button>
-                            <button class="lux-secondary-btn ${activeGroupPanel === 'invite' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="invite" aria-label="Invite" title="Invite"><i class="fas fa-user-plus"></i></button>
-                            <button class="lux-secondary-btn ${activeGroupPanel === 'settings' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="settings" aria-label="Settings" title="Settings"><i class="fas fa-sliders"></i></button>
-                        </div>
-                        ${activeGroupPanel === 'search' ? `
-                        <div class="social-neo-search-bar" role="search" aria-label="Search in conversation">
-                            <i class="fas fa-search social-neo-search-bar-icon" aria-hidden="true"></i>
-                            <input class="social-neo-search-bar-input" type="search" data-bind="group-thread-search" data-chat-id="${escape(text(chat.id))}" placeholder="Search messages..." value="${escape(searchQuery)}" autofocus>
-                            ${searchQuery && searchResults.length ? `<span class="social-neo-search-bar-counter">${escape(searchIndex + 1)} of ${escape(searchResults.length)}</span>` : searchQuery ? '<span class="social-neo-search-bar-counter social-neo-search-bar-counter-empty">0 results</span>' : ''}
-                            ${searchResults.length > 1 ? `
-                                <button class="lux-secondary-btn lux-secondary-btn-xs" type="button" data-action="group-thread-search-prev" data-chat-id="${escape(text(chat.id))}" aria-label="Previous match" title="Previous"><i class="fas fa-chevron-up"></i></button>
-                                <button class="lux-secondary-btn lux-secondary-btn-xs" type="button" data-action="group-thread-search-next" data-chat-id="${escape(text(chat.id))}" aria-label="Next match" title="Next"><i class="fas fa-chevron-down"></i></button>
-                            ` : ''}
-                            <button class="lux-secondary-btn lux-secondary-btn-xs" type="button" data-action="group-thread-search-clear" data-chat-id="${escape(text(chat.id))}" aria-label="Close search" title="Close"><i class="fas fa-times"></i></button>
-                        </div>
                         ` : ''}
-                    ` : `
-                        <div class="social-neo-thread-head social-neo-messages__thread-head">
+                        <div class="social-neo-thread-head__main">
                             <div class="social-neo-person">
-                                ${avatar(accountById((Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId()) || '') || { displayName: chatTitle(chat) }, 'social-neo-avatar-sm')}
-                                <div>
-                                    <strong>${escape(chatTitle(chat))}</strong>
-                                    <span>${escape('Direct conversation')}</span>
-                                    ${(() => {
-                                        const peer = accountById((Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId()) || '');
-                                        return peer ? `<small>${escape(accountPresenceLabel(peer))}</small>` : '';
-                                    })()}
+                                ${isGroupThread
+                                    ? groupAvatar(group, 'social-neo-avatar-md')
+                                    : avatar(peer, 'social-neo-avatar-md')}
+                                <div class="social-neo-thread-head__meta">
+                                    <strong>${escape(isGroupThread ? text(group.name || chatTitle(chat)) : chatTitle(chat))}</strong>
+                                    <span class="social-neo-thread-head__subtitle">${escape(isGroupThread
+                                        ? `${memberIds.length} members${group.description ? ` · ${truncateText(group.description)}` : ''}`
+                                        : (directSubtitle || 'Direct conversation'))}</span>
                                 </div>
                             </div>
                             <div class="social-neo-inline social-neo-messages__thread-actions">
-                                ${activeMessages(chat).length > 8 ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i> Latest</button>` : ''}
-                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="call-start" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> Call</button>
-                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="chat-hide-open" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-eye-slash"></i></button>
+                                ${activeMessages(chat).length > 8 ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i></button>` : ''}
+                                ${isGroupThread
+                                    ? `<button class="social-neo-btn ${call && text(call.mode || '') === 'group' && call.active && !inCurrentCall ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="${call && text(call.mode || '') === 'group' && call.active && inCurrentCall ? 'group-call-leave' : 'group-call-join'}" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> ${call && text(call.mode || '') === 'group' && call.active ? (inCurrentCall ? 'Leave' : 'Join') : 'Call'}</button>`
+                                    : `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="call-start" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> Call</button>
+                                       <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="chat-hide-open" data-chat-id="${escape(text(chat.id))}" aria-label="Hide conversation"><i class="fas fa-eye-slash"></i></button>`}
                             </div>
                         </div>
-                    `}
+                    </div>
+                    ${renderThreadToolbar()}
+                    ${renderThreadSearchBar()}
                 </div>
                 <div class="social-neo-messages__thread-scroll">
                     <div class="social-neo-thread-messages social-neo-messages__thread-stream" data-lux-transparency-exempt="1">
                         ${activeMessages(chat).length ? activeMessages(chat).map(renderMessageCard).join('') : `<div class="social-neo-empty">No messages yet.</div>`}
                     </div>
                     ${isGroupThread ? renderGroupCallCard() : ''}
-                    ${!isGroupThread && call && (text(call.chatId) === text(chat.id) || text(state().ui?.activeCallChatId) === text(chat.id)) ? `
-                        <div class="social-neo-call-card">
-                            <div>
-                                <strong>Call status</strong>
-                                <span>${escape(text(state().ui?.callMessage || call.status || 'Ready'))}</span>
-                            </div>
-                            <div class="social-neo-call-actions">
-                                ${isIncomingCall(call)
-                                    ? `<button class="lux-primary-btn" type="button" data-action="call-accept" data-chat-id="${escape(text(chat.id))}">Accept</button>
-                                       <button class="lux-secondary-btn" type="button" data-action="call-decline" data-chat-id="${escape(text(chat.id))}">Decline</button>`
-                                    : `<button class="lux-secondary-btn" type="button" data-action="call-end" data-chat-id="${escape(text(chat.id))}">End</button>`
-                                }
-                            </div>
-                            ${state().ui?.callOpen ? `
-                                <div class="social-neo-call-stage">
-                                    <div class="social-neo-call-video">
-                                        <video id="portal-call-remote-video" autoplay playsinline></video>
-                                        <span>Remote video</span>
-                                    </div>
-                                    <div class="social-neo-call-video">
-                                        <video id="portal-call-local-video" autoplay playsinline muted></video>
-                                        <span>Local preview</span>
-                                    </div>
-                                </div>
-                                <div class="social-neo-inline">
-                                    <button class="lux-secondary-btn" type="button" data-action="call-mic">${state().ui?.callMicEnabled ? 'Mute mic' : 'Unmute mic'}</button>
-                                    <button class="lux-secondary-btn" type="button" data-action="call-camera">${state().ui?.callCameraEnabled ? 'Hide camera' : 'Show camera'}</button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    ` : ''}
+                    ${renderDirectCallHint()}
                 </div>
                 <form class="${messageComposeFormClass} social-neo-messages__composer" data-form="send-message" data-chat-id="${escape(text(chat.id))}">
                     ${renderFileChip(messageFile)}
                     <div class="${messageComposeRowClass}">
-                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="message-attach" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-paperclip"></i></button>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="message-attach" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-paperclip"></i></button>
                         <input class="${messageComposeInputClass}" id="${escape(messageBodyId)}" name="messageBody" placeholder="Aa" value="${escape(messageDraft)}">
-                        <button class="lux-primary-btn lux-secondary-btn-sm" type="submit"><i class="fas fa-paper-plane"></i></button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="submit"><i class="fas fa-paper-plane"></i></button>
                     </div>
                     <input id="${escape(messageFileId)}" name="messageFile" type="file" hidden>
                 </form>
@@ -350,7 +322,7 @@
         const chat = visibleChats.find((entry) => text(entry.id) === activeChatId) || visibleChats[0] || null;
         const group = groupForChat(chat);
         const isGroupThread = Boolean(chat && text(chat?.type || '') === 'group' && group);
-        const railOpen = runtime.ui?.groupThreadRailOpen !== false;
+        const railOpen = isGroupThread && runtime.ui?.groupThreadRailOpen !== false;
         const renderChatAvatar = (entry) => {
             const entryGroup = groupForChat(entry);
             if (text(entry?.type || '') === 'group' && entryGroup) return groupAvatar(entryGroup, 'social-neo-avatar-sm');
@@ -380,8 +352,8 @@
                                 <span class="social-neo-messages__inbox-subtitle">${escape(inboxSubtitle)}</span>
                             </div>
                             <div class="social-neo-messages__inbox-toolbar-actions">
-                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn-icon" type="button" aria-label="Find people" data-action="panel-community" data-community-tab="people"><i class="fas fa-search" aria-hidden="true"></i></button>
-                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn-icon social-neo-messages__inbox-alerts-btn" type="button" data-action="panel-alerts" data-alerts-filter="unread" aria-label="${escape(alertsAriaLabel)}"><i class="fas fa-bell" aria-hidden="true"></i>${totalUnreadAlerts ? `<span class="social-neo-messages__inbox-alerts-badge" aria-hidden="true">${escape(alertsBadgeLabel)}</span>` : ''}</button>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-btn-icon" type="button" aria-label="Find people" data-action="panel-community" data-community-tab="people"><i class="fas fa-search" aria-hidden="true"></i></button>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-btn-icon social-neo-messages__inbox-alerts-btn" type="button" data-action="panel-alerts" data-alerts-filter="unread" aria-label="${escape(alertsAriaLabel)}"><i class="fas fa-bell" aria-hidden="true"></i>${totalUnreadAlerts ? `<span class="social-neo-messages__inbox-alerts-badge" aria-hidden="true">${escape(alertsBadgeLabel)}</span>` : ''}</button>
                             </div>
                         </div>
                         <div class="social-neo-messages__inbox-tabs-row">
@@ -438,7 +410,7 @@
                             <div class="social-neo-messages__inbox-empty" role="status">
                                 <strong class="social-neo-messages__inbox-empty-title">${escape(inboxEmptyTitle)}</strong>
                                 <p class="social-neo-messages__inbox-empty-copy">${escape(inboxEmptyCopy)}</p>
-                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="panel-community" data-community-tab="people">Find people</button>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-community" data-community-tab="people">Find people</button>
                             </div>
                         `}
                     </div>
@@ -449,6 +421,7 @@
         `;
     }
 
+
     const MESSAGES_OWNED_DIALOG_KINDS = new Set(['message-delete', 'chat-hide']);
 
     function renderMessagesOwnedDialog(runtime, dialog) {
@@ -458,22 +431,32 @@
         const dialogChat = ['message-delete', 'chat-hide'].includes(kind)
             ? activeChats().find((item) => text(item.id) === text(dialog.chatId))
             : null;
-        const dialogMessage = kind === 'message-delete' && Array.isArray(dialogChat?.messages)
-            ? dialogChat.messages.find((item) => text(item.id) === text(dialog.messageId))
-            : null;
         if (kind === 'message-delete') {
+            const dialogMessage = dialogChat
+                ? activeMessages(dialogChat).find((item) => text(item.id) === text(dialog.messageId))
+                : null;
             if (!dialogChat || !dialogMessage) return '';
+            const preview = escape(text(dialogMessage.text || dialogMessage.file?.name || 'Message attachment'));
+            const head = typeof socialNeoDialogHead === 'function'
+                ? socialNeoDialogHead('Remove message', 'This will delete the message from the chat thread.', { icon: 'fas fa-trash' })
+                : '';
+            const actions = typeof socialNeoDialogActions === 'function'
+                ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Remove message', submitTone: 'danger' })
+                : `<div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">Remove message</button>
+                    </div>`;
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card" data-form="dialog-message-delete" data-action="noop">
-                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Remove message', 'This will delete the message from the chat thread.') : ''}
-                    <div class="lux-glass-dialog-preview">
-                        ${escape(text(dialogMessage.text || dialogMessage.file?.name || 'Message attachment'))}
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="dialog-message-delete" data-action="noop" data-lux-transparency-exempt="1">
+                    ${head}
+                    <div class="lux-glass-dialog-body">
+                        <div class="lux-glass-dialog-preview">${preview}</div>
+                        <label class="social-neo-item-line lux-glass-dialog-checkbox-line">
+                            <input type="checkbox" name="confirmMessageDelete" value="yes">
+                            <span class="lux-glass-dialog-checkbox-copy">Remove this message from the conversation.</span>
+                        </label>
                     </div>
-                    <label class="social-neo-item-line lux-glass-dialog-checkbox-line">
-                        <input type="checkbox" name="confirmMessageDelete" value="yes">
-                        <span class="lux-glass-dialog-checkbox-copy">Remove this message from the conversation.</span>
-                    </label>
-                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Remove message' }) : ''}
+                    ${actions}
                     <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
                     <input type="hidden" name="messageId" value="${escape(text(dialogMessage.id))}">
                 </form>
@@ -481,17 +464,28 @@
         }
         if (kind === 'chat-hide') {
             if (!dialogChat) return '';
+            const head = typeof socialNeoDialogHead === 'function'
+                ? socialNeoDialogHead('Hide conversation', 'This only removes the chat from your inbox view.', { icon: 'fas fa-eye-slash' })
+                : '';
+            const actions = typeof socialNeoDialogActions === 'function'
+                ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Hide from inbox' })
+                : `<div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">Hide from inbox</button>
+                    </div>`;
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card" data-form="dialog-chat-hide" data-action="noop">
-                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Hide conversation', 'This only removes the chat from your inbox view.') : ''}
-                    <div class="lux-glass-dialog-preview">
-                        <strong class="lux-glass-dialog-preview-title">${escape(chatTitle(dialogChat))}</strong>
-                        <div class="social-neo-muted social-neo-muted-mt-6">${escape(chatPreview(dialogChat))}</div>
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="dialog-chat-hide" data-action="noop" data-lux-transparency-exempt="1">
+                    ${head}
+                    <div class="lux-glass-dialog-body">
+                        <div class="lux-glass-dialog-preview">
+                            <strong class="lux-glass-dialog-preview-title">${escape(chatTitle(dialogChat))}</strong>
+                            <div class="social-neo-muted social-neo-muted-mt-6">${escape(chatPreview(dialogChat))}</div>
+                        </div>
+                        <div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">
+                            Chat history will stay saved. This only hides the conversation from your inbox until you open it again or a new message arrives.
+                        </div>
                     </div>
-                    <div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">
-                        Chat history will stay saved. This only hides the conversation from your inbox until you open it again or a new message arrives.
-                    </div>
-                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Hide from inbox' }) : ''}
+                    ${actions}
                     <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
                 </form>
             </div>`;
@@ -563,22 +557,63 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
             });
         }
 
+        if (action === 'call-accept') {
+            const chatId = text(trigger.getAttribute('data-chat-id'));
+            return withBusy(() => acceptPortalCall(chatId));
+        }
+
+        if (action === 'call-decline') {
+            const chatId = text(trigger.getAttribute('data-chat-id'));
+            locallyDismissCallOverlay(chatId, 'declined');
+            return withBusy(() => declinePortalCall(chatId));
+        }
+
+        if (action === 'call-end') {
+            const chatId = text(trigger.getAttribute('data-chat-id'));
+            locallyDismissCallOverlay(chatId, 'ended');
+            return withBusy(() => endPortalCall(chatId));
+        }
+
         if (action === 'call-start') return withBusy(() => startPortalCall(trigger.getAttribute('data-chat-id')));
-
-        if (action === 'call-accept') return withBusy(() => acceptPortalCall(trigger.getAttribute('data-chat-id')));
-
-        if (action === 'call-decline') return withBusy(() => declinePortalCall(trigger.getAttribute('data-chat-id')));
-
-        if (action === 'call-end') return withBusy(() => endPortalCall(trigger.getAttribute('data-chat-id')));
 
         if (action === 'call-mic') {
             if (typeof togglePortalCallMic === 'function') togglePortalCallMic();
+            renderSocialCallOverlay();
             return;
         }
 
         if (action === 'call-camera') {
             if (typeof togglePortalCallCamera === 'function') togglePortalCallCamera();
+            renderSocialCallOverlay();
             return;
+        }
+
+        if (action === 'call-overlay-minimize') {
+            state().ui.callOverlayMinimized = true;
+            renderSocialCallOverlay();
+            renderSocialPageNow('call-overlay-minimize');
+            return true;
+        }
+
+        if (action === 'call-overlay-expand') {
+            state().ui.callOverlayMinimized = false;
+            renderSocialCallOverlay();
+            renderSocialPageNow('call-overlay-expand');
+            return true;
+        }
+
+        if (action === 'call-overlay-close') {
+            const chatId = text(trigger.getAttribute('data-chat-id') || state().ui?.activeCallChatId || state().ui?.activeChatId);
+            const call = callForChat(chatId) || currentCall();
+            const { incoming, outgoing } = resolveCallOverlayMode(call, state().ui);
+            const isGroup = text(call?.mode || '') === 'group';
+            locallyDismissCallOverlay(chatId, incoming ? 'declined' : 'ended');
+            return withBusy(async () => {
+                if (incoming) await declinePortalCall(chatId);
+                else if (isGroup && typeof leavePortalGroupCall === 'function') await leavePortalGroupCall(chatId);
+                else await endPortalCall(chatId);
+                renderSocialPageNow('call-overlay-close');
+            });
         }
         return false;
     }
@@ -683,5 +718,269 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
     window.isSocialMessagesInputTarget = isSocialMessagesInputTarget;
     window.handleSocialMessagesChange = handleSocialMessagesChange;
     window.isSocialMessagesChangeTarget = isSocialMessagesChangeTarget;
+
+    const SOCIAL_CALL_OVERLAY_ID = 'social-neo-call-overlay';
+    const SOCIAL_CALL_PORTAL_CSS = 'assets/css/layout-portal.css?v=20260727-socshell13';
+    let socialCallOverlaySignature = '';
+
+    function ensureSocialCallPortalCss() {
+        if (typeof document === 'undefined') return;
+        if (document.querySelector('link[data-kiu-layout-portal]')) return;
+        const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some((link) =>
+            String(link.getAttribute('href') || '').includes('layout-portal.css')
+        );
+        if (existing) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = SOCIAL_CALL_PORTAL_CSS;
+        link.setAttribute('data-kiu-layout-portal', '1');
+        document.head.appendChild(link);
+    }
+
+    function resolveCallOverlayMode(call, ui) {
+        const callMode = text(ui?.callMode || '');
+        const startedBy = text(call?.startedBy || '');
+        const userId = currentUserId();
+        const outgoing = callMode === 'outgoing'
+            || (text(call?.status) === 'ringing' && startedBy === userId);
+        const incoming = !outgoing && (
+            callMode === 'incoming'
+            || (Boolean(call) && Boolean(startedBy) && isIncomingCall(call))
+        );
+        return { incoming, outgoing };
+    }
+
+    function locallyDismissCallOverlay(chatId, status = 'declined') {
+        const runtime = state();
+        const ui = runtime.ui || {};
+        const id = text(chatId);
+        ui.callOverlayMinimized = false;
+        ui.callOpen = false;
+        ui.callMode = '';
+        ui.activeCallChatId = '';
+        ui.activeCallRemoteUserId = '';
+        ui.callStatus = status;
+        ui.callMessage = status === 'declined' ? 'Call declined.' : 'Call ended.';
+        if (Array.isArray(runtime.calls)) {
+            runtime.calls = runtime.calls.map((entry) => (
+                text(entry.chatId) === id ? { ...entry, status, active: false } : entry
+            ));
+        }
+        if (typeof window.finalizePortalMessengerCall === 'function') {
+            try { window.finalizePortalMessengerCall(); } catch (error) {}
+        }
+        socialCallOverlaySignature = '';
+        renderSocialCallOverlay();
+    }
+
+    function resolveSocialCallOverlayContext() {
+        const runtime = state();
+        const ui = runtime.ui || {};
+        const chatId = text(ui.activeCallChatId || ui.activeChatId || '');
+        const chat = activeChats().find((entry) => text(entry.id) === chatId) || activeChat();
+        if (!chat) return null;
+        const call = callForChat(chat.id) || currentCall();
+        const { incoming, outgoing } = resolveCallOverlayMode(call, ui);
+        const open = Boolean(ui.callOpen && text(ui.activeCallChatId || chat.id) === text(chat.id));
+        if (!open && !incoming) return null;
+        return {
+            chat,
+            call,
+            incoming,
+            outgoing,
+            open,
+            minimized: Boolean(ui.callOverlayMinimized),
+            ui
+        };
+    }
+
+    function ensureSocialCallOverlayRoot() {
+        let root = document.getElementById(SOCIAL_CALL_OVERLAY_ID);
+        if (!root) {
+            root = document.createElement('div');
+            root.id = SOCIAL_CALL_OVERLAY_ID;
+            root.className = 'portal-call-overlay';
+            root.setAttribute('data-lux-transparency-exempt', '1');
+            document.body.appendChild(root);
+            if (!root.dataset.kiuCallEventsBound) {
+                root.dataset.kiuCallEventsBound = '1';
+                const routeCallOverlayClick = (event) => {
+                    if (!root.classList.contains('is-open')) return;
+                    const handler = window.__kiuSocialPageHandleClick;
+                    if (typeof handler === 'function') handler(event);
+                };
+                root.addEventListener('click', routeCallOverlayClick);
+            }
+        }
+        return root;
+    }
+
+    function buildSocialCallOverlayHtml(context) {
+        const { chat, call, incoming, outgoing, minimized, ui } = context;
+        const chatId = text(chat.id);
+        const isGroup = text(call?.mode || '') === 'group' || text(chat.type || '') === 'group';
+        const group = isGroup ? groupForChat(chat) : null;
+        const participants = isGroup ? currentCallParticipants(call) : [];
+        const peerId = !isGroup
+            ? (Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId())
+            : '';
+        const peer = peerId ? accountById(peerId) : null;
+        const peerName = displayName(peer) || chatTitle(chat);
+        const title = isGroup ? text(group?.name || chatTitle(chat)) : chatTitle(chat);
+        const statusText = isGroup
+            ? `${participants.length || 0} in call · ${text(ui.callMessage || 'Group call live.')}`
+            : text(ui.callMessage || call?.status || (incoming ? 'Incoming video call' : outgoing ? 'Calling...' : 'Connected'));
+        const remoteInitial = escape(text(peerName).slice(0, 1).toUpperCase() || 'U');
+        const peerRole = peer ? roleLabel(peer) : '';
+        const callRuntime = window.__kiuSocialCallRuntime || {};
+        const hasRemoteVideo = Boolean(callRuntime.remoteStream);
+        const micOn = Boolean(ui.callMicEnabled);
+        const camOn = Boolean(ui.callCameraEnabled);
+
+        const headAction = `
+            <button type="button" class="portal-msg-ghost-btn" data-action="call-overlay-close" data-chat-id="${escape(chatId)}" aria-label="Close call"><i class="fas fa-times"></i></button>
+            ${minimized
+                ? `<button type="button" class="portal-msg-ghost-btn" data-action="call-overlay-expand" aria-label="Expand call"><i class="fas fa-up-right-and-down-left-from-center"></i></button>`
+                : `<button type="button" class="portal-msg-ghost-btn" data-action="call-overlay-minimize" aria-label="Minimize call"><i class="fas fa-window-minimize"></i></button>`
+            }`;
+
+        const controlButtons = incoming ? `
+            <div class="portal-call-actions">
+                <button type="button" class="lux-primary-btn portal-msg-inline-btn" data-action="call-accept" data-chat-id="${escape(chatId)}"><i class="fas fa-phone"></i> Accept</button>
+                <button type="button" class="portal-call-hangup" data-action="call-decline" data-chat-id="${escape(chatId)}"><i class="fas fa-phone-slash"></i> Decline</button>
+            </div>
+        ` : outgoing ? `
+            <div class="portal-call-controls">
+                <button type="button" class="portal-call-control ${micOn ? 'is-active' : ''}" data-action="call-mic"><i class="fas fa-microphone${micOn ? '' : '-slash'}"></i> ${micOn ? 'Mic On' : 'Mic Off'}</button>
+                <button type="button" class="portal-call-control ${camOn ? 'is-active' : ''}" data-action="call-camera"><i class="fas fa-video${camOn ? '' : '-slash'}"></i> ${camOn ? 'Camera On' : 'Camera Off'}</button>
+            </div>
+            <div class="portal-call-actions">
+                <button type="button" class="portal-call-hangup" data-action="call-end" data-chat-id="${escape(chatId)}"><i class="fas fa-phone-slash"></i> Cancel</button>
+            </div>
+        ` : `
+            <div class="portal-call-controls">
+                <button type="button" class="portal-call-control ${micOn ? 'is-active' : ''}" data-action="call-mic"><i class="fas fa-microphone${micOn ? '' : '-slash'}"></i> ${micOn ? 'Mic On' : 'Mic Off'}</button>
+                <button type="button" class="portal-call-control ${camOn ? 'is-active' : ''}" data-action="call-camera"><i class="fas fa-video${camOn ? '' : '-slash'}"></i> ${camOn ? 'Camera On' : 'Camera Off'}</button>
+            </div>
+            <div class="portal-call-actions">
+                ${isGroup
+                    ? `<button type="button" class="portal-call-hangup" data-action="group-call-leave" data-chat-id="${escape(chatId)}"><i class="fas fa-phone-slash"></i> Leave</button>`
+                    : `<button type="button" class="portal-call-hangup" data-action="call-end" data-chat-id="${escape(chatId)}"><i class="fas fa-phone-slash"></i> End Call</button>`
+                }
+            </div>
+        `;
+
+        const stage = isGroup ? `
+            <div class="portal-call-stage is-group">
+                <div class="portal-call-local-card">
+                    <video id="portal-call-local-video" class="portal-call-local-video" autoplay playsinline muted></video>
+                    <div class="portal-call-local-badge">You</div>
+                    <div class="portal-call-local-status">${camOn ? 'Camera on' : 'Camera off'} · ${micOn ? 'Mic live' : 'Mic muted'}</div>
+                </div>
+                <div class="portal-call-local-card portal-call-local-card-placeholder">
+                    <div class="portal-call-remote-avatar"><i class="fas fa-users"></i></div>
+                    <div class="portal-call-remote-name">${participants.length ? `${participants.length} live` : 'Waiting'}</div>
+                    <div class="portal-call-remote-note">${escape(participants.map((participant) => displayName(participant)).filter(Boolean).slice(0, 3).join(', ') || 'Participants join live')}</div>
+                </div>
+            </div>
+        ` : `
+            <div class="portal-call-stage">
+                <div class="portal-call-remote">
+                    <video id="portal-call-remote-video" class="portal-call-remote-video" autoplay playsinline></video>
+                    <div class="portal-call-remote-avatar${hasRemoteVideo ? ' is-hidden' : ''}">${remoteInitial}</div>
+                    <div class="portal-call-remote-name">${escape(peerName)}</div>
+                    ${peerRole ? `<div class="portal-call-remote-role">${escape(peerRole)}</div>` : ''}
+                    <div class="portal-call-remote-note">${escape(statusText)}</div>
+                </div>
+                <div class="portal-call-local-card">
+                    <video id="portal-call-local-video" class="portal-call-local-video" autoplay playsinline muted></video>
+                    <div class="portal-call-local-badge">You</div>
+                    <div class="portal-call-local-status">${camOn ? 'Camera on' : 'Camera off'} · ${micOn ? 'Mic live' : 'Mic muted'}</div>
+                </div>
+            </div>
+        `;
+
+        return `
+            <div class="portal-call-backdrop" data-action="call-overlay-minimize" aria-hidden="true"></div>
+            <div class="portal-call-window" role="dialog" aria-label="${escape(isGroup ? 'Group video call' : 'Video call')}">
+                <div class="portal-call-head">
+                    <div>
+                        <div class="portal-call-title">${escape(isGroup ? 'Group Call' : 'Video Call')}</div>
+                        <div class="portal-call-copy">${escape(title)} &middot; ${escape(statusText)}</div>
+                    </div>
+                    <div class="portal-call-head-actions">
+                        ${headAction}
+                    </div>
+                </div>
+                <div class="portal-call-body">
+                    ${stage}
+                    <div class="portal-call-side">
+                        <div class="portal-call-card">
+                            <div class="portal-call-card-title">${incoming ? 'Incoming Call' : outgoing ? 'Calling' : 'Call Controls'}</div>
+                            ${controlButtons}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSocialCallOverlay() {
+        const context = resolveSocialCallOverlayContext();
+        const signature = context
+            ? [
+                text(context.chat.id),
+                context.incoming ? 'incoming' : context.outgoing ? 'outgoing' : 'active',
+                context.minimized ? 'min' : 'max',
+                context.ui.callMicEnabled ? 'mic1' : 'mic0',
+                context.ui.callCameraEnabled ? 'cam1' : 'cam0',
+                text(context.ui.callMessage || ''),
+                (currentCallParticipants(context.call) || []).map((entry) => text(entry?.id || entry)).join(',')
+            ].join('|')
+            : '';
+        const root = ensureSocialCallOverlayRoot();
+        if (!context) {
+            socialCallOverlaySignature = '';
+            root.className = 'portal-call-overlay';
+            root.innerHTML = '';
+            root.hidden = true;
+            return;
+        }
+        ensureSocialCallPortalCss();
+        if (signature === socialCallOverlaySignature && root.classList.contains('is-open')) {
+            window.requestAnimationFrame(() => {
+                try {
+                    if (typeof window.attachPortalCallLocalPreview === 'function') window.attachPortalCallLocalPreview();
+                    if (typeof window.attachPortalCallRemotePreview === 'function') window.attachPortalCallRemotePreview();
+                } catch (error) {}
+            });
+            return;
+        }
+        socialCallOverlaySignature = signature;
+        root.hidden = false;
+        root.className = `portal-call-overlay is-open${context.minimized ? ' is-minimized' : ''}`;
+        root.innerHTML = buildSocialCallOverlayHtml(context);
+        window.requestAnimationFrame(() => {
+            try {
+                if (typeof window.attachPortalCallLocalPreview === 'function') window.attachPortalCallLocalPreview();
+                if (typeof window.attachPortalCallRemotePreview === 'function') window.attachPortalCallRemotePreview();
+            } catch (error) {}
+        });
+    }
+
+    window.renderSocialCallOverlay = renderSocialCallOverlay;
+    window.ensureSocialCallPortalCss = ensureSocialCallPortalCss;
+    window.dismissSocialCallOverlay = function dismissSocialCallOverlay() {
+        const context = resolveSocialCallOverlayContext();
+        if (!context) return Promise.resolve();
+        const chatId = text(context.chat.id);
+        const isGroup = text(context.call?.mode || '') === 'group' || text(context.chat.type || '') === 'group';
+        locallyDismissCallOverlay(chatId, context.incoming ? 'declined' : 'ended');
+        if (context.incoming) return withBusy(() => declinePortalCall(chatId));
+        if (isGroup && typeof leavePortalGroupCall === 'function') {
+            return withBusy(() => leavePortalGroupCall(chatId));
+        }
+        return withBusy(() => endPortalCall(chatId));
+    };
 
 })();

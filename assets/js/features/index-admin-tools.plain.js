@@ -110,7 +110,7 @@ function ensureAdminToolsPage() {
                     </section>
 
                     <div id="kiu-subject-builder-modal" class="registration-structured-modal-backdrop lms-glass-dialog-overlay" data-lux-transparency-exempt="1" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="subject-builder-modal-title">
-                        <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card" data-form="create-subject" data-action="noop" data-lux-transparency-exempt="1" data-lux-glass-root="1">
+                        <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card" data-form="create-subject" data-action="noop" data-lux-transparency-exempt="1">
                             <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                                 <div class="lux-glass-dialog-heading">
                                     <strong class="lux-glass-dialog-title"><i class="fas fa-book-open" aria-hidden="true"></i> <span id="subject-builder-modal-title">Add Subject</span></strong>
@@ -168,7 +168,7 @@ function ensureAdminToolsPage() {
                                         <input id="subject-search-input" name="subject_search_input" type="text" class="social-neo-input lux-control lux-admin-tools-prereq-search" placeholder="Search for a prerequisite course..." data-admin-tools-prereq-search="1">
                                     </label>
                                     <div id="subject-search-results" class="lux-list lux-admin-tools-prereq-results" hidden></div>
-                                    <label class="social-neo-checkbox" for="has-condition-checkbox">
+                                    <label class="lux-checkbox social-neo-checkbox" for="has-condition-checkbox">
                                         <input id="has-condition-checkbox" name="has_condition_checkbox" type="checkbox" data-admin-tools-toggle-condition="1">
                                         <span>Require a prerequisite course</span>
                                     </label>
@@ -185,7 +185,7 @@ function ensureAdminToolsPage() {
                                 </div>
                                 <div class="social-neo-divider" aria-hidden="true"></div>
                                 <div data-builder-section="availability">
-                                    <div id="new-subject-semester-parity-hint" class="lux-card-meta lux-admin-tools-parity-hint lux-admin-tools-parity-callout"></div>
+                                    <div id="new-subject-semester-parity-hint" class="registration-structured-help lux-admin-tools-parity-callout"></div>
                                 </div>
                             </div>
                             <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions lux-admin-tools-submit-row">
@@ -311,13 +311,8 @@ function ensureAdminToolsPage() {
 
         syncCurriculumSubjectBuilderTarget(getCurrentFaculty());
         if (typeof populateAntiReqDropdown === 'function') populateAntiReqDropdown();
-        if (typeof initCurriculumSemesterPicker === 'function') {
-            initCurriculumSemesterPicker({
-                onChange: () => {
-                    if (typeof ensureSubjectSemesterParityHint === 'function') ensureSubjectSemesterParityHint();
-                    if (typeof updateSubjectCodePreview === 'function') updateSubjectCodePreview();
-                }
-            });
+        if (typeof ensureCurriculumSemesterPickerInitialized === 'function') {
+            ensureCurriculumSemesterPickerInitialized();
         }
         if (typeof initCurriculumLibraryRowScroll === 'function') initCurriculumLibraryRowScroll(shell);
         if (typeof ensureSubjectSemesterParityHint === 'function') ensureSubjectSemesterParityHint();
@@ -363,6 +358,9 @@ function ensureAdminToolsPage() {
         } else if (typeof ensurePortalRegistrationRuntimeLoaded === 'function') {
             ensurePortalRegistrationRuntimeLoaded().then((loaded) => {
                 if (!loaded) return;
+                if (typeof ensureCurriculumSemesterPickerInitialized === 'function') {
+                    ensureCurriculumSemesterPickerInitialized();
+                }
                 refreshRegistrationWorkspace();
             });
         } else {

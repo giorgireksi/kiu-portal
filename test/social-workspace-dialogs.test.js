@@ -169,4 +169,73 @@ describe('social-workspace-dialogs', () => {
         expect(html).toContain('lux-glass-dialog');
         expect(html).toContain('data-project-id');
     });
+
+    it('wires PROJECT_TASK_STATUS_EDGE_COLOR for health dialog status rows', () => {
+        const peel = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-dialogs.js'), 'utf8');
+        const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
+        const dialogsBlock = workspace.slice(workspace.indexOf('/* ── Task detail / risk / health dialogs: social-workspace-dialogs.js ── */'));
+        expect(peel).toMatch(/\bPROJECT_TASK_STATUS_EDGE_COLOR\b/);
+        expect(dialogsBlock).toMatch(/\bPROJECT_TASK_STATUS_EDGE_COLOR\b/);
+
+        const colors = {
+            todo: '#3b82f6',
+            'in-progress': '#f59e0b',
+            blocked: '#f43f5e',
+            done: '#10b981'
+        };
+        const healthModel = {
+            projectId: 'p1',
+            projectName: 'Demo',
+            currency: 'USD',
+            statusCounts: { todo: 1, 'in-progress': 0, blocked: 0, done: 0 },
+            totalTasks: 1,
+            donePct: 0,
+            planned: 0,
+            spent: 0,
+            capValue: 0,
+            overCap: false,
+            noBudgetLine: true,
+            budgetTail: null,
+            overdueCount: 0,
+            dueSoonCount: 0,
+            blockedCount: 0,
+            scheduleStartAt: null,
+            criticalIds: [],
+            shortestFinish: null,
+            plannedFinishLabel: '',
+            lastDueAt: null,
+            noEstOpen: 0,
+            overEstimateCount: 0,
+            remainingHours: 0,
+            loggedHours: 0,
+            unassignedCount: 0,
+            readyN: 0,
+            waitingN: 0,
+            riskSummary: '',
+            topRisks: [],
+            linkCount: 0,
+            hasCycle: false,
+            bottleneckTitle: '',
+            bottleneckCount: 0,
+            groupCount: 0,
+            loadList: [],
+            maxLoad: 0,
+            issues: [],
+            healthLevel: 'ok',
+            healthLabel: 'Healthy',
+            topIssue: '',
+            dataReadiness: 'ok',
+            dataChecks: [],
+            whyBits: [],
+            weekActionsTop: [],
+            fixSamples: [],
+            taskTitles: { t1: 'Task one' },
+            canContribute: true,
+            riskCount: 0
+        };
+        const loaded = loadDialogs({ PROJECT_TASK_STATUS_EDGE_COLOR: colors });
+        loaded.sandbox.window.buildProjectHealthModel = () => healthModel;
+        const html = loaded.api.renderProjectHealthDialog(loaded.runtime, { type: 'project-health', projectId: 'p1' });
+        expect(html).toContain(`background:${colors.todo}`);
+    });
 });

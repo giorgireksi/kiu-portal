@@ -91,6 +91,43 @@ describe('social-page-feed-runtime peel', () => {
         expect(main).toMatch(/renderCommentThread,/);
     });
 
+    it('exports lazy stub identities for groups/events/pages module checks', () => {
+        const feed = readSource('assets/js/pages/social-page-feed-runtime.js');
+        const main = readSource('assets/js/pages/social-page.js');
+        for (const name of [
+            'renderGroupsHero',
+            'renderGroupCreateDialog',
+            'renderEventsHero',
+            'renderEventCreateDialog',
+            'renderPagesHero',
+            'renderPageCreateDialog',
+            'renderWorkspaceHero',
+            'renderPortfolioHero',
+            'renderProjectTaskFormFields',
+        ]) {
+            expect(feed, `feed api missing ${name}`).toMatch(new RegExp(`\\b${name}\\b`));
+            expect(main, `social-page.js missing ${name} destructure`).toMatch(new RegExp(`\\b${name}\\b`));
+        }
+    });
+
+    it('dispatches workspace panels from KiuSocialWorkspace instead of window stubs', () => {
+        const feed = readSource('assets/js/pages/social-page-feed-runtime.js');
+        expect(feed).toMatch(/resolveWorkspacePanelExport/);
+        expect(feed).toMatch(/resolveWorkspacePanelExport\('renderProjectsWorkspacePanelClassic'\)/);
+        expect(feed).toMatch(/resolveWorkspacePanelExport\('renderProjectsPanel'\)/);
+        expect(feed).toMatch(/impl !== renderProjectsWorkspacePanelClassic/);
+        expect(feed).not.toMatch(/window\.renderProjectsWorkspacePanelClassic\(\)/);
+    });
+
+    it('ensureSocialWorkspaceModule waits for existing script tags', () => {
+        const main = readSource('assets/js/pages/social-page.js');
+        const start = main.indexOf('function ensureSocialWorkspaceModule()');
+        const end = main.indexOf('function hasSocialWorkspaceModule()', start);
+        const block = main.slice(start, end);
+        expect(block).toMatch(/waitForDynamicScript\(existing\)/);
+        expect(block).not.toMatch(/if \(document\.querySelector\(`script\[src="\$\{url\}"\]`\)\) \{ resolve\(\); return; \}/);
+    });
+
     it('exports projectRiskScaleRank for workspace hooks', () => {
         const feed = readSource('assets/js/pages/social-page-feed-runtime.js');
         const main = readSource('assets/js/pages/social-page.js');

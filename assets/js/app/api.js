@@ -20,6 +20,13 @@ function getKiuPortalBackendDefaultUrl() {
 }
 var KIU_PORTAL_BACKEND_DEFAULT_URL = getKiuPortalBackendDefaultUrl();
 var KIU_PORTAL_SESSION_TOKEN_KEY = 'KIU_PORTAL_SESSION_TOKEN';
+function getPortalSessionToken() {
+    try {
+        return String(localStorage.getItem(KIU_PORTAL_SESSION_TOKEN_KEY) || '').trim();
+    } catch (error) {
+        return '';
+    }
+}
 var KIU_PORTAL_BACKEND_TIMEOUT_MS = 4000;
 var KIU_PORTAL_BACKEND_COOLDOWN_MS = 5000;
 var KIU_PORTAL_PUBLIC_ENDPOINT_PATTERNS = [

@@ -56,9 +56,11 @@
             getProjectTaskGraphCheckpointById,
             getProjectTaskGraphHost,
             getProjectTaskGraphPositions,
+            getProjectTaskGraphStackAnchorDialog,
             hydrateMyPortfolioDocument,
             invalidateSocialRenderCache,
             isProjectTaskGraphGroupId,
+            isProjectTaskGraphStackActive,
             isSocialWorkspaceChangeTarget,
             isSocialWorkspaceClickAction,
             isSocialWorkspaceInputTarget,
@@ -125,6 +127,7 @@
             setPortalSocialProjectBaseline,
             setPortalSocialProjectMembership,
             setProjectTaskGraphPositions,
+            shouldRenderProjectTaskGraphStack,
             state,
             syncPortfolioEditorInput,
             syncProjectTaskGraphEdgesOnly,
@@ -207,6 +210,12 @@
                 const runtime = state();
                 runtime.ui.projectTaskFocus = ['all', 'ready', 'mine', 'overdue', 'blocked', 'week', 'critical', 'unassigned'].includes(nextFocus) ? nextFocus : 'all';
                 runtime.ui.projectTaskDeskActiveViewId = '';
+                const stackedOnGraph = text(runtime.ui?.previousDialog?.type || '') === 'project-task-graph'
+                    || text(runtime.ui?.projectTaskGraphStackAnchor?.type || '') === 'project-task-graph';
+                if (stackedOnGraph && text(runtime.ui?.socialDialog?.type || '') === 'project-health') {
+                    restorePreviousDialog();
+                    return;
+                }
                 runtime.ui.projectTaskViewMode = 'desk';
                 // Coach / hygiene chips from Health: close the dialog so the desk filter is visible.
                 if (text(runtime.ui?.socialDialog?.type || '') === 'project-health') {
@@ -866,6 +875,18 @@
             }
             if (action === 'project-task-graph-open') {
                 const graphRuntime = state();
+                if (!text(graphRuntime.ui?.socialDialog?.type) && graphRuntime.ui?.projectTaskGraphStackAnchor) {
+                    graphRuntime.ui.projectTaskGraphStackAnchor = null;
+                    graphRuntime.ui.previousDialog = null;
+                }
+                if (text(graphRuntime.ui?.socialDialog?.type || '') === 'project-task-graph-history') {
+                    const graphAnchor = getProjectTaskGraphStackAnchorDialog(graphRuntime);
+                    if (!graphAnchor) closeDialog();
+                    else return restorePreviousDialog();
+                }
+                if (isProjectTaskGraphStackActive(graphRuntime)) {
+                    return restorePreviousDialog();
+                }
                 const graphProjectId = text(trigger.getAttribute('data-project-id') || graphRuntime.ui?.activeProjectId || '');
                 const graphProject = resolveActiveSocialProject(graphRuntime, graphProjectId);
                 const graphTasks = Array.isArray(graphProject?.tasks) ? graphProject.tasks : [];
@@ -944,6 +965,12 @@
                     // If history dialog is open, remount it so the new row appears.
                     if (text(activeDialog()?.type || '') === 'project-task-graph-history') {
                         state().ui.projectTaskGraphHistoryPendingDeleteId = '';
+                        const region = document.getElementById('lux-glass-dialog-region');
+                        if (shouldRenderProjectTaskGraphStack(state(), 'project-task-graph-history')
+                            && region
+                            && !region.querySelector('[data-project-task-graph-anchor="1"] .lux-glass-dialog-backdrop--project-task-graph')) {
+                            delete region.__kiuLastMarkup;
+                        }
                         return renderDialogOnlyNow();
                     }
                     refreshProjectTaskGraphDialog(['chrome']);
@@ -955,9 +982,14 @@
                 return refreshProjectTaskGraphDialog(['canvas', 'chrome', 'selection']);
             }
             if (action === 'project-task-graph-history-open') {
-                const projectId = text(trigger.getAttribute('data-project-id') || state().ui?.activeProjectId || '');
+                const runtime = state();
+                const projectId = text(trigger.getAttribute('data-project-id') || runtime.ui?.activeProjectId || '');
+                const graphAnchor = getProjectTaskGraphStackAnchorDialog(runtime);
+                if (graphAnchor?.type === 'project-task-graph') {
+                    runtime.ui.projectTaskGraphStackAnchor = { ...graphAnchor };
+                }
                 pulseProjectTaskGraphCheckpointButton(trigger);
-                state().ui.projectTaskGraphHistoryPendingDeleteId = '';
+                runtime.ui.projectTaskGraphHistoryPendingDeleteId = '';
                 return openDialog('project-task-graph-history', { projectId });
             }
             if (action === 'project-task-graph-schedule-help') {
@@ -1276,8 +1308,13 @@
                 });
             }
             if (action === 'project-health-open') {
+                const runtime = state();
+                const graphAnchor = getProjectTaskGraphStackAnchorDialog(runtime);
+                if (graphAnchor?.type === 'project-task-graph') {
+                    runtime.ui.projectTaskGraphStackAnchor = { ...graphAnchor };
+                }
                 return openDialog('project-health', {
-                    projectId: text(trigger.getAttribute('data-project-id') || state().ui?.activeProjectId || '')
+                    projectId: text(trigger.getAttribute('data-project-id') || runtime.ui?.activeProjectId || '')
                 });
             }
             if (action === 'project-health-plan-window') {
@@ -1400,14 +1437,19 @@
                 return renderDialogOnlyNow();
             }
             if (action === 'project-risk-open') {
-                const projectId = text(trigger.getAttribute('data-project-id') || state().ui?.activeProjectId || '');
+                const runtime = state();
+                const projectId = text(trigger.getAttribute('data-project-id') || runtime.ui?.activeProjectId || '');
                 const taskId = text(trigger.getAttribute('data-task-id') || '');
                 if (taskId) return openProjectRiskForTask(projectId, taskId);
+                const graphAnchor = getProjectTaskGraphStackAnchorDialog(runtime);
+                if (graphAnchor?.type === 'project-task-graph') {
+                    runtime.ui.projectTaskGraphStackAnchor = { ...graphAnchor };
+                }
                 const groupId = text(trigger.getAttribute('data-group-id') || '');
-                state().ui.projectRiskTaskId = '';
-                state().ui.projectRiskGroupId = groupId;
-                state().ui.projectRiskEditId = '';
-                state().ui.projectRiskComposeOpen = false;
+                runtime.ui.projectRiskTaskId = '';
+                runtime.ui.projectRiskGroupId = groupId;
+                runtime.ui.projectRiskEditId = '';
+                runtime.ui.projectRiskComposeOpen = false;
                 closeProjectTaskGraphContextMenu();
                 return openDialog('project-risk', { projectId, groupId, taskId: '' });
             }

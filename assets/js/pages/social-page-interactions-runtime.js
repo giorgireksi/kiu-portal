@@ -132,6 +132,7 @@
         const bindProjectTaskGraphResizeObserver = dep('bindProjectTaskGraphResizeObserver');
         const syncOverlayPortalVisibility = dep('syncOverlayPortalVisibility');
         const pruneStaleSocialOverlayState = dep('pruneStaleSocialOverlayState');
+        const socialDialogRegion = dep('socialDialogRegion');
         const bindEvents = dep('bindEvents');
         const enhanceSocialAccessibility = dep('enhanceSocialAccessibility');
         const focusCommentComposeInput = dep('focusCommentComposeInput');
@@ -889,6 +890,7 @@ function renderSocialPageNow(reason = 'manual') {
         const forceRender = isSocialForceRenderReason(reason);
         if (!forceRender && reason !== 'boot' && !/-module$/.test(reason) && host.__kiuLastRenderSignature === renderSignature) {
             syncSocialOverlayLock();
+            if (typeof window.renderSocialCallOverlay === 'function') window.renderSocialCallOverlay();
             return;
         }
         const renderPlan = resolveSocialRenderPlan(reason, activePanel, runtime);
@@ -907,9 +909,11 @@ function renderSocialPageNow(reason = 'manual') {
             renderPlan.drawer = false;
             renderPlan.mobileTab = false;
             renderPlan.toast = false;
-            renderPlan.dialog = false;
-            renderPlan.storyViewer = false;
-            renderPlan.storyComposer = false;
+            if (!activeDialog()) {
+                renderPlan.dialog = false;
+                renderPlan.storyViewer = false;
+                renderPlan.storyComposer = false;
+            }
         }
         const interactionSnapshot = captureInteractionState(host);
         shell.root.dataset.role = text(currentUser()?.role || 'student');
@@ -1058,15 +1062,19 @@ function renderSocialPageNow(reason = 'manual') {
         if (reason === 'project-tab') {
             host.querySelector('.social-projects-shell')?.classList.remove('is-tab-switching');
         }
-        if (state().ui?.callOpen) {
+        if (state().ui?.callOpen || (state().calls || []).some((entry) => text(entry?.status) === 'ringing' && text(entry?.startedBy) !== text(currentUser()?.id))) {
+            ensureSocialMessagesModule?.().catch(() => null);
             window.requestAnimationFrame(() => {
                 try {
+                    if (typeof window.renderSocialCallOverlay === 'function') window.renderSocialCallOverlay();
                     if (typeof attachPortalCallLocalPreview === 'function') attachPortalCallLocalPreview();
                     if (typeof attachPortalCallRemotePreview === 'function') attachPortalCallRemotePreview();
                 } catch (error) {
                     console.warn('[Social] Could not attach call previews.', error);
                 }
             });
+        } else if (typeof window.renderSocialCallOverlay === 'function') {
+            window.renderSocialCallOverlay();
         }
         const activeChatId = text(state().ui?.activeChatId || '');
         const jumpMessageId = text(state().ui?.groupThreadJumpMessageByChat?.[activeChatId] || '');
@@ -1146,8 +1154,10 @@ function renderSocialPageNow(reason = 'manual') {
             renderStoryViewer,
             renderStoryComposer,
             renderSocialPageNow,
+            renderDialog,
         };
         Object.assign(window, api);
+        window.__kiuRenderDialog = renderDialog;
         return api;
     };
 })();

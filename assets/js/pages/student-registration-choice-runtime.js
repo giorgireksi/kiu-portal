@@ -5,6 +5,32 @@
     if (window.__KIU_STUDENT_REGISTRATION_CHOICE_LOADED) return;
     window.__KIU_STUDENT_REGISTRATION_CHOICE_LOADED = true;
 
+    const STUDENT_REGISTRATION_SECTION_META = {
+        prog: {
+            title: 'My Program',
+            subtitle: 'Review the same program module structure created in Registration Structure CMS and choose only eligible subjects.',
+            listTitle: 'Program Modules',
+            paneSubtitle: 'Program Module Subjects'
+        },
+        free: {
+            title: 'Free Credits',
+            subtitle: 'Browse the free-credit modules defined by admin and choose only the subjects you are allowed to take.',
+            listTitle: 'Free Credit Modules',
+            paneSubtitle: 'Free Credit Subjects'
+        },
+        conc: {
+            title: 'Concentration',
+            subtitle: 'Use the same concentration program structure created by admin. You can only choose eligible subjects.',
+            listTitle: 'Concentration Programs'
+        },
+        minor: {
+            title: 'Minor',
+            subtitle: 'Use the same minor program structure created by admin. You can only choose eligible subjects.',
+            listTitle: 'Minor Programs'
+        }
+    };
+    window.STUDENT_REGISTRATION_SECTION_META = STUDENT_REGISTRATION_SECTION_META;
+
     window.__kiuCreateStudentRegistrationChoiceApi = function createKiuPeelApi(deps = {}) {
         const d = deps;
         void d;
@@ -57,31 +83,6 @@ window.addEventListener('kiu:registration-cms-changed', () => {
         renderStudentRegStructures(activeTab);
     }
 });
-
-const STUDENT_REGISTRATION_SECTION_META = {
-    prog: {
-        title: 'My Program',
-        subtitle: 'Review the same program module structure created in Registration Structure CMS and choose only eligible subjects.',
-        listTitle: 'Program Modules',
-        paneSubtitle: 'Program Module Subjects'
-    },
-    free: {
-        title: 'Free Credits',
-        subtitle: 'Browse the free-credit modules defined by admin and choose only the subjects you are allowed to take.',
-        listTitle: 'Free Credit Modules',
-        paneSubtitle: 'Free Credit Subjects'
-    },
-    conc: {
-        title: 'Concentration',
-        subtitle: 'Use the same concentration program structure created by admin. You can only choose eligible subjects.',
-        listTitle: 'Concentration Programs'
-    },
-    minor: {
-        title: 'Minor',
-        subtitle: 'Use the same minor program structure created by admin. You can only choose eligible subjects.',
-        listTitle: 'Minor Programs'
-    }
-};
 
 function getStudentRegistrationScopeKey(user = getCurrentUser(), faculty = getCurrentFaculty()) {
     const fallbackUserId = typeof getCurrentUserId === 'function' ? getCurrentUserId() : '';

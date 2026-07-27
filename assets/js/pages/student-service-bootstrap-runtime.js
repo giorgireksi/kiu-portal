@@ -204,6 +204,8 @@ function getStudentServiceCurrentUser() {
             removeStudentServiceAnswersFromSnapshot,
             mergeStudentServiceQuestionSnapshot,
             removeStudentServiceQuestionFromSnapshot,
+            removeStudentServiceQuestionCard,
+            applyStudentServiceBootstrap,
             fetchStudentServiceBootstrap,
             shouldDeferStudentServiceStudentHubUntilBootstrap,
             renderStudentServiceBootstrapLoadingShell,

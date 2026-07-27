@@ -7,6 +7,8 @@
         && window.renderStudentServiceStudentHub !== studentHubStub
     ) return;
     window.__KIU_STUDENT_SERVICE_SERVICE_MODULE_LOADED = true;
+    const __kiuSsApi = window.KiuStudentService || (window.KiuStudentService = {});
+    window.__kiuSsApi = __kiuSsApi;
 
     const STUDENT_SERVICE_ROUTE_STATUS_OWNER = Object.freeze({
         ticket: Object.freeze([
@@ -212,7 +214,7 @@
         return `
             <div class="student-service-ticket-composer student-service-ticket-composer--compact">
                 <div class="student-service-ticket-composer-main">
-                    <textarea id="${textareaId}" rows="2" placeholder="${ssEscape(placeholder)}" autocomplete="off"></textarea>
+                    <textarea id="${textareaId}" class="lux-control" rows="2" placeholder="${ssEscape(placeholder)}" autocomplete="off"></textarea>
                     <div class="student-service-ticket-composer-toolbar">
                         <button type="button" class="lux-secondary-btn student-service-ticket-composer-attach" data-student-service-attach="${ssEscape(composerId)}" title="Attach files (up to 5)" aria-label="Attach files"><i class="fas fa-paperclip"></i></button>
                         <button class="lux-primary-btn student-service-ticket-composer-send" type="button" data-student-service-reply-ticket="true"><i class="fas fa-paper-plane"></i> ${buttonLabel}</button>
@@ -294,8 +296,8 @@
             <div class="student-service-ticket-conversation-header">
                 <div class="lux-panel-head student-service-ticket-conversation-head">
                     <div>
-                        <div class="student-service-kicker">${kicker}</div>
-                        <div class="lux-panel-title">${ssEscape(ticket.title)}</div>
+                        <div class="student-service-kicker lux-section-kicker">${kicker}</div>
+                        <div class="lux-panel-title lux-page-title">${ssEscape(ticket.title)}</div>
                     </div>
                     <div class="student-service-ticket-conversation-head-actions">
                         ${renderStudentServiceStatusBadge(ticket.status, {
@@ -443,8 +445,8 @@
                 <div class="student-service-ticket-conversation-header">
                     <div class="lux-panel-head student-service-ticket-conversation-head">
                         <div>
-                            <div class="student-service-kicker">Conversation</div>
-                            <div class="lux-panel-title">${ssEscape(title)}</div>
+                            <div class="student-service-kicker lux-section-kicker">Conversation</div>
+                            <div class="lux-panel-title lux-page-title">${ssEscape(title)}</div>
                         </div>
                     </div>
                 </div>
@@ -472,7 +474,7 @@
         return `
             <section class="student-service-zone student-service-zone-track student-service-track-compact-inline">
                 <div class="student-service-track-compact-inline-copy">
-                    <span class="student-service-kicker">Track</span>
+                    <span class="student-service-kicker lux-section-kicker">Track</span>
                     <div class="student-service-track-compact-inline-counts" aria-label="Ticket status counts">
                         <span><strong>${statusCounts.open}</strong> open</span>
                         <span><strong>${waitingCount}</strong> waiting</span>
@@ -506,8 +508,8 @@
             <section class="student-service-zone student-service-zone-find student-service-zone-inbox">
                 <div class="lux-panel-head">
                     <div>
-                        <div class="student-service-kicker">Inbox</div>
-                        <div class="lux-panel-title">Your conversations with Student Service</div>
+                        <div class="student-service-kicker lux-section-kicker">Inbox</div>
+                        <div class="lux-panel-title lux-page-title">Your conversations with Student Service</div>
                     </div>
                     <span class="student-service-panel-chip">${ticketFeed.length} conversation${ticketFeed.length === 1 ? '' : 's'}</span>
                 </div>
@@ -557,7 +559,7 @@
     function buildStudentServiceGuidanceBrowserContext(visibleArticles, visibleTickets) {
         const ui = ensureStudentServiceUiState();
         const draft = getStudentServiceDraftTicket();
-        const activeArea = getStudentServiceSupportArea(ui.activeSupportArea || draft.serviceArea);
+        const activeArea = getStudentServiceSupportArea(ui.activeSupportArea || draft?.serviceArea || 'general');
         const articleQuery = ui.articleSearch.trim().toLowerCase();
         const visibleStudentTickets = visibleTickets.slice().sort((a, b) => ssParseTime(b.updatedAt || b.createdAt) - ssParseTime(a.updatedAt || a.createdAt));
         const filteredArticles = STUDENT_SERVICE_SUPPORT_AREAS
@@ -707,6 +709,9 @@
     }
 
     function renderStudentServiceStudentHubRequestMarkup(currentUser, selectedArea, draft, ui, visibleTickets, studentTicketCounts) {
+        const safeDraft = draft && typeof draft === 'object'
+            ? draft
+            : { title: '', message: '', serviceArea: 'general', category: 'General Question' };
         const publishedLayout = typeof window.getStudentServicePublishedInboxFilterLayout === 'function'
             ? window.getStudentServicePublishedInboxFilterLayout()
             : null;
@@ -717,9 +722,9 @@
             <section class="student-service-zone student-service-zone-act">
                 <div class="lux-panel-head">
                     <div>
-                        <div class="student-service-kicker">Contact Student Service</div>
-                        <div class="lux-panel-title">Start a clear private request in one pass.</div>
-                        <div class="lux-panel-copy">This lane is for personal follow-up, office guidance, and cases that should not be public.</div>
+                        <div class="student-service-kicker lux-section-kicker">Contact Student Service</div>
+                        <div class="lux-panel-title lux-page-title">Start a clear private request in one pass.</div>
+                        <div class="lux-panel-copy lux-page-copy">This lane is for personal follow-up, office guidance, and cases that should not be public.</div>
                     </div>
                     <div class="lux-panel-head-actions">
                         <button type="button" class="student-service-mini-action lux-secondary-btn student-service-guidance-open-btn" data-student-service-open-guidance-modal="true" aria-haspopup="dialog"><i class="fas fa-book-open"></i> Browse rules & guidance</button>
@@ -727,8 +732,8 @@
                 </div>
                 <div class="student-service-request-form" data-lux-transparency-exempt="1">
                     ${filterMarkup ? `<div class="student-service-request-filters">${filterMarkup}</div>` : ''}
-                    <input id="student-service-ticket-title" type="text" value="${ssEscape(draft.title)}" data-student-service-draft-ticket-field="title" placeholder="Short title" autocomplete="off">
-                    <textarea id="student-service-ticket-message" rows="7" data-student-service-draft-ticket-field="message" placeholder="Describe what happened, what you expected, and what you need." autocomplete="off">${ssEscape(draft.message)}</textarea>
+                    <input id="student-service-ticket-title" class="lux-control" type="text" value="${ssEscape(safeDraft.title)}" data-student-service-draft-ticket-field="title" placeholder="Short title" autocomplete="off">
+                    <textarea id="student-service-ticket-message" class="lux-control" rows="7" data-student-service-draft-ticket-field="message" placeholder="Describe what happened, what you expected, and what you need." autocomplete="off">${ssEscape(safeDraft.message)}</textarea>
                     ${typeof window.renderStudentServiceAttachmentPickerMarkup === 'function' ? window.renderStudentServiceAttachmentPickerMarkup('ticket-create') : ''}
                     <div class="student-service-action-row">
                         <button class="lux-primary-btn" type="button" data-student-service-submit-ticket="true"><i class="fas fa-paper-plane"></i> Send request</button>
@@ -861,7 +866,7 @@
     window.buildStudentServiceGuidanceBrowserContext = buildStudentServiceGuidanceBrowserContext;
     window.renderStudentServiceGuidanceBrowserMarkup = renderStudentServiceGuidanceBrowserMarkup;
 
-    window.renderStudentServiceStudentHub = function renderStudentServiceStudentHub(container, visibleArticles, visibleTickets) {
+    __kiuSsApi.renderStudentServiceStudentHub = window.renderStudentServiceStudentHub = function renderStudentServiceStudentHub(container, visibleArticles, visibleTickets) {
         const ui = ensureStudentServiceUiState();
         const draft = getStudentServiceDraftTicket();
         const currentUser = getStudentServiceCurrentUser();
@@ -889,7 +894,7 @@
         }
     };
 
-    window.renderStudentServiceMyTicketsHub = function renderStudentServiceMyTicketsHub(container, visibleTickets) {
+    __kiuSsApi.renderStudentServiceMyTicketsHub = window.renderStudentServiceMyTicketsHub = function renderStudentServiceMyTicketsHub(container, visibleTickets) {
         const ui = ensureStudentServiceUiState();
         const currentUser = getStudentServiceCurrentUser();
         const ticketFeed = typeof window.getStudentServiceFilteredStudentTickets === 'function'
@@ -917,7 +922,7 @@
         );
     };
 
-    window.renderStudentServiceResponderServiceLane = function renderStudentServiceResponderServiceLane(container, visibleArticles) {
+    __kiuSsApi.renderStudentServiceResponderServiceLane = window.renderStudentServiceResponderServiceLane = function renderStudentServiceResponderServiceLane(container, visibleArticles) {
         const ui = ensureStudentServiceUiState();
         const filteredArticles = getStudentServiceFilteredArticles(visibleArticles);
         const selectedArticle = ensureSelectedStudentServiceArticle(filteredArticles.length ? filteredArticles : visibleArticles);
@@ -1079,9 +1084,9 @@
                             })}
                         </div>
                         <div class="student-service-request-form">
-                            <input id="student-service-article-title" type="text" value="${ssEscape(editorArticle?.title || '')}" placeholder="Article title">
-                            <textarea id="student-service-article-summary" rows="3" placeholder="Short summary">${ssEscape(editorArticle?.summary || '')}</textarea>
-                            <textarea id="student-service-article-content" rows="10" placeholder="Full article content">${ssEscape(editorArticle?.content || '')}</textarea>
+                            <input id="student-service-article-title" class="lux-control" type="text" value="${ssEscape(editorArticle?.title || '')}" placeholder="Article title" autocomplete="off">
+                            <textarea id="student-service-article-summary" class="lux-control" rows="3" placeholder="Short summary" autocomplete="off">${ssEscape(editorArticle?.summary || '')}</textarea>
+                            <textarea id="student-service-article-content" class="lux-control" rows="10" placeholder="Full article content" autocomplete="off">${ssEscape(editorArticle?.content || '')}</textarea>
                             ${showArticleActions ? `
                             <div class="student-service-action-row">
                                 <button class="lux-secondary-btn" type="button" data-student-service-save-article="draft"><i class="far fa-save"></i> Save Draft</button>

@@ -419,9 +419,14 @@
         /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
            GROUPS PANEL - Facebook-style group discovery & management
            â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+        function resolveWorkspacePanelExport(name) {
+            const sw = window.KiuSocialWorkspace;
+            return sw && typeof sw[name] === 'function' ? sw[name] : null;
+        }
         function renderProjectsWorkspacePanelClassic() {
-            if (hasSocialWorkspaceModule() && typeof window.renderProjectsWorkspacePanelClassic === 'function') {
-                return window.renderProjectsWorkspacePanelClassic();
+            const impl = resolveWorkspacePanelExport('renderProjectsWorkspacePanelClassic');
+            if (typeof impl === 'function' && impl !== renderProjectsWorkspacePanelClassic) {
+                return impl();
             }
             ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
             return `
@@ -743,8 +748,9 @@
             ['custom', 'Custom'],
         ];
         function renderProjectsPanel() {
-            if (hasSocialWorkspaceModule() && typeof window.renderProjectsPanel === 'function' && window.renderProjectsPanel !== renderProjectsPanel) {
-                return window.renderProjectsPanel();
+            const impl = resolveWorkspacePanelExport('renderProjectsPanel');
+            if (typeof impl === 'function' && impl !== renderProjectsPanel) {
+                return impl();
             }
             ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
             return `
@@ -933,6 +939,9 @@
             renderPhotographyPanel,
             renderMessagesPanel,
             renderCommunityHero,
+            renderWorkspaceHero,
+            renderPortfolioHero,
+            renderProjectTaskFormFields,
             buildProjectCreateInviteContext,
             resolveActiveSocialProject,
             renderProjectTaskChecklistBlock,
@@ -951,6 +960,12 @@
             renderGroupDetailMemberLine,
             renderGroupDetailDialog,
             renderGroupsPanel,
+            renderGroupsHero,
+            renderGroupCreateDialog,
+            renderEventsHero,
+            renderEventCreateDialog,
+            renderPagesHero,
+            renderPageCreateDialog,
             renderPagesPanel,
             renderAlertsPanel,
             renderProjectsPanel,

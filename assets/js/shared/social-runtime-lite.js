@@ -48,6 +48,7 @@
             feedScopeType: '',
             feedScopeId: '',
             callOpen: false,
+            callOverlayMinimized: false,
             activeCallChatId: '',
             callMode: '',
             activeCallRemoteUserId: '',
@@ -994,7 +995,8 @@
                 mergeAccounts(Array.isArray(messengerPayload?.accounts) ? messengerPayload.accounts : []);
                 const deferredAccountIds = unique([
                     ...runtime.feed.map((post) => text(post?.authorUserId)),
-                    ...collectSocialAccountIds(runtime.social)
+                    ...collectSocialAccountIds(runtime.social),
+                    ...runtime.chats.flatMap((chat) => (Array.isArray(chat?.members) ? chat.members : []).map((memberId) => text(memberId)))
                 ]);
                 ensureActiveChat();
                 runtime.loading = false;
@@ -1412,9 +1414,12 @@
             loadSocialState, mutationRequest, invalidateSocialRenderCache, invalidateSocialFeedRenderCache,
             mergeFeedPost, cloneFeedPost, findFeedCommentRecord,
             applyOptimisticCommentReaction, applyOptimisticPostReaction,
-            ensureDirectChat, ensureCallRuntime, readFileAsDataUrl, fileUrl, isImageFile, nowLabel,
+            ensureDirectChat, ensureCallRuntime, ensureCallMedia, attachLocalCallPreview,
+            teardownPeerConnection, stopCallMedia, finalizeCall, resolveRemoteUserIdForChat,
+            readFileAsDataUrl, fileUrl, isImageFile, nowLabel,
             makeId: typeof makeId === 'function' ? makeId : (typeof window.makeId === 'function' ? window.makeId : undefined),
             unique, chatTitle, markChatMessagesRead,
+            fetchAccountsByIds, refreshFeed, ensureActiveChat,
             runtime
         })
         : {};
@@ -1520,6 +1525,7 @@
         teardownPeerConnection();
         stopCallMedia();
         runtime.ui.callOpen = false;
+        runtime.ui.callOverlayMinimized = false;
         runtime.ui.activeCallChatId = '';
         runtime.ui.activeCallRemoteUserId = '';
         runtime.ui.callMode = '';

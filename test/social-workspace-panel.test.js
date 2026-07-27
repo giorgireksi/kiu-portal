@@ -105,21 +105,41 @@ describe('social-workspace-panel', () => {
         expect(page).toMatch(/WEEK_PLAN_MODEL_URL[\s\S]*SCHEDULE_UI_URL[\s\S]*TAB_RUNTIME_URL[\s\S]*EVENTS_URL[\s\S]*PANEL_URL[\s\S]*GRAPH_RUNTIME_URL[\s\S]*DIALOGS_URL[\s\S]*GRAPH_RENDER_URL[\s\S]*TASK_UI_URL[\s\S]*PORTFOLIO_RUNTIME_URL[\s\S]*PORTFOLIO_UI_URL[\s\S]*PROJECT_CHROME_URL[\s\S]*DIALOG_ROUTE_URL[\s\S]*MODULE_URL/);
     });
 
-    it('panel factory avoids TDZ for renderTaskDependencyGraphPreview', () => {
+    it('initializes graph-runtime before dialogs to avoid TDZ on stacked backdrop', () => {
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
-        expect(workspace).toMatch(/renderTaskDependencyGraphPreview:\s*window\.renderTaskDependencyGraphPreview/);
+        const graphRt = workspace.indexOf('/* ── Task graph runtime: social-workspace-graph-runtime.js');
+        const dialogs = workspace.indexOf('/* ── Task detail / risk / health dialogs: social-workspace-dialogs.js');
+        const graphRender = workspace.indexOf('/* ── Task graph render stack: social-workspace-graph-render.js');
+        expect(graphRt).toBeGreaterThan(-1);
+        expect(dialogs).toBeGreaterThan(graphRt);
+        expect(graphRender).toBeGreaterThan(dialogs);
+        expect(workspace).toMatch(/projectTaskGraphStackedBackdropClass,\n        readProjectWeekPlan/);
     });
 
-    it('graph runtime factory avoids TDZ for dialog-route stack helpers', () => {
+    it('panel factory defers renderTaskDependencyGraphPreview lookup until render time', () => {
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
-        expect(workspace).toMatch(/renderStackedProjectTaskChild:\s*window\.renderStackedProjectTaskChild/);
-        expect(workspace).toMatch(/shouldRenderProjectHealthStack:\s*window\.shouldRenderProjectHealthStack/);
+        expect(workspace).toMatch(/renderTaskDependencyGraphPreview:\s*\(\.\.\.args\)\s*=>\s*\{/);
+        expect(workspace).toMatch(/window\.renderTaskDependencyGraphPreview\s*=\s*renderTaskDependencyGraphPreview/);
+    });
+
+    it('graph runtime factory lazy-resolves dialog-route stack helpers', () => {
+        const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
+        expect(workspace).not.toContain('renderStackedProjectTaskChild: window.renderStackedProjectTaskChild');
+        expect(workspace).not.toContain('shouldRenderProjectHealthStack: window.shouldRenderProjectHealthStack');
+        expect(workspace).toMatch(/renderStackedProjectTaskChild:\s*\(\.\.\.args\)\s*=>\s*\{/);
+        expect(workspace).toMatch(/shouldRenderProjectHealthStack:\s*\(\.\.\.args\)\s*=>\s*\{/);
     });
 
     it('binds graph-model exports before re-exporting to KiuSocialWorkspace', () => {
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
         expect(workspace).toMatch(/const clampProjectTaskGraphCardHeight = window\.clampProjectTaskGraphCardHeight \|\| __swGraphBatch\.clampProjectTaskGraphCardHeight/);
         expect(workspace).toMatch(/__kiuSwApi\.clampProjectTaskGraphCardHeight = clampProjectTaskGraphCardHeight/);
+    });
+
+    it('uses activeProject budget utilization for budget tab pill note', () => {
+        const panel = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-panel.js'), 'utf8');
+        expect(panel).toMatch(/budgetUtilizationPercent/);
+        expect(panel).not.toMatch(/\$\{budgetUtilization\}% used/);
     });
 
     it('keeps manager settings CTA markers in the panel module', () => {

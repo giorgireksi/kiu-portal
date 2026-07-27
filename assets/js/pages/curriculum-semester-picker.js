@@ -286,9 +286,22 @@
         return true;
     }
 
+    function defaultCurriculumSemesterPickerOnChange() {
+        if (typeof window.ensureSubjectSemesterParityHint === 'function') window.ensureSubjectSemesterParityHint();
+        if (typeof window.updateSubjectCodePreview === 'function') window.updateSubjectCodePreview();
+    }
+
+    function ensureCurriculumSemesterPickerInitialized(config = {}) {
+        return initCurriculumSemesterPicker({
+            onChange: defaultCurriculumSemesterPickerOnChange,
+            ...config
+        });
+    }
+
     window.initCurriculumSemesterPicker = initCurriculumSemesterPicker;
+    window.ensureCurriculumSemesterPickerInitialized = ensureCurriculumSemesterPickerInitialized;
     window.syncCurriculumSemesterPickerUi = function syncCurriculumSemesterPickerUi(config) {
-        syncUi(config || {});
+        ensureCurriculumSemesterPickerInitialized(config);
     };
     window.setCurriculumSemesterAddMode = setAddSemestersMode;
 })();

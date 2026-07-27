@@ -159,4 +159,13 @@ describe('student service attachments', () => {
         expect(serviceSource).toContain('renderStudentServiceTicketNotesSidebar');
         expect(serviceSource).toContain('renderStudentServiceAttachmentGalleryMarkup(entry.attachments)');
     });
+
+    it('routes attachment picker clicks from the modal portal', () => {
+        const events = readSource('assets/js/pages/student-service-events.js');
+        const attachments = readSource('assets/js/pages/student-service-attachments.js');
+        expect(events).toContain("sel: '[data-student-service-attach]'");
+        expect(events).toContain('pickStudentServiceAttachments(composerId)');
+        expect(events).toContain("sel: '[data-student-service-remove-attachment]'");
+        expect(attachments).toContain('function syncStudentServiceAttachmentPickerUi(composerId)');
+    });
 });

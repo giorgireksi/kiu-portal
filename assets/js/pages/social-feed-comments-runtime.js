@@ -61,11 +61,13 @@
         }
         
         /** The 5 emoji reaction buttons for a comment (extracted so they can be patched in place). */
-        function renderCommentReactionButtons(comment, normalizedPostId) {
+        function renderCommentReactionButtons(comment, normalizedPostId, context = 'feed') {
             const commentReaction = commentReactionType(comment);
             const reactionCounts = comment?.reactionCounts || {};
+            const btnClass = 'lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn';
+            const activeClass = ' lux-primary-btn';
             return ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                <button class="lux-secondary-btn lux-secondary-btn-sm ${commentReaction === reactionType ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
+                <button class="${btnClass}${commentReaction === reactionType ? activeClass : ''}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
                     <span>${reactionEmoji(reactionType)}</span> ${escape(text(reactionCounts[reactionType] || 0))}
                 </button>
             `).join('');
@@ -82,12 +84,13 @@
                 (text(viewer.id) === text(comment.authorUserId) || String(viewer.role || '').toLowerCase() === 'admin')
             );
             const isReplyTarget = text(state().ui?.commentReplyTargetByPost?.[normalizedPostId]?.commentId) === text(comment.id);
+            const actionBtn = 'lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn';
             return `
                 <article class="social-neo-comment${depthClass}" data-comment-id="${escape(text(comment.id))}">
                     <div class="social-neo-comment-row">
                         ${avatar(commentAuthor, 'social-neo-avatar-sm')}
                         <div class="social-neo-comment-body">
-                            <div class="social-neo-comment-bubble">
+                            <div class="social-neo-comment-bubble${context === 'dialog' ? ' sns-comment-dialog-bubble' : ''}"${context === 'dialog' ? ' data-lux-transparency-exempt="1"' : ''}>
                                 <div class="social-neo-comment-head">
                                     <strong>${escape(displayName(commentAuthor))}</strong>
                                     <span>${escape(when(comment.createdAt))}</span>
@@ -95,16 +98,16 @@
                                 <p>${escape(comment.body || comment.text || '')}</p>
                             </div>
                             <div class="social-neo-comment-actions">
-                                <span class="social-neo-comment-reactions">${renderCommentReactionButtons(comment, normalizedPostId)}</span>
-                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-comment-reply-btn${isReplyTarget ? ' is-active' : ''}" type="button" data-action="comment-reply" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
+                                <span class="social-neo-comment-reactions">${renderCommentReactionButtons(comment, normalizedPostId, context)}</span>
+                                <button class="${actionBtn} social-neo-comment-reply-btn${isReplyTarget ? ' is-active' : ''}" type="button" data-action="comment-reply" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
                                     <i class="fas fa-reply"></i> <span class="social-neo-comment-reply-label">Reply${replyCount ? ` (${replyCount})` : ''}</span>
                                 </button>
                                 ${canDeleteComment ? `
-                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-comment-delete-btn" type="button" data-action="comment-delete" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" aria-label="Delete comment">
+                                <button class="${actionBtn} social-neo-comment-delete-btn" type="button" data-action="comment-delete" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" aria-label="Delete comment">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 ` : ''}
-                                <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn" type="button" data-action="comment-report" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">
+                                <button class="${actionBtn}" type="button" data-action="comment-report" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">
                                     <i class="fas fa-flag"></i>
                                 </button>
                             </div>
@@ -138,11 +141,11 @@
         function patchCommentReactions(updatedPost, commentId) {
             const article = dialogCommentEl(commentId);
             if (!article) return false;
-            const span = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions > .social-neo-comment-reactions');
-            if (!span) return false;
+            const reactionsEl = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions > .social-neo-comment-reactions');
+            if (!reactionsEl) return false;
             const fresh = findCommentInThread(updatedPost?.comments, commentId);
             if (!fresh) return false;
-            span.innerHTML = renderCommentReactionButtons(fresh, postKey(updatedPost));
+            reactionsEl.innerHTML = renderCommentReactionButtons(fresh, postKey(updatedPost), 'dialog');
             return true;
         }
         function patchCommentReactionsByIds(postId, commentId) {
@@ -209,21 +212,21 @@
         }
         function patchCommentDialogCount(updatedPost) {
             const card = document.querySelector('.lux-glass-dialog-card--comments');
-            const heroCopy = card?.querySelector('.social-neo-surveys-hero-copy p');
-            const legacySubtitle = card?.querySelector('.lux-glass-dialog-subtitle')
+            const subtitle = card?.querySelector('.lux-glass-dialog-comment-subtitle')
+                || card?.querySelector('.social-neo-surveys-hero-copy p')
+                || card?.querySelector('.lux-glass-dialog-subtitle')
                 || document.querySelector('.social-photo-ig-modal .social-photo-ig-comments-subtitle');
-            const subtitle = heroCopy || legacySubtitle;
             if (!subtitle && !card) return;
             const collect = (list) => (Array.isArray(list) ? list : []).reduce((n, c) => n + 1 + collect(c?.replies), 0);
             const total = collect(updatedPost?.comments);
-            if (heroCopy) {
-                heroCopy.textContent = total
-                    ? `${total} comment${total === 1 ? '' : 's'} on this post.`
-                    : 'Be the first to reply to this post.';
-            } else if (legacySubtitle) {
-                legacySubtitle.textContent = total ? `${total} comment${total === 1 ? '' : 's'}` : 'No comments yet';
-            }
-            const statStrong = card?.querySelector('.lux-glass-dialog-comment-stats article:nth-child(2) strong');
+            subtitle.textContent = total
+                ? `${total} comment${total === 1 ? '' : 's'} on this post.`
+                : (card?.querySelector('.lux-glass-dialog-comment-subtitle')
+                    ? 'Be the first to reply to this post.'
+                    : 'No comments yet');
+            const statStrong = card?.querySelector('.social-neo-dialog-comment-stats article:nth-child(2) strong')
+                || card?.querySelector('.sns-comment-stats .sns-comment-stat:nth-child(2) strong')
+                || card?.querySelector('.lux-glass-dialog-comment-stats .sns-comment-stat:nth-child(2) strong');
             if (statStrong) statStrong.textContent = String(total);
         }
         async function deleteCommentInline(postId, commentId) {
@@ -261,7 +264,11 @@
                 }
                 const lastChild = kids.querySelector(':scope > article.social-neo-comment:last-child');
                 const lastAvatar = lastChild?.querySelector(':scope > .social-neo-comment-row > .social-neo-avatar');
-                if (!lastAvatar) return;
+                if (!lastAvatar) {
+                    comment.style.removeProperty('--trunk-top');
+                    comment.style.removeProperty('--trunk-bottom');
+                    return;
+                }
                 const cR = comment.getBoundingClientRect();
                 const aR = avatar.getBoundingClientRect();
                 const lR = lastAvatar.getBoundingClientRect();

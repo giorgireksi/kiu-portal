@@ -20,7 +20,7 @@ function install(names, fallback) {
 }
 install([
         'shouldRenderProjectTaskGraphStack', 'renderWorkspaceOwnedDialog', 'isProjectTaskGraphStackActive', 'getProjectTaskGraphStackAnchorDialog', 'wrapProjectTaskGraphStack', 'wrapProjectHealthStack',
-        'renderHealthStackLayers', 'maybeWrapStackedProjectDialog', 'renderStackedProjectTaskChild', 'trySyncProjectTaskGraphStackDialog', 'projectTaskGraphStackedBackdropClass', 'resolveProjectTaskGraphNodeFromTarget',
+        'renderHealthStackLayers', 'maybeWrapStackedProjectDialog', 'renderStackedProjectTaskChild', 'trySyncProjectTaskGraphStackDialog', 'syncProjectTaskGraphStackSlotState', 'projectTaskGraphStackedBackdropClass', 'resolveProjectTaskGraphNodeFromTarget',
         'projectTaskDependsOnIds', 'clampProjectTaskGraphCardHeight', 'estimateProjectTaskGraphCardHeight', 'measureProjectTaskGraphCardHeights', 'normalizeProjectTaskGraphMode', 'projectTaskGraphShowInferred',
         'projectTaskGraphShowCritical', 'projectTaskGraphShowFlow', 'projectTaskGraphVisibleEdges', 'buildProjectTaskGraphModel', 'layoutProjectTaskGraphByStatus', 'compareProjectTaskGraphNodes',
         'hashProjectTaskGraphSeed', 'projectTaskGraphPseudoRandom', 'getProjectTaskGraphMetrics', 'computeProjectTaskGraphStageSize', 'computeProjectTaskGraphNodeDegree', 'projectTaskGraphBoxRepulse',

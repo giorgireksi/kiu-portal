@@ -481,7 +481,8 @@ describe('student service empty articles bootstrap', () => {
         expect(initialStateSource).toContain('state.studentServiceArticles = [];');
         expect(studentServiceJs).not.toContain('buildStudentServiceDefaultArticles');
         expect(studentServiceJs).toContain('shouldDeferStudentServiceStudentHubUntilBootstrap');
-        expect(studentServiceJs).toContain('window.applyStudentServiceBootstrap = applyStudentServiceBootstrap;');
+        expect(readSource('assets/js/pages/student-service-bootstrap-runtime.js')).toContain('applyStudentServiceBootstrap');
+        expect(readSource('assets/js/pages/student-service-bootstrap-runtime.js')).toMatch(/applyStudentServiceBootstrap,\s*\n\s*fetchStudentServiceBootstrap/);
     });
 });
 

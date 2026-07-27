@@ -1,6 +1,9 @@
 (function initSocialPhotographyModule() {
-    if (window.__KIU_SOCIAL_PHOTOGRAPHY_MODULE_LOADED) return;
-    window.__KIU_SOCIAL_PHOTOGRAPHY_MODULE_LOADED = true;
+    if (window.__KIU_SOCIAL_PHOTOGRAPHY_MODULE_LOADED
+        && typeof window.handleSocialPhotographyClick === 'function'
+        && typeof window.renderPhotographyPanel === 'function') {
+        return;
+    }
 
     const hooks = window.__kiuSocialPhotographyHooks || {};
     const {
@@ -68,6 +71,8 @@
     ) {
         throw new Error('Social photography hooks are unavailable.');
     }
+
+    window.__KIU_SOCIAL_PHOTOGRAPHY_MODULE_LOADED = true;
 
     function profileFollowerCount() {
         const userId = currentUserId();
@@ -197,7 +202,7 @@
                                 <span class="social-photo-mono">${isSuggested ? 'New' : `${escape(postCount)} photo${postCount === 1 ? '' : 's'}`}</span>
                             </button>
                             ${text(account.id) !== currentUserId() ? `
-                                <button class="lux-secondary-btn lux-secondary-btn-sm ${isFollowingProfile(account.id) ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="photography-follow" data-user-id="${escape(text(account.id))}">
+                                <button class="${isFollowingProfile(account.id) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="photography-follow" data-user-id="${escape(text(account.id))}">
                                     ${isFollowingProfile(account.id) ? 'Following' : 'Follow'}
                                 </button>
                             ` : ''}
@@ -246,7 +251,7 @@
                         </div>
                     </button>
                     ${text(author.id) !== currentUserId() ? `
-                        <button class="lux-secondary-btn lux-secondary-btn-sm ${isFollowingProfile(author.id) ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="photography-follow" data-user-id="${escape(text(author.id))}">
+                        <button class="${isFollowingProfile(author.id) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="photography-follow" data-user-id="${escape(text(author.id))}">
                             ${isFollowingProfile(author.id) ? 'Following' : 'Follow'}
                         </button>
                     ` : ''}
@@ -413,7 +418,7 @@
 
         return `
             <div class="social-photo-shell social-neo-community-panel social-photo-shell--my-profile">
-                <button class="social-photo-back social-photo-mono" type="button" data-action="photography-my-profile-close">&larr; Back to Exposé</button>
+                <button class="lux-ghost-btn social-photo-back social-photo-mono" type="button" data-action="photography-my-profile-close">&larr; Back to Exposé</button>
                 <header class="social-neo-card social-photo-my-header social-photo-my-hero">
                     <div class="social-photo-my-head">
                         <span class="social-photo-my-avatar">${avatar(account, 'social-photo-my-avatar-img')}</span>
@@ -434,13 +439,13 @@
                     </div>
                 </header>
                 <nav class="social-photo-my-tabs" role="tablist" aria-label="Profile sections">
-                    <button class="social-photo-my-tab ${profileTab === 'posts' ? 'is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="posts">
+                    <button class="${profileTab === 'posts' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-my-tab${profileTab === 'posts' ? ' is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="posts">
                         <i class="fas fa-th"></i> Posts
                     </button>
-                    <button class="social-photo-my-tab ${profileTab === 'saved' ? 'is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="saved">
+                    <button class="${profileTab === 'saved' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-my-tab${profileTab === 'saved' ? ' is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="saved">
                         <i class="fas fa-bookmark"></i> Saved
                     </button>
-                    <button class="social-photo-my-tab ${profileTab === 'tagged' ? 'is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="tagged">
+                    <button class="${profileTab === 'tagged' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-my-tab${profileTab === 'tagged' ? ' is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="tagged">
                         <i class="fas fa-tags"></i> Tagged
                     </button>
                 </nav>
@@ -455,7 +460,7 @@
         const isSelf = text(userId) === currentUserId();
         return `
             <div class="social-photo-profile-shell">
-                <button class="social-photo-back social-photo-mono" type="button" data-action="photography-profile-back">&larr; Back</button>
+                <button class="lux-ghost-btn social-photo-back social-photo-mono" type="button" data-action="photography-profile-back">&larr; Back</button>
                 <header class="social-neo-card social-photo-profile-hero">
                     <div class="social-photo-profile-head">
                         <span class="social-photo-profile-avatar">${avatar(account, 'social-photo-profile-avatar-img')}</span>
@@ -497,12 +502,12 @@
             </label>
         ` : '';
         const uploadFabMarkup = hasCatalog ? `
-            <button class="social-photo-upload-fab" type="button" data-action="photography-upload-open" aria-label="Share a photo" title="Share a photo">
+            <button class="lux-primary-btn lux-secondary-btn-sm social-photo-upload-fab" type="button" data-action="photography-upload-open" aria-label="Share a photo" title="Share a photo">
                 <i class="fas fa-plus"></i>
             </button>
         ` : '';
         const myProfileBtn = user ? `
-            <button class="social-photo-my-profile-btn" type="button" data-action="photography-my-profile-open" aria-label="My profile" title="My profile">
+            <button class="lux-secondary-btn lux-secondary-btn-sm social-photo-my-profile-btn" type="button" data-action="photography-my-profile-open" aria-label="My profile" title="My profile">
                 ${avatar(user, 'social-photo-my-profile-btn-avatar')}
             </button>
         ` : '';
@@ -528,9 +533,9 @@
                         </div>
                     </div>
                     <nav class="social-photo-tab-segment" role="tablist" aria-label="Photo feed tabs">
-                        <button class="social-photo-tab ${tab === 'explore' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'explore' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="explore">Explore</button>
-                        <button class="social-photo-tab ${tab === 'grid' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'grid' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="grid">Grid</button>
-                        <button class="social-photo-tab ${tab === 'following' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'following' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="following">Following</button>
+                        <button class="${tab === 'explore' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'explore' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'explore' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="explore">Explore</button>
+                        <button class="${tab === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'grid' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'grid' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="grid">Grid</button>
+                        <button class="${tab === 'following' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'following' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'following' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="following">Following</button>
                     </nav>
                 </header>
                 ${renderDiscoverStrip(discover)}
@@ -573,6 +578,8 @@
             const value = text(btn.getAttribute('data-photography-tab') || '');
             const active = value === tab;
             btn.classList.toggle('is-active', active);
+            btn.classList.toggle('lux-primary-btn', active);
+            btn.classList.toggle('lux-secondary-btn', !active);
             btn.setAttribute('aria-selected', active ? 'true' : 'false');
         });
 
@@ -700,7 +707,7 @@
 
         return `
             <div class="lux-glass-dialog-backdrop social-photo-upload-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card lux-glass-dialog-card social-photo-upload-card photo-panel" data-form="photography-upload" data-action="noop" data-lux-transparency-exempt="1">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass social-photo-upload-card photo-panel" data-form="photography-upload" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-photo-upload-head">
                         <div>
                             <strong class="social-photo-display">${step === 1 ? 'Capture' : step === 2 ? 'Caption' : 'Publish'}</strong>

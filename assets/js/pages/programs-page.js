@@ -149,8 +149,8 @@
         root.innerHTML = `
             <div class="lux-program-shell">
                 <div class="lux-program-grid">
-                    <section id="programs-module-rail-region" class="surface-card lux-program-shell-section lux-program-shell-section--module-rail" data-programs-panel-shell="1"></section>
-                    <section id="programs-subject-panel-region" class="surface-card lux-program-shell-section lux-program-shell-section--subject-panel" data-programs-panel-shell="1"></section>
+                    <section id="programs-module-rail-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--module-rail" data-programs-panel-shell="1"></section>
+                    <section id="programs-subject-panel-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--subject-panel" data-programs-panel-shell="1"></section>
                 </div>
             </div>
         `;
@@ -209,7 +209,7 @@
                         const load = limit > 0 ? Math.min(100, Math.round((ectsTotal / limit) * 100)) : 0;
                         const moduleSemesters = getCurriculumSemesterCoverage(moduleSubjectsForFaculty);
                         return `
-                            <label class="lux-module-option lux-program-module-option ${active ? 'is-active' : ''}">
+                            <label class="lux-module-option lux-program-module-option lux-soft-chrome ${active ? 'is-active' : ''}">
                                 <span class="lux-module-option__main">
                                     <input type="radio" name="student-curriculum-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} data-programs-module-radio="1" data-programs-faculty="${escapeHtml(context.programFaculty)}">
                                     <span class="lux-module-option__text">

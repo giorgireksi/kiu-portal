@@ -61,7 +61,7 @@
                     </div>
                     <div class="social-neo-workspace-hero-stats">
                         ${stats.map((stat) => `
-                            <article class="social-neo-workspace-hero-stat social-neo-events-hero-stat lux-strip-card surface-card">
+                            <article class="social-neo-workspace-hero-stat lux-strip-card surface-card">
                                 <strong>${escape(String(stat.value))}</strong>
                                 <span>${escape(stat.label)}</span>
                             </article>
@@ -286,7 +286,7 @@
                 ? `<span class="lux-glass-dialog-submit-badge">${escape(String(inviteCount))}</span>`
                 : '';
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-create lux-glass-dialog-card" data-form="create-project" data-action="noop" data-lux-transparency-exempt="1">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="create-project" data-action="noop" data-lux-transparency-exempt="1">
                     ${neoHead('Create workspace', 'Create a course group project, invite teammates, then track tasks together.', { icon: 'fas fa-diagram-project' })}
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--project-create">
                         <section class="lux-glass-dialog-group-section">

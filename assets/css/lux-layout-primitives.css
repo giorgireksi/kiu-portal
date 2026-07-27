@@ -69,10 +69,804 @@
   color: var(--lux-text-muted);
 }
 
+.lux-stat em {
+  display: block;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--lux-text-muted);
+}
+
 .lux-stat.lux-soft-chrome {
   padding: 12px 14px 14px;
   border-radius: 16px;
   overflow: visible;
+}
+
+/* Curriculum library — shared text (programs + admin-tools). */
+.lux-section-kicker,
+.lux-page-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.lux-section-title {
+  margin: 0;
+  font-family: "Noto Sans Georgian", system-ui, sans-serif;
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--lux-text);
+}
+
+/* Bare portal hero + section heads (programs, LMS, registration, timetable). */
+.lux-page-title {
+  margin: 0;
+  font-family: "Noto Sans Georgian", system-ui, sans-serif;
+  font-size: clamp(24px, 2.8vw, 32px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--lux-text);
+}
+
+.lux-page-copy {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+
+.lux-card-title {
+  margin: 0;
+  font-family: "Noto Sans Georgian", system-ui, sans-serif;
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--lux-text);
+}
+
+.lux-card-copy {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+.lux-card-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--lux-text-muted);
+}
+
+.lux-module-option__title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+
+.lux-module-option__meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--lux-text-muted);
+}
+
+.lux-subject-row__code {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--lux-accent-2, var(--lux-accent));
+  overflow-wrap: anywhere;
+}
+
+.lux-subject-row__title {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--lux-text);
+}
+
+.lux-subject-row__meta {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--lux-text-muted);
+}
+
+.lux-subject-row__detail {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+.lux-subject-row__detail strong {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+.lux-subject-row__detail.is-soft {
+  opacity: 0.88;
+}
+
+.lux-subject-row__stats strong {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--lux-text);
+}
+
+.lux-empty-state__title,
+.lms-route-empty-title,
+.schedule-empty-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+
+.lux-empty-state__copy,
+.lms-route-empty-copy,
+.schedule-empty-copy {
+  display: block;
+  max-width: 42ch;
+  margin: 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+.lux-program-detail-columns {
+  color: var(--lux-text-muted);
+}
+
+/* Schedule toolbar chips (timetable + admin-scheduler shared text). */
+.schedule-chip,
+.lux-status-pill.lux-timetable-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+
+.schedule-chip i,
+.lux-timetable-chip i {
+  opacity: 0.85;
+  font-size: 11px;
+}
+
+.schedule-chip-soft,
+.lux-status-pill.lux-timetable-chip.schedule-chip-soft {
+  color: var(--lux-accent, var(--lux-text));
+}
+
+/* Hero meta pills (timetable + registration; matte paint in lux-fouc-ht per route). */
+.page-hero-badge.lux-pill,
+.lux-timetable-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: var(--lux-text);
+  white-space: nowrap;
+}
+
+.page-hero-badge.lux-pill i,
+.lux-timetable-hero-badge i {
+  flex: 0 0 auto;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* Registration route typography (layout in lux-page-bare-lite; matte in lux-fouc-ht). */
+.registration-insight-label,
+.registration-summary-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.registration-insight-value,
+.registration-summary-value {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.registration-insight-copy,
+.registration-summary-copy {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.registration-workspace-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.registration-workspace-title {
+  margin-top: 8px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(24px, 2.3vw, 30px);
+  line-height: 1.08;
+  font-weight: 600;
+}
+
+.registration-workspace-note {
+  max-width: 360px;
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.registration-footer-bar-label,
+.registration-progress-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.registration-focus-value {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: clamp(24px, 2.2vw, 30px);
+  letter-spacing: -0.02em;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.registration-module-list-title,
+.registration-module-pane-title {
+  font-family: "Noto Sans Georgian", system-ui, sans-serif;
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+
+.registration-module-pane-copy,
+.registration-module-list-count {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+
+.registration-module-choice-title {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--lux-text);
+}
+
+.registration-module-choice-ects,
+.registration-module-pane-chip {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Personal data route typography (layout in lux-page-bare-lite; matte in lux-fouc-ht). */
+.personal-data-card-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.personal-data-hero-title,
+.personal-data-name,
+.personal-data-level-heading {
+  color: var(--lux-text);
+}
+
+.personal-data-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(24px, 2.8vw, 34px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.personal-data-level-heading {
+  margin-top: 8px;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.personal-data-kpi-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.personal-data-kpi-value {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: clamp(20px, 1.8vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.personal-data-subjects-meta,
+.pd-contact-row span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lux-text-muted);
+}
+
+.pd-contact-row strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+
+/* Chancellery route typography (layout in lux-page-bare-lite; matte in lux-fouc-ht). */
+.lux-chancellery-card-title,
+.lux-chancellery-section-title {
+  color: var(--lux-text);
+}
+
+.lux-chancellery-stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lux-chancellery-stat-value {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: clamp(20px, 1.8vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.lux-chancellery-queue-id,
+.lux-chancellery-inline-meta,
+.lux-chancellery-queue-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lux-text-muted);
+}
+
+.lux-chancellery-queue-subject {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--lux-text);
+}
+
+.lux-chancellery-finance-note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+
+/* Student Service route typography (layout in lux-page-bare-lite; matte in lux-fouc-ht). */
+.student-service-command-bar-title {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--lux-text);
+}
+
+.student-service-command-bar-metrics,
+.student-service-lane-choice-copy {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--lux-text-muted);
+}
+
+.student-service-lane-choice-title {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--lux-text);
+}
+
+.student-service-lane-choice-cta {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: rgba(var(--lux-accent-rgb), 0.98);
+}
+
+.lux-panel-title {
+  margin: 0;
+  font-family: "Noto Sans Georgian", system-ui, sans-serif;
+  font-size: clamp(24px, 2.8vw, 32px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--lux-text);
+}
+
+.lux-panel-copy {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+
+.student-service-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.student-service-attachment-hint,
+.student-service-student-hub-track-compact-count {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+
+.student-service-command-bar-stat {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--lux-text-muted);
+}
+
+.student-service-command-bar-stat strong {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+.student-service-panel-chip {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+
+.student-service-empty-state {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--lux-text-muted);
+}
+
+.student-service-find-search i {
+  color: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+.student-service-qa-card-title {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--lux-text);
+}
+
+.student-service-qa-card-preview,
+.student-service-qa-detail-body,
+.student-service-qa-answer-copy {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--lux-text-muted);
+}
+
+.student-service-qa-card-author-date,
+.student-service-qa-answer-time {
+  font-size: 12px;
+  color: var(--lux-text-muted);
+}
+
+.student-service-track-compact-inline-counts,
+.student-service-student-hub-track-compact-count strong {
+  font-size: 12px;
+  color: var(--lux-text-muted);
+}
+
+.student-service-track-compact-inline-counts strong,
+.student-service-student-hub-track-compact-count strong {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+.student-service-ticket-inbox-title,
+.student-service-ticket-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--lux-text);
+}
+
+.student-service-ticket-card-copy,
+.student-service-ticket-card-meta,
+.student-service-ticket-card-meta-item {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--lux-text-muted);
+}
+
+.student-service-status {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.student-service-mini-action {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--lux-text);
+}
+
+.student-service-ticket-inbox-preview,
+.student-service-ticket-inbox-time,
+.student-service-ticket-msg-meta {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+
+.student-service-ticket-msg-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--lux-text);
+  white-space: pre-wrap;
+}
+
+.student-service-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+
+/* Orders inbox typography (layout in lux-page-bare-lite). */
+.orders-inbox-hero .lux-page-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(var(--lux-accent-rgb), 0.92);
+}
+
+.orders-hero-title,
+.orders-inbox-hero .page-hero-title {
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--lux-text);
+}
+
+.orders-inbox-hero .lux-card-copy {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--lux-text-muted);
+}
+
+.orders-item__title {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+
+.orders-item__meta {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+.orders-item__state {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.orders-list-empty,
+.orders-detail-empty {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--lux-text-muted);
+}
+
+.orders-detail-empty__icon {
+  color: rgba(var(--lux-accent-rgb), 0.55);
+}
+
+.orders-detail-title--hero {
+  font-size: clamp(28px, 2.6vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--lux-text);
+}
+
+.orders-detail-submeta {
+  font-size: 13px;
+  color: var(--lux-text-muted);
+}
+
+.orders-detail-section-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+.orders-metric-label,
+.orders-inbox-hero .lux-hero-signal > span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(var(--lux-accent-rgb), 0.88);
+}
+
+.orders-metric-value,
+.orders-inbox-hero .lux-hero-signal > strong {
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--lux-text);
+}
+
+.orders-metric-value--context {
+  font-size: clamp(18px, 2.2vw, 22px);
+  line-height: 1.2;
+}
+
+.orders-attachment-title,
+.orders-recipient-title {
+  font-weight: 800;
+  color: var(--lux-text);
+}
+
+.orders-attachment-meta,
+.orders-recipient-meta {
+  font-size: 12px;
+  color: var(--lux-text-muted);
+}
+
+.orders-recipient-submeta {
+  font-size: 11px;
+  color: var(--lux-text-soft);
+}
+
+.orders-status-filter {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--lux-text-muted);
+}
+
+/* LMS / exam-portal shared route typography (layout in lux-page-bare-lite). */
+.lux-section-kicker,
+.lms-clean-kicker,
+.lms-route-eyebrow,
+.lms-clean-card-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-accent-2, var(--lux-accent));
+}
+
+.lms-route-title {
+  margin: 0;
+  font-family: "Noto Sans Georgian", system-ui, sans-serif;
+  font-size: clamp(24px, 2.8vw, 32px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--lux-text);
+}
+
+.lms-route-title-26 {
+  font-size: clamp(22px, 2.4vw, 26px);
+}
+
+.lms-route-copy {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+
+.lms-route-meta-12 {
+  font-size: 12px;
+}
+
+.lms-route-field-label,
+.lms-student-semester-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+
+.lux-subject-row__title,
+.lms-clean-card-title {
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+
+.lms-clean-card-meta,
+.lms-clean-subject-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.lms-role-context {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--lux-text-muted);
 }
 
 .lux-list {

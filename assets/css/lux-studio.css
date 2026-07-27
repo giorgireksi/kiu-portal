@@ -1,5 +1,5 @@
 /* Color & Motion Studio — self-contained fixed 50% glassmorph (ignores portal opacity slider). */
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) {
   --lux-studio-glass-border: rgba(255, 255, 255, 0.14);
   --lux-studio-dialog-bg: var(--lux-popup-shell-surface);
   --lux-studio-dialog-border: var(--lux-popup-shell-border);
@@ -86,7 +86,17 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
 :is(
   #lux-studio-backdrop .lux-studio-panel,
   .lux-bg-mode-params-dialog,
-  .lux-bg-gallery-dialog
+  .lux-bg-gallery-dialog,
+  #social-neo-overlay-portal .lux-glass-dialog-card--project-health-fs,
+  #social-neo-overlay-portal .lux-glass-dialog-card--project-risk,
+  #social-neo-overlay-portal .lux-glass-dialog-card--project-task-detail,
+  #social-neo-overlay-portal .lux-glass-dialog-card--project-task-create,
+  #social-neo-overlay-portal .lux-glass-dialog-card--project-task-delete,
+  #social-neo-overlay-portal .lux-glass-dialog-card--project-column-tasks,
+  #social-neo-overlay-portal .sptg-history-dialog,
+  #social-neo-overlay-portal .sptg-schedule-help-dialog,
+  #social-neo-overlay-portal .lux-glass-dialog-card--health-plan-pick,
+  #social-neo-overlay-portal .lux-glass-dialog-card--comments
 ) {
   border: 1px solid var(--lux-studio-dialog-border);
   background: var(--lux-studio-dialog-bg);
@@ -115,13 +125,21 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   opacity: 1;
 }
 
-#lux-studio-backdrop .lux-studio-head {
+#lux-studio-backdrop .lux-studio-head,
+#social-neo-overlay-portal .lux-studio-head.lux-glass-dialog-head,
+#social-neo-overlay-portal .lux-studio-panel > .lux-glass-dialog-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  padding: 0 0 12px;
   flex-shrink: 0;
+}
+#lux-studio-backdrop .lux-studio-head {
+  padding: 0 0 12px;
+}
+#social-neo-overlay-portal .lux-studio-head.lux-glass-dialog-head,
+#social-neo-overlay-portal .lux-studio-panel > .lux-glass-dialog-head {
+  padding: 16px 18px 12px;
 }
 #lux-studio-backdrop .lux-studio-heading {
   flex: 1;
@@ -168,17 +186,23 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   background: rgba(255, 255, 255, 0.12);
 }
 
-#lux-studio-backdrop .lux-studio-body {
+#lux-studio-backdrop .lux-studio-body,
+#social-neo-overlay-portal .lux-studio-body {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 16px 12px 12px;
   display: grid;
   gap: 20px;
 }
+#lux-studio-backdrop .lux-studio-body {
+  padding: 16px 12px 12px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-body.lux-studio-body {
+  padding: 14px 18px;
+}
 
 /* Soft-chrome chip shells — interactive targets only (not section/layout containers). */
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
@@ -206,7 +230,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     transform 0.28s var(--lux-studio-chip-ease),
     opacity 0.18s var(--lux-studio-chip-ease-out);
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
@@ -233,7 +257,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   box-shadow: var(--lux-studio-chip-shadow-hover);
   transition: opacity 0.18s var(--lux-studio-chip-ease-out);
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
@@ -253,7 +277,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   z-index: 1;
 }
 @media (hover: hover) and (pointer: fine) {
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
     .lux-mode-btn,
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
@@ -278,7 +302,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   ) {
     transform: translate3d(0, -3px, 0);
   }
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
     .lux-mode-btn,
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
@@ -304,7 +328,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     opacity: 1;
   }
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
@@ -321,7 +345,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   transition-duration: 0.06s;
   transition-timing-function: var(--lux-studio-chip-ease-out);
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
@@ -394,7 +418,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   box-shadow: var(--lux-studio-chip-shadow-press);
 }
 @media (hover: hover) and (pointer: fine) {
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
     .lux-mode-btn,
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
@@ -424,7 +448,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     transform: translate3d(0, -3px, 0);
   }
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
@@ -441,7 +465,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   transform: translate3d(0, -3px, 0);
   outline: none;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
@@ -458,7 +482,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   opacity: 1;
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
     .lux-mode-btn,
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
@@ -477,7 +501,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
       box-shadow 0.15s ease;
   }
   @media (hover: hover) and (pointer: fine) {
-    :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+    :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
       .lux-mode-btn,
       .lux-control-btn,
       .lux-fog-profile-bank-btn,
@@ -503,7 +527,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
       transform: none;
     }
   }
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
     .lux-mode-btn,
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
@@ -528,7 +552,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   ) {
     transform: none;
   }
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
     .lux-mode-btn,
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
@@ -546,7 +570,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   }
 }
 /* Static studio cards — glass frame without interactive chip overflow/hover */
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-fog-color-field,
   .lux-fog-profile-edit-bar,
   .lux-bg-mode-panel-copy,
@@ -581,6 +605,20 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   border-radius: var(--lux-studio-section-radius);
   overflow: visible;
 }
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)) {
+  padding: 14px 16px;
+  border-radius: var(--lux-studio-section-radius);
+  border: 1px solid var(--lux-studio-chip-border);
+  background: var(--lux-studio-chip-surface);
+  box-shadow: var(--lux-studio-chip-shadow);
+  box-sizing: border-box;
+  overflow: visible;
+}
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-studio-section {
+  padding: 14px 16px;
+  border-radius: var(--lux-studio-section-radius);
+  overflow: visible;
+}
 #lux-studio-backdrop .lux-studio-section:has(
   .lux-bg-mode-item,
   .lux-range-row,
@@ -598,7 +636,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop)
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal)
   .lux-bg-mode-panel-subsection:has(.lux-control-grid, [data-particle-quality]) {
   padding: 0;
   border: none;
@@ -609,7 +647,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
 }
 
 /* Shared studio + params control chrome */
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-studio-label {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-studio-label {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -617,7 +655,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   color: var(--lux-text-soft);
   margin-bottom: 12px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-studio-label--compact { margin-bottom: 8px; }
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-studio-label--compact { margin-bottom: 8px; }
 
 #lux-studio-backdrop .lux-palette-grid {
   display: grid;
@@ -663,17 +701,17 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(.lux-mode-btn, .lux-control-btn, .lux-bg-mode-btn, .lux-bg-mode-settings-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], [data-glass-blur-quality]) {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(.lux-mode-btn, .lux-control-btn, .lux-bg-mode-btn, .lux-bg-mode-settings-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], [data-glass-blur-quality]) {
   border-radius: var(--lux-studio-btn-radius);
   color: var(--lux-text);
   cursor: pointer;
   box-sizing: border-box;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-mode-row .lux-mode-btn,
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-grid :is(.lux-control-btn, [data-particle-quality], [data-glass-blur-quality]) {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-mode-row .lux-mode-btn,
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-control-grid :is(.lux-control-btn, [data-particle-quality], [data-glass-blur-quality]) {
   width: 100%;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(.lux-apply-btn) {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(.lux-apply-btn) {
   border-radius: var(--lux-studio-btn-radius);
   color: var(--lux-text);
   cursor: pointer;
@@ -727,7 +765,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   border-radius: var(--lux-studio-chip-radius);
   cursor: pointer;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-fog-profile-item {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-fog-profile-item {
   border: none;
   cursor: pointer;
 }
@@ -773,14 +811,14 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   border-left: 1px solid var(--lux-studio-chip-border);
 }
 #lux-studio-backdrop .lux-reset-grid { display: grid; gap: 12px; }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-btn {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-control-btn:not(.sns-comment-chip-btn) {
   display: grid;
   gap: 4px;
   text-align: left;
   padding: 12px 14px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-btn strong { font-size: 13px; }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-btn span { font-size: 11px; color: var(--lux-text-muted); }
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-control-btn:not(.sns-comment-chip-btn) strong { font-size: 13px; }
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-control-btn:not(.sns-comment-chip-btn) span { font-size: 11px; color: var(--lux-text-muted); }
 #lux-studio-backdrop .lux-apply-btn {
   position: relative;
   isolation: isolate;
@@ -833,16 +871,16 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   opacity: 0.7;
   box-shadow: var(--lux-studio-apply-shadow-press);
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-range-row {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-range-row {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr) 56px;
   gap: 10px;
   align-items: center;
   margin: 8px 0;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-range-text,
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-range-value,
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-mix-label {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-range-text,
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-range-value,
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-mix-label {
   font-size: 12px;
   color: var(--lux-text-muted);
 }
@@ -866,14 +904,14 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   place-items: center;
   margin-top: 10px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-transparency-header {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-transparency-header {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 8px;
   font-size: 12px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-transparency-meta {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-transparency-meta {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -881,23 +919,23 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   font-size: 11px;
   color: var(--lux-text-muted);
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-transparency-control {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-transparency-control {
   margin: 0;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-range {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-range {
   width: 100%;
   accent-color: var(--lux-accent);
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-grid {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-control-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-grid :is(.lux-control-btn, [data-particle-quality], [data-glass-blur-quality]) {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) .lux-control-grid :is(.lux-control-btn, [data-particle-quality], [data-glass-blur-quality]) {
   min-height: 40px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) [data-particle-quality],
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) [data-glass-blur-quality] {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) [data-particle-quality],
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) [data-glass-blur-quality] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1128,7 +1166,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 }
 
 /* Light mode — still fixed 50% glass */
-:is(html.lux-light-mode, body.lux-light-mode) :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) {
+:is(html.lux-light-mode, body.lux-light-mode) :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) {
   --lux-studio-glass-border: rgba(77, 52, 31, 0.14);
   --lux-studio-btn-shadow: 0 4px 12px rgba(73, 48, 25, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.78);
   --lux-studio-chip-surface:
@@ -1204,7 +1242,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-:is(html.lux-light-mode, body.lux-light-mode) :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop)
+:is(html.lux-light-mode, body.lux-light-mode) :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal)
   .lux-bg-mode-panel-subsection:has(.lux-control-grid, [data-particle-quality]) {
   padding: 0;
   border: none;
@@ -1270,7 +1308,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 }
 
 /* Exterior click burst — particles on backdrop, outside shell border */
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) :is(
   .lux-bg-mode-item,
   .lux-fog-profile-item,
   .lux-mode-btn,
@@ -1282,7 +1320,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 #lux-studio-backdrop :is(.lux-palette-chip, .lux-apply-btn) {
   position: relative;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) > .lux-chip-burst-particle {
   position: fixed;
   width: var(--burst-size, 5px);
   height: var(--burst-size, 5px);
@@ -1294,22 +1332,22 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   transform: translate(-50%, -50%);
   animation: lux-chip-particle-out 0.72s var(--lux-studio-chip-ease-out) var(--burst-delay, 0ms) forwards;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--sm {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) > .lux-chip-burst-particle--sm {
   --burst-size: 3px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--md {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) > .lux-chip-burst-particle--md {
   --burst-size: 5px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--lg {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) > .lux-chip-burst-particle--lg {
   --burst-size: 7px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--spark {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) > .lux-chip-burst-particle--spark {
   border-radius: 2px;
   background: color-mix(in srgb, var(--lux-accent) 70%, #fff 30%);
   box-shadow: 0 0 6px color-mix(in srgb, var(--lux-accent) 55%, transparent);
   animation-name: lux-chip-particle-spark;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--streak {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) > .lux-chip-burst-particle--streak {
   width: 2px;
   height: 10px;
   border-radius: 999px;
@@ -1374,7 +1412,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle {
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal) > .lux-chip-burst-particle {
     animation: none !important;
   }
 }

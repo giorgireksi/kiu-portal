@@ -86,6 +86,29 @@ function handleStudentServiceModalDocumentClick(event) {
         },
         { sel: '[data-student-service-submit-question]', run: () => submitStudentServiceQuestion() },
         {
+            sel: '[data-student-service-attach]',
+            run: (el) => {
+                const composerId = el.dataset.studentServiceAttach || '';
+                const runPick = () => {
+                    if (typeof pickStudentServiceAttachments === 'function') {
+                        pickStudentServiceAttachments(composerId);
+                    }
+                };
+                if (typeof ensureStudentServiceAttachmentsModule === 'function') {
+                    ensureStudentServiceAttachmentsModule().then(runPick).catch(runPick);
+                } else {
+                    runPick();
+                }
+            }
+        },
+        {
+            sel: '[data-student-service-remove-attachment]',
+            run: (el) => removeStudentServiceDraftAttachment(
+                el.dataset.studentServiceRemoveAttachment || '',
+                el.dataset.studentServiceAttachmentId || ''
+            )
+        },
+        {
             sel: '[data-student-service-open-question]',
             run: (el) => {
                 closeStudentServiceQuestionComposerModal();
@@ -292,7 +315,16 @@ function handleStudentServiceRootClick(event) {
                 ui.serviceLane = 'qa';
                 writeStudentServiceStoredLane('qa');
             }
-            openStudentServiceQuestionComposerModal();
+            const openComposer = () => {
+                if (typeof openStudentServiceQuestionComposerModal === 'function') {
+                    openStudentServiceQuestionComposerModal();
+                }
+            };
+            if (typeof hasStudentServiceQaModule === 'function' && hasStudentServiceQaModule()) {
+                openComposer();
+            } else if (typeof ensureStudentServiceQaModule === 'function') {
+                ensureStudentServiceQaModule().then(openComposer).catch(() => null);
+            }
         }
         return;
     }
@@ -480,6 +512,15 @@ function bindStudentServiceDelegatedInteractions() {
 
     if (modalRoot && modalRoot.dataset.studentServiceModalQaInteractionsBound !== '1') {
         modalRoot.dataset.studentServiceModalQaInteractionsBound = '1';
+        const syncModalDraftQuestionField = (node) => {
+            if (!node?.matches?.('[data-student-service-draft-question-field]')) return;
+            const field = node.dataset.studentServiceDraftQuestionField || '';
+            if (!field) return;
+            const value = node.type === 'checkbox' ? node.checked : node.value;
+            setStudentServiceDraftQuestionField(field, value);
+        };
+        modalRoot.addEventListener('input', (event) => syncModalDraftQuestionField(event.target));
+        modalRoot.addEventListener('change', (event) => syncModalDraftQuestionField(event.target));
         modalRoot.addEventListener('click', (event) => {
             if (!modalRoot.contains(event.target)) return;
             handleStudentServiceQaThreadClick(event);

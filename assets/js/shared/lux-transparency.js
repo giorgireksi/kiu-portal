@@ -20,12 +20,11 @@ const SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS = [
     '.social-neo-event-feature', '.social-neo-event-feature-meta-item', '.social-neo-group-card',
     '.social-neo-group-create-block', '.social-neo-group-create-picker', '.social-neo-group-member-row',
     '.social-neo-group-thread-panel', '.social-neo-group-thread-section', '.social-neo-pages-hero',
-    '.social-neo-pages-wizard', '.social-neo-pages-wizard-step', '.social-neo-page-card', '.social-neo-page-card-rich',
+    '.social-neo-page-card', '.social-neo-page-card-rich',
     '.social-neo-page-card-support', '.social-neo-page-compose-block', '.social-neo-page-profile',
     '.social-neo-page-about-card', '.social-neo-thread-head', '.social-neo-thread-compose',
     '.social-neo-thread-messages', '.social-neo-thread-group-hero', '.social-neo-call-card', '.social-neo-call-stage',
-    '.social-neo-call-video', '.lux-glass-dialog-card', '.lux-glass-dialog-card--project-create',
-    '.lux-glass-dialog-preview', '.social-neo-toast', '.social-neo-mobile-tabbar', '.social-neo-mobile-tab',
+    '.social-neo-call-video', '.social-neo-toast', '.social-neo-mobile-tabbar', '.social-neo-mobile-tab',
     '.social-neo-shell-drawer', '.social-neo-shell-drawer-profile', '.social-neo-shell-drawer-nav-card',
     '.social-neo-side-link', '.social-neo-workspace-nav-btn', '.social-neo-shell-nav-btn',
     '.social-neo-feed-hero-tab', '.social-neo-events-hero-tab', '.social-neo-community-hero-tab',
@@ -55,7 +54,7 @@ const SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
     'social-neo-composer-cta', 'social-neo-community-hero-stat', 'social-neo-community-card',
     'social-neo-events-manage-item',
     'social-neo-event-date-group', 'social-neo-event-feature-meta-item', 'social-neo-group-member-row',
-    'social-neo-pages-wizard-step', 'social-neo-page-card', 'social-project-metric-card', 'social-project-mini-card',
+    'social-neo-page-card', 'social-project-metric-card', 'social-project-mini-card',
     'social-project-activity-item', 'social-project-milestone-item', 'social-project-task-card',
     'social-project-team-card', 'social-portfolio-mini-card', 'social-portfolio-stat-tile',
     'social-portfolio-link'
@@ -73,7 +72,7 @@ function isHomeCssOwnedInnerPanel(el) {
 const SOCIAL_BLUR_HOST_CLASSES = new Set([
     'social-neo-card', 'social-neo-post-card', 'social-neo-topbar-card', 'social-neo-community-panel',
     'social-neo-group-card', 'social-neo-group-thread-panel', 'social-neo-page-card-rich', 'social-neo-events-lane',
-    'social-neo-events-support-card', 'social-neo-event-feature', 'lux-glass-dialog-card', 'social-neo-shell-drawer',
+    'social-neo-events-support-card', 'social-neo-event-feature', 'social-neo-shell-drawer',
     'social-neo-story-composer-card', 'social-neo-call-card', 'social-neo-empty', 'social-project-detail-hero-rich',
     'social-project-tab-shell', 'social-project-rich-panel', 'social-project-card',
     'social-portfolio-card'
@@ -1310,6 +1309,7 @@ function updateTransparency(value, options = {}) {
 function isLuxTransparencyExemptSubtree(node) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
     if (node.closest && node.closest('[data-lux-transparency-exempt="1"]')) return true;
+    if (node.closest && node.closest('#social-neo-overlay-portal')) return true;
     if (node.closest && node.closest('.lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay')) return true;
     if (node.closest && node.closest('#lux-studio-backdrop, .lux-studio-panel, #lux-bg-mode-params-backdrop')) return true;
     return false;

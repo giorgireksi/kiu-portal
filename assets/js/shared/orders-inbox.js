@@ -92,10 +92,10 @@ function renderOrderDetailHeaderMarkup(selectedOrder, options = {}) {
     const titleVariantClass = options.titleVariantClass || 'orders-detail-title--hero';
     const rightBadges = [];
     if (selectedOrder?.status) {
-        rightBadges.push(`<span class="lux-status-pill is-success">${escapeHtml(selectedOrder.status || 'Active')}</span>`);
+        rightBadges.push(`<span class="lux-status-pill is-success home-hover-chip">${escapeHtml(selectedOrder.status || 'Active')}</span>`);
     }
     if (options.showSenderPill) {
-        rightBadges.push(`<span class="lux-status-pill is-muted">From ${escapeHtml(selectedOrder.createdByName || 'Administration')}</span>`);
+        rightBadges.push(`<span class="lux-status-pill is-muted home-hover-chip">From ${escapeHtml(selectedOrder.createdByName || 'Administration')}</span>`);
     }
     if (options.extraBadgesMarkup) {
         rightBadges.push(options.extraBadgesMarkup);
@@ -173,7 +173,7 @@ function renderOrderDetailAttachmentsMarkup(selectedOrder) {
                     </div>
                     ${attachment.url
                         ? `<a class="lux-secondary-btn" href="${escapeHtml(attachment.url)}" download="${escapeHtml(attachment.name)}"><i class="fas fa-file-download"></i> Download</a>`
-                        : `<span class="lux-status-pill is-muted">No file URL</span>`}
+                        : `<span class="lux-status-pill is-muted home-hover-chip">No file URL</span>`}
                 </div>
             `).join('')}
         </div>
@@ -334,7 +334,7 @@ function ensureRecipientOrdersShell(container) {
 function createRecipientOrdersStatusButton(status, active) {
     const label = status.charAt(0).toUpperCase() + status.slice(1);
     return createOrdersNode('button', {
-        className: `orders-status-filter lux-filter-pill ${active ? 'is-active' : ''}`.trim(),
+        className: `orders-status-filter lux-filter-pill home-hover-chip ${active ? 'is-active' : ''}`.trim(),
         text: label,
         attrs: {
             type: 'button',
@@ -371,7 +371,7 @@ function createRecipientOrdersListItem(order, currentUser, selectedOrder) {
     }));
     topRow.appendChild(copyWrap);
     topRow.appendChild(createOrdersNode('span', {
-        className: `orders-item__state lux-status-pill ${isRead ? 'is-muted' : 'is-info'}`.trim(),
+        className: `orders-item__state lux-status-pill ${isRead ? 'is-muted' : 'is-info'} home-hover-chip`.trim(),
         text: isRead ? 'Read' : 'Unread'
     }));
 
@@ -514,9 +514,9 @@ function renderRecipientOrdersHeroMain(currentUser, unreadCount) {
         <div class="page-hero-title orders-hero-title">Official orders and decisions</div>
         <div class="lux-card-copy">Review official orders and institutional decisions sent to your portal account. Orders are shared by administrators and scoped to the groups or people they selected.</div>
         <div class="lux-pill-row orders-hero-pills">
-            <span class="lux-status-pill is-muted"><i class="fas fa-user-shield"></i> ${escapeHtml(getOrderRoleLabel(currentUser.role))}</span>
-            <span class="lux-status-pill is-muted"><i class="fas fa-building"></i> ${escapeHtml(getFacultyLabel(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty()))}</span>
-            <span class="lux-status-pill is-muted"><i class="fas fa-bell"></i> ${unreadCount} unread</span>
+            <span class="lux-pill lux-soft-chrome home-hover-chip"><i class="fas fa-user-shield"></i> ${escapeHtml(getOrderRoleLabel(currentUser.role))}</span>
+            <span class="lux-pill lux-soft-chrome home-hover-chip"><i class="fas fa-building"></i> ${escapeHtml(getFacultyLabel(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty()))}</span>
+            <span class="lux-pill lux-soft-chrome home-hover-chip"><i class="fas fa-bell"></i> ${unreadCount} unread</span>
         </div>
     `;
 }
@@ -555,7 +555,7 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
     const statusButtons = ['all', 'unread', 'read'].map((status) => {
         const active = (uiState.status || 'all') === status;
         const label = status.charAt(0).toUpperCase() + status.slice(1);
-        return `<button type="button" data-recipient-order-status="${escapeHtml(status)}" class="orders-status-filter lux-filter-pill ${active ? 'is-active' : ''}" aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
+        return `<button type="button" data-recipient-order-status="${escapeHtml(status)}" class="orders-status-filter lux-filter-pill home-hover-chip ${active ? 'is-active' : ''}" aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
     }).join('');
 
     const orderRows = orders.length ? orders.map((order) => {
@@ -568,7 +568,7 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
                         <div class="orders-item__title">${escapeHtml(order.title)}</div>
                         <div class="orders-item__meta">${escapeHtml(order.type)} &middot; Effective ${escapeHtml(getOrderDisplayValue(order.effectiveDate))}</div>
                     </div>
-                    <span class="orders-item__state lux-status-pill ${isRead ? 'is-muted' : 'is-info'}">${isRead ? 'Read' : 'Unread'}</span>
+                    <span class="orders-item__state lux-status-pill ${isRead ? 'is-muted' : 'is-info'} home-hover-chip">${isRead ? 'Read' : 'Unread'}</span>
                 </div>
                 <div class="orders-item__meta">${escapeHtml(order.id)} &middot; Sent ${escapeHtml(getOrderDisplayValue(order.createdDate))} by ${escapeHtml(order.createdByName || 'Administrator')}</div>
             </button>
@@ -581,7 +581,7 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
                 <div class="lux-card-title">My Orders</div>
                 <div class="lux-card-copy">Official decisions delivered to your account.</div>
             </div>
-            <span class="lux-status-pill is-info">${allOrders.length} total</span>
+            <span class="lux-status-pill is-info home-hover-chip">${allOrders.length} total</span>
         </div>
         <input type="text" class="lux-control" value="${escapeHtml(uiState.search || '')}" data-recipient-order-search="1" placeholder="Search by order title, type, or date">
         <div class="orders-status-row">${statusButtons}</div>

@@ -111,6 +111,7 @@
     "library.html": {
       "category": "standard-shell",
       "dedicatedCss": [
+        "assets/css/lux-layout-primitives.css",
         "assets/css/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
@@ -199,7 +200,8 @@
     "social.html": {
       "category": "special-surface",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/lux-page-bare-lite.css",
+        "assets/css/lux-studio.css"
       ],
       "mobileShell": "social-shared",
       "stack": "shared-portal"
@@ -223,6 +225,7 @@
     "student-service.html": {
       "category": "standard-shell",
       "dedicatedCss": [
+        "assets/css/lux-layout-primitives.css",
         "assets/css/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",

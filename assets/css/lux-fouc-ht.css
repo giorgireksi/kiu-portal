@@ -394,7 +394,7 @@ html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-p
 }
 .lux-hero { min-height: 240px; padding: 26px; }
 /* Outer glass host SSOT — denser desk panel tokens (redesign via lux-tokens). */
-body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]) {
+body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]:not(.lux-glass-dialog-card)) {
   background-color: var(--lux-panel-fill);
   background-image: var(--lux-panel-surface);
   border: 1px solid var(--lux-panel-host-border);
@@ -427,7 +427,7 @@ body.lux-route-home #page-home #lux-home-shell :is(
   background-image: var(--lux-soft-chrome-surface);
   border: 1px solid var(--lux-soft-chrome-border-accent);
   border-radius: 16px;
-  box-shadow: var(--lux-soft-chrome-chip-shadow);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
@@ -576,15 +576,6 @@ body.lux-route-admin-scheduler #page-admin-scheduler .palette-card:focus-visible
     0 0 0 3px color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, transparent) !important;
 }
 
-body.lux-route-admin-scheduler .sch-modal[data-lux-glass-root="1"] {
-  border: 1px solid var(--lux-panel-border, var(--lux-border));
-  background-color: var(--lux-panel-fill);
-  background-image: var(--lux-panel-surface);
-  box-shadow: var(--lux-elev-3);
-  color: var(--lux-text);
-  backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
-}
 body.lux-route-admin-scheduler .sch-modal-head-accent {
   background: linear-gradient(
     135deg,
@@ -597,7 +588,7 @@ body.lux-route-admin-scheduler .sch-modal-head-accent {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
   .sch-modal-title,
   .sch-modal-subtitle,
   .sch-modal-week,
@@ -606,7 +597,7 @@ body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #
 ) {
   color: #fff8ef;
 }
-body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
   .sch-modal-subtitle,
   .sch-modal-week,
   .quiz-modal-subtitle
@@ -618,22 +609,17 @@ body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #
   color: #fff8ef;
   border: 1px solid rgba(255, 255, 255, 0.22);
 }
-body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
   .sch-modal-close-muted,
   .quiz-modal-close
 ) {
   color: rgba(255, 248, 239, 0.78);
 }
-body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
   .sch-modal-close-muted,
   .quiz-modal-close
 ):hover {
   color: #fff8ef;
-}
-body.lux-route-admin-scheduler .sch-modal-mode-chip {
-  background: rgba(var(--lux-accent-rgb), 0.14);
-  color: var(--lux-accent-2);
-  border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
 }
 body.lux-route-admin-scheduler .sch-modal-subtitle,
 body.lux-route-admin-scheduler .sch-modal-week,
@@ -647,102 +633,6 @@ body.lux-route-admin-scheduler .sch-modal-close-muted {
 body.lux-route-admin-scheduler .quiz-modal-close:hover,
 body.lux-route-admin-scheduler .sch-modal-close-muted:hover {
   color: var(--lux-text);
-}
-body.lux-route-admin-scheduler .sch-modal-foot {
-  background: color-mix(in srgb, var(--lux-panel-fill, transparent) 82%, transparent);
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-preset-manage-link {
-  color: var(--lux-accent-2);
-  text-transform: none;
-  letter-spacing: 0.04em;
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-preset-manage-link:hover {
-  color: var(--lux-text);
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-create-btn.lux-primary-btn:not(.lux-modern-button) {
-  min-width: 240px;
-  padding: 14px 18px !important;
-  border-radius: 18px !important;
-  background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.92), rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), 0.84)) !important;
-  border: 1px solid rgba(var(--lux-accent-rgb), 0.32) !important;
-  color: #fff8ef !important;
-  box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.2) !important;
-}
-/* Session modal copy — readable labels, values, and conflict messaging on CTA fields. */
-body.lux-route-admin-scheduler #schModalOverlay .sch-modal-body {
-  color: var(--lux-text);
-}
-body.lux-route-admin-scheduler #schModalOverlay :is(
-  .sch-form-section-title,
-  .sch-input-group > label,
-  .sch-input-label-row label
-) {
-  color: var(--lux-text-soft, var(--lux-text-muted));
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-form-section-copy {
-  color: var(--lux-text-muted);
-  line-height: 1.5;
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-inline-required {
-  color: #f87171;
-  font-weight: 800;
-}
-body.lux-route-admin-scheduler #schModalOverlay :is(.lux-control, .lux-picker-btn--compact) {
-  color: var(--lux-btn-label, var(--lux-text));
-}
-body.lux-route-admin-scheduler #schModalOverlay .lux-control::placeholder {
-  color: color-mix(in srgb, var(--lux-btn-label, var(--lux-text)) 58%, transparent);
-  opacity: 1;
-}
-body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn--compact :is(.lux-picker-value, strong, i) {
-  color: inherit;
-}
-body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn--compact i {
-  opacity: 0.82;
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-input-readonly.lux-control {
-  color: color-mix(in srgb, var(--lux-btn-label, var(--lux-text)) 76%, var(--lux-text-muted));
-}
-body.lux-route-admin-scheduler #schModalOverlay input[type='time'].lux-control,
-body.lux-route-admin-scheduler #schModalOverlay input[type='number'].lux-control {
-  color: var(--lux-btn-label, var(--lux-text));
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show {
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
-  border-style: solid;
-  border-width: var(--lux-btn-frame-width, 3.5px);
-  box-shadow: var(--lux-btn-frame-shadow);
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show i {
-  flex: 0 0 auto;
-  margin-top: 2px;
-  font-size: 14px;
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger'] {
-  background: color-mix(in srgb, #7f1d1d 22%, var(--lux-btn-well-soft));
-  border-color: var(--lux-btn-danger-border, #dc2626);
-  color: #fecaca;
-}
-body.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='success'] {
-  background: color-mix(in srgb, #14532d 20%, var(--lux-btn-well-soft));
-  border-color: color-mix(in srgb, #22c55e 72%, var(--lux-btn-border-solid, var(--lux-accent)));
-  color: #bbf7d0;
-}
-body.lux-light-mode.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger'] {
-  color: #991b1b;
-  background: color-mix(in srgb, #fecaca 48%, var(--lux-btn-well-soft));
-}
-body.lux-light-mode.lux-route-admin-scheduler #schModalOverlay .sch-conflict-alert.show[data-conflict-state='success'] {
-  color: #166534;
-  background: color-mix(in srgb, #bbf7d0 44%, var(--lux-btn-well-soft));
-}
-body.lux-light-mode.lux-route-admin-scheduler #schModalOverlay :is(.lux-control, .lux-picker-btn--compact) {
-  text-shadow: none;
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item {
   border-width: var(--lux-btn-frame-width, 3.5px);
@@ -816,9 +706,7 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .sch-empty-week-notice.lux-soft-chrome,
   .sch-grid-empty.lux-soft-chrome,
   .alib-panel.lux-soft-chrome,
-  .library-catalog-filters-panel.lux-soft-chrome,
   .social-neo-card,
-  .admin-library-catalog-card.lux-soft-chrome,
   .orders-admin-panel.lux-soft-chrome,
   .admin-orders-create-column.lux-soft-chrome,
   .lux-status-pill,
@@ -846,16 +734,2086 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .staff-hub-studio-quick-btn,
   .students-hub-studio-quick-btn,
   .staff-hub-builder-launch-card,
-  .students-hub-builder-launch-card
+  .students-hub-builder-launch-card,
+  .lux-prog-control-band.lux-soft-chrome,
+  .lux-program-shell-section,
+  .lux-section-card.lux-program-shell-section,
+  .lux-program-module-option,
+  .lux-module-option.lux-program-module-option,
+  .lux-program-subject-card,
+  .lux-program-empty-state,
+  .lux-empty-state,
+  .lms-clean-subjects,
+  .lms-clean-subjects--merged,
+  .lux-lms-subject-card,
+  .lms-route-card,
+  .lms-route-empty,
+  .lux-timetable-session-card,
+  .lux-timetable-day-section,
+  .schedule-session-card,
+  .schedule-empty-state,
+  .schedule-grid-empty,
+  .lux-timetable-grid-empty,
+  .schedule-day-section
+):not(.lux-panel):not([data-lux-glass-root="1"]),
+body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
+  .lux-strip-card.surface-card,
+  [class*="-hero-stat"],
+  .social-neo-directory-item,
+  .social-neo-event-feature,
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty
 ):not(.lux-panel):not([data-lux-glass-root="1"]) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
   border: 1px solid var(--lux-soft-chrome-border-accent);
   border-radius: 16px;
-  box-shadow: var(--lux-soft-chrome-chip-shadow);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+}
+
+/* LMS catalog: matte semester/subject stage inside page-hero glass host. */
+body.lux-route-lms .page-hero :is(
+  .lms-clean-subjects,
+  .lms-clean-subjects--merged,
+  .lux-lms-subject-card,
+  .lms-route-empty
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+/* Timetable + registration pages: matte inners + home-hover-chip motion; glass hosts static. */
+body.lux-route-timetable .lux-timetable-page :is(
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-view-switcher,
+  .lux-timetable-week-nav,
+  .lux-timetable-overview-row,
+  .schedule-empty-state,
+  .schedule-grid-empty,
+  .lux-timetable-grid-empty,
+  .lux-timetable-hero-focus,
+  .lux-timetable-day-section,
+  .schedule-day-section,
+  .lux-timetable-session-card,
+  .schedule-session-card,
+  .page-hero-badge,
+  .lux-timetable-hero-badge,
+  .schedule-chip,
+  .lux-timetable-chip
+),
+body.lux-route-registration #page-registration :is(
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-hero-focus,
+  .registration-insight-card,
+  .registration-footer-bar,
+  .reg-tab:not(.active),
+  .registration-state-card,
+  .registration-module-choice,
+  .registration-course-row,
+  .registration-empty-state,
+  .registration-render-error,
+  .registration-module-list-card,
+  .registration-module-pane-card,
+  .registration-track-card,
+  .page-hero-badge
+),
+body.lux-route-timetable .lux-timetable-page .lux-card:not([data-lux-glass-root="1"]),
+body.lux-route-registration #page-registration .lux-card:not([data-lux-glass-root="1"]) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+/* Glass hosts only — no lift (outer page-hero + stage canvas). */
+body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage),
+body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace) {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage)::after,
+body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace)::after {
+  display: none;
+}
+
+/* Every matte inner shell: shared home-hover-chip lift + glow. */
+body.lux-route-timetable .lux-timetable-page :is(
+  .home-hover-chip,
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-view-switcher,
+  .lux-timetable-week-nav,
+  .lux-timetable-overview-row,
+  .lux-timetable-hero-focus,
+  .schedule-empty-state,
+  .schedule-grid-empty,
+  .lux-timetable-grid-empty,
+  .lux-timetable-day-section,
+  .schedule-day-section,
+  .lux-timetable-session-card,
+  .schedule-session-card
+),
+body.lux-route-registration #page-registration :is(
+  .home-hover-chip,
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-hero-focus,
+  .registration-insight-card,
+  .registration-footer-bar,
+  .registration-state-card,
+  .registration-module-choice,
+  .registration-course-row,
+  .registration-empty-state,
+  .registration-render-error,
+  .registration-module-list-card,
+  .registration-module-pane-card,
+  .registration-track-card
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-timetable .lux-timetable-page :is(
+  .home-hover-chip,
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-view-switcher,
+  .lux-timetable-week-nav,
+  .lux-timetable-overview-row,
+  .lux-timetable-hero-focus,
+  .schedule-empty-state,
+  .schedule-grid-empty,
+  .lux-timetable-grid-empty,
+  .lux-timetable-day-section,
+  .schedule-day-section,
+  .lux-timetable-session-card,
+  .schedule-session-card
+)::after,
+body.lux-route-registration #page-registration :is(
+  .home-hover-chip,
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-hero-focus,
+  .registration-insight-card,
+  .registration-footer-bar,
+  .registration-state-card,
+  .registration-module-choice,
+  .registration-course-row,
+  .registration-empty-state,
+  .registration-render-error,
+  .registration-module-list-card,
+  .registration-module-pane-card,
+  .registration-track-card
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-timetable .lux-timetable-page :is(
+  .home-hover-chip,
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-view-switcher,
+  .lux-timetable-week-nav,
+  .lux-timetable-overview-row,
+  .lux-timetable-hero-focus,
+  .schedule-empty-state,
+  .schedule-grid-empty,
+  .lux-timetable-grid-empty,
+  .lux-timetable-day-section,
+  .schedule-day-section,
+  .lux-timetable-session-card,
+  .schedule-session-card
+) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select),
+body.lux-route-registration #page-registration :is(
+  .home-hover-chip,
+  .lux-timetable-command,
+  .lux-timetable-filters,
+  .lux-timetable-hero-focus,
+  .registration-insight-card,
+  .registration-footer-bar,
+  .registration-state-card,
+  .registration-module-choice,
+  .registration-course-row,
+  .registration-empty-state,
+  .registration-render-error,
+  .registration-module-list-card,
+  .registration-module-pane-card,
+  .registration-track-card
+) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Small pills/chips: lighter lift than panel shells. */
+body.lux-route-timetable .lux-timetable-page :is(
+  .lux-timetable-chip,
+  .schedule-chip,
+  .page-hero-badge,
+  .lux-timetable-hero-badge,
+  .lux-timetable-stage-status
+),
+body.lux-route-registration #page-registration :is(
+  .page-hero-badge,
+  .reg-tab:not(.active)
+) {
+  contain: none;
+  overflow: visible;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+body.lux-route-timetable .lux-timetable-page :is(.page-hero-badge, .lux-timetable-hero-badge),
+body.lux-route-registration #page-registration :is(.page-hero-badge, .reg-tab:not(.active)) {
+  border-radius: 999px;
+}
+
+body.lux-route-registration #page-registration .reg-tab:not(.active) {
+  border-radius: 16px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage):hover,
+  body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace):hover {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-timetable .lux-timetable-page :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-view-switcher,
+    .lux-timetable-week-nav,
+    .lux-timetable-overview-row,
+    .lux-timetable-hero-focus,
+    .schedule-empty-state,
+    .schedule-grid-empty,
+    .lux-timetable-grid-empty,
+    .lux-timetable-day-section,
+    .schedule-day-section,
+    .lux-timetable-session-card,
+    .schedule-session-card
+  ):hover,
+  body.lux-route-registration #page-registration :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-hero-focus,
+    .registration-insight-card,
+    .registration-footer-bar,
+    .registration-state-card,
+    .registration-module-choice,
+    .registration-course-row,
+    .registration-empty-state,
+    .registration-render-error,
+    .registration-module-list-card,
+    .registration-module-pane-card,
+    .registration-track-card
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-timetable .lux-timetable-page :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-view-switcher,
+    .lux-timetable-week-nav,
+    .lux-timetable-overview-row,
+    .lux-timetable-hero-focus,
+    .schedule-empty-state,
+    .schedule-grid-empty,
+    .lux-timetable-grid-empty,
+    .lux-timetable-day-section,
+    .schedule-day-section,
+    .lux-timetable-session-card,
+    .schedule-session-card
+  ):hover::after,
+  body.lux-route-registration #page-registration :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-hero-focus,
+    .registration-insight-card,
+    .registration-footer-bar,
+    .registration-state-card,
+    .registration-module-choice,
+    .registration-course-row,
+    .registration-empty-state,
+    .registration-render-error,
+    .registration-module-list-card,
+    .registration-module-pane-card,
+    .registration-track-card
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-route-timetable .lux-timetable-page :is(
+    .lux-timetable-chip,
+    .schedule-chip,
+    .page-hero-badge,
+    .lux-timetable-hero-badge,
+    .lux-timetable-stage-status
+  ):hover,
+  body.lux-route-registration #page-registration :is(
+    .page-hero-badge,
+    .reg-tab:not(.active)
+  ):hover {
+    transform: translateY(-1px);
+    box-shadow: var(--lux-elev-2);
+  }
+}
+
+@media (hover: none) {
+  body.lux-route-timetable .lux-timetable-page :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-view-switcher,
+    .lux-timetable-week-nav,
+    .lux-timetable-overview-row,
+    .lux-timetable-hero-focus,
+    .schedule-empty-state,
+    .schedule-grid-empty,
+    .lux-timetable-grid-empty,
+    .lux-timetable-day-section,
+    .schedule-day-section,
+    .lux-timetable-session-card,
+    .schedule-session-card
+  ):active,
+  body.lux-route-registration #page-registration :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-hero-focus,
+    .registration-insight-card,
+    .registration-footer-bar,
+    .registration-state-card,
+    .registration-module-choice,
+    .registration-course-row,
+    .registration-empty-state,
+    .registration-render-error,
+    .registration-module-list-card,
+    .registration-module-pane-card,
+    .registration-track-card
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-timetable .lux-timetable-page :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-view-switcher,
+    .lux-timetable-week-nav,
+    .lux-timetable-overview-row,
+    .lux-timetable-hero-focus,
+    .schedule-empty-state,
+    .schedule-grid-empty,
+    .lux-timetable-grid-empty,
+    .lux-timetable-day-section,
+    .schedule-day-section,
+    .lux-timetable-session-card,
+    .schedule-session-card
+  ):active::after,
+  body.lux-route-registration #page-registration :is(
+    .home-hover-chip,
+    .lux-timetable-command,
+    .lux-timetable-filters,
+    .lux-timetable-hero-focus,
+    .registration-insight-card,
+    .registration-footer-bar,
+    .registration-state-card,
+    .registration-module-choice,
+    .registration-course-row,
+    .registration-empty-state,
+    .registration-render-error,
+    .registration-module-list-card,
+    .registration-module-pane-card,
+    .registration-track-card
+  ):active::after {
+    opacity: 1;
+  }
+
+  body.lux-route-timetable .lux-timetable-page :is(
+    .lux-timetable-chip,
+    .schedule-chip,
+    .page-hero-badge,
+    .lux-timetable-hero-badge,
+    .lux-timetable-stage-status
+  ):active,
+  body.lux-route-registration #page-registration :is(
+    .page-hero-badge,
+    .reg-tab:not(.active)
+  ):active {
+    transform: translateY(-1px);
+    box-shadow: var(--lux-elev-2);
+  }
+}
+
+/* Picker hosts are layout-only — button chrome lives in lux-controls. */
+body.lux-route-timetable .lux-timetable-page .lux-picker-field,
+body.lux-route-registration #page-registration .lux-picker-field,
+body.lux-route-admin-tools #kiu-subject-builder-modal .lux-picker-field,
+body.lux-route-personal-data #page-personal-data .lux-picker-field,
+body.lux-route-chancellery #page-chancellery .lux-picker-field {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+/* Personal data page: matte inners + home-hover-chip motion; glass hosts static. */
+body.lux-route-personal-data #page-personal-data :is(
+  .personal-data-command,
+  .personal-data-toolbar,
+  .personal-data-identity-card,
+  .personal-data-kpi-card,
+  #personal-data-status.lux-status-pill
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-personal-data #page-personal-data :is(.page-hero, .personal-data-workspace) {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-personal-data #page-personal-data :is(.page-hero, .personal-data-workspace)::after {
+  display: none;
+}
+
+body.lux-route-personal-data #page-personal-data :is(
+  .home-hover-chip,
+  .personal-data-command,
+  .personal-data-toolbar,
+  .personal-data-identity-card,
+  .personal-data-kpi-card
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-personal-data #page-personal-data :is(
+  .home-hover-chip,
+  .personal-data-command,
+  .personal-data-toolbar,
+  .personal-data-identity-card,
+  .personal-data-kpi-card
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-personal-data #page-personal-data :is(
+  .home-hover-chip,
+  .personal-data-command,
+  .personal-data-toolbar,
+  .personal-data-identity-card,
+  .personal-data-kpi-card
+) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
+  position: relative;
+  z-index: 1;
+}
+
+body.lux-route-personal-data #page-personal-data #personal-data-status.lux-status-pill {
+  contain: none;
+  overflow: visible;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-personal-data #page-personal-data :is(.page-hero, .personal-data-workspace):hover {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-personal-data #page-personal-data :is(
+    .home-hover-chip,
+    .personal-data-command,
+    .personal-data-toolbar,
+    .personal-data-identity-card,
+    .personal-data-kpi-card
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-personal-data #page-personal-data :is(
+    .home-hover-chip,
+    .personal-data-command,
+    .personal-data-toolbar,
+    .personal-data-identity-card,
+    .personal-data-kpi-card
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-route-personal-data #page-personal-data #personal-data-status.lux-status-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--lux-elev-2);
+  }
+}
+
+@media (hover: none) {
+  body.lux-route-personal-data #page-personal-data :is(
+    .home-hover-chip,
+    .personal-data-command,
+    .personal-data-toolbar,
+    .personal-data-identity-card,
+    .personal-data-kpi-card
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-personal-data #page-personal-data :is(
+    .home-hover-chip,
+    .personal-data-command,
+    .personal-data-toolbar,
+    .personal-data-identity-card,
+    .personal-data-kpi-card
+  ):active::after {
+    opacity: 1;
+  }
+
+  body.lux-route-personal-data #page-personal-data #personal-data-status.lux-status-pill:active {
+    transform: translateY(-1px);
+    box-shadow: var(--lux-elev-2);
+  }
+}
+
+/* Chancellery page: matte inners + home-hover-chip motion; glass hosts static. */
+body.lux-route-chancellery #page-chancellery :is(
+  .lux-chancellery-command-bar,
+  .lux-chancellery-hero-side,
+  .lux-chancellery-list-panel,
+  .lux-chancellery-detail-panel,
+  .lux-chancellery-queue-item,
+  .lux-chancellery-finance-card
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-chancellery #page-chancellery :is(.page-hero, [data-chancellery-shell="1"]) {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-chancellery #page-chancellery :is(.page-hero, [data-chancellery-shell="1"])::after {
+  display: none;
+}
+
+body.lux-route-chancellery #page-chancellery :is(
+  .home-hover-chip,
+  .lux-chancellery-command-bar,
+  .lux-chancellery-hero-side,
+  .lux-chancellery-list-panel,
+  .lux-chancellery-detail-panel,
+  .lux-chancellery-queue-item,
+  .lux-chancellery-finance-card
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-chancellery #page-chancellery :is(
+  .home-hover-chip,
+  .lux-chancellery-command-bar,
+  .lux-chancellery-hero-side,
+  .lux-chancellery-list-panel,
+  .lux-chancellery-detail-panel,
+  .lux-chancellery-queue-item,
+  .lux-chancellery-finance-card
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-chancellery #page-chancellery :is(
+  .home-hover-chip,
+  .lux-chancellery-command-bar,
+  .lux-chancellery-hero-side,
+  .lux-chancellery-list-panel,
+  .lux-chancellery-detail-panel,
+  .lux-chancellery-queue-item,
+  .lux-chancellery-finance-card
+) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
+  position: relative;
+  z-index: 1;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-queue-item {
+  border-radius: 14px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-chancellery #page-chancellery :is(.page-hero, [data-chancellery-shell="1"]):hover {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-chancellery #page-chancellery :is(
+    .home-hover-chip,
+    .lux-chancellery-command-bar,
+    .lux-chancellery-hero-side,
+    .lux-chancellery-list-panel,
+    .lux-chancellery-detail-panel,
+    .lux-chancellery-queue-item,
+    .lux-chancellery-finance-card
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-chancellery #page-chancellery :is(
+    .home-hover-chip,
+    .lux-chancellery-command-bar,
+    .lux-chancellery-hero-side,
+    .lux-chancellery-list-panel,
+    .lux-chancellery-detail-panel,
+    .lux-chancellery-queue-item,
+    .lux-chancellery-finance-card
+  ):hover::after {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-chancellery #page-chancellery :is(
+    .home-hover-chip,
+    .lux-chancellery-command-bar,
+    .lux-chancellery-hero-side,
+    .lux-chancellery-list-panel,
+    .lux-chancellery-detail-panel,
+    .lux-chancellery-queue-item,
+    .lux-chancellery-finance-card
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-chancellery #page-chancellery :is(
+    .home-hover-chip,
+    .lux-chancellery-command-bar,
+    .lux-chancellery-hero-side,
+    .lux-chancellery-list-panel,
+    .lux-chancellery-detail-panel,
+    .lux-chancellery-queue-item,
+    .lux-chancellery-finance-card
+  ):active::after {
+    opacity: 1;
+  }
+}
+
+/* Library page: matte inners + home-hover-chip motion; primary shells → frosted override below. */
+#page-library :is(
+  .admin-library-metric-card.lux-stat-card,
+  .admin-library-catalog-card .admin-library-tabs,
+  .admin-library-empty-state
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+#page-library .admin-library-metric-card.lux-stat-card {
+  border-radius: 12px;
+}
+
+#page-library :is(.admin-library-status-pill, .library-status-pill) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 999px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+#page-library .admin-library-empty-state {
+  border-style: dashed;
+}
+
+#page-library .admin-library-catalog-foot {
+  border-top: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
+#page-library .admin-library-catalog-table thead th {
+  color: rgba(var(--lux-accent-rgb), 0.76);
+  background: rgba(var(--lux-accent-rgb), 0.06);
+  border-bottom: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
+#page-library .admin-library-catalog-table tbody td.admin-library-catalog-cell {
+  color: var(--lux-text);
+  border-bottom: 1px solid color-mix(in srgb, var(--lux-soft-chrome-border-accent) 72%, transparent);
+  background: color-mix(in srgb, var(--lux-panel-fill, transparent) 36%, transparent);
+}
+
+#page-library .admin-library-catalog-table tbody tr.admin-library-catalog-row:hover td.admin-library-catalog-cell {
+  background: rgba(var(--lux-accent-rgb), 0.12);
+}
+
+#page-library .admin-library-catalog-table tbody tr.admin-library-empty-row,
+#page-library .admin-library-catalog-table tbody tr.admin-library-empty-row:hover {
+  cursor: default;
+  pointer-events: none;
+}
+
+#page-library .admin-library-catalog-table tbody tr.admin-library-empty-row td,
+#page-library .admin-library-catalog-table tbody tr.admin-library-empty-row:hover td,
+#page-library .admin-library-empty-cell {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+}
+
+#page-library .admin-library-catalog-card .lux-tab-btn.active,
+#page-library .admin-library-catalog-card .lux-tab-btn[aria-pressed='true'] {
+  color: #fff8ef;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * 0.55)),
+    rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .92) * 0.42))
+  );
+  border-color: rgba(var(--lux-accent-rgb), 0.45);
+  box-shadow:
+    inset 0 1px 0 hsl(var(--lux-ink-100, 0 0% 100%) / 0.18),
+    0 8px 22px -10px rgba(var(--lux-accent-rgb), 0.5);
+}
+
+body.lux-route-library #page-library.lux-page-shell {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-library #page-library [data-library-catalog-shell="1"] {
+  transition: none;
+  contain: none;
+  overflow: visible;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-library #page-library [data-library-catalog-shell="1"]::after {
+  display: none;
+}
+
+body.lux-route-library #page-library :is(
+  .home-hover-chip,
+  .library-catalog-filters-panel,
+  .admin-library-catalog-card,
+  .admin-library-metric-card.lux-stat-card
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-library #page-library :is(
+  .home-hover-chip,
+  .library-catalog-filters-panel,
+  .admin-library-catalog-card,
+  .admin-library-metric-card.lux-stat-card
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-library #page-library :is(
+  .home-hover-chip,
+  .library-catalog-filters-panel,
+  .admin-library-catalog-card,
+  .admin-library-metric-card.lux-stat-card
+) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-library #page-library :is(
+    .page-hero,
+    [data-library-catalog-shell="1"]
+  ):hover {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-library #page-library :is(
+    .home-hover-chip,
+    .library-catalog-filters-panel,
+    .admin-library-catalog-card,
+    .admin-library-metric-card.lux-stat-card
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-library #page-library :is(
+    .home-hover-chip,
+    .library-catalog-filters-panel,
+    .admin-library-catalog-card,
+    .admin-library-metric-card.lux-stat-card
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-route-library #page-library :is(
+    .home-hover-chip,
+    .library-catalog-filters-panel,
+    .admin-library-catalog-card,
+    .admin-library-metric-card.lux-stat-card
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-library #page-library :is(
+    .home-hover-chip,
+    .library-catalog-filters-panel,
+    .admin-library-catalog-card,
+    .admin-library-metric-card.lux-stat-card
+  ):active::after {
+    opacity: 1;
+  }
+
+  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:hover,
+  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:active {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:hover::after,
+  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:active::after {
+    opacity: 0;
+  }
+}
+
+/* Student Service page: matte inners + home-hover-chip motion; primary shells → frosted override below. */
+body.lux-route-student-service #page-student-service :is(
+  .student-service-lane-choice-stats .lux-pill,
+  .student-service-student-hub-track-compact,
+  .student-service-attachment-chip,
+  .student-service-panel-chip,
+  .student-service-command-bar-stat,
+  .student-service-find-search,
+  .student-service-empty-state,
+  .student-service-qa-card,
+  .student-service-qa-answer-card,
+  .student-service-ticket-inbox-row,
+  .student-service-ticket-card,
+  .student-service-mini-action,
+  .student-service-ticket-msg-bubble,
+  .student-service-pill
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-student-service #page-student-service .student-service-lane-choice-card {
+  border-radius: 28px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-zone {
+  border-radius: 28px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-student-hub-track-compact {
+  border-radius: 18px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-attachment-chip {
+  border-radius: 999px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-panel-chip,
+body.lux-route-student-service #page-student-service .student-service-command-bar-stat {
+  border-radius: 999px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-find-search {
+  border-radius: 18px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-empty-state {
+  border-radius: 18px;
+  border-style: dashed;
+}
+
+body.lux-route-student-service #page-student-service .student-service-qa-card,
+body.lux-route-student-service #page-student-service .student-service-qa-answer-card {
+  border-radius: 22px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-ticket-inbox-row {
+  border-radius: 18px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-ticket-card {
+  border-radius: 22px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-mini-action {
+  border-radius: 999px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-status {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.lux-route-student-service #page-student-service .student-service-ticket-msg-bubble {
+  border-radius: 18px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-pill {
+  border-radius: 999px;
+}
+
+body.lux-route-student-service #page-student-service .student-service-ticket-inbox-row.is-selected {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-accent-rgb), 0.5));
+}
+
+body.lux-route-student-service #page-student-service .student-service-ticket-card.is-selected {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-service-accent-rgb), 0.5));
+  box-shadow: 0 0 0 1px rgba(var(--lux-service-accent-rgb), 0.12), var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+}
+
+body.lux-route-student-service #page-student-service .student-service-ticket-msg-bubble.is-mine {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 45%, rgba(var(--lux-accent-rgb), 0.42));
+}
+
+body.lux-route-student-service #page-student-service .student-service-qa-card.is-open {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 55%, rgba(var(--lux-accent-rgb), 0.45));
+}
+
+body.lux-route-student-service #page-student-service .student-service-qa-answer-card.is-accepted {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-accent-rgb), 0.38));
+}
+
+body.lux-route-student-service #page-student-service .student-service-qa-card-detail {
+  border-top: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
+body.lux-route-student-service #page-student-service.lux-page-shell {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-student-service #page-student-service :is(
+  .student-service-shell[data-lux-glass-root="1"],
+  .student-service-canvas
+) {
+  transition: none;
+  contain: none;
+  overflow: visible;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-student-service #page-student-service :is(
+  .student-service-shell[data-lux-glass-root="1"],
+  .student-service-canvas
+)::after {
+  display: none;
+}
+
+body.lux-route-student-service #page-student-service :is(
+  .home-hover-chip,
+  .student-service-command-bar-shell,
+  .student-service-zone,
+  .student-service-lane-choice-card,
+  .student-service-lane-choice-stats .lux-pill,
+  .student-service-student-hub-track-compact,
+  .student-service-qa-card,
+  .student-service-ticket-inbox-row,
+  .student-service-ticket-card
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-student-service #page-student-service :is(
+  .home-hover-chip,
+  .student-service-command-bar-shell,
+  .student-service-zone,
+  .student-service-lane-choice-card,
+  .student-service-lane-choice-stats .lux-pill,
+  .student-service-student-hub-track-compact,
+  .student-service-qa-card,
+  .student-service-ticket-inbox-row,
+  .student-service-ticket-card
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-student-service #page-student-service :is(
+  .home-hover-chip,
+  .student-service-command-bar-shell,
+  .student-service-zone,
+  .student-service-lane-choice-card,
+  .student-service-lane-choice-stats .lux-pill,
+  .student-service-student-hub-track-compact,
+  .student-service-qa-card,
+  .student-service-ticket-inbox-row,
+  .student-service-ticket-card
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-student-service #page-student-service :is(
+    .student-service-shell[data-lux-glass-root="1"],
+    .student-service-canvas
+  ):hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+
+  body.lux-route-student-service #page-student-service :is(
+    .home-hover-chip,
+    .student-service-command-bar-shell,
+    .student-service-zone,
+    .student-service-lane-choice-card,
+    .student-service-lane-choice-stats .lux-pill,
+    .student-service-student-hub-track-compact,
+    .student-service-qa-card,
+    .student-service-ticket-inbox-row,
+  .student-service-ticket-card
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-student-service #page-student-service :is(
+    .home-hover-chip,
+    .student-service-command-bar-shell,
+    .student-service-zone,
+    .student-service-lane-choice-card,
+    .student-service-lane-choice-stats .lux-pill,
+    .student-service-student-hub-track-compact,
+    .student-service-qa-card,
+    .student-service-ticket-inbox-row,
+  .student-service-ticket-card
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-route-student-service #page-student-service :is(
+    .home-hover-chip,
+    .student-service-command-bar-shell,
+    .student-service-zone,
+    .student-service-lane-choice-card,
+    .student-service-lane-choice-stats .lux-pill,
+    .student-service-student-hub-track-compact,
+    .student-service-qa-card,
+    .student-service-ticket-inbox-row,
+    .student-service-ticket-card
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-student-service #page-student-service :is(
+    .home-hover-chip,
+    .student-service-command-bar-shell,
+    .student-service-zone,
+    .student-service-lane-choice-card,
+    .student-service-lane-choice-stats .lux-pill,
+    .student-service-student-hub-track-compact,
+    .student-service-qa-card,
+    .student-service-ticket-inbox-row,
+    .student-service-ticket-card
+  ):active::after {
+    opacity: 1;
+  }
+
+  body.lux-route-student-service #page-student-service .student-service-zone :is(
+    .student-service-find-search,
+    .student-service-ticket-inbox-row,
+    .student-service-ticket-card
+  ):hover,
+  body.lux-route-student-service #page-student-service .student-service-zone :is(
+    .student-service-find-search,
+    .student-service-ticket-inbox-row,
+    .student-service-ticket-card
+  ):active {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-student-service #page-student-service .student-service-zone :is(
+    .student-service-find-search,
+    .student-service-ticket-inbox-row,
+    .student-service-ticket-card
+  ):hover::after,
+  body.lux-route-student-service #page-student-service .student-service-zone :is(
+    .student-service-find-search,
+    .student-service-ticket-inbox-row,
+    .student-service-ticket-card
+  ):active::after {
+    opacity: 0;
+  }
+}
+
+body.lux-route-student-service #page-student-service .student-service-lane-choice-card:focus-visible {
+  outline: 2px solid rgba(var(--lux-accent-rgb), 0.36);
+  outline-offset: 3px;
+}
+
+/* Student Service modal portal: backdrop dim + matte dialog surfaces. */
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-qa-composer-modal-backdrop,
+  .student-service-qa-delete-modal-backdrop,
+  .student-service-guidance-modal-backdrop,
+  .student-service-qa-thread-modal-backdrop,
+  .student-service-ticket-thread-modal-backdrop,
+  .student-service-inbox-filter-editor-backdrop
+) {
+  background: rgba(4, 7, 13, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+body.lux-light-mode.lux-route-student-service #student-service-modal-root :is(
+  .student-service-qa-composer-modal-backdrop,
+  .student-service-qa-delete-modal-backdrop,
+  .student-service-guidance-modal-backdrop,
+  .student-service-qa-thread-modal-backdrop,
+  .student-service-ticket-thread-modal-backdrop,
+  .student-service-inbox-filter-editor-backdrop
+),
+html.lux-light-mode body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-qa-composer-modal-backdrop,
+  .student-service-qa-delete-modal-backdrop,
+  .student-service-guidance-modal-backdrop,
+  .student-service-qa-thread-modal-backdrop,
+  .student-service-ticket-thread-modal-backdrop,
+  .student-service-inbox-filter-editor-backdrop
+) {
+  background: rgba(244, 241, 234, 0.62);
+}
+
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-qa-composer-modal,
+  .student-service-qa-delete-confirm,
+  .student-service-guidance-modal,
+  .student-service-qa-thread-modal,
+  .student-service-ticket-thread-modal,
+  .student-service-inbox-filter-editor-modal
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-qa-composer-modal-accent,
+  .student-service-qa-delete-confirm-accent,
+  .student-service-guidance-modal-accent,
+  .student-service-qa-thread-modal-accent,
+  .student-service-ticket-thread-modal-accent,
+  .student-service-inbox-filter-editor-accent
+) {
+  background: linear-gradient(90deg, rgba(var(--lux-accent-rgb), 0.92), rgba(var(--lux-shell-glow-rgb, var(--lux-accent-rgb)), 0.72));
+}
+
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-qa-composer-modal-icon-chip,
+  .student-service-qa-delete-confirm-icon-chip,
+  .student-service-guidance-modal-icon-chip,
+  .student-service-qa-thread-modal-icon-chip,
+  .student-service-inbox-filter-editor-icon-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  color: rgba(var(--lux-accent-rgb), 0.96);
+}
+
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-qa-composer-modal-actions,
+  .student-service-qa-delete-confirm-actions,
+  .student-service-inbox-filter-editor-actions
+) {
+  border-top: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-inbox-filter-editor-row {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+}
+
+/* Orders inbox page: matte inners + home-hover-chip motion; primary shells → frosted override below. */
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-summary-surface:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-summary-surface::after {
+  display: none !important;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero-side .lux-hero-signal,
+  .orders-metric-card,
+  .orders-list-wrap,
+  .orders-item,
+  .orders-list-empty,
+  .orders-detail-panel.lux-detail-panel,
+  .orders-detail-empty,
+  .orders-attachment-card,
+  .orders-recipient-card,
+  .orders-status-filter,
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-wrap {
+  border-radius: 18px;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  box-shadow: none;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item:last-child {
+  border-bottom: 0;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-status-filter {
+  border-radius: 999px;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-status-pill,
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-pill.lux-soft-chrome {
+  border-radius: 999px;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-status-filter.is-active {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-accent-rgb), 0.5));
+  color: var(--lux-text);
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item.is-active {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-accent-rgb), 0.5));
+  box-shadow: inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.75);
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item.is-active::before {
+  background: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-empty {
+  border-radius: 18px;
+  border-style: dashed;
+}
+
+body.lux-route-orders #page-orders.lux-page-shell {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"] {
+  transition: none;
+  contain: none;
+  overflow: visible;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"]::after {
+  display: none;
+}
+
+/* Orders inbox primary shells: frosted panel glass (beats lux-summary-surface neutralize). */
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card
+) {
+  background-color: var(--lux-panel-fill) !important;
+  background-image: var(--lux-panel-surface) !important;
+  border: 1px solid var(--lux-panel-host-border) !important;
+  box-shadow: var(--lux-panel-host-shadow) !important;
+  backdrop-filter: var(--lux-panel-blur-filter) !important;
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter) !important;
+  background-clip: padding-box;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero {
+  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55) !important;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card,
+  .orders-inbox-hero-side,
+  .lux-hero-signal,
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome,
+  .home-hover-chip,
+  .orders-status-filter,
+  .orders-item,
+  .orders-list-empty,
+  .orders-metric-card,
+  .orders-detail-panel.lux-detail-panel,
+  .orders-detail-empty,
+  .orders-attachment-card,
+  .orders-recipient-card
+),
+body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card,
+  .orders-inbox-hero-side,
+  .lux-hero-signal,
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome,
+  .home-hover-chip,
+  .orders-status-filter,
+  .orders-item,
+  .orders-list-empty,
+  .orders-metric-card,
+  .orders-detail-panel.lux-detail-panel,
+  .orders-detail-empty,
+  .orders-attachment-card,
+  .orders-recipient-card
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card,
+  .orders-inbox-hero-side,
+  .lux-hero-signal,
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome,
+  .home-hover-chip,
+  .orders-status-filter,
+  .orders-item,
+  .orders-list-empty,
+  .orders-metric-card,
+  .orders-detail-panel.lux-detail-panel,
+  .orders-detail-empty,
+  .orders-attachment-card,
+  .orders-recipient-card
+)::after,
+body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card,
+  .orders-inbox-hero-side,
+  .lux-hero-signal,
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome,
+  .home-hover-chip,
+  .orders-status-filter,
+  .orders-item,
+  .orders-list-empty,
+  .orders-metric-card,
+  .orders-detail-panel.lux-detail-panel,
+  .orders-detail-empty,
+  .orders-attachment-card,
+  .orders-recipient-card
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card,
+  .orders-inbox-hero-side,
+  .lux-hero-signal,
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome,
+  .home-hover-chip,
+  .orders-status-filter,
+  .orders-item,
+  .orders-list-empty,
+  .orders-metric-card,
+  .orders-detail-panel.lux-detail-panel,
+  .orders-detail-empty,
+  .orders-attachment-card,
+  .orders-recipient-card
+) > *,
+body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card,
+  .orders-inbox-hero-side,
+  .lux-hero-signal,
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome,
+  .home-hover-chip,
+  .orders-status-filter,
+  .orders-item,
+  .orders-list-empty,
+  .orders-metric-card,
+  .orders-detail-panel.lux-detail-panel,
+  .orders-detail-empty,
+  .orders-attachment-card,
+  .orders-recipient-card
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+  .lux-status-pill,
+  .lux-pill.lux-soft-chrome,
+  .orders-status-filter,
+  .orders-item__state
+) {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"]:hover,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"]:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover::after,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):active,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):active::after,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card,
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel.lux-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):active::after {
+    opacity: 1;
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card
+  ):has(:is(
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover),
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card
+  ):has(:is(
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover) {
+    transform: none;
+    border-color: var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card
+  ):has(:is(
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover)::after,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+    .orders-inbox-hero,
+    .orders-list-card,
+    .orders-detail-card
+  ):has(:is(
+    .orders-inbox-hero-side,
+    .lux-hero-signal,
+    .lux-status-pill,
+    .lux-pill.lux-soft-chrome,
+    .home-hover-chip,
+    .orders-status-filter,
+    .orders-item,
+    .orders-list-empty,
+    .orders-metric-card,
+    .orders-detail-panel,
+    .orders-detail-empty,
+    .orders-attachment-card,
+    .orders-recipient-card
+  ):hover)::after {
+    opacity: 0;
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover),
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover) {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover)::after,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover)::after {
+    opacity: 0;
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover),
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover) {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover)::after,
+  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover)::after {
+    opacity: 0;
+  }
+}
+
+/* Social soft-chrome shells: same hover lift + ambient glow as home-hover-chip. */
+body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+  .lux-strip-card.surface-card,
+  [class*="-hero-stat"],
+  .social-neo-directory-item,
+  .social-neo-event-feature
+) {
+  position: relative;
+  isolation: isolate;
+  contain: paint;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+}
+
+body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+  .lux-strip-card.surface-card,
+  [class*="-hero-stat"],
+  .social-neo-directory-item,
+  .social-neo-event-feature
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+  .lux-strip-card.surface-card,
+  [class*="-hero-stat"],
+  .social-neo-directory-item,
+  .social-neo-event-feature
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field)) {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field)):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+    box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  }
+}
+
+body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+  .lux-strip-card.surface-card,
+  [class*="-hero-stat"],
+  .social-neo-directory-item,
+  .social-neo-event-feature,
+  .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
+):active {
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature,
+    .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
+  ) {
+    transition: border-color 0.15s ease;
+  }
+
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature
+  )::after {
+    display: none;
+  }
+
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature,
+    .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
+  ):hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+html[data-lux-transparency="0"] body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+  .social-neo-messages__inbox,
+  .social-neo-messages__thread-shell,
+  .social-neo-messages__inbox-empty,
+  .lux-strip-card.surface-card,
+  [class*="-hero-stat"],
+  .social-neo-directory-item,
+  .social-neo-event-feature,
+  .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
+):hover {
+  transform: none;
+  box-shadow: none;
 }
 
 body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] .lux-status-pill {
@@ -879,7 +2837,7 @@ body.lux-route-admin-orders .admin-orders-create-column.lux-soft-chrome :is(
   background-image: var(--lux-soft-chrome-surface);
   border: 1px solid var(--lux-soft-chrome-border-accent);
   border-radius: 16px;
-  box-shadow: var(--lux-soft-chrome-chip-shadow);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
@@ -1041,13 +2999,86 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   background-clip: padding-box;
 }
 
+/* Library catalog primary shells: frosted panel glass (not matte soft-chrome). */
+body.lux-unified-shell #page-library :is(
+  .library-catalog-filters-panel,
+  .admin-library-catalog-card
+) {
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
+}
+
+body.lux-unified-shell #page-library .library-catalog-filters-panel {
+  border-radius: 28px;
+}
+
+body.lux-unified-shell #page-library .admin-library-catalog-card {
+  border-radius: 22px;
+}
+
+/* Student Service primary shells: frosted panel glass (not matte soft-chrome). */
+body.lux-unified-shell #page-student-service :is(
+  .student-service-command-bar-shell,
+  .student-service-zone,
+  .student-service-lane-choice-card
+) {
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
+}
+
+body.lux-unified-shell #page-student-service .student-service-command-bar-shell {
+  border-radius: 18px;
+}
+
+body.lux-unified-shell #page-student-service .student-service-zone,
+body.lux-unified-shell #page-student-service .student-service-lane-choice-card {
+  border-radius: 28px;
+}
+
+/* Orders inbox primary shells: frosted panel glass (not matte soft-chrome). */
+body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+  .orders-inbox-hero,
+  .orders-list-card,
+  .orders-detail-card
+) {
+  background-color: var(--lux-panel-fill) !important;
+  background-image: var(--lux-panel-surface) !important;
+  border: 1px solid var(--lux-panel-host-border) !important;
+  box-shadow: var(--lux-panel-host-shadow) !important;
+  backdrop-filter: var(--lux-panel-blur-filter) !important;
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter) !important;
+  background-clip: padding-box;
+}
+
+body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-hero {
+  border-radius: 24px;
+  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55) !important;
+}
+
+body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
+  .orders-list-card,
+  .orders-detail-card
+) {
+  border-radius: 22px;
+}
+
 /* Global luxury hover motion & ambient radial glow for leaf panels, cards, tiles, and chips.
  * IMPORTANT: Exclude structural containers that hold popups — the hover transform
  * creates a stacking context that traps absolutely-positioned child panels.
  * Excluded: .lux-topbar-shell, .lux-page-shell, .lux-sidebar-nav, .lux-alert,
  *           .lux-admin-curriculum-control-band (holds picker dropdowns),
  *           admin-tools .lux-section-card (nested under glass host). */
-body.lux-unified-shell :is(.home-hover-chip, .lux-card),
+body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)),
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   position: relative;
   isolation: isolate;
@@ -1056,7 +3087,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
 }
 
-body.lux-unified-shell :is(.home-hover-chip, .lux-card)::after,
+body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card))::after,
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
   content: '';
   position: absolute;
@@ -1070,40 +3101,40 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after 
   transition: opacity 0.2s ease;
 }
 
-body.lux-unified-shell :is(.home-hover-chip, .lux-card) > *,
+body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)) > *,
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > * {
   position: relative;
   z-index: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover,
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
   }
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover::after,
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover::after,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover::after {
     opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card),
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)),
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
     transition: border-color 0.15s ease;
   }
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card)::after,
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card))::after,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
     display: none;
   }
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover,
+  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: none;
   }
 }
 
-html[data-lux-transparency="0"] body.lux-unified-shell :is(.home-hover-chip, .lux-card):hover,
+html[data-lux-transparency="0"] body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover,
 html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
   transform: none;
   box-shadow: none;

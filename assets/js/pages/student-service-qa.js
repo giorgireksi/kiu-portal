@@ -2,8 +2,7 @@
     const studentQaHubStub = window.__studentServiceStudentQaHubStub;
     const staffQaFeedStub = window.__studentServiceStaffQaFeedStub;
     if (
-        window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED
-        && typeof window.renderStudentServiceStudentQaHub === 'function'
+        typeof window.renderStudentServiceStudentQaHub === 'function'
         && typeof window.renderStudentServiceStaffQaFeed === 'function'
         && typeof studentQaHubStub === 'function'
         && typeof staffQaFeedStub === 'function'
@@ -12,7 +11,7 @@
         && typeof window.renderStudentServiceQuestionFeed === 'function'
         && typeof window.handleStudentServiceQaThreadClick === 'function'
     ) return;
-    window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED = true;
+
     const __kiuSsApi = window.KiuStudentService || (window.KiuStudentService = {});
     window.__kiuSsApi = __kiuSsApi;
 
@@ -952,13 +951,13 @@
                     <button type="button" class="student-service-qa-mode-btn ${draftQuestion.askMode === 'public' ? 'lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-draft-question-mode="public"><i class="fas fa-globe"></i> Public</button>
                     <button type="button" class="student-service-qa-mode-btn ${draftQuestion.askMode === 'private' ? 'lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-draft-question-mode="private"><i class="fas fa-lock"></i> Private</button>
                 </div>
-                <input id="student-service-question-title" type="text" value="${ssEscape(draftQuestion.title || '')}" data-student-service-draft-question-field="title" placeholder="Question title">
-                <textarea id="student-service-question-body" rows="5" data-student-service-draft-question-field="body" placeholder="Explain the question clearly so the answer can be reused by other students.">${ssEscape(draftQuestion.body || '')}</textarea>
+                <input id="student-service-question-title" class="lux-control" type="text" value="${ssEscape(draftQuestion.title || '')}" data-student-service-draft-question-field="title" placeholder="Question title">
+                <textarea id="student-service-question-body" class="lux-control" rows="5" data-student-service-draft-question-field="body" placeholder="Explain the question clearly so the answer can be reused by other students.">${ssEscape(draftQuestion.body || '')}</textarea>
                 <div class="student-service-staff-filter-row student-service-qa-field-row">
-                    <select id="student-service-question-category" data-student-service-draft-question-field="category">
+                    <select id="student-service-question-category" class="lux-control" data-student-service-draft-question-field="category">
                         ${STUDENT_SERVICE_CATEGORIES.map(category => `<option value="${ssEscape(category)}"${draftQuestion.category === category ? ' selected' : ''}>${ssEscape(category)}</option>`).join('')}
                     </select>
-                    <select id="student-service-question-faculty" data-student-service-draft-question-field="facultyCode">
+                    <select id="student-service-question-faculty" class="lux-control" data-student-service-draft-question-field="facultyCode">
                         <option value="${ssEscape(normalizeFacultyCode(currentUser?.facultyCode || currentUser?.faculty || '', '') || '')}"${normalizeFacultyCode(draftQuestion.facultyCode || '', '') === normalizeFacultyCode(currentUser?.facultyCode || currentUser?.faculty || '', '') ? ' selected' : ''}>${ssEscape(ssFacultyLabel(currentUser?.facultyCode || currentUser?.faculty || ''))}</option>
                         <option value="ALL"${draftQuestion.facultyCode === 'ALL' ? ' selected' : ''}>All faculties</option>
                     </select>
@@ -1010,7 +1009,7 @@
                             <span class="student-service-qa-composer-modal-icon-chip"><i class="fas fa-pen" aria-hidden="true"></i></span>
                             <div class="student-service-qa-composer-modal-title">
                                 <div class="student-service-kicker">Ask question</div>
-                                <strong id="student-service-question-composer-modal-title">Post in the Q&A feed</strong>
+                                <strong id="student-service-question-composer-modal-title" class="lux-page-title">Post in the Q&A feed</strong>
                                 <span class="lux-panel-copy">${ssEscape(prompt)}</span>
                             </div>
                         </div>
@@ -1495,11 +1494,32 @@
     const __w18Deps = { getStudentServiceQuestionThreadHost, updateStudentServiceQuestionCardToggleUi, clearLegacyStudentServiceOpenQuestionCards, updateStudentServiceQuestionThreadActiveCards, closeStudentServiceQuestionThreadModal, renderStudentServiceQuestionThreadModalShell, mountStudentServiceQuestionThreadModal, remountStudentServiceQuestionThreadModal, setStudentServiceOpenQuestionId, restoreStudentServiceOpenQuestionFromUi, patchStudentServiceQuestionCardStats, isStudentServiceQuestionHelpfulVoted, renderStudentServiceQuestionHelpfulButtonMarkup, updateStudentServiceQuestionHelpfulButton, triggerStudentServiceHelpfulAnimation, patchStudentServiceQuestionHelpfulUi, isStudentServiceAnswerHelpfulVoted, renderStudentServiceAnswerHelpfulButtonMarkup, updateStudentServiceAnswerHelpfulButton, patchStudentServiceAnswerHelpfulBtn, removeStudentServiceAnswerBranch, applyStudentServiceQuestionMutation, patchStudentServiceOpenQuestionThread, setStudentServiceQuestionFilter, setStudentServiceQuestionComposerExpanded, setStudentServiceDraftQuestionField, openStudentServiceQuestion, getStudentServiceQuestionStatusLabel, getStudentServiceQuestionStatusClass, getStudentServiceQuestionAnswerCount, renderStudentServiceQuestionList, renderStudentServiceQuestionComposer, renderStudentServiceQuestionComposerFormMarkup, renderStudentServiceQuestionComposerModalActionsMarkup, renderStudentServiceQuestionComposerModalShell, renderStudentServiceQuestionCardPreviewMarkup, renderStudentServiceQuestionFeed, renderStudentServiceCommentReplyShell, openStudentServiceDeleteQuestionConfirm, isStudentServiceQuestionComposerModalOpen, mountStudentServiceQuestionComposerModal, openStudentServiceQuestionComposerModal, closeStudentServiceQuestionComposerModal, remountStudentServiceQuestionComposerModal, renderStudentServiceAnswerCardMarkup, renderStudentServiceAnswerThreadNode, renderStudentServiceQuestionDetailActionsMarkup, renderStudentServiceQuestionDetail, submitStudentServiceQuestion, submitStudentServiceQuestionAnswer };
     const __w18PeelApi = typeof window.__kiuCreateStudentServiceQaStaffApi === 'function'
         ? window.__kiuCreateStudentServiceQaStaffApi(__w18Deps) : null;
-    if (!__w18PeelApi) throw new Error('student-service-qa-staff-runtime.js missing');
-    const { setStudentServiceQuestionOwnerResolution, setStudentServiceQuestionFeedback, setStudentServiceAnswerFeedback, deleteStudentServiceQuestion, deleteStudentServiceQuestionAnswer, renderStudentServiceQaCommandBarStats, ensureStudentServiceStaffQaShell, renderStudentServiceStaffQaFeedMarkup } = __w18PeelApi;
+    if (!__w18PeelApi) {
+        console.error('Student Service QA staff peel missing; staff desk markup unavailable.');
+    }
+    const {
+        setStudentServiceQuestionOwnerResolution = () => {},
+        setStudentServiceQuestionFeedback = () => {},
+        setStudentServiceAnswerFeedback = () => {},
+        deleteStudentServiceQuestion = async () => null,
+        deleteStudentServiceQuestionAnswer = async () => null,
+        renderStudentServiceQaCommandBarStats = () => '',
+        ensureStudentServiceStaffQaShell = () => null,
+        renderStudentServiceStaffQaFeedMarkup = () => ''
+    } = __w18PeelApi || {};
 
-
-
+    __kiuSsApi.renderStudentServiceStudentQaHub = window.renderStudentServiceStudentQaHub = function renderStudentServiceStudentQaHub(container) {
+        const ui = ensureStudentServiceUiState();
+        const filteredQuestions = getStudentServiceFilteredQuestions(getStudentServiceVisibleQuestions());
+        const selectedQuestion = getStudentServiceOpenQuestion(filteredQuestions);
+        const shell = ensureStudentServiceStudentQaShell(container);
+        if (!shell) return;
+        setStudentServiceMarkup(
+            shell.feed,
+            buildStudentServiceQaFeedCacheKey(ui, filteredQuestions),
+            renderStudentServiceStudentQaFeedMarkup(ui, filteredQuestions, selectedQuestion)
+        );
+    };
 
     __kiuSsApi.renderStudentServiceStaffQaFeed = window.renderStudentServiceStaffQaFeed = function renderStudentServiceStaffQaFeed(container, options = {}) {
     const ui = ensureStudentServiceUiState();
@@ -1589,11 +1609,11 @@
     __kiuSsApi.renderStudentServiceQuestionFeed = window.renderStudentServiceQuestionFeed = renderStudentServiceQuestionFeed;
     __kiuSsApi.renderStudentServiceCommentReplyShell = renderStudentServiceCommentReplyShell;
     __kiuSsApi.openStudentServiceDeleteQuestionConfirm = openStudentServiceDeleteQuestionConfirm;
-    __kiuSsApi.isStudentServiceQuestionComposerModalOpen = isStudentServiceQuestionComposerModalOpen;
-    __kiuSsApi.mountStudentServiceQuestionComposerModal = mountStudentServiceQuestionComposerModal;
-    __kiuSsApi.openStudentServiceQuestionComposerModal = openStudentServiceQuestionComposerModal;
-    __kiuSsApi.closeStudentServiceQuestionComposerModal = closeStudentServiceQuestionComposerModal;
-    __kiuSsApi.remountStudentServiceQuestionComposerModal = remountStudentServiceQuestionComposerModal;
+    __kiuSsApi.isStudentServiceQuestionComposerModalOpen = window.isStudentServiceQuestionComposerModalOpen = isStudentServiceQuestionComposerModalOpen;
+    __kiuSsApi.mountStudentServiceQuestionComposerModal = window.mountStudentServiceQuestionComposerModal = mountStudentServiceQuestionComposerModal;
+    __kiuSsApi.openStudentServiceQuestionComposerModal = window.openStudentServiceQuestionComposerModal = openStudentServiceQuestionComposerModal;
+    __kiuSsApi.closeStudentServiceQuestionComposerModal = window.closeStudentServiceQuestionComposerModal = closeStudentServiceQuestionComposerModal;
+    __kiuSsApi.remountStudentServiceQuestionComposerModal = window.remountStudentServiceQuestionComposerModal = remountStudentServiceQuestionComposerModal;
     __kiuSsApi.renderStudentServiceAnswerCardMarkup = renderStudentServiceAnswerCardMarkup;
     __kiuSsApi.renderStudentServiceAnswerThreadNode = renderStudentServiceAnswerThreadNode;
     __kiuSsApi.renderStudentServiceQuestionDetailActionsMarkup = renderStudentServiceQuestionDetailActionsMarkup;
@@ -1611,5 +1631,8 @@
     __kiuSsApi.convertStudentServiceQuestionToArticle = convertStudentServiceQuestionToArticle;
     __kiuSsApi.mergeStudentServiceQuestionPrompt = mergeStudentServiceQuestionPrompt;
     __kiuSsApi.renderStudentServiceQaCommandBarStats = renderStudentServiceQaCommandBarStats;
-    __kiuSsApi.handleStudentServiceQaThreadClick = window.handleStudentServiceQaThreadClick = handleStudentServiceQaThreadClick;
+    if (typeof window.handleStudentServiceQaThreadClick === 'function') {
+        __kiuSsApi.handleStudentServiceQaThreadClick = window.handleStudentServiceQaThreadClick;
+    }
+    window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED = true;
 })();

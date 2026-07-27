@@ -138,4 +138,11 @@ describe('social-page-boot-runtime peel deps', () => {
         expect(() => sandbox.window.__kiuCreateSocialPageBootApi(deps)).not.toThrow();
         expect(typeof sandbox.window.__kiuCreateSocialPageBootApi(deps).boot).toBe('function');
     });
+
+    it('routes call overlay clicks through document capture handler', () => {
+        const boot = readSource('assets/js/pages/social-page-boot-runtime.js');
+        expect(boot).toContain('social-neo-call-overlay');
+        expect(boot).toContain('fromCallOverlay');
+        expect(boot).toContain('__kiuSocialPageHandleClick');
+    });
 });

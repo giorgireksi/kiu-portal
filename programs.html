@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260725-frosted1">
     <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxcontrolcta1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-panelhost1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260725-frosted1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260725-hostwave1">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260727-progshare4">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260727-progshare4">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260727-progshare4">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
 </head>
@@ -23,19 +24,19 @@
 
     <main id="app-content">
         <div id="page-programs" class="page-section lux-page-shell active-page" data-lux-layout-only="1">
-            <section class="lux-program-command-deck" data-lux-glass-root="1">
+            <section class="lux-panel lux-program-command-deck" data-lux-glass-root="1">
                 <div class="lux-prog-toolbar">
                     <div class="lux-prog-intro">
-                        <div class="lux-page-kicker"><i class="fas fa-compass"></i> Academic planning</div>
-                        <h1 id="programs-hero-title" class="lux-prog-title">Academic Programs</h1>
+                        <div class="lux-section-kicker"><i class="fas fa-compass"></i> Academic planning</div>
+                        <h1 id="programs-hero-title" class="lux-page-title lux-prog-title">Academic Programs</h1>
                     </div>
 
                 </div>
 
-                <div class="lux-prog-control-band">
+                <div class="lux-prog-control-band lux-soft-chrome">
                     <label class="lux-program-field lux-program-select-wrap">
                         <span>Semester filter</span>
-                        <select id="student-program-semester-filter" name="student_program_semester_filter" data-programs-semester-filter="1">
+                        <select class="lux-control" id="student-program-semester-filter" name="student_program_semester_filter" data-programs-semester-filter="1">
                             <option value="all">All Semesters</option>
                             <option value="1">Semester 1</option>
                             <option value="2">Semester 2</option>
@@ -54,8 +55,8 @@
                     <div class="lux-program-field lux-program-search-wrap">
                         <span>Search subjects</span>
                         <i class="fas fa-search"></i>
-                        <input id="student-program-search" name="student_program_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search subject code, title, prerequisite..." value="" data-programs-search="1" data-programs-faculty="">
-                        <button type="button" class="lux-program-clear-search" id="student-program-search-clear" data-programs-clear-search="1" data-programs-faculty="" aria-label="Clear program search" hidden>
+                        <input class="lux-control" id="student-program-search" name="student_program_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search subject code, title, prerequisite..." value="" data-programs-search="1" data-programs-faculty="">
+                        <button type="button" class="lux-ghost-btn lux-program-clear-search" id="student-program-search-clear" data-programs-clear-search="1" data-programs-faculty="" aria-label="Clear program search" hidden>
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -68,29 +69,29 @@
                         <span id="programs-ops-note">Official curriculum for your faculty.</span>
                     </div>
                     <div class="lux-prog-ops-grid" id="programs-ops-grid">
-                        <article class="lux-prog-ops-tile">
-                            <span>Total credits</span>
+                        <article class="lux-stat lux-soft-chrome home-hover-chip">
                             <strong id="programs-ops-total-ects">0</strong>
+                            <span>Total credits</span>
                             <em id="programs-ops-total-ects-note">ECTS in program</em>
                         </article>
-                        <article class="lux-prog-ops-tile">
-                            <span>Visible credits</span>
+                        <article class="lux-stat lux-soft-chrome home-hover-chip">
                             <strong id="programs-ops-visible-ects">0</strong>
+                            <span>Visible credits</span>
                             <em id="programs-ops-visible-ects-note">Current filter</em>
                         </article>
-                        <article class="lux-prog-ops-tile">
-                            <span>Modules</span>
+                        <article class="lux-stat lux-soft-chrome home-hover-chip">
                             <strong id="programs-ops-modules">0</strong>
+                            <span>Modules</span>
                             <em id="programs-ops-modules-note">Curriculum blocks</em>
                         </article>
-                        <article class="lux-prog-ops-tile">
-                            <span>Prerequisites</span>
+                        <article class="lux-stat lux-soft-chrome home-hover-chip">
                             <strong id="programs-ops-prerequisites">0</strong>
+                            <span>Prerequisites</span>
                             <em id="programs-ops-prerequisites-note">Subjects with requirements</em>
                         </article>
-                        <article class="lux-prog-ops-tile">
-                            <span>Module load</span>
+                        <article class="lux-stat lux-soft-chrome home-hover-chip">
                             <strong id="programs-ops-module-load">--</strong>
+                            <span>Module load</span>
                             <em id="programs-ops-module-load-note">Selected module capacity</em>
                         </article>
                     </div>
@@ -109,7 +110,8 @@
 <script defer src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
     <script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
     <script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
-    <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
+    <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260720-w18"></script>
+<script defer src="assets/js/app/api.js?v=20260727-sessionfix4"></script>
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
     <script defer src="assets/js/data/initial-state.js?v=1776604822079"></script>
     <script defer src="assets/js/app/state-admin-exam-runtime.js?v=20260720-e4exam1"></script>

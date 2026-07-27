@@ -457,7 +457,7 @@
         const submitIcon = isEditing ? 'fa-pen' : (isUniversity ? 'fa-university' : 'fa-calendar-plus');
         if (isUniversity && !isStaff) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <div class="lux-glass-dialog-card lux-glass-dialog-card--event-create lux-glass-dialog-card" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Official events', 'Faculty and administrators can publish campus-wide events here.', { icon: 'fas fa-landmark' }) : ''}
                     <p class="lux-glass-dialog-hint">Official university announcements, exam sessions, and administration-led events are published by staff accounts.</p>
                     <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
@@ -484,7 +484,7 @@
             </label>
         `;
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card" data-form="create-event" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="create-event" data-action="noop" data-lux-transparency-exempt="1">
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
                         <strong class="lux-glass-dialog-title"><i class="fas ${isEditing ? 'fa-pen' : (isUniversity ? 'fa-landmark' : 'fa-calendar-plus')}" aria-hidden="true"></i> ${escape(title)}</strong>
@@ -539,12 +539,12 @@
                             <input class="social-neo-input lux-control" id="${escape(eventMaxSeatsId)}" type="number" name="eventMaxSeats" min="1" placeholder="Unlimited" value="${escape(text(runtime.ui?.eventMaxSeats || ''))}">
                         </label>
                     </div>
-                    <div class="social-neo-inline social-neo-events-toggle-row social-neo-inline-gap-14-wrap">
-                        <label class="social-neo-checkbox" for="${escape(eventIsOnlineId)}">
+                    <div class="lux-checkbox-row social-neo-inline social-neo-events-toggle-row social-neo-inline-gap-14-wrap">
+                        <label class="lux-checkbox lux-checkbox--chip social-neo-checkbox" for="${escape(eventIsOnlineId)}">
                             <input id="${escape(eventIsOnlineId)}" type="checkbox" name="eventIsOnline" ${runtime.ui?.eventIsOnline ? 'checked' : ''}>
                             <span>${isUniversity ? 'Online / hybrid' : 'Online event'}</span>
                         </label>
-                        <label class="social-neo-checkbox" for="${escape(eventRecurringId)}">
+                        <label class="lux-checkbox lux-checkbox--chip social-neo-checkbox" for="${escape(eventRecurringId)}">
                             <input id="${escape(eventRecurringId)}" type="checkbox" name="eventRecurring" ${runtime.ui?.eventRecurring ? 'checked' : ''}>
                             <span>Recurring weekly</span>
                         </label>

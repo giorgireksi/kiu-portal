@@ -1,0 +1,239 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+function readSource(relativePath) {
+    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+}
+
+describe('social-project-health-ui', () => {
+    it('bare-lite includes project health dialog paint hooks', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const blockStart = bare.indexOf('/* Social: project health dialog */');
+        expect(blockStart).toBeGreaterThan(-1);
+        const blockEnd = bare.indexOf('/* —— Graph detail rail:', blockStart);
+        const block = bare.slice(blockStart, blockEnd > -1 ? blockEnd : blockStart + 50000);
+
+        expect(block).toContain('.sph-hygiene-chip');
+        expect(block).toContain('.sph-pick-split');
+        expect(block).toContain('.sph-card--readiness');
+        expect(block).toContain('.sph-card--plan');
+        expect(block).not.toContain('--sn-');
+    });
+
+    it('bare-lite hardens health child popup stacking', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.social-project-health-child-slot');
+        expect(bare).toMatch(/social-project-health-child-slot[\s\S]{0,400}z-index:\s*10102/);
+        expect(bare).toContain('.lux-glass-dialog-backdrop--project-health-fs');
+    });
+
+    it('bare-lite blocks graph clicks when stacked child is open', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const stackBlock = bare.slice(bare.indexOf('/* Stacked child modals must clear dashboard chrome'));
+        expect(stackBlock).toContain(
+            '.social-project-task-graph-stack:has(.social-project-task-graph-child-slot > .lux-glass-dialog-backdrop) .social-project-task-graph-anchor'
+        );
+        expect(stackBlock).toContain('pointer-events: none !important');
+        expect(stackBlock).toContain('[data-project-task-graph-stage]');
+        expect(stackBlock).not.toContain('.social-project-task-graph-anchor *');
+        expect(stackBlock).toContain('.social-project-task-graph-immersive-topbar');
+        expect(stackBlock).toContain('pointer-events: auto !important');
+        expect(stackBlock).toContain('.social-project-task-graph-stack--child-open');
+        expect(stackBlock).toContain('.social-project-task-graph-child-slot[hidden]');
+        expect(stackBlock).toMatch(/\.social-project-task-graph-child-slot:has\(> \.lux-glass-dialog-backdrop\)[\s\S]{0,260}top:\s*var\(--ptg-chrome-top/);
+        expect(stackBlock).toMatch(/\.social-project-task-graph-child-slot \{[\s\S]{0,120}position:\s*static/);
+        expect(stackBlock).toContain('.social-project-task-graph-child-slot .social-project-health-stack .lux-glass-dialog-backdrop');
+    });
+
+    it('studio chip tokens and sections apply on social overlay portal', () => {
+        const studio = readSource('assets/css/lux-studio.css');
+        const socialHtml = readSource('social.html');
+        expect(socialHtml).toContain('assets/css/lux-studio.css?v=');
+        expect(studio).toContain('#social-neo-overlay-portal');
+        expect(studio).toMatch(
+            /:is\(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal\)[\s\S]{0,200}--lux-studio-chip-surface/
+        );
+        expect(studio).toContain(
+            '#social-neo-overlay-portal .sptg-history-dialog'
+        );
+        expect(studio).toContain(
+            '#social-neo-overlay-portal .lux-glass-dialog-card--health-plan-pick'
+        );
+        expect(studio).toContain(
+            '#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-studio-section'
+        );
+
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.social-project-task-graph-child-slot [data-lux-transparency-exempt="1"].lux-glass-dialog-card--social-glass');
+        expect(modals).toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}var\(--lux-modal-glass-blur,\s*var\(--lux-popup-shell-blur\)\)/);
+        expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,900}var\(--lux-panel-modal-section\)/);
+
+        const dialogs = readSource('assets/js/pages/social-workspace-dialogs.js');
+        expect(dialogs).toContain('sph-card-head');
+        expect(dialogs).not.toContain('sph-card lux-soft-chrome-head');
+        expect(dialogs).toContain('lux-studio-section');
+        expect(dialogs).toContain('lux-control-btn');
+
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const healthBlock = bare.slice(bare.indexOf('body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .sph-verdict'));
+        expect(healthBlock).not.toMatch(/\.sph-verdict \{[\s\S]{0,180}background:/);
+        expect(healthBlock).not.toMatch(/\.sph-hygiene-chip \{[\s\S]{0,220}background:/);
+        expect(healthBlock).not.toMatch(/\.sph-week-item \{[\s\S]{0,220}background:/);
+        expect(healthBlock).not.toMatch(/\.sph-fix-task \{[\s\S]{0,220}background:/);
+
+        const stackBlock = bare.slice(bare.indexOf('/* Stacked child modals must clear dashboard chrome'));
+        expect(stackBlock).toContain('.social-project-task-graph-child-slot > .lux-glass-dialog-backdrop');
+        expect(stackBlock).not.toContain('background: rgba(2, 6, 23, 0.86)');
+        expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-body');
+        expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-footer');
+        expect(stackBlock).toMatch(/\.social-project-task-graph-immersive-footer[\s\S]{0,200}display:\s*none !important/);
+        expect(stackBlock).toMatch(/social-project-task-graph-stack--child-open[\s\S]{0,900}\.social-project-task-graph-immersive-body[\s\S]{0,180}opacity:\s*0\.55/);
+        expect(stackBlock).not.toMatch(/social-project-task-graph-stack--child-open[\s\S]{0,900}\.social-project-task-graph-immersive-body[\s\S]{0,120}visibility:\s*hidden/);
+        expect(stackBlock).toContain('opacity: 0.55');
+    });
+
+    it('lux-modals keeps stacked health compact above graph parent', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toMatch(
+            /\.lux-glass-dialog-backdrop--stacked-child \.lux-glass-dialog-card--project-health-fs[\s\S]{0,200}min\(860px/
+        );
+        expect(modals).toContain('.lux-glass-dialog-backdrop--project-health-fs:not(.lux-glass-dialog-backdrop--stacked-child)');
+    });
+
+    it('lux-modals overrides warmglass for graph child-slot stacked backdrops', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card)');
+        expect(modals).toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}rgba\(0, 0, 0, 0\.45\)/);
+        expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}rgba\(2, 6, 23, 0\.86\)/);
+    });
+
+    it('lux-modals defines fullscreen health and plan-picker shells', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.lux-glass-dialog-card--project-health-fs');
+        expect(modals).toContain('.lux-glass-dialog-backdrop--project-health-fs');
+        expect(modals).toContain('.lux-glass-dialog-card--health-plan-pick');
+        expect(modals).toContain('.lux-glass-dialog-body--health-plan-pick');
+        expect(modals).toContain('.sph-board');
+    });
+
+    it('dialogs JS emits lux health fullscreen classes', () => {
+        const dialogs = readSource('assets/js/pages/social-workspace-dialogs.js');
+        expect(dialogs).toContain('lux-glass-dialog-backdrop--project-health-fs');
+        expect(dialogs).toContain('lux-glass-dialog-card--project-health-fs');
+        expect(dialogs).toContain('lux-glass-dialog-card--health-plan-pick');
+    });
+
+    it('dialogs JS uses studio panel shell and studio body on health and risk', () => {
+        const dialogs = readSource('assets/js/pages/social-workspace-dialogs.js');
+        expect(dialogs).toContain('lux-studio-panel');
+        expect(dialogs).toContain('lux-studio-body');
+        expect(dialogs).toContain('spr-risk-card lux-studio-section');
+        expect(dialogs).toContain('sph-card lux-studio-section');
+        expect(dialogs).toContain('sph-hygiene-chip lux-control-btn');
+        expect(dialogs).toContain('sph-week-item lux-control-btn');
+        expect(dialogs).toContain('lux-mode-btn sph-plan-tab');
+        expect(dialogs).toContain('sph-pick-row lux-control-btn');
+        expect(dialogs).toContain('sph-pick-pkg-main lux-control-btn');
+        expect(dialogs).toContain('spr-rail lux-studio-section');
+        expect(dialogs).toContain('spr-main lux-studio-section');
+        expect(dialogs).toContain('spr-compose lux-studio-section');
+        expect(dialogs).toContain('spr-task-add lux-control-btn');
+        expect(dialogs).toContain('spr-group-toggle lux-control-btn');
+        expect(dialogs).toContain('lux-studio-panel spt-detail-dialog');
+        expect(dialogs).toContain('spt-detail-section lux-studio-section');
+        expect(dialogs).toContain('spt-detail-dep-chip lux-control-btn');
+        expect(dialogs).not.toContain('lux-glass-dialog-group-section sph-fs-hero-section');
+        expect(dialogs).not.toContain('lux-soft-chrome lux-glass-dialog-panel-section');
+    });
+
+    it('graph render JS uses studio shell on history and schedule-help stacked dialogs', () => {
+        const graph = readSource('assets/js/pages/social-workspace-graph-render.js');
+        expect(graph).toContain('sptg-history-dialog lux-studio-panel');
+        expect(graph).toContain('sptg-schedule-help-dialog lux-studio-panel');
+        expect(graph).toContain('sptg-history-list lux-studio-body');
+        expect(graph).toContain('sptg-schedule-help-list lux-studio-body');
+        expect(graph).toContain("headClass: 'lux-studio-head'");
+        expect(graph).toContain('sptg-history-row lux-control-btn');
+        expect(graph).toContain('sptg-schedule-help-row lux-control-btn');
+        expect(graph).not.toContain('sptg-history-row lux-soft-chrome');
+    });
+
+    it('lux-modals defines project-task-detail studio layout helpers', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.lux-glass-dialog-card--project-task-detail.lux-studio-panel');
+        expect(modals).toContain('.lux-glass-dialog-body--project-task-detail.lux-studio-body');
+        expect(modals).toContain('.spt-detail-section.lux-studio-section');
+        expect(modals).toContain('.lux-control-btn.spt-detail-dep-chip');
+
+        const studio = readSource('assets/css/lux-studio.css');
+        expect(studio).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--project-task-detail');
+    });
+
+    it('lux-modals defines project-risk studio layout helpers', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.lux-glass-dialog-body--project-risk.lux-studio-body');
+        expect(modals).toContain('.spr-rail.lux-studio-section');
+        expect(modals).toContain('.spr-compose.lux-studio-section');
+        expect(modals).toContain('.lux-control-btn.spr-section');
+        expect(modals).toContain('grid-template-columns: auto minmax(0, 1fr) auto');
+
+        const studio = readSource('assets/css/lux-studio.css');
+        expect(studio).toContain('padding: 16px 18px 12px');
+        expect(studio).toContain('#social-neo-overlay-portal .lux-glass-dialog-body.lux-studio-body');
+    });
+
+    it('task UI JS uses studio shell on create, delete, and column modals', () => {
+        const taskUi = readSource('assets/js/pages/social-workspace-task-ui.js');
+        expect(taskUi).toContain('lux-glass-dialog-card--project-task-create lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel');
+        expect(taskUi).toContain('lux-glass-dialog-card--project-task-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel');
+        expect(taskUi).toContain('lux-glass-dialog-card--project-column-tasks lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel');
+        expect(taskUi).toContain('lux-glass-dialog-body--project-task-create lux-studio-body');
+        expect(taskUi).toContain('lux-glass-dialog-body--project-task-delete lux-studio-body');
+        expect(taskUi).toContain('lux-glass-dialog-body--project-column-tasks lux-studio-body');
+        expect(taskUi).toContain("headClass: 'lux-studio-head'");
+        expect(taskUi).toContain('<section class="lux-studio-section">');
+        expect(taskUi).not.toContain('lux-glass-dialog-group-section');
+    });
+
+    it('lux-modals defines task create/delete/column studio layout helpers', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.lux-glass-dialog-card--project-task-create.lux-studio-panel');
+        expect(modals).toContain('.lux-glass-dialog-card--project-task-delete.lux-studio-panel');
+        expect(modals).toContain('.lux-glass-dialog-card--project-column-tasks.lux-studio-panel');
+        expect(modals).toContain('.lux-glass-dialog-body--project-task-create.lux-studio-body');
+        expect(modals).toContain('.lux-glass-dialog-body--project-column-tasks.lux-studio-body');
+
+        const studio = readSource('assets/css/lux-studio.css');
+        expect(studio).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--project-task-create');
+        expect(studio).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--project-task-delete');
+        expect(studio).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--project-column-tasks');
+    });
+
+    it('bare-lite defines dialog-scoped comment thread trunks', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread');
+        expect(bare).toContain('--sn-thread');
+        expect(bare).toContain('border-bottom-left-radius: 12px');
+        expect(bare).toContain('--trunk-top');
+        expect(bare).toContain('[style*="--trunk-top"]::after');
+        expect(bare).toContain('.social-neo-comment-reply-form');
+        expect(bare).toContain('.social-neo-comment-reply-form-actions .lux-secondary-btn');
+    });
+
+    it('bare-lite strips sph-pick row paint snowflakes', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const pickStart = bare.indexOf('.sph-pick-split');
+        const pickEnd = bare.indexOf('.sph-pick-check', pickStart);
+        const pickBlock = bare.slice(pickStart, pickEnd > -1 ? pickEnd : pickStart + 4000);
+        expect(pickBlock).not.toMatch(/\.sph-pick-split \{[\s\S]{0,220}background:/);
+        expect(pickBlock).not.toMatch(/\.sph-pick-row \{[\s\S]{0,220}background:/);
+    });
+
+    it('light-mode ink targets lux-glass-dialog health cards', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.lux-glass-dialog-card--project-health');
+        expect(bare).toContain('.lux-glass-dialog-card--health-plan-pick');
+        expect(bare).not.toMatch(/lux-light-mode[\s\S]{0,800}social-neo-dialog-card--project-health/);
+    });
+});

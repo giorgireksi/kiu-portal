@@ -29,26 +29,49 @@
         const openDialog = deps.openDialog || (() => {});
         const navigateToEntity = deps.navigateToEntity || (() => {});
 
+        function resolveSocialRouteFn(name) {
+            const direct = window[name];
+            if (typeof direct === 'function') return direct;
+            const ws = window.KiuSocialWorkspace;
+            if (ws && typeof ws[name] === 'function') return ws[name];
+            const weekPlan = window.KiuSocialWorkspaceWeekPlanModel;
+            if (weekPlan && typeof weekPlan[name] === 'function') return weekPlan[name];
+            const feed = window.KiuSocialFeed;
+            if (feed && typeof feed[name] === 'function') return feed[name];
+            return null;
+        }
+
         /** Shared lazy-domain router for click/submit/input/change. */
         function routeSocialDomain(value, routes, { invoke, fireAndForget = false } = {}) {
             for (let i = 0; i < routes.length; i += 1) {
                 const route = routes[i];
-                const matched = typeof window[route.is] === 'function'
-                    ? window[route.is](value)
-                    : route.fallback(value);
+                const matcher = resolveSocialRouteFn(route.is);
+                const matched = matcher ? matcher(value) : route.fallback(value);
                 if (!matched) continue;
-                if (route.has() && typeof window[route.handle] === 'function') {
-                    const result = invoke(window[route.handle]);
+                const handler = resolveSocialRouteFn(route.handle);
+                if (route.has() && handler) {
+                    const result = invoke(handler);
                     return fireAndForget ? { matched: true } : { matched: true, result };
                 }
-                if (typeof route.onMissing === 'function') {
-                    route.ensure().then(route.onMissing).catch(() => null);
-                    return { matched: true };
-                }
                 const pending = route.ensure().then(() => {
-                    if (typeof window[route.handle] === 'function') {
-                        return invoke(window[route.handle]);
+                    const loadedHandler = resolveSocialRouteFn(route.handle);
+                    if (loadedHandler) {
+                        return invoke(loadedHandler);
                     }
+                    if (typeof route.onMissing === 'function') {
+                        route.onMissing();
+                    }
+                    const missing = `Social action handler is unavailable: ${route.handle}`;
+                    console.error('[Social]', missing);
+                    if (typeof setPortalSocialFlash === 'function') {
+                        setPortalSocialFlash(missing, 'danger');
+                    }
+                }).catch((error) => {
+                    console.error('[Social] Deferred module action failed:', value, error);
+                    if (typeof setPortalSocialFlash === 'function') {
+                        setPortalSocialFlash(error?.message || 'Action could not be completed.', 'danger');
+                    }
+                    throw error;
                 });
                 if (fireAndForget) {
                     pending.catch(() => null);

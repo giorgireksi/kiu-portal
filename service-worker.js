@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260725-engstruct1';
+const CACHE_NAME = 'kiu-portal-shell-v20260727-socshell13';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const SHELL_ASSETS = [
   '/',
@@ -8,8 +8,9 @@ const SHELL_ASSETS = [
   '/exams.html',
   '/login.html',
   '/assets/css/lux-tokens.css?v=20260725-engstruct1',
-'/assets/css/lux-fouc-ht.css?v=20260725-engstruct1',
-  '/assets/css/lux-controls.css?v=20260726-luxcontrolcta1',
+'/assets/css/lux-fouc-ht.css?v=20260727-socshell13',
+  '/assets/css/lux-page-bare-lite.css?v=20260727-socshell13',
+  '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260724-chromeshare1',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260725-engstruct1',

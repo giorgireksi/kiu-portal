@@ -10,8 +10,9 @@
             try {
                 await action();
             } catch (error) {
-                console.error('[Social] Action failed:', error);
-                if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(error?.message || 'Action failed.', 'danger');
+                const message = error?.message || 'Action failed.';
+                if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(message, 'danger');
+                if (!error?.userFacing) console.error('[Social] Action failed:', error);
             }
         }
 
@@ -66,6 +67,11 @@
                 rippleSurveySubmitButton,
                 rippleSurveyChoiceLabel,
                 closeDialog, closeSocialWorkspaceNavAnimated, renderSocialPageNow,
+                restorePreviousDialog, shouldRestoreStackedDialog,
+                revealShell,
+                flashSocialError: (message) => {
+                    if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(message, 'danger');
+                },
                 applyPhotographyUploadFile: typeof window.applyPhotographyUploadFile === 'function' ? window.applyPhotographyUploadFile : () => {},
                 hasSocialFeedModule, ensureSocialFeedModule, hasSocialWorkspaceModule, ensureSocialWorkspaceModule,
                 hasSocialGroupsModule, ensureSocialGroupsModule, hasSocialPagesModule, ensureSocialPagesModule,
@@ -89,12 +95,28 @@
         let overlayCaptureClickBound = false;
         let overlayCaptureChangeBound = false;
 
+        function hostEventState() {
+            return (eventBinding && typeof eventBinding === 'object')
+                ? eventBinding
+                : { bound: Boolean(bound), boundHost: boundHost || null, hostEventAbort: hostEventAbort || null };
+        }
+
         function bindOverlayCaptureClick() {
             if (overlayCaptureClickBound) return;
             document.addEventListener('click', (event) => {
                 const portal = document.getElementById(SOCIAL_OVERLAY_PORTAL_ID);
-                if (!portal || !portal.contains(event.target)) return;
-                if (!portal.querySelector(SOCIAL_OVERLAY_SURFACE_SELECTOR)) return;
+                const callOverlay = document.getElementById('social-neo-call-overlay');
+                const fromPortal = Boolean(
+                    portal
+                    && portal.contains(event.target)
+                    && portal.querySelector(SOCIAL_OVERLAY_SURFACE_SELECTOR)
+                );
+                const fromCallOverlay = Boolean(
+                    callOverlay
+                    && callOverlay.contains(event.target)
+                    && callOverlay.classList.contains('is-open')
+                );
+                if (!fromPortal && !fromCallOverlay) return;
                 handleClick(event);
             }, { capture: true });
             overlayCaptureClickBound = true;
@@ -129,20 +151,25 @@
         function bindEvents() {
             const host = root();
             if (!host) return;
+            if (document.body?.classList.contains('kiu-shell-loading')
+                || document.documentElement?.classList.contains('kiu-shell-loading')) {
+                revealShell();
+            }
+            const binding = hostEventState();
             ensureSocialOverlayPortal();
             ensurePhotographyUploadFileSink();
             bindOverlayCaptureClick();
             bindOverlayCaptureChange();
             bindOverlayPortalEvents();
-            if (bound && boundHost === host) {
+            if (binding.bound && binding.boundHost === host) {
                 return;
             }
-            if (hostEventAbort) {
-                hostEventAbort.abort();
-                hostEventAbort = null;
+            if (binding.hostEventAbort) {
+                binding.hostEventAbort.abort();
+                binding.hostEventAbort = null;
             }
-            hostEventAbort = new AbortController();
-            const { signal } = hostEventAbort;
+            binding.hostEventAbort = new AbortController();
+            const { signal } = binding.hostEventAbort;
             host.addEventListener('click', handleClick, { signal });
             host.addEventListener('pointerdown', handlePointerDown, { signal });
             host.addEventListener('submit', handleSubmit, { signal });
@@ -180,8 +207,8 @@
             }
             bindSocialCenterWheelForward();
             syncSocialScrollLayout(host);
-            boundHost = host;
-            bound = true;
+            binding.boundHost = host;
+            binding.bound = true;
         }
         function renderOrRetry() {
             renderAttemptCount += 1;
@@ -203,6 +230,7 @@
             bindEvents();
             guardStandaloneSocialRoute();
             window.__kiuSocialLiteRenderPage = renderSocialPageNow;
+            window.__kiuSocialPageHandleClick = handleClick;
             window.__kiuSocialPatchPostReactions = patchPostReactions;
             window.__kiuSocialPatchCommentReactions = patchCommentReactionsByIds;
             window.__kiuSocialPatchEventRsvp = patchEventRsvpButtons;

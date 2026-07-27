@@ -20,6 +20,8 @@
         const rippleSurveySubmitButton = deps.rippleSurveySubmitButton || (() => {});
         const rippleSurveyChoiceLabel = deps.rippleSurveyChoiceLabel || (() => {});
         const closeDialog = deps.closeDialog || (() => {});
+        const restorePreviousDialog = deps.restorePreviousDialog || (() => {});
+        const shouldRestoreStackedDialog = deps.shouldRestoreStackedDialog || (() => false);
         const closeSocialWorkspaceNavAnimated = deps.closeSocialWorkspaceNavAnimated || (() => {});
         const renderSocialPageNow = deps.renderSocialPageNow || (() => {});
         const applyPhotographyUploadFile = deps.applyPhotographyUploadFile || (() => {});
@@ -47,12 +49,46 @@
         const ensureSocialAlertsModule = deps.ensureSocialAlertsModule || (() => Promise.resolve());
         const hasSocialCommunityModule = deps.hasSocialCommunityModule || (() => false);
         const ensureSocialCommunityModule = deps.ensureSocialCommunityModule || (() => Promise.resolve());
+        const revealShell = deps.revealShell || (() => {});
+        const flashSocialError = deps.flashSocialError || ((message) => {
+            if (typeof setPortalSocialFlash === 'function') {
+                setPortalSocialFlash(message, 'danger');
+            }
+        });
+
+        function isGraphStackChildLayerOpen() {
+            const region = document.getElementById('lux-glass-dialog-region');
+            const childSlot = region?.querySelector('[data-project-task-graph-child-slot="1"]');
+            if (childSlot?.hidden) return false;
+            return Boolean(region?.querySelector(
+                '.social-project-task-graph-child-slot > .lux-glass-dialog-backdrop, '
+                + '.social-project-task-graph-child-slot .social-project-health-child-slot > .lux-glass-dialog-backdrop'
+            ));
+        }
+
+        function shouldBlockGraphSurfaceClick(event, trigger = null) {
+            if (!isGraphStackChildLayerOpen()) return false;
+            const surface = (trigger || event.target)?.closest?.(
+                '[data-project-task-graph-stage], .social-project-task-graph-canvas'
+            );
+            return Boolean(surface);
+        }
 
         async function handleClick(event) {
             if (event.__kiuSocialHandled) return;
             if (event.target?.closest?.('label.social-photo-upload-dropzone, input[name="photographyUploadFile"]')) return;
+            if (shouldBlockGraphSurfaceClick(event)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
             const trigger = event.target.closest('[data-action]');
             if (!trigger || !socialInteractionContains(trigger)) return;
+            if (shouldBlockGraphSurfaceClick(event, trigger)) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
             const action = text(trigger.getAttribute('data-action'));
             if (!action) return;
             if (action === 'noop') return;
@@ -68,16 +104,42 @@
                 delete draggedNode.dataset.kiuGraphSelected;
                 return;
             }
-            event.__kiuSocialHandled = true;
-            event.preventDefault();
+
+            if (document.body?.classList.contains('kiu-shell-loading')
+                || document.documentElement?.classList.contains('kiu-shell-loading')) {
+                revealShell();
+            }
 
             const shellNav = handleShellNavClick(action, trigger);
-            if (shellNav.handled) return shellNav.result;
+            if (shellNav.handled) {
+                event.__kiuSocialHandled = true;
+                event.preventDefault();
+                try {
+                    const navResult = shellNav.result;
+                    if (navResult && typeof navResult.then === 'function') await navResult;
+                    return navResult;
+                } catch (error) {
+                    console.error('[Social] Shell nav action failed:', action, error);
+                    flashSocialError(error?.message || 'Action failed.');
+                }
+                return;
+            }
 
             const clickDomain = routeSocialDomain(action, clickDomainRoutes, {
                 invoke: (handler) => handler(action, trigger)
             });
-            if (clickDomain.matched) return clickDomain.result;
+            if (!clickDomain.matched) return;
+
+            event.__kiuSocialHandled = true;
+            event.preventDefault();
+            try {
+                const clickResult = clickDomain.result;
+                if (clickResult && typeof clickResult.then === 'function') await clickResult;
+                return clickResult;
+            } catch (error) {
+                console.error('[Social] Click action failed:', action, error);
+                flashSocialError(error?.message || 'Action failed.');
+            }
         }
 
         async function handleSubmit(event) {
@@ -381,7 +443,12 @@
                 const runtime = state();
                 if (runtime.ui?.socialDialog) {
                     event.preventDefault();
-                    closeDialog();
+                    const activeType = text(runtime.ui.socialDialog?.type || '');
+                    if (shouldRestoreStackedDialog(activeType)) {
+                        restorePreviousDialog();
+                    } else {
+                        closeDialog();
+                    }
                     return;
                 }
                 if (runtime.ui?.workspaceNavOpen) {
@@ -403,6 +470,14 @@
                 if (typeof isPortalStoryComposerOpen === 'function' && isPortalStoryComposerOpen()) {
                     event.preventDefault();
                     if (typeof closePortalStoryComposer === 'function') closePortalStoryComposer();
+                    return;
+                }
+                const callOverlay = document.getElementById('social-neo-call-overlay');
+                if (callOverlay?.classList.contains('is-open')) {
+                    event.preventDefault();
+                    if (typeof window.dismissSocialCallOverlay === 'function') {
+                        window.dismissSocialCallOverlay().catch(() => null);
+                    }
                     return;
                 }
             }

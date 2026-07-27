@@ -528,7 +528,7 @@
 
         return `
             <div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-card lux-glass-dialog-card lux-glass-dialog-card lux-glass-dialog-card--survey-create lux-glass-dialog-card--survey-results social-neo-surveys-results-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--survey-create lux-glass-dialog-card--survey-results lux-glass-dialog-card lux-glass-dialog-card--social-glass social-neo-surveys-results-dialog" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-head social-neo-surveys-hero-head social-neo-surveys-results-dialog-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker"><i class="fas fa-chart-column" aria-hidden="true"></i> Survey results</span>
@@ -803,7 +803,7 @@
                         <input class="social-neo-input lux-control" id="${escape(maxLengthId)}" type="number" name="surveyQuestionMaxLength-${escape(String(index))}" min="50" max="5000" value="${escape(String(maxLength))}">
                     </label>
                 ` : ''}
-                <label class="social-neo-checkbox social-neo-survey-question-required">
+                <label class="lux-checkbox social-neo-checkbox social-neo-survey-question-required">
                     <input type="checkbox" name="surveyQuestionRequired-${escape(String(index))}" ${question.required === false ? '' : 'checked'}>
                     <span>Required question</span>
                 </label>
@@ -862,7 +862,7 @@
         const isStaff = ['professor', 'ta', 'admin', 'student_service'].includes(userRole);
         if (isOfficial && !isStaff) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-card social-neo-surveys-hero social-neo-surveys-create-hero lux-glass-dialog-card--survey-create" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--survey-create lux-glass-dialog-card lux-glass-dialog-card--social-glass social-neo-surveys-hero social-neo-surveys-create-hero" data-lux-transparency-exempt="1">
                     <div class="social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Official surveys</span>
@@ -926,7 +926,7 @@
         const submitIcon = isOfficial ? 'fa-landmark' : 'fa-paper-plane';
         const titlePlaceholder = isOfficial ? 'e.g. Library services evaluation' : 'e.g. Study group session feedback';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-card lux-glass-dialog-card social-neo-surveys-hero social-neo-surveys-create-hero lux-glass-dialog-card--survey-create lux-glass-dialog-card ${isOfficial ? 'social-neo-surveys-create-hero--official' : 'social-neo-surveys-create-hero--student'}" data-form="survey-create" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--survey-create lux-glass-dialog-card lux-glass-dialog-card--social-glass social-neo-surveys-hero social-neo-surveys-create-hero ${isOfficial ? 'social-neo-surveys-create-hero--official' : 'social-neo-surveys-create-hero--student'}" data-form="survey-create" data-action="noop" data-lux-transparency-exempt="1">
                 ${isOfficial ? '<input type="hidden" name="surveyIsOfficial" value="true">' : ''}
                 <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
                     <div class="social-neo-surveys-hero-copy">
@@ -975,12 +975,12 @@
                             </select>
                         </label>
                     </div>
-                    <div class="social-neo-inline social-neo-surveys-create-toggle-row social-neo-inline-gap-14-wrap">
-                        <label class="social-neo-checkbox" for="${escape(anonymousId)}">
+                    <div class="lux-checkbox-row social-neo-inline social-neo-surveys-create-toggle-row social-neo-inline-gap-14-wrap">
+                        <label class="lux-checkbox lux-checkbox--chip social-neo-checkbox" for="${escape(anonymousId)}">
                             <input id="${escape(anonymousId)}" type="checkbox" name="surveyAnonymous" value="yes" ${anonymousChecked ? 'checked' : ''}>
                             <span>Anonymous</span>
                         </label>
-                        <label class="social-neo-checkbox" for="${escape(promoteFeedId)}">
+                        <label class="lux-checkbox lux-checkbox--chip social-neo-checkbox" for="${escape(promoteFeedId)}">
                             <input id="${escape(promoteFeedId)}" type="checkbox" name="surveyPromoteFeed" value="yes" ${promoteFeedChecked ? 'checked' : ''}>
                             <span>Promote to feed</span>
                         </label>

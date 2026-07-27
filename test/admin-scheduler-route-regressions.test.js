@@ -184,10 +184,22 @@ describe('admin scheduler route regressions.test', () => {
     });
 
     it('session modal copy stays readable on CTA fields and conflict alerts', () => {
+        const modals = readSource('assets/css/lux-modals.css');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
-        expect(fouc).toContain("#schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger']");
-        expect(fouc).toContain('#schModalOverlay .lux-control::placeholder');
-        expect(fouc).toMatch(/#schModalOverlay[\s\S]*?\.sch-inline-required[\s\S]*?#f87171/);
+        expect(modals).toContain("#schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger']");
+        expect(modals).toContain('#schModalOverlay .lux-control::placeholder');
+        expect(modals).toMatch(/#schModalOverlay[\s\S]*?\.sch-inline-required[\s\S]*?#f87171/);
+        expect(modals).toContain('#schModalOverlay .sch-form-section');
+        expect(modals).toContain('--lux-panel-modal-section');
+        expect(fouc).not.toContain("#schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger']");
+    });
+
+    it('session modal uses warmglass card without frosted glass-root host', () => {
+        const html = readSource('admin-scheduler.html');
+        const modalTemplate = html.match(/<template id="sch-modal-template">[\s\S]*?<\/template>/)?.[0] || '';
+        expect(modalTemplate).toContain('class="sch-modal"');
+        expect(modalTemplate).not.toMatch(/class="sch-modal"[^>]*data-lux-glass-root="1"/);
+        expect(modalTemplate).not.toContain('sch-modal-head-accent');
     });
 
     it('session modal fields use lux-control and preset overlay is transparency exempt', () => {

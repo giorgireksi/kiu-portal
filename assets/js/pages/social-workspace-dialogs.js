@@ -13,6 +13,7 @@
             PROJECT_RISK_RESPONSE_OPTIONS,
             PROJECT_RISK_STATUS_OPTIONS,
             PROJECT_TASK_COLUMNS,
+            PROJECT_TASK_STATUS_EDGE_COLOR,
             __riskModel,
             accountById,
             avatar,
@@ -187,7 +188,7 @@
                 })
                 : null;
             const scheduleBlock = taskSched ? `
-                        <section class="spt-detail-section">
+                        <section class="spt-detail-section lux-studio-section">
                             <h3 class="spt-detail-section-title">This task</h3>
                             <div class="spt-detail-schedule spt-detail-schedule--full">
                                 <div class="spt-detail-schedule-cell">
@@ -278,23 +279,23 @@
                 }
                 const st = normalizeProjectTaskStatusId(task?.status);
                 const label = text(task?.title || 'Task');
-                return `<button type="button" class="spt-detail-dep-chip" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(tid)}">
+                return `<button type="button" class="spt-detail-dep-chip lux-control-btn" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(tid)}">
                     <em data-status="${escape(st)}">${escape(({ todo: 'To do', 'in-progress': 'Active', blocked: 'Blocked', done: 'Done' })[st] || st)}</em>
                     <span>${escape(label)}</span>
                 </button>`;
             };
 
             const depsBlock = `
-                        <section class="spt-detail-section">
+                        <section class="spt-detail-section lux-studio-section">
                             <h3 class="spt-detail-section-title">Dependencies</h3>
                             <div class="spt-detail-deps">
-                                <div class="spt-detail-deps-col">
+                                <div class="spt-detail-deps-col lux-studio-section">
                                     <span class="spt-detail-k">Blocked by</span>
                                     ${parentTasks.length || missingParentIds.length
                                         ? `<div class="spt-detail-dep-list">${parentTasks.map(renderDepChip).join('')}${missingParentIds.map((id) => `<span class="spt-detail-dep-chip is-missing"><em>Missing</em><span>${escape(id)}</span></span>`).join('')}</div>`
                                         : '<span class="spt-detail-muted">No parents — root task</span>'}
                                 </div>
-                                <div class="spt-detail-deps-col">
+                                <div class="spt-detail-deps-col lux-studio-section">
                                     <span class="spt-detail-k">Blocks</span>
                                     ${childTasks.length
                                         ? `<div class="spt-detail-dep-list">${childTasks.map(renderDepChip).join('')}</div>`
@@ -306,8 +307,8 @@
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, 'project-task-detail');
             const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
             return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Task detail">
-                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-detail lux-glass-dialog-card lux-glass-dialog-card--social-glass spt-detail-dialog" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head spt-detail-head">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-detail lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel spt-detail-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head lux-studio-head spt-detail-head">
                         <div class="lux-glass-dialog-heading spt-detail-heading">
                             <strong class="lux-glass-dialog-title spt-detail-title">${escape(text(editTask.title || 'Task'))}</strong>
                             <div class="spt-detail-head-chips" aria-label="Status and priority">
@@ -323,12 +324,12 @@
                             <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
-                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-detail spt-detail-body">
-                        <section class="spt-detail-section">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-detail lux-studio-body spt-detail-body">
+                        <section class="spt-detail-section lux-studio-section">
                             <h3 class="spt-detail-section-title">Description</h3>
                             <div class="social-project-task-detail-description spt-detail-description${description ? '' : ' is-empty'}">${description ? escape(description) : 'No description added yet.'}</div>
                         </section>
-                        <section class="spt-detail-section">
+                        <section class="spt-detail-section lux-studio-section">
                             <h3 class="spt-detail-section-title">Properties</h3>
                             <div class="spt-detail-props spt-detail-props--6">
                                 <div class="spt-detail-prop">
@@ -363,11 +364,11 @@
                                 </div>
                             </div>
                         </section>
-                        <section class="spt-detail-section">
+                        <section class="spt-detail-section lux-studio-section">
                             <h3 class="spt-detail-section-title">Plan vs actual</h3>
                             <p class="spt-detail-section-hint">Estimate vs what was recorded. Variance is actual minus plan.</p>
                             <div class="spt-detail-compare-grid">
-                                <div class="spt-detail-compare ${timeVariance ? `is-tone-${escape(timeVariance.tone)}` : ''}">
+                                <div class="spt-detail-compare lux-studio-section ${timeVariance ? `is-tone-${escape(timeVariance.tone)}` : ''}">
                                     <span class="spt-detail-compare-label"><i class="fas fa-stopwatch" aria-hidden="true"></i> Time</span>
                                     <div class="spt-detail-compare-rows">
                                         <div><span>${isPertEstimate ? 'Estimated (PERT)' : 'Estimated'}</span><strong>${escape(timeEstLabel)}</strong></div>
@@ -382,7 +383,7 @@
                                         </div>
                                     ` : ''}
                                 </div>
-                                <div class="spt-detail-compare ${costVariance ? `is-tone-${escape(costVariance.tone)}` : ''}">
+                                <div class="spt-detail-compare lux-studio-section ${costVariance ? `is-tone-${escape(costVariance.tone)}` : ''}">
                                     <span class="spt-detail-compare-label"><i class="fas fa-receipt" aria-hidden="true"></i> Cost</span>
                                     <div class="spt-detail-compare-rows">
                                         <div><span>Planned budget</span><strong>${escape(costEstLabel)}</strong></div>
@@ -498,19 +499,19 @@
                 const active = selectedTaskId === tid ? ' is-active' : '';
                 const title = text(task?.title || 'Task');
                 return `<div class="spr-task-row${nested ? ' is-nested' : ''}${active}">
-                    <button type="button" class="spr-task-select" data-action="project-risk-select-task" data-project-id="${escape(projectId)}" data-task-id="${escape(tid)}" title="View risks for this task">
+                    <button type="button" class="spr-task-select lux-control-btn" data-action="project-risk-select-task" data-project-id="${escape(projectId)}" data-task-id="${escape(tid)}" title="View risks for this task">
                         <i class="fas fa-clipboard-check" aria-hidden="true"></i>
                         <span class="spr-task-label">${escape(title)}</span>
                         <span class="spr-section-count">${count}</span>
                     </button>
-                    ${canEdit ? `<button type="button" class="spr-task-add" data-action="project-risk-task-compose" data-project-id="${escape(projectId)}" data-task-id="${escape(tid)}" title="Add risk for this task" aria-label="Add risk for ${escape(title)}"><i class="fas fa-plus" aria-hidden="true"></i></button>` : ''}
+                    ${canEdit ? `<button type="button" class="spr-task-add lux-control-btn" data-action="project-risk-task-compose" data-project-id="${escape(projectId)}" data-task-id="${escape(tid)}" title="Add risk for this task" aria-label="Add risk for ${escape(title)}"><i class="fas fa-plus" aria-hidden="true"></i></button>` : ''}
                 </div>`;
             };
 
             const projectWideActive = !selectedTaskId && !selectedGroupId ? ' is-active' : '';
             const projectWideTotal = countForGroup('');
             const projectWideOpen = openCountForGroup('');
-            const projectWideButton = `<button type="button" class="spr-section${projectWideActive}" data-action="project-risk-select-group" data-project-id="${escape(projectId)}" data-group-id="" title="${projectWideTotal} total · ${projectWideOpen} open">
+            const projectWideButton = `<button type="button" class="spr-section lux-control-btn${projectWideActive}" data-action="project-risk-select-group" data-project-id="${escape(projectId)}" data-group-id="" title="${projectWideTotal} total · ${projectWideOpen} open">
                     <i class="fas fa-globe" aria-hidden="true"></i>
                     <span class="spr-section-label">Project-wide</span>
                     <span class="spr-section-count">${projectWideOpen > 0 ? projectWideOpen : projectWideTotal}</span>
@@ -521,7 +522,7 @@
                 const count = riskCountByTaskId[selectedTaskId] || 0;
                 return `<div class="spr-selected-pin" role="status">
                     <span class="spr-selected-pin-label">Selected task</span>
-                    <button type="button" class="spr-task-select is-active" data-action="project-risk-select-task" data-project-id="${escape(projectId)}" data-task-id="${escape(selectedTaskId)}">
+                    <button type="button" class="spr-task-select lux-control-btn is-active" data-action="project-risk-select-task" data-project-id="${escape(projectId)}" data-task-id="${escape(selectedTaskId)}">
                         <i class="fas fa-clipboard-check" aria-hidden="true"></i>
                         <span class="spr-task-label">${escape(sectionLabel)}</span>
                         <span class="spr-section-count">${count}</span>
@@ -545,10 +546,10 @@
                         const countLabel = underPackage;
                         return `<div class="spr-group${isExpanded ? ' is-expanded' : ''}${isActiveGroup ? ' is-active-group' : ''}" data-group-id="${escape(gid)}">
                             <div class="spr-group-head">
-                                <button type="button" class="spr-group-toggle" data-action="project-risk-toggle-group" data-project-id="${escape(projectId)}" data-group-id="${escape(gid)}" aria-expanded="${isExpanded ? 'true' : 'false'}" title="${isExpanded ? 'Collapse' : 'Expand'} tasks">
+                                <button type="button" class="spr-group-toggle lux-control-btn" data-action="project-risk-toggle-group" data-project-id="${escape(projectId)}" data-group-id="${escape(gid)}" aria-expanded="${isExpanded ? 'true' : 'false'}" title="${isExpanded ? 'Collapse' : 'Expand'} tasks">
                                     <i class="fas fa-chevron-${isExpanded ? 'down' : 'right'}" aria-hidden="true"></i>
                                 </button>
-                                <button type="button" class="spr-group-select${isActiveGroup ? ' is-active' : ''}" data-action="project-risk-select-group" data-project-id="${escape(projectId)}" data-group-id="${escape(gid)}" title="Group risks ${groupOnly} · with tasks ${underPackage}">
+                                <button type="button" class="spr-group-select lux-control-btn${isActiveGroup ? ' is-active' : ''}" data-action="project-risk-select-group" data-project-id="${escape(projectId)}" data-group-id="${escape(gid)}" title="Group risks ${groupOnly} · with tasks ${underPackage}">
                                     <i class="fas fa-layer-group" aria-hidden="true"></i>
                                     <span class="spr-section-label">${escape(text(group?.name || 'Group'))}</span>
                                     <span class="spr-section-count">${countLabel}</span>
@@ -579,7 +580,7 @@
                 const rankI = projectRiskScaleRank(risk?.impact ?? 3);
                 const owner = accountById(risk?.ownerUserId) || { id: risk?.ownerUserId };
                 const ownerLabel = text(risk?.ownerUserId) ? displayName(owner) : 'Unassigned';
-                return `<article class="spr-risk-card" data-exposure="${escape(tier)}">
+                return `<article class="spr-risk-card lux-studio-section" data-exposure="${escape(tier)}">
                     <div class="spr-risk-card-head">
                         <div class="spr-risk-card-main">
                             <div class="spr-risk-title-row">
@@ -608,7 +609,7 @@
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, 'project-risk');
             const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
             const composeFields = canEdit && composeOpen ? `
-                            <form class="spr-compose lux-glass-dialog-group-section" data-form="project-risk-save" data-project-id="${escape(projectId)}" data-group-id="${escape(selectedGroupId)}" data-task-id="${escape(selectedTaskId)}" data-risk-id="${escape(text(formRisk?.id || ''))}" data-default-title="${escape(defaultRiskTitle)}" data-existing-title="${escape(text(formRisk?.title || ''))}" data-action="noop" autocomplete="off">
+                            <form class="spr-compose lux-studio-section" data-form="project-risk-save" data-project-id="${escape(projectId)}" data-group-id="${escape(selectedGroupId)}" data-task-id="${escape(selectedTaskId)}" data-risk-id="${escape(text(formRisk?.id || ''))}" data-default-title="${escape(defaultRiskTitle)}" data-existing-title="${escape(text(formRisk?.title || ''))}" data-action="noop" autocomplete="off">
                                 <div class="lux-glass-dialog-group-section-head">
                                     <strong>${formRisk ? 'Edit risk' : 'Add risk'}</strong>
                                     <span>Scope: ${escape(scopeBreadcrumb)} · ${formRisk ? 'Update this entry' : 'Record a new risk'}</span>
@@ -660,8 +661,8 @@
                     : neoActions({ hideCancel: true, submitLabel: 'Close', submitIcon: 'fas fa-check', submitType: 'button', submitAttrs: 'data-action="dialog-close"' }));
 
             return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Risk register">
-                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-risk lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-risk lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head lux-studio-head">
                         <div class="lux-glass-dialog-heading">
                             <strong class="lux-glass-dialog-title"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Risk register</strong>
                             <span class="lux-glass-dialog-subtitle">${escape(text(project.name || project.title || 'Project'))} · Scope: ${escape(scopeBreadcrumb)}</span>
@@ -673,9 +674,9 @@
                         </div>
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-risk">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-risk lux-studio-body">
                         <div class="spr-layout">
-                            <aside class="spr-rail" aria-label="Risk scope">
+                            <aside class="spr-rail lux-studio-section" aria-label="Risk scope">
                                 <div class="spr-rail-head">
                                     <strong>Scope</strong>
                                     <span>Project, work packages, and tasks</span>
@@ -685,7 +686,7 @@
                                 ${workPackagesRail}
                                 ${tasksRail}
                             </aside>
-                            <div class="spr-main">
+                            <div class="spr-main lux-studio-section">
                                 <div class="spr-main-head">
                                     <div>
                                         <h3>${escape(sectionLabel)}</h3>
@@ -737,16 +738,16 @@
                     </div>`;
                 }).join('')}</div>`
                 : `<p class="sph-empty">No tasks on your <b>${escape(planHorizonLabel)}</b> plan yet — use Add tasks… to choose carefully.</p>`;
-            return `<section class="sph-card sph-card--plan" aria-label="Manual plan">
+            return `<section class="sph-card lux-studio-section sph-card--plan" aria-label="Manual plan">
                 <div class="sph-card-head">
-                    <h3>My plan</h3>
+                    <h3 class="lux-studio-label">My plan</h3>
                     <span class="sph-auto">yours</span>
                     <span class="sph-plan-count">${planIds.length}</span>
                 </div>
                 <p class="sph-coach-lead">Choose days, weeks, months, or all — each is its own list. Add tasks carefully in the picker. Stored on this device per project.</p>
                 <div class="sph-plan-tabs" role="tablist" aria-label="Plan horizon">
                     ${PROJECT_PLAN_HORIZONS.map((h) => `
-                        <button type="button" class="sph-plan-tab${planWindow === h.id ? ' is-active' : ''}" data-action="project-health-plan-window" data-window="${escape(h.id)}" aria-selected="${planWindow === h.id ? 'true' : 'false'}">${escape(h.label)}</button>
+                        <button type="button" class="lux-mode-btn sph-plan-tab${planWindow === h.id ? ' is-active' : ''}" data-action="project-health-plan-window" data-window="${escape(h.id)}" aria-selected="${planWindow === h.id ? 'true' : 'false'}">${escape(h.label)}</button>
                     `).join('')}
                 </div>
                 <div class="sph-plan-add">
@@ -776,10 +777,10 @@
                 const isAll = pkg.id === 'all';
                 const active = browseId === pkg.id;
                 const addPkg = !isAll && pkg.count > 0
-                    ? `<button type="button" class="sph-pick-add-pkg" data-action="project-health-plan-pick-add-package" data-package-id="${escape(pkg.id)}" title="Select all tasks in this package"><i class="fas fa-plus" aria-hidden="true"></i> Add package</button>`
+                    ? `<button type="button" class="sph-pick-add-pkg lux-control-btn" data-action="project-health-plan-pick-add-package" data-package-id="${escape(pkg.id)}" title="Select all tasks in this package"><i class="fas fa-plus" aria-hidden="true"></i> Add package</button>`
                     : '';
                 return `<div class="sph-pick-pkg${active ? ' is-active' : ''}" data-package-id="${escape(pkg.id)}">
-                    <button type="button" class="sph-pick-pkg-main" data-action="project-health-plan-pick-browse" data-package-id="${escape(pkg.id)}" aria-pressed="${active ? 'true' : 'false'}">
+                    <button type="button" class="sph-pick-pkg-main lux-control-btn" data-action="project-health-plan-pick-browse" data-package-id="${escape(pkg.id)}" aria-pressed="${active ? 'true' : 'false'}">
                         <span class="sph-pick-pkg-name">${escape(pkg.name)}</span>
                         <em class="sph-pick-pkg-count">${pkg.count}</em>
                     </button>
@@ -804,7 +805,7 @@
                     ? displayName(accountById(t.assigneeUserId) || { id: t.assigneeUserId })
                     : 'Unassigned';
                 const checked = selectedSet.has(tid);
-                return `<button type="button" class="sph-pick-row${checked ? ' is-selected' : ''}" data-action="project-health-plan-pick-toggle" data-task-id="${escape(tid)}" aria-pressed="${checked ? 'true' : 'false'}">
+                return `<button type="button" class="sph-pick-row lux-control-btn${checked ? ' is-selected' : ''}" data-action="project-health-plan-pick-toggle" data-task-id="${escape(tid)}" aria-pressed="${checked ? 'true' : 'false'}">
                     <span class="sph-pick-check" aria-hidden="true"><i class="fas ${checked ? 'fa-square-check' : 'fa-square'}"></i></span>
                     <span class="sph-pick-copy">
                         <strong>${escape(text(t?.title || 'Task'))}</strong>
@@ -827,7 +828,7 @@
         }
         function renderProjectHealthPlanPickBodyHtml(model) {
             if (!model) return '';
-            return `<div class="sph-pick-split" data-lux-transparency-exempt="1">
+            return `<div class="sph-pick-split lux-studio-section" data-lux-transparency-exempt="1">
                 <aside class="sph-pick-rail" aria-label="Packages">
                     <div class="sph-pick-rail-head">Packages</div>
                     <div class="sph-pick-rail-list">${renderProjectHealthPlanPickRailHtml(model)}</div>
@@ -854,13 +855,14 @@
             } = model;
 
             return `<div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Add tasks to plan">
-                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--health-plan-pick lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1" data-project-id="${escape(projectId)}" data-horizon="${escape(horizon)}">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--health-plan-pick lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel" data-action="noop" data-lux-transparency-exempt="1" data-project-id="${escape(projectId)}" data-horizon="${escape(horizon)}">
                     ${neoHeadHtml(
                         `<i class="fas fa-list-check" aria-hidden="true"></i> Add to plan · ${escape(horizonLabel)}`,
-                        'Pick a package or specific tasks, then add them to your plan.'
+                        'Pick a package or specific tasks, then add them to your plan.',
+                        { headClass: 'lux-studio-head' }
                     )}
-                    <div class="lux-glass-dialog-body lux-glass-dialog-body--health-plan-pick">
-                        <div class="sph-pick-filters" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--health-plan-pick lux-studio-body">
+                        <div class="sph-pick-filters lux-studio-section" data-lux-transparency-exempt="1">
                             <input class="social-neo-input social-neo-input-sm sph-pick-search" type="search" name="projectHealthPlanPickSearch" value="${escape(searchRaw)}" placeholder="Search tasks…" data-action="project-health-plan-pick-filter" data-filter="search" autocomplete="off">
                             <label class="sph-pick-checklab"><input type="checkbox" data-action="project-health-plan-pick-filter" data-filter="openOnly" ${openOnly ? 'checked' : ''}> Open only</label>
                             <label class="sph-pick-checklab"><input type="checkbox" data-action="project-health-plan-pick-filter" data-filter="hidePlanned" ${hidePlanned ? 'checked' : ''}> Hide already planned</label>
@@ -926,8 +928,8 @@
             const statusRow = (key, label) => `<div class="sph-statrow"><span class="sph-sw" style="background:${PROJECT_TASK_STATUS_EDGE_COLOR[key]}"></span><span class="sph-t">${escape(label)}</span><span class="sph-n">${statusCounts[key]}</span></div>`;
             const hygieneChip = (focus, icon, label, count, tone = '') => (
                 count > 0
-                    ? `<button type="button" class="sph-hygiene-chip${tone ? ` is-${tone}` : ''}" data-action="project-task-focus" data-focus="${escape(focus)}" title="Open desk filter: ${escape(label)}"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>${count}</strong> ${escape(label)}</button>`
-                    : `<span class="sph-hygiene-chip is-ok"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>0</strong> ${escape(label)}</span>`
+                    ? `<button type="button" class="sph-hygiene-chip lux-control-btn${tone ? ` is-${tone}` : ''}" data-action="project-task-focus" data-focus="${escape(focus)}" title="Open desk filter: ${escape(label)}"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>${count}</strong> ${escape(label)}</button>`
+                    : `<span class="sph-hygiene-chip lux-control-btn is-ok"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>0</strong> ${escape(label)}</span>`
             );
             const weekActionBtn = (item) => {
                 const attrs = item.taskId
@@ -935,7 +937,7 @@
                     : item.focus
                         ? `data-action="${escape(item.action)}" data-focus="${escape(item.focus)}"`
                         : `data-action="${escape(item.action)}" data-project-id="${escape(projectId)}"`;
-                return `<button type="button" class="sph-week-item" ${attrs}>
+                return `<button type="button" class="sph-week-item lux-control-btn" ${attrs}>
                     <span class="sph-week-ic"><i class="fas ${escape(item.icon)}" aria-hidden="true"></i></span>
                     <span class="sph-week-copy"><strong>${escape(item.title)}</strong><em>${escape(item.detail)}</em></span>
                     <i class="fas fa-chevron-right sph-week-go" aria-hidden="true"></i>
@@ -946,8 +948,8 @@
             const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
 
             return `<div class="${backdropClasses} lux-glass-dialog-backdrop--project-health-fs" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Project health">
-                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-health lux-glass-dialog-card--project-health-fs lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head sph-fs-topbar">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-health lux-glass-dialog-card--project-health-fs lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head sph-fs-topbar lux-studio-head">
                         <div class="lux-glass-dialog-heading">
                             <strong class="lux-glass-dialog-title"><i class="fas fa-heart-pulse" aria-hidden="true"></i> Project health</strong>
                             <span class="lux-glass-dialog-subtitle">${escape(projectName)} · live from tasks, schedule, budget &amp; risks.</span>
@@ -958,9 +960,8 @@
                             <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
-                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-health">
-                        <section class="lux-glass-dialog-group-section sph-fs-hero-section">
-                            <div class="sph-verdict sph-verdict--rich sph-verdict--fs" data-health="${escape(healthLevel)}" data-over="${overCap ? '1' : '0'}">
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-health lux-studio-body">
+                            <div class="sph-verdict sph-verdict--rich sph-verdict--fs lux-studio-section" data-health="${escape(healthLevel)}" data-over="${overCap ? '1' : '0'}">
                                 <div class="sph-verdict-lede">
                                     <span class="sph-k">The one-line read</span>
                                     <p><b>${escape(topIssue)}</b>${issues.length > 1 ? ` · also: ${escape(issues.slice(1, 3).join(', '))}` : ''}. Planned work <b>${escape(money(planned))}</b> across <b>${totalTasks}</b> tasks — ${budgetTailHtml}</p>
@@ -970,7 +971,7 @@
                                 <div class="sph-verdict-stat"><span class="sph-vlabel">Open risks</span><span class="sph-vval ${riskSummary.high ? 'sph-bad' : ''}">${riskSummary.open}</span><span class="sph-vsub">${riskSummary.high ? `${riskSummary.high} high` : 'active register'}</span></div>
                                 <div class="sph-verdict-stat" title="Tasks with zero float — delay here delays the whole project"><span class="sph-vlabel">Critical tasks</span><span class="sph-vval">${criticalIds.length}</span><span class="sph-vsub">zero float</span></div>
                             </div>
-                            <div class="sph-why" aria-label="Why this score">
+                            <div class="sph-why lux-studio-section" aria-label="Why this score">
                                 <span class="sph-k">Why this score</span>
                                 <ul>${whyBits.map((b) => `<li>${escape(b)}</li>`).join('')}</ul>
                             </div>
@@ -983,7 +984,7 @@
                                 ${hygieneChip('critical', 'fa-route', 'on critical path', criticalIds.length, criticalIds.length ? 'crit' : '')}
                             </div>
                             <div class="sph-coach-grid">
-                                <section class="sph-card sph-card--readiness">
+                                <section class="sph-card lux-studio-section sph-card--readiness">
                                     <div class="sph-card-head">
                                         <h3>Data readiness</h3>
                                         <span class="sph-auto">auto</span>
@@ -1004,13 +1005,13 @@
                                     ${fixSamples.length ? `
                                         <div class="sph-mini-label">Fix these tasks first</div>
                                         <div class="sph-fix-list">${fixSamples.map((f) => `
-                                            <button type="button" class="sph-fix-task" data-action="project-task-edit-open" data-project-id="${escape(projectId)}" data-task-id="${escape(f.id)}" title="Edit task">
+                                            <button type="button" class="sph-fix-task lux-control-btn" data-action="project-task-edit-open" data-project-id="${escape(projectId)}" data-task-id="${escape(f.id)}" title="Edit task">
                                                 <strong>${escape(f.title)}</strong>
                                                 <span>${escape(f.reason)}</span>
                                             </button>`).join('')}
                                         </div>` : '<p class="sph-empty">Open tasks already have owners, estimates, due dates, and budget lines.</p>'}
                                 </section>
-                                <section class="sph-card sph-card--week">
+                                <section class="sph-card lux-studio-section sph-card--week">
                                     <div class="sph-card-head"><h3>Coach tips</h3><span class="sph-auto">auto</span></div>
                                     <p class="sph-coach-lead">Suggested from live issues — separate from your manual plan below.</p>
                                     ${weekActionsTop.length
@@ -1019,9 +1020,8 @@
                                 </section>
                             </div>
                             ${renderProjectHealthPlanCardHtml(runtime, project)}
-                        </section>
                         <div class="sph-board" data-lux-transparency-exempt="1">
-                                <section class="sph-card sph-card--progress">
+                                <section class="sph-card lux-studio-section sph-card--progress">
                                     <div class="sph-card-head"><h3>Progress</h3><span class="sph-auto">auto</span></div>
                                     <div class="sph-ring-row">
                                         <div class="sph-ring" style="--p:${donePct}"><span>${donePct}%<small>done</small></span></div>
@@ -1037,7 +1037,7 @@
                                         <div class="sph-fact"><span class="sph-fv">${escape(formatProjectScheduleHours(loggedHours))}</span><span class="sph-fk">Time logged</span></div>
                                     </div>
                                 </section>
-                                <section class="sph-card sph-card--budget">
+                                <section class="sph-card lux-studio-section sph-card--budget">
                                     <div class="sph-card-head"><h3>Budget</h3><span class="sph-auto">auto</span></div>
                                     <div class="sph-bmeter">
                                         <div class="sph-brow"><span class="sph-blab">Budget on cards</span><span class="sph-bamt">${escape(money(planned))}</span></div>
@@ -1046,7 +1046,7 @@
                                     </div>
                                     ${noBudgetLine ? `<p class="sph-empty">${noBudgetLine} open task${noBudgetLine === 1 ? '' : 's'} have no budget on the card — “Budget on cards” understates work.</p>` : ''}
                                 </section>
-                                <section class="sph-card sph-card--risks">
+                                <section class="sph-card lux-studio-section sph-card--risks">
                                     <div class="sph-card-head">
                                         <h3>Risks</h3>
                                         <span class="sph-auto">auto</span>
@@ -1071,7 +1071,7 @@
                                         }).join('')}</div>`
                                         : '<div class="sph-empty">No open risks on the register.</div>'}
                                 </section>
-                                <section class="sph-card sph-card--schedule">
+                                <section class="sph-card lux-studio-section sph-card--schedule">
                                     <div class="sph-card-head"><h3>Schedule</h3><span class="sph-auto">auto</span></div>
                                     <div class="sph-facts sph-facts--tight">
                                         <div class="sph-fact"><span class="sph-fv">${escape(shortestFinish)}</span><span class="sph-fk">Shortest finish</span></div>
@@ -1089,7 +1089,7 @@
                                         ${overEstimateCount ? `<div class="sph-fact"><span class="sph-fv sph-bad">${overEstimateCount}</span><span class="sph-fk">Over estimate</span></div>` : ''}
                                     </div>
                                 </section>
-                                <section class="sph-card sph-card--team">
+                                <section class="sph-card lux-studio-section sph-card--team">
                                     <div class="sph-card-head"><h3>Team load</h3><span class="sph-auto">auto</span></div>
                                     ${loadList.length ? `<div class="sph-team">${loadList.map((l) => {
                                         const unassignedRow = l.key === '__unassigned__';
@@ -1104,7 +1104,7 @@
                                         </div>`;
                                     }).join('')}</div>` : '<div class="sph-empty">No tasks yet.</div>'}
                                 </section>
-                                <section class="sph-card sph-card--deps">
+                                <section class="sph-card lux-studio-section sph-card--deps">
                                     <div class="sph-card-head"><h3>Dependencies</h3><span class="sph-auto">auto</span></div>
                                     <div class="sph-deprow">
                                         <div class="sph-dep"><span class="sph-dep-ic ok"><i class="fas fa-link"></i></span><span><b>${linkCount}</b> order link${linkCount === 1 ? '' : 's'}</span></div>

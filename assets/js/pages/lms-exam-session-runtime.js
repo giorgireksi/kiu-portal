@@ -237,22 +237,6 @@ function syncLmsExamSessionLifecycle(quiz) {
     }
     return session;
 }
-bindLmsDelegatedMarkupActions();
-window.isLmsStudentViewer = isLmsStudentViewer;
-window.getLmsStudentSelectedSemester = getLmsStudentSelectedSemester;
-window.setLmsStudentSelectedSemester = setLmsStudentSelectedSemester;
-window.getStudentLmsEnrolledSubjects = getStudentLmsEnrolledSubjects;
-window.getStudentLmsSemesterOptions = getStudentLmsSemesterOptions;
-window.openLmsStudentEnrolledSubject = openLmsStudentEnrolledSubject;
-window.syncLmsNextSessionContext = syncLmsNextSessionContext;
-window.syncLmsCourseContext = syncLmsCourseContext;
-window.canPostLmsInteractionAnnouncement = canPostLmsInteractionAnnouncement;
-window.isLmsInteractionMessageFromStaff = isLmsInteractionMessageFromStaff;
-window.canReplyToLmsInteractionPost = canReplyToLmsInteractionPost;
-window.isLmsPersonalBoardKey = isLmsPersonalBoardKey;
-window.isLmsPersonalBoardOwner = isLmsPersonalBoardOwner;
-window.buildLmsPersonalBoardKey = buildLmsPersonalBoardKey;
-window.getLmsPersonalDashboardCourseId = getLmsPersonalDashboardCourseId;
 
         const api = {
             finalizeLmsQuizSubmission,

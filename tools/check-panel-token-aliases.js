@@ -36,6 +36,7 @@ const PROPS = [
 
 const ALLOW_LITERAL_PREFIXES = [
   /^--home-fade-/, // home dashboard exception
+  /^--social-fade-/, // social route messages/feed dialect (layout chrome in bare-lite)
 ];
 
 function isAliasOk(name, val) {

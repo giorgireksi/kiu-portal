@@ -23,7 +23,8 @@ describe('student service student inbox messenger regressions', () => {
         expect(serviceSource).not.toContain("renderStudentServiceInboxFiltersMarkup(ui, visibleTickets, currentUser, { layout: publishedLayout })");
         expect(source).toContain('Search conversations by title or topic');
         expect(hub).toContain('function getStudentServiceFilteredStudentTickets(');
-        expect(hub).toContain('function ssFormatRelativeTime(');
+        expect(hub).toContain('(layout?.filters || [])');
+        expect(readSource('assets/js/pages/student-service-model.js')).toContain('function ssFormatRelativeTime(');
     });
 
     it('keeps right column messenger-ready with placeholder shell when no ticket is selected', () => {
@@ -43,12 +44,13 @@ describe('student service student inbox messenger regressions', () => {
 
 
 
+        expect(serviceSource).toContain('student-service-kicker lux-section-kicker">Inbox</div>');
         expect(serviceSource).toContain('student-service-ticket-composer--compact student-service-ticket-composer--placeholder');
         expect(html).toContain('lux-page-bare-lite.css');
         expect(html).toMatch(/student-service\.js\?v=/);
         expect(html).not.toContain('student-service-route.css');
         expectRetiredCss('student-service-route.css');
-        expect(source).toContain('STUDENT_SERVICE_SERVICE_MODULE_URL');
-        expect(source).toContain('?v=');
+        expect(readSource('assets/js/pages/student-service-modules-runtime.js')).toContain('STUDENT_SERVICE_SERVICE_MODULE_URL');
+        expect(html).toMatch(/student-service\.js\?v=/);
     });
 });

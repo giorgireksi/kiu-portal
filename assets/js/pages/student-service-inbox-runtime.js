@@ -110,7 +110,7 @@
         const getStudentServiceSharedInboxFilterLayout = __ssModuleForward('Filters', 'getStudentServiceSharedInboxFilterLayout', null);
         const getStudentServicePublicInboxFilterLayout = __ssModuleForward('Filters', 'getStudentServicePublicInboxFilterLayout', null);
         const publishStudentServiceInboxFilterLayout = __ssModuleForward('Filters', 'publishStudentServiceInboxFilterLayout', null);
-        const getStudentServicePublishedInboxFilterLayout = __ssModuleForward('Filters', 'getStudentServicePublishedInboxFilterLayout', null);
+        const getStudentServicePublishedInboxFilterLayout = __ssModuleForward('Filters', 'getStudentServicePublishedInboxFilterLayout', () => ({ version: 1, filters: [] }));
         const publishStudentServiceInboxFilterLayoutFromEffective = __ssModuleForward('Filters', 'publishStudentServiceInboxFilterLayoutFromEffective', null);
         const getStudentServiceEffectiveInboxFilterLayout = __ssModuleForward('Filters', 'getStudentServiceEffectiveInboxFilterLayout', null);
         const resolveStudentServiceInboxFilterLayout = __ssModuleForward('Filters', 'resolveStudentServiceInboxFilterLayout', null);
@@ -412,6 +412,22 @@
             return getStudentServiceSupportArea(areaId).category;
         }
 
+        function buildStudentServiceInboxDefaultDraftTicket() {
+            return {
+                serviceArea: 'general',
+                category: getStudentServiceDefaultCategoryForArea('general'),
+                title: '',
+                message: '',
+                subjectValue: '',
+                relatedContextLabel: ''
+            };
+        }
+
+        function resolveStudentServiceDefaultDraftTicket() {
+            const draft = buildStudentServiceDefaultDraftTicket();
+            return draft && typeof draft === 'object' ? draft : buildStudentServiceInboxDefaultDraftTicket();
+        }
+
         function buildStudentServiceDefaultDetailSections() {
             return {
                 studentInfo: false,
@@ -420,6 +436,23 @@
                 internalNotes: false,
                 officeHandoff: false
             };
+        }
+
+        function buildStudentServiceInboxDefaultDraftQuestion() {
+            return {
+                title: '',
+                body: '',
+                category: 'General Question',
+                facultyCode: normalizeFacultyCode(getCurrentFaculty?.() || '', ''),
+                anonymousMode: true,
+                displayIdentityToPeers: false,
+                askMode: 'public'
+            };
+        }
+
+        function resolveStudentServiceDefaultDraftQuestion() {
+            const draft = buildStudentServiceDefaultDraftQuestion();
+            return draft && typeof draft === 'object' ? draft : buildStudentServiceInboxDefaultDraftQuestion();
         }
 
         function ensureStudentServiceUiState() {
@@ -447,13 +480,13 @@
                     selectedQuestionId: '',
                     replyingToAnswerId: '',
                     replyingToQuestionId: '',
-                    draftQuestion: buildStudentServiceDefaultDraftQuestion(),
+                    draftQuestion: resolveStudentServiceDefaultDraftQuestion(),
                     customTicketFilters: {},
                     detailSections: buildStudentServiceDefaultDetailSections(),
                     activeSupportArea: 'general',
                     selectedGuidanceArticleId: '',
                     studentHubArticleByArea: {},
-                    draftTicket: buildStudentServiceDefaultDraftTicket(),
+                    draftTicket: resolveStudentServiceDefaultDraftTicket(),
                     draftAttachments: {},
                     ticketThreadModalOpen: false
                 };
@@ -469,7 +502,7 @@
                 ui.studentHubArticleByArea = {};
             }
             if (!ui.draftTicket || typeof ui.draftTicket !== 'object') {
-                ui.draftTicket = buildStudentServiceDefaultDraftTicket();
+                ui.draftTicket = resolveStudentServiceDefaultDraftTicket();
             }
             if (!['get_help', 'my_tickets'].includes(ui.studentTab)) ui.studentTab = 'get_help';
             if (!['tickets', 'articles', 'qa'].includes(ui.staffPanel)) ui.staffPanel = 'tickets';
@@ -478,7 +511,7 @@
             if (typeof ui.replyingToQuestionId !== 'string') ui.replyingToQuestionId = '';
             if (!ui.customTicketFilters || typeof ui.customTicketFilters !== 'object') ui.customTicketFilters = {};
             if (!ui.draftQuestion || typeof ui.draftQuestion !== 'object') {
-                ui.draftQuestion = buildStudentServiceDefaultDraftQuestion();
+                ui.draftQuestion = resolveStudentServiceDefaultDraftQuestion();
             }
             if (!['public', 'private'].includes(ui.draftQuestion.askMode)) ui.draftQuestion.askMode = 'public';
             ui.draftQuestion.category = STUDENT_SERVICE_CATEGORIES.includes(ui.draftQuestion.category)

@@ -341,8 +341,14 @@ describe('exams delegation regressions', () => {
 
     it('approves exam templates via getTemplateById and upsertTemplate', () => {
         const baseSource = readSource('assets/js/pages/exams-console.js');
+        const workspaceSource = readSource('assets/js/pages/exams-console-workspace-runtime.js');
+        const adminHooksBlock = baseSource.match(/window\.__kiuExamsAdminHooks[\s\S]*?renderExamModalShell[\s\S]*?\}\);/);
+        expect(adminHooksBlock?.[0] || '').not.toContain('detectScheduleCollisions');
+        expect(baseSource).toContain('Object.assign(window.__kiuExamsAdminHooks, {\n        detectScheduleCollisions,\n        generateExamPIN\n    });');
+        expect(baseSource).toMatch(/Object\.assign\(__examsWorkspaceDeps,\s*\{[\s\S]*getRole,/);
+        expect(baseSource).not.toMatch(/Object\.assign\(__examsWorkspaceDeps,\s*\{[\s\S]*?\btext,/);
         expect(baseSource).toContain('getTemplateById(templateId)');
-        expect(baseSource).toMatch(/saveAndApproveExamTemplate[\s\S]*upsertTemplate/);
+        expect(workspaceSource).toMatch(/saveAndApproveExamTemplate[\s\S]*upsertTemplate/);
         expect(baseSource).not.toContain('getTemplateContainer().findIndex');
     });
 

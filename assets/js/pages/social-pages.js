@@ -1,6 +1,9 @@
 (function initSocialPagesModule() {
-    if (window.__KIU_SOCIAL_PAGES_MODULE_LOADED) return;
-    window.__KIU_SOCIAL_PAGES_MODULE_LOADED = true;
+    if (window.__KIU_SOCIAL_PAGES_MODULE_LOADED
+        && typeof window.handleSocialPagesClick === 'function'
+        && typeof window.renderPagesPanel === 'function') {
+        return;
+    }
 
     const hooks = window.__kiuSocialPagesHooks || {};
     const {
@@ -93,6 +96,8 @@
         throw new Error('Social pages hooks are unavailable.');
     }
 
+    window.__KIU_SOCIAL_PAGES_MODULE_LOADED = true;
+
     function renderPagesHero(runtime, pages, activeTab, options = {}) {
         const {
             pagesSearchId = '',
@@ -129,19 +134,17 @@
                             </button>
                         </div>
                     </div>
-                    <div class="social-neo-pages-hero-tabs-row">
-                        <div class="social-neo-pages-hero-tabs" role="tablist" aria-label="Pages view">
+                    <div class="social-neo-pages-hero-grid" role="tablist" aria-label="Pages view">
                             ${tabs.map((tab) => `
-                                <button class="social-neo-tab ${activeTab === tab.tab ? 'is-active' : ''}" type="button" role="tab" data-action="panel-pages" data-pages-tab="${escape(tab.tab)}" aria-selected="${activeTab === tab.tab ? 'true' : 'false'}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
-                                    <i class="fas ${escape(tab.icon)}" aria-hidden="true"></i>
+                                <button class="lux-secondary-btn social-neo-pages-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" role="tab" data-action="panel-pages" data-pages-tab="${escape(tab.tab)}" aria-selected="${activeTab === tab.tab ? 'true' : 'false'}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
+                                    <span class="social-neo-pages-hero-tab-icon"><i class="fas ${escape(tab.icon)}" aria-hidden="true"></i></span>
                                     <span class="social-neo-pages-hero-tab-copy">
-                                        <span class="social-neo-pages-hero-tab-label">${escape(tab.label)}</span>
-                                        <small class="social-neo-pages-hero-tab-helper">${escape(tab.helper)}</small>
+                                        <strong>${escape(tab.label)}</strong>
+                                        <small>${escape(tab.helper)}</small>
                                     </span>
-                                    ${tab.badge > 0 ? `<span class="social-neo-tab-badge">${escape(String(tab.badge))}</span>` : ''}
+                                    ${tab.badge > 0 ? `<span class="lux-tab-badge social-neo-tab-badge">${escape(String(tab.badge))}</span>` : ''}
                                 </button>
                             `).join('')}
-                        </div>
                     </div>
                 </div>
                 <form class="social-neo-inline social-neo-pages-hero-toolbar" data-form="pages-search" autocomplete="off">
@@ -339,7 +342,7 @@
                             <button class="lux-secondary-btn" type="button" data-action="page-open-profile" data-page-id="${escape(text(page?.id))}">
                                 <i class="fas fa-globe"></i> Open Page
                             </button>
-                            <button class="lux-secondary-btn ${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
+                            <button class="${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
                                 <i class="fas ${page?.isFollowing ? 'fa-check' : 'fa-plus'}"></i> ${page?.isFollowing ? 'Following' : 'Follow'}
                             </button>
                             ${actionHref ? `<a class="lux-secondary-btn" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
@@ -475,7 +478,7 @@
                                 </div>
                             </div>
                             <div class="social-neo-page-profile-actions">
-                                <button class="lux-secondary-btn ${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
+                                <button class="${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
                                     <i class="fas ${page?.isFollowing ? 'fa-check' : 'fa-plus'}"></i> ${page?.isFollowing ? 'Following' : 'Follow'}
                                 </button>
                                 ${actionHref ? `<a class="lux-secondary-btn" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
@@ -548,7 +551,7 @@
         const pageType = text(runtime.ui?.pageType || 'brand') || 'brand';
         const pageVisibility = text(runtime.ui?.pageVisibility || 'public') || 'public';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--page-create lux-glass-dialog-card" data-form="create-page" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--page-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="create-page" data-action="noop" data-lux-transparency-exempt="1">
                 ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create page', 'Build a public-facing page for a brand, product, club, department, or official campus team.', { icon: 'fas fa-flag' }) : ''}
                 <div class="lux-glass-dialog-body lux-glass-dialog-body--page-create">
                     <div class="social-neo-pages-wizard-steps lux-glass-dialog-page-create-steps">
@@ -706,7 +709,7 @@
             ? 'Share an official update, launch note, or announcement...'
             : 'Share a community thought, reaction, or question...';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--page-post lux-glass-dialog-card" data-form="page-profile-post" data-page-id="${escape(text(page?.id))}" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--page-post lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="page-profile-post" data-page-id="${escape(text(page?.id))}" data-action="noop" data-lux-transparency-exempt="1">
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
                         <strong class="lux-glass-dialog-title"><i class="fas fa-pen" aria-hidden="true"></i> ${escape(title)}</strong>
@@ -800,7 +803,7 @@
             const followerCount = page?.followerCount || pageFollowerIdsFor(page).length || 0;
             const filterChip = (value, label) => `<button class="social-neo-pill social-neo-page-members-filter ${membersFilter === value ? 'is-active' : ''}" type="button" data-action="page-members-filter" data-filter="${escape(value)}">${escape(label)}</button>`;
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <div class="social-neo-card lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card lux-glass-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-glass-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Page</span>
