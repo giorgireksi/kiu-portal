@@ -26,6 +26,14 @@ describe('LMS content library module split', () => {
             classroomSource.indexOf('lms-assignments-runtime.js')
         );
 
+        const liveQuizModuleBlock = classroomSource.match(/const LMS_LIVE_QUIZ_MODULE_URLS = Object\.freeze\(\[([\s\S]*?)\]\);/);
+        expect(liveQuizModuleBlock?.[1] || '').toContain('lms-week-store-runtime.js');
+
+        const sectionQuizSource = readSource('assets/js/pages/lms-section-quiz-runtime.js');
+        expect(sectionQuizSource).toContain('function resolveLmsQuizContextWeeks(resourceKey)');
+        expect(sectionQuizSource).toContain('weeks: resolveLmsQuizContextWeeks(resourceKey)');
+        expect(sectionQuizSource).not.toMatch(/weeks:\s*ensureLmsWeeksForKey\(/);
+
         expect(contentSource).toContain('renderLmsWeekPanelEmptyState(');
         expect(contentSource).toContain('function renderLmsConceptsLibrary(courseId)');
         expect(contentSource).toContain('async function createLmsConcept(resourceKey)');
@@ -106,5 +114,13 @@ describe('LMS content library module split', () => {
         expect(lmsSource).not.toContain('function updateLmsConceptReview(resourceKey, conceptId, reviewStatus = \'approved\')');
         expect(lmsSource).not.toContain('function deleteLmsConcept(resourceKey, conceptId)');
         expect(lmsSource).not.toContain('function rateLmsConcept(resourceKey, conceptId, score)');
+    });
+
+    it('uses shared bare-lite layout for concept library surfaces', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('body.lux-route-lms #lms-content-area.lms-tab-concepts');
+        expect(bare).toContain('body.lux-route-lms .lms-concept-leader-list');
+        expect(bare).toContain('body.lux-route-lms .lms-concept-review-pill.is-approved');
+        expect(bare).toContain('body.lux-route-lms .lms-concept-rate-btn');
     });
 });

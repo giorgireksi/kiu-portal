@@ -30,7 +30,7 @@ describe('LMS CSS-token surface regressions', () => {
         );
         expect(transparency).not.toContain('Math.max(amount, 0.10)');
         expect(transparency).not.toContain('isLmsShellSurface');
-        expect(lmsHtml.match(/data-lux-glass-root="1"/g).length).toBeGreaterThanOrEqual(3);
+        expect(lmsHtml.match(/data-lux-glass-root="1"/g).length).toBeGreaterThanOrEqual(2);
     });
 
     it('does not use LMS transparency root hacks', () => {
@@ -46,12 +46,15 @@ describe('LMS CSS-token surface regressions', () => {
 
     it('includes LMS glass hosts in paint selectors / shared observer surface set', () => {
         const transparency = readSource('assets/js/shared/lux-transparency.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
 
         expect(transparency).toContain("'.lux-lms-group-card'");
         expect(transparency).not.toContain("'.lms-clean-subject-card'");
         expect(transparency).not.toContain("'.lms-clean-signal-pill'");
         expect(transparency).toContain("'.page-hero'");
         expect(transparency).toContain("'.lux-status-pill'");
+        expect(fouc).toContain('.lms-bulk-panel');
+        expect(fouc).toContain('.lms-bulk-card');
     });
 
     it('engine CSS-owns LMS shells; residual paint uses panel tokens only', () => {

@@ -90,6 +90,7 @@ describe('registration route regressions', () => {
 
     it('dynamic student registration shells use shared text primitives and home-hover-chip', () => {
         const js = readSource('assets/js/pages/student-registration.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(js).toContain("className = 'registration-state-card home-hover-chip'");
         expect(js).toContain("className = 'registration-course-row home-hover-chip'");
         expect(js).toContain('registration-module-choice home-hover-chip');
@@ -97,5 +98,42 @@ describe('registration route regressions', () => {
         expect(js).toContain('registration-section-title lux-card-title');
         expect(js).toContain("className = 'registration-module-list-card home-hover-chip'");
         expect(js).toContain('registration-course-title lux-card-title');
+        expect(fouc).toContain('.registration-module-pane-title.lux-card-title');
+        expect(fouc).toContain('.registration-course-index, .registration-course-ects');
+        expect(fouc).toContain('.registration-course-meta-line.is-accent');
+        expect(fouc).toContain('.registration-course-picker-btn');
+    });
+
+    it('transparency engine keeps registration glass hosts on CSS blur at max transparency', () => {
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        expect(transparency).toContain('function isRegistrationGlassHost(el)');
+        expect(transparency).toContain('isRegistrationGlassHost,');
+        expect(transparency).toMatch(/function isRegistrationGlassHost\(el\)[\s\S]*?\.page-hero/);
+        expect(transparency).toMatch(/function isRegistrationGlassHost\(el\)[\s\S]*?data-lux-glass-root/);
+
+        const structuralBranch = transparency.match(
+            /if \(percentage >= 99 && document\.body\.classList\.contains\('lux-route-registration'\)[\s\S]*?el\.style\.removeProperty\('background-color'\);/
+        )?.[0] || '';
+        expect(structuralBranch).toContain('isRegistrationGlassHost(el)');
+        expect(structuralBranch).toContain('stripInlineGlassPaint(el, transparencySignature)');
+
+        const cssOwnedBranch = transparency.match(
+            /if \(percentage >= 99 && isCssOwnedSurface\(el\) && el\.closest\?\.\('#page-registration'\)\) \{[\s\S]*?if \(el\.id === 'lux-shell'\)/
+        )?.[0] || '';
+        expect(cssOwnedBranch).toContain('isRegistrationGlassHost(el)');
+        expect(cssOwnedBranch).toContain('stripInlineGlassPaint(el, transparencySignature)');
+    });
+
+    it('fouc-ht applies panel blur to glass hosts and matte fill to insight cards', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const glassHostRule = fouc.match(
+            /body\.lux-unified-shell :is\(\.page-hero, \.lux-panel, \.lux-alert, \[data-lux-glass-root="1"\][\s\S]*?\}/
+        )?.[0] || '';
+        expect(glassHostRule).toContain('backdrop-filter: var(--lux-panel-blur-filter)');
+
+        const regMatteBlock = fouc.split('/* Timetable + registration pages')[1]?.split('/* Social soft-chrome shells')[0] || '';
+        expect(regMatteBlock).toContain('.registration-insight-card');
+        expect(regMatteBlock).toMatch(/body\.lux-route-registration #page-registration[\s\S]*backdrop-filter: none/);
+        expect(regMatteBlock).toMatch(/body\.lux-route-registration #page-registration \.lux-card:not\(\[data-lux-glass-root="1"\]\)/);
     });
 });

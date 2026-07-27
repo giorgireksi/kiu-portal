@@ -1178,7 +1178,12 @@ function getStudentCoursePickerGroups(courseId, courseName = '') {
 
 function closeStudentCourseSectionPicker() {
     const modal = document.getElementById('student-course-section-picker-modal');
-    if (modal) modal.remove();
+    if (!modal) return;
+    if (typeof window.closeLuxPortalModal === 'function') {
+        window.closeLuxPortalModal(modal, { remove: true });
+        return;
+    }
+    modal.remove();
 }
 
 function getStudentCoursePickerCurrentSchedule() {
@@ -1210,37 +1215,35 @@ function formatStudentCourseSectionRemoveConfirm(courseId, groupId, courseName =
     return `Remove ${typeLabel} section ${groupLabel} for ${subjectLabel} from your registration draft?`;
 }
 
+function getRegistrationSharedApi() {
+    return window.KiuRegistrationShared || window.__kiuRegSharedApi || {};
+}
+
 function normalizeRegistrationRemoveVerificationToken(value) {
+    const shared = getRegistrationSharedApi();
+    if (typeof shared.normalizeRegistrationRemoveVerificationToken === 'function') {
+        return shared.normalizeRegistrationRemoveVerificationToken(value);
+    }
     return String(value || '').trim().toUpperCase();
 }
 
-function runRegistrationRemoveVerification({
-    step1Text = '',
-    step2Text = '',
-    promptText = '',
-    expectedToken = ''
-} = {}) {
-    const normalizedExpected = normalizeRegistrationRemoveVerificationToken(expectedToken);
-    if (!normalizedExpected) return false;
-    if (typeof window.confirm !== 'function' || typeof window.prompt !== 'function') {
-        return false;
+function runRegistrationRemoveVerification(config = {}) {
+    const shared = getRegistrationSharedApi();
+    if (typeof shared.runRegistrationRemoveVerificationModal === 'function') {
+        return shared.runRegistrationRemoveVerificationModal(config);
     }
-    if (!window.confirm(String(step1Text || 'Remove this registration item?'))) return false;
-    if (!window.confirm(String(step2Text || 'This action cannot be undone without choosing the section again.'))) {
-        return false;
+    if (typeof shared.runRegistrationRemoveVerification === 'function') {
+        return shared.runRegistrationRemoveVerification(config);
     }
-    const typedValue = window.prompt(
-        String(promptText || `Type ${normalizedExpected} to confirm removal.`),
-        ''
-    );
-    if (typedValue == null) return false;
-    if (normalizeRegistrationRemoveVerificationToken(typedValue) !== normalizedExpected) {
-        if (typeof showToast === 'function') {
-            showToast('Removal cancelled. Confirmation text did not match.');
-        }
-        return false;
+    return Promise.resolve(false);
+}
+
+function runRegistrationChooseVerification(config = {}) {
+    const shared = getRegistrationSharedApi();
+    if (typeof shared.runRegistrationChooseVerificationModal === 'function') {
+        return shared.runRegistrationChooseVerificationModal(config);
     }
-    return true;
+    return Promise.resolve(false);
 }
 
 function buildStudentCourseSectionRemoveVerification(courseId, groupId, courseName = '') {
@@ -1273,6 +1276,22 @@ function buildStudentCourseSubjectRemoveVerification(courseId, courseName = '') 
         step2Text: `This removes every lecture and seminar section you selected for ${subjectLabel}.`,
         promptText: `Step 3 of 3: Type ${expectedToken} to confirm subject removal.`,
         expectedToken
+    };
+}
+
+function buildStudentCourseSectionChooseVerification(courseId, groupId, courseName = '', group = null) {
+    const normalizedCourseId = String(courseId || '').trim();
+    const subjectLabel = String(
+        courseName || studentCourseSectionPickerState.courseName || normalizedCourseId
+    ).trim() || 'this subject';
+    const groupLabel = String(group?.name || group?.id || groupId || 'section').trim();
+    const typeLabel = getStudentSectionTypeLabel(group?.sessionType || 'lecture');
+    const dayLabel = toEnglishText(group?.day || 'TBD');
+    const timeLabel = group?.time || 'TBD';
+    const roomLabel = group?.room ? `, ${group.room}` : '';
+    return {
+        step1Text: `Add ${typeLabel} section ${groupLabel} (${dayLabel} ${timeLabel}${roomLabel}) for ${subjectLabel}?`,
+        step2Text: `Confirm your seat in ${groupLabel} for ${subjectLabel}. This updates your registration draft immediately.`
     };
 }
 
@@ -1357,9 +1376,12 @@ function openStudentCourseSectionPicker(courseId, courseName = '') {
     closeStudentCourseSectionPicker();
     const modal = document.createElement('div');
     modal.id = 'student-course-section-picker-modal';
-    modal.className = 'registration-section-picker-backdrop';
+    modal.className = 'registration-section-picker-backdrop registration-structured-modal-backdrop lms-glass-dialog-overlay';
+    modal.dataset.luxTransparencyExempt = '1';
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
     const dialog = document.createElement('div');
-    dialog.className = 'registration-section-picker-dialog';
+    dialog.className = 'registration-section-picker-dialog lux-glass-dialog-card';
     dialog.setAttribute('role', 'dialog');
     dialog.setAttribute('aria-modal', 'true');
     dialog.setAttribute('aria-label', 'Choose course section');
@@ -1399,6 +1421,13 @@ function openStudentCourseSectionPicker(courseId, courseName = '') {
         if (event.target === modal) closeStudentCourseSectionPicker();
     });
     document.body.appendChild(modal);
+    if (typeof window.openLuxPortalModal === 'function') {
+        window.openLuxPortalModal(modal);
+    } else {
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('is-open');
+    }
     renderStudentCourseSectionPicker();
 }
 
@@ -1539,11 +1568,11 @@ function renderStudentCourseSectionPicker() {
     content.replaceChildren(fragment);
 }
 
-function clearStudentCourseSection(courseId, groupId) {
+async function clearStudentCourseSection(courseId, groupId) {
     if (typeof unselectCourseGroup !== 'function') return false;
     const preferredFaculty = getCurrentFaculty();
     const courseDef = getCourseByIdForRegistration(courseId, preferredFaculty) || { id: courseId, name: courseId };
-    const verified = runRegistrationRemoveVerification(buildStudentCourseSectionRemoveVerification(
+    const verified = await runRegistrationRemoveVerification(buildStudentCourseSectionRemoveVerification(
         courseId,
         groupId,
         studentCourseSectionPickerState.courseName || courseDef.name || courseId
@@ -1559,11 +1588,11 @@ function clearStudentCourseSection(courseId, groupId) {
     return true;
 }
 
-function removeStudentCourseSelection(courseId, courseName = '') {
+async function removeStudentCourseSelection(courseId, courseName = '') {
     const normalizedCourseId = String(courseId || '').trim();
     if (!normalizedCourseId) return false;
     const label = String(courseName || normalizedCourseId).trim();
-    const verified = runRegistrationRemoveVerification(buildStudentCourseSubjectRemoveVerification(
+    const verified = await runRegistrationRemoveVerification(buildStudentCourseSubjectRemoveVerification(
         normalizedCourseId,
         label
     ));
@@ -1574,7 +1603,7 @@ function removeStudentCourseSelection(courseId, courseName = '') {
     return removed;
 }
 
-function chooseStudentCourseSection(courseId, groupId) {
+async function chooseStudentCourseSection(courseId, groupId) {
     const preferredFaculty = getCurrentFaculty();
     const courseDef = getCourseByIdForRegistration(courseId, preferredFaculty) || { id: courseId, name: courseId };
     const pickerGroups = getStudentCoursePickerGroups(courseId, courseDef.name || courseId);
@@ -1603,9 +1632,26 @@ function chooseStudentCourseSection(courseId, groupId) {
             : (typeof formatStudentScheduleConflictWarning === 'function'
                 ? `${formatStudentScheduleConflictWarning(scheduleConflict, normalizedGroup || targetGroup)}\n\nAdd this section anyway?`
                 : `Schedule overlap with ${scheduleConflict.courseName || scheduleConflict.courseId} (${scheduleConflict.groupName || scheduleConflict.groupId}).\n\nAdd this section anyway?`);
-        const accepted = typeof window.confirm === 'function' ? window.confirm(confirmText) : true;
+        const shared = getRegistrationSharedApi();
+        const accepted = typeof shared.luxuryConfirmModalAsync === 'function'
+            ? await shared.luxuryConfirmModalAsync({
+                title: 'Schedule Conflict',
+                subtitle: 'Review overlap before continuing',
+                message: confirmText,
+                confirmLabel: 'Add Anyway'
+            })
+            : (typeof window.confirm === 'function' ? window.confirm(confirmText) : true);
         if (!accepted) return false;
     }
+    const verified = await runRegistrationChooseVerification(
+        buildStudentCourseSectionChooseVerification(
+            courseId,
+            groupId,
+            courseDef.name || courseId,
+            normalizedGroup || targetGroup
+        )
+    );
+    if (!verified) return false;
     const result = selectCourseGroup(courseId, courseDef.name || courseId, groupId);
     if (result !== false) {
         renderStudentCourseSectionPicker();
@@ -1757,5 +1803,6 @@ window.setStudentCourseSectionType = setStudentCourseSectionType;
 window.chooseStudentCourseSection = chooseStudentCourseSection;
 window.clearStudentCourseSection = clearStudentCourseSection;
 window.runRegistrationRemoveVerification = runRegistrationRemoveVerification;
+window.runRegistrationChooseVerification = runRegistrationChooseVerification;
 window.removeStudentCourseSelection = removeStudentCourseSelection;
 window.toggleCourseSelection = toggleCourseSelection;

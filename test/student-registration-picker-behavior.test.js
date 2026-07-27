@@ -11,7 +11,7 @@ describe('student registration picker behavior', () => {
         const html = readSource('registration.html');
         const studentRegistration = readSource('assets/js/pages/student-registration.js');
 
-        expect(html).toContain('student-registration.js?v=20260724-peelfix1');
+        expect(html).toContain('student-registration.js?v=20260728-regchoose2');
         expect(html).toContain('registration-enrollment.js?v=20260608-regfix1');
         expect(studentRegistration).toContain("const REGISTRATION_PICKER_BUILD = '20260608-regfix1'");
         expect(studentRegistration).toContain('window.REGISTRATION_PICKER_BUILD = REGISTRATION_PICKER_BUILD');
@@ -20,11 +20,16 @@ describe('student registration picker behavior', () => {
 
     it('exposes modal footer remove subject and capture-phase picker clicks', () => {
         const source = readSource('assets/js/pages/student-registration.js');
+        const modals = readSource('assets/css/lux-modals.css');
 
         expect(source).toContain('function buildStudentCourseSectionPickerFooter(courseId, courseName, hasSubjectSelection)');
         expect(source).toContain('registration-section-picker-remove-subject-btn');
         expect(source).toContain("event.stopImmediatePropagation()");
         expect(source).toContain('#student-course-section-picker-modal');
+        expect(source).toContain('openLuxPortalModal(modal)');
+        expect(source).toContain('registration-structured-modal-backdrop lms-glass-dialog-overlay');
+        expect(modals).toContain('.registration-section-picker-backdrop');
+        expect(modals).toContain('.registration-section-picker-dialog');
     });
 
     it('persists session type from admin scheduler deploy', () => {

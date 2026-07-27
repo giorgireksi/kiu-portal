@@ -10,6 +10,7 @@ function readSource(relativePath) {
 describe('LMS interaction UI regressions', () => {
     it('uses organized messenger layout and CSS-managed interaction transparency', () => {
         const html = readSource('lms.html');
+        const bareCss = readSource('assets/css/lux-page-bare-lite.css');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
@@ -52,5 +53,9 @@ describe('LMS interaction UI regressions', () => {
         expect(utilitiesSource).toContain('.lms-route-workspace-chrome');
         expect(utilitiesSource).not.toContain('lms-interaction-messenger');
         expect(utilitiesSource).not.toContain('lms-interaction-direct__rail');
+
+        expect(bareCss).toContain('body.lux-route-lms .lms-interaction-messenger');
+        expect(bareCss).toContain('body.lux-route-lms .lms-interaction-direct');
+        expect(bareCss).toContain('--lms-interaction-panel-chrome');
     });
 });

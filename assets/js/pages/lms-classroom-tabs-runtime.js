@@ -15,6 +15,7 @@ const LMS_GRADEBOOK_MODULE_URLS = Object.freeze([
     'assets/js/pages/gradebook-staff.js?v=20260720-gbsize1'
 ]);
 const LMS_LIVE_QUIZ_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2',
     'assets/js/pages/lms-workspace-sync-timing.js?v=20260718-lmssync1',
     'assets/js/pages/lms-live-quiz-access-runtime.js?v=20260720-w18',
     'assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260714-lmspro2',
@@ -1677,7 +1678,6 @@ const renderLmsAttendanceSection = window.renderLmsAttendanceSection;
 const markLmsAttendanceStatus = window.markLmsAttendanceStatus;
 const getLmsSectionEnhancementContext = window.getLmsSectionEnhancementContext;
 const getLmsSectionEnhancementConfig = window.getLmsSectionEnhancementConfig;
-const renderLmsProfessionalSectionHero = window.renderLmsProfessionalSectionHero;
 const computeLmsMemberRisk = window.computeLmsMemberRisk;
 const renderLmsDeepToolkitCard = window.renderLmsDeepToolkitCard;
 const renderLmsDeepToolkitList = window.renderLmsDeepToolkitList;

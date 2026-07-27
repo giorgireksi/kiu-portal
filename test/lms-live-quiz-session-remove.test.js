@@ -26,6 +26,7 @@ describe('LMS live quiz session remove', () => {
 
     it('redesigns the active session switcher as a lux picker with scroll cap', () => {
         const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const bareCss = readSource('assets/css/lux-page-bare-lite.css');
         const switcherBlock = extractFunctionBody(uiSource, 'renderLmsLiveSessionSwitcher');
 
         expect(switcherBlock).toContain('lms-live-session-switcher-');
@@ -33,8 +34,8 @@ describe('LMS live quiz session remove', () => {
         expect(switcherBlock).toContain('data-lux-picker-enhanced="true"');
         expect(switcherBlock).toContain('data-lux-picker-subtitle');
         expect(uiSource).toContain('enhanceUniversalPicker(switcher)');
-        expect(css).toContain('.lms-live-session-switcher-field .lux-picker-panel');
-        expect(css).toContain('--lux-picker-visible-options: 5');
+        expect(bareCss).toContain('.lms-live-session-switcher-field .lux-picker-panel');
+        expect(bareCss).toContain('--lux-picker-visible-options: 5');
     });
 
     it('uses a two-step verification dialog before deleting sessions', () => {

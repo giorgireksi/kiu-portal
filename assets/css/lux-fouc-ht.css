@@ -748,6 +748,12 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .lux-lms-subject-card,
   .lms-route-card,
   .lms-route-empty,
+  .lms-pro-hero,
+  .lms-pro-surface,
+  .lms-deep-toolkit,
+  .lms-interaction-messenger,
+  .lms-week-accordion-panel,
+  .lms-route-workspace-chrome,
   .lux-timetable-session-card,
   .lux-timetable-day-section,
   .schedule-session-card,
@@ -786,7 +792,8 @@ body.lux-route-lms .page-hero :is(
   .lms-clean-subjects,
   .lms-clean-subjects--merged,
   .lux-lms-subject-card,
-  .lms-route-empty
+  .lms-route-empty,
+  .lms-hero-focus
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -796,6 +803,188 @@ body.lux-route-lms .page-hero :is(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+}
+
+/* LMS course workspace: matte tab surfaces inside one glass stage. */
+body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] :is(
+  .lms-route-workspace-chrome,
+  .lms-pro-hero,
+  .lms-pro-surface,
+  .lms-deep-toolkit,
+  .lms-interaction-messenger,
+  .lms-route-panel:not([data-lux-glass-root="1"]),
+  .lms-route-card,
+  .lms-week-accordion-panel,
+  .lms-route-empty,
+  .lms-route-hero,
+  .lms-session-hero,
+  .lms-route-stat,
+  .lms-session-official-card,
+  .lms-next-session-card,
+  .lms-session-marker-board,
+  .lms-session-marker-composer,
+  .lms-live-student-wait,
+  .lms-live-hero,
+  .lms-live-panel,
+  .lms-live-card,
+  .lms-live-student-card,
+  .lms-live-stage,
+  .lms-call-classroom,
+  .lms-call-collab-panel,
+  .lms-call-side-card,
+  .lms-call-post,
+  .lms-call-roster,
+  .lms-call-stage,
+  .lms-assignment-banner,
+  .lms-member-overview-panel,
+  .lms-member-section,
+  .lms-member-row,
+  .lms-whiteboard-shell,
+  .lms-gradebook-wrapper-shell .lms-route-panel,
+  .lms-gradebook-wrapper-shell .lms-route-card,
+  .gb-modern-hero,
+  .gb-modern-card,
+  .gb-weight-row,
+  .gb-student-context-bar
+),
+body.lux-route-lms #page-lms-groups [data-lux-glass-root="1"] :is(
+  .lux-lms-group-card,
+  .lms-bulk-panel,
+  .lms-bulk-card,
+  .lms-route-card,
+  .lms-route-empty,
+  .home-hover-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-lms #page-lms-inner :is(.lms-route-panel[data-lux-glass-root="1"]),
+body.lux-route-lms #page-lms-groups :is(.lms-route-panel[data-lux-glass-root="1"]) {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-lms #page-lms-inner :is(.lms-route-panel[data-lux-glass-root="1"])::after,
+body.lux-route-lms #page-lms-groups :is(.lms-route-panel[data-lux-glass-root="1"])::after {
+  display: none;
+}
+
+body.lux-route-lms #page-lms-inner :is(
+  .home-hover-chip,
+  .lms-route-workspace-chrome,
+  .lms-pro-hero,
+  .lms-pro-surface,
+  .lms-deep-toolkit,
+  .lms-interaction-messenger,
+  .lms-route-panel:not([data-lux-glass-root="1"]),
+  .lms-route-card,
+  .lms-week-accordion-panel,
+  .lms-route-empty,
+  .lms-route-hero,
+  .lms-session-hero,
+  .lms-route-stat,
+  .lms-session-official-card,
+  .lms-next-session-card,
+  .lms-session-marker-board,
+  .lms-session-marker-composer,
+  .lms-live-student-wait,
+  .lms-live-hero,
+  .lms-live-panel,
+  .lms-live-card,
+  .lms-live-student-card,
+  .lms-live-stage,
+  .lms-call-classroom,
+  .lms-call-collab-panel,
+  .lms-call-side-card,
+  .lms-call-post,
+  .lms-call-roster,
+  .lms-call-stage,
+  .lms-assignment-banner,
+  .lms-member-overview-panel,
+  .lms-member-section,
+  .lms-member-row,
+  .gb-modern-hero,
+  .gb-modern-card,
+  .gb-weight-row
+),
+body.lux-route-lms #page-lms-groups :is(
+  .home-hover-chip,
+  .lux-lms-group-card
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-lms #page-lms-inner :is(
+  .home-hover-chip,
+  .lms-route-workspace-chrome,
+  .lms-pro-hero,
+  .lms-pro-surface,
+  .lms-deep-toolkit,
+  .lms-route-panel:not([data-lux-glass-root="1"]),
+  .lms-route-card,
+  .lms-week-accordion-panel,
+  .lms-route-empty,
+  .lms-route-hero,
+  .lms-session-hero,
+  .lms-route-stat,
+  .lms-session-official-card,
+  .lms-next-session-card,
+  .lms-session-marker-board,
+  .lms-session-marker-composer,
+  .lms-live-student-wait,
+  .lms-live-hero,
+  .lms-live-panel,
+  .lms-live-card,
+  .lms-live-student-card,
+  .lms-live-stage,
+  .lms-call-classroom,
+  .lms-call-collab-panel,
+  .lms-call-side-card,
+  .lms-call-post,
+  .lms-call-roster,
+  .lms-call-stage,
+  .lms-assignment-banner,
+  .lms-member-overview-panel,
+  .lms-member-section,
+  .lms-member-row,
+  .gb-modern-hero,
+  .gb-modern-card,
+  .gb-weight-row
+):hover,
+body.lux-route-lms #page-lms-groups :is(
+  .home-hover-chip,
+  .lux-lms-group-card
+):hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+}
+
+body.lux-route-lms #page-lms-inner .lms-interaction-messenger:hover {
+  transform: none;
+  border-color: var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+}
+
+body.lux-route-lms .page-hero :is(
+  .lms-hero-focus,
+  .lux-lms-subject-card
+):hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
 }
 
 /* Timetable + registration pages: matte inners + home-hover-chip motion; glass hosts static. */
@@ -1199,6 +1388,118 @@ body.lux-route-chancellery #page-chancellery .lux-picker-field {
   box-shadow: none;
   border-radius: 0;
   padding: 0;
+}
+
+/* Registration module pane + course row interior (matte wells, chips, meta). */
+body.lux-route-registration #page-registration :is(.registration-module-pane-chip, .registration-track-group-chip) {
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, var(--lux-panel-fill));
+  color: var(--lux-accent-2, var(--lux-text));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+body.lux-route-registration #page-registration .registration-module-pane-title.lux-card-title {
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+body.lux-route-registration #page-registration .registration-module-pane-copy.lux-card-copy {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+body.lux-route-registration #page-registration .registration-module-grid-head {
+  letter-spacing: 0.08em;
+}
+body.lux-route-registration #page-registration .registration-course-row.home-hover-chip {
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+body.lux-route-registration #page-registration :is(.registration-course-index, .registration-course-ects) {
+  background: var(--lux-btn-well-soft);
+  border: 1px solid var(--lux-btn-border-solid, var(--lux-accent));
+  box-shadow: var(--lux-btn-frame-shadow);
+  color: var(--lux-btn-label, var(--lux-text));
+}
+body.lux-route-registration #page-registration .registration-course-title.lux-card-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--lux-text);
+}
+body.lux-route-registration #page-registration .registration-course-subtitle.lux-card-meta {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+body.lux-route-registration #page-registration .registration-course-meta {
+  font-size: 10px;
+  line-height: 1.55;
+  letter-spacing: 0.02em;
+  color: var(--lux-text-muted);
+}
+body.lux-route-registration #page-registration .registration-course-meta-line.is-spaced {
+  margin-top: 4px;
+}
+body.lux-route-registration #page-registration .registration-course-meta-line.is-accent {
+  color: #0f766e;
+  font-weight: 700;
+}
+body.lux-route-registration #page-registration .registration-course-meta-line.is-info {
+  color: #2563eb;
+  font-weight: 700;
+}
+body.lux-route-registration #page-registration .registration-course-meta-line.is-success {
+  color: #047857;
+  font-weight: 700;
+}
+body.lux-route-registration #page-registration .registration-course-meta-line.is-danger {
+  color: #dc2626;
+  font-weight: 700;
+}
+body.lux-route-registration #page-registration .registration-course-meta-line.is-small {
+  font-size: 10px;
+}
+body.lux-route-registration #page-registration .registration-course-action-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid var(--lux-modal-glass-border, var(--lux-border));
+  background: var(--lux-panel-modal-section, var(--lux-btn-well-soft));
+}
+body.lux-route-registration #page-registration .registration-course-action-state.is-locked {
+  color: var(--lux-text-muted);
+  border-color: color-mix(in srgb, var(--lux-text-muted) 28%, transparent);
+}
+body.lux-route-registration #page-registration .registration-course-action-state.is-empty {
+  color: #c2410c;
+  border-color: #fdba74;
+  background: color-mix(in srgb, #fff7ed 72%, var(--lux-panel-fill));
+}
+body.lux-route-registration #page-registration .registration-course-picker-btn,
+body.lux-route-registration #page-registration .registration-course-remove-btn {
+  min-width: 96px;
+  padding: 8px 12px;
+  font-size: 11px;
+}
+body.lux-route-registration #page-registration .registration-course-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--lux-text-muted);
+  border: 1px dashed color-mix(in srgb, var(--lux-text-muted) 28%, transparent);
+  border-radius: 16px;
+  background: var(--lux-panel-modal-section, var(--lux-btn-well-soft));
 }
 
 /* Personal data page: matte inners + home-hover-chip motion; glass hosts static. */

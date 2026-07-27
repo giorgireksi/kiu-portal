@@ -20,14 +20,19 @@ describe('LMS members panel regressions', () => {
         expect(membersBlock).not.toContain("renderLmsRouteKv('Faculty'");
     });
 
-    
-
     it('styles compact member rows and slim overview panel', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('body.lux-route-lms .lms-member-stack');
+        expect(bare).toContain('body.lux-route-lms .lms-member-row');
+        expect(bare).toContain('body.lux-route-lms .lms-member-section');
+        expect(bare).toContain('body.lux-route-lms #lms-content-area.lms-tab-members');
+        expect(bare).toContain('.lms-route-pill.is-you');
     });
 
     it('bumps members compact cache bust token in lms.html', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
+        expect(html).toContain('lmworkspace7');
     });
 });

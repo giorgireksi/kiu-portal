@@ -38,4 +38,11 @@ describe('LMS navigation regressions', () => {
         expect(luxurySource).toContain('typeof window.refreshStandaloneDesktopShellChrome === \'function\'');
         expect(luxurySource).not.toContain('function queueShellSync(args, result) {\n        if (result?.navigationSkipped) return;\n        if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;\n        if (queuedShellSyncFrame) return;\n        queuedShellSyncFrame = window.requestAnimationFrame(() => {\n            queuedShellSyncFrame = null;\n            if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;\n            syncAll();');
     });
+
+    it('switches LMS tabs immediately instead of blocking on lazy runtime preload', () => {
+        const boot = readSource('assets/js/pages/lms-route-boot.js');
+        expect(boot).toMatch(/data-lms-tab[\s\S]*switchLMSTab\(tabId\)/);
+        expect(boot).not.toMatch(/await ensureLmsExtendedRuntimeForTab\(tabId\);\s*\n\s*if \(typeof window\.switchLMSTab/);
+        expect(boot).toContain('[data-lms-tab-loading]');
+    });
 });

@@ -9,7 +9,7 @@ function readSource(relativePath) {
 describe('LMS embedded staff gradebook UX', () => {
     const gradebook = readSource('assets/js/pages/gradebook.js');
     const lms = readSource('assets/js/pages/lms.js');
-    const lmsCss = ''; /* purged retired lms-route.css */
+    const lmsCss = readSource('assets/css/lux-page-bare-lite.css');
 
     it('detects LMS embedded gradebook context and branches staff init', () => {
         expect(gradebook).toContain('function isLmsEmbeddedGradebookContext()');
@@ -226,7 +226,7 @@ describe('LMS embedded staff gradebook UX', () => {
 describe('LMS bulk grading scheme tool', () => {
     const classroom = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
     const gradebook = readSource('assets/js/pages/gradebook.js');
-    const lmsCss = ''; /* purged retired lms-route.css */
+    const lmsCss = readSource('assets/css/lux-page-bare-lite.css');
 
     it('adds Grading scheme card to multi-group actions on GROUP VIEW', () => {
         expect(classroom).toContain('Grading scheme');
@@ -267,6 +267,7 @@ describe('LMS bulk grading scheme tool', () => {
     });
 
     it('uses wide two-column bulk layout with full-width grading scheme', () => {
+        expect(lmsCss).toContain('body.lux-route-lms .lms-bulk-action-grid');
         expect(lmsCss).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
         expect(lmsCss).toContain('.lms-bulk-card--grading-scheme');
         expect(lmsCss).toContain('grid-column: 1 / -1');

@@ -154,7 +154,7 @@ function openLMSGroups(subjectId, titleString, iconClass) {
             );
             grid.innerHTML += `
             <article
-                class="lms-route-card lms-route-panel-compact lux-strip-card lux-lms-group-card"
+                class="lms-route-card lms-route-panel-compact lux-strip-card lux-lms-group-card home-hover-chip"
                 role="button"
                 tabindex="0"
                 data-group-id="${escapeHtml(String(g.id))}"

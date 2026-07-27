@@ -356,6 +356,7 @@ function closeLuxuryConfirmModal() {
 
 function openLuxuryConfirmModal(config = {}) {
     closeLuxuryConfirmModal();
+    closeLuxuryPromptModal();
 
     const {
         title = 'Confirm',
@@ -363,7 +364,8 @@ function openLuxuryConfirmModal(config = {}) {
         message = '',
         danger = false,
         confirmLabel = 'Confirm',
-        onConfirm
+        onConfirm,
+        onCancel
     } = config;
 
     const modal = document.createElement('div');
@@ -441,28 +443,302 @@ function openLuxuryConfirmModal(config = {}) {
         }
     }
 
-    const close = () => closeLuxuryConfirmModal();
+    const dismiss = () => closeLuxuryConfirmModal();
+    const cancel = () => {
+        dismiss();
+        if (typeof onCancel === 'function') onCancel();
+    };
     const onKeyDown = (event) => {
-        if (event.key === 'Escape') close();
+        if (event.key === 'Escape') cancel();
     };
     window.__kiuLuxuryConfirmCleanup = () => {
         window.removeEventListener('keydown', onKeyDown);
     };
-    closeButton.onclick = close;
-    cancelButton.onclick = close;
+    closeButton.onclick = cancel;
+    cancelButton.onclick = cancel;
     confirmButton.addEventListener('click', () => {
         if (typeof onConfirm === 'function') {
-            onConfirm(close);
+            onConfirm(dismiss);
         } else {
-            close();
+            dismiss();
         }
     });
     window.addEventListener('keydown', onKeyDown);
     modal.addEventListener('click', (event) => {
-        if (event.target === modal) close();
+        if (event.target === modal) cancel();
     });
 
     openLuxPortalModalAfterAppend(modal, { focusSelector: '.lux-glass-dialog-submit-btn' });
+}
+
+function closeLuxuryPromptModal() {
+    closeLuxPortalModalEphemeral('kiu-luxury-prompt-modal', '__kiuLuxuryPromptCleanup');
+}
+
+function openLuxuryPromptModal(config = {}) {
+    closeLuxuryPromptModal();
+    closeLuxuryConfirmModal();
+
+    const {
+        title = 'Confirm',
+        subtitle = '',
+        message = '',
+        inputLabel = 'Confirmation',
+        placeholder = '',
+        confirmLabel = 'Confirm',
+        danger = false,
+        expectedToken = '',
+        onConfirm,
+        onCancel
+    } = config;
+
+    const modal = document.createElement('div');
+    modal.id = 'kiu-luxury-prompt-modal';
+    modal.className = luxStructuredModalOverlayClass();
+    modal.setAttribute('data-lux-transparency-exempt', '1');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    const card = document.createElement('div');
+    card.className = 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card';
+    card.dataset.luxTransparencyExempt = '1';
+    card.dataset.luxGlassRoot = '1';
+
+    const head = document.createElement('div');
+    head.className = 'lux-glass-dialog-section-head lux-glass-dialog-head';
+
+    const heading = document.createElement('div');
+    heading.className = 'lux-glass-dialog-heading';
+
+    const titleStrong = document.createElement('strong');
+    titleStrong.className = 'lux-glass-dialog-title';
+    const titleIcon = document.createElement('i');
+    titleIcon.className = `fas ${danger ? 'fa-triangle-exclamation' : 'fa-circle-question'}`;
+    titleIcon.setAttribute('aria-hidden', 'true');
+    const titleText = document.createElement('span');
+    titleText.textContent = title;
+    titleStrong.append(titleIcon, document.createTextNode(' '), titleText);
+
+    const subtitleEl = document.createElement('span');
+    subtitleEl.className = 'lux-glass-dialog-subtitle';
+    subtitleEl.textContent = subtitle || 'Type the confirmation text to continue.';
+
+    heading.append(titleStrong, subtitleEl);
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'lux-ghost-btn lux-glass-dialog-close-btn';
+    closeButton.setAttribute('aria-label', 'Close');
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fas fa-times';
+    closeButton.appendChild(closeIcon);
+
+    head.append(heading, closeButton);
+
+    const body = document.createElement('div');
+    body.className = 'lux-glass-dialog-body lux-glass-dialog-body--event-create';
+    const messageCopy = document.createElement('div');
+    messageCopy.className = 'lux-glass-dialog-preview-copy';
+    messageCopy.textContent = message;
+    body.appendChild(messageCopy);
+
+    const fieldWrap = document.createElement('label');
+    fieldWrap.className = 'lux-glass-dialog-field';
+    const fieldLabel = document.createElement('span');
+    fieldLabel.className = 'social-neo-label';
+    fieldLabel.textContent = inputLabel;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'social-neo-input lux-control';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    if (placeholder) input.placeholder = String(placeholder);
+    fieldWrap.append(fieldLabel, input);
+    body.appendChild(fieldWrap);
+
+    const footer = document.createElement('div');
+    footer.className = 'lux-glass-dialog-actions';
+
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.className = 'lux-ghost-btn lux-glass-dialog-cancel-btn';
+    cancelButton.textContent = 'Cancel';
+
+    const confirmButton = document.createElement('button');
+    confirmButton.type = 'button';
+    confirmButton.className = `lux-primary-btn lux-glass-dialog-submit-btn${danger ? ' lux-glass-dialog-submit-btn--danger' : ''}`;
+    confirmButton.textContent = confirmLabel;
+
+    footer.append(cancelButton, confirmButton);
+    card.append(head, body, footer);
+    modal.appendChild(card);
+    document.body.appendChild(modal);
+
+    if (document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxStructuredModal = '1';
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
+
+    const dismiss = () => closeLuxuryPromptModal();
+    const cancel = () => {
+        dismiss();
+        if (typeof onCancel === 'function') onCancel();
+    };
+    const validateAndConfirm = () => {
+        const normalizedExpected = normalizeRegistrationRemoveVerificationToken(expectedToken);
+        if (normalizedExpected) {
+            const typedValue = normalizeRegistrationRemoveVerificationToken(input.value);
+            if (typedValue !== normalizedExpected) {
+                if (typeof showToast === 'function') {
+                    showToast('Removal cancelled. Confirmation text did not match.');
+                }
+                input.focus();
+                input.select();
+                return;
+            }
+        }
+        if (typeof onConfirm === 'function') {
+            onConfirm(dismiss, input.value);
+        } else {
+            dismiss();
+        }
+    };
+    const onKeyDown = (event) => {
+        if (event.key === 'Escape') cancel();
+    };
+    window.__kiuLuxuryPromptCleanup = () => {
+        window.removeEventListener('keydown', onKeyDown);
+    };
+    closeButton.onclick = cancel;
+    cancelButton.onclick = cancel;
+    confirmButton.addEventListener('click', validateAndConfirm);
+    input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            validateAndConfirm();
+        }
+    });
+    window.addEventListener('keydown', onKeyDown);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) cancel();
+    });
+
+    openLuxPortalModalAfterAppend(modal, { focusSelector: 'input.social-neo-input' });
+}
+
+function luxuryConfirmModalAsync(config = {}) {
+    return new Promise((resolve) => {
+        if (typeof openLuxuryConfirmModal !== 'function') {
+            resolve(typeof window.confirm === 'function' ? window.confirm(String(config.message || 'Confirm?')) : true);
+            return;
+        }
+        openLuxuryConfirmModal({
+            ...config,
+            onConfirm: (close) => {
+                if (typeof config.onConfirm === 'function') {
+                    config.onConfirm(close);
+                } else {
+                    close();
+                }
+                resolve(true);
+            },
+            onCancel: () => resolve(false)
+        });
+    });
+}
+
+function luxuryPromptModalAsync(config = {}) {
+    return new Promise((resolve) => {
+        const normalizedExpected = normalizeRegistrationRemoveVerificationToken(config.expectedToken);
+        if (!normalizedExpected) {
+            resolve(false);
+            return;
+        }
+        if (typeof openLuxuryPromptModal !== 'function') {
+            if (typeof window.prompt !== 'function') {
+                resolve(false);
+                return;
+            }
+            const typedValue = window.prompt(
+                String(config.message || `Type ${normalizedExpected} to confirm.`),
+                ''
+            );
+            if (typedValue == null) {
+                resolve(false);
+                return;
+            }
+            resolve(normalizeRegistrationRemoveVerificationToken(typedValue) === normalizedExpected);
+            return;
+        }
+        openLuxuryPromptModal({
+            ...config,
+            onConfirm: (close) => {
+                close();
+                resolve(true);
+            },
+            onCancel: () => resolve(false)
+        });
+    });
+}
+
+function runRegistrationChooseVerificationModal({
+    step1Text = '',
+    step2Text = ''
+} = {}) {
+    return luxuryConfirmModalAsync({
+        title: 'Add Section',
+        subtitle: 'Step 1 of 2',
+        message: step1Text || 'Add this section to your registration?',
+        confirmLabel: 'Continue'
+    }).then((accepted) => {
+        if (!accepted) return false;
+        return luxuryConfirmModalAsync({
+            title: 'Confirm Seat',
+            subtitle: 'Step 2 of 2',
+            message: step2Text || 'Confirm this section choice?',
+            confirmLabel: 'Confirm'
+        });
+    });
+}
+
+function runRegistrationRemoveVerificationModal({
+    step1Text = '',
+    step2Text = '',
+    promptText = '',
+    expectedToken = ''
+} = {}) {
+    const normalizedExpected = normalizeRegistrationRemoveVerificationToken(expectedToken);
+    if (!normalizedExpected) return Promise.resolve(false);
+    return luxuryConfirmModalAsync({
+        title: 'Remove Section',
+        subtitle: 'Step 1 of 3',
+        message: step1Text || 'Remove this registration item?',
+        danger: true,
+        confirmLabel: 'Continue'
+    }).then((step1) => {
+        if (!step1) return false;
+        return luxuryConfirmModalAsync({
+            title: 'Remove Section',
+            subtitle: 'Step 2 of 3',
+            message: step2Text || 'This action cannot be undone without choosing the section again.',
+            danger: true,
+            confirmLabel: 'Continue'
+        });
+    }).then((step2) => {
+        if (!step2) return false;
+        return luxuryPromptModalAsync({
+            title: 'Remove Section',
+            subtitle: 'Step 3 of 3',
+            message: promptText || `Step 3 of 3: Type ${normalizedExpected} to confirm removal.`,
+            inputLabel: `Type ${normalizedExpected}`,
+            placeholder: normalizedExpected,
+            expectedToken: normalizedExpected,
+            danger: true,
+            confirmLabel: 'Remove'
+        });
+    });
 }
 
 function resolveAdminRegManageTitleIcon({ title } = {}) {
@@ -1799,5 +2075,11 @@ __kiuRegSharedExpose({
     closeStructuredFormModal,
     openLuxuryConfirmModal,
     closeLuxuryConfirmModal,
+    openLuxuryPromptModal,
+    closeLuxuryPromptModal,
+    luxuryConfirmModalAsync,
+    luxuryPromptModalAsync,
+    runRegistrationChooseVerificationModal,
+    runRegistrationRemoveVerificationModal,
     purgeStudentRegistrationTrackSelectionForTab,
 });

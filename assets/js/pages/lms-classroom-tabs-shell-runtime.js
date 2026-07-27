@@ -303,97 +303,27 @@ function getLmsSectionEnhancementContext(tab, courseId = currentCourseId) {
 }
 
 function getLmsSectionEnhancementConfig(ctx) {
-    const liveQuiz = ctx.liveSessions.find(session => session.status === 'live');
-    const liveCall = ctx.classCalls.find(session => session.status === 'active');
     const base = {
         sessions: {
-            icon: 'fa-calendar-check',
-            title: 'Class Sessions',
-            copy: 'Timeline for seminars, lectures, marked activities, attendance moments, and linked classroom work.',
-            stats: [
-                ['Markers', ctx.markers.length],
-                ['Students', ctx.students.length],
-                ['Live quiz', liveQuiz ? 'Active' : 'None'],
-                ['Upcoming', ctx.markers.filter(marker => new Date(marker.date || marker.startsAt || 0).getTime() > Date.now()).length]
-            ],
-            actions: ctx.isStaff ? ['Start attendance', 'Attach material', 'Link quiz'] : ['Today', 'Materials', 'Quiz status']
+            title: 'Class Sessions'
         },
         calls: {
-            icon: 'fa-video',
-            title: 'Class Calls Hub',
-            copy: 'Live classroom calls, recordings, attendance signals, and session history in one place.',
-            stats: [
-                ['Calls', ctx.classCalls.length],
-                ['Live call', liveCall ? 'Active' : 'None'],
-                ['Recordings', ctx.classCalls.filter(call => call.recordingUrl).length],
-                ['Students', ctx.students.length]
-            ],
-            actions: ctx.isStaff ? ['Start call', 'Recordings', 'Attendance'] : ['Join call', 'Waiting status', 'Recordings']
+            title: 'Class Calls Hub'
         },
         members: {
-            icon: 'fa-users',
-            title: 'Group Members',
-            copy: 'Roster with students, staff, participation risk, grade context, and quick profile actions.',
-            stats: [
-                ['Students', ctx.students.length],
-                ['Professor', '1'],
-                ['TA', '1'],
-                ['Grade risk', 'Tracked']
-            ],
-            actions: ctx.isStaff ? ['Message', 'View grades', 'Attendance'] : ['Classmates', 'Staff contacts', 'Group']
+            title: 'Group Members'
         },
         materials: {
-            icon: 'fa-folder-open',
-            title: 'Learning Materials',
-            copy: 'Week-based library for slides, readings, files, links, recordings, and pinned resources.',
-            stats: [
-                ['Files', ctx.materials.length],
-                ['Weeks', new Set(ctx.materials.map(item => item.weekLabel).filter(Boolean)).size],
-                ['Pinned', ctx.materials.filter(item => item.pinned).length],
-                ['Staff upload', ctx.isStaff ? 'Enabled' : 'Hidden']
-            ],
-            actions: ctx.isStaff ? ['Upload', 'Pin', 'Attach to session'] : ['Preview', 'Download', 'By week']
+            title: 'Learning Materials'
         },
         concepts: {
-            icon: 'fa-lightbulb',
-            title: 'Concept Wiki',
-            copy: 'Student and staff explanations, examples, peer scores, and approved learning notes.',
-            stats: [
-                ['Concepts', ctx.concepts.length],
-                ['Reviewed', ctx.concepts.filter(item => item.reviewed || item.approved).length],
-                ['Student posts', ctx.concepts.filter(item => item.authorRole === USER_ROLES.STUDENT).length],
-                ['Quality', 'Peer rated']
-            ],
-            actions: ctx.isStaff ? ['Approve', 'Pin', 'Correct'] : ['Submit concept', 'Rate', 'Study']
+            title: 'Concept Wiki'
+        },
+        workspace: {
+            title: 'Assignments'
         }
     };
-    return base[ctx.tab] || base.sessions;
-}
-
-function renderLmsProfessionalSectionHero(ctx, config) {
-    return `
-        <section class="lms-pro-hero" data-lms-pro-hero="${escapeHtml(ctx.tab)}">
-            <div class="lms-pro-hero-main">
-                <div class="lms-pro-icon"><i class="fas ${escapeHtml(config.icon)}"></i></div>
-                <div>
-                    <div class="lms-pro-kicker">${escapeHtml(ctx.subjectLabel)} / ${escapeHtml(ctx.groupLabel)}</div>
-                    <h2>${escapeHtml(config.title)}</h2>
-                    <p>${escapeHtml(config.copy)}</p>
-                </div>
-            </div>
-            <div class="lms-pro-actions">
-                ${(config.actions || []).map(action => `<span>${escapeHtml(action)}</span>`).join('')}
-            </div>
-            <div class="lms-pro-stat-grid">
-                ${(config.stats || []).map(([label, value]) => `
-                    <div class="lms-pro-stat">
-                        <span>${escapeHtml(label)}</span>
-                        <strong>${escapeHtml(String(value))}</strong>
-                    </div>
-                `).join('')}
-            </div>
-        </section>
-    `;
+    return base[ctx.tab] || null;
 }
 
 function computeLmsMemberRisk(student, ctx) {
@@ -536,6 +466,19 @@ function renderLmsDeepSectionToolkit(ctx) {
                 ${renderLmsDeepToolkitCard('Peer scoring', '5-10', 'Students can rate helpful concepts.', 'fa-star', 'pending')}
             </div>
             <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(conceptItems, 'No concepts shared yet')}</div>
+        `,
+        workspace: `
+            <div class="lms-deep-grid">
+                ${renderLmsDeepToolkitCard('Homework', ctx.assignments.length, 'Published assignments organized by teaching week.', 'fa-clipboard-list', 'info')}
+                ${renderLmsDeepToolkitCard('Students', ctx.students.length, 'Submission and review status per enrolled learner.', 'fa-user-graduate', 'success')}
+                ${renderLmsDeepToolkitCard('Weeks', typeof ensureLmsWeeksForKey === 'function' && ctx.resourceKey ? ensureLmsWeeksForKey(ctx.resourceKey).length : 0, 'Accordion sections mirror the course week plan.', 'fa-calendar-week', 'pending')}
+            </div>
+            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(ctx.assignments.slice(0, 8).map(item => ({
+                title: item.title || 'Assignment',
+                meta: joinLmsMeta([item.weekLabel || 'General', item.deadline ? formatLmsDateTime(item.deadline) : 'No deadline']),
+                status: item.published === false ? 'Draft' : 'Published',
+                tone: item.published === false ? 'pending' : 'info'
+            })), 'No homework published yet')}</div>
         `
     };
     const panel = tabPanels[ctx.tab];
@@ -556,7 +499,7 @@ function renderLmsDeepSectionToolkit(ctx) {
 
 function cleanupLmsInjectedEnhancementBlocks(contentArea = document.getElementById('lms-content-area')) {
     if (!contentArea) return;
-    contentArea.querySelectorAll('[data-lms-pro-hero], [data-lms-deep-toolkit]').forEach(node => node.remove());
+    contentArea.querySelectorAll('[data-lms-deep-toolkit]').forEach(node => node.remove());
 }
 
 let lmsTabRenderSequence = 0;
@@ -640,6 +583,14 @@ function syncLmsInteractionTabCacheFromDom(resourceKey = '') {
 function prepareLmsContentAreaForTab(tab, contentArea = document.getElementById('lms-content-area')) {
     if (!contentArea) return 0;
     cleanupLmsInjectedEnhancementBlocks(contentArea);
+    if (tab !== 'gradebook') {
+        contentArea.innerHTML = '';
+        contentArea.hidden = false;
+        contentArea.style.removeProperty('display');
+        delete contentArea.dataset.enhancedLmsTab;
+        delete contentArea.dataset.lmsInteractionDelegatedBound;
+        delete contentArea.dataset.lmsLiveBlurBound;
+    }
     lmsTabRenderSequence += 1;
     contentArea.dataset.activeLmsTab = String(tab || '');
     contentArea.dataset.lmsRenderToken = String(lmsTabRenderSequence);
@@ -667,27 +618,12 @@ function enhanceLmsTabExperience(tab, courseId = currentCourseId) {
     const contentArea = document.getElementById('lms-content-area');
     if (!contentArea || tab === 'gradebook') return;
     cleanupLmsInjectedEnhancementBlocks(contentArea);
-    // Quiz, live-quiz, and interaction tabs own their shells; pro-hero/toolkit cause double paint.
-    if (tab === 'quiz' || tab === 'live-quiz' || tab === 'interaction' || tab === 'whiteboard') {
-        contentArea.dataset.enhancedLmsTab = String(tab || '');
-        return;
-    }
     contentArea.dataset.enhancedLmsTab = String(tab || '');
-    const ctx = getLmsSectionEnhancementContext(tab, courseId);
-    if (ctx) {
-        const config = getLmsSectionEnhancementConfig(ctx);
-        const heroMarkup = renderLmsProfessionalSectionHero(ctx, config);
-        const toolkitMarkup = renderLmsDeepSectionToolkit(ctx);
-        const injectedMarkup = `${heroMarkup || ''}${toolkitMarkup || ''}`.trim();
-        if (injectedMarkup) {
-            contentArea.insertAdjacentHTML('afterbegin', injectedMarkup);
-        }
-    }
     contentArea.querySelectorAll('.lms-route-empty').forEach(empty => {
         if (empty.closest('.lms-week-accordion-body, .lms-week-accordion-empty')) return;
         empty.classList.add('lms-pro-empty');
     });
-    contentArea.querySelectorAll('.lms-route-panel, .lms-route-card, .course-card').forEach(card => {
+    contentArea.querySelectorAll('.lms-route-panel, .lms-route-card, .lms-route-hero, .course-card').forEach(card => {
         if (card.classList.contains('lms-week-accordion-panel')) return;
         card.classList.add('lms-pro-surface');
     });
@@ -1024,7 +960,16 @@ function switchLMSTab(tab, options = {}) {
             }
             syncLmsWorkspaceChromeOffset(contentArea);
             if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
-            ensureLmsQuizRuntime()
+            const quizRuntimeEnsure = typeof ensureLmsQuizRuntime === 'function'
+                ? ensureLmsQuizRuntime
+                : (typeof window.ensureLmsQuizRuntime === 'function' ? window.ensureLmsQuizRuntime : null);
+            if (!quizRuntimeEnsure) {
+                if (contentArea) {
+                    contentArea.innerHTML = '<div class="lms-live-copy is-danger">Quiz tools failed to load. Refresh the page.</div>';
+                }
+                return;
+            }
+            quizRuntimeEnsure()
                 .then(() => switchLMSTab('quiz', { force: true }))
                 .catch(() => {
                     if (contentArea) {
@@ -1052,7 +997,16 @@ function switchLMSTab(tab, options = {}) {
             }
             syncLmsWorkspaceChromeOffset(contentArea);
             if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
-            ensureLmsQuizRuntime()
+            const quizRuntimeEnsure = typeof ensureLmsQuizRuntime === 'function'
+                ? ensureLmsQuizRuntime
+                : (typeof window.ensureLmsQuizRuntime === 'function' ? window.ensureLmsQuizRuntime : null);
+            if (!quizRuntimeEnsure) {
+                if (contentArea) {
+                    contentArea.innerHTML = '<div class="lms-live-copy is-danger">Monitoring tools failed to load. Refresh the page.</div>';
+                }
+                return;
+            }
+            quizRuntimeEnsure()
                 .then(() => switchLMSTab('monitoring', { force: true }))
                 .catch(() => {
                     if (contentArea) {
@@ -1111,7 +1065,6 @@ function switchLMSTab(tab, options = {}) {
             markLmsAttendanceStatus,
             getLmsSectionEnhancementContext,
             getLmsSectionEnhancementConfig,
-            renderLmsProfessionalSectionHero,
             computeLmsMemberRisk,
             renderLmsDeepToolkitCard,
             renderLmsDeepToolkitList,

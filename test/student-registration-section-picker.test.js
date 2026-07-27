@@ -44,23 +44,42 @@ describe('student registration section picker', () => {
     expect(enrollmentSource).toContain('window.removeStudentCourseEnrollment = removeStudentCourseEnrollment;');
   });
 
-  it('uses three-tier verification before removing a section from the picker row', () => {
+  it('uses two-step warmglass verification before choosing a section from the picker row', () => {
     const registrationSource = readSource('assets/js/pages/student-registration.js');
+    const sharedSource = readSource('assets/js/pages/registration-shared.js');
+    expect(registrationSource).toContain('function runRegistrationChooseVerification');
+    expect(registrationSource).toContain('function buildStudentCourseSectionChooseVerification');
+    expect(registrationSource).toContain('runRegistrationChooseVerificationModal');
+    expect(sharedSource).toContain('function runRegistrationChooseVerificationModal');
+    expect(sharedSource).toContain('function openLuxuryConfirmModal');
+    const chooseFn = registrationSource.match(/async function chooseStudentCourseSection\(courseId, groupId\) \{[\s\S]*?\n\}/)?.[0] || '';
+    const verifyIndex = chooseFn.indexOf('runRegistrationChooseVerification');
+    const selectIndex = chooseFn.indexOf('selectCourseGroup(');
+    expect(verifyIndex).toBeGreaterThan(-1);
+    expect(selectIndex).toBeGreaterThan(verifyIndex);
+    expect(registrationSource).toMatch(/function runRegistrationChooseVerification[\s\S]*?runRegistrationChooseVerificationModal/);
+  });
+
+  it('uses three-tier warmglass verification before removing a section from the picker row', () => {
+    const registrationSource = readSource('assets/js/pages/student-registration.js');
+    const sharedSource = readSource('assets/js/pages/registration-shared.js');
     expect(registrationSource).toContain('function runRegistrationRemoveVerification');
     expect(registrationSource).toContain('function buildStudentCourseSectionRemoveVerification');
-    const clearFn = registrationSource.match(/function clearStudentCourseSection\(courseId, groupId\) \{[\s\S]*?^}/m)?.[0] || '';
+    expect(registrationSource).toContain('runRegistrationRemoveVerificationModal');
+    expect(sharedSource).toContain('function runRegistrationRemoveVerificationModal');
+    expect(sharedSource).toContain('function openLuxuryPromptModal');
+    const clearFn = registrationSource.match(/async function clearStudentCourseSection\(courseId, groupId\) \{[\s\S]*?^}/m)?.[0] || '';
     const verifyIndex = clearFn.indexOf('runRegistrationRemoveVerification');
     const unselectIndex = clearFn.indexOf('unselectCourseGroup(courseId, groupId)');
     expect(verifyIndex).toBeGreaterThan(-1);
     expect(unselectIndex).toBeGreaterThan(verifyIndex);
-    expect(registrationSource).toContain('function runRegistrationRemoveVerification');
-    expect(registrationSource).toMatch(/function runRegistrationRemoveVerification[\s\S]*?window\.confirm[\s\S]*?window\.confirm[\s\S]*?window\.prompt/);
+    expect(registrationSource).toMatch(/function runRegistrationRemoveVerification[\s\S]*?runRegistrationRemoveVerificationModal/);
   });
 
-  it('uses three-tier verification before removing a subject from registration', () => {
+  it('uses three-tier warmglass verification before removing a subject from registration', () => {
     const registrationSource = readSource('assets/js/pages/student-registration.js');
     expect(registrationSource).toContain('function buildStudentCourseSubjectRemoveVerification');
-    const removeFn = registrationSource.match(/function removeStudentCourseSelection\(courseId, courseName = ''\) \{[\s\S]*?^}/m)?.[0] || '';
+    const removeFn = registrationSource.match(/async function removeStudentCourseSelection\(courseId, courseName = ''\) \{[\s\S]*?^}/m)?.[0] || '';
     expect(removeFn).toContain('runRegistrationRemoveVerification');
     expect(removeFn).toContain('buildStudentCourseSubjectRemoveVerification');
     const verifyIndex = removeFn.indexOf('runRegistrationRemoveVerification');
@@ -71,11 +90,11 @@ describe('student registration section picker', () => {
 
   it('keeps the section picker open after Choose and refreshes rows in place', () => {
     const registrationSource = readSource('assets/js/pages/student-registration.js');
-    const chooseFn = registrationSource.match(/function chooseStudentCourseSection\(courseId, groupId\) \{[\s\S]*?\n\}/)?.[0] || '';
+    const chooseFn = registrationSource.match(/async function chooseStudentCourseSection\(courseId, groupId\) \{[\s\S]*?\n\}/)?.[0] || '';
     const successBlock = chooseFn.match(/if \(result !== false\) \{[\s\S]*?\}/)?.[0] || '';
     expect(successBlock).toContain('renderStudentCourseSectionPicker()');
     expect(successBlock).not.toContain('closeStudentCourseSectionPicker()');
-    const clearFn = registrationSource.match(/function clearStudentCourseSection\(courseId, groupId\) \{[\s\S]*?\n\}/)?.[0] || '';
+    const clearFn = registrationSource.match(/async function clearStudentCourseSection\(courseId, groupId\) \{[\s\S]*?\n\}/)?.[0] || '';
     expect(clearFn).toContain('renderStudentCourseSectionPicker()');
     expect(clearFn).not.toContain('closeStudentCourseSectionPicker()');
   });

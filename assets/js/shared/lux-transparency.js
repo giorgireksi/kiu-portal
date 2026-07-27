@@ -269,6 +269,13 @@ function isCssOwnedSurface(el) {
     return isRouteOwnedSurface(el);
 }
 
+/** Registration outer glass hosts — CSS owns frosted blur; never force matte solid at max transparency. */
+function isRegistrationGlassHost(el) {
+    if (!el?.matches || !document.body.classList.contains('lux-route-registration')) return false;
+    if (!el.closest?.('#page-registration')) return false;
+    return el.matches('.page-hero') || el.getAttribute('data-lux-glass-root') === '1';
+}
+
 const GLOBAL_DYNAMIC_PAINT_CLASSES = new Set([
     'lux-card', 'lux-panel', 'lux-page-shell', 'surface-card', 'content-box', 'kiu-card', 'page-hero',
     'schedule-toolbar-host', 'schedule-toolbar', 'lux-modern-surface', 'lux-modern-table',
@@ -337,6 +344,7 @@ Object.assign(window, {
     shouldKeepSocialFadeCssBackground,
     isRouteOwnedSurface,
     isCssOwnedSurface,
+    isRegistrationGlassHost,
     shouldApplyDynamicBackground,
     shouldKeepRouteFadeCssBackground,
     shouldKeepHomeFadeCssBackground,
@@ -1174,6 +1182,10 @@ function updateTransparency(value, options = {}) {
             if (isStructuralSurface(el)) {
                 
                 if (percentage >= 99 && document.body.classList.contains('lux-route-registration') && el.closest?.('#page-registration')) {
+                    if (isRegistrationGlassHost(el)) {
+                        stripInlineGlassPaint(el, transparencySignature);
+                        return;
+                    }
                     const isFocusPanel = el.classList.contains('lux-timetable-hero-focus') || el.classList.contains('registration-hero-aside');
                     var _solidBg = isFocusPanel
                         ? (isLightMode
@@ -1197,6 +1209,10 @@ function updateTransparency(value, options = {}) {
             }
 
             if (percentage >= 99 && isCssOwnedSurface(el) && el.closest?.('#page-registration')) {
+                if (isRegistrationGlassHost(el)) {
+                    stripInlineGlassPaint(el, transparencySignature);
+                    return;
+                }
                 const isFocusPanel = el.classList.contains('lux-timetable-hero-focus') || el.classList.contains('registration-hero-aside');
                 var _solidBg2 = isFocusPanel
                     ? (isLightMode

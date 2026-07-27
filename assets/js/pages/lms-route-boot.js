@@ -271,7 +271,7 @@
                    </div>`;
             return `<button
                 type="button"
-                class="lux-strip-card lux-lms-subject-card"
+                class="lux-strip-card lux-lms-subject-card home-hover-chip"
                 data-subject-id="${safeHtml(subjectId)}"
                 data-subject-title="${safeHtml(subjectName)}"
                 data-icon-class="${safeHtml(icon)}"
@@ -440,8 +440,18 @@
             if (tabButton) {
                 event.preventDefault();
                 const tabId = tabButton.dataset.lmsTab;
-                await ensureLmsExtendedRuntimeForTab(tabId);
-                if (typeof window.switchLMSTab === 'function') window.switchLMSTab(tabId);
+                if (typeof window.switchLMSTab === 'function') {
+                    window.switchLMSTab(tabId);
+                }
+                void ensureLmsExtendedRuntimeForTab(tabId).then(() => {
+                    const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.dataset?.lmsTab;
+                    const contentArea = document.getElementById('lms-content-area');
+                    const stillLoading = Boolean(contentArea?.querySelector?.('[data-lms-tab-loading]'));
+                    if (activeTab === tabId && stillLoading && typeof window.switchLMSTab === 'function') {
+                        window.switchLMSTab(tabId, { force: true });
+                    }
+                });
+                return;
             }
         });
     }

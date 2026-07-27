@@ -125,13 +125,16 @@ describe('student registration schedule conflict warnings', () => {
 
     it('confirms overlap on Choose before calling selectCourseGroup', () => {
         const registrationSource = readSource('assets/js/pages/student-registration.js');
-        const chooseFn = registrationSource.match(/function chooseStudentCourseSection\(courseId, groupId\) \{[\s\S]*?\n\}/)?.[0] || '';
+        const chooseFn = registrationSource.match(/async function chooseStudentCourseSection\(courseId, groupId\) \{[\s\S]*?\n\}/)?.[0] || '';
         const selectIndex = chooseFn.indexOf('selectCourseGroup(');
         const conflictIndex = chooseFn.indexOf('findStudentEnrollmentScheduleConflict');
+        const verifyIndex = chooseFn.indexOf('runRegistrationChooseVerification');
         expect(conflictIndex).toBeGreaterThan(-1);
-        expect(conflictIndex).toBeLessThan(selectIndex);
-        expect(chooseFn).toContain('window.confirm');
+        expect(verifyIndex).toBeGreaterThan(conflictIndex);
+        expect(verifyIndex).toBeLessThan(selectIndex);
+        expect(chooseFn).toContain('luxuryConfirmModalAsync');
         expect(chooseFn).toContain('formatStudentScheduleConflictChooseConfirm');
+        expect(chooseFn).toContain('buildStudentCourseSectionChooseVerification');
         expect(chooseFn).not.toMatch(/selectCourseGroup[\s\S]*?showToast/);
     });
 });

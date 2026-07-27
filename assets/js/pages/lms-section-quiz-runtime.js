@@ -335,6 +335,16 @@ function normalizeLmsDraftStorageKey(kind, key) {
     }
     return String(key || '');
 }
+function resolveLmsQuizContextWeeks(resourceKey) {
+    const ensureWeeks = typeof window.ensureLmsWeeksForKey === 'function'
+        ? window.ensureLmsWeeksForKey
+        : (typeof ensureLmsWeeksForKey === 'function' ? ensureLmsWeeksForKey : null);
+    if (ensureWeeks) {
+        return ensureWeeks(resourceKey);
+    }
+    const defaults = typeof LMS_DEFAULT_WEEKS !== 'undefined' ? LMS_DEFAULT_WEEKS : null;
+    return Array.isArray(defaults) && defaults.length ? [...defaults] : ['Week 1'];
+}
 function resolveActiveLmsQuizContext(courseKey = currentLmsQuizCourseKey || currentCourseId, faculty = getCurrentFaculty()) {
     const rawKey = String(courseKey || '').trim();
     if (!rawKey) return null;
@@ -356,7 +366,7 @@ function resolveActiveLmsQuizContext(courseKey = currentLmsQuizCourseKey || curr
         subject,
         group,
         faculty: normalizedFaculty,
-        weeks: ensureLmsWeeksForKey(resourceKey)
+        weeks: resolveLmsQuizContextWeeks(resourceKey)
     };
 }
 function ensureLmsStores() {
