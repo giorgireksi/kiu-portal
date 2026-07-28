@@ -768,7 +768,8 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .gb-lms-staff-roster-row,
   .study-card-term-row.lux-soft-chrome,
   .study-card-term-header.lux-soft-chrome,
-  .study-card-summary-stage.lux-soft-chrome,
+  .study-card-summary-main.lux-soft-chrome,
+  .study-card-summary-focus.lux-soft-chrome,
   .study-card-assessment-panel.lux-soft-chrome,
   .study-card-control-band.lux-soft-chrome,
   .study-card-activity-item.lux-soft-chrome,
@@ -787,7 +788,13 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
   .social-neo-messages__thread-shell,
   .social-neo-messages__inbox,
   .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty
+  .social-neo-messages__inbox-empty,
+  .social-portfolio-card,
+  .social-neo-portfolio-hero-discover,
+  .social-neo-workspace-hub-section,
+  .social-project-hub-rail-card,
+  .social-neo-workspace-nav-card,
+  .social-neo-page-profile-tab
 ):not(.lux-panel):not([data-lux-glass-root="1"]) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -1103,6 +1110,9 @@ body.lux-unified-shell.lux-route-exams #admin-exams-root [data-lux-glass-root="1
   .ex2-session-stat-card,
   .ex2-split-box,
   .ex2-builder-step-body,
+  .ex2-builder-toolbar.lux-soft-chrome,
+  .ex2-progress-bar.lux-soft-chrome,
+  .ex2-builder-summary-strip.lux-soft-chrome,
   .ex2-builder-empty,
   .ex2-modal-list .ex2-list-item
 ):not([data-lux-glass-root="1"]) {
@@ -1649,6 +1659,8 @@ body.lux-route-personal-data #page-personal-data :is(
   .personal-data-toolbar,
   .personal-data-identity-card,
   .personal-data-kpi-card,
+  .personal-data-merged,
+  .personal-data-subjects-table-wrap,
   #personal-data-status.lux-status-pill
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
@@ -1782,10 +1794,160 @@ body.lux-route-personal-data #page-personal-data #personal-data-status.lux-statu
   }
 }
 
+/* Study card page: matte inners + home-hover-chip motion; glass host static. */
+body.lux-route-study-card #page-study-card :is(
+  .study-card-control-band,
+  .study-card-summary-main,
+  .study-card-summary-focus,
+  .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+  .study-card-term-header,
+  .study-card-term-row,
+  .study-card-assessment-panel,
+  .study-card-activity-item
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-study-card #page-study-card .study-card-command-deck.lux-panel[data-lux-glass-root="1"] {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-study-card #page-study-card .study-card-command-deck.lux-panel[data-lux-glass-root="1"]::after {
+  display: none;
+}
+
+body.lux-route-study-card #page-study-card :is(
+  .home-hover-chip,
+  .study-card-control-band,
+  .study-card-summary-main,
+  .study-card-summary-focus,
+  .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+  .study-card-term-header,
+  .study-card-term-row
+) {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-study-card #page-study-card :is(
+  .home-hover-chip,
+  .study-card-control-band,
+  .study-card-summary-main,
+  .study-card-summary-focus,
+  .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+  .study-card-term-header,
+  .study-card-term-row
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-study-card #page-study-card :is(
+  .home-hover-chip,
+  .study-card-control-band,
+  .study-card-summary-main,
+  .study-card-summary-focus
+) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
+  position: relative;
+  z-index: 1;
+}
+
+body.lux-route-study-card #page-study-card .study-card-summary-focus.lux-focus-panel {
+  border-radius: 20px;
+  overflow: visible;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-study-card #page-study-card .study-card-summary-focus.home-hover-chip:has(.lux-hero-signal.home-hover-chip:hover) {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-study-card #page-study-card .study-card-summary-focus.home-hover-chip:has(.lux-hero-signal.home-hover-chip:hover)::after {
+    opacity: 0;
+  }
+
+  body.lux-route-study-card #page-study-card .study-card-command-deck.lux-panel[data-lux-glass-root="1"]:hover {
+    transform: none;
+    border-color: var(--lux-soft-chrome-border-accent);
+  }
+
+  body.lux-route-study-card #page-study-card :is(
+    .home-hover-chip,
+    .study-card-control-band,
+    .study-card-summary-main,
+    .study-card-summary-focus,
+    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+    .study-card-term-header,
+    .study-card-term-row
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-study-card #page-study-card :is(
+    .home-hover-chip,
+    .study-card-control-band,
+    .study-card-summary-main,
+    .study-card-summary-focus,
+    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+    .study-card-term-header,
+    .study-card-term-row
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-route-study-card #page-study-card :is(
+    .home-hover-chip,
+    .study-card-control-band,
+    .study-card-summary-main,
+    .study-card-summary-focus,
+    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+    .study-card-term-header,
+    .study-card-term-row
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-study-card #page-study-card :is(
+    .home-hover-chip,
+    .study-card-control-band,
+    .study-card-summary-main,
+    .study-card-summary-focus,
+    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+    .study-card-term-header,
+    .study-card-term-row
+  ):active::after {
+    opacity: 1;
+  }
+}
+
 /* Chancellery page: matte inners + home-hover-chip motion; glass hosts static. */
 body.lux-route-chancellery #page-chancellery :is(
   .lux-chancellery-command-bar,
   .lux-chancellery-hero-side,
+  .lux-chancellery-hero-side .lux-hero-signal,
   .lux-chancellery-list-panel,
   .lux-chancellery-detail-panel,
   .lux-chancellery-queue-item,
@@ -1920,6 +2082,74 @@ body.lux-route-chancellery #page-chancellery .lux-chancellery-queue-item {
     .lux-chancellery-queue-item,
     .lux-chancellery-finance-card
   ):active::after {
+    opacity: 1;
+  }
+}
+
+/* News page: matte sidebar + home-hover-chip motion; glass hosts static. */
+body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-news #portal-news-root [data-news-shell="1"] {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-news #portal-news-root [data-news-shell="1"]::after {
+  display: none;
+}
+
+body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip {
+  position: relative;
+  isolation: isolate;
+  contain: none;
+  overflow: visible;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:hover::after {
+    opacity: 1;
+  }
+
+  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:active::after {
     opacity: 1;
   }
 }
@@ -3054,18 +3284,19 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
 
 /* Social soft-chrome shells: same hover lift + ambient glow as home-hover-chip. */
 body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
   .lux-strip-card.surface-card,
   [class*="-hero-stat"],
   .social-neo-directory-item,
-  .social-neo-event-feature
+  .social-neo-event-feature,
+  .social-portfolio-card,
+  .social-neo-portfolio-hero-discover,
+  .social-neo-workspace-hub-section,
+  .social-project-hub-rail-card
 ) {
   position: relative;
   isolation: isolate;
@@ -3075,18 +3306,19 @@ body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-roo
 }
 
 body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
   .lux-strip-card.surface-card,
   [class*="-hero-stat"],
   .social-neo-directory-item,
-  .social-neo-event-feature
+  .social-neo-event-feature,
+  .social-portfolio-card,
+  .social-neo-portfolio-hero-discover,
+  .social-neo-workspace-hub-section,
+  .social-project-hub-rail-card
 )::after {
   content: '';
   position: absolute;
@@ -3101,137 +3333,310 @@ body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-roo
 }
 
 body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
   .lux-strip-card.surface-card,
   [class*="-hero-stat"],
   .social-neo-directory-item,
-  .social-neo-event-feature
+  .social-neo-event-feature,
+  .social-portfolio-card,
+  .social-neo-portfolio-hero-discover,
+  .social-neo-workspace-hub-section,
+  .social-project-hub-rail-card
 ) > * {
   position: relative;
   z-index: 1;
 }
 
 body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field)) {
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
     .lux-strip-card.surface-card,
     [class*="-hero-stat"],
     .social-neo-directory-item,
-    .social-neo-event-feature
+    .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card
   ):hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
   }
 
   body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field)):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-    box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  }
-}
-
-body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
-  .lux-strip-card.surface-card,
-  [class*="-hero-stat"],
-  .social-neo-directory-item,
-  .social-neo-event-feature,
-  .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
-):active {
-  transform: translate3d(0, 0, 0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
     .lux-strip-card.surface-card,
     [class*="-hero-stat"],
     .social-neo-directory-item,
     .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card,
+    [class*="-hub-section"],
+    .social-neo-workspace-hub-section
+  ):has(:is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
+    [class*="-hub-section"],
+    .social-neo-empty,
+    .social-neo-empty-hero,
+    .social-neo-entity-card,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card
+  ):hover) {
+    transform: none;
+    border-color: var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+    box-shadow: none;
+  }
+
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card,
+    [class*="-hub-section"],
+    .social-neo-workspace-hub-section
+  ):has(:is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
+    [class*="-hub-section"],
+    .social-neo-empty,
+    .social-neo-empty-hero,
+    .social-neo-entity-card,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card
+  ):hover)::after {
+    opacity: 0;
+  }
+}
+
+@media (hover: none) {
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
+    [class*="-hub-section"],
+    .social-neo-empty,
+    .social-neo-empty-hero,
+    .social-neo-entity-card,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
+    [class*="-hub-section"],
+    .social-neo-empty,
+    .social-neo-empty-hero,
+    .social-neo-entity-card,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card
+  ):active::after {
+    opacity: 1;
+  }
+}
+
+/* Social comments dialog: matte inners inside overlay portal (no data-lux-glass-root). */
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+  .lux-strip-card.surface-card,
+  .lux-soft-chrome.home-hover-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+  position: relative;
+  isolation: isolate;
+  contain: paint;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments .sns-comment-dialog-bubble.lux-soft-chrome.home-hover-chip {
+  border-radius: 14px;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form.lux-soft-chrome.home-hover-chip {
+  border-radius: 12px;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment {
+  overflow: visible;
+  contain: none;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-bubble {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+  .lux-strip-card.surface-card,
+  .lux-soft-chrome.home-hover-chip
+)::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+  .lux-strip-card.surface-card,
+  .lux-soft-chrome.home-hover-chip
+) > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+    .lux-strip-card.surface-card,
+    .lux-soft-chrome.home-hover-chip
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+    .lux-strip-card.surface-card,
+    .lux-soft-chrome.home-hover-chip
+  ):hover::after {
+    opacity: 1;
+  }
+
+  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments:has(.home-hover-chip:hover) {
+    transform: none;
+    border-color: var(--lux-popup-shell-border, var(--lux-panel-border-soft));
+  }
+
+  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments:has(.home-hover-chip:hover)::after {
+    opacity: 0;
+  }
+}
+
+@media (hover: none) {
+  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+    .lux-strip-card.surface-card,
+    .lux-soft-chrome.home-hover-chip
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+
+  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+    .lux-strip-card.surface-card,
+    .lux-soft-chrome.home-hover-chip
+  ):active::after {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
+  [class*="-hub-section"],
+  .social-neo-empty,
+  .social-neo-empty-hero,
+  .social-neo-entity-card,
+    .lux-strip-card.surface-card,
+    [class*="-hero-stat"],
+    .social-neo-directory-item,
+    .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card,
     .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
   ) {
     transition: border-color 0.15s ease;
   }
 
   body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
     .lux-strip-card.surface-card,
     [class*="-hero-stat"],
     .social-neo-directory-item,
-    .social-neo-event-feature
+    .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card
   )::after {
     display: none;
   }
 
   body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
     .lux-strip-card.surface-card,
     [class*="-hero-stat"],
     .social-neo-directory-item,
     .social-neo-event-feature,
+    .social-portfolio-card,
+    .social-neo-portfolio-hero-discover,
+    .social-neo-workspace-hub-section,
+    .social-project-hub-rail-card,
     .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
   ):hover {
     transform: none;
@@ -3240,18 +3645,19 @@ body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-roo
 }
 
 html[data-lux-transparency="0"] body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)),
+  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
   [class*="-hub-section"],
   .social-neo-empty,
   .social-neo-empty-hero,
   .social-neo-entity-card,
-  .social-neo-messages__inbox,
-  .social-neo-messages__thread-shell,
-  .social-neo-messages__inbox-empty,
   .lux-strip-card.surface-card,
   [class*="-hero-stat"],
   .social-neo-directory-item,
   .social-neo-event-feature,
+  .social-portfolio-card,
+  .social-neo-portfolio-hero-discover,
+  .social-neo-workspace-hub-section,
+  .social-project-hub-rail-card,
   .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
 ):hover {
   transform: none;

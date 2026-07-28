@@ -49,6 +49,13 @@ describe('social workspace messaging regressions', () => {
         expect(readSource('assets/js/pages/social-page-boot-runtime.js').indexOf('__kiuCreateSocialPageBootApi'))
             .toBeLessThan(readSource('assets/js/pages/social-page-boot-runtime.js').indexOf('__KIU_SOCIAL_PAGE_BOOT_LOADED = true'));
 
+        const app = readSource('assets/js/app/app.js');
+        expect(app.indexOf('social-page-boot-runtime.js'))
+            .toBeLessThan(app.indexOf('assets/js/pages/social-page.js'));
+        expect(app).toContain('social-page-shell-runtime.js');
+        expect(app).toContain('social-page-feed-runtime.js');
+        expect(app).toContain('social-overlay-chrome.js');
+
         expect(readSource('assets/js/pages/social-page-interactions-runtime.js'))
             .toContain('markPortalChatMessagesRead(nextChatId)');
         expect(readSource('assets/js/pages/social-shell-nav.js'))

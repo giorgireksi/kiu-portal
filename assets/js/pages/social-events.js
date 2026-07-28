@@ -235,10 +235,10 @@
                             <strong>${escape(scopeLabel)}</strong>
                         </div>
                         <div class="social-neo-event-feature-actions">
-                            <button class="lux-secondary-btn ${item.viewerRsvpStatus === 'going' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="going">Going</button>
-                            <button class="lux-secondary-btn ${item.viewerRsvpStatus === 'interested' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="interested">Interested</button>
-                            <button class="lux-secondary-btn ${item.viewerRsvpStatus === 'declined' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="declined">Decline</button>
-                            ${item.viewerCanDelete ? `<button class="lux-secondary-btn social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(eventId)}"><i class="fas fa-trash"></i> Remove event</button>` : ''}
+                            <button class="${item.viewerRsvpStatus === 'going' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="going">Going</button>
+                            <button class="${item.viewerRsvpStatus === 'interested' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="interested">Interested</button>
+                            <button class="${item.viewerRsvpStatus === 'declined' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="declined">Decline</button>
+                            ${item.viewerCanDelete ? `<button class="lux-secondary-btn lux-secondary-btn-sm social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(eventId)}"><i class="fas fa-trash"></i> Remove event</button>` : ''}
                         </div>
                     </div>
                     <div class="social-neo-event-feature-foot">
@@ -457,7 +457,7 @@
         const submitIcon = isEditing ? 'fa-pen' : (isUniversity ? 'fa-university' : 'fa-calendar-plus');
         if (isUniversity && !isStaff) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card--social-glass" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Official events', 'Faculty and administrators can publish campus-wide events here.', { icon: 'fas fa-landmark' }) : ''}
                     <p class="lux-glass-dialog-hint">Official university announcements, exam sessions, and administration-led events are published by staff accounts.</p>
                     <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
@@ -484,7 +484,7 @@
             </label>
         `;
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="create-event" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card--social-glass" data-form="create-event" data-action="noop" data-lux-transparency-exempt="1">
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
                         <strong class="lux-glass-dialog-title"><i class="fas ${isEditing ? 'fa-pen' : (isUniversity ? 'fa-landmark' : 'fa-calendar-plus')}" aria-hidden="true"></i> ${escape(title)}</strong>
@@ -549,7 +549,7 @@
                             <span>Recurring weekly</span>
                         </label>
                         ${runtime.ui?.eventIsOnline ? `
-                            <input class="social-neo-input social-neo-input-flex-1-180" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
+                            <input class="social-neo-input lux-control social-neo-input-flex-1-180" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
                         ` : ''}
                     </div>
                     <div class="social-neo-inline social-neo-events-form-actions">
@@ -582,14 +582,16 @@
                 .find((item) => text(item.id) === text(dialog.eventId));
             if (!eventItem) return '';
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card" data-form="dialog-event-delete" data-action="noop">
-                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Delete event', 'This removes the event and its RSVP history.') : ''}
-                    <div class="lux-glass-dialog-preview">
-                        <strong class="lux-glass-dialog-preview-title">${escape(text(eventItem.title || 'Untitled event'))}</strong>
-                        <div class="social-neo-muted social-neo-muted-mt-6">${escape(when(eventItem.startsAt || ''))}</div>
-                    </div>
-                    <div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">
-                        This will remove the event for everyone and clear its RSVP history.
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--event-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="dialog-event-delete" data-action="noop" data-lux-transparency-exempt="1">
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Delete event', 'This removes the event and its RSVP history.', { icon: 'fas fa-trash' }) : ''}
+                    <div class="lux-glass-dialog-body">
+                        <div class="lux-glass-dialog-preview">
+                            <strong class="lux-glass-dialog-preview-title">${escape(text(eventItem.title || 'Untitled event'))}</strong>
+                            <div class="social-neo-muted social-neo-muted-mt-6">${escape(when(eventItem.startsAt || ''))}</div>
+                        </div>
+                        <div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">
+                            This will remove the event for everyone and clear its RSVP history.
+                        </div>
                     </div>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Delete event' }) : ''}
                     <input type="hidden" name="eventId" value="${escape(text(eventItem.id))}">

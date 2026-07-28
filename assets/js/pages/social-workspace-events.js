@@ -596,6 +596,7 @@
                 state().ui.customBuilderFields = typeof window.KiuPortfolioCustomBuilder?.templateFields === 'function'
                     ? window.KiuPortfolioCustomBuilder.templateFields(state().ui.customBuilderTemplate)
                     : [];
+                state().ui.customBuilderStep = 2;
                 return renderSocialPageNow('portfolio-custom-template');
             }
             if (action === 'portfolio-custom-next') {

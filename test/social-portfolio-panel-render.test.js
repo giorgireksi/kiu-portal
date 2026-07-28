@@ -21,6 +21,10 @@ describe('social portfolio panel render regressions', () => {
         const renderHeroBlock = portfolioUi.slice(renderHeroStart, renderHeroEnd > 0 ? renderHeroEnd : undefined);
         expect(renderHeroBlock).toContain('PORTFOLIO_DISCOVER_ROLE_TARGETS.map');
         expect(renderHeroBlock).toContain('social-neo-portfolio-hero-tabs');
+        expect(renderHeroBlock).toContain('portfolio-panel-tab-copy');
+        expect(renderHeroBlock).toContain('lux-universal-native-select');
+        expect(renderHeroBlock).toContain('class="lux-control" type="search"');
+        expect(renderHeroBlock).not.toMatch(/class="social-neo-input lux-control" type="search"/);
         expect(renderHeroBlock).toContain('social-neo-portfolio-hero-discover');
         expect(renderHeroBlock).toContain('social-neo-portfolio-hero-divider');
         expect(renderHeroBlock).toContain('social-neo-portfolio-hero-body');
@@ -34,6 +38,8 @@ describe('social portfolio panel render regressions', () => {
         expect(renderProjectsBlock).toContain('bodyHtml: panelBodyMarkup');
         expect(renderProjectsBlock).not.toContain('<section class="social-portfolio-feed');
         expect(renderProjectsBlock).toContain('social-neo-portfolio-feed-empty');
+        expect(renderProjectsBlock).toContain('social-portfolio-card lux-soft-chrome');
+        expect(renderProjectsBlock).toContain('social-neo-muted lms-route-meta-12');
 
         expect(readSource('assets/js/pages/social-render-plan.js')).toContain("['projects', 'groups', 'pages', 'events', 'lost-and-found', 'workspace', 'photography'].includes(activePanel)");
         expect(readSource('assets/js/pages/social-render-plan.js')).toContain('plan.center = true');

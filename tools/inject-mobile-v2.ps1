@@ -141,9 +141,6 @@ $mobileJSNew = @'
         var msgBtn = document.getElementById('mob-nav-messages');
         if (msgBtn) msgBtn.addEventListener('click', function(e) {
             e.preventDefault(); e.stopPropagation();
-            // Try to open the messaging system
-            var msgFab = document.querySelector('.portal-msg-fab');
-            if (msgFab) { msgFab.click(); return; }
             if (typeof window.toggleMessaging === 'function') { window.toggleMessaging(); return; }
             var msgUtil = document.querySelector('[data-utility="messages"]');
             if (msgUtil) msgUtil.click();
@@ -152,8 +149,6 @@ $mobileJSNew = @'
         var notifBtn = document.getElementById('mob-nav-notif');
         if (notifBtn) notifBtn.addEventListener('click', function(e) {
             e.preventDefault(); e.stopPropagation();
-            var notifFab = document.querySelector('.portal-notif-fab');
-            if (notifFab) { notifFab.click(); return; }
             if (typeof window.toggleNotifications === 'function') { window.toggleNotifications(); return; }
             var notifUtil = document.querySelector('[data-utility="notifications"]');
             if (notifUtil) notifUtil.click();
@@ -333,25 +328,7 @@ $mobileJSNew = @'
     }
 
     function syncBadges() {
-        // Check for notification/message counts and update badges
-        setInterval(function() {
-            if (!isMobile()) return;
-            var msgBadge = document.getElementById('mob-badge-msg');
-            var notifBadge = document.getElementById('mob-badge-notif');
-            // Try to read existing badge counts from FABs
-            var msgFabBadge = document.querySelector('.portal-msg-fab .badge, .portal-msg-fab .count');
-            var notifFabBadge = document.querySelector('.portal-notif-fab .badge, .portal-notif-fab .count');
-            if (msgBadge && msgFabBadge) {
-                var val = parseInt(msgFabBadge.textContent) || 0;
-                msgBadge.textContent = val;
-                msgBadge.style.display = val > 0 ? '' : 'none';
-            }
-            if (notifBadge && notifFabBadge) {
-                var val2 = parseInt(notifFabBadge.textContent) || 0;
-                notifBadge.textContent = val2;
-                notifBadge.style.display = val2 > 0 ? '' : 'none';
-            }
-        }, 3000);
+        // Mobile nav badges are updated by the shell runtime when available.
     }
 
     function onResize() {

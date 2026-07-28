@@ -38,8 +38,9 @@ ${inner}
 
     function socialNeoDialogHead(title, subtitle, options = {}) {
         const icon = options.icon ? `<i class="${esc(options.icon)}" aria-hidden="true"></i> ` : '';
+        const closeAction = options.closeAction || 'dialog-close';
         const close = options.hideClose ? '' : `
-                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>`;
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="${esc(closeAction)}" aria-label="Close"><i class="fas fa-times"></i></button>`;
         const headClass = options.headClass ? ` ${options.headClass}` : '';
         return `
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head${headClass}">

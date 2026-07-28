@@ -38,6 +38,8 @@ describe('social-alerts-panel-ui.test', () => {
         const controls = readSource('assets/css/lux-controls.css');
 
         expect(controls).toContain('.lux-tab-btn--icon');
+        expect(bare).toContain('.sn-alerts-header__title');
+        expect(bare).toContain('.sn-alerts-header__subtitle');
         expect(bare).toContain('.sn-alerts-category-filters.lux-tab-strip--segmented');
         expect(bare).toMatch(/grid-template-columns:\s*repeat\(6/);
         expect(bare).toContain('.sn-alert-card::before');

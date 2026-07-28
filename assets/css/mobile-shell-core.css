@@ -37,7 +37,6 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     padding-bottom: 80px;
   }
   body.lux-sidebar-collapsed #app-content { margin-left: 0; padding-left: 16px; padding-right: 16px; }
-  .portal-notif-fab-stack, .portal-msg-fab-stack { display: none; }
   .page-section { max-width: none; width: 100%; margin: 0; }
 }
 @media (max-width: 900px) {
@@ -208,7 +207,6 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     justify-content: center;
     padding: 0 5px;
   }
-  .portal-notif-fab-stack, .portal-msg-fab-stack { display: none; }
   #lux-bg-canvas { opacity: 0.5; }
 }
 @media (max-width: 400px) {

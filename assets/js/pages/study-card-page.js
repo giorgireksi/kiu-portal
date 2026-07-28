@@ -1,16 +1,7 @@
-function formatStudyCardLabel(value, fallback = '-') {
-    if (value === null || value === undefined || value === '') return fallback;
-    if (typeof value === 'object') {
-        const nested = value.name ?? value.label ?? value.title ?? value.id;
-        if (nested !== undefined && nested !== null && typeof nested !== 'object') {
-            const text = String(nested).trim();
-            return text || fallback;
-        }
-        return fallback;
-    }
-    const text = String(value).trim();
-    return text || fallback;
-}
+const formatStudyCardLabel = (...args) => window.formatStudyCardLabel(...args);
+const resolveStudyCardScheduleRefs = (...args) => window.resolveStudyCardScheduleRefs(...args);
+const formatStudyCardCourseIdLabel = (...args) => window.formatStudyCardCourseIdLabel(...args);
+const studyCardDomToken = (...args) => window.studyCardDomToken(...args);
 
 function getStudyCardSemesterLabel(semesterNumber) {
     const safeSemester = Math.max(1, parseInt(semesterNumber, 10) || 1);
@@ -401,8 +392,8 @@ function ensureStudyCardContentShell(container) {
 
 function renderStudyCardSummaryRegion(context) {
     return `
-        <div class="lux-hero-stage study-card-summary-stage lux-soft-chrome">
-            <div class="lux-hero-main">
+        <div class="lux-hero-stage study-card-summary-stage">
+            <div class="lux-hero-main study-card-summary-main lux-soft-chrome home-hover-chip">
                 <div class="lux-section-kicker study-card-summary-kicker">Academic Record Snapshot</div>
                 <div class="lux-page-title study-card-summary-title">${escapeHtml(context.latestTermLabel || 'No active term')}</div>
                 <p class="lux-card-copy study-card-summary-copy">Semester-by-semester grade signals and assessment history for the courses currently attached to your student record.</p>
@@ -413,19 +404,19 @@ function renderStudyCardSummaryRegion(context) {
                     <span class="lux-status-pill"><i class="fas fa-chart-line"></i> ${escapeHtml(context.averageScoreLabel)}</span>
                 </div>
             </div>
-            <aside class="lux-hero-side lux-focus-panel" aria-label="Study card summary">
+            <aside class="lux-hero-side lux-focus-panel study-card-summary-focus lux-soft-chrome home-hover-chip" aria-label="Study card summary">
                 <div class="lux-focus-panel__head lux-hero-side-head">
                     <div class="lux-focus-panel__kicker">Academic record</div>
-                    <span class="lux-focus-panel__chip">${context.totalEcts} ECTS</span>
+                    <span class="lux-focus-panel__chip lux-status-pill">${context.totalEcts} ECTS</span>
                 </div>
                 <div class="lux-focus-panel__body">
                     <div class="lux-focus-panel__title">${context.totalSubjects} subjects</div>
                     <p class="lux-focus-panel__copy">Subject coverage and assessment history in the same summary language used on the home dashboard.</p>
                 </div>
                 <div class="lux-focus-panel__meta lux-hero-signal-list" aria-label="Record metrics">
-                    <span class="lux-hero-signal"><span>Latest term</span> <strong>${escapeHtml(context.latestTermLabel || 'No term')}</strong></span>
-                    <span class="lux-hero-signal"><span>Average</span> <strong>${escapeHtml(context.averageScoreLabel)}</strong></span>
-                    <span class="lux-hero-signal"><span>Assessments</span> <strong>${context.assessmentEntryTotal}</strong></span>
+                    <span class="lux-hero-signal home-hover-chip"><span>Latest term</span> <strong>${escapeHtml(context.latestTermLabel || 'No term')}</strong></span>
+                    <span class="lux-hero-signal home-hover-chip"><span>Average</span> <strong>${escapeHtml(context.averageScoreLabel)}</strong></span>
+                    <span class="lux-hero-signal home-hover-chip"><span>Assessments</span> <strong>${context.assessmentEntryTotal}</strong></span>
                 </div>
             </aside>
         </div>
@@ -438,13 +429,13 @@ function renderStudyCardTermsRegion(context) {
         const rows = context.semesterBuckets[termNum]
             .sort((a, b) => String(a.courseName || '').localeCompare(String(b.courseName || ''), undefined, { sensitivity: 'base' }))
             .map((subject) => {
-                const assessmentCacheKey = `study-card-${toDomToken(subject.courseId)}-${toDomToken(subject.groupName)}-${termNum}`;
+                const assessmentCacheKey = `study-card-${studyCardDomToken(subject.courseId)}-${studyCardDomToken(subject.groupId || subject.groupName)}-${termNum}`;
                 assessmentWindowCache[assessmentCacheKey] = subject;
                 return `
-                <tr class="study-card-term-row lux-soft-chrome">
+                <tr class="study-card-term-row lux-soft-chrome home-hover-chip">
                     <td class="study-card-cell study-card-cell--subject">
                         <div class="lms-route-card-title">${escapeHtml(subject.courseName)}</div>
-                        <div class="study-card-subject-meta study-card-cell-meta lms-route-meta-12">${escapeHtml(subject.courseId)}</div>
+                        <div class="study-card-subject-meta study-card-cell-meta lms-route-meta-12">${escapeHtml(subject.courseIdLabel || subject.courseId)}</div>
                     </td>
                     <td class="study-card-cell study-card-cell--professor">
                         <div class="lms-route-copy">${escapeHtml(subject.professorLabel)}</div>
@@ -464,7 +455,7 @@ function renderStudyCardTermsRegion(context) {
 
         return `
             <div class="study-card-term-block${index === 0 ? ' is-first' : ''}">
-                <div class="semester-header study-card-term-header lux-soft-chrome">
+                <div class="semester-header study-card-term-header lux-soft-chrome home-hover-chip">
                     <span class="lms-route-card-title">${escapeHtml(getStudyCardSemesterLabel(termNum))}</span>
                 </div>
                 <table class="kiu-table study-card-semester-table lux-modern-table">
@@ -506,10 +497,9 @@ function renderStudyCard() {
     const rawSchedule = getCurrentStudentSchedule();
     const seenCourseGroups = new Set();
     const currentSchedule = (rawSchedule || []).filter((item) => {
-        const courseId = String(item?.courseId || item?.id || item?.subjectId || '').trim();
-        const groupId = String(item?.groupId || item?.group || item?.sectionId || '').trim();
-        if (!courseId) return false;
-        const dedupeKey = `${normalizeStudyCardIdentifier(courseId)}::${normalizeStudyCardIdentifier(groupId || 'default')}`;
+        const refs = resolveStudyCardScheduleRefs(item);
+        if (!refs.courseId || refs.courseId === '0') return false;
+        const dedupeKey = `${normalizeStudyCardIdentifier(refs.courseId)}::${normalizeStudyCardIdentifier(refs.groupId || 'default')}`;
         if (seenCourseGroups.has(dedupeKey)) return false;
         seenCourseGroups.add(dedupeKey);
         return true;
@@ -532,12 +522,13 @@ function renderStudyCard() {
     const semesterBuckets = {};
 
     currentSchedule.forEach((scheduleItem) => {
-        const courseId = String(scheduleItem?.courseId || scheduleItem?.id || scheduleItem?.subjectId || '').trim();
-        const groupId = String(scheduleItem?.groupId || scheduleItem?.group || scheduleItem?.sectionId || '').trim();
+        const refs = resolveStudyCardScheduleRefs(scheduleItem);
+        const courseId = refs.courseId;
+        const groupId = refs.groupId;
         const availableGroups = Array.isArray(KIU_STATE.availableGroups?.[courseId]) ? KIU_STATE.availableGroups[courseId] : [];
         const groupObj = availableGroups.find((group) => (
             normalizeStudyCardIdentifier(group?.id) === normalizeStudyCardIdentifier(groupId)
-        )) || null;
+        )) || refs.embeddedGroup || null;
         const subject = subjectsById[courseId] || (KIU_STATE.curriculum || []).find((item) => String(item?.id) === courseId) || null;
         const semester = Math.max(1, parseInt(scheduleItem?.semester || groupObj?.semester || subject?.semester || currentUser?.semester || KIU_STATE.activeSemester || 1, 10) || 1);
 
@@ -584,20 +575,26 @@ function renderStudyCard() {
             || [quizScore, oralQuizScore, homeworkScore, midtermScore, examScore].some((score) => Number(score) > 0);
         const letterMeta = getStudyCardLetterGrade(overallScore, hasAnyScore);
         const courseName = formatStudyCardLabel(
-            scheduleItem?.courseName || scheduleItem?.name || subject?.name,
+            refs.courseName || subject?.name,
             formatStudyCardLabel(subject?.code, courseId && courseId !== '0' ? courseId : 'Subject')
         );
         const professorLabel = formatStudyCardLabel(
-            scheduleItem?.prof || groupObj?.prof || groupObj?.teacher || groupObj?.ta,
+            refs.professorLabel || groupObj?.prof || groupObj?.teacher || groupObj?.ta,
             'Professor TBA'
         );
-        const groupName = formatStudyCardLabel(groupObj?.name || groupObj?.id || groupId, '-');
-        const ects = getStudyCardCourseEctsValue(scheduleItem) || getStudyCardCourseEctsValue(subject) || 6;
+        const groupName = formatStudyCardLabel(
+            refs.groupName || groupObj?.name || groupObj?.id || groupId,
+            '-'
+        );
+        const courseIdLabel = formatStudyCardCourseIdLabel(courseId, subject);
+        const ects = getStudyCardCourseEctsValue(scheduleItem) || getStudyCardCourseEctsValue(refs.embeddedGroup) || getStudyCardCourseEctsValue(subject) || 6;
 
         if (!semesterBuckets[semester]) semesterBuckets[semester] = [];
         semesterBuckets[semester].push({
             courseId,
+            courseIdLabel,
             courseName,
+            groupId,
             groupName,
             professorLabel,
             ects,

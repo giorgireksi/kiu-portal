@@ -18,4 +18,14 @@ describe('social-event-create-dialog.test (bare-shell era)', () => {
         expect(createFormLine).toContain('lux-glass-dialog-card--social-glass');
         expect(createFormLine).not.toContain('social-neo-card');
     });
+
+    it('event delete dialog uses shared social-glass compact shell', () => {
+        const events = readSource('assets/js/pages/social-events.js');
+        const deleteFormLine = events.split('\n').find((line) => line.includes('data-form="dialog-event-delete"') && line.includes('<form'));
+        expect(deleteFormLine).toBeTruthy();
+        expect(deleteFormLine).toContain('lux-glass-dialog-card--social-glass');
+        expect(deleteFormLine).toContain('lux-glass-dialog-card--compact');
+        expect(deleteFormLine).toContain('data-lux-transparency-exempt="1"');
+        expect(events).toContain('lux-glass-dialog-body');
+    });
 });

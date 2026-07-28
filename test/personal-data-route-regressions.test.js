@@ -27,9 +27,10 @@ describe('personal data route regressions', () => {
         expect(html).toMatch(/personal-data-workspace[\s\S]*data-lux-glass-root="1"/);
     });
 
-    it('loads shared layout primitives and pdshare1 cache', () => {
+    it('loads shared layout primitives and pdshare2 cache', () => {
         const html = readSource('personal-data.html');
-        expect(html).toContain('pdshare1');
+        expect(html).toContain('pdshare2');
+        expect(html).toContain('student-schedule-refs.js');
         expect(html).toContain('lux-layout-primitives.css');
     });
 
@@ -42,6 +43,7 @@ describe('personal data route regressions', () => {
         expect(html).toContain('filter-shell personal-data-command personal-data-toolbar home-hover-chip');
         expect(html).toContain('personal-data-identity-card home-hover-chip');
         expect(html).toContain('personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip');
+        expect(html).toContain('personal-data-merged home-hover-chip');
         expect(html).toContain('lux-card-meta personal-data-kpi-label');
     });
 
@@ -61,12 +63,16 @@ describe('personal data route regressions', () => {
         expect(pdBlock).toContain('body.lux-route-personal-data .personal-data-kpi-card');
         expect(pdBlock).not.toMatch(/backdrop-filter/);
         expect(bare).not.toContain('--pd-fade-');
+        expect(bare).toContain('body.lux-route-personal-data #page-personal-data .personal-data-merged.home-hover-chip');
+        expect(bare).toContain('body.lux-route-personal-data #page-personal-data .personal-data-subjects-table .lux-card-title');
     });
 
     it('fouc-ht matte paints personal data shells and keeps glass hosts static', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toContain('body.lux-route-personal-data #page-personal-data');
         expect(fouc).toMatch(/body\.lux-route-personal-data #page-personal-data :is\([\s\S]*\.personal-data-kpi-card/);
+        expect(fouc).toContain('.personal-data-merged');
+        expect(fouc).toContain('.personal-data-subjects-table-wrap');
         expect(fouc).toMatch(/body\.lux-route-personal-data #page-personal-data :is\(\.page-hero, \.personal-data-workspace\)/);
         expect(fouc).toMatch(/body\.lux-route-personal-data #page-personal-data :is\([\s\S]*\.personal-data-identity-card[\s\S]*\):hover[\s\S]*--home-chip-hover-lift/);
         expect(fouc).toContain('body.lux-route-personal-data #page-personal-data .lux-picker-field');

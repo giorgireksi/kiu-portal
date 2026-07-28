@@ -45,6 +45,20 @@ describe('news bare shell', () => {
         expect(feed).toContain('lux-soft-chrome newsx-panel newsx-feed-card');
     });
 
+    it('uses shared shell classes and home-hover-chip on news sidebar', () => {
+        const feed = readSource('assets/js/pages/news/news-feed-render.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(feed).toContain('newsx-sidebar home-hover-chip');
+        expect(feed).toContain('lux-section-kicker');
+        expect(feed).toContain('newsx-account-name lux-card-title');
+        expect(feed).toContain('newsx-section-key lux-card-meta lms-route-meta-12');
+        expect(bare).toContain('body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip');
+        expect(bare).not.toMatch(/#portal-news-root \.newsx-sidebar\s*\{[^}]*--lux-panel-surface/);
+        expect(fouc).toContain('body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip');
+        expect(fouc).toMatch(/body\.lux-route-news #portal-news-root \.newsx-sidebar\.home-hover-chip:hover[\s\S]*--home-chip-hover-lift/);
+    });
+
     it('styles markdown and publisher editor chrome in shared CSS', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         const modals = readSource('assets/css/lux-modals.css');

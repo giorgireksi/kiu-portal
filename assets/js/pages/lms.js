@@ -73,14 +73,20 @@ function findCurriculumSubjectByIdOrTitle(subjectId, subjectTitle = '', preferre
 }
 const LMS_STUDENT_SEMESTER_STORAGE_KEY = 'kiuLmsStudentSemester';
 function normalizeLmsStudentScheduleEntries(scheduleValue) {
-    if (Array.isArray(scheduleValue)) return scheduleValue.filter(Boolean);
-    if (scheduleValue && typeof scheduleValue === 'object') {
-        if (Array.isArray(scheduleValue.entries)) return scheduleValue.entries.filter(Boolean);
-        return Object.entries(scheduleValue)
-            .filter(([, groupId]) => groupId != null && groupId !== '')
-            .map(([courseId, groupId]) => ({ courseId, groupId }));
-    }
-    return [];
+    const rawEntries = (() => {
+        if (Array.isArray(scheduleValue)) return scheduleValue.filter(Boolean);
+        if (scheduleValue && typeof scheduleValue === 'object') {
+            if (Array.isArray(scheduleValue.entries)) return scheduleValue.entries.filter(Boolean);
+            return Object.entries(scheduleValue)
+                .filter(([, groupId]) => groupId != null && groupId !== '')
+                .map(([courseId, groupId]) => ({ courseId, groupId }));
+        }
+        return [];
+    })();
+    if (typeof window.flattenStudentScheduleEntry !== 'function') return rawEntries;
+    return rawEntries
+        .map((entry) => window.flattenStudentScheduleEntry(entry))
+        .filter(Boolean);
 }
 function isLmsStudentViewer() {
     return typeof getEffectiveUserRole === 'function'
@@ -163,23 +169,36 @@ function getStudentLmsEnrolledSubjects(semester = null) {
     const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '';
     const seen = new Set();
     const subjects = [];
+    const labelFor = typeof window.formatStudyCardLabel === 'function'
+        ? window.formatStudyCardLabel
+        : (value, fallback = '') => {
+            const text = String(value ?? '').trim();
+            return text || fallback;
+        };
     entries.forEach((entry) => {
-        const courseId = String(entry?.courseId || entry?.sourceCourseId || '').trim();
-        if (!courseId) return;
+        const refs = typeof window.resolveStudentScheduleEntryRefs === 'function'
+            ? window.resolveStudentScheduleEntryRefs(entry)
+            : null;
+        const courseId = labelFor(refs?.courseId || entry?.courseId || entry?.sourceCourseId, '');
+        if (!courseId || courseId === '0') return;
         const dedupeKey = canonicalCourseKey(courseId);
         if (!dedupeKey || seen.has(dedupeKey)) return;
         seen.add(dedupeKey);
-        const curriculum = findCurriculumSubjectByIdOrTitle(courseId, entry?.courseName || '', faculty);
-        const groupId = String(entry?.groupId || '').trim();
+        const curriculum = findCurriculumSubjectByIdOrTitle(courseId, refs?.courseName || entry?.courseName || '', faculty);
+        const groupId = labelFor(refs?.groupId || entry?.groupId, '');
+        const groupName = labelFor(refs?.groupName || entry?.groupName, '');
         const semesterValue = resolveScheduleEntrySemester(entry, faculty);
-        const title = entry?.courseName || curriculum?.name || curriculum?.title || courseId;
+        const title = labelFor(
+            refs?.courseName || entry?.courseName || curriculum?.name || curriculum?.title,
+            courseId
+        );
         subjects.push({
             id: curriculum?.id || courseId,
             courseId,
             name: title,
             title,
             groupId,
-            groupName: entry?.groupName || '',
+            groupName,
             semester: semesterValue,
             courseKey: groupId ? `${courseId}::${groupId}` : courseId,
             icon: curriculum?.icon || 'fas fa-book-reader',

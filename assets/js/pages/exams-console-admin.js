@@ -76,12 +76,12 @@
     function renderReturnModal() {
         const body = `
             <label class="ex2-field">
-                <span class="ex2-field-label">Feedback for the Professor/TA (required)</span>
-                <textarea class="ex2-textarea" rows="4" placeholder="Explain what needs to be fixed..." data-exam-input="return-note">${escapeHtml(runtime.returnNote)}</textarea>
+                <span class="ex2-field-label lms-route-field-label">Feedback for the Professor/TA (required)</span>
+                <textarea class="lux-control lms-route-textarea lms-route-textarea-min-110" rows="4" placeholder="Explain what needs to be fixed..." data-exam-input="return-note">${escapeHtml(runtime.returnNote)}</textarea>
             </label>
             <div class="ex2-inline-actions ex2-modal-actions">
-                <button type="button" class="ex2-btn is-primary" data-exam-action="execute-return"><i class="fas fa-paper-plane"></i> Send Back</button>
-                <button type="button" class="ex2-btn is-ghost" data-exam-action="close-return-modal">Cancel</button>
+                <button type="button" class="lux-primary-btn" data-exam-action="execute-return"><i class="fas fa-paper-plane"></i> Send Back</button>
+                <button type="button" class="lux-ghost-btn" data-exam-action="close-return-modal">Cancel</button>
             </div>
         `;
         return renderExamModalShell({

@@ -27,7 +27,8 @@ describe('lms route regressions (retired skins purged)', () => {
 
     it('uses shared typography and button primitives in static shell', () => {
         const html = read('lms.html');
-        expect(html).toContain('lmquiz1');
+        expect(html).toContain('lmsscss11');
+        expect(html).toContain('student-schedule-refs.js');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('lux-section-kicker lms-clean-kicker');
         expect(html).toContain('lux-page-title');
@@ -53,6 +54,7 @@ describe('lms route regressions (retired skins purged)', () => {
         const lmsBlockWithoutWhiteboardHud = lmsBlock.split('/* Whiteboard tab (retired lms-whiteboard-catalog.css')[0]
             + (lmsBlock.split('/* Interaction messenger (retired lms-interaction.css')[1] || '');
         expect(lmsBlock).toContain('body.lux-route-lms .lms-route-stage');
+        expect(lmsBlock).toContain('.lux-lms-subject-card .lux-card-body');
         expect(lmsBlockWithoutWhiteboardHud).not.toMatch(/backdrop-filter/);
         expect(bare).not.toContain('--lms-fade-');
     });
@@ -176,6 +178,7 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(js).toContain('lux-subject-row__title lms-clean-card-title lms-route-card-title');
         expect(js).toContain('<div class="lux-card-body" data-lux-layout-only="1">');
         expect(js).toContain('lux-lms-subject-card home-hover-chip');
+        expect(js).toContain('lmsScheduleLabel');
         expect(js).toContain('lux-empty-state__title lms-route-empty-title');
         expect(js).toContain('lux-empty-state__copy lms-route-empty-copy');
     });

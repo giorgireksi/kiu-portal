@@ -801,6 +801,7 @@ function __kiuFeedExpose(map) {
         'comment-report',
         'comment-delete'
     ]);
+    const FEED_OWNED_ACTION_DIALOG_CARD_CLASS = 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card lux-glass-dialog-card--social-glass sn-mat-modal';
 
     function renderPostCommentsDialog(runtime, dialog, post, options = {}) {
         if (!post) return '';
@@ -840,12 +841,12 @@ function __kiuFeedExpose(map) {
                     <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats social-neo-dialog-comment-stats">
-                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogPostReactionTotal))}</strong><span>Reactions</span></article>
-                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(dialogCommentTotal))}</strong><span>Comments</span></article>
-                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(dialogScopeBadge)}</strong><span>Scope</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(dialogPostReactionTotal))}</strong><span>Reactions</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(dialogCommentTotal))}</strong><span>Comments</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(dialogScopeBadge)}</strong><span>Scope</span></article>
                 </div>
                 <div class="lux-glass-dialog-comment-scroll">
-                <div class="lux-glass-dialog-comment-preview">
+                <div class="lux-glass-dialog-comment-preview lux-soft-chrome home-hover-chip">
                     <div class="lux-glass-dialog-comment-post-head">
                         <div class="social-neo-person social-neo-person-start-gap-10">
                             ${avatar(dialogPostAuthor, 'social-neo-avatar-sm')}
@@ -877,7 +878,7 @@ function __kiuFeedExpose(map) {
                     ${dialogComments.length ? renderCommentThread(dialogComments, post, 'dialog') : '<div class="social-neo-empty">No comments yet. Be the first to reply.</div>'}
                 </div>
                 </div>
-                <form class="lux-glass-dialog-comment-compose sns-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
+                <form class="lux-glass-dialog-comment-compose sns-comment-compose lux-soft-chrome home-hover-chip" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
                     ${avatar(commentAuthor, 'social-neo-avatar-sm')}
                     <div class="lux-glass-dialog-comment-compose-main">
                         <div class="social-neo-inline social-neo-comment-compose-row">
@@ -900,7 +901,7 @@ function __kiuFeedExpose(map) {
             // eslint-disable-next-line no-console
             console.warn('[comment-delete] post not in feed', { postId: dialog.postId, feedSize: Array.isArray(state().feed) ? state().feed.length : 0 });
             return `<div class="${backdropClass}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Delete comment">
-                <div class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal lux-studio-panel" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--comment-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass social-neo-delete-confirm" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                         <div class="lux-glass-dialog-heading">
                             <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
@@ -944,7 +945,7 @@ function __kiuFeedExpose(map) {
             console.warn('[comment-delete] comment lookup missed', { postId: post.id, commentId: dialog.commentId, commentCount: Array.isArray(post.comments) ? post.comments.length : 0 });
         }
         return `<div class="${backdropClass}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Delete comment">
-            <form class="lux-glass-dialog-card social-neo-delete-confirm sn-mat-modal lux-studio-panel" data-form="dialog-comment-delete" data-action="noop" data-lux-transparency-exempt="1">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--comment-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass social-neo-delete-confirm" data-form="dialog-comment-delete" data-action="noop" data-lux-transparency-exempt="1">
                 <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
@@ -985,8 +986,8 @@ function __kiuFeedExpose(map) {
             ? (Array.isArray(state().feed) ? state().feed : []).find((item) => postKey(item) === postKey(dialog.postId))
             : null;
         if (kind === 'post-edit' && post) {
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-edit" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Edit post">
+                <form class="${FEED_OWNED_ACTION_DIALOG_CARD_CLASS}" data-form="dialog-post-edit" data-action="noop" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Edit post', 'Refine the post without leaving the feed.') : ''}
                     <textarea class="social-neo-textarea lux-control" name="dialogBody" rows="6" placeholder="Update your post...">${escape(text(dialog.body || post.body || post.text || ''))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Save changes' }) : ''}
@@ -995,8 +996,8 @@ function __kiuFeedExpose(map) {
             </div>`;
         }
         if (kind === 'post-share' && post) {
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-share" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Share post">
+                <form class="${FEED_OWNED_ACTION_DIALOG_CARD_CLASS}" data-form="dialog-post-share" data-action="noop" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Share post', 'Add context before it goes back into the stream.') : ''}
                     <textarea class="social-neo-textarea lux-control" name="dialogNote" rows="4" placeholder="Say something about this...">${escape(text(dialog.note || ''))}</textarea>
                     <div class="lux-glass-dialog-preview">${escape(text(post.body || post.text || 'Original post'))}</div>
@@ -1006,8 +1007,8 @@ function __kiuFeedExpose(map) {
             </div>`;
         }
         if (kind === 'post-report' && post) {
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-report" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Report post">
+                <form class="${FEED_OWNED_ACTION_DIALOG_CARD_CLASS}" data-form="dialog-post-report" data-action="noop" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report post', 'Explain what is wrong with this content.') : ''}
                     <textarea class="social-neo-textarea lux-control" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Submit report' }) : ''}
@@ -1019,8 +1020,8 @@ function __kiuFeedExpose(map) {
             const reportPost = (Array.isArray(state().feed) ? state().feed : []).find((item) => postKey(item) === postKey(dialog.postId));
             const comment = findCommentInThread(reportPost?.comments, dialog.commentId);
             if (!comment) return '';
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-comment-report" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Report comment">
+                <form class="${FEED_OWNED_ACTION_DIALOG_CARD_CLASS}" data-form="dialog-comment-report" data-action="noop" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report comment', 'Explain what is wrong with this comment.') : ''}
                     <div class="lux-glass-dialog-preview">${escape(text(comment.body || comment.text || 'Comment'))}</div>
                     <textarea class="social-neo-textarea lux-control" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
@@ -1045,8 +1046,8 @@ function __kiuFeedExpose(map) {
             return deleteMarkup;
         }
         if (kind === 'post-delete' && post) {
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card sn-mat-modal" data-form="dialog-post-delete" data-action="noop">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Delete post">
+                <form class="${FEED_OWNED_ACTION_DIALOG_CARD_CLASS}" data-form="dialog-post-delete" data-action="noop" data-lux-transparency-exempt="1">
                     ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Delete post', 'This removes the post from the social feed.') : ''}
                     <div class="lux-glass-dialog-preview">${escape(text(post.body || post.text || 'This post has no text.'))}</div>
                     ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Delete post' }) : ''}

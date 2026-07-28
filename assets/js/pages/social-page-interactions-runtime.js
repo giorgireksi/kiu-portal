@@ -133,6 +133,8 @@
         const syncOverlayPortalVisibility = dep('syncOverlayPortalVisibility');
         const pruneStaleSocialOverlayState = dep('pruneStaleSocialOverlayState');
         const socialDialogRegion = dep('socialDialogRegion');
+        const ensureMyPortfolioDocument = dep('ensureMyPortfolioDocument');
+        const portfolioCollectDocumentFromUi = dep('portfolioCollectDocumentFromUi');
         const bindEvents = dep('bindEvents');
         const enhanceSocialAccessibility = dep('enhanceSocialAccessibility');
         const focusCommentComposeInput = dep('focusCommentComposeInput');

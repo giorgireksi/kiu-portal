@@ -32,11 +32,28 @@
             ? normalizeFacultyCode(storedFaculty || fallback, fallback)
             : (storedFaculty || fallback || 'ECON');
     }
+    function lmsScheduleLabel(value, fallback = '') {
+        if (typeof window.formatStudyCardLabel === 'function') {
+            return window.formatStudyCardLabel(value, fallback);
+        }
+        const text = String(value ?? '').trim();
+        return text || fallback;
+    }
+    function lmsScheduleDomToken(value) {
+        if (typeof window.studyCardDomToken === 'function') {
+            return window.studyCardDomToken(value);
+        }
+        return String(value ?? 'unknown').replace(/[^a-zA-Z0-9_-]+/g, '_');
+    }
     function getLmsSubjectName(subject) {
-        return repairLmsDisplayText(subject?.name || subject?.title || subject?.subjectName || subject?.label, 'Untitled Course');
+        return repairLmsDisplayText(
+            lmsScheduleLabel(subject?.name || subject?.title || subject?.subjectName || subject?.label, 'Untitled Course'),
+            'Untitled Course'
+        );
     }
     function getLmsSubjectId(subject, index) {
-        return subject?.id || subject?.subjectId || subject?.courseId || `lms-subject-${index}`;
+        const resolved = lmsScheduleLabel(subject?.id || subject?.subjectId || subject?.courseId, '');
+        return resolved && resolved !== '0' ? resolved : `lms-subject-${index}`;
     }
     function getLmsSubjectFaculty(subject) {
         return subject?.faculty || subject?.facultyCode || '';
@@ -254,9 +271,9 @@
             const subjectName = getLmsSubjectName(subject);
             const groupCount = getLmsSubjectGroupCount(subject, subjectId);
             const icon = subject.icon || 'fas fa-book-reader';
-            const courseKey = subject.courseKey || '';
-            const groupId = subject.groupId || '';
-            const groupName = subject.groupName || '';
+            const groupId = lmsScheduleLabel(subject.groupId, '');
+            const groupName = lmsScheduleLabel(subject.groupName, '');
+            const courseKey = lmsScheduleLabel(subject.courseKey, '') || (groupId && subjectId ? `${subjectId}::${groupId}` : subjectId);
             const kickerLabel = isStudent ? 'Enrolled' : 'Published';
             const resolvedCourseKey = courseKey || (groupId && subjectId ? `${subjectId}::${groupId}` : '');
             const nextSessionLine = resolvedCourseKey && typeof window.renderLmsNextSessionHtml === 'function' && typeof window.getLmsNextSessionForGroup === 'function'
@@ -272,11 +289,11 @@
             return `<button
                 type="button"
                 class="lux-strip-card lux-lms-subject-card home-hover-chip"
-                data-subject-id="${safeHtml(subjectId)}"
+                data-subject-id="${safeHtml(lmsScheduleDomToken(subjectId))}"
                 data-subject-title="${safeHtml(subjectName)}"
                 data-icon-class="${safeHtml(icon)}"
-                data-course-key="${safeHtml(courseKey)}"
-                data-group-id="${safeHtml(groupId)}"
+                data-course-key="${safeHtml(resolvedCourseKey)}"
+                data-group-id="${safeHtml(lmsScheduleDomToken(groupId || groupName))}"
                 data-lms-subject-card="true">
                 <div class="lux-card-body" data-lux-layout-only="1">
                     <div class="lux-section-kicker lms-clean-card-kicker"><i class="${safeHtml(icon)}"></i> ${safeHtml(kickerLabel)}</div>

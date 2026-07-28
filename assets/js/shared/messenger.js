@@ -328,13 +328,12 @@ function setPortalMessengerCompactTab(value) {
 }
 function togglePortalMessengerDock(forceOpen = null) {
     const uiState = ensurePortalMessengerUiState();
-    uiState.dockOpen = forceOpen === null ? !uiState.dockOpen : Boolean(forceOpen);
-    renderPortalMessengerWorkspace();
+    const shouldOpen = forceOpen === null ? !uiState.fullOpen : Boolean(forceOpen);
+    if (shouldOpen) openPortalMessengerFullModal();
+    else closePortalMessengerFullModal();
 }
 function openPortalMessengerFullModal() {
-    const uiState = ensurePortalMessengerUiState();
-    uiState.fullOpen = true;
-    uiState.dockOpen = true;
+    ensurePortalMessengerUiState().fullOpen = true;
     renderPortalMessengerWorkspace();
 }
 function closePortalMessengerFullModal() {
@@ -342,10 +341,7 @@ function closePortalMessengerFullModal() {
     renderPortalMessengerWorkspace();
 }
 function switchPortalMessengerToDock() {
-    const uiState = ensurePortalMessengerUiState();
-    uiState.fullOpen = false;
-    uiState.dockOpen = true;
-    renderPortalMessengerWorkspace();
+    closePortalMessengerFullModal();
 }
 function consumePendingSocialMessengerLaunch() {
     const raw = localStorage.getItem('KIU_PENDING_SOCIAL_MESSENGER');
@@ -363,9 +359,7 @@ function consumePendingSocialMessengerLaunch() {
         return;
     }
     if (targetUserId === '__OPEN__') {
-        const uiState = ensurePortalMessengerUiState();
-        uiState.fullOpen = true;
-        uiState.dockOpen = true;
+        ensurePortalMessengerUiState().fullOpen = true;
         localStorage.removeItem('KIU_PENDING_SOCIAL_MESSENGER');
         return;
     }
@@ -377,7 +371,6 @@ function consumePendingSocialMessengerLaunch() {
     unhidePortalMessengerChatForUser(chat.id, currentUser.id);
     const uiState = ensurePortalMessengerUiState();
     uiState.fullOpen = true;
-    uiState.dockOpen = true;
     uiState.activeChatId = chat.id;
     localStorage.removeItem('KIU_PENDING_SOCIAL_MESSENGER');
 }
@@ -483,7 +476,7 @@ function openPortalMessengerChat(chatId, source = 'full') {
     }
     uiState.activeChatId = chatId;
     if (source === 'compact') {
-        uiState.dockOpen = true;
+        uiState.fullOpen = true;
         uiState.compactTab = 'thread';
     }
     renderPortalMessengerWorkspace();
@@ -1239,6 +1232,7 @@ function ensurePortalMessengerChrome() {
     if (!dockRoot) {
         dockRoot = document.createElement('div');
         dockRoot.id = 'portal-messenger-chrome';
+        dockRoot.hidden = true;
         document.body.appendChild(dockRoot);
     }
     let modalRoot = document.getElementById('portal-messenger-modal-overlay');
@@ -1262,6 +1256,7 @@ function ensurePortalNotificationChrome() {
     if (!dockRoot) {
         dockRoot = document.createElement('div');
         dockRoot.id = 'portal-notification-chrome';
+        dockRoot.hidden = true;
         document.body.appendChild(dockRoot);
     }
     let modalRoot = document.getElementById('portal-notification-modal-overlay');
@@ -1269,24 +1264,6 @@ function ensurePortalNotificationChrome() {
         modalRoot = document.createElement('div');
         modalRoot.id = 'portal-notification-modal-overlay';
         document.body.appendChild(modalRoot);
-    }
-    if (!dockRoot.dataset.portalNotifBuilt) {
-        dockRoot.dataset.portalNotifBuilt = 'true';
-        dockRoot.innerHTML = `
-            <div class="portal-notif-fab-stack">
-                <div class="portal-notif-dock">
-                    <div id="portal-notification-dock-content" class="portal-notif-dock-content"></div>
-                    <div class="portal-notif-dock-footer">
-                        <button type="button" id="portal-notification-maximize" class="lux-primary-btn portal-notif-dock-maximize"><i class="fas fa-expand"></i> Maximize</button>
-                    </div>
-                </div>
-                <button type="button" id="portal-notification-fab" class="portal-notif-fab">
-                    <span><i class="fas fa-bell"></i></span>
-                    <span id="portal-notification-fab-label">Notifications</span>
-                    <span id="portal-notification-fab-count" class="portal-notif-fab-count">0</span>
-                </button>
-            </div>
-        `;
     }
     if (!modalRoot.dataset.portalNotifBuilt) {
         modalRoot.dataset.portalNotifBuilt = 'true';
@@ -1299,27 +1276,12 @@ function ensurePortalNotificationChrome() {
                         <div class="portal-notif-modal-copy">Track real grades, service replies, schedule changes, official orders, and selected social activity in one place.</div>
                     </div>
                     <div class="portal-notif-modal-actions">
-                        <button type="button" id="portal-notification-minimize" class="lux-secondary-btn"><i class="fas fa-window-restore"></i> Minimize</button>
                         <button type="button" id="portal-notification-close" class="portal-notif-ghost-btn"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
                 <div id="portal-notification-modal-body" class="portal-notif-modal-body"></div>
             </div>
         `;
-    }
-    if (!dockRoot.dataset.boundNotifications) {
-        dockRoot.dataset.boundNotifications = 'true';
-        dockRoot.addEventListener('click', handlePortalNotificationChromeClick);
-        dockRoot.querySelector('#portal-notification-fab')?.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation();
-            togglePortalNotificationDock();
-        });
-        dockRoot.querySelector('#portal-notification-maximize')?.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation();
-            openPortalNotificationFullModal();
-        });
     }
     if (!modalRoot.dataset.boundNotifications) {
         modalRoot.dataset.boundNotifications = 'true';
@@ -1328,11 +1290,6 @@ function ensurePortalNotificationChrome() {
             event.preventDefault();
             event.stopPropagation();
             closePortalNotificationFullModal();
-        });
-        modalRoot.querySelector('#portal-notification-minimize')?.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation();
-            switchPortalNotificationToDock();
         });
         modalRoot.querySelector('#portal-notification-close')?.addEventListener('click', event => {
             event.preventDefault();
@@ -1343,17 +1300,13 @@ function ensurePortalNotificationChrome() {
     if (!document.body.dataset.boundNotificationChromeGlobal) {
         document.body.dataset.boundNotificationChromeGlobal = 'true';
         document.addEventListener('keydown', handlePortalNotificationChromeKeydown);
-        document.addEventListener('pointerdown', handlePortalNotificationChromePointerDown);
     }
     return { dockRoot, modalRoot };
 }
 function ensurePortalNotificationRenderState() {
     window.__portalNotificationRenderState = window.__portalNotificationRenderState || {
         hidden: true,
-        dockOpen: null,
         fullOpen: null,
-        unreadCount: null,
-        compactHtml: '',
         modalHtml: ''
     };
     return window.__portalNotificationRenderState;
@@ -1395,19 +1348,8 @@ function handlePortalNotificationChromeClick(event) {
 function handlePortalNotificationChromeKeydown(event) {
     if (event.key !== 'Escape') return;
     const uiState = typeof ensurePortalNotificationUiState === 'function' ? ensurePortalNotificationUiState() : null;
-    if (!uiState) return;
-    if (uiState.fullOpen) {
-        closePortalNotificationFullModal();
-    } else if (uiState.dockOpen) {
-        togglePortalNotificationDock(false);
-    }
-}
-function handlePortalNotificationChromePointerDown(event) {
-    const uiState = typeof ensurePortalNotificationUiState === 'function' ? ensurePortalNotificationUiState() : null;
-    if (!uiState || !uiState.dockOpen || uiState.fullOpen) return;
-    if (event.target.closest('#portal-notification-chrome')) return;
-    if (event.target.closest('#portal-notification-modal-overlay')) return;
-    togglePortalNotificationDock(false);
+    if (!uiState?.fullOpen) return;
+    closePortalNotificationFullModal();
 }
 function getPortalNotificationSummary() {
     const currentUser = getCurrentUser();
@@ -1429,38 +1371,15 @@ function renderPortalNotificationChrome() {
             modalRoot.querySelector('#portal-notification-modal-body')?.replaceChildren();
             modalRoot.className = 'portal-notif-modal-overlay';
             renderState.hidden = true;
-            renderState.compactHtml = '';
             renderState.modalHtml = '';
-            renderState.dockOpen = null;
             renderState.fullOpen = null;
-            renderState.unreadCount = null;
         }
         return;
     }
-    if (renderState.hidden) {
-        dockRoot.hidden = false;
-        renderState.hidden = false;
-    }
-    const { uiState, unreadCount } = summary;
-    const dock = dockRoot.querySelector('.portal-notif-dock');
-    const fabCount = dockRoot.querySelector('#portal-notification-fab-count');
-    const dockContent = dockRoot.querySelector('#portal-notification-dock-content');
-    const compactHtml = buildPortalNotificationWorkspaceHtml(summary, 'compact');
+    dockRoot.hidden = true;
+    if (renderState.hidden) renderState.hidden = false;
+    const { uiState } = summary;
     const modalHtml = uiState.fullOpen ? buildPortalNotificationWorkspaceHtml(summary, 'modal') : '';
-    if (dock && renderState.dockOpen !== Boolean(uiState.dockOpen)) {
-        dock.hidden = !Boolean(uiState.dockOpen);
-        dock.setAttribute('aria-hidden', Boolean(uiState.dockOpen) ? 'false' : 'true');
-        dock.classList.toggle('is-open', Boolean(uiState.dockOpen));
-        renderState.dockOpen = Boolean(uiState.dockOpen);
-    }
-    if (fabCount && renderState.unreadCount !== Number(unreadCount || 0)) {
-        fabCount.textContent = String(Math.max(unreadCount, 0));
-        renderState.unreadCount = Number(unreadCount || 0);
-    }
-    if (dockContent && renderState.compactHtml !== compactHtml) {
-        dockContent.innerHTML = compactHtml;
-        renderState.compactHtml = compactHtml;
-    }
     if (renderState.fullOpen !== Boolean(uiState.fullOpen)) {
         modalRoot.className = `portal-notif-modal-overlay ${uiState.fullOpen ? 'is-open' : ''}`;
         renderState.fullOpen = Boolean(uiState.fullOpen);
@@ -1480,31 +1399,9 @@ function renderPortalMessengerChrome(summary) {
     const roots = ensurePortalMessengerChrome();
     if (!roots) return;
     const { dockRoot, modalRoot, callRoot } = roots;
-    const { currentUser, uiState, chats } = summary;
-    dockRoot.innerHTML = `
-        <div class="portal-msg-fab-stack">
-            <div class="portal-msg-dock ${uiState.dockOpen ? 'is-open' : ''}">
-                <div class="portal-msg-dock-head">
-                    <div>
-                        <div class="portal-msg-dock-title">Messenger</div>
-                        <div class="portal-msg-dock-copy">${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))} &middot; ${chats.length} conversations</div>
-                    </div>
-                    <div class="portal-msg-dock-head-actions">
-                        <button type="button" class="portal-msg-ghost-btn" data-portal-msg-click="open-full" title="Open full messenger"><i class="fas fa-expand"></i></button>
-                        <button type="button" class="portal-msg-ghost-btn" data-portal-msg-click="toggle-dock" data-portal-msg-force-open="false" title="Close mini chat"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>
-                <div class="portal-msg-dock-body">
-                    ${buildPortalMessengerCompactBody(summary)}
-                </div>
-            </div>
-            <button type="button" class="portal-msg-fab ${uiState.dockOpen ? 'is-open' : ''}" data-portal-msg-click="toggle-dock">
-                <span class="portal-msg-fab-icon"><i class="fas fa-comments"></i></span>
-                <span class="portal-msg-fab-label">${uiState.dockOpen ? 'Close chat' : 'Open chat'}</span>
-                <span class="portal-msg-fab-count">${Math.max(chats.length, 1)}</span>
-            </button>
-        </div>
-    `;
+    const { uiState } = summary;
+    dockRoot.hidden = true;
+    dockRoot.replaceChildren();
     modalRoot.className = `portal-msg-modal-overlay ${uiState.fullOpen ? 'is-open' : ''}`;
     modalRoot.innerHTML = uiState.fullOpen ? `
         <div class="portal-msg-modal-backdrop" data-portal-msg-click="close-full"></div>
@@ -1515,7 +1412,6 @@ function renderPortalMessengerChrome(summary) {
                     <div class="portal-msg-modal-copy">Stay on the current page and manage every private conversation in one place.</div>
                 </div>
                 <div class="portal-msg-modal-actions">
-    <button type="button" class="lux-secondary-btn portal-msg-inline-btn" data-portal-msg-click="switch-dock"><i class="fas fa-window-restore"></i> Mini Chat</button>
                     <button type="button" class="portal-msg-ghost-btn" data-portal-msg-click="close-full"><i class="fas fa-times"></i></button>
                 </div>
             </div>

@@ -22,13 +22,12 @@ describe('index widget wave 2 regressions', () => {
   it('keeps study-card summary aligned to index hero-side and strip-card widgets', () => {
     const source = readSource('assets/js/pages/study-card-page.js');
 
-    expect(source).toContain('class="lux-hero-stage study-card-summary-stage lux-soft-chrome"');
-    expect(source).toContain('class="lux-hero-main"');
-    expect(source).toContain('class="lux-hero-side lux-focus-panel"');
-    expect(source).toContain('lux-hero-signal-list');
-    expect(source).toContain('class="lux-hero-signal"');
+    expect(source).toContain('class="lux-hero-stage study-card-summary-stage"');
+    expect(source).toContain('class="lux-hero-main study-card-summary-main lux-soft-chrome home-hover-chip"');
+    expect(source).toContain('class="lux-hero-side lux-focus-panel study-card-summary-focus lux-soft-chrome home-hover-chip"');
+    expect(source).toContain('class="lux-hero-signal home-hover-chip"');
     expect(source).toContain('lux-section-kicker study-card-summary-kicker');
-    expect(source).toContain('study-card-term-row lux-soft-chrome');
+    expect(source).toContain('study-card-term-row lux-soft-chrome home-hover-chip');
   });
 
   it('keeps faculty-gradebook and chancellery summary widgets aligned to index strip and hero-side classes', () => {

@@ -69,18 +69,18 @@
                     <div class="social-portfolio-toolbar-head">
                         <div>
                             <strong>Discover talent across campus</strong>
-                            <span>Filter by faculty, audience, and tags without losing the social feel of the feed.</span>
+                            <span class="lms-route-meta-12">Filter by faculty, audience, and tags without losing the social feel of the feed.</span>
                         </div>
                     </div>
                     <div class="social-portfolio-search-row">
                         <label class="social-portfolio-search">
                             <i class="fas fa-search"></i>
-                            <input class="social-neo-input lux-control" type="search" name="projectDiscoverSearch" value="${escape(discoverSearch)}" placeholder="Search projects, skills, hashtags, people, or faculties">
+                            <input class="lux-control" type="search" name="projectDiscoverSearch" value="${escape(discoverSearch)}" placeholder="Search projects, skills, hashtags, people, or faculties">
                         </label>
-                        <select class="social-neo-select lux-control" name="projectDiscoverFaculty" data-lux-picker>
+                        <select class="social-neo-select lux-control lux-universal-native-select" name="projectDiscoverFaculty" data-lux-picker>
                             ${facultyOptions.map((facultyCode) => `<option value="${escape(facultyCode)}" ${discoverFaculty === facultyCode ? 'selected' : ''}>${escape(facultyCode === 'all' ? 'All faculties' : facultyLabel(facultyCode))}</option>`).join('')}
                         </select>
-                        <select class="social-neo-select lux-control" name="projectDiscoverRole" data-lux-picker>
+                        <select class="social-neo-select lux-control lux-universal-native-select" name="projectDiscoverRole" data-lux-picker>
                             ${PORTFOLIO_DISCOVER_ROLE_TARGETS.map(([value, label]) => `<option value="${escape(value)}" ${discoverRole === value ? 'selected' : ''}>${escape(label)}</option>`).join('')}
                         </select>
                     </div>
@@ -116,8 +116,10 @@
                         <div class="portfolio-panel-tabs social-neo-portfolio-hero-tabs" role="tablist" aria-label="Portfolio views">
                             ${portfolioPanelTabs.map((tab) => `
                                 <button class="${portfolioPanelTab === tab.tab ? 'lux-primary-btn' : 'lux-secondary-btn'} portfolio-panel-tab" type="button" role="tab" data-action="portfolio-panel-tab" ${tab.attrs} aria-selected="${portfolioPanelTab === tab.tab ? 'true' : 'false'}" aria-pressed="${portfolioPanelTab === tab.tab ? 'true' : 'false'}">
-                                    <strong>${escape(tab.label)}</strong>
-                                    <span>${escape(tab.helper)}</span>
+                                    <span class="portfolio-panel-tab-copy">
+                                        <strong>${escape(tab.label)}</strong>
+                                        <small>${escape(tab.helper)}</small>
+                                    </span>
                                 </button>
                             `).join('')}
                         </div>
@@ -238,15 +240,21 @@
         }
 
         function renderPortfolioEditorDialog() {
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close"><div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-editor lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
-                    <div class="lux-glass-dialog-editor-topbar">
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="My portfolio">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-editor lux-glass-dialog-card--social-glass sns-portfolio-editor-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head social-neo-surveys-hero-head portfolio-editor-dialog-head">
+                        <div class="social-neo-surveys-hero-copy">
+                            <span class="social-neo-section-kicker">Portfolio</span>
+                            <h2>My portfolio</h2>
+                            <p class="lux-glass-dialog-portfolio-editor-subtitle">Build sections, save drafts, and publish your campus showcase.</p>
+                        </div>
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-editor">
                         ${renderMyPortfolioPanel()}
-                        ${renderPortfolioCustomBuilderOverlay()}
                     </div>
                 </div>
+                ${renderPortfolioCustomBuilderOverlay()}
             </div>`;
         }
 
@@ -331,13 +339,13 @@
                             const mediaUrl = mediaPreview ? fileUrl(mediaPreview) : '';
                             const featured = index === 0 || (index > 0 && index % 5 === 0);
                             return `
-                                <article class="social-neo-post-card social-portfolio-card ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
+                                <article class="social-neo-post-card social-portfolio-card lux-soft-chrome ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
                                     <div class="social-portfolio-card-head">
                                         <div class="social-neo-person">
                                             ${avatar(owner, 'social-neo-avatar-sm')}
                                             <div>
                                                 <strong>${escape(displayName(owner))}</strong>
-                                                <div class="social-neo-muted">${escape(roleLabel(owner?.role))} / ${escape(facultyLabel(entry.ownerFacultyCode || currentFaculty))}</div>
+                                                <div class="social-neo-muted lms-route-meta-12">${escape(roleLabel(owner?.role))} / ${escape(facultyLabel(entry.ownerFacultyCode || currentFaculty))}</div>
                                             </div>
                                         </div>
                                         <div class="social-neo-badge-row">

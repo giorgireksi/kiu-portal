@@ -306,7 +306,7 @@
             : '<p class="lux-glass-dialog-hint">No invited members selected yet.</p>';
         const searchResultsMarkup = candidateAccounts.length
             ? candidateAccounts.slice(0, 12).map((account) => `
-                <article class="social-neo-entity-card social-neo-group-creator-member">
+                <div class="social-neo-item-line social-neo-group-creator-member">
                     <div class="social-neo-person">
                         ${avatar(account, 'social-neo-avatar-sm')}
                         <div>
@@ -317,7 +317,7 @@
                     <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="group-creator-member-add" data-user-id="${escape(text(account.id))}">
                         <i class="fas fa-user-plus"></i> Invite
                     </button>
-                </article>
+                </div>
             `).join('')
             : `<p class="lux-glass-dialog-hint">${memberSearch || facultyFilter !== 'all' ? 'No people match the current search or faculty filter.' : 'Start typing or choose a faculty to find people.'}</p>`;
         return {
@@ -362,14 +362,14 @@
                             <strong>Selected members</strong>
                             <span>${escape(ctx.selectedMemberIds.length)} invitation${ctx.selectedMemberIds.length === 1 ? '' : 's'} queued.</span>
                         </div>
-                        <div class="social-neo-list lux-glass-dialog-invite-list">${ctx.selectedMembersMarkup}</div>
+                        <div class="social-neo-list lux-glass-dialog-invite-list" data-lux-transparency-exempt="1">${ctx.selectedMembersMarkup}</div>
                     </article>
                     <article class="lux-glass-dialog-invite-block">
                         <div class="lux-glass-dialog-invite-block-head">
                             <strong>Search results</strong>
                             <span>${escape(ctx.candidateAccounts.length)} people available.</span>
                         </div>
-                        <div class="social-neo-list lux-glass-dialog-invite-list">${ctx.searchResultsMarkup}</div>
+                        <div class="social-neo-list lux-glass-dialog-invite-list" data-lux-transparency-exempt="1">${ctx.searchResultsMarkup}</div>
                     </article>
                 </div>
             </section>

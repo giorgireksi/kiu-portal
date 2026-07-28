@@ -769,15 +769,71 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         });
     }
 
+    const SOCIAL_RUNTIME_VERSION = '20260728-socshell14';
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
-        ['assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1'],
-        ['assets/js/shared/social-lite-content-runtime.js?v=20260720-soccontent1'],
-        ['assets/js/shared/social-lite-invite-runtime.js?v=20260720-w18'],
-        ['assets/js/shared/social-runtime-lite.js?v=20260720-soccontent1'],
+        [
+            'assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1',
+            'assets/js/shared/social-lite-content-runtime.js?v=20260726-socfix38',
+            'assets/js/shared/social-lite-invite-runtime.js?v=20260720-w18',
+            'assets/js/shared/social-runtime-lite.js?v=20260726-socpaint14'
+        ],
         [
             'assets/js/pages/social-mobile.js?v=20260624-event-edit2',
-            'assets/js/pages/social-ui-kernel.js?v=20260718-portlazy1',
-            'assets/js/pages/social-page.js?v=20260721-tdz1'
+            'assets/js/shared/lux-scroll-rail.js?v=20260611-scrollrail1',
+            'assets/js/pages/social-render-plan.js?v=20260726-socfix25',
+            'assets/js/pages/social-ui-kernel.js?v=20260718-portlazy1'
+        ],
+        [
+            { src: 'assets/js/pages/social-task-model.js?v=20260720-w23task1', module: true },
+            'assets/js/pages/social-task-model-bridge.js?v=20260720-w23task1'
+        ],
+        [
+            { src: 'assets/js/pages/social-form-model.js?v=20260720-w23form1', module: true },
+            'assets/js/pages/social-form-model-bridge.js?v=20260720-w23form1'
+        ],
+        [
+            'assets/js/pages/social-workspace-week-plan-model.js?v=20260719-wswplan1'
+        ],
+        [
+            { src: 'assets/js/pages/social-workspace-risk-model.js?v=20260720-w20risk1', module: true },
+            'assets/js/pages/social-workspace-risk-model-bridge.js?v=20260720-w20risk1'
+        ],
+        [
+            { src: 'assets/js/pages/social-entity-model.js?v=20260719-entity2', module: true },
+            'assets/js/pages/social-entity-model-bridge.js?v=20260719-entity2'
+        ],
+        [
+            { src: 'assets/js/pages/social-panel-model.js?v=20260720-w24panel1', module: true },
+            'assets/js/pages/social-panel-model-bridge.js?v=20260720-w24panel1'
+        ],
+        [
+            { src: 'assets/js/pages/social-alerts-model.js?v=20260720-w24alerts1', module: true },
+            'assets/js/pages/social-alerts-model-bridge.js?v=20260720-w24alerts1'
+        ],
+        [
+            { src: 'assets/js/pages/social-profile-model.js?v=20260720-w25profile1', module: true },
+            'assets/js/pages/social-profile-model-bridge.js?v=20260720-w25profile1'
+        ],
+        [
+            'assets/js/pages/social-fingerprint-model.js?v=20260719-fp3',
+            'assets/js/pages/social-chrome-model.js?v=20260719-chrome2',
+            'assets/js/pages/social-workspace-stubs.js?v=20260719-wsstubs1'
+        ],
+        [
+            'assets/js/pages/social-dialog-router.js?v=20260726-socfix25',
+            `assets/js/pages/social-overlay-chrome.js?v=${SOCIAL_RUNTIME_VERSION}`,
+            'assets/js/pages/social-shell-nav.js?v=20260726-socfix26',
+            `assets/js/pages/social-page-events.js?v=${SOCIAL_RUNTIME_VERSION}`
+        ],
+        [
+            'assets/js/pages/social-page-survey-runtime.js?v=20260726-socstack47',
+            'assets/js/pages/social-page-feed-runtime.js?v=20260726-socfix25',
+            'assets/js/pages/social-page-shell-runtime.js?v=20260726-socfix25',
+            `assets/js/pages/social-page-interactions-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`
+        ],
+        [
+            `assets/js/pages/social-page-boot-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`,
+            'assets/js/pages/social-page.js?v=20260726-socstack57'
         ]
     ];
     let socialRuntimeLoadPromise = null;

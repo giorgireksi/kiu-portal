@@ -48,12 +48,13 @@
             const formType = context === 'dialog' ? 'dialog-comment' : 'comment';
             const author = displayName(accountById(comment.authorUserId) || { id: comment.authorUserId, displayName: comment.authorName || comment.authorUserId });
             const inputId = `social-reply-input-${text(comment.id)}`;
+            const dialogShellClass = context === 'dialog' ? ' lux-soft-chrome home-hover-chip' : '';
             return `
-                <form class="social-neo-comment-reply-form" data-form="${formType}" data-post-id="${escape(normalizedPostId)}" data-reply-comment-id="${escape(text(comment.id))}" data-reply-author="${escape(author)}">
+                <form class="social-neo-comment-reply-form${dialogShellClass}" data-form="${formType}" data-post-id="${escape(normalizedPostId)}" data-reply-comment-id="${escape(text(comment.id))}" data-reply-author="${escape(author)}">
                     <input class="social-neo-input lux-modern-field" id="${escape(inputId)}" type="text" name="commentBody" placeholder="Reply to @${escape(author)}..." aria-label="Reply to @${escape(author)}..." value="" autocomplete="off">
                     <div class="social-neo-comment-reply-form-actions">
-                        <button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn" type="button" data-action="comment-reply-cancel" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">Cancel</button>
-                        <button class="lux-secondary-btn lux-secondary-btn-sm lux-primary-btn" type="submit">Reply</button>
+                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="comment-reply-cancel" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">Cancel</button>
+                        <button class="lux-primary-btn lux-secondary-btn-sm" type="submit">Reply</button>
                     </div>
                     <input type="hidden" name="postId" value="${escape(normalizedPostId)}">
                 </form>
@@ -64,13 +65,14 @@
         function renderCommentReactionButtons(comment, normalizedPostId, context = 'feed') {
             const commentReaction = commentReactionType(comment);
             const reactionCounts = comment?.reactionCounts || {};
-            const btnClass = 'lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn';
-            const activeClass = ' lux-primary-btn';
-            return ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                <button class="${btnClass}${commentReaction === reactionType ? activeClass : ''}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
+            return ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => {
+                const btnClass = commentReaction === reactionType ? 'lux-primary-btn' : 'lux-secondary-btn';
+                return `
+                <button class="${btnClass} lux-secondary-btn-sm" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
                     <span>${reactionEmoji(reactionType)}</span> ${escape(text(reactionCounts[reactionType] || 0))}
                 </button>
-            `).join('');
+            `;
+            }).join('');
         }
         
         function renderCommentNode(comment, post, depth = 0, context = 'feed') {
@@ -84,13 +86,14 @@
                 (text(viewer.id) === text(comment.authorUserId) || String(viewer.role || '').toLowerCase() === 'admin')
             );
             const isReplyTarget = text(state().ui?.commentReplyTargetByPost?.[normalizedPostId]?.commentId) === text(comment.id);
-            const actionBtn = 'lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn';
+            const actionBtn = 'lux-secondary-btn lux-secondary-btn-sm';
+            const dialogBubbleClass = context === 'dialog' ? ' lux-soft-chrome home-hover-chip sns-comment-dialog-bubble' : '';
             return `
                 <article class="social-neo-comment${depthClass}" data-comment-id="${escape(text(comment.id))}">
                     <div class="social-neo-comment-row">
                         ${avatar(commentAuthor, 'social-neo-avatar-sm')}
                         <div class="social-neo-comment-body">
-                            <div class="social-neo-comment-bubble${context === 'dialog' ? ' sns-comment-dialog-bubble' : ''}"${context === 'dialog' ? ' data-lux-transparency-exempt="1"' : ''}>
+                            <div class="social-neo-comment-bubble${dialogBubbleClass}"${context === 'dialog' ? ' data-lux-transparency-exempt="1"' : ''}>
                                 <div class="social-neo-comment-head">
                                     <strong>${escape(displayName(commentAuthor))}</strong>
                                     <span>${escape(when(comment.createdAt))}</span>

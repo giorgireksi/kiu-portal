@@ -497,8 +497,8 @@
         const hasCatalog = allPosts.length > 0;
         const searchMarkup = hasCatalog ? `
             <label class="social-photo-search" for="${escape(searchId)}">
-                <i class="fas fa-search"></i>
-                <input id="${escape(searchId)}" type="search" placeholder="Search photos..." value="${escape(text(runtime.ui?.photographySearch || ''))}" data-action="photography-search-input">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" placeholder="Search photos..." value="${escape(text(runtime.ui?.photographySearch || ''))}" data-action="photography-search-input" autocomplete="off">
             </label>
         ` : '';
         const uploadFabMarkup = hasCatalog ? `
@@ -523,9 +523,12 @@
         };
         return `
             <div class="social-photo-shell social-neo-community-panel">
-                <header class="social-photo-chrome">
+                <section class="social-neo-card social-photo-hero">
                     <div class="social-photo-chrome-row">
-                        <h1 class="social-photo-display social-photo-chrome-title">${escape(tabTitles[tab] || tabTitles.explore)}</h1>
+                        <div class="social-photo-chrome-copy">
+                            <h1 class="social-photo-display social-photo-chrome-title">${escape(tabTitles[tab] || tabTitles.explore)}</h1>
+                            <p class="social-photo-chrome-subtitle social-neo-muted">${escape(tabCopy[tab] || tabCopy.explore)}</p>
+                        </div>
                         <div class="social-photo-chrome-actions">
                             ${searchMarkup}
                             ${uploadFabMarkup}
@@ -537,7 +540,7 @@
                         <button class="${tab === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'grid' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'grid' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="grid">Grid</button>
                         <button class="${tab === 'following' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'following' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'following' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="following">Following</button>
                     </nav>
-                </header>
+                </section>
                 ${renderDiscoverStrip(discover)}
                 ${renderPhotoFeed(posts, tab)}
             </div>
@@ -571,8 +574,15 @@
             grid: 'Photo grid',
             following: 'Following feed'
         };
+        const tabCopy = {
+            explore: 'Discover campus photography from students, clubs, and events.',
+            grid: 'Browse the full campus photo grid in a compact layout.',
+            following: 'Photos from photographers you follow across campus.'
+        };
         const titleEl = shell.querySelector('.social-photo-chrome-title');
+        const subtitleEl = shell.querySelector('.social-photo-chrome-subtitle');
         if (titleEl) titleEl.textContent = tabTitles[tab] || tabTitles.explore;
+        if (subtitleEl) subtitleEl.textContent = tabCopy[tab] || tabCopy.explore;
 
         shell.querySelectorAll('.social-photo-tab[data-photography-tab]').forEach((btn) => {
             const value = text(btn.getAttribute('data-photography-tab') || '');
@@ -588,8 +598,8 @@
         if (nextDiscover) {
             if (discoverEl) discoverEl.outerHTML = nextDiscover;
             else {
-                const chrome = shell.querySelector('.social-photo-chrome');
-                if (chrome) chrome.insertAdjacentHTML('afterend', nextDiscover);
+                const hero = shell.querySelector('.social-photo-hero');
+                if (hero) hero.insertAdjacentHTML('afterend', nextDiscover);
             }
         } else if (discoverEl) {
             discoverEl.remove();
@@ -707,7 +717,7 @@
 
         return `
             <div class="lux-glass-dialog-backdrop social-photo-upload-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass social-photo-upload-card photo-panel" data-form="photography-upload" data-action="noop" data-lux-transparency-exempt="1">
+                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--photography-upload lux-glass-dialog-card--social-glass social-photo-upload-card" data-form="photography-upload" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-photo-upload-head">
                         <div>
                             <strong class="social-photo-display">${step === 1 ? 'Capture' : step === 2 ? 'Caption' : 'Publish'}</strong>

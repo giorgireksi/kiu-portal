@@ -183,11 +183,6 @@
             messagesButton.addEventListener('click', function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                var fab = document.querySelector('.portal-msg-fab');
-                if (fab) {
-                    fab.click();
-                    return;
-                }
                 if (typeof window.toggleMessaging === 'function') {
                     window.toggleMessaging();
                     return;
@@ -202,11 +197,6 @@
             notificationsButton.addEventListener('click', function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                var fab = document.querySelector('.portal-notif-fab');
-                if (fab) {
-                    fab.click();
-                    return;
-                }
                 if (typeof window.toggleNotifications === 'function') {
                     window.toggleNotifications();
                     return;

@@ -1752,13 +1752,421 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   flex-shrink: 0;
   margin: 0;
 }
-/* Comments dialog: asd8 layout on lux-studio shell (layout only; paint from lux-studio.css). */
-#social-neo-overlay-portal .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card--comments) {
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+/* Portfolio editor dialog: fullscreen-ish social-glass shell. */
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor.lux-glass-dialog-card--social-glass {
+  width: min(920px, calc(100vw - 32px));
+  max-width: 920px;
+  height: min(88dvh, 880px);
+  max-height: min(88dvh, 880px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
 }
-#social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-studio-panel {
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-editor-dialog-head {
+  flex-shrink: 0;
+  padding: 18px 22px 14px;
+  margin: 0;
+  border-bottom: 1px solid var(--lux-popup-shell-border, var(--lux-panel-border-soft));
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--lux-accent) 10%, transparent), transparent 42%),
+    transparent;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .social-neo-surveys-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .lux-glass-dialog-portfolio-editor-subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+#social-neo-overlay-portal .lux-glass-dialog-body--portfolio-editor {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 18px 18px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-editor-stack {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 4px 10px;
+  margin: -4px 0 2px;
+  background: color-mix(in srgb, var(--lux-panel-fill, var(--lux-popup-shell-fill, #0b1118)) 94%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-save-status {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor :is(
+  .portfolio-editor-actions,
+  .portfolio-section-body,
+  .portfolio-publish-actions
+) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+  min-height: 32px;
+  padding: 5px 11px;
+  border-width: 1px;
+  text-shadow: none;
+  font-size: 12px;
+  line-height: 1.25;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .sns-portfolio-editor-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--lux-popup-shell-border, var(--lux-panel-border-soft));
+  background: color-mix(in srgb, var(--lux-text) 4%, var(--lux-panel-control, var(--lux-panel-fill)));
+  box-shadow: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-card {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--lux-text);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-toggle strong {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-toggle .social-neo-pill {
+  min-height: 22px;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-toggle i {
+  margin-left: auto;
+  transition: transform 160ms ease;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-card.is-open .portfolio-section-toggle i {
+  transform: rotate(180deg);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 16px 16px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-entry-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--lux-accent) 8%, var(--lux-popup-shell-border, var(--lux-panel-border-soft)));
+  background: color-mix(in srgb, var(--lux-text) 3%, transparent);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-section-empty {
+  padding: 10px 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .social-neo-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .social-neo-section-head > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .social-neo-section-head > div > strong {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .social-neo-section-head > div > span,
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-entry-grid label > span,
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-save-status {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-entry-grid label > span {
+  font-weight: 600;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-entry-grid label,
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-date-range label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-entry-span-2 {
+  grid-column: 1 / -1;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-date-range {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor :is(.social-neo-input, .social-neo-textarea).lux-control {
+  min-height: 36px;
+  padding: 8px 11px;
+  font-size: 13px;
+  line-height: 1.45;
+  border-width: 1px;
+  text-shadow: none;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .social-neo-textarea.lux-control {
+  min-height: 72px;
+  resize: vertical;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-audience-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-audience-card {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-height: 0;
+  height: auto;
+  padding: 11px 13px;
+  text-align: left;
+  border-width: 1px;
+  text-shadow: none;
+  font-size: 12px;
+  line-height: 1.25;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-audience-card.is-selected {
+  border-color: color-mix(in srgb, var(--lux-accent) 48%, var(--social-chip-border, var(--lux-border)));
+  background: color-mix(in srgb, var(--lux-accent) 14%, var(--lux-panel-control, var(--lux-panel-fill)));
+  color: var(--lux-btn-label, var(--lux-text));
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-audience-card strong {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-audience-card span,
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-consent-row {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-publish-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor.lux-glass-dialog-card--social-glass :is(
+  .social-neo-surveys-hero-copy h2,
+  .social-neo-section-head > div > strong,
+  .portfolio-audience-card strong
+) {
+  color: var(--lux-text);
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor.lux-glass-dialog-card--social-glass :is(
+  .lux-glass-dialog-portfolio-editor-subtitle,
+  .social-neo-section-head > div > span,
+  .portfolio-save-status,
+  .portfolio-audience-card span,
+  .portfolio-consent-row,
+  .portfolio-section-empty
+) {
+  color: color-mix(in srgb, var(--lux-text) 72%, transparent);
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor :is(
+  .portfolio-editor-actions,
+  .portfolio-section-body,
+  .portfolio-publish-actions
+) :is(.lux-secondary-btn, .lux-primary-btn, .lux-ghost-btn) {
+  color: var(--lux-btn-label, var(--lux-text));
+  text-shadow: none;
+}
+@media (max-width: 720px) {
+  #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-audience-cards,
+  #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-editor .portfolio-entry-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Portfolio custom section builder: stacked child over portfolio editor. */
+#social-neo-overlay-portal .lux-glass-dialog-backdrop--portfolio-custom {
+  z-index: 10200;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom {
+  width: min(520px, calc(100vw - 32px));
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-dialog-head {
+  flex-shrink: 0;
+  padding: 18px 22px 14px;
+  margin: 0;
+  border-bottom: 1px solid var(--lux-popup-shell-border, var(--lux-panel-border-soft));
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--lux-accent) 10%, transparent), transparent 42%),
+    transparent;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .social-neo-surveys-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .lux-glass-dialog-body--portfolio-custom {
+  display: grid;
+  gap: 14px;
+  padding: 14px 18px 18px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-template-card {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-height: 88px;
+  height: auto;
+  padding: 12px 13px;
+  text-align: left;
+  border-width: 1px;
+  text-shadow: none;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-template-card strong {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-template-card span {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-field-list {
+  display: grid;
+  gap: 12px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-field-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .lux-glass-dialog-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom :is(.social-neo-input, .social-neo-textarea).lux-control {
+  min-height: 36px;
+  padding: 8px 11px;
+  font-size: 13px;
+  line-height: 1.45;
+  border-width: 1px;
+  text-shadow: none;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .lux-glass-dialog-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 18px 18px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom :is(
+  .portfolio-custom-field-actions,
+  .lux-glass-dialog-form-actions
+) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+  min-height: 32px;
+  padding: 5px 11px;
+  border-width: 1px;
+  text-shadow: none;
+  font-size: 12px;
+  line-height: 1.25;
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom.lux-glass-dialog-card--social-glass :is(
+  .social-neo-surveys-hero-copy h2,
+  .portfolio-custom-template-card strong
+) {
+  color: var(--lux-text);
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom.lux-glass-dialog-card--social-glass :is(
+  .lux-glass-dialog-portfolio-editor-subtitle,
+  .portfolio-custom-template-card span
+) {
+  color: color-mix(in srgb, var(--lux-text) 72%, transparent);
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom :is(
+  .portfolio-custom-field-actions,
+  .lux-glass-dialog-form-actions
+) :is(.lux-secondary-btn, .lux-primary-btn, .lux-ghost-btn) {
+  color: var(--lux-btn-label, var(--lux-text));
+  text-shadow: none;
+}
+@media (max-width: 720px) {
+  #social-neo-overlay-portal .lux-glass-dialog-card--portfolio-custom .portfolio-custom-template-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Comments dialog: layout on social-glass shell (paint → §7b social-glass). */
+#social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass.lux-studio-panel {
   width: min(1180px, calc(100vw - 32px));
   max-width: 1180px;
   height: min(94dvh, 980px);
@@ -1774,18 +2182,11 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   padding: 18px 22px 14px;
   margin: 0;
   border-bottom: 1px solid var(--lux-popup-shell-border, var(--lux-panel-border-soft));
-  background:
-    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--lux-accent) 10%, transparent), transparent 42%),
-    transparent;
 }
 #social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-dialog-comment-stats {
   flex-shrink: 0;
   padding: 12px 22px 0;
   margin: 0;
-}
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-dialog-comment-stats .lux-strip-card {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
 }
 #social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-scroll {
   flex: 1 1 auto;
@@ -1796,8 +2197,8 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
 }
 #social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-preview {
   padding: 14px 18px;
-  border-bottom: 1px solid var(--lux-popup-shell-border, var(--lux-panel-border-soft));
-  background: color-mix(in srgb, var(--lux-accent) 2.5%, transparent);
+  margin: 0 18px;
+  border-bottom: 0;
   display: grid;
   gap: 10px;
 }
@@ -1827,7 +2228,7 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   gap: 8px 14px;
   align-items: center;
   padding-top: 6px;
-  border-top: 1px solid color-mix(in srgb, var(--lux-accent) 6%, transparent);
+  border-top: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-panel-border-soft));
 }
 #social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread {
   flex: none;
@@ -1844,10 +2245,9 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   align-items: flex-start;
   gap: 10px;
   flex-shrink: 0;
-  margin: 0;
-  padding: 14px 22px;
-  border-top: 1px solid var(--lux-popup-shell-border, var(--lux-panel-border-soft));
-  background: color-mix(in srgb, var(--lux-accent) 2%, transparent);
+  margin: 0 18px 18px;
+  padding: 14px 18px;
+  border-top: 0;
   box-shadow: none;
 }
 #social-neo-overlay-portal .lux-glass-dialog-card--comments .sns-comment-compose .lux-glass-dialog-comment-compose-main {
@@ -1865,6 +2265,83 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
 #social-neo-overlay-portal .lux-glass-dialog-card--comments .sns-comment-compose .social-neo-input {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass .social-neo-surveys-hero-copy h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass .lux-glass-dialog-comment-subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass .social-neo-dialog-comment-stats .lux-strip-card strong {
+  color: var(--lux-text);
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass .social-neo-dialog-comment-stats .lux-strip-card span {
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-head strong {
+  font-size: 13px;
+  color: var(--lux-text);
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-head span {
+  font-size: 11px;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reactions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass :is(
+  .social-neo-surveys-hero-copy h2,
+  .sns-comment-dialog-bubble p,
+  .social-neo-comment-head strong,
+  .lux-glass-dialog-comment-post-body
+) {
+  color: var(--lux-text);
+}
+
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass :is(
+  .lux-glass-dialog-comment-subtitle,
+  .social-neo-comment-head span,
+  .social-neo-dialog-comment-stats .lux-strip-card span,
+  .lux-glass-dialog-comment-post-head .social-neo-muted
+) {
+  color: color-mix(in srgb, var(--lux-text) 72%, transparent);
+}
+
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-actions :is(.lux-secondary-btn, .lux-primary-btn) {
+  color: var(--lux-btn-label, var(--lux-text));
+  text-shadow: none;
 }
 
 /* Comments dialog stack: keep thread visible under delete confirm. */
@@ -1886,6 +2363,7 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
+#social-neo-overlay-portal .social-neo-delete-confirm.lux-glass-dialog-card--social-glass,
 #social-neo-overlay-portal .social-neo-delete-confirm.lux-studio-panel {
   position: relative;
   width: min(460px, calc(100vw - 32px));
@@ -2540,11 +3018,17 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   .lux-glass-dialog-card--page-create,
   .lux-glass-dialog-card--event-create,
   .lux-glass-dialog-card--lost-found-create,
-  .lux-glass-dialog-card--survey-create
+  .lux-glass-dialog-card--survey-create,
+  .lux-glass-dialog-card--photography-upload
 ) {
   width: min(860px, calc(100vw - 32px));
   max-width: 860px;
   max-height: min(90vh, 960px);
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--photography-upload {
+  width: min(520px, calc(100vw - 32px));
+  max-width: 520px;
 }
 
 /* ── §7c survey-create dialog interior (ported from social-surveys-lms.css) ── */
@@ -3045,6 +3529,20 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   width: min(560px, calc(100vw - 32px));
   max-width: 560px;
 }
+
+/* Feed owned action dialogs: body fields between head and footer actions. */
+#social-neo-overlay-portal .lux-glass-dialog-card--social-glass.sn-mat-modal[data-form^="dialog-"] > :is(
+  .social-neo-textarea.lux-control,
+  .lux-glass-dialog-preview
+) {
+  margin: 0 18px 12px;
+  align-self: stretch;
+  width: auto;
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--social-glass.sn-mat-modal[data-form^="dialog-"] > .lux-glass-dialog-preview:last-of-type {
+  margin-bottom: 0;
+}
 #social-neo-overlay-portal :is(
   .lux-glass-dialog-body--group-create,
   .lux-glass-dialog-body--project-create,
@@ -3116,9 +3614,10 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
 }
 #social-neo-overlay-portal .lux-glass-dialog-invite-block {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 8px;
   min-width: 0;
-  min-height: 160px;
+  min-height: 220px;
   padding: 12px;
   border-radius: 14px;
 }
@@ -3128,25 +3627,70 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
 }
 #social-neo-overlay-portal .lux-glass-dialog-invite-block-head strong {
   font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
 }
 #social-neo-overlay-portal .lux-glass-dialog-invite-block-head span {
   font-size: 12px;
-  color: var(--lux-text-muted);
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+  line-height: 1.45;
 }
 #social-neo-overlay-portal .lux-glass-dialog-invite-list {
   display: grid;
   gap: 8px;
-  max-height: 200px;
+  max-height: min(32dvh, 280px);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  align-content: start;
   min-height: 0;
 }
 #social-neo-overlay-portal .lux-glass-dialog-card--social-glass .lux-glass-dialog-invite-list :is(.social-neo-entity-card, .social-neo-item-line) {
+  display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  gap: 10px;
   padding: 10px 12px;
   border-radius: 12px;
   background: var(--lux-modal-glass-input);
   border: 1px solid var(--lux-modal-glass-border);
+  contain: none;
+  overflow: visible;
+  transform: none;
+  min-width: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--social-glass .lux-glass-dialog-invite-list .social-neo-person > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--social-glass .lux-glass-dialog-invite-list .social-neo-person > div strong {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--lux-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--social-glass .lux-glass-dialog-invite-list .social-neo-person > div span {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--lux-text-muted, var(--lux-text-secondary));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#social-neo-overlay-portal .lux-glass-dialog-card--social-glass .lux-glass-dialog-invite-list :is(.social-neo-item-line, .social-neo-entity-card) :is(.lux-primary-btn, .lux-secondary-btn) {
+  flex-shrink: 0;
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-invite-block-head strong,
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--social-glass .lux-glass-dialog-invite-list .social-neo-person > div strong {
+  color: var(--lux-text);
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-invite-block-head span,
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-card--social-glass .lux-glass-dialog-invite-list .social-neo-person > div span {
+  color: color-mix(in srgb, var(--lux-text) 72%, transparent);
 }
 #social-neo-overlay-portal .social-neo-group-creator-member.is-selected {
   border-style: dashed;

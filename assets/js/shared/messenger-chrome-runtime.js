@@ -166,7 +166,7 @@ function handlePortalMessengerChromeClick(event) {
         return;
     }
     if (action === 'switch-dock') {
-        switchPortalMessengerToDock();
+        closePortalMessengerFullModal();
         return;
     }
     if (action === 'queue-lms-session') {

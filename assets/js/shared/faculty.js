@@ -890,13 +890,12 @@ function setPortalNotificationFilter(value) {
 }
 function togglePortalNotificationDock(forceOpen = null) {
     const uiState = ensurePortalNotificationUiState();
-    uiState.dockOpen = forceOpen === null ? !uiState.dockOpen : Boolean(forceOpen);
-    renderPortalNotificationChrome();
+    const shouldOpen = forceOpen === null ? !uiState.fullOpen : Boolean(forceOpen);
+    if (shouldOpen) openPortalNotificationFullModal();
+    else closePortalNotificationFullModal();
 }
 function openPortalNotificationFullModal() {
-    const uiState = ensurePortalNotificationUiState();
-    uiState.fullOpen = true;
-    uiState.dockOpen = true;
+    ensurePortalNotificationUiState().fullOpen = true;
     renderPortalNotificationChrome();
 }
 function closePortalNotificationFullModal() {
@@ -904,10 +903,7 @@ function closePortalNotificationFullModal() {
     renderPortalNotificationChrome();
 }
 function switchPortalNotificationToDock() {
-    const uiState = ensurePortalNotificationUiState();
-    uiState.fullOpen = false;
-    uiState.dockOpen = true;
-    renderPortalNotificationChrome();
+    closePortalNotificationFullModal();
 }
 function openPortalNotificationItem(notificationKey) {
     const currentUser = getCurrentUser();
@@ -916,7 +912,6 @@ function openPortalNotificationItem(notificationKey) {
     if (!item) return;
     const uiState = ensurePortalNotificationUiState();
     uiState.fullOpen = false;
-    uiState.dockOpen = false;
     markPortalNotificationRead(notificationKey);
     if (item.routePage === 'social') {
         rememberSocialPortalContext();

@@ -27,9 +27,9 @@ describe('chancellery route regressions', () => {
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');
     });
 
-    it('loads shared layout primitives and chshare1 cache', () => {
+    it('loads shared layout primitives and chshare2 cache', () => {
         const html = readSource('chancellery.html');
-        expect(html).toContain('chshare1');
+        expect(html).toContain('chshare2');
         expect(html).toContain('lux-layout-primitives.css');
     });
 
@@ -59,6 +59,8 @@ describe('chancellery route regressions', () => {
         expect(chanBlock).toContain('body.lux-route-chancellery #page-chancellery');
         expect(chanBlock).toContain('body.lux-route-chancellery .lux-chancellery-workspace-split');
         expect(chanBlock).toContain('body.lux-route-chancellery .lux-chancellery-queue-item');
+        expect(chanBlock).toContain('body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-side.home-hover-chip');
+        expect(chanBlock).toContain('body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-signals.lux-hero-signal-list');
         expect(chanBlock).not.toMatch(/backdrop-filter/);
         expect(bare).not.toContain('--chan-fade-');
     });
@@ -69,6 +71,7 @@ describe('chancellery route regressions', () => {
         expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\([\s\S]*\.lux-chancellery-list-panel/);
         expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\(\.page-hero, \[data-chancellery-shell="1"\]\)/);
         expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\([\s\S]*\.lux-chancellery-command-bar[\s\S]*\):hover[\s\S]*--home-chip-hover-lift/);
+        expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\([\s\S]*\.lux-chancellery-hero-side \.lux-hero-signal/);
         expect(fouc).toContain('body.lux-route-chancellery #page-chancellery .lux-picker-field');
     });
 });

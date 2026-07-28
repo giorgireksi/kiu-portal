@@ -69,12 +69,14 @@ describe('legacy visual purge', () => {
         expect(portal).toMatch(/\.portal-msg-modal-window[\s\S]*?var\(--lux-popup-slide-offset\)/);
     });
 
-    it('routes messenger dock shells through frosted popup shell tokens', () => {
+    it('routes messenger modal shells through frosted popup shell tokens', () => {
         const portal = readSource('assets/css/layout-portal.css');
-        expect(portal).toMatch(/\.portal-msg-dock[\s\S]*?var\(--lux-popup-shell-surface\)/);
-        expect(portal).toMatch(/\.portal-notif-dock[\s\S]*?var\(--lux-popup-shell-surface\)/);
+        expect(portal).toMatch(/\.portal-msg-modal-window[\s\S]*?var\(--lux-popup-shell-surface\)/);
+        expect(portal).toMatch(/\.portal-notif-modal-window[\s\S]*?var\(--lux-popup-shell-surface\)/);
         expect(portal).toMatch(/\.portal-msg-panel[\s\S]*?var\(--lux-warmglass-surface\)/);
         expect(portal).not.toMatch(/rgba\(255,\s*255,\s*255,\s*0\.98\)/);
+        expect(portal).not.toContain('.portal-msg-dock');
+        expect(portal).not.toContain('.portal-notif-dock');
     });
 
     it('lays out registration structured modals as fixed warmglass overlays', () => {

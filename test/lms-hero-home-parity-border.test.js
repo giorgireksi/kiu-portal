@@ -46,7 +46,7 @@ describe('LMS hero + subjects shared CSS parity', () => {
     it('cache-busts LMS shared stack and hero focus markup', () => {
         const html = readSource('lms.html');
         expectLmsRouteCssLinks(html);
-        expect(html).toContain('lmsscss10');
+        expect(html).toContain('lmsscss11');
         expect(html).toContain('lmsscss3');
         expect(html).toMatch(/class="lms-hero-focus lux-hero-side home-hover-chip/);
         expect(html).toContain('lux-section-kicker lms-clean-kicker');

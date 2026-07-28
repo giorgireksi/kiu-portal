@@ -22,11 +22,13 @@
     }
 
     function normalizeScheduleEntries(scheduleValue) {
-        if (typeof normalizeStudentScheduleValue === 'function') {
-            return normalizeStudentScheduleValue(scheduleValue).map((entry) => ({ ...entry }));
-        }
-        if (Array.isArray(scheduleValue)) return scheduleValue.map((entry) => ({ ...entry }));
-        return [];
+        const rawEntries = typeof normalizeStudentScheduleValue === 'function'
+            ? normalizeStudentScheduleValue(scheduleValue).map((entry) => ({ ...entry }))
+            : (Array.isArray(scheduleValue) ? scheduleValue.map((entry) => ({ ...entry })) : []);
+        if (typeof window.flattenStudentScheduleEntry !== 'function') return rawEntries;
+        return rawEntries
+            .map((entry) => window.flattenStudentScheduleEntry(entry))
+            .filter(Boolean);
     }
 
     function facultyLabel(code) {
@@ -1100,6 +1102,17 @@
             return room ? `${escapeHtml(dayTime)}<div class="personal-data-subjects-meta">${escapeHtml(room)}</div>` : escapeHtml(dayTime);
         };
         const gradeCopy = (item) => (item.gradeScore != null && item.gradeScore > 0 ? `${Math.round(item.gradeScore)}%` : '—');
+        const subjectCourseIdLabel = (item) => {
+            if (typeof window.formatStudyCardCourseIdLabel === 'function') {
+                return window.formatStudyCardCourseIdLabel(item.courseId, item);
+            }
+            const label = normalizeText(item.courseId, '');
+            return label && label !== '0' ? label : normalizeText(item.name, '-');
+        };
+        const subjectTitleCell = (item, metaExtra = '') => `
+            <div class="lux-card-title">${escapeHtml(item.name)}</div>
+            <div class="personal-data-subjects-meta">${escapeHtml(subjectCourseIdLabel(item))}${metaExtra}</div>
+        `;
 
         const currentSubjects = snapshot.subjects.filter((item) => item.status === 'enrolled' || item.status === 'planned');
         const failedSubjects = snapshot.subjectsByStatus ? snapshot.subjectsByStatus.failed : snapshot.subjects.filter((item) => item.status === 'failed');
@@ -1108,7 +1121,7 @@
             const tone = subjectStatusTone(item.status);
             return `
                 <tr>
-                    <td><strong>${escapeHtml(item.name)}</strong><div class="personal-data-subjects-meta">${escapeHtml(item.courseId)} · ${escapeHtml(String(item.ects || 0))} ECTS</div></td>
+                    <td>${subjectTitleCell(item, ` · ${escapeHtml(String(item.ects || 0))} ECTS`)}</td>
                     <td>${yearSemCopy(item)}</td>
                     <td>${staffCopy(item)}</td>
                     <td>${scheduleCopy(item)}</td>
@@ -1124,14 +1137,19 @@
                 <span class="is-danger">⚠ Needs retake</span>
                 <span>${escapeHtml(String(failedSubjects.length))} to repeat</span>
             </div>
-            <div class="personal-data-subjects-table-wrap">
+            <div class="personal-data-subjects-table-wrap home-hover-chip">
                 <table class="personal-data-subjects-table">
                     <thead>
-                        <tr><th>Subject</th><th>Grade</th><th>Failed on</th><th>Retake in</th></tr>
+                        <tr>
+                            <th class="lms-route-field-label">Subject</th>
+                            <th class="lms-route-field-label">Grade</th>
+                            <th class="lms-route-field-label">Failed on</th>
+                            <th class="lms-route-field-label">Retake in</th>
+                        </tr>
                     </thead>
                     <tbody>${failedSubjects.map((item) => `
                         <tr>
-                            <td><strong>${escapeHtml(item.name)}</strong><div class="personal-data-subjects-meta">${escapeHtml(item.courseId)}</div></td>
+                            <td>${subjectTitleCell(item)}</td>
                             <td>${escapeHtml(gradeCopy(item))}</td>
                             <td>${yearSemCopy(item)}</td>
                             <td>Awaiting re-registration</td>
@@ -1139,7 +1157,7 @@
                     `).join('')}</tbody>
                 </table>
             </div>
-            <p class="personal-data-card-copy">Passed retakes drop off this list automatically once a passing grade is recorded.</p>
+            <p class="lux-card-copy personal-data-card-copy">Passed retakes drop off this list automatically once a passing grade is recorded.</p>
         ` : '';
 
         root.innerHTML = `
@@ -1148,15 +1166,15 @@
                 <span>${escapeHtml(String(snapshot.enrolledCount))} enrolled</span>
                 <span>${escapeHtml(String(snapshot.completedEcts))} ECTS done</span>
             </div>
-            <div class="personal-data-subjects-table-wrap">
+            <div class="personal-data-subjects-table-wrap home-hover-chip">
                 <table class="personal-data-subjects-table">
                     <thead>
                         <tr>
-                            <th>Subject</th>
-                            <th>Year / Sem</th>
-                            <th>Staff</th>
-                            <th>Schedule</th>
-                            <th>Status</th>
+                            <th class="lms-route-field-label">Subject</th>
+                            <th class="lms-route-field-label">Year / Sem</th>
+                            <th class="lms-route-field-label">Staff</th>
+                            <th class="lms-route-field-label">Schedule</th>
+                            <th class="lms-route-field-label">Status</th>
                         </tr>
                     </thead>
                     <tbody>${currentRows}</tbody>

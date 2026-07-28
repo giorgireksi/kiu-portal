@@ -1404,7 +1404,7 @@
                 <div class="ex2-modal" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}" data-lux-transparency-exempt="1">
                     <div class="ex2-modal-head ${tone === 'warm' ? 'is-warm' : 'is-accent'}">
                         <h3 id="${escapeHtml(titleId)}"><i class="fas ${escapeHtml(icon || 'fa-window-maximize')}"></i> ${escapeHtml(title)}</h3>
-                        <button type="button" class="ex2-btn is-ghost ex2-modal-close" data-exam-action="${closeAction}" aria-label="Close modal"><i class="fas fa-times"></i></button>
+                        <button type="button" class="lux-ghost-btn lux-icon-btn ex2-modal-close" data-exam-action="${closeAction}" aria-label="Close modal"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="ex2-modal-body">
                         ${body}
@@ -1420,14 +1420,17 @@
         const filtered = search ? staff.filter(s => s.name.toLowerCase().includes(search) || s.email.toLowerCase().includes(search)) : staff;
         const alreadyShared = new Set((draft.sharedWith || []).map(s => s.userId));
         const body = `
-            <input class="ex2-input ex2-modal-search" type="text" placeholder="Search by name or email..." value="${escapeHtml(runtime.shareSearchQuery)}" data-exam-input="share-search">
+            <input class="lux-control lms-route-input ex2-modal-search" type="text" placeholder="Search by name or email..." value="${escapeHtml(runtime.shareSearchQuery)}" data-exam-input="share-search">
             <div class="ex2-list ex2-modal-list">
                 ${filtered.length ? filtered.map(s => `
-                    <div class="ex2-list-item lux-soft-chrome">
-                        <div><strong>${escapeHtml(s.name)}</strong><span class="ex2-modal-meta">${escapeHtml(s.role)}</span></div>
-                        ${alreadyShared.has(s.id) ? `<span class="ex2-status is-approved">Shared</span>` : `<button type="button" class="ex2-btn is-secondary" data-exam-action="share-with-staff" data-user-id="${escapeHtml(s.id)}" data-user-name="${escapeHtml(s.name)}"><i class="fas fa-share"></i> Share</button>`}
+                    <div class="ex2-list-item lux-soft-chrome ex2-modal-list-item">
+                        <div class="ex2-modal-list-primary">
+                            <strong class="ex2-modal-list-name">${escapeHtml(s.name)}</strong>
+                            <span class="ex2-modal-meta lms-route-meta-12">${escapeHtml(s.role)}</span>
+                        </div>
+                        ${alreadyShared.has(s.id) ? `<span class="ex2-status is-approved">Shared</span>` : `<button type="button" class="lux-secondary-btn" data-exam-action="share-with-staff" data-user-id="${escapeHtml(s.id)}" data-user-name="${escapeHtml(s.name)}"><i class="fas fa-share"></i> Share</button>`}
                     </div>
-                `).join('') : `<div class="ex2-empty lux-soft-chrome">No colleagues found in your faculty.</div>`}
+                `).join('') : `<div class="ex2-empty lux-soft-chrome ex2-modal-empty"><span class="lms-route-copy">No colleagues found in your faculty.</span></div>`}
             </div>
         `;
         return renderExamModalShell({

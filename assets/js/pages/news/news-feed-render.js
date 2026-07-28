@@ -97,8 +97,8 @@ function renderSections() {
             <button type="button" class="newsx-section-btn lux-secondary-btn lux-select-card ${runtime.selectedSection === 'all' ? 'is-active' : ''}" data-news-section="all">
                 <span class="newsx-sec-icon"><i class="fas fa-globe"></i></span>
                 <div class="newsx-grow">
-                    <div class="newsx-account-name">All Updates</div>
-                    <div class="newsx-section-key">All sections</div>
+                    <div class="newsx-account-name lux-card-title">All Updates</div>
+                    <div class="newsx-section-key lux-card-meta lms-route-meta-12">All sections</div>
                 </div>
                 <strong>${escapeHtml(String(runtime.posts.length))}</strong>
             </button>
@@ -107,20 +107,20 @@ function renderSections() {
         <button type="button" class="newsx-section-btn lux-secondary-btn lux-select-card ${runtime.selectedSection === section.key ? 'is-active' : ''}" data-news-section="${escapeHtml(section.key || 'general')}">
             <span class="newsx-sec-icon"><i class="fas ${getSectionIcon(section.key)}"></i></span>
             <div class="newsx-grow">
-                <div class="newsx-account-name">${escapeHtml(section.label || 'General')}</div>
-                <div class="newsx-section-key">${escapeHtml(section.key || 'general')}</div>
+                <div class="newsx-account-name lux-card-title">${escapeHtml(section.label || 'General')}</div>
+                <div class="newsx-section-key lux-card-meta lms-route-meta-12">${escapeHtml(section.key || 'general')}</div>
             </div>
             <strong>${escapeHtml(String(section.count || 0))}</strong>
         </button>
     `)).join('');
 
     return `
-        <aside class="newsx-sidebar">
+        <aside class="newsx-sidebar home-hover-chip" aria-label="News sections">
             <div class="newsx-sidebar-deco">
                 <div class="newsx-sidebar-deco-icon"><i class="fas fa-newspaper"></i></div>
                 <div class="newsx-sidebar-deco-copy">
-                    <div class="newsx-kicker newsx-kicker-muted">News</div>
-                    <h2 class="newsx-headline newsx-headline-tight">Sections</h2>
+                    <div class="newsx-kicker newsx-kicker-muted lux-section-kicker">News</div>
+                    <h2 class="newsx-headline newsx-headline-tight lux-card-title">Sections</h2>
                 </div>
                 ${canManageNews() ? `
                     <button type="button" class="newsx-btn lux-secondary-btn newsx-sections-manage-btn" data-news-open-sections-manager aria-label="Manage sections" title="Manage sections">
@@ -128,7 +128,7 @@ function renderSections() {
                     </button>
                 ` : ''}
             </div>
-            <p class="newsx-subtle">Filter news by category.</p>
+            <p class="newsx-subtle lux-card-copy lms-route-copy">Filter news by category.</p>
             <div class="newsx-divider"></div>
             <div class="newsx-section-list">${buttons}</div>
         </aside>

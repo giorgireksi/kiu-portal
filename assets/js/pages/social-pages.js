@@ -147,7 +147,7 @@
                             `).join('')}
                     </div>
                 </div>
-                <form class="social-neo-inline social-neo-pages-hero-toolbar" data-form="pages-search" autocomplete="off">
+                <form class="social-neo-pages-hero-toolbar" data-form="pages-search" autocomplete="off">
                     <label class="social-neo-field-flex-1-260">
                         <span class="social-neo-label">Search pages</span>
                         <input class="social-neo-input lux-control" id="${escape(pagesSearchId)}" name="pagesSearch" type="search" placeholder="Search pages by name, category, or bio..." data-bind="pages-search" value="${escape(pageSearchValue)}" autocomplete="off">

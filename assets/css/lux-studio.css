@@ -96,7 +96,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   #social-neo-overlay-portal .sptg-history-dialog,
   #social-neo-overlay-portal .sptg-schedule-help-dialog,
   #social-neo-overlay-portal .lux-glass-dialog-card--health-plan-pick,
-  #social-neo-overlay-portal .lux-glass-dialog-card--comments
+  #social-neo-overlay-portal .lux-glass-dialog-card--comments:not(.lux-glass-dialog-card--social-glass)
 ) {
   border: 1px solid var(--lux-studio-dialog-border);
   background: var(--lux-studio-dialog-bg);

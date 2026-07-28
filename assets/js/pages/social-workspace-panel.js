@@ -747,7 +747,7 @@
                                     <div class="social-project-hub-search-row">
                                         <label class="social-project-hub-search">
                                             <i class="fas fa-search"></i>
-                                            <input class="social-neo-input lux-control" type="search" name="projectDiscoverSearch" value="${escape(text(runtime.ui?.projectDiscoverSearch || ''))}" placeholder="Search my projects, course, tags…">
+                                            <input class="lux-control" type="search" name="projectDiscoverSearch" value="${escape(text(runtime.ui?.projectDiscoverSearch || ''))}" placeholder="Search my projects, course, tags…">
                                         </label>
                                     </div>
                                     ${attentionTotal ? `
@@ -775,7 +775,7 @@
                                         </div>
                                         <div class="social-project-hub-filter-group">
                                             <span class="social-project-hub-filter-label">Faculty</span>
-                                            <select class="social-neo-select social-neo-select-sm" name="projectDiscoverFaculty" data-lux-picker>
+                                            <select class="social-neo-select social-neo-select-sm lux-control lux-universal-native-select" name="projectDiscoverFaculty" data-lux-picker>
                                                 ${hubFacultyOptions.map((code) => `<option value="${escape(code)}" ${discoverFaculty === code ? 'selected' : ''}>${escape(code === 'all' ? 'All faculties' : code)}</option>`).join('')}
                                             </select>
                                         </div>
@@ -795,7 +795,7 @@
                                             <div class="social-project-hub-main-head">
                                                 <div>
                                                     <strong>My projects</strong>
-                                                    <span>${escape(String(hubProjects.length))} matching</span>
+                                                    <span class="lms-route-meta-12">${escape(String(hubProjects.length))} matching</span>
                                                 </div>
                                                 <div class="social-project-hub-view-toggle" role="group" aria-label="Hub view mode">
                                                     <button class="${hubViewMode === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-view" data-view="grid"><i class="fas fa-th-large"></i> Grid</button>
@@ -809,9 +809,9 @@
                                                 : `<div class="social-neo-empty">No projects match these filters. Try Mine, or create a group project for your course.</div>`}
                                         </div>
                                         <aside class="social-project-hub-rail">
-                                            <section class="social-project-hub-rail-card">
+                                            <section class="social-project-hub-rail-card lux-soft-chrome">
                                                 <div class="social-neo-section-head">
-                                                    <div><strong>My Work</strong><span>Tasks assigned to you.</span></div>
+                                                    <div><strong>My Work</strong><span class="lms-route-meta-12">Tasks assigned to you.</span></div>
                                                     <span class="social-neo-pill">${escape(String(myWorkItems.length))}</span>
                                                 </div>
                                                 ${myWorkItems.length ? `<div class="social-project-hub-my-work social-project-hub-my-work--roomy">${myWorkItems.map((entry) => {
@@ -829,17 +829,17 @@
                                                     </button>`;
                                                 }).join('')}</div>` : `<div class="social-neo-empty">No open tasks assigned to you.</div>`}
                                             </section>
-                                            ${featuredProjects.length > 1 ? `<section class="social-project-hub-rail-card">
+                                            ${featuredProjects.length > 1 ? `<section class="social-project-hub-rail-card lux-soft-chrome">
                                                 <div class="social-neo-section-head">
-                                                    <div><strong>Recently active</strong><span>Projects with recent team activity.</span></div>
+                                                    <div><strong>Recently active</strong><span class="lms-route-meta-12">Projects with recent team activity.</span></div>
                                                 </div>
                                                 <div class="social-project-rows social-project-hub-trending">
                                                     ${featuredProjects.slice(0, 5).map(renderProjectRow).join('')}
                                                 </div>
                                             </section>` : ''}
-                                            <section class="social-project-hub-rail-card">
+                                            <section class="social-project-hub-rail-card lux-soft-chrome">
                                                 <div class="social-neo-section-head">
-                                                    <div><strong>Your load</strong><span>Roles and assigned work.</span></div>
+                                                    <div><strong>Your load</strong><span class="lms-route-meta-12">Roles and assigned work.</span></div>
                                                 </div>
                                                 <div class="social-project-hub-contribution">
                                                     <div class="social-project-hub-contribution-stat"><strong>${escape(String(myProjects.length))}</strong><span>My projects</span></div>
