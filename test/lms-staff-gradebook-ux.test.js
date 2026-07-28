@@ -134,7 +134,9 @@ describe('LMS embedded staff gradebook UX', () => {
         expect(weightsFn?.[0]).toBeTruthy();
         expect(weightsFn[0]).toContain('options.studentView');
         expect(weightsFn[0]).toContain('const referenceTableMarkup = studentView');
-        expect(weightsFn[0]).toContain('Your progress');
+        expect(weightsFn[0]).toContain('lms-route-card-title');
+        expect(weightsFn[0]).toContain('lms-route-copy');
+        expect(weightsFn[0]).toContain('lux-section-kicker');
         expect(weightsFn[0]).toContain('gb-weight-row-meta');
         expect(weightsFn[0]).toContain('getGradebookSchemeComponentMetaLine');
         expect(weightsFn[0]).toContain("${metaLine ? '' : `<span>${Math.round(row.weightPoints)} pts max</span>`}");

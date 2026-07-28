@@ -53,8 +53,8 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
         ? ''
         : `
                     <div class="gb-scheme-progress-head">
-                        <div class="gb-modern-kicker">Your progress</div>
-                        <p>Earned, pending review, and remaining points per component.</p>
+                        <div class="lms-route-field-label gb-modern-kicker lux-section-kicker">Your progress</div>
+                        <p class="lms-route-copy">Earned, pending review, and remaining points per component.</p>
                     </div>
         `;
     const schemeFooterMarkup = studyCardOverlay
@@ -77,9 +77,9 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                 </div>`
         : '';
     const weightCardClass = `lms-route-card lms-route-panel-compact${studyCardOverlay ? ' lux-soft-chrome' : ''} gb-modern-card gb-weight-card${studentView ? ' is-student-view' : ''}${studyCardOverlay ? ' is-study-card-overlay' : ''}`;
-    const schemeKickerClass = studyCardOverlay ? 'lms-route-field-label gb-modern-kicker' : 'gb-modern-kicker';
-    const schemeTitleClass = studyCardOverlay ? 'lms-route-card-title' : '';
-    const schemeCopyClass = studyCardOverlay ? 'lms-route-copy' : '';
+    const schemeKickerClass = 'lms-route-field-label gb-modern-kicker lux-section-kicker';
+    const schemeTitleClass = 'lms-route-card-title';
+    const schemeCopyClass = 'lms-route-copy';
     return `
         <div class="${weightCardClass}">
             <div class="gb-modern-card-head">

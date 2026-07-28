@@ -4162,9 +4162,23 @@ body.lux-route-lms .gb-modern-card-head h3 {
     margin: 4px 0 0;
 }
 
-body.lux-route-lms .gb-modern-card-head p {
+body.lux-route-lms .gb-modern-card-head .lms-route-card-title {
+    margin: 4px 0 0;
+}
+
+body.lux-route-lms .gb-modern-card-head p,
+body.lux-route-lms .gb-modern-card-head .lms-route-copy {
     margin: 8px 0 0;
-    color: var(--lux-text-muted);
+    max-width: 62ch;
+}
+
+body.lux-route-lms .gb-scheme-progress-head {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-lms .gb-scheme-progress-head .lms-route-copy {
+    margin: 0;
     max-width: 62ch;
 }
 
