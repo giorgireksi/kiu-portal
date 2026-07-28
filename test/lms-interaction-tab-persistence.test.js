@@ -9,36 +9,38 @@ function readSource(relativePath) {
 
 describe('LMS interaction tab persistence', () => {
     it('skips cache-only restore for interaction and exposes cache invalidation', () => {
+        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
 
-        expect(classroomSource).toContain("tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && LMS_TAB_RENDER_CACHE[cacheKey]");
-        expect(classroomSource).toContain("tab === 'live-quiz' || tab === 'interaction'");
-        expect(classroomSource).toContain('function invalidateLmsInteractionTabCache');
-        expect(classroomSource).toContain('function syncLmsInteractionTabCacheFromDom');
+        expect(shellSource).toContain("tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && tab !== 'quiz' && tab !== 'monitoring' && LMS_TAB_RENDER_CACHE[cacheKey]");
+        expect(shellSource).toContain("tab === 'live-quiz' || tab === 'interaction'");
+        expect(shellSource).toContain('function invalidateLmsInteractionTabCache');
+        expect(shellSource).toContain('function syncLmsInteractionTabCacheFromDom');
         expect(classroomSource).toContain('window.invalidateLmsInteractionTabCache = invalidateLmsInteractionTabCache');
         expect(runtimeSource).toContain('invalidateLmsInteractionTabCache');
     });
 
     it('strips interaction bound flags before tab cache sync', () => {
+        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
 
         expect(runtimeSource).toContain('function stripLmsInteractionBoundFlags');
-        expect(classroomSource).toContain("tab === 'interaction' && typeof stripLmsInteractionBoundFlags === 'function'");
-        expect(classroomSource).toContain('stripLmsInteractionBoundFlags(contentArea)');
+        expect(shellSource).toContain("tab === 'interaction' && typeof stripLmsInteractionBoundFlags === 'function'");
+        expect(shellSource).toContain('stripLmsInteractionBoundFlags(contentArea)');
         expect(classroomSource).toContain('syncLmsInteractionTabCacheFromDom(resourceKey)');
     });
 
     it('binds interaction events once on the content area via delegation', () => {
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
 
         expect(runtimeSource).toContain('function bindLmsInteractionDelegatedEvents');
         expect(runtimeSource).toContain('contentArea.dataset.lmsInteractionDelegatedBound');
         expect(runtimeSource).toContain("contentArea.addEventListener('click'");
         expect(runtimeSource).toContain('resolveLmsInteractionResourceKeyFromTarget');
-        expect(classroomSource).toContain('bindLmsInteractionDelegatedEvents(contentArea)');
+        expect(shellSource).toContain('bindLmsInteractionDelegatedEvents(contentArea)');
     });
 
     it('renders unified inbox rail with compose rail picker', () => {

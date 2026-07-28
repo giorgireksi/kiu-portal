@@ -11,8 +11,9 @@
     <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
     <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260725-legacypurge1">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-wave2host1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260725-frosted1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260725-wave2host1">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260728-scardshare2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260728-scardshare2">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260728-scardshare2">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
 </head>
@@ -24,24 +25,23 @@
 
     <!-- MAIN CONTENT -->
     <main id="app-content">
-        <div id="page-study-card" class="page-section active-page">
-            <section class="study-card-page-shell lux-page-shell" data-lux-layout-only="1">
+        <div id="page-study-card" class="page-section lux-page-shell active-page" data-lux-layout-only="1">
+            <section class="study-card-command-deck lux-panel" data-lux-glass-root="1">
                 <header class="study-card-page-head">
                     <div class="study-card-title-row">
-                        <h1 class="study-card-title">Study Card</h1>
+                        <div class="lux-section-kicker"><i class="far fa-address-card"></i> Student record</div>
+                        <h1 class="lux-page-title study-card-title">Study Card</h1>
                     </div>
-                    <div class="study-card-control-band">
-                        <span class="study-card-control-label">Program View</span>
+                    <div class="study-card-control-band lux-soft-chrome">
+                        <span class="lms-route-field-label study-card-control-label">Program View</span>
                         <div class="study-card-control-actions">
-                            <select id="study-card-program-select" aria-label="Program"><option>Program</option></select>
+                            <select id="study-card-program-select" class="lms-route-select lux-control" aria-label="Program" autocomplete="off"><option>Program</option></select>
                             <button type="button" class="lux-secondary-btn" aria-label="List view"><i class="fas fa-list"></i></button>
                             <button type="button" class="lux-primary-btn" aria-label="Calendar view"><i class="far fa-calendar-alt"></i></button>
                         </div>
                     </div>
                 </header>
-                <div class="study-card-workspace" id="study-card-container" data-lux-glass-root="1">
-                    <!-- Javascript renderStudyCard() will inject semantic semester blocks here -->
-                </div>
+                <div class="study-card-workspace" id="study-card-container"></div>
             </section>
         </div>
     </main>
@@ -89,7 +89,7 @@
 <script defer src="assets/js/pages/gradebook-components-runtime.js?v=20260720-h2b"></script>
 <script defer src="assets/js/pages/gradebook-workspace.js?v=20260720-gbsize1"></script>
     <script defer src="assets/js/pages/gradebook-staff.js?v=20260715-gb-split2"></script>
-    <script defer src="assets/js/pages/study-card-page.js?v=20260621-components1"></script>
+    <script defer src="assets/js/pages/study-card-page.js?v=20260728-scardshare2"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
 <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">

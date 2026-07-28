@@ -719,7 +719,8 @@
 .lms-quiz-board-modal .lms-quiz-card { padding: 8px 10px; }
 .lms-quiz-board-modal .lms-quiz-card-stats {
   display: flex;
-  background: var(--lux-panel-control);
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .lms-quiz-board-modal .lms-quiz-card-stat-value { font-size: 14px; }
 .lms-quiz-board-modal .lms-quiz-board-tab { min-height: 28px !important; }

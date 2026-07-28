@@ -116,18 +116,18 @@ function renderLmsConceptsLibrary(courseId) {
                 <div class="lms-route-field-grid">
                     <div class="lms-route-field">
                         <label class="lms-route-field-label" for="new-concept-title">Concept Title</label>
-                        <input id="new-concept-title" class="lms-route-input" type="text" placeholder="Concept title">
+                        <input id="new-concept-title" class="lms-route-input lux-control" type="text" placeholder="Concept title">
                     </div>
                     <div class="lms-route-field">
                         <label class="lms-route-field-label" for="new-concept-week">Teaching Week</label>
-                        <select id="new-concept-week" class="lms-route-select">
+                        <select id="new-concept-week" class="lms-route-select lux-control">
                             ${buildLmsWeekSelectOptions(resourceKey, '')}
                         </select>
                     </div>
                 </div>
                 <div class="lms-route-field lms-route-field-mt-14">
                     <label class="lms-route-field-label" for="new-concept-summary">Summary</label>
-                    <textarea id="new-concept-summary" class="lms-route-textarea" placeholder="Explain the concept in an easier way, add solved examples, shortcuts, or learning tips..."></textarea>
+                    <textarea id="new-concept-summary" class="lms-route-textarea lux-control" placeholder="Explain the concept in an easier way, add solved examples, shortcuts, or learning tips..."></textarea>
                 </div>
                 ${getEffectiveUserRole() === USER_ROLES.STUDENT ? `
                     <label class="lms-concept-form-toggle">

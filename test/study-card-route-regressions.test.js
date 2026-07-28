@@ -27,6 +27,17 @@ describe('study card route regressions.test', () => {
         expect(shell).toContain('body.lux-page-bare .lux-page-shell');
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');
         expect(html).toContain('data-lux-layout-only="1"');
-        expect(html).toMatch(/study-card-workspace[\s\S]*data-lux-glass-root="1"/);
+        expect(html).toContain('lux-layout-primitives.css');
+        expect(html).toContain('lms-route-select lux-control');
+        expect(html).toContain('study-card-control-band lux-soft-chrome');
+        expect(html).toContain('study-card-command-deck');
+        expect(html).toMatch(/study-card-command-deck[\s\S]*data-lux-glass-root="1"/);
+        expect(bare).toContain('body.lux-route-study-card');
+        expect(bare).toContain('.study-card-summary-stage.lux-hero-stage');
+        expect(bare).toContain('.study-card-gradebook-overlay .gb-weight-row');
+        const studyCardJs = readSource('assets/js/pages/study-card-page.js');
+        expect(studyCardJs).toContain('study-card-term-row lux-soft-chrome');
+        expect(studyCardJs).toContain('lms-route-field-label study-card-heading');
+        expect(studyCardJs).toContain('lux-empty-state__title lms-route-empty-title');
     });
 });

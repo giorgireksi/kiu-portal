@@ -10,12 +10,22 @@ function readSource(relativePath) {
 describe('LMS quiz preview visual regressions', () => {
     it('styles quiz board modals via lux-modals warmglass SSOT', () => {
         const modals = readSource('assets/css/lux-modals.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
         const quizSource = readSource('assets/js/pages/lms-quiz-workspace-runtime.js');
 
         expect(modals).toContain('.lms-glass-dialog-overlay');
         expect(modals).toContain('--lux-modal-glass-surface');
         expect(modals).toContain('.lms-quiz-board-modal .lms-quiz-card-stats');
-        expect(modals).toMatch(/\.lms-quiz-board-modal \.lms-quiz-card-stats[\s\S]*background:\s*var\(--lux-panel-control\)/);
+        expect(bare).toMatch(/#lms-quiz-board-modal[\s\S]*\.lux-soft-chrome[\s\S]*var\(--lux-soft-chrome-surface\)/);
+        const statsBlock = modals.match(
+            /\.lms-quiz-board-modal \.lms-quiz-card-stats \{[\s\S]*?\}/
+        )?.[0] || '';
+        expect(statsBlock).toContain('display: flex');
+        expect(statsBlock).not.toContain('--lux-panel-control');
+        expect(quizSource).toContain('lms-quiz-board-toolbar lux-soft-chrome');
+        expect(quizSource).toContain('lms-quiz-card lux-soft-chrome home-hover-chip');
+        expect(quizSource).toContain('lms-quiz-card-title lms-route-card-title');
+        expect(quizSource).toContain('lms-quiz-card-stats lux-soft-chrome');
         expect(quizSource).toContain('renderLmsGlassDialogCard');
         expect(quizSource).toContain('lms-glass-dialog-overlay');
         expect(quizSource).toContain('data-lux-transparency-exempt');

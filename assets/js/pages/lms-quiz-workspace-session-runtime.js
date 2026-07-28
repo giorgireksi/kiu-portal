@@ -38,19 +38,19 @@ function renderLmsAntiCheatPolicyControls(quiz = {}) {
             </div>
             <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
                 <span><strong>Heartbeat interval</strong><br>Milliseconds between protected session heartbeats.</span>
-                <input class="lms-route-input" type="number" min="1000" max="60000" step="500" data-lms-ac-policy="heartbeatMs" value="${Number(policy.heartbeatMs || 2000)}">
+                <input class="lms-route-input lux-control" type="number" min="1000" max="60000" step="500" data-lms-ac-policy="heartbeatMs" value="${Number(policy.heartbeatMs || 2000)}">
             </label>
             <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
                 <span><strong>Process scan interval</strong><br>Milliseconds between blocked software checks.</span>
-                <input class="lms-route-input" type="number" min="1000" max="60000" step="500" data-lms-ac-policy="processScanMs" value="${Number(policy.processScanMs || 1500)}">
+                <input class="lms-route-input lux-control" type="number" min="1000" max="60000" step="500" data-lms-ac-policy="processScanMs" value="${Number(policy.processScanMs || 1500)}">
             </label>
             <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
                 <span><strong>Allowed domains</strong><br>One hostname per line; LMS and backend domains are added automatically.</span>
-                <textarea class="lms-route-input" rows="3" data-lms-ac-policy="allowedDomains">${escapeHtml((policy.allowedDomains || []).join('\n'))}</textarea>
+                <textarea class="lms-route-input lux-control" rows="3" data-lms-ac-policy="allowedDomains">${escapeHtml((policy.allowedDomains || []).join('\n'))}</textarea>
             </label>
             <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
                 <span><strong>Blocked processes</strong><br>One process name per line.</span>
-                <textarea class="lms-route-input" rows="4" data-lms-ac-policy="blockedProcesses">${escapeHtml((policy.blockedProcesses || []).join('\n'))}</textarea>
+                <textarea class="lms-route-input lux-control" rows="4" data-lms-ac-policy="blockedProcesses">${escapeHtml((policy.blockedProcesses || []).join('\n'))}</textarea>
             </label>
         </div>
     `;
@@ -495,21 +495,6 @@ function renderSharedQaRoleTestingCard() {
 function openSharedQaTest() {
     return;
 }
-
-function formatLmsDateTime(value) {
-    if (!value) return 'No deadline';
-    const normalized = String(value).replace('T', ' ');
-    return normalized.length > 16 ? normalized.slice(0, 16) : normalized;
-}
-
-
-const ensureLmsStudentQuizFocusStyles = window.ensureLmsStudentQuizFocusStyles;
-const syncLmsStudentQuizFocusChrome = window.syncLmsStudentQuizFocusChrome;
-const getLmsStudentQuizFocusState = window.getLmsStudentQuizFocusState;
-const setLmsStudentQuizFocusState = window.setLmsStudentQuizFocusState;
-const enableLmsStudentQuizFocusMode = window.enableLmsStudentQuizFocusMode;
-const disableLmsStudentQuizFocusMode = window.disableLmsStudentQuizFocusMode;
-
 
 function getCurrentLmsActiveTab() {
     const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active');
@@ -1076,7 +1061,6 @@ function saveLmsQuizBuilderDraft() {
             renderAdminQaTestingCard,
             renderSharedQaRoleTestingCard,
             openSharedQaTest,
-            formatLmsDateTime,
             getCurrentLmsActiveTab,
             rerenderCurrentLmsTab,
             resolveLmsQuizWorkspace,

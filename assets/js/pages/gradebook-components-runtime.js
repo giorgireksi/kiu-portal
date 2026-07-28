@@ -50,7 +50,7 @@ function renderGradebookComponentManager() {
                 <span class="gb-component-dot" style="background:${escapeHtml(component.color || '#64748b')}"></span>
                 <strong class="gb-component-name">${escapeHtml(component.label || criterionKey)}</strong>
                 <span class="gb-component-meta">${entryCount} recorded</span>
-                <button type="button" class="gb-modern-action" data-gradebook-click="component-manager-remove" data-gradebook-component-key="${escapeHtml(criterionKey)}" aria-label="Remove ${escapeHtml(component.label || criterionKey)}"><i class="fas fa-times"></i></button>
+                <button type="button" class="lux-secondary-btn gb-modern-action" data-gradebook-click="component-manager-remove" data-gradebook-component-key="${escapeHtml(criterionKey)}" aria-label="Remove ${escapeHtml(component.label || criterionKey)}"><i class="fas fa-times"></i></button>
             </div>
         `;
     }).join('') || '<div class="gb-modal-empty"><span>No components. Add one below or apply a profile.</span></div>';
@@ -65,15 +65,15 @@ function renderGradebookComponentManager() {
         bodyHtml: `
                 <div class="gb-component-list">${componentRows}</div>
                 <div class="gb-component-add">
-                    <input id="gb-component-add-input" type="text" class="lux-modern-field lms-route-input" placeholder="New component name (e.g. Lab, Presentation)">
+                    <input id="gb-component-add-input" type="text" class="lux-control lux-modern-field lms-route-input" placeholder="New component name (e.g. Lab, Presentation)">
                     <button type="button" class="lux-primary-btn" data-gradebook-click="component-manager-add"><i class="fas fa-plus"></i> Add component</button>
                 </div>
                 <div class="gb-component-profiles">
                     <div class="gb-modern-kicker">Profiles</div>
                     <div class="gb-component-profile-row">
-                        <select id="gb-component-profile-select" class="lux-modern-field lms-route-input">${profileOptions}</select>
-                        <button type="button" class="gb-modern-action" data-gradebook-click="component-manager-apply-profile"><i class="fas fa-download"></i> Apply</button>
-                        <button type="button" class="gb-modern-action" data-gradebook-click="component-manager-save-profile"><i class="fas fa-save"></i> Save current as profile</button>
+                        <select id="gb-component-profile-select" class="lux-control lux-modern-field lms-route-input">${profileOptions}</select>
+                        <button type="button" class="lux-secondary-btn gb-modern-action" data-gradebook-click="component-manager-apply-profile"><i class="fas fa-download"></i> Apply</button>
+                        <button type="button" class="lux-secondary-btn gb-modern-action" data-gradebook-click="component-manager-save-profile"><i class="fas fa-save"></i> Save current as profile</button>
                     </div>
                 </div>`,
         actionsHtml: `

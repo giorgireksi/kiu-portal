@@ -243,6 +243,7 @@ function syncLmsExamSessionLifecycle(quiz) {
             startLmsExamSession,
             closeLmsExamSession,
             syncLmsExamSessionLifecycle,
+            syncLmsQuizWorkspaceLifecycle,
         };
         Object.assign(window, api);
         return api;

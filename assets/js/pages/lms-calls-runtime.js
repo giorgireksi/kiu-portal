@@ -953,7 +953,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     <div class="lms-call-feed">${chatFeed}</div>
                     ${session.status === 'active' ? `
                         <div class="lms-call-question-form">
-                            <input id="lms-call-chat-${token}" class="lms-route-input" type="text" placeholder="Message everyone in class">
+                            <input id="lms-call-chat-${token}" class="lms-route-input lux-control" type="text" placeholder="Message everyone in class">
                             <button type="button" class="lux-secondary-btn" data-lms-click="sendLmsClassChatMessage(${lmsInlineArg(session.id)})"><i class="fas fa-paper-plane"></i> Send</button>
                         </div>
                     ` : ''}
@@ -963,7 +963,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     <div class="lms-call-question-list">${questionList}</div>
                     ${session.status === 'active' ? `
                         <div class="lms-call-question-form">
-                            <input id="lms-call-question-${token}" class="lms-route-input" type="text" placeholder="Ask a question or use anonymous mode">
+                            <input id="lms-call-question-${token}" class="lms-route-input lux-control" type="text" placeholder="Ask a question or use anonymous mode">
                             <label><input id="lms-call-anonymous-${token}" type="checkbox"> Ask anonymously</label>
                             <button type="button" class="lux-secondary-btn" data-lms-click="askLmsClassQuestion(${lmsInlineArg(session.id)})"><i class="fas fa-paper-plane"></i> Ask</button>
                         </div>
@@ -971,7 +971,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                 </div>
                 <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Private notes</div>
-                    <textarea id="lms-call-notes-${token}" class="lms-route-textarea" placeholder="Private notes for this class">${escapeHtml(userState.privateNotes || '')}</textarea>
+                    <textarea id="lms-call-notes-${token}" class="lms-route-textarea lux-control" placeholder="Private notes for this class">${escapeHtml(userState.privateNotes || '')}</textarea>
                     <button type="button" class="lux-secondary-btn" data-lms-click="saveLmsClassPrivateNotes(${lmsInlineArg(session.id)})"><i class="fas fa-save"></i> Save notes</button>
                 </div>
                 <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
@@ -999,7 +999,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     <div class="lms-call-breakout-list">${breakoutRoomsMarkup}</div>
                     ${canManage ? `
                         <div class="lms-call-question-form">
-                            <input id="lms-call-broadcast-${token}" class="lms-route-input" type="text" placeholder="Broadcast message to rooms">
+                            <input id="lms-call-broadcast-${token}" class="lms-route-input lux-control" type="text" placeholder="Broadcast message to rooms">
                             <button type="button" class="lux-secondary-btn" data-lms-click="broadcastLmsBreakoutMessage(${lmsInlineArg(session.id)})"><i class="fas fa-bullhorn"></i> Broadcast</button>
                         </div>
                     ` : ''}
@@ -1050,25 +1050,25 @@ function renderLmsCallsSection(courseId) {
             <div class="lms-route-field-grid">
                 <label class="lms-route-field">
                     <span class="lms-route-field-label">Lesson title</span>
-                    <input id="lms-call-title" class="lms-route-input" type="text" placeholder="${escapeHtml(sectionMeta.label)} online lesson">
+                    <input id="lms-call-title" class="lms-route-input lux-control" type="text" placeholder="${escapeHtml(sectionMeta.label)} online lesson">
                 </label>
                 <label class="lms-route-field">
                     <span class="lms-route-field-label">Schedule time</span>
-                    <input id="lms-call-scheduled" class="lms-route-input" type="datetime-local">
+                    <input id="lms-call-scheduled" class="lms-route-input lux-control" type="datetime-local">
                 </label>
                 <label class="lms-route-field">
                     <span class="lms-route-field-label">Max participants</span>
-                    <input id="lms-call-max" class="lms-route-input" type="number" min="1" max="200" value="200">
+                    <input id="lms-call-max" class="lms-route-input lux-control" type="number" min="1" max="200" value="200">
                 </label>
                 <label class="lms-route-field">
                     <span class="lms-route-field-label">Teaching week</span>
-                    <select id="lms-call-week" class="lms-route-select">
+                    <select id="lms-call-week" class="lms-route-select lux-control">
                         ${buildLmsWeekSelectOptions(resourceKey, '')}
                     </select>
                 </label>
                 <label class="lms-route-field">
                     <span class="lms-route-field-label">Class layout mode</span>
-                    <select id="lms-call-mode" class="lms-route-select">
+                    <select id="lms-call-mode" class="lms-route-select lux-control">
                         <option value="lecture">Lecture mode</option>
                         <option value="seminar">Seminar mode</option>
                         <option value="whiteboard">Whiteboard mode</option>

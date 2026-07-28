@@ -191,7 +191,7 @@ function renderLmsAttendanceSection(courseId = currentCourseId) {
                     <span class="lms-attendance-status-badge ${statusTone}">${escapeHtml(statusLabel)}</span>
                 </td>
                 <td class="lms-attendance-mark-cell">
-                    <select class="lms-route-select lms-attendance-select" ${canManage ? '' : 'disabled'} data-lms-change="markLmsAttendanceStatus(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(today)}, ${lmsInlineArg(student.id)}, this.value)">
+                    <select class="lms-route-select lux-control lms-attendance-select" ${canManage ? '' : 'disabled'} data-lms-change="markLmsAttendanceStatus(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(today)}, ${lmsInlineArg(student.id)}, this.value)">
                         <option value="" ${status === '' ? 'selected' : ''}>Unmarked</option>
                         <option value="Present" ${status === 'Present' ? 'selected' : ''}>Present</option>
                         <option value="Late" ${status === 'Late' ? 'selected' : ''}>Late</option>
@@ -709,6 +709,7 @@ function switchLMSTab(tab, options = {}) {
         && contentArea.dataset.activeLmsTab === String(tab || '')
         && contentArea.dataset.activeLmsCourseKey === normalizedCourseKey
         && contentArea.dataset.activeLmsSectionType === activeSectionType
+        && !contentArea.querySelector('[data-lms-tab-loading]')
         && ((tab === 'gradebook' && gradebookVisible) || (tab !== 'gradebook' && contentVisible))
     ) {
         const currentTabButton = document.getElementById(`tab-${tab}`);
@@ -806,14 +807,14 @@ function switchLMSTab(tab, options = {}) {
         if (forceRender) {
             delete LMS_TAB_RENDER_CACHE[cacheKey];
         }
-        if (!forceRender && tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && LMS_TAB_RENDER_CACHE[cacheKey]) {
+        if (!forceRender && tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && tab !== 'quiz' && tab !== 'monitoring' && LMS_TAB_RENDER_CACHE[cacheKey]) {
             contentArea.innerHTML = LMS_TAB_RENDER_CACHE[cacheKey];
             enhanceLmsTabExperience(tab, tabCourseKey || currentCourseId);
             syncLmsWorkspaceChromeOffset(contentArea);
             if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
             return;
         }
-        if (tab === 'live-quiz' || tab === 'interaction' || tab === 'whiteboard') {
+        if (tab === 'live-quiz' || tab === 'interaction' || tab === 'whiteboard' || tab === 'quiz' || tab === 'monitoring') {
             delete LMS_TAB_RENDER_CACHE[cacheKey];
         }
     }
@@ -954,9 +955,13 @@ function switchLMSTab(tab, options = {}) {
         }
         renderLmsConceptsLibrary(tabCourseKey);
     } else if (tab === 'quiz') {
-        if (typeof renderLmsQuizSection !== 'function') {
+        const renderQuiz = typeof window.renderLmsQuizSection === 'function'
+            ? window.renderLmsQuizSection
+            : (typeof renderLmsQuizSection === 'function' ? renderLmsQuizSection : null);
+        if (!renderQuiz) {
             if (contentArea) {
-                contentArea.innerHTML = '<div class="lms-route-empty lms-route-empty--full-span" data-lms-tab-loading="quiz"><div class="lms-route-empty-title">Loading quizzes…</div><div class="lms-route-empty-copy">Preparing the quiz workspace.</div></div>';
+                contentArea.innerHTML = '<div class="lms-route-empty lms-route-empty--full-span" data-lms-tab-loading="quiz"><div class="lms-route-empty-icon"><i class="fas fa-pen-to-square"></i></div><div class="lms-route-empty-title">Loading quizzes…</div><div class="lms-route-empty-copy">Preparing the quiz workspace.</div></div>';
+                enhanceLmsTabExperience('quiz', tabCourseKey || currentCourseId);
             }
             syncLmsWorkspaceChromeOffset(contentArea);
             if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
@@ -970,7 +975,35 @@ function switchLMSTab(tab, options = {}) {
                 return;
             }
             quizRuntimeEnsure()
-                .then(() => switchLMSTab('quiz', { force: true }))
+                .then(() => {
+                    delete LMS_TAB_RENDER_CACHE[cacheKey];
+                    if (typeof window.renderLmsQuizSection === 'function') {
+                        if (effectiveRole === USER_ROLES.STUDENT) {
+                            const studentQuizKey = (typeof window.resolveLmsQuizWorkspace === 'function'
+                                ? window.resolveLmsQuizWorkspace(tabCourseKey)?.resourceKey
+                                : null)
+                                || (typeof resolveLmsQuizWorkspace === 'function'
+                                    ? resolveLmsQuizWorkspace(tabCourseKey)?.resourceKey
+                                    : null)
+                                || (typeof resolveCanonicalLmsResourceKey === 'function'
+                                    ? resolveCanonicalLmsResourceKey(tabCourseKey || '')
+                                    : '');
+                            if (studentQuizKey && typeof ensureLmsQuizUiState === 'function') {
+                                ensureLmsQuizUiState(studentQuizKey).studentQuizId = null;
+                            }
+                        }
+                        window.renderLmsQuizSection(tabCourseKey);
+                        if (contentArea && !contentArea.querySelector('[data-lms-tab-loading]')) {
+                            LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
+                            contentArea.dataset.activeLmsSectionType = activeSectionType;
+                        }
+                        enhanceLmsTabExperience('quiz', tabCourseKey || currentCourseId);
+                        syncLmsWorkspaceChromeOffset(contentArea);
+                        if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
+                        return;
+                    }
+                    switchLMSTab('quiz', { force: true });
+                })
                 .catch(() => {
                     if (contentArea) {
                         contentArea.innerHTML = '<div class="lms-live-copy is-danger">Quiz tools failed to load. Retry the Quizzes tab.</div>';
@@ -989,7 +1022,7 @@ function switchLMSTab(tab, options = {}) {
                 ensureLmsQuizUiState(studentQuizKey).studentQuizId = null;
             }
         }
-        renderLmsQuizSection(tabCourseKey);
+        renderQuiz(tabCourseKey);
     } else if (tab === 'monitoring') {
         if (typeof renderLmsMonitoringSection !== 'function') {
             if (contentArea) {
@@ -1040,7 +1073,9 @@ function switchLMSTab(tab, options = {}) {
         if (tab === 'interaction' && typeof stripLmsInteractionBoundFlags === 'function') {
             stripLmsInteractionBoundFlags(contentArea);
         }
-        LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
+        if (!contentArea.querySelector('[data-lms-tab-loading]')) {
+            LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
+        }
         contentArea.dataset.activeLmsSectionType = activeSectionType;
     }
     enhanceLmsTabExperience(tab, tabCourseKey || currentCourseId);

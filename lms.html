@@ -20,9 +20,9 @@
     <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
     <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260725-legacypurge1">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-wave2host1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260728-lmgroup1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260728-lmgroup1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260728-lmgroup1">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260728-lmsscss3">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260728-lmquiz1">
+<link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260728-lmsscss10">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script defer src="assets/js/pages/lms-export-libs.js?v=20260714-lmspro2"></script>
 </head>
@@ -40,8 +40,8 @@
                     <div class="lms-hero-v2-grid lux-hero-stage">
                         <div class="lms-hero-v2-left lux-hero-main">
                             <div class="lux-section-kicker lms-clean-kicker"><i class="fas fa-book-reader"></i> Learning Management System</div>
-                            <div class="page-hero-title lux-page-title lms-hero-v2-title">Learning Workspace</div>
-                            <div class="page-hero-copy lux-page-copy">Review subjects you chose during registration, switch semesters, and open your enrolled course workspace.</div>
+                            <div class="page-hero-title lux-page-title lms-hero-v2-title lms-route-title">Learning Workspace</div>
+                            <div class="page-hero-copy lux-page-copy lms-route-copy">Review subjects you chose during registration, switch semesters, and open your enrolled course workspace.</div>
                         </div>
                         <aside class="lms-hero-focus lux-hero-side home-hover-chip" id="lms-subject-anchor" aria-label="Workspace status">
                             <div class="lms-hero-focus-head">
@@ -58,7 +58,7 @@
                         </aside>
                     </div>
                     <div class="lms-clean-subjects lms-clean-subjects--merged">
-                    <div class="lux-card-body">
+                    <div class="lux-card-body" data-lux-layout-only="1">
                         <div id="lms-student-semester-bar" class="lms-student-semester-bar" hidden>
                             <div class="lux-route-field-label lms-student-semester-label">Semester</div>
                             <div id="lms-student-semester-options" class="lms-student-semester-options" role="tablist" aria-label="Semester"></div>
@@ -66,8 +66,8 @@
                         <div class="lux-card-head lux-actions-between">
                             <div>
                                 <div class="lux-section-kicker lms-clean-kicker"><i class="fas fa-layer-group"></i> Subjects</div>
-                                <div class="lux-card-title" id="lms-subjects-section-title">Published faculty subjects</div>
-                                <div class="lux-card-copy" id="lms-subjects-section-copy">Published subjects for the selected faculty, ready to open by group.</div>
+                                <div class="lux-card-title lms-route-card-title" id="lms-subjects-section-title">Published faculty subjects</div>
+                                <div class="lux-card-copy lms-route-copy" id="lms-subjects-section-copy">Published subjects for the selected faculty, ready to open by group.</div>
                             </div>
                             <span class="lux-status-pill is-muted" id="lms-lane-chip"><i class="fas fa-book-open"></i> Faculty LMS</span>
                         </div>
@@ -197,14 +197,14 @@
 <script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260723-gpuperf4l"></script>
 <script defer src="assets/js/features/luxury-shell-chrome.js?v=20260726-teleportfix1"></script>
     <script defer src="assets/js/pages/lms-classroom-sessions-runtime.js?v=20260719-lmssess1"></script>
-    <script defer src="assets/js/pages/lms-classroom-tabs-shell-runtime.js?v=20260728-lmgroup1"></script>
+    <script defer src="assets/js/pages/lms-classroom-tabs-shell-runtime.js?v=20260728-lmquiz1"></script>
     <script defer src="assets/js/pages/lms-classroom-tabs-panel-runtime.js?v=20260720-w18"></script>
-    <script defer src="assets/js/pages/lms-classroom-tabs-runtime.js?v=20260728-lmquizweeks1"></script>
+    <script defer src="assets/js/pages/lms-classroom-tabs-runtime.js?v=20260728-lmquiz3"></script>
     <script defer src="assets/js/pages/lms-quiz-blue-runtime.js?v=20260719-lmsblue1"></script>
     <script defer src="assets/js/pages/lms-section-quiz-runtime.js?v=20260728-lmquizweeks1"></script>
-    <script defer src="assets/js/pages/lms-exam-session-runtime.js?v=20260727-w18fix1"></script>
+    <script defer src="assets/js/pages/lms-exam-session-runtime.js?v=20260728-lmquiz5"></script>
     <script defer src="assets/js/pages/lms.js?v=20260719-lmsblue1"></script>
-    <script defer src="assets/js/pages/lms-route-boot.js?v=20260728-lmgroup1"></script>
+    <script defer src="assets/js/pages/lms-route-boot.js?v=20260728-lmquiz1"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
 <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">

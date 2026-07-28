@@ -21,8 +21,8 @@ const LMS_LIVE_QUIZ_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260714-lmspro2',
     'assets/js/pages/lms-live-quiz-podium-runtime.js?v=20260609-livequiz-podium1',
     'assets/js/pages/lms-live-quiz-session-runtime.js?v=20260720-lqsession1',
-    'assets/js/pages/lms-live-quiz-ui-staff-runtime.js?v=20260720-w18',
-    'assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260609-livequiz-timerfix1'
+    'assets/js/pages/lms-live-quiz-ui-staff-runtime.js?v=20260728-livepatch1',
+    'assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260728-livepatch1'
 ]);
 const LMS_WHITEBOARD_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-workspace-sync-timing.js?v=20260718-lmssync1',
@@ -33,11 +33,11 @@ const LMS_WHITEBOARD_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-whiteboard-document-runtime.js?v=20260708-wb-shapes-v4',
     'assets/js/pages/lms-whiteboard-model.js?v=20260720-w25wb1',
     'assets/js/pages/lms-whiteboard-model-bridge.js?v=20260720-w25wb1',
-    'assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260719-wbchrome1',
+    'assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260728-wbpan1',
     'assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260719-wbchrome1',
-    'assets/js/pages/lms-whiteboard-chrome-runtime.js?v=20260719-wbchrome1',
+    'assets/js/pages/lms-whiteboard-chrome-runtime.js?v=20260728-wbchrome2',
     'assets/js/pages/lms-whiteboard-session-runtime.js?v=20260720-wbsession1',
-    'assets/js/pages/lms-whiteboard-selection-runtime.js?v=20260720-w18',
+    'assets/js/pages/lms-whiteboard-selection-runtime.js?v=20260728-wbpan1',
     'assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1'
 ]);
 const LMS_QUIZ_MODULE_URLS = Object.freeze([
@@ -48,7 +48,7 @@ const LMS_QUIZ_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-quiz-focus-runtime.js?v=20260719-quizfocus1',
     'assets/js/pages/lms-quiz-workspace-session-runtime.js?v=20260720-quizsess1',
     'assets/js/pages/lms-quiz-workspace-review-runtime.js?v=20260720-w18',
-    'assets/js/pages/lms-quiz-workspace-runtime.js?v=20260720-quizsess1',
+    'assets/js/pages/lms-quiz-workspace-runtime.js?v=20260728-lmquiz4',
     'assets/js/pages/lms-protected-quiz-runtime.js?v=20260714-lmspro2'
 ]);
 const LMS_CALLS_MODULE_URLS = Object.freeze([
@@ -73,36 +73,82 @@ const LMS_PERSONAL_DASHBOARD_MODULE_URLS = Object.freeze([
 
 const lmsRuntimeEnsurePromises = Object.create(null);
 
+const LMS_SCRIPT_EXECUTION_MARKERS = Object.freeze([
+    [/lms-quiz-model\.js(\?|$)/, () => Boolean(window.__KIU_LMS_QUIZ_MODEL_LOADED)],
+    [/lms-quiz-model-bridge\.js(\?|$)/, () => Boolean(window.__KIU_LMS_QUIZ_MODEL_LOADED)],
+    [/lms-quiz-blue-runtime\.js(\?|$)/, () => Boolean(window.__KIU_LMS_QUIZ_BLUE_LOADED)],
+    [/lms-quiz-focus-runtime\.js(\?|$)/, () => Boolean(window.__KIU_LMS_QUIZ_FOCUS_LOADED)],
+    [/lms-quiz-workspace-session-runtime\.js(\?|$)/, () => Boolean(window.__KIU_LMS_QUIZ_WORKSPACE_SESSION_LOADED)],
+    [/lms-quiz-workspace-review-runtime\.js(\?|$)/, () => Boolean(window.__KIU_LMS_QUIZ_WORKSPACE_REVIEW_LOADED)],
+    [/lms-quiz-workspace-runtime\.js(\?|$)/, () => typeof window.renderLmsQuizSection === 'function'],
+    [/lms-protected-quiz-runtime\.js(\?|$)/, () => typeof window.launchProtectedQuizInAntiCheat === 'function'],
+]);
+
+function hasLmsScriptExecuted(url) {
+    const entry = LMS_SCRIPT_EXECUTION_MARKERS.find(([pattern]) => pattern.test(url));
+    return entry ? entry[1]() : true;
+}
+
+function waitForLmsScriptExecution(url, scriptEl, resolve, reject) {
+    if (hasLmsScriptExecuted(url)) {
+        scriptEl.dataset.kiuLoaded = '1';
+        resolve();
+        return;
+    }
+    let attempts = 0;
+    const tick = () => {
+        if (hasLmsScriptExecuted(url)) {
+            scriptEl.dataset.kiuLoaded = '1';
+            resolve();
+            return;
+        }
+        if (++attempts >= 50) {
+            reject(new Error(`LMS module loaded but did not execute: ${url}`));
+            return;
+        }
+        queueMicrotask(tick);
+    };
+    queueMicrotask(tick);
+}
+
 function loadLmsScriptOnce(url) {
     return new Promise((resolve, reject) => {
         const existing = document.querySelector(`script[src="${url}"]`);
         if (existing) {
-            if (existing.dataset.kiuLoaded === '1'
-                || existing.readyState === 'complete'
-                || existing.readyState === 'loaded') {
-                existing.dataset.kiuLoaded = '1';
+            const settleLoaded = () => waitForLmsScriptExecution(url, existing, resolve, reject);
+            if (existing.dataset.kiuLoaded === '1' && hasLmsScriptExecuted(url)) {
                 resolve();
                 return;
             }
-            existing.addEventListener('load', () => {
-                existing.dataset.kiuLoaded = '1';
-                resolve();
-            }, { once: true });
+            if (existing.dataset.kiuLoaded === '1') {
+                delete existing.dataset.kiuLoaded;
+            }
+            if (existing.readyState === 'complete' || existing.readyState === 'loaded') {
+                settleLoaded();
+                return;
+            }
+            existing.addEventListener('load', settleLoaded, { once: true });
             existing.addEventListener('error', () => {
                 reject(new Error(`Could not load LMS module: ${url}`));
             }, { once: true });
+            // Parser-inserted defer/classic scripts (e.g. lms-quiz-blue-runtime.js in lms.html)
+            // can finish before listeners attach; load will not fire again.
+            queueMicrotask(() => {
+                if (existing.readyState === 'loading') return;
+                settleLoaded();
+            });
             return;
         }
         const script = document.createElement('script');
         script.src = url;
         script.async = false;
+        script.dataset.kiuInjected = '1';
         // Wave 25: pure model leaves load as ESM; classic bridges follow in MODULE_URLS.
         if (/\/(lms-quiz-model|lms-whiteboard-model)\.js(\?|$)/.test(url)) {
             script.type = 'module';
         }
         script.addEventListener('load', () => {
-            script.dataset.kiuLoaded = '1';
-            resolve();
+            waitForLmsScriptExecution(url, script, resolve, reject);
         }, { once: true });
         script.addEventListener('error', () => {
             reject(new Error(`Could not load LMS module: ${url}`));
@@ -409,7 +455,7 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                             <div class="lms-bulk-title"><i class="fas fa-message"></i> Announcement</div>
                             <div class="lms-bulk-copy lms-route-copy-mt-5">Post one message to selected Interaction threads.</div>
                         </div>
-                        <textarea id="lms-bulk-message-text" class="lms-route-textarea" rows="3" placeholder="Write the message students should see..."></textarea>
+                        <textarea id="lms-bulk-message-text" class="lms-route-textarea lux-control" rows="3" placeholder="Write the message students should see..."></textarea>
                         <div class="lms-bulk-actions">
                             <span class="lms-bulk-copy">Sender: ${escapeHtml(getSimulatedUserName())}</span>
                             <button type="button" class="lux-primary-btn" data-lms-bulk-requires-selection="true" data-lms-click="sendLmsBulkGroupMessage()"><i class="fas fa-paper-plane"></i> Send</button>
@@ -426,24 +472,24 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                         <div class="lms-bulk-upload-grid">
                             <div class="lms-route-field">
                                 <label class="lms-route-field-label" for="lms-bulk-material-title">Title</label>
-                                <input id="lms-bulk-material-title" class="lms-route-input" type="text" placeholder="e.g. Week 5 slides">
+                                <input id="lms-bulk-material-title" class="lms-route-input lux-control" type="text" placeholder="e.g. Week 5 slides">
                             </div>
                             <div class="lms-route-field">
                                 <label class="lms-route-field-label" for="lms-bulk-material-section">Class type</label>
-                                <select id="lms-bulk-material-section" class="lms-route-select">
+                                <select id="lms-bulk-material-section" class="lms-route-select lux-control">
                                     ${LMS_SECTION_TYPES.map(type => `<option value="${type}" ${type === defaultSection ? 'selected' : ''}>${escapeHtml(getLmsSectionMeta(type).label)}</option>`).join('')}
                                 </select>
                             </div>
                             <div class="lms-route-field">
                                 <label class="lms-route-field-label" for="lms-bulk-material-weeks">Weeks</label>
-                                <select id="lms-bulk-material-weeks" class="lms-route-select" multiple size="4">
+                                <select id="lms-bulk-material-weeks" class="lms-route-select lux-control" multiple size="4">
                                     ${buildLmsBulkWeekOptions(subjectId, groups)}
                                 </select>
                             </div>
                         </div>
                         <div class="lms-route-field">
                             <label class="lms-route-field-label" for="lms-bulk-material-description">Description</label>
-                            <input id="lms-bulk-material-description" class="lms-route-input" type="text" placeholder="Optional student-facing note">
+                            <input id="lms-bulk-material-description" class="lms-route-input lux-control" type="text" placeholder="Optional student-facing note">
                         </div>
                         <div class="lms-bulk-actions">
                             <button type="button" class="lux-secondary-btn" data-lms-click="pickLocalLmsFile('material', ${lmsInlineArg(bulkKey)}, ${lmsInlineArg(fileLabelId)})"><i class="fas fa-paperclip"></i> Choose</button>
@@ -982,17 +1028,17 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                                 <div class="lms-session-marker-title-row">
                                     <label class="lms-route-field">
                                         <span class="lms-route-field-label">Title</span>
-                                        <input id="lms-session-marker-title" class="lms-route-input" type="text" placeholder="${escapeHtml(defaultTitle)}">
+                                        <input id="lms-session-marker-title" class="lms-route-input lux-control" type="text" placeholder="${escapeHtml(defaultTitle)}">
                                     </label>
                                     <label class="lms-route-field">
                                         <span class="lms-route-field-label">Note for students</span>
-                                        <input id="lms-session-marker-note" class="lms-route-input" type="text" placeholder="Optional: bring laptop, files, printed work, or ID card">
+                                        <input id="lms-session-marker-note" class="lms-route-input lux-control" type="text" placeholder="Optional: bring laptop, files, printed work, or ID card">
                                     </label>
                                 </div>
                                 <div class="lms-session-marker-week-row">
                                     <label class="lms-route-field lms-session-marker-week-field">
                                         <span class="lms-route-field-label">Weeks</span>
-                                        <input id="lms-session-marker-week-input" class="lms-route-input" type="text" value="1,2,3,4,5" placeholder="1,2,3 or 1-5" data-lms-change="refreshLmsSessionMarkerPreview(${lmsInlineArg(courseId)})">
+                                        <input id="lms-session-marker-week-input" class="lms-route-input lux-control" type="text" value="1,2,3,4,5" placeholder="1,2,3 or 1-5" data-lms-change="refreshLmsSessionMarkerPreview(${lmsInlineArg(courseId)})">
                                     </label>
                                     <div class="lms-session-marker-week-chips">
                                         <button type="button" class="lux-secondary-btn lms-session-marker-week-chip" data-lms-click="setLmsSessionMarkerWeekPreset('this', ${lmsInlineArg(courseId)})">This week</button>
@@ -1001,7 +1047,7 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                                     </div>
                                     <label class="lms-route-field lms-session-marker-section-filter-field">
                                         <span class="lms-route-field-label">Class type</span>
-                                        <select id="lms-session-marker-section-filter" class="lms-route-select" data-lms-change="refreshLmsSessionMarkerPreview(${lmsInlineArg(courseId)})">
+                                        <select id="lms-session-marker-section-filter" class="lms-route-select lux-control" data-lms-change="refreshLmsSessionMarkerPreview(${lmsInlineArg(courseId)})">
                                             <option value="all">All</option>
                                             ${LMS_SECTION_TYPES.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(getLmsSectionMeta(type).label)}</option>`).join('')}
                                         </select>

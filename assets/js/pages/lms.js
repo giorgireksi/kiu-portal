@@ -543,11 +543,11 @@ function sanitizeLegacyLmsMarkup(markup = '') {
         const isBadge = tag === 'SPAN' && /border-radius\s*:\s*999px/i.test(style);
         const isHero = /linear-gradient\(135deg,\s*(rgba\(15,\s*23,\s*42|var\(--kiu-navy\))/i.test(style);
         if (tag === 'INPUT' && !['checkbox', 'radio'].includes(type)) {
-            node.classList.add('lms-route-input');
+            node.classList.add('lms-route-input', 'lux-control');
         } else if (tag === 'TEXTAREA') {
-            node.classList.add('lms-route-textarea');
+            node.classList.add('lms-route-textarea', 'lux-control');
         } else if (tag === 'SELECT') {
-            node.classList.add('lms-route-select');
+            node.classList.add('lms-route-select', 'lux-control');
         }
         if ((classes.includes('accordion-item') || classes.includes('course-card') || classes.includes('surface-card')) && !node.classList.contains('lms-route-card')) {
             node.classList.add('lms-route-card');

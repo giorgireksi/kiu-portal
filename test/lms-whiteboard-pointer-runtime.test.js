@@ -15,7 +15,9 @@ describe('lms-whiteboard-pointer-runtime peel', () => {
         expect(runtime).toContain('lms-whiteboard-pointer-runtime.js');
         expect(pointer).toMatch(/^function onLmsWhiteboardPointerDown\b/m);
         expect(pointer).toMatch(/^function bindLmsWhiteboardStagePointerHandlers\b/m);
-        expect(pointer).toContain('window.onLmsWhiteboardPointerDown');
+        expect(pointer).toMatch(/^function startLmsWhiteboardPan\b/m);
+        expect(pointer).toMatch(/^function endLmsWhiteboardPan\b/m);
+        expect(pointer).toContain('window.startLmsWhiteboardPan = startLmsWhiteboardPan');
     });
 
     it('loads before runtime in LMS_WHITEBOARD_MODULE_URLS', () => {

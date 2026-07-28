@@ -27,7 +27,7 @@ const decorateLmsPostSubmitLockedQuizCards = window.decorateLmsPostSubmitLockedQ
 const renderAdminQaTestingCard = window.renderAdminQaTestingCard;
 const renderSharedQaRoleTestingCard = window.renderSharedQaRoleTestingCard;
 const openSharedQaTest = window.openSharedQaTest;
-const formatLmsDateTime = window.formatLmsDateTime;
+/* formatLmsDateTime: global from assets/js/shared/utilities.js — do not redeclare */
 const getCurrentLmsActiveTab = window.getCurrentLmsActiveTab;
 const rerenderCurrentLmsTab = window.rerenderCurrentLmsTab;
 const resolveLmsQuizWorkspace = window.resolveLmsQuizWorkspace;
@@ -198,7 +198,9 @@ function revealLmsStudentQuiz(resourceKey, quizId) {
     return startLmsStudentQuiz(resourceKey, quizId);
 }
 
-syncLmsStudentQuizFocusChrome(getLmsStudentQuizFocusState());
+if (typeof syncLmsStudentQuizFocusChrome === 'function' && typeof getLmsStudentQuizFocusState === 'function') {
+    syncLmsStudentQuizFocusChrome(getLmsStudentQuizFocusState());
+}
 
 function updateLmsQuizDraftAnswer(resourceKey, quizId, questionId, field, value) {
     const quiz = getLmsQuizById(resourceKey, quizId);
@@ -273,18 +275,18 @@ function renderLmsQuizLifecycleCard(context, quiz, sectionType) {
         : '';
     const showReviewPanel = false;
     return `
-        <div data-quiz-id="${escapeHtml(quiz.id)}" class="lms-quiz-card">
+        <div data-quiz-id="${escapeHtml(quiz.id)}" class="lms-quiz-card lux-soft-chrome home-hover-chip">
             <div class="lms-quiz-card-head">
                 <div>
                     <div class="lms-quiz-card-badges">
-                        <span class="lms-quiz-card-eyebrow">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</span>
+                        <span class="lms-quiz-card-eyebrow lms-route-field-label">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</span>
                         <span class="lms-quiz-card-status is-${escapeHtml(lifecycle)}">${escapeHtml(lifecycle)}</span>
                         ${quiz.variantEnabled ? `<span class="lms-quiz-card-pill-accent">Variant Set</span>` : ''}
                         ${hasLiveAlerts ? `<span class="lms-quiz-card-pill-alert"><span class="lms-monitor-pulse-dot"></span> Live Alert</span>` : ''}
                     </div>
-                    <div class="lms-quiz-card-title">${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
-                    <div class="lms-quiz-card-meta">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}${variantSummary ? `  -  ${escapeHtml(variantSummary)}` : ''}</div>
-                    <div class="lms-quiz-card-meta">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
+                    <div class="lms-quiz-card-title lms-route-card-title">${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
+                    <div class="lms-quiz-card-meta lms-route-copy">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}${variantSummary ? `  -  ${escapeHtml(variantSummary)}` : ''}</div>
+                    <div class="lms-quiz-card-meta lms-route-copy">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
                     ${getLmsQuizLifecycleStatus(quiz) !== 'draft' ? `<div class="lms-quiz-card-mode">Mode: ${escapeHtml(String(quiz.publishMode || 'manual') === 'scheduled' ? 'Automatic publish and end by time' : 'Manual publish with manual end')}</div>` : ''}
                 </div>
                 <div class="lms-quiz-card-score-pill">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
@@ -296,7 +298,7 @@ function renderLmsQuizLifecycleCard(context, quiz, sectionType) {
                 </div>
                 ${latestAlertLabel ? `<div class="lms-quiz-card-alert-latest">Latest: ${escapeHtml(latestAlertLabel)}</div>` : ''}
             </div>` : ''}
-            <div class="lms-quiz-card-stats">
+            <div class="lms-quiz-card-stats lux-soft-chrome">
                 <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">${quiz.variantEnabled ? 'Base Pool' : 'Questions'}</div><div class="lms-quiz-card-stat-value">${escapeHtml(String((quiz.questions || []).length))}</div></div>
                 <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Allowed</div><div class="lms-quiz-card-stat-value">${escapeHtml(allowCountLabel)}</div></div>
                 <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Pending Review</div><div class="lms-quiz-card-stat-value">${escapeHtml(String(stats.pendingReviewCount))}</div></div>
@@ -460,10 +462,8 @@ function renderLmsQuizBoardPagePreview(context, page = 'drafts', limit = 3) {
         ? `<div class="lms-quiz-board-preview-copy">Showing latest ${previewItems.length} of ${meta.items.length} quizzes.</div>`
         : '';
     return `
-        <div class="lms-quiz-card-group">
-            ${renderLmsQuizBoardSection(meta.title, meta.description, cards)}
-            ${summary}
-        </div>
+        ${renderLmsQuizBoardSection(meta.title, meta.description, cards)}
+        ${summary}
     `;
 }
 
@@ -532,7 +532,7 @@ function openLmsQuizBoardModal(page = null) {
         if (event.target === overlay) closeLmsQuizBoardModal();
     };
     const boardBody = `
-                <div class="lms-quiz-board-toolbar" data-lms-quiz-board-tabs-rail>
+                <div class="lms-quiz-board-toolbar lux-soft-chrome" data-lms-quiz-board-tabs-rail>
                     <div class="lms-quiz-board-tabs">
                         ${modalTabs.map(tab => `
                             <button type="button" data-lms-click="openLmsQuizBoardModal(${jsQuote(tab.key)})" class="${targetPage === tab.key ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-quiz-board-tab">
@@ -545,7 +545,7 @@ function openLmsQuizBoardModal(page = null) {
                 <div class="lms-quiz-board-card-list lux-scrollbar">
                 ${meta.items.length
                     ? meta.items.map(quiz => renderLmsQuizLifecycleCard(context, quiz, meta.sectionType)).join('')
-                    : '<div class="lms-quiz-board-empty">Nothing here yet.</div>'}
+                    : '<div class="lms-quiz-board-empty lms-route-copy">Nothing here yet.</div>'}
                 </div>`;
     overlay.innerHTML = typeof renderLmsGlassDialogCard === 'function'
         ? renderLmsGlassDialogCard({
@@ -734,7 +734,7 @@ function renderLmsStaffQuizWorkspace(context) {
             <div class="lms-quiz-option-row">
                 <input type="radio" name="lms-quiz-correct-${escapeHtml(activeQuestion.id)}" ${activeQuestion.correctOption === optionIndex ? 'checked' : ''} data-lms-change="setLmsQuizQuestionCorrectOption(${jsQuote(activeQuestion.id)}, ${optionIndex})" title="Correct answer" />
                 <div class="lms-quiz-option-marker">${String.fromCharCode(65 + optionIndex)}</div>
-                <input type="text" value="${escapeHtml(activeQuestion.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizQuestionOptionText(${jsQuote(activeQuestion.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" class="lms-quiz-option-input" />
+                <input type="text" value="${escapeHtml(activeQuestion.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizQuestionOptionText(${jsQuote(activeQuestion.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" class="lms-quiz-option-input lux-control" />
             </div>
         `).join('')
         : '';
@@ -742,7 +742,7 @@ function renderLmsStaffQuizWorkspace(context) {
         ? `
             <div class="lms-quiz-answer-composer">
                 <div class="lms-quiz-answer-composer-label">Written Answer Key</div>
-                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion.id)}, 'expectedAnswer', this.value)" placeholder="Write the reference answer or grading note here..." class="lms-quiz-answer-textarea">${escapeHtml(activeQuestion.expectedAnswer || '')}</textarea>
+                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion.id)}, 'expectedAnswer', this.value)" placeholder="Write the reference answer or grading note here..." class="lms-quiz-answer-textarea lux-control">${escapeHtml(activeQuestion.expectedAnswer || '')}</textarea>
                 <div class="lms-quiz-answer-composer-copy">Students will manually type their answer for this question.</div>
             </div>
         `
@@ -784,24 +784,24 @@ function renderLmsStaffQuizWorkspace(context) {
                             <button type="button" class="lux-secondary-btn lms-quiz-variant-action-danger" data-lms-click="removeLmsQuizVariantQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)})"><i class="fas fa-trash"></i> Remove</button>
                         </div>
                     </div>
-                    <textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Variant question text..." class="lms-quiz-variant-question-textarea">${escapeHtml(question.text || '')}</textarea>
+                    <textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Variant question text..." class="lms-quiz-variant-question-textarea lux-control">${escapeHtml(question.text || '')}</textarea>
                     <div class="lms-quiz-variant-question-grid">
-                        <label class="lms-quiz-variant-field">Question Type<select data-lms-change="setLmsQuizVariantQuestionType(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" class="lms-quiz-variant-control"><option value="mcq" ${questionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${questionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
-                        <label class="lms-quiz-variant-field">Options<select data-lms-change="setLmsQuizVariantQuestionOptionCount(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" ${questionType === 'written' ? 'disabled' : ''} class="lms-quiz-variant-control ${questionType === 'written' ? 'is-disabled' : ''}">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(question.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
-                        <label class="lms-quiz-variant-field">Score<input type="number" min="1" step="1" value="${escapeHtml(String(question.score || 1))}" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'score', this.value)" class="lms-quiz-variant-control" /></label>
+                        <label class="lms-quiz-variant-field">Question Type<select data-lms-change="setLmsQuizVariantQuestionType(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" class="lms-quiz-variant-control lux-control"><option value="mcq" ${questionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${questionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
+                        <label class="lms-quiz-variant-field">Options<select data-lms-change="setLmsQuizVariantQuestionOptionCount(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" ${questionType === 'written' ? 'disabled' : ''} class="lms-quiz-variant-control lux-control ${questionType === 'written' ? 'is-disabled' : ''}">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(question.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
+                        <label class="lms-quiz-variant-field">Score<input type="number" min="1" step="1" value="${escapeHtml(String(question.score || 1))}" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'score', this.value)" class="lms-quiz-variant-control lux-control" /></label>
                     </div>
                     ${questionType === 'written'
-                        ? `<textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'expectedAnswer', this.value)" placeholder="Reference answer..." class="lms-quiz-variant-question-textarea">${escapeHtml(question.expectedAnswer || '')}</textarea>`
+                        ? `<textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'expectedAnswer', this.value)" placeholder="Reference answer..." class="lms-quiz-variant-question-textarea lux-control">${escapeHtml(question.expectedAnswer || '')}</textarea>`
                         : `<div class="lms-quiz-variant-option-list">${Array.from({ length: question.optionCount || 0 }, (_, optionIndex) => `
                             <div class="lms-quiz-option-row">
                                 <input type="radio" name="lms-variant-correct-${escapeHtml(question.id)}" ${question.correctOption === optionIndex ? 'checked' : ''} data-lms-change="setLmsQuizVariantQuestionCorrectOption(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, ${optionIndex})">
                                 <div class="lms-quiz-option-marker">${String.fromCharCode(65 + optionIndex)}</div>
-                                <input type="text" value="${escapeHtml(question.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizVariantQuestionOptionText(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" class="lms-quiz-option-input">
+                                <input type="text" value="${escapeHtml(question.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizVariantQuestionOptionText(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" class="lms-quiz-option-input lux-control">
                             </div>
                         `).join('')}</div>`
                     }
                     <div class="lms-quiz-variant-replace-row">
-                        <label class="lms-quiz-variant-field">Replace With Base Question<select id="${replacementSelectId}" class="lms-quiz-variant-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
+                        <label class="lms-quiz-variant-field">Replace With Base Question<select id="${replacementSelectId}" class="lms-quiz-variant-control lux-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
                         <button type="button" class="lux-secondary-btn lms-quiz-variant-action" data-lms-click="replaceLmsQuizVariantQuestionWithBaseQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, document.getElementById(${jsQuote(replacementSelectId)})?.value)"><i class="fas fa-arrows-rotate"></i> Replace</button>
                     </div>
                 </div>
@@ -912,17 +912,17 @@ function renderLmsStaffQuizWorkspace(context) {
                         </div>
                     </div>
                     <div class="lms-quiz-studio-field-grid lms-quiz-studio-field-grid--hero">
-                        <label class="lms-quiz-studio-field">Quiz Title<input type="text" value="${escapeHtml(draft?.title || '')}" data-lms-input="setLmsQuizDraftField('title', this.value)" placeholder="e.g. Midterm Quiz 1" class="lms-quiz-studio-control" /></label>
-                        <label class="lms-quiz-studio-field">Subject<input type="text" value="${escapeHtml(context.subject?.name || context.courseId)}" disabled class="lms-quiz-studio-control lms-quiz-studio-control--muted" /></label>
+                        <label class="lms-quiz-studio-field">Quiz Title<input type="text" value="${escapeHtml(draft?.title || '')}" data-lms-input="setLmsQuizDraftField('title', this.value)" placeholder="e.g. Midterm Quiz 1" class="lms-quiz-studio-control lux-control" /></label>
+                        <label class="lms-quiz-studio-field">Subject<input type="text" value="${escapeHtml(context.subject?.name || context.courseId)}" disabled class="lms-quiz-studio-control lux-control is-muted" /></label>
                     </div>
                     <div class="lms-quiz-studio-field-grid lms-quiz-studio-field-grid--triple">
-                        <label class="lms-quiz-studio-field">Assessment Type<select data-lms-change="setLmsQuizDraftField('assessmentType', this.value)" class="lms-quiz-studio-control">${['quiz','oral-quiz','midterm','final','retake'].map(type => `<option value="${type}" ${normalizeLmsQuizAssessmentType(draft?.assessmentType) === type ? 'selected' : ''}>${escapeHtml(getLmsQuizAssessmentMeta(type).label)}</option>`).join('')}</select></label>
-                        <label class="lms-quiz-studio-field">Week<select data-lms-change="setLmsQuizDraftField('weekLabel', this.value)" class="lms-quiz-studio-control">${(context.weeks?.length ? context.weeks : ['Week 1']).map(week => `<option value="${escapeHtml(week)}" ${normalizeLmsWeekLabel(draft?.weekLabel) === normalizeLmsWeekLabel(week) ? 'selected' : ''}>${escapeHtml(week)}</option>`).join('')}</select></label>
-                        <label class="lms-quiz-studio-field">Timer (minutes)<input type="number" min="1" value="${escapeHtml(String(draft?.durationMinutes || 20))}" data-lms-input="setLmsQuizDraftField('durationMinutes', this.value)" class="lms-quiz-studio-control" /></label>
+                        <label class="lms-quiz-studio-field">Assessment Type<select data-lms-change="setLmsQuizDraftField('assessmentType', this.value)" class="lms-quiz-studio-control lux-control">${['quiz','oral-quiz','midterm','final','retake'].map(type => `<option value="${type}" ${normalizeLmsQuizAssessmentType(draft?.assessmentType) === type ? 'selected' : ''}>${escapeHtml(getLmsQuizAssessmentMeta(type).label)}</option>`).join('')}</select></label>
+                        <label class="lms-quiz-studio-field">Week<select data-lms-change="setLmsQuizDraftField('weekLabel', this.value)" class="lms-quiz-studio-control lux-control">${(context.weeks?.length ? context.weeks : ['Week 1']).map(week => `<option value="${escapeHtml(week)}" ${normalizeLmsWeekLabel(draft?.weekLabel) === normalizeLmsWeekLabel(week) ? 'selected' : ''}>${escapeHtml(week)}</option>`).join('')}</select></label>
+                        <label class="lms-quiz-studio-field">Timer (minutes)<input type="number" min="1" value="${escapeHtml(String(draft?.durationMinutes || 20))}" data-lms-input="setLmsQuizDraftField('durationMinutes', this.value)" class="lms-quiz-studio-control lux-control" /></label>
                     </div>
                     <div class="lms-quiz-studio-field-grid lms-quiz-studio-field-grid--double">
-                        <label class="lms-quiz-studio-field">Start Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableFrom || ''))}" data-lms-change="setLmsQuizDraftField('availableFrom', this.value)" class="lms-quiz-studio-control" /></label>
-                        <label class="lms-quiz-studio-field">End Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableUntil || ''))}" data-lms-change="setLmsQuizDraftField('availableUntil', this.value)" class="lms-quiz-studio-control" /></label>
+                        <label class="lms-quiz-studio-field">Start Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableFrom || ''))}" data-lms-change="setLmsQuizDraftField('availableFrom', this.value)" class="lms-quiz-studio-control lux-control" /></label>
+                        <label class="lms-quiz-studio-field">End Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableUntil || ''))}" data-lms-change="setLmsQuizDraftField('availableUntil', this.value)" class="lms-quiz-studio-control lux-control" /></label>
                     </div>
                     <div class="lms-quiz-studio-policy-block">
                         <label class="lms-quiz-policy-card">
@@ -930,7 +930,7 @@ function renderLmsStaffQuizWorkspace(context) {
                             <span><strong>Attendance gate</strong><br>TA / professor must mark the student present in the LMS review board before Start Quiz unlocks.</span>
                         </label>
                     </div>
-                    <label class="lms-quiz-studio-field lms-quiz-studio-notes-field">Quiz Notes<textarea rows="3" data-lms-input="setLmsQuizDraftField('instructions', this.value)" placeholder="Short notes for the invigilator or setup rules..." class="lms-quiz-studio-textarea">${escapeHtml(draft?.instructions || '')}</textarea></label>
+                    <label class="lms-quiz-studio-field lms-quiz-studio-notes-field">Quiz Notes<textarea rows="3" data-lms-input="setLmsQuizDraftField('instructions', this.value)" placeholder="Short notes for the invigilator or setup rules..." class="lms-quiz-studio-textarea lux-control">${escapeHtml(draft?.instructions || '')}</textarea></label>
                     <div class="lms-quiz-tool-panel lms-quiz-variant-panel ${variantSetExpanded ? '' : 'is-collapsed'}">
                         <div class="lms-quiz-tool-head">
                             <div class="lms-quiz-tool-title">
@@ -948,10 +948,10 @@ function renderLmsStaffQuizWorkspace(context) {
                                 Enable variants
                             </label>
                             <div class="lms-quiz-variant-config-grid">
-                                <label class="lms-quiz-variant-field">Variant Count<input type="number" min="1" max="8" value="${escapeHtml(String(draft?.variantCount || 3))}" data-lms-input="setLmsQuizDraftField('variantCount', this.value)" class="lms-quiz-variant-config-control ${draft?.variantEnabled ? '' : 'is-disabled'}" ${draft?.variantEnabled ? '' : 'disabled'}></label>
-                                <label class="lms-quiz-variant-field">Questions Per Variant<input type="number" min="1" value="${escapeHtml(String(draft?.questionsPerVariant || 10))}" data-lms-input="setLmsQuizDraftField('questionsPerVariant', this.value)" class="lms-quiz-variant-config-control ${draft?.variantEnabled ? '' : 'is-disabled'}" ${draft?.variantEnabled ? '' : 'disabled'}></label>
-                                <label class="lms-quiz-variant-field">Assignment<input type="text" value="Auto-fixed" disabled class="lms-quiz-variant-config-control lms-quiz-variant-config-control--muted"></label>
-                                <label class="lms-quiz-variant-field">Generation<input type="text" value="Unique-first randomization" disabled class="lms-quiz-variant-config-control lms-quiz-variant-config-control--muted"></label>
+                                <label class="lms-quiz-variant-field">Variant Count<input type="number" min="1" max="8" value="${escapeHtml(String(draft?.variantCount || 3))}" data-lms-input="setLmsQuizDraftField('variantCount', this.value)" class="lms-quiz-variant-config-control lux-control ${draft?.variantEnabled ? '' : 'is-disabled'}" ${draft?.variantEnabled ? '' : 'disabled'}></label>
+                                <label class="lms-quiz-variant-field">Questions Per Variant<input type="number" min="1" value="${escapeHtml(String(draft?.questionsPerVariant || 10))}" data-lms-input="setLmsQuizDraftField('questionsPerVariant', this.value)" class="lms-quiz-variant-config-control lux-control ${draft?.variantEnabled ? '' : 'is-disabled'}" ${draft?.variantEnabled ? '' : 'disabled'}></label>
+                                <label class="lms-quiz-variant-field">Assignment<input type="text" value="Auto-fixed" disabled class="lms-quiz-variant-config-control lux-control is-muted"></label>
+                                <label class="lms-quiz-variant-field">Generation<input type="text" value="Unique-first randomization" disabled class="lms-quiz-variant-config-control lux-control is-muted"></label>
                             </div>
                             ${draft?.variantEnabled ? `
                                 <div class="lms-quiz-variant-action-row">
@@ -969,7 +969,7 @@ function renderLmsStaffQuizWorkspace(context) {
                                     </div>
                                     <div class="lms-quiz-variant-tab-row">${variantTabsMarkup || '<span class="lms-quiz-variant-empty-copy">No variants generated yet.</span>'}</div>
                                     ${activeVariant ? `<div class="lms-quiz-variant-add-row">
-                                        <label class="lms-quiz-variant-field">Add Base Question To ${escapeHtml(activeVariant.label)}<select id="lms-variant-add-base-question" class="lms-quiz-variant-config-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
+                                        <label class="lms-quiz-variant-field">Add Base Question To ${escapeHtml(activeVariant.label)}<select id="lms-variant-add-base-question" class="lms-quiz-variant-config-control lux-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
                                         <button type="button" class="lux-secondary-btn lms-quiz-variant-action-btn" data-lms-click="addBaseQuestionToLmsQuizVariant(${jsQuote(activeVariant.id)}, document.getElementById('lms-variant-add-base-question')?.value)"><i class="fas fa-plus"></i> Add Question</button>
                                     </div>` : ''}
                                     <div class="lms-quiz-variant-question-list">${activeVariantQuestionsMarkup}</div>
@@ -1006,11 +1006,11 @@ function renderLmsStaffQuizWorkspace(context) {
                                 </div>
                             </div>
                             <div class="lms-quiz-question-editor-body">
-                                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'text', this.value)" placeholder="Write the question here..." class="lms-quiz-question-textarea">${escapeHtml(activeQuestion?.text || '')}</textarea>
+                                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'text', this.value)" placeholder="Write the question here..." class="lms-quiz-question-textarea lux-control">${escapeHtml(activeQuestion?.text || '')}</textarea>
                                 <div class="lms-quiz-question-meta-grid">
-                                    <label class="lms-quiz-question-field">Question Type<select data-lms-change="setLmsQuizQuestionType(${jsQuote(activeQuestion?.id || '')}, this.value)" class="lms-quiz-question-control"><option value="mcq" ${activeQuestionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${activeQuestionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
-                                    <label class="lms-quiz-question-field">Options Per Question<select data-lms-change="setLmsQuizQuestionOptionCount(${jsQuote(activeQuestion?.id || '')}, this.value)" ${activeQuestionType === 'written' ? 'disabled' : ''} class="lms-quiz-question-control ${activeQuestionType === 'written' ? 'is-disabled' : ''}">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(activeQuestion?.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
-                                    <label class="lms-quiz-question-field">Score<input type="number" min="1" step="1" value="${escapeHtml(String(activeQuestion?.score || 1))}" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'score', this.value)" class="lms-quiz-question-control" /></label>
+                                    <label class="lms-quiz-question-field">Question Type<select data-lms-change="setLmsQuizQuestionType(${jsQuote(activeQuestion?.id || '')}, this.value)" class="lms-quiz-question-control lux-control"><option value="mcq" ${activeQuestionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${activeQuestionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
+                                    <label class="lms-quiz-question-field">Options Per Question<select data-lms-change="setLmsQuizQuestionOptionCount(${jsQuote(activeQuestion?.id || '')}, this.value)" ${activeQuestionType === 'written' ? 'disabled' : ''} class="lms-quiz-question-control lux-control ${activeQuestionType === 'written' ? 'is-disabled' : ''}">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(activeQuestion?.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
+                                    <label class="lms-quiz-question-field">Score<input type="number" min="1" step="1" value="${escapeHtml(String(activeQuestion?.score || 1))}" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'score', this.value)" class="lms-quiz-question-control lux-control" /></label>
                                 </div>
                                 ${activeAnswerComposer}
                             </div>
@@ -1131,6 +1131,8 @@ function renderLmsQuizSection(courseId) {
     }
     renderLmsStaffQuizWorkspace(context);
 }
+
+window.renderLmsQuizSection = renderLmsQuizSection;
 
 function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
     const contentArea = document.getElementById('lms-content-area');
@@ -1314,7 +1316,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                     <div class="lms-student-quiz-question-card">
                         <div class="lms-student-quiz-question-label">Question ${index + 1}</div>
                         <div class="lms-student-quiz-question-text">${escapeHtml(question.text || '')}</div>
-                        <textarea ${disabled ? 'disabled' : ''} data-lms-input="updateLmsQuizDraftAnswer(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Write your answer here..." class="lms-quiz-answer-textarea${disabled ? ' is-disabled' : ''}">${escapeHtml(answer.text || '')}</textarea>
+                        <textarea ${disabled ? 'disabled' : ''} data-lms-input="updateLmsQuizDraftAnswer(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Write your answer here..." class="lms-quiz-answer-textarea lux-control${disabled ? ' is-disabled' : ''}">${escapeHtml(answer.text || '')}</textarea>
                     </div>
                 `;
             }

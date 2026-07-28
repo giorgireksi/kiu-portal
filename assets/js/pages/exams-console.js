@@ -1339,7 +1339,7 @@
                 ${filtered.length ? `
                     <div class="ex2-card-grid">
                         ${filtered.map((template, idx) => `
-                            <article class="ex2-quiz-card ex2-quiz-card--delay-${idx % 12}" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'>
+                            <article class="ex2-quiz-card lux-soft-chrome ex2-quiz-card--delay-${idx % 12}" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'>
                                 <div class="ex2-quiz-card-head">
                                     <span class="ex2-status-dot is-${escapeHtml(String(template.status||'draft').toLowerCase())}">${escapeHtml(String(template.status||'draft').replace(/_/g,' '))}</span>
                                     <span class="ex2-quiz-card-type">${escapeHtml(template.examType === 'paper' ? 'Paper' : 'Digital')}</span>
@@ -1363,7 +1363,7 @@
                         `).join('')}
                     </div>
                 ` : `
-                    <div class="ex2-empty-state">
+                    <div class="ex2-empty-state lux-soft-chrome">
                         <i class="fas fa-graduation-cap"></i>
                         <p>${isAdmin ? 'No templates match your filters.' : 'No quizzes yet. Create your first one!'}</p>
                         <button type="button" class="ex2-btn is-primary" data-exam-call="beginExamTemplateCreation"><i class="fas fa-plus"></i> Create Quiz</button>
@@ -1377,7 +1377,7 @@
     function renderBuilderLoadingState() {
         return `
             <div class="ex2-workspace-section">
-                <div class="ex2-empty-state">
+                <div class="ex2-empty-state lux-soft-chrome">
                     <i class="fas fa-wand-magic-sparkles"></i>
                     <p><strong>Loading Quiz Builder</strong></p>
                     <p>Preparing the question bank, variant editor, and review workspace.</p>
@@ -1400,8 +1400,8 @@
         const closeAction = normalizedKey === 'return' ? 'close-return-modal' : 'close-share-modal';
         const titleId = `ex2-modal-title-${toFieldToken(normalizedKey || 'dialog')}`;
         return `
-            <div class="ex2-modal-overlay" data-exam-modal="${escapeHtml(normalizedKey)}">
-                <div class="ex2-modal" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}">
+            <div class="ex2-modal-overlay" data-exam-modal="${escapeHtml(normalizedKey)}" data-lux-transparency-exempt="1">
+                <div class="ex2-modal" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}" data-lux-transparency-exempt="1">
                     <div class="ex2-modal-head ${tone === 'warm' ? 'is-warm' : 'is-accent'}">
                         <h3 id="${escapeHtml(titleId)}"><i class="fas ${escapeHtml(icon || 'fa-window-maximize')}"></i> ${escapeHtml(title)}</h3>
                         <button type="button" class="ex2-btn is-ghost ex2-modal-close" data-exam-action="${closeAction}" aria-label="Close modal"><i class="fas fa-times"></i></button>
@@ -1423,11 +1423,11 @@
             <input class="ex2-input ex2-modal-search" type="text" placeholder="Search by name or email..." value="${escapeHtml(runtime.shareSearchQuery)}" data-exam-input="share-search">
             <div class="ex2-list ex2-modal-list">
                 ${filtered.length ? filtered.map(s => `
-                    <div class="ex2-list-item">
+                    <div class="ex2-list-item lux-soft-chrome">
                         <div><strong>${escapeHtml(s.name)}</strong><span class="ex2-modal-meta">${escapeHtml(s.role)}</span></div>
                         ${alreadyShared.has(s.id) ? `<span class="ex2-status is-approved">Shared</span>` : `<button type="button" class="ex2-btn is-secondary" data-exam-action="share-with-staff" data-user-id="${escapeHtml(s.id)}" data-user-name="${escapeHtml(s.name)}"><i class="fas fa-share"></i> Share</button>`}
                     </div>
-                `).join('') : `<div class="ex2-empty">No colleagues found in your faculty.</div>`}
+                `).join('') : `<div class="ex2-empty lux-soft-chrome">No colleagues found in your faculty.</div>`}
             </div>
         `;
         return renderExamModalShell({
@@ -1526,7 +1526,7 @@
     function renderAdminLoadingPanel(title, description) {
         return `
             <div class="ex2-workspace-section">
-                <div class="ex2-empty-state">
+                <div class="ex2-empty-state lux-soft-chrome">
                     <i class="fas fa-user-shield"></i>
                     <p><strong>${escapeHtml(title)}</strong></p>
                     <p>${escapeHtml(description)}</p>

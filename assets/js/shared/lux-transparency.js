@@ -141,6 +141,7 @@ function isRouteOwnedSurface(el) {
             '.lms-route-empty, .lms-clean-subjects, .lux-lms-hero, .lms-hero-v2, ' +
             '.lux-lms-group-card, .lux-lms-subject-card'
         )) return true;
+        if (el.matches?.('.lux-card-body') && el.closest?.('.lms-clean-subjects--merged, .lux-lms-subject-card')) return true;
         if (el.closest?.('.lms-quiz-builder') && hasOwnedClassPrefix(el, ['lms-quiz-'])) return true;
     }
 
@@ -197,7 +198,7 @@ function isRouteOwnedSurface(el) {
     }
 
     if (document.body.classList.contains('lux-route-study-card')
-        && el.closest?.('#page-study-card, #study-card-container, .study-card-page-shell')) {
+        && el.closest?.('#page-study-card, #study-card-container, .study-card-command-deck, .study-card-page-shell')) {
         if (hasOwnedClassPrefix(el, ['study-card-']) || el.id === 'study-card-container') return true;
     }
 

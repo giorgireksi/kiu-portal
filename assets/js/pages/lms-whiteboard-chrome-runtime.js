@@ -742,6 +742,17 @@ function updateLmsWhiteboardVolatileUi(resourceKey = '') {
     return true;
 }
 
+function toggleLmsWhiteboardMinimap(force) {
+    const boardShell = getActiveLmsWhiteboardShell(LMS_WHITEBOARD_UI.boundKey);
+    const shell = boardShell?.querySelector('.lms-whiteboard-minimap-shell')
+        || document.querySelector('.lms-whiteboard-minimap-shell');
+    if (!shell) return;
+    const hidden = typeof force === 'boolean' ? !force : shell.classList.contains('is-collapsed');
+    shell.classList.toggle('is-collapsed', !hidden);
+    const toggle = shell.querySelector('[data-lms-whiteboard-action="toggle-minimap"]');
+    if (toggle) toggle.setAttribute('aria-pressed', hidden ? 'true' : 'false');
+}
+
 function runLmsWhiteboardHudAction(action = '', resourceKey = '', canEdit = false, canManage = false, shell = null) {
     const key = resourceKey || LMS_WHITEBOARD_UI.boundKey;
     if (!action) return;
@@ -1240,6 +1251,7 @@ function updateLmsWhiteboardLayerActionState() {
             updateLmsWhiteboardSessionChrome,
             updateLmsWhiteboardVolatileUi,
             runLmsWhiteboardHudAction,
+            toggleLmsWhiteboardMinimap,
             handleLmsWhiteboardShellActionClick,
             bindLmsWhiteboardShellActions,
             bindLmsWhiteboardHudControls,

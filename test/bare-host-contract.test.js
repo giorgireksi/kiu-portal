@@ -66,7 +66,7 @@ describe('bare host contract', () => {
             ['lms.html', 'lms-route-stage'],
             ['timetable.html', 'lux-timetable-page'],
             ['registration.html', 'registration-page-shell'],
-            ['study-card.html', 'study-card-page-shell'],
+            ['study-card.html', 'study-card-command-deck'],
             ['faculty-gradebook.html', 'lux-faculty-gradebook-page'],
             ['admin-scheduler.html', 'id="page-admin-scheduler"'],
             ['admin-library.html', 'id="page-library"'],
@@ -86,7 +86,7 @@ describe('bare host contract', () => {
         expect(readSource('lms.html')).toMatch(/lms-route-workspace-chrome[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('timetable.html')).toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('registration.html')).toMatch(/registration-workspace[\s\S]*data-lux-glass-root="1"/);
-        expect(readSource('study-card.html')).toMatch(/study-card-workspace[\s\S]*data-lux-glass-root="1"/);
+        expect(readSource('study-card.html')).toMatch(/study-card-command-deck[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('faculty-gradebook.html')).toMatch(/lux-faculty-command-deck[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('admin-scheduler.html')).toMatch(/sch-grid-shell[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('admin-library.html')).toMatch(/admin-library-shell[\s\S]*data-lux-glass-root="1"/);

@@ -278,9 +278,9 @@
                 data-course-key="${safeHtml(courseKey)}"
                 data-group-id="${safeHtml(groupId)}"
                 data-lms-subject-card="true">
-                <div class="lux-card-body">
+                <div class="lux-card-body" data-lux-layout-only="1">
                     <div class="lux-section-kicker lms-clean-card-kicker"><i class="${safeHtml(icon)}"></i> ${safeHtml(kickerLabel)}</div>
-                    <div class="lux-subject-row__title lms-clean-card-title">${safeHtml(subjectName)}</div>
+                    <div class="lux-subject-row__title lms-clean-card-title lms-route-card-title">${safeHtml(subjectName)}</div>
                     ${buildLmsSubjectMetaBadges(subject)}
                     ${metaHtml}
                 </div>

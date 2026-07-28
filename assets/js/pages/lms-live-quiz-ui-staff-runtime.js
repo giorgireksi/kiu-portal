@@ -175,34 +175,6 @@ function refreshStaffLmsLiveQuizUi(resourceKey, options = {}) {
     renderLmsLiveQuizSection(resourceKey, { skipLoad: true, ...options });
 }
 
-const LMS_LIVE_BROADCAST_PATCH_HINTS = {
-    'question-activated': { questionSwap: true, includeResults: true },
-    'question-paused': {},
-    'question-resumed': {},
-    'question-locked': {},
-    'question-revealed': { includeResults: true },
-    'results-toggle': { includeResults: true },
-    'question-stepped': { questionSwap: true, includeResults: true },
-    'question-ready': {},
-    'podium-reveal': { includeResults: true },
-    'podium-dismiss': {}
-};
-
-const LMS_LIVE_QUEUE_PATCH_HINTS = {
-    'question-deleted': { includeBreakdown: true },
-    'question-duplicated': {},
-    'question-moved': {},
-    'question-added': { includeHeroStats: true },
-    'questions-imported': { includeHeroStats: true },
-    'answers-cleared': { includeBreakdown: true },
-    'session-ended': { includeStage: true, includeHeroStats: true }
-};
-
-const LMS_LIVE_SESSION_PATCH_HINTS = {
-    'session-deleted': { includeQueue: false, includeBroadcast: false, includeHeroStats: true },
-    'session-created': { includeQueue: true, includeBroadcast: false, includeHeroStats: true }
-};
-
         const api = {
             getLmsLiveStudentId,
             canManageLmsLiveQuiz,

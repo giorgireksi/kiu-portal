@@ -13,26 +13,26 @@ function buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelI
             <div class="lms-route-field-grid">
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-asm-title">Homework Title</label>
-                    <input type="text" id="new-asm-title" class="lms-route-input" placeholder="Homework title">
+                    <input type="text" id="new-asm-title" class="lms-route-input lux-control" placeholder="Homework title">
                 </div>
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-asm-deadline">Deadline</label>
-                    <input type="datetime-local" id="new-asm-deadline" class="lms-route-input">
+                    <input type="datetime-local" id="new-asm-deadline" class="lms-route-input lux-control">
                 </div>
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-asm-week">Teaching Week</label>
-                    <select id="new-asm-week" class="lms-route-select">
+                    <select id="new-asm-week" class="lms-route-select lux-control">
                         ${buildLmsWeekSelectOptions(resourceKey, '')}
                     </select>
                 </div>
             </div>
             <div class="lms-route-field lms-route-field-mt-14">
                 <label class="lms-route-field-label" for="new-asm-description">Description</label>
-                <textarea id="new-asm-description" class="lms-route-textarea" placeholder="Homework description, instructions, grading notes..."></textarea>
+                <textarea id="new-asm-description" class="lms-route-textarea lux-control" placeholder="Homework description, instructions, grading notes..."></textarea>
             </div>
             <div class="lms-route-field lms-route-field-mt-14">
                 <label class="lms-route-field-label" for="new-asm-rubric">Rubric</label>
-                <textarea id="new-asm-rubric" class="lms-route-textarea" placeholder="Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%">Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%</textarea>
+                <textarea id="new-asm-rubric" class="lms-route-textarea lux-control" placeholder="Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%">Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%</textarea>
             </div>
             <label class="lms-route-inline lms-route-inline-gap-8 lms-route-inline-center lms-route-copy lms-route-copy-mt-12">
                 <input type="checkbox" id="new-asm-late">
@@ -97,7 +97,7 @@ function buildLmsAssignmentGradeModalBodyHtml({
                     <div class="lms-route-field-grid lms-assignment-grade-field-grid">
                         <div class="lms-route-field">
                             <label class="lms-route-field-label" for="${fieldIds.scoreInputId}">Score out of ${escapeHtml(String(maxScore))}</label>
-                            <input id="${fieldIds.scoreInputId}" type="number" min="0" max="${escapeHtml(String(maxScore))}" step="1" value="${escapeHtml(submission.score == null ? '' : String(submission.score))}" class="lms-route-input lms-assignment-grade-score-input">
+                            <input id="${fieldIds.scoreInputId}" type="number" min="0" max="${escapeHtml(String(maxScore))}" step="1" value="${escapeHtml(submission.score == null ? '' : String(submission.score))}" class="lms-route-input lux-control lms-assignment-grade-score-input">
                         </div>
                         <div class="lms-route-field">
                             <label class="lms-route-field-label">Review status</label>
@@ -109,7 +109,7 @@ function buildLmsAssignmentGradeModalBodyHtml({
                     </div>
                     <div class="lms-route-field lms-route-field-mt-14">
                         <label class="lms-route-field-label" for="${fieldIds.feedbackInputId}">Feedback for the student</label>
-                        <textarea id="${fieldIds.feedbackInputId}" class="lms-route-textarea lms-route-textarea-min-110 lms-assignment-grade-feedback-input" placeholder="Explain the score, note what to revise, or confirm why the work is ready.">${escapeHtml(submission.feedback || '')}</textarea>
+                        <textarea id="${fieldIds.feedbackInputId}" class="lms-route-textarea lux-control lms-route-textarea-min-110 lms-assignment-grade-feedback-input" placeholder="Explain the score, note what to revise, or confirm why the work is ready.">${escapeHtml(submission.feedback || '')}</textarea>
                     </div>
                     <div class="lms-route-actions lms-route-actions-mt-16 lms-assignment-grade-actions">
                         <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-lms-click="closeLmsAssignmentGradeModal()"><i class="fas fa-arrow-left"></i> Cancel</button>
@@ -168,7 +168,7 @@ function renderWorkspace(courseId) {
         ` : '';
         const studentControls = effectiveRole === USER_ROLES.STUDENT ? `
             <div class="lms-route-divider-top lms-assignment-student-controls">
-                <textarea id="sub-text-${assignment.id}" class="lms-route-textarea lms-route-textarea-min-110">${escapeHtml(studentSubmission?.text || '')}</textarea>
+                <textarea id="sub-text-${assignment.id}" class="lms-route-textarea lux-control lms-route-textarea-min-110">${escapeHtml(studentSubmission?.text || '')}</textarea>
                 <div class="lms-route-inline lms-route-inline-between lms-route-inline-gap-10 lms-route-inline-center lms-assignment-student-toolbar">
                     <div id="${submissionLabelId}" class="lms-route-pill lms-assignment-student-file-pill">
                         ${studentSubmission?.file?.name ? `<i class="fas fa-paperclip"></i> ${escapeHtml(studentSubmission.file.name)}` : 'No homework file selected'}

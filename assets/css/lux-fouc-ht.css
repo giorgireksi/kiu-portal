@@ -760,7 +760,19 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .schedule-empty-state,
   .schedule-grid-empty,
   .lux-timetable-grid-empty,
-  .schedule-day-section
+  .schedule-day-section,
+  .lux-fg-filters,
+  .lux-fg-assessment-controls,
+  .lux-fg-ops-panel,
+  .lux-fg-ops-tile,
+  .gb-lms-staff-roster-row,
+  .study-card-term-row.lux-soft-chrome,
+  .study-card-term-header.lux-soft-chrome,
+  .study-card-summary-stage.lux-soft-chrome,
+  .study-card-assessment-panel.lux-soft-chrome,
+  .study-card-control-band.lux-soft-chrome,
+  .study-card-activity-item.lux-soft-chrome,
+  .study-card-gradebook-overlay .gb-weight-card.lux-soft-chrome
 ):not(.lux-panel):not([data-lux-glass-root="1"]),
 body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
   .lux-strip-card.surface-card,
@@ -793,7 +805,10 @@ body.lux-route-lms .page-hero :is(
   .lms-clean-subjects--merged,
   .lux-lms-subject-card,
   .lms-route-empty,
-  .lms-hero-focus
+  .lms-hero-focus,
+  .lms-student-semester-bar,
+  .lms-student-semester-option,
+  #lms-lane-chip
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -839,7 +854,30 @@ body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] :is(
   .lms-member-overview-panel,
   .lms-member-section,
   .lms-member-row,
+  .lms-quiz-studio-hero,
+  .lms-quiz-studio-main-card,
+  .lms-quiz-studio-stat-card,
+  .lms-quiz-studio-alert-summary,
+  .lms-quiz-tool-panel,
+  .lms-quiz-saved-card,
+  .lms-quiz-rules-card,
+  .lms-quiz-card,
+  .lms-quiz-question-nav-card,
+  .lms-quiz-question-editor-card,
+  .lms-quiz-variant-question-card,
+  .lms-live-monitor-panel,
+  .lms-student-quiz-card,
+  .lms-protected-monitor-page-shell,
+  .lms-protected-monitor-shell,
   .lms-whiteboard-shell,
+  .lms-whiteboard-tools,
+  .lms-whiteboard-command-bar,
+  .lms-whiteboard-zoom,
+  .lms-whiteboard-minimap,
+  .lms-whiteboard-panel,
+  .lms-whiteboard-stage,
+  .lms-whiteboard-props-card,
+  .lms-whiteboard-collab-pill,
   .lms-gradebook-wrapper-shell .lms-route-panel,
   .lms-gradebook-wrapper-shell .lms-route-card,
   .gb-modern-hero,
@@ -911,6 +949,21 @@ body.lux-route-lms #page-lms-inner :is(
   .lms-member-overview-panel,
   .lms-member-section,
   .lms-member-row,
+  .lms-quiz-studio-hero,
+  .lms-quiz-studio-main-card,
+  .lms-quiz-studio-stat-card,
+  .lms-quiz-studio-alert-summary,
+  .lms-quiz-tool-panel,
+  .lms-quiz-saved-card,
+  .lms-quiz-rules-card,
+  .lms-quiz-card,
+  .lms-quiz-question-nav-card,
+  .lms-quiz-question-editor-card,
+  .lms-quiz-variant-question-card,
+  .lms-live-monitor-panel,
+  .lms-student-quiz-card,
+  .lms-protected-monitor-page-shell,
+  .lms-protected-monitor-shell,
   .gb-modern-hero,
   .gb-modern-card,
   .gb-weight-row
@@ -959,6 +1012,21 @@ body.lux-route-lms #page-lms-inner :is(
   .lms-member-overview-panel,
   .lms-member-section,
   .lms-member-row,
+  .lms-quiz-studio-hero,
+  .lms-quiz-studio-main-card,
+  .lms-quiz-studio-stat-card,
+  .lms-quiz-studio-alert-summary,
+  .lms-quiz-tool-panel,
+  .lms-quiz-saved-card,
+  .lms-quiz-rules-card,
+  .lms-quiz-card,
+  .lms-quiz-question-nav-card,
+  .lms-quiz-question-editor-card,
+  .lms-quiz-variant-question-card,
+  .lms-live-monitor-panel,
+  .lms-student-quiz-card,
+  .lms-protected-monitor-page-shell,
+  .lms-protected-monitor-shell,
   .gb-modern-hero,
   .gb-modern-card,
   .gb-weight-row
@@ -978,11 +1046,82 @@ body.lux-route-lms #page-lms-inner .lms-interaction-messenger:hover {
   box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
 }
 
+/* LMS whiteboard: body-mounted fullscreen leaves glass host — matte HUD surfaces here. */
+body.lux-route-lms.kiu-lms-whiteboard-focus-active .lms-whiteboard-shell.is-fullscreen :is(
+  .lms-whiteboard-tools,
+  .lms-whiteboard-command-bar,
+  .lms-whiteboard-zoom,
+  .lms-whiteboard-minimap,
+  .lms-whiteboard-panel,
+  .lms-whiteboard-stage,
+  .lms-whiteboard-props-card,
+  .lms-whiteboard-collab-pill
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
 body.lux-route-lms .page-hero :is(
   .lms-hero-focus,
   .lux-lms-subject-card
 ):hover {
   transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+}
+
+/* Exams command center: matte chips inside one glass workspace host. */
+body.lux-route-exams #admin-exams-root .ex2-stat-chip,
+body.lux-route-exams #admin-exams-root .ex2-summary-chip,
+body.lux-route-exams #admin-exams-root .ex2-qnav-bar,
+body.lux-route-exams #admin-exams-root .ex2-question-card,
+body.lux-route-exams #admin-exams-root .ex2-auto-gen-box,
+body.lux-route-exams #admin-exams-root .ex2-panel,
+body.lux-route-exams #admin-exams-root .ex2-session-summary-card,
+body.lux-unified-shell.lux-route-exams #admin-exams-root [data-lux-glass-root="1"] :is(
+  .ex2-stat-chip,
+  .ex2-summary-chip,
+  .ex2-qnav-bar,
+  .ex2-question-card,
+  .ex2-auto-gen-box,
+  .ex2-panel:not(:has(.lux-universal-picker-field)),
+  .ex2-session-summary-card,
+  .ex2-quiz-card,
+  .ex2-empty-state,
+  .ex2-rq-column,
+  .ex2-rq-card,
+  .ex2-select-card,
+  .ex2-activity-metric,
+  .ex2-cohort-card,
+  .ex2-session-card,
+  .ex2-session-stat-card,
+  .ex2-split-box,
+  .ex2-builder-step-body,
+  .ex2-builder-empty,
+  .ex2-modal-list .ex2-list-item
+):not([data-lux-glass-root="1"]) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-unified-shell.lux-route-exams #admin-exams-root :is(
+  .ex2-rq-column,
+  .ex2-quiz-card,
+  .ex2-select-card
+):hover {
+  transform: translateY(var(--home-chip-hover-lift, -3px));
   border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
   box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
 }
@@ -1038,14 +1177,16 @@ body.lux-route-registration #page-registration .lux-card:not([data-lux-glass-roo
 
 /* Glass hosts only — no lift (outer page-hero + stage canvas). */
 body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage),
-body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace) {
+body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace),
+body.lux-route-faculty-gradebook .lux-faculty-command-deck[data-lux-glass-root="1"] {
   transition: none;
   contain: none;
   overflow: visible;
 }
 
 body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage)::after,
-body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace)::after {
+body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace)::after,
+body.lux-route-faculty-gradebook .lux-faculty-command-deck.lux-summary-surface--hero[data-lux-glass-root="1"]::after {
   display: none;
 }
 

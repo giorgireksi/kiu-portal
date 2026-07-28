@@ -107,43 +107,7 @@ const renderLmsWhiteboardSection = window.renderLmsWhiteboardSection;
 const renderLmsPersonalWhiteboardScratch = window.renderLmsPersonalWhiteboardScratch;
 const bindLmsWhiteboardSection = window.bindLmsWhiteboardSection;
 
-function startLmsWhiteboardPan(event, canvas) {
-    event.preventDefault();
-    canvas.setPointerCapture?.(event.pointerId);
-    LMS_WHITEBOARD_UI.panning = true;
-    LMS_WHITEBOARD_UI.dragStart = {
-        x: event.clientX,
-        y: event.clientY,
-        panX: LMS_WHITEBOARD_UI.panX,
-        panY: LMS_WHITEBOARD_UI.panY
-    };
-    canvas.closest('.lms-whiteboard-stage')?.classList.add('is-panning');
-    refreshLmsWhiteboardPointerCursor(canvas);
-}
-
-function endLmsWhiteboardPan(canvas, event) {
-    if (!LMS_WHITEBOARD_UI.panning) return;
-    LMS_WHITEBOARD_UI.panning = false;
-    LMS_WHITEBOARD_UI.dragStart = null;
-    if (event?.pointerId != null) canvas.releasePointerCapture?.(event.pointerId);
-    canvas.closest('.lms-whiteboard-stage')?.classList.remove('is-panning');
-    refreshLmsWhiteboardPointerCursor(canvas);
-}
-
-
 /* Props tab + more menu: lms-whiteboard-chrome-runtime.js */
-
-
-function toggleLmsWhiteboardMinimap(force) {
-    const boardShell = getActiveLmsWhiteboardShell(LMS_WHITEBOARD_UI.boundKey);
-    const shell = boardShell?.querySelector('.lms-whiteboard-minimap-shell')
-        || document.querySelector('.lms-whiteboard-minimap-shell');
-    if (!shell) return;
-    const hidden = typeof force === 'boolean' ? !force : shell.classList.contains('is-collapsed');
-    shell.classList.toggle('is-collapsed', !hidden);
-    const toggle = shell.querySelector('[data-lms-whiteboard-action="toggle-minimap"]');
-    if (toggle) toggle.setAttribute('aria-pressed', hidden ? 'true' : 'false');
-}
 
 /* Layers chrome UI: lms-whiteboard-chrome-runtime.js */
 

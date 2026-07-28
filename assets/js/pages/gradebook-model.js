@@ -534,9 +534,9 @@ function renderGradebookSchemeReferenceTable(scheme = {}, options = {}) {
     const showCaption = Boolean(options.showCaption);
     return `
         <div class="gb-scheme-reference-section${compact ? ' is-compact' : ''}" data-gb-scheme-reference>
-            ${showCaption ? '<p class="gb-scheme-reference-copy">How points are distributed for this subject.</p>' : ''}
+            ${showCaption ? '<p class="gb-scheme-reference-copy lms-route-copy">How points are distributed for this subject.</p>' : ''}
             <div class="gb-scheme-reference-table-wrap">
-                <table class="gb-scheme-table gb-scheme-table--reference">
+                <table class="gb-scheme-table gb-scheme-table--reference lux-modern-table">
                     <thead>
                         <tr>
                             <th scope="col">Component</th>
@@ -562,7 +562,7 @@ function renderGradebookSchemeReferenceTable(scheme = {}, options = {}) {
                     </tbody>
                 </table>
             </div>
-            ${showFooter ? `<div class="gb-scheme-total gb-scheme-reference-total">Course total: ${courseTotal} points</div>` : ''}
+            ${showFooter ? `<div class="gb-scheme-total gb-scheme-reference-total lms-route-card-title">Course total: ${courseTotal} points</div>` : ''}
         </div>
     `;
 }
@@ -585,7 +585,7 @@ function getGradebookGradingSchemeControlsMarkupInner(scheme = {}, readOnly = fa
     if (readOnly) {
         return `
             <div class="gb-scheme-shell gb-scheme-shell-readonly" data-gb-scheme-shell>
-                <div class="gb-scheme-label">${escapeHtml(shellLabel)}</div>
+                <div class="lms-route-field-label gb-scheme-label">${escapeHtml(shellLabel)}</div>
                 ${renderGradebookSchemeReferenceTable(normalized, { showCaption: false })}
             </div>
         `;
@@ -597,9 +597,9 @@ function getGradebookGradingSchemeControlsMarkupInner(scheme = {}, readOnly = fa
             data-gb-scheme-shell
             data-gb-scheme-locked="true"
         >
-            <div class="gb-scheme-label">${escapeHtml(shellLabel)}</div>
+            <div class="lms-route-field-label gb-scheme-label">${escapeHtml(shellLabel)}</div>
             <div class="gb-scheme-table-wrap">
-                <table class="gb-scheme-table">
+                <table class="gb-scheme-table lux-modern-table">
                     <thead>
                         <tr>
                             <th scope="col">Component</th>
@@ -618,7 +618,7 @@ function getGradebookGradingSchemeControlsMarkupInner(scheme = {}, readOnly = fa
                                 <td>
                                     <input
                                         id="${escapeHtml(`${idPrefix}scheme-count-${component.schemeKey}`)}"
-                                        class="gb-scheme-input gb-scheme-input-count is-locked"
+                                        class="gb-scheme-input gb-scheme-input-count is-locked lux-control is-muted"
                                         type="number"
                                         min="1"
                                         step="1"
@@ -631,7 +631,7 @@ function getGradebookGradingSchemeControlsMarkupInner(scheme = {}, readOnly = fa
                                 <td>
                                     <input
                                         id="${escapeHtml(`${idPrefix}scheme-${component.schemeKey}`)}"
-                                        class="gb-scheme-input is-locked"
+                                        class="gb-scheme-input is-locked lux-control is-muted"
                                         type="number"
                                         min="0"
                                         step="1"
@@ -643,7 +643,7 @@ function getGradebookGradingSchemeControlsMarkupInner(scheme = {}, readOnly = fa
                                 </td>
                                 <td>
                                     <span
-                                        class="gb-scheme-per-item"
+                                        class="gb-scheme-per-item lms-route-copy lms-route-meta-12"
                                         data-gb-scheme-per-item="${escapeHtml(component.schemeKey)}"
                                         title="${escapeHtml(`${itemCount} items × ${perItem} per item`)}"
                                     >${escapeHtml(`${perItem} pt${Number(perItem) === 1 ? '' : 's'} each`)}</span>
@@ -659,7 +659,7 @@ function getGradebookGradingSchemeControlsMarkupInner(scheme = {}, readOnly = fa
                 <button type="button" class="lux-secondary-btn" data-gradebook-click="manage-components" data-gradebook-subject-id="${escapeHtml(subjectId)}"><i class="fas fa-sliders-h"></i> Manage components</button>
                 <button type="button" class="lux-primary-btn" data-gradebook-click="save-grading-scheme" disabled><i class="fas fa-save"></i> Save</button>
             </div>
-            <div id="${escapeHtml(totalId)}" class="gb-scheme-total" data-gb-scheme-total>Course total: ${totalPoints} points</div>
+            <div id="${escapeHtml(totalId)}" class="gb-scheme-total lms-route-card-title" data-gb-scheme-total>Course total: ${totalPoints} points</div>
         </div>
     `;
 }
@@ -1233,16 +1233,16 @@ function renderStudyCardAssessmentActivityFeed(record, options = {}) {
                     ? `<p class="study-card-activity-item-note"><i class="fas fa-comment-dots"></i> ${escapeHtml(note)}</p>`
                     : '';
                 return `
-                    <button type="button" class="study-card-activity-item is-${escapeHtml(item.status.key)}" data-gradebook-click="open-category-history" data-gradebook-criterion="${escapeHtml(String(item.meta.key))}" data-gradebook-category-label="${escapeHtml(item.meta.label)}">
+                    <button type="button" class="study-card-activity-item lux-soft-chrome is-${escapeHtml(item.status.key)}" data-gradebook-click="open-category-history" data-gradebook-criterion="${escapeHtml(String(item.meta.key))}" data-gradebook-category-label="${escapeHtml(item.meta.label)}">
                         <div class="study-card-activity-item-main">
-                            <span class="study-card-activity-item-badge">${escapeHtml(item.meta.label)}</span>
-                            <strong class="study-card-activity-item-title">${escapeHtml(item.displayMeta.title || `${item.meta.label} ${item.entryNumber}`)}</strong>
-                            ${item.displayMeta.subtitle ? `<span class="study-card-activity-item-subtitle">${escapeHtml(item.displayMeta.subtitle)}</span>` : ''}
-                            <span class="study-card-activity-item-meta">${escapeHtml(formatAssessmentHistoryTimestamp(item.entry.updatedAt))}${item.entry.updatedBy ? ` · ${escapeHtml(item.entry.updatedBy)}` : ''}</span>
+                            <span class="study-card-activity-item-badge lms-route-field-label">${escapeHtml(item.meta.label)}</span>
+                            <strong class="study-card-activity-item-title lms-route-card-title">${escapeHtml(item.displayMeta.title || `${item.meta.label} ${item.entryNumber}`)}</strong>
+                            ${item.displayMeta.subtitle ? `<span class="study-card-activity-item-subtitle lms-route-copy">${escapeHtml(item.displayMeta.subtitle)}</span>` : ''}
+                            <span class="study-card-activity-item-meta lms-route-meta-12">${escapeHtml(formatAssessmentHistoryTimestamp(item.entry.updatedAt))}${item.entry.updatedBy ? ` · ${escapeHtml(item.entry.updatedBy)}` : ''}</span>
                             ${notePreview}
                         </div>
                         <div class="study-card-activity-item-side">
-                            <strong class="study-card-activity-item-score">${escapeHtml(String(scoreLabel))}</strong>
+                            <strong class="study-card-activity-item-score lms-route-card-title">${escapeHtml(String(scoreLabel))}</strong>
                             <span class="gb-status-badge lux-status-pill is-${escapeHtml(item.status.key)}"><i class="fas ${escapeHtml(item.status.icon)}"></i> ${escapeHtml(item.status.label)}</span>
                         </div>
                     </button>
@@ -1485,18 +1485,18 @@ function renderStudentEvaluationHistorySectionsV3(record, studentId, studentName
                     : { key: 'graded', label: 'Graded', icon: 'fa-circle-check' };
             const scoreInputId = `eval-score-modern-${toDomToken(studentId)}-${sectionId}-${entryNumber}`;
             return `
-                <article class="gb-modal-history-card is-${escapeHtml(status.key)}">
+                <article class="gb-modal-history-card lux-soft-chrome is-${escapeHtml(status.key)}">
                     <div class="gb-modal-history-main">
                         <div class="gb-modal-history-icon"><i class="fas ${escapeHtml(status.icon)}"></i></div>
                         <div>
                             <div class="gb-modal-history-title">
-                                <strong>${escapeHtml(displayMeta.title)}</strong>
+                                <strong class="lms-route-card-title">${escapeHtml(displayMeta.title)}</strong>
                                 <span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
                             </div>
-                            <div class="gb-modal-history-kind">${escapeHtml(status.key === 'pending' ? 'Pending review queue' : status.key === 'graded' ? 'Graded result' : 'Recorded attempt')}</div>
-                            ${displayMeta.subtitle ? `<div class="gb-modal-history-subtitle">${escapeHtml(displayMeta.subtitle)}</div>` : ''}
-                            <div class="gb-modal-history-meta">${escapeHtml(formatAssessmentHistoryTimestamp(entry.updatedAt))}${entry.updatedBy ? ` · ${escapeHtml(entry.updatedBy)}` : ''}</div>
-                            ${entry.note ? `<div class="gb-modal-history-note">${escapeHtml(entry.note)}</div>` : ''}
+                            <div class="gb-modal-history-kind lms-route-copy lms-route-meta-12">${escapeHtml(status.key === 'pending' ? 'Pending review queue' : status.key === 'graded' ? 'Graded result' : 'Recorded attempt')}</div>
+                            ${displayMeta.subtitle ? `<div class="gb-modal-history-subtitle lms-route-copy">${escapeHtml(displayMeta.subtitle)}</div>` : ''}
+                            <div class="gb-modal-history-meta lms-route-copy lms-route-meta-12">${escapeHtml(formatAssessmentHistoryTimestamp(entry.updatedAt))}${entry.updatedBy ? ` · ${escapeHtml(entry.updatedBy)}` : ''}</div>
+                            ${entry.note ? `<div class="gb-modal-history-note lms-route-copy">${escapeHtml(entry.note)}</div>` : ''}
                             ${renderGradebookScoreHistoryPanel({
                                 record: safeRecord,
                                 studentId,
@@ -1509,24 +1509,24 @@ function renderStudentEvaluationHistorySectionsV3(record, studentId, studentName
                         </div>
                     </div>
                     <div class="gb-modal-history-score">
-                        <strong>${status.key === 'pending' ? 'Pending' : (entry.score === null || entry.score === undefined ? '-' : Number(entry.score))}</strong>
-                        <span>${escapeHtml(meta.label)}</span>
+                        <strong class="gb-modal-history-score-value">${status.key === 'pending' ? 'Pending' : (entry.score === null || entry.score === undefined ? '-' : Number(entry.score))}</strong>
+                        <span class="lms-route-copy lms-route-meta-12">${escapeHtml(meta.label)}</span>
                     </div>
                     ${canEdit ? `
                         <div class="gb-modal-history-actions">
                             ${linkedQuizSource ? `<button type="button" class="lux-secondary-btn gb-modal-action-btn" data-gradebook-click="open-linked-quiz" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(meta.key))}" data-gradebook-number="${escapeHtml(String(entryNumber))}"><i class="fas fa-file-alt"></i> ${pendingReview ? 'Evaluate' : 'Paper'}</button>` : ''}
                             ${status.key === 'graded'
                                 ? `<button type="button" class="lux-secondary-btn gb-modal-action-btn" data-gradebook-click="open-score-edit" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(meta.key))}" data-gradebook-number="${escapeHtml(String(entryNumber))}" data-gradebook-score="${escapeHtml(String(Number(entry.score || 0)))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-pen"></i> Edit</button>`
-                                : `<input id="${scoreInputId}" type="number" min="0" max="${Number(meta.maxScore || 100)}" placeholder="Score"><button type="button" class="lux-primary-btn gb-modal-action-btn gb-modal-action-btn-primary" data-gradebook-click="save-entry" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(meta.key))}" data-gradebook-number="${escapeHtml(String(entryNumber))}" data-gradebook-input-id="${escapeHtml(String(scoreInputId))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-save"></i> Save</button>`}
+                                : `<input id="${scoreInputId}" class="lms-route-input lux-control gb-modal-history-score-input" type="number" min="0" max="${Number(meta.maxScore || 100)}" placeholder="Score" autocomplete="off"><button type="button" class="lux-primary-btn gb-modal-action-btn gb-modal-action-btn-primary" data-gradebook-click="save-entry" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(meta.key))}" data-gradebook-number="${escapeHtml(String(entryNumber))}" data-gradebook-input-id="${escapeHtml(String(scoreInputId))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-save"></i> Save</button>`}
                             <button type="button" class="lux-secondary-btn gb-modal-action-btn gb-modal-action-btn-danger" data-gradebook-click="remove-entry" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(meta.key))}" data-gradebook-number="${escapeHtml(String(entryNumber))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-trash"></i> Remove</button>
                         </div>
                     ` : ''}
                 </article>
             `;
         }).join('') : `
-            <div class="gb-modal-empty">
+            <div class="gb-modal-empty lms-route-copy">
                 <i class="fas fa-inbox"></i>
-                <strong>No ${escapeHtml(meta.pluralLabel || meta.label)} yet</strong>
+                <strong class="lms-route-card-title">No ${escapeHtml(meta.pluralLabel || meta.label)} yet</strong>
                 <span>This section will update when an assessment is submitted, graded, or manually recorded.</span>
             </div>
         `;
@@ -1536,12 +1536,12 @@ function renderStudentEvaluationHistorySectionsV3(record, studentId, studentName
             </button>
         ` : '';
         return `
-            <section class="gb-modal-section">
+            <section class="gb-modal-section lms-route-panel lms-route-panel-compact lux-soft-chrome">
                 <div class="gb-modal-section-head">
                     <div>
-                        <div class="gb-modern-kicker">${escapeHtml(meta.pluralLabel || meta.label)}</div>
-                        <h3>${escapeHtml(meta.label)} history</h3>
-                        <p>Current ${Number.isFinite(current) ? current : 0} · ${entries.length} item${entries.length === 1 ? '' : 's'} · ${pendingCount} pending</p>
+                        <div class="lms-route-field-label gb-modern-kicker">${escapeHtml(meta.pluralLabel || meta.label)}</div>
+                        <h3 class="lms-route-card-title">${escapeHtml(meta.label)} history</h3>
+                        <p class="lms-route-copy">Current ${Number.isFinite(current) ? current : 0} · ${entries.length} item${entries.length === 1 ? '' : 's'} · ${pendingCount} pending</p>
                     </div>
                     <div class="gb-modal-section-actions">
                         ${pendingCount ? `<span class="gb-status-badge lux-status-pill is-pending">${pendingCount} pending</span>` : `<span class="gb-status-badge lux-status-pill is-graded">Ready</span>`}

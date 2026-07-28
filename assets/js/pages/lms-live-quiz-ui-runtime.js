@@ -87,6 +87,34 @@ function renderLmsLiveParticipantPill(resourceKey, session = null) {
     return `<span class="lms-live-pill"><i class="fas fa-user-group"></i> ${escapeHtml(label)}</span>`;
 }
 
+const LMS_LIVE_BROADCAST_PATCH_HINTS = {
+    'question-activated': { questionSwap: true, includeResults: true },
+    'question-paused': {},
+    'question-resumed': {},
+    'question-locked': {},
+    'question-revealed': { includeResults: true },
+    'results-toggle': { includeResults: true },
+    'question-stepped': { questionSwap: true, includeResults: true },
+    'question-ready': {},
+    'podium-reveal': { includeResults: true },
+    'podium-dismiss': {}
+};
+
+const LMS_LIVE_QUEUE_PATCH_HINTS = {
+    'question-deleted': { includeBreakdown: true },
+    'question-duplicated': {},
+    'question-moved': {},
+    'question-added': { includeHeroStats: true },
+    'questions-imported': { includeHeroStats: true },
+    'answers-cleared': { includeBreakdown: true },
+    'session-ended': { includeStage: true, includeHeroStats: true }
+};
+
+const LMS_LIVE_SESSION_PATCH_HINTS = {
+    'session-deleted': { includeQueue: false, includeBroadcast: false, includeHeroStats: true },
+    'session-created': { includeQueue: true, includeBroadcast: false, includeHeroStats: true }
+};
+
 function syncStaffLmsLiveQuizControl(resourceKey, reason = 'live-quiz') {
     const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
         ? resolveCanonicalLmsResourceKey(resourceKey)
@@ -1458,31 +1486,31 @@ function renderLmsLiveStaffWorkspace(context) {
                         <div class="lms-live-form-grid lms-live-form-grid-mt-12">
                             <label class="lms-route-field">
                                 <span class="lms-route-field-label">Question</span>
-                                <textarea id="lms-live-question-${escapeHtml(token)}" class="lms-route-textarea" rows="3" placeholder="Ask one clear question from the current topic"></textarea>
+                                <textarea id="lms-live-question-${escapeHtml(token)}" class="lms-route-textarea lux-control" rows="3" placeholder="Ask one clear question from the current topic"></textarea>
                             </label>
                             <div class="lms-live-form-grid two">
                                 ${LMS_LIVE_OPTION_KEYS.map((key, index) => `
                                     <label class="lms-route-field">
                                         <span class="lms-route-field-label">Option ${escapeHtml(key)}</span>
-                                        <input id="lms-live-option-${index}-${escapeHtml(token)}" class="lms-route-input" type="text" placeholder="Answer ${escapeHtml(key)}">
+                                        <input id="lms-live-option-${index}-${escapeHtml(token)}" class="lms-route-input lux-control" type="text" placeholder="Answer ${escapeHtml(key)}">
                                     </label>
                                 `).join('')}
                             </div>
                             <div class="lms-live-form-grid two">
                                 <label class="lms-route-field">
                                     <span class="lms-route-field-label">Correct answer</span>
-                                    <select id="lms-live-correct-${escapeHtml(token)}" class="lms-route-select">
+                                    <select id="lms-live-correct-${escapeHtml(token)}" class="lms-route-select lux-control">
                                         ${LMS_LIVE_OPTION_KEYS.map((key, index) => `<option value="${index}">${escapeHtml(key)}</option>`).join('')}
                                     </select>
                                 </label>
                                 <label class="lms-route-field">
                                     <span class="lms-route-field-label">Timer seconds</span>
-                                    <input id="lms-live-timer-${escapeHtml(token)}" class="lms-route-input" type="number" min="10" max="180" value="45">
+                                    <input id="lms-live-timer-${escapeHtml(token)}" class="lms-route-input lux-control" type="number" min="10" max="180" value="45">
                                 </label>
                             </div>
                             <label class="lms-route-field">
                                 <span class="lms-route-field-label">Topic label</span>
-                                <input id="lms-live-question-topic-${escapeHtml(token)}" class="lms-route-input" type="text" placeholder="Optional">
+                                <input id="lms-live-question-topic-${escapeHtml(token)}" class="lms-route-input lux-control" type="text" placeholder="Optional">
                             </label>
                             <button type="button" class="lux-primary-btn" data-lms-click="addLmsLiveQuestion(${lmsInlineArg(resourceKey)})"><i class="fas fa-plus"></i> Add question</button>
                         </div>
@@ -1490,7 +1518,7 @@ function renderLmsLiveStaffWorkspace(context) {
                     <div class="lms-live-card">
                         <div class="lms-live-label">Import questions</div>
                         <div class="lms-live-copy">One line per question: Question | A | B | C | D | correct letter | seconds</div>
-                        <textarea id="lms-live-import-${escapeHtml(token)}" class="lms-route-textarea" rows="5" placeholder="What is 2+2? | 3 | 4 | 5 | 6 | B | 30"></textarea>
+                        <textarea id="lms-live-import-${escapeHtml(token)}" class="lms-route-textarea lux-control" rows="5" placeholder="What is 2+2? | 3 | 4 | 5 | 6 | B | 30"></textarea>
                         <button type="button" class="lux-secondary-btn lms-live-import-btn-mt-10" data-lms-click="importLmsLiveQuestionsFromText(${lmsInlineArg(resourceKey)})"><i class="fas fa-file-import"></i> Import</button>
                     </div>
                     <div class="lms-live-card">

@@ -12,6 +12,7 @@ describe('lms-whiteboard-chrome-runtime peel', () => {
         expect(chrome).toContain('__kiuCreateLmsWhiteboardChromeApi');
         expect(chrome).toContain('Object.assign(window, api)');
         expect(chrome).toMatch(/renderLmsWhiteboardDashboardSection|renderLmsWhiteboardToolRail/);
+        expect(chrome).toContain('function toggleLmsWhiteboardMinimap');
     });
 
     it('loads chrome before runtime in LMS_WHITEBOARD_MODULE_URLS', () => {

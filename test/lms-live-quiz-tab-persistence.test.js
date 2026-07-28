@@ -34,11 +34,12 @@ describe('LMS live quiz tab persistence', () => {
     });
 
     it('skips cache-only restore for live-quiz and invalidates cache on save', () => {
+        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
 
-        expect(classroomSource).toContain("tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && LMS_TAB_RENDER_CACHE[cacheKey]");
-        expect(classroomSource).toContain('function invalidateLmsLiveQuizTabCache');
+        expect(shellSource).toContain("tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && tab !== 'quiz' && tab !== 'monitoring' && LMS_TAB_RENDER_CACHE[cacheKey]");
+        expect(shellSource).toContain('function invalidateLmsLiveQuizTabCache');
         expect(classroomSource).toContain('flushLmsLiveQuizSync');
         expect(workspaceSource).toContain('window.invalidateLmsLiveQuizTabCache');
     });

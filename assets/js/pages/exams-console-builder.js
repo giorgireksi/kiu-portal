@@ -217,7 +217,7 @@
                 <div class="ex2-qnav-dots">
                     ${bank.map((q, i) => `<button type="button" class="ex2-qnav-dot ${i === page ? 'is-active' : ''} ${q.text ? 'has-content' : ''}" data-exam-call="navigateBankQuestion" data-exam-args='[${i}]' title="Q${i + 1}">${i + 1}</button>`).join('')}
                 </div>
-                ${question ? renderQuestionEditor(question, page, 'bank') : `<div class="ex2-empty ex2-builder-empty"><span class="ex2-builder-empty-copy">No questions yet. Click "Add Question" to begin.</span></div>`}
+                ${question ? renderQuestionEditor(question, page, 'bank') : `<div class="ex2-empty ex2-builder-empty lux-soft-chrome"><span class="ex2-builder-empty-copy">No questions yet. Click "Add Question" to begin.</span></div>`}
             </div>
         `;
     }
@@ -250,7 +250,7 @@
                 <div class="ex2-inline-actions ex2-inline-actions--mt-8">
                     <button type="button" class="ex2-btn is-secondary" data-exam-call="addManualVariant"><i class="fas fa-plus"></i> Add Manual Variant</button>
                 </div>
-                ${variants.length ? variants.map((v, vi) => renderVariantCard(v, vi, bank)).join('') : `<div class="ex2-empty ex2-builder-empty"><span class="ex2-builder-empty-copy">No variants created yet. Use auto-generate above or add manually.</span></div>`}
+                ${variants.length ? variants.map((v, vi) => renderVariantCard(v, vi, bank)).join('') : `<div class="ex2-empty ex2-builder-empty lux-soft-chrome"><span class="ex2-builder-empty-copy">No variants created yet. Use auto-generate above or add manually.</span></div>`}
             </div>
         `;
     }
@@ -404,7 +404,7 @@
                 <div data-exam-region="builder-summary">
                     ${renderExamBuilderSummaryStrip(draft)}
                 </div>
-                <div class="ex2-builder-step-body ex2-panel--animated" data-exam-region="builder-step">
+                <div class="ex2-builder-step-body lux-soft-chrome ex2-panel--animated" data-exam-region="builder-step">
                     ${renderExamBuilderStepMarkup()}
                 </div>
             </div>

@@ -1,3 +1,17 @@
+function formatStudyCardLabel(value, fallback = '-') {
+    if (value === null || value === undefined || value === '') return fallback;
+    if (typeof value === 'object') {
+        const nested = value.name ?? value.label ?? value.title ?? value.id;
+        if (nested !== undefined && nested !== null && typeof nested !== 'object') {
+            const text = String(nested).trim();
+            return text || fallback;
+        }
+        return fallback;
+    }
+    const text = String(value).trim();
+    return text || fallback;
+}
+
 function getStudyCardSemesterLabel(semesterNumber) {
     const safeSemester = Math.max(1, parseInt(semesterNumber, 10) || 1);
     const academicYearStart = 2024 + Math.floor((safeSemester - 1) / 2);
@@ -297,19 +311,19 @@ function renderStudyCardAssessmentBody(subject = {}) {
         : '';
     const activityHint = activityMarkup
         ? ''
-        : '<p class="study-card-assessment-hint">No recorded activity yet. Categories above will show history once staff posts scores.</p>';
+        : '<p class="study-card-assessment-hint lms-route-copy">No recorded activity yet. Categories above will show history once staff posts scores.</p>';
 
     return `
         <div class="study-card-assessment-layout">
-            <section class="study-card-assessment-panel study-card-assessment-panel--scheme">
-                ${schemeMarkup || '<div class="study-card-activity-empty"><strong>Grading scheme unavailable</strong><span>Refresh the page if this subject should have a scheme.</span></div>'}
+            <section class="study-card-assessment-panel study-card-assessment-panel--scheme lux-soft-chrome lms-route-panel lms-route-panel-compact">
+                ${schemeMarkup || '<div class="study-card-activity-empty lms-route-copy"><strong>Grading scheme unavailable</strong><span>Refresh the page if this subject should have a scheme.</span></div>'}
                 ${activityHint}
             </section>
             ${activityMarkup ? `
-                <section class="study-card-assessment-panel study-card-assessment-panel--activity">
+                <section class="study-card-assessment-panel study-card-assessment-panel--activity lux-soft-chrome lms-route-panel lms-route-panel-compact">
                     <div class="study-card-assessment-panel-head">
-                        <div class="study-card-assessment-panel-kicker">Recent activity</div>
-                        <p class="study-card-assessment-panel-copy">Latest submissions and score updates.</p>
+                        <div class="lms-route-field-label study-card-assessment-panel-kicker">Recent activity</div>
+                        <p class="lms-route-copy study-card-assessment-panel-copy">Latest submissions and score updates.</p>
                     </div>
                     ${activityMarkup}
                 </section>
@@ -340,13 +354,13 @@ function openStudyCardAssessmentWindow(cacheKey) {
     };
 
     overlay.innerHTML = `
-        <div class="study-card-assessment-window">
+        <div class="study-card-assessment-window lux-soft-chrome">
             <div class="study-card-assessment-window__header">
                 <div class="study-card-assessment-window__copy">
-                    <div class="study-card-summary-kicker">Subject assessment</div>
-                    <div class="study-card-summary-title study-card-assessment-window__title">${escapeHtml(subject.courseName)}</div>
-                    <div class="study-card-summary-copy study-card-assessment-window__meta">${escapeHtml(subject.courseId)} · ${escapeHtml(subject.groupName)} · ${escapeHtml(subject.professorLabel)}</div>
-                    <div class="study-card-summary-copy study-card-assessment-window__meta study-card-assessment-window__meta--roster" title="Roster: ${escapeHtml(subject.rosterId || '-')}">Roster ${escapeHtml(subject.rosterId || '-')}</div>
+                    <div class="lux-section-kicker study-card-summary-kicker">Subject assessment</div>
+                    <div class="lux-page-title study-card-summary-title study-card-assessment-window__title">${escapeHtml(subject.courseName)}</div>
+                    <p class="lux-card-copy study-card-summary-copy study-card-assessment-window__meta">${escapeHtml(subject.courseId)} · ${escapeHtml(subject.groupName)} · ${escapeHtml(subject.professorLabel)}</p>
+                    <p class="lux-card-copy study-card-summary-copy study-card-assessment-window__meta study-card-assessment-window__meta--roster" title="Roster: ${escapeHtml(subject.rosterId || '-')}">Roster ${escapeHtml(subject.rosterId || '-')}</p>
                     ${renderStudyCardAssessmentStatChips(subject)}
                 </div>
                 <div class="study-card-assessment-window__actions">
@@ -387,11 +401,11 @@ function ensureStudyCardContentShell(container) {
 
 function renderStudyCardSummaryRegion(context) {
     return `
-        <div class="lux-hero-stage study-card-summary-stage">
+        <div class="lux-hero-stage study-card-summary-stage lux-soft-chrome">
             <div class="lux-hero-main">
-                <div class="study-card-summary-kicker">Academic Record Snapshot</div>
-                <div class="study-card-summary-title">${escapeHtml(context.latestTermLabel || 'No active term')}</div>
-                <div class="study-card-summary-copy">Semester-by-semester grade signals and assessment history for the courses currently attached to your student record.</div>
+                <div class="lux-section-kicker study-card-summary-kicker">Academic Record Snapshot</div>
+                <div class="lux-page-title study-card-summary-title">${escapeHtml(context.latestTermLabel || 'No active term')}</div>
+                <p class="lux-card-copy study-card-summary-copy">Semester-by-semester grade signals and assessment history for the courses currently attached to your student record.</p>
                 <div class="study-card-summary-chip-row">
                     <span class="lux-status-pill"><i class="fas fa-layer-group"></i> ${context.totalSemesters} semester${context.totalSemesters === 1 ? '' : 's'}</span>
                     <span class="lux-status-pill"><i class="fas fa-book"></i> ${context.totalSubjects} subject${context.totalSubjects === 1 ? '' : 's'}</span>
@@ -427,14 +441,14 @@ function renderStudyCardTermsRegion(context) {
                 const assessmentCacheKey = `study-card-${toDomToken(subject.courseId)}-${toDomToken(subject.groupName)}-${termNum}`;
                 assessmentWindowCache[assessmentCacheKey] = subject;
                 return `
-                <tr class="study-card-term-row">
+                <tr class="study-card-term-row lux-soft-chrome">
                     <td class="study-card-cell study-card-cell--subject">
-                        <div>${escapeHtml(subject.courseName)}</div>
-                        <div class="study-card-subject-meta study-card-cell-meta">${escapeHtml(subject.courseId)}</div>
+                        <div class="lms-route-card-title">${escapeHtml(subject.courseName)}</div>
+                        <div class="study-card-subject-meta study-card-cell-meta lms-route-meta-12">${escapeHtml(subject.courseId)}</div>
                     </td>
                     <td class="study-card-cell study-card-cell--professor">
-                        <div>${escapeHtml(subject.professorLabel)}</div>
-                        <div class="study-card-prof-meta study-card-cell-meta">${escapeHtml(subject.groupName)}</div>
+                        <div class="lms-route-copy">${escapeHtml(subject.professorLabel)}</div>
+                        <div class="study-card-prof-meta study-card-cell-meta lms-route-meta-12">${escapeHtml(subject.groupName)}</div>
                     </td>
                     <td class="study-card-cell study-card-cell--ects">${subject.ects}</td>
                     <td class="study-card-cell study-card-cell--score">${subject.overallScore}</td>
@@ -450,18 +464,18 @@ function renderStudyCardTermsRegion(context) {
 
         return `
             <div class="study-card-term-block${index === 0 ? ' is-first' : ''}">
-                <div class="semester-header study-card-term-header">
-                    <span>${escapeHtml(getStudyCardSemesterLabel(termNum))}</span>
+                <div class="semester-header study-card-term-header lux-soft-chrome">
+                    <span class="lms-route-card-title">${escapeHtml(getStudyCardSemesterLabel(termNum))}</span>
                 </div>
-                <table class="kiu-table study-card-semester-table">
+                <table class="kiu-table study-card-semester-table lux-modern-table">
                     <thead>
                         <tr>
-                            <th class="study-card-heading study-card-heading--left">Subject</th>
-                            <th class="study-card-heading study-card-heading--left">Professor</th>
-                            <th>ECTS</th>
-                            <th>Score</th>
-                            <th>Letter Grade</th>
-                            <th class="study-card-heading study-card-heading--right">Assessment</th>
+                            <th class="study-card-heading lms-route-field-label study-card-heading--left">Subject</th>
+                            <th class="study-card-heading lms-route-field-label study-card-heading--left">Professor</th>
+                            <th class="study-card-heading lms-route-field-label">ECTS</th>
+                            <th class="study-card-heading lms-route-field-label">Score</th>
+                            <th class="study-card-heading lms-route-field-label">Letter Grade</th>
+                            <th class="study-card-heading lms-route-field-label study-card-heading--right">Assessment</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
@@ -485,7 +499,7 @@ function renderStudyCard() {
         ? getEffectiveUserRole()
         : (currentUserRole || currentUser?.role || USER_ROLES.STUDENT);
     if (!currentUser || effectiveRole !== USER_ROLES.STUDENT) {
-        container.innerHTML = '<div class="study-card-empty">Study Card is only available in the student portal.</div>';
+        container.innerHTML = '<div class="study-card-empty lux-empty-state"><strong class="lux-empty-state__title lms-route-empty-title">Students only</strong><span class="lux-empty-state__copy lms-route-empty-copy">Study Card is only available in the student portal.</span></div>';
         return;
     }
 
@@ -502,13 +516,13 @@ function renderStudyCard() {
     });
 
     if (!currentSchedule.length) {
-        container.innerHTML = '<div class="study-card-empty">You have no registered subjects yet. Complete Academic Registration to populate your Study Card.</div>';
+        container.innerHTML = '<div class="study-card-empty lux-empty-state"><strong class="lux-empty-state__title lms-route-empty-title">No subjects yet</strong><span class="lux-empty-state__copy lms-route-empty-copy">You have no registered subjects yet. Complete Academic Registration to populate your Study Card.</span></div>';
         return;
     }
 
     const criteria = window.GRADEBOOK_CRITERIA;
     if (!criteria) {
-        container.innerHTML = '<div class="study-card-empty">Gradebook criteria are not loaded. Refresh the page.</div>';
+        container.innerHTML = '<div class="study-card-empty lux-empty-state"><strong class="lux-empty-state__title lms-route-empty-title">Gradebook unavailable</strong><span class="lux-empty-state__copy lms-route-empty-copy">Gradebook criteria are not loaded. Refresh the page.</span></div>';
         return;
     }
 
@@ -569,15 +583,22 @@ function renderStudyCard() {
         const hasAnyScore = Object.values(record.assessments || {}).some((entries) => Array.isArray(entries) && entries.length > 0)
             || [quizScore, oralQuizScore, homeworkScore, midtermScore, examScore].some((score) => Number(score) > 0);
         const letterMeta = getStudyCardLetterGrade(overallScore, hasAnyScore);
-        const courseName = scheduleItem?.courseName || scheduleItem?.name || subject?.name || courseId || 'Subject';
-        const professorLabel = scheduleItem?.prof || groupObj?.prof || groupObj?.teacher || groupObj?.ta || 'Professor TBA';
+        const courseName = formatStudyCardLabel(
+            scheduleItem?.courseName || scheduleItem?.name || subject?.name,
+            formatStudyCardLabel(subject?.code, courseId && courseId !== '0' ? courseId : 'Subject')
+        );
+        const professorLabel = formatStudyCardLabel(
+            scheduleItem?.prof || groupObj?.prof || groupObj?.teacher || groupObj?.ta,
+            'Professor TBA'
+        );
+        const groupName = formatStudyCardLabel(groupObj?.name || groupObj?.id || groupId, '-');
         const ects = getStudyCardCourseEctsValue(scheduleItem) || getStudyCardCourseEctsValue(subject) || 6;
 
         if (!semesterBuckets[semester]) semesterBuckets[semester] = [];
         semesterBuckets[semester].push({
             courseId,
             courseName,
-            groupName: groupObj?.name || groupId || '-',
+            groupName,
             professorLabel,
             ects,
             overallScore,
@@ -645,7 +666,7 @@ function renderStudyCard() {
     }
     } catch (error) {
         console.error('Study Card render failed.', error);
-        container.innerHTML = '<div class="study-card-empty">Could not load your Study Card. Refresh the page or try again later.</div>';
+        container.innerHTML = '<div class="study-card-empty lux-empty-state"><strong class="lux-empty-state__title lms-route-empty-title">Could not load</strong><span class="lux-empty-state__copy lms-route-empty-copy">Could not load your Study Card. Refresh the page or try again later.</span></div>';
     }
 }
 

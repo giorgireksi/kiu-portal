@@ -76,14 +76,17 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                     </div>
                 </div>`
         : '';
-    const weightCardClass = `lms-route-card lms-route-panel-compact gb-modern-card gb-weight-card${studentView ? ' is-student-view' : ''}${studyCardOverlay ? ' is-study-card-overlay' : ''}`;
+    const weightCardClass = `lms-route-card lms-route-panel-compact${studyCardOverlay ? ' lux-soft-chrome' : ''} gb-modern-card gb-weight-card${studentView ? ' is-student-view' : ''}${studyCardOverlay ? ' is-study-card-overlay' : ''}`;
+    const schemeKickerClass = studyCardOverlay ? 'lms-route-field-label gb-modern-kicker' : 'gb-modern-kicker';
+    const schemeTitleClass = studyCardOverlay ? 'lms-route-card-title' : '';
+    const schemeCopyClass = studyCardOverlay ? 'lms-route-copy' : '';
     return `
         <div class="${weightCardClass}">
             <div class="gb-modern-card-head">
                 <div>
-                    <div class="gb-modern-kicker">Grading scheme</div>
-                    <h3>${escapeHtml(cardTitle)}</h3>
-                    <p>${escapeHtml(cardCopy)}</p>
+                    <div class="${schemeKickerClass}">Grading scheme</div>
+                    <h3 class="${schemeTitleClass}">${escapeHtml(cardTitle)}</h3>
+                    <p class="${schemeCopyClass}">${escapeHtml(cardCopy)}</p>
                     ${overallStripMarkup}
                 </div>
                 <span class="gb-status-badge lux-status-pill is-graded">${courseTotal} pts</span>

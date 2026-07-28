@@ -30,10 +30,11 @@ describe('LMS whiteboard wave 4 classroom features', () => {
 
     it('adds mobile bottom dock without frames sidebar', () => {
         const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
 
-        expect(css).toContain('@media (max-width: 768px)');
-        expect(css).not.toContain('.lms-whiteboard-frames-sidebar');
-        expect(css).toContain('bottom: calc(12px + env(safe-area-inset-bottom, 0px))');
+        expect(bare).toContain('@media (max-width: 768px)');
+        expect(bare).not.toContain('.lms-whiteboard-frames-sidebar');
+        expect(bare).toContain('bottom: calc(12px + env(safe-area-inset-bottom, 0px))');
         expect(runtime).not.toContain('syncLmsWhiteboardFramesSidebar');
     });
 
@@ -41,6 +42,6 @@ describe('LMS whiteboard wave 4 classroom features', () => {
         const html = readSource('lms.html');
 
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1');
     });
 });

@@ -14,7 +14,7 @@ describe('LMS live quiz UI module split', () => {
         const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
         expect(lmsHtml).not.toContain('assets/js/pages/lms-live-quiz-ui-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        expect(classroomSource).toContain('assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260609-livequiz-timerfix1');
+        expect(classroomSource).toContain('assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260728-livepatch1');
         expect(classroomSource).toContain('function ensureLmsLiveQuizRuntime()');
         expect(liveQuizUiSource).toContain('function getLmsLiveStudentId()');
         expect(liveQuizUiSource).toContain('function canManageLmsLiveQuiz(resourceKey = currentCourseId)');

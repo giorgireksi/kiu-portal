@@ -18,9 +18,10 @@
     <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260725-frosted1">
     <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
     <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260725-legacypurge1">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-wave2host1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260725-frosted1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260725-wave2host1">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260728-lmsscss5">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260728-lmsscss12">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
 
@@ -51,14 +52,14 @@
                     <div class="lux-fg-control-band">
                         <div class="lux-fg-filters" id="faculty-filters">
                             <div class="lux-field-stack">
-                                <label for="fs-filter-sem">Semester</label>
+                                <label for="fs-filter-sem" class="lms-route-field-label">Semester</label>
                                 <select id="fs-filter-sem" data-gradebook-roster-filter="1">
                                     <option value="all">All semesters</option>
                                     <option value="1" selected>Semester 1</option><option value="2">Semester 2</option><option value="3">Semester 3</option><option value="4">Semester 4</option>
                                 </select>
                             </div>
                             <div class="lux-field-stack only-admin">
-                                <label for="fs-filter-fac">Faculty</label>
+                                <label for="fs-filter-fac" class="lms-route-field-label">Faculty</label>
                                 <select id="fs-filter-fac" data-gradebook-roster-filter="1">
                                     <option value="ECON">Management &amp; Business</option>
                                     <option value="CS">Computer Science</option>
@@ -68,13 +69,13 @@
                                 </select>
                             </div>
                             <div class="lux-field-stack">
-                                <label for="fs-filter-subject">Subject</label>
+                                <label for="fs-filter-subject" class="lms-route-field-label">Subject</label>
                                 <select id="fs-filter-subject" data-gradebook-roster-filter="1">
                                     <option value="all" selected>All subjects</option>
                                 </select>
                             </div>
                             <div class="lux-field-stack">
-                                <label for="fs-filter-group">Group</label>
+                                <label for="fs-filter-group" class="lms-route-field-label">Group</label>
                                 <select id="fs-filter-group" data-gradebook-roster-filter="1">
                                     <option value="all" selected>All groups</option>
                                 </select>
@@ -85,11 +86,11 @@
 
                     <div class="lux-fg-action-band" id="faculty-fg-actions">
                         <div class="gb-staff-actions gb-lms-staff-hero-actions">
-                            <button type="button" id="faculty-fg-scheme-btn" data-gradebook-click="open-subject-weights"><i class="fas fa-table-list"></i> Grading scheme</button>
-                            <button type="button" data-gradebook-click="pending-queue"><i class="fas fa-list-check"></i> Review pending</button>
-                            <button type="button" data-gradebook-click="export-csv"><i class="fas fa-file-export"></i> Export</button>
-                            <button type="button" data-gradebook-click="publish"><i class="fas fa-bullhorn"></i> Publish</button>
-                            <button type="button" data-gradebook-click="finalize"><i class="fas fa-lock"></i> Finalize</button>
+                            <button type="button" class="lux-secondary-btn" id="faculty-fg-scheme-btn" data-gradebook-click="open-subject-weights"><i class="fas fa-table-list"></i> Grading scheme</button>
+                            <button type="button" class="lux-secondary-btn" data-gradebook-click="pending-queue"><i class="fas fa-list-check"></i> Review pending</button>
+                            <button type="button" class="lux-secondary-btn" data-gradebook-click="export-csv"><i class="fas fa-file-export"></i> Export</button>
+                            <button type="button" class="lux-secondary-btn" data-gradebook-click="publish"><i class="fas fa-bullhorn"></i> Publish</button>
+                            <button type="button" class="lux-secondary-btn" data-gradebook-click="finalize"><i class="fas fa-lock"></i> Finalize</button>
                         </div>
                     </div>
 
@@ -151,6 +152,7 @@
 <script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
 <script defer src="assets/js/shared/utilities.js?v=20260725-legacypurge1"></script>
 <script defer src="assets/js/shared/lux-transparency.js?v=20260725-popupunify1"></script>
+<script defer src="assets/js/shared/lux-glass-dialog.js?v=20260725-portalmodal1"></script>
 <script defer src="assets/js/shared/faculty-schedule-runtime.js?v=20260720-facsched1"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260528-gradebookfix3"></script>
 <script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>

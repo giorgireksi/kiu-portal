@@ -13,15 +13,15 @@ function buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId) {
             <div class="lms-route-field-grid">
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-material-title">Material Title</label>
-                    <input id="new-material-title" class="lms-route-input" type="text" placeholder="Material title">
+                    <input id="new-material-title" class="lms-route-input lux-control" type="text" placeholder="Material title">
                 </div>
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-material-description">Description</label>
-                    <input id="new-material-description" class="lms-route-input" type="text" placeholder="Short description for students">
+                    <input id="new-material-description" class="lms-route-input lux-control" type="text" placeholder="Short description for students">
                 </div>
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-material-week">Teaching Week</label>
-                    <select id="new-material-week" class="lms-route-select">
+                    <select id="new-material-week" class="lms-route-select lux-control">
                         ${buildLmsWeekSelectOptions(resourceKey, '')}
                     </select>
                 </div>

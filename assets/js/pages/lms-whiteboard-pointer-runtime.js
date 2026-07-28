@@ -137,6 +137,29 @@ function onLmsWhiteboardTouchEnd(event) {
     if (event.touches.length < 2) LMS_WHITEBOARD_UI.pinch = null;
 }
 
+function startLmsWhiteboardPan(event, canvas) {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
+    LMS_WHITEBOARD_UI.panning = true;
+    LMS_WHITEBOARD_UI.dragStart = {
+        x: event.clientX,
+        y: event.clientY,
+        panX: LMS_WHITEBOARD_UI.panX,
+        panY: LMS_WHITEBOARD_UI.panY
+    };
+    canvas.closest('.lms-whiteboard-stage')?.classList.add('is-panning');
+    refreshLmsWhiteboardPointerCursor(canvas);
+}
+
+function endLmsWhiteboardPan(canvas, event) {
+    if (!LMS_WHITEBOARD_UI.panning) return;
+    LMS_WHITEBOARD_UI.panning = false;
+    LMS_WHITEBOARD_UI.dragStart = null;
+    if (event?.pointerId != null) canvas.releasePointerCapture?.(event.pointerId);
+    canvas.closest('.lms-whiteboard-stage')?.classList.remove('is-panning');
+    refreshLmsWhiteboardPointerCursor(canvas);
+}
+
 function onLmsWhiteboardPointerDown(event, resourceKey, canEdit, canvas, captureTarget = null) {
     // Recompute live: canvas is bound once and not rebuilt on session start, so the captured bool goes stale.
     canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : canEdit;
@@ -606,3 +629,5 @@ window.onLmsWhiteboardPointerDown = onLmsWhiteboardPointerDown;
 window.onLmsWhiteboardPointerMove = onLmsWhiteboardPointerMove;
 window.onLmsWhiteboardPointerUp = onLmsWhiteboardPointerUp;
 window.onLmsWhiteboardDoubleClick = onLmsWhiteboardDoubleClick;
+window.startLmsWhiteboardPan = startLmsWhiteboardPan;
+window.endLmsWhiteboardPan = endLmsWhiteboardPan;

@@ -474,7 +474,7 @@ return {
         if (node.closest('#page-lms, #page-lms-groups, #page-lms-inner, #lms-content-area')) return true;
         // Study card owns shell paint via --sc-fade-* (study-card-route.css); skip lux-modern-surface stamp.
         if (document.body?.classList?.contains('lux-route-study-card')) return true;
-        if (node.closest?.('#page-study-card, .study-card-page-shell')) return true;
+        if (node.closest?.('#page-study-card, .study-card-command-deck, .study-card-page-shell')) return true;
         if (node.closest('#page-registration .reg-tabs')) return true;
         if (node.classList?.contains('curriculum-library-scroll-btn')) return true;
         if (node.classList?.contains('curriculum-library-scroll-controls')) return true;

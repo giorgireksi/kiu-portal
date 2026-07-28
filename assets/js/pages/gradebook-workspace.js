@@ -280,8 +280,8 @@ function openGradebookCommentModal(studentId, criterion, number, studentName = '
             subtitle: `${escapeHtml(studentName || studentId)} · visible in the student's grade history.`,
             closeAttr: 'data-gradebook-click="close-gradebook-comment"',
             bodyHtml: `
-            <label>Comment
-                <textarea id="${inputId}" class="lms-route-input" placeholder="Explain the score, next steps, or classroom feedback...">${escapeHtml(currentNote)}</textarea>
+            <label class="lms-route-field-label gb-score-edit-field">Comment
+                <textarea id="${inputId}" class="lms-route-textarea lux-control lms-route-textarea-min-110" placeholder="Explain the score, next steps, or classroom feedback...">${escapeHtml(currentNote)}</textarea>
             </label>`,
             actionsHtml: `
                 <button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-gradebook-click="close-gradebook-comment">Cancel</button>
@@ -461,12 +461,12 @@ function renderLmsStaffScoreEditorBlock({
     entryNote = ''
 }) {
     const notePreview = entryNote && shouldDisplayGradebookHistoryNote(entryNote)
-        ? `<p class="gb-lms-staff-score-note-preview" title="${escapeHtml(entryNote)}"><i class="fas fa-comment-dots"></i> ${escapeHtml(entryNote)}</p>`
+        ? `<p class="gb-lms-staff-score-note-preview lms-route-copy" title="${escapeHtml(entryNote)}"><i class="fas fa-comment-dots"></i> ${escapeHtml(entryNote)}</p>`
         : '';
     return `
-        <div class="gb-lms-staff-score-editor gb-lms-staff-score-editor--focus">
+        <div class="gb-lms-staff-score-editor gb-lms-staff-score-editor--focus lux-soft-chrome">
             <div class="gb-lms-staff-score-stat">
-                <span class="gb-lms-staff-score-stat-label">Assessment score</span>
+                <span class="lms-route-field-label gb-lms-staff-score-stat-label">Assessment score</span>
                 <div class="gb-lms-staff-score-stat-value">
                     <strong>${scoreDisplay}</strong>
                     <span class="gb-lms-staff-score-stat-max">/ ${maxScore}</span>
@@ -478,7 +478,7 @@ function renderLmsStaffScoreEditorBlock({
                 <button type="button" class="lux-primary-btn gb-lms-staff-score-cta" data-gradebook-click="open-score-edit" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion="${escapeHtml(String(criterionKey))}" data-gradebook-number="${escapeHtml(String(assessmentNumber))}" data-gradebook-score="${escapeHtml(scoreEditAttr)}" data-gradebook-student-name="${escapeHtml(studentName)}">
                     <i class="fas fa-pen"></i> ${escapeHtml(scoreEditLabel)}
                 </button>
-                <button type="button" class="gb-modern-action gb-lms-staff-comment-cta" data-gradebook-click="open-gradebook-comment" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion="${escapeHtml(String(criterionKey))}" data-gradebook-number="${escapeHtml(String(assessmentNumber))}" data-gradebook-student-name="${escapeHtml(studentName)}">
+                <button type="button" class="lux-secondary-btn gb-modern-action gb-lms-staff-comment-cta" data-gradebook-click="open-gradebook-comment" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion="${escapeHtml(String(criterionKey))}" data-gradebook-number="${escapeHtml(String(assessmentNumber))}" data-gradebook-student-name="${escapeHtml(studentName)}">
                     <i class="fas fa-comment"></i> Comment
                 </button>
             </div>
@@ -515,11 +515,11 @@ function openGradebookScoreEditModal(studentId, criterion, number, currentScore,
         subtitle: `${escapeHtml(studentName || studentId)} · saved scores stay in history.`,
         closeAttr: 'data-gradebook-click="close-score-edit"',
         bodyHtml: `
-            <label>Score
-                <input id="${inputId}" class="lms-route-input" type="number" min="0" max="${Number(getGradebookCriterionMeta(criterion).maxScore || 100)}" value="${escapeHtml(scoreValue)}" placeholder="Enter score">
+            <label class="lms-route-field-label gb-score-edit-field">Score
+                <input id="${inputId}" class="lms-route-input lux-control gb-score-edit-score-input" type="number" min="0" max="${Number(getGradebookCriterionMeta(criterion).maxScore || 100)}" value="${escapeHtml(scoreValue)}" placeholder="Enter score" autocomplete="off">
             </label>
-            <label>Comment for student <span class="gb-score-edit-optional">(optional)</span>
-                <textarea id="${reasonId}" class="lms-route-input" placeholder="Explain the score or leave feedback the student can read in their history."></textarea>
+            <label class="lms-route-field-label gb-score-edit-field">Comment for student <span class="gb-score-edit-optional lms-route-copy lms-route-meta-12">(optional)</span>
+                <textarea id="${reasonId}" class="lms-route-textarea lux-control lms-route-textarea-min-110" placeholder="Explain the score or leave feedback the student can read in their history." autocomplete="off"></textarea>
             </label>`,
         actionsHtml: `
                 <button type="button" class="lux-secondary-btn lux-glass-dialog-cancel-btn" data-gradebook-click="close-score-edit">Cancel</button>
@@ -974,22 +974,22 @@ function renderStaffCreateActionsPanel({
     if (isFacultyStandaloneGradebookContext()) {
         return `
             <div class="gb-staff-create-panel">
-                <div class="gb-staff-create-card gb-staff-create-card--faculty">
+                <div class="gb-staff-create-card gb-staff-create-card--faculty lms-route-panel lms-route-panel-compact lux-soft-chrome">
                     <div class="gb-staff-create-toolbar">
                         <div class="gb-staff-create-toolbar-copy">
-                            <div class="gb-modern-kicker">Staff Actions</div>
-                            <h3>Add manual attempt</h3>
-                            <p>Paper quizzes, oral exams, midterms, finals, retakes, or other manual assessments.</p>
+                            <div class="lms-route-field-label gb-modern-kicker">Staff Actions</div>
+                            <h3 class="lms-route-card-title">Add manual attempt</h3>
+                            <p class="lms-route-copy">Paper quizzes, oral exams, midterms, finals, retakes, or other manual assessments.</p>
                         </div>
                     </div>
                     <div class="gb-staff-create-form">
-                        <label class="gb-staff-create-field" id="${escapeHtml(String(namedAttemptCriterionId))}-field-label">Section
-                            <select id="${escapeHtml(String(namedAttemptCriterionId))}" class="lux-modern-field" data-lux-picker-label="Section">
+                        <label class="lms-route-field-label gb-staff-create-field" id="${escapeHtml(String(namedAttemptCriterionId))}-field-label">Section
+                            <select id="${escapeHtml(String(namedAttemptCriterionId))}" class="lms-route-select lux-control lux-modern-field" data-lux-picker-label="Section" autocomplete="off">
                                 ${sectionOptions}
                             </select>
                         </label>
-                        <label class="gb-staff-create-field gb-staff-create-field--grow">Assessment name
-                            <input id="${escapeHtml(String(namedAttemptTitleId))}" type="text" class="lux-modern-field" placeholder="e.g. Paper Quiz - Week 6, Oral Exam 2, Midterm Part B">
+                        <label class="lms-route-field-label gb-staff-create-field gb-staff-create-field--grow">Assessment name
+                            <input id="${escapeHtml(String(namedAttemptTitleId))}" type="text" class="lms-route-input lux-control lux-modern-field" placeholder="e.g. Paper Quiz - Week 6, Oral Exam 2, Midterm Part B" autocomplete="off">
                         </label>
                         <button type="button" class="lux-primary-btn gb-staff-create-submit" data-gradebook-click="create-named-attempt" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion-select-id="${escapeHtml(String(namedAttemptCriterionId))}" data-gradebook-title-input-id="${escapeHtml(String(namedAttemptTitleId))}" data-gradebook-student-name="${escapeHtml(String(displayName))}"><i class="fas fa-plus"></i> Create</button>
                     </div>
@@ -1000,24 +1000,24 @@ function renderStaffCreateActionsPanel({
 
     return `
         <div class="gb-staff-create-panel">
-            <div class="gb-staff-create-card">
+            <div class="gb-staff-create-card lms-route-panel lms-route-panel-compact lux-soft-chrome">
                 <div class="gb-modern-card-head">
                     <div>
-                        <div class="gb-modern-kicker">Staff Actions</div>
-                        <h3>Create named paper/manual attempt</h3>
-                        <p>Use this for paper quizzes, oral quizzes, midterms, finals, retakes, or manual classroom assessments.</p>
+                        <div class="lms-route-field-label gb-modern-kicker">Staff Actions</div>
+                        <h3 class="lms-route-card-title">Create named paper/manual attempt</h3>
+                        <p class="lms-route-copy">Use this for paper quizzes, oral quizzes, midterms, finals, retakes, or manual classroom assessments.</p>
                     </div>
                 </div>
                 <div class="gb-staff-create-grid">
-                    <label>Section
-                        <select id="${escapeHtml(String(namedAttemptCriterionId))}">
+                    <label class="lms-route-field-label gb-staff-create-field">Section
+                        <select id="${escapeHtml(String(namedAttemptCriterionId))}" class="lms-route-select lux-control" autocomplete="off">
                             ${sectionOptions}
                         </select>
                     </label>
-                    <label>Assessment name
-                        <input id="${escapeHtml(String(namedAttemptTitleId))}" type="text" placeholder="e.g. Paper Quiz - Week 6, Oral Exam 2, Midterm Part B">
+                    <label class="lms-route-field-label gb-staff-create-field">Assessment name
+                        <input id="${escapeHtml(String(namedAttemptTitleId))}" type="text" class="lms-route-input lux-control" placeholder="e.g. Paper Quiz - Week 6, Oral Exam 2, Midterm Part B" autocomplete="off">
                     </label>
-                    <button type="button" class="gb-modern-action is-primary" data-gradebook-click="create-named-attempt" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion-select-id="${escapeHtml(String(namedAttemptCriterionId))}" data-gradebook-title-input-id="${escapeHtml(String(namedAttemptTitleId))}" data-gradebook-student-name="${escapeHtml(String(displayName))}"><i class="fas fa-plus"></i> Create</button>
+                    <button type="button" class="lux-primary-btn gb-modern-action" data-gradebook-click="create-named-attempt" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion-select-id="${escapeHtml(String(namedAttemptCriterionId))}" data-gradebook-title-input-id="${escapeHtml(String(namedAttemptTitleId))}" data-gradebook-student-name="${escapeHtml(String(displayName))}"><i class="fas fa-plus"></i> Create</button>
                 </div>
             </div>
         </div>
@@ -1048,21 +1048,21 @@ function openStudentEvaluationHistoryModal(studentId, studentName = '', focusSec
         const isActiveCategory = focusKey && normalizeGradebookCriterion(section.meta.key) === focusKey;
         const scoreText = status.key === 'pending' ? 'Pending' : Number(section.aggregate || 0);
         return `
-        <button type="button" class="gb-modal-category-card ${isActiveCategory ? 'is-active' : ''}" data-gradebook-click="open-history" data-gradebook-student-id="${escapeHtml(String(record.id))}" data-gradebook-student-name="${escapeHtml(String(displayName))}" data-gradebook-criterion="${escapeHtml(String(section.meta.key))}"${forceViewOnly ? ' data-gradebook-force-view-only="true"' : ''}${resolvedRosterId ? ` data-gradebook-roster-id="${escapeHtml(resolvedRosterId)}"` : ''}>
+        <button type="button" class="gb-modal-category-card lux-soft-chrome ${isActiveCategory ? 'is-active' : ''}" data-gradebook-click="open-history" data-gradebook-student-id="${escapeHtml(String(record.id))}" data-gradebook-student-name="${escapeHtml(String(displayName))}" data-gradebook-criterion="${escapeHtml(String(section.meta.key))}"${forceViewOnly ? ' data-gradebook-force-view-only="true"' : ''}${resolvedRosterId ? ` data-gradebook-roster-id="${escapeHtml(resolvedRosterId)}"` : ''}>
             <div class="gb-modal-category-top">
-                <span>${escapeHtml(section.meta.pluralLabel || section.meta.label)}</span>
-                <em class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</em>
+                <span class="lms-route-field-label gb-modal-category-label">${escapeHtml(section.meta.pluralLabel || section.meta.label)}</span>
+                <span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
             </div>
             <div class="gb-modal-category-body">
-                <strong>${escapeHtml(String(scoreText))}</strong>
-                <div>
-                    <small>${section.scoredEntries.length} graded</small>
-                    <small>${section.pendingEntries.length} pending</small>
+                <strong class="gb-modal-category-score">${escapeHtml(String(scoreText))}</strong>
+                <div class="gb-modal-category-stats">
+                    <small class="lms-route-copy lms-route-meta-12">${section.scoredEntries.length} graded</small>
+                    <small class="lms-route-copy lms-route-meta-12">${section.pendingEntries.length} pending</small>
                 </div>
             </div>
-            <small>${section.scoredEntries.length} graded · ${section.pendingEntries.length} pending</small>
+            <small class="gb-modal-category-footnote">${section.scoredEntries.length} graded · ${section.pendingEntries.length} pending</small>
             <div class="gb-modal-category-latest">
-                <span>${latest ? escapeHtml(latest.title) : 'No activity yet'}</span>
+                <span class="lms-route-copy lms-route-meta-12">${latest ? escapeHtml(latest.title) : 'No activity yet'}</span>
             </div>
         </button>
     `;
@@ -1106,7 +1106,7 @@ function openStudentEvaluationHistoryModal(studentId, studentName = '', focusSec
         title: displayName,
         icon: 'fa-chart-line',
         subtitle: `Student ID: ${escapeHtml(record.id)} · ${canEdit ? 'TA / Professor review workspace' : 'Read-only student record'}`,
-        headExtra: `<div class="gb-modal-score"><strong>${escapeHtml(modalSummary.outcome.scoreLabel)}</strong><span>${escapeHtml(modalSummary.outcome.letterLabel)}</span></div>`,
+        headExtra: `<div class="gb-modal-score"><strong class="lms-route-title lms-route-title-26 gb-modal-score-value">${escapeHtml(modalSummary.outcome.scoreLabel)}</strong><span class="lms-route-copy lms-route-meta-12">${escapeHtml(modalSummary.outcome.letterLabel)}</span></div>`,
         closeAttr: 'data-gradebook-click="close-history-modal"',
         bodyHtml: `
                 <div class="gb-modal-category-grid ${focusMeta ? 'is-filtered' : ''}">

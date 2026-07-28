@@ -209,7 +209,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
                     <div class="lms-quiz-review-manual-row">
                         <label class="lms-quiz-review-manual-field">
                             Written score
-                            <input id="${manualInputId}" data-lms-written-score="true" data-question-id="${escapeHtml(question.id)}" type="number" min="0" max="${questionManualMax}" value="${submission.manualScoresByQuestion?.[question.id] === null || submission.manualScoresByQuestion?.[question.id] === undefined ? '' : Number(submission.manualScoresByQuestion[question.id])}" placeholder="0 - ${questionManualMax}" class="lms-quiz-review-manual-input">
+                            <input id="${manualInputId}" data-lms-written-score="true" data-question-id="${escapeHtml(question.id)}" type="number" min="0" max="${questionManualMax}" value="${submission.manualScoresByQuestion?.[question.id] === null || submission.manualScoresByQuestion?.[question.id] === undefined ? '' : Number(submission.manualScoresByQuestion[question.id])}" placeholder="0 - ${questionManualMax}" class="lms-quiz-review-manual-input lux-control">
                         </label>
                     </div>
                 ` : '<div class="lms-quiz-review-auto-pill"><i class="fas fa-bolt"></i> Auto-scored by computer</div>'}

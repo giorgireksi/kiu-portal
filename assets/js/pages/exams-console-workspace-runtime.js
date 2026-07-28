@@ -33,7 +33,7 @@
             function renderExamsAttemptsLoadingPanel(title, description) {
                 return `
                     <div class="ex2-workspace-section">
-                        <div class="ex2-empty-state">
+                        <div class="ex2-empty-state lux-soft-chrome">
                             <i class="fas fa-chart-line"></i>
                             <p><strong>${escapeHtml(title)}</strong></p>
                             <p>${escapeHtml(description)}</p>

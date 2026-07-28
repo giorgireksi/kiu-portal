@@ -1175,9 +1175,9 @@ function ensurePortalMessengerDirectChat(a, b) {
 }
 function getPortalMessengerChatsForUser(userId) {
     ensurePortalMessengerState();
-    const favorites = new Set(KIU_STATE.portalMessengerFavorites?.[String(userId)] || []);
-    const pinned = new Set(KIU_STATE.portalMessengerPinnedChats?.[String(userId)] || []);
-    const hidden = new Set((KIU_STATE.portalMessengerHiddenChats?.[String(userId)] || []).map(String));
+    const favorites = new Set(getPortalMessengerFavoriteIds(userId));
+    const pinned = new Set(getPortalMessengerPinnedChatIds(userId));
+    const hidden = new Set(getPortalMessengerHiddenChatIds(userId).map(String));
     return Object.values(KIU_STATE.portalMessengerChats)
         .filter(chat => Array.isArray(chat.members) && chat.members.includes(String(userId)) && !hidden.has(String(chat.id)))
         .sort((a, b) => {

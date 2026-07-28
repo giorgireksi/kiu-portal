@@ -208,11 +208,11 @@ function renderLmsLiveSessionFieldsMarkup(resourceKey, editingSession = null) {
     return `
         <label class="lms-route-field">
             <span class="lms-route-field-label">Title</span>
-            <input id="lms-live-title-${escapeHtml(token)}" class="lms-route-input" type="text" placeholder="e.g. Week 4 lecture quiz" value="${escapeHtml(editingSession?.title || '')}" data-lms-input="updateLmsLiveSessionField(${lmsInlineArg(resourceKey)}, 'title', this.value)">
+            <input id="lms-live-title-${escapeHtml(token)}" class="lms-route-input lux-control" type="text" placeholder="e.g. Week 4 lecture quiz" value="${escapeHtml(editingSession?.title || '')}" data-lms-input="updateLmsLiveSessionField(${lmsInlineArg(resourceKey)}, 'title', this.value)">
         </label>
         <label class="lms-route-field">
             <span class="lms-route-field-label">Topic</span>
-            <input id="lms-live-topic-${escapeHtml(token)}" class="lms-route-input" type="text" placeholder="Topic or slide section" value="${escapeHtml(editingSession?.topic || '')}" data-lms-input="updateLmsLiveSessionField(${lmsInlineArg(resourceKey)}, 'topic', this.value)">
+            <input id="lms-live-topic-${escapeHtml(token)}" class="lms-route-input lux-control" type="text" placeholder="Topic or slide section" value="${escapeHtml(editingSession?.topic || '')}" data-lms-input="updateLmsLiveSessionField(${lmsInlineArg(resourceKey)}, 'topic', this.value)">
         </label>
         ${startButton}
     `;
@@ -237,7 +237,7 @@ function renderLmsLiveSessionSwitcher(resourceKey, sessions = [], activeSessionI
     return `
         <label class="lms-route-field lms-live-session-switcher-field">
             <span class="lms-route-field-label">Active session</span>
-            <select id="lms-live-session-switcher-${escapeHtml(token)}" class="lms-route-select" data-lux-native data-lux-picker-enhanced="true" data-lux-picker-label="Active session" data-lms-resource-key="${escapeHtml(resourceKey)}" data-lms-change="setLmsLiveActiveSession(this.dataset.lmsResourceKey, this.value)">
+            <select id="lms-live-session-switcher-${escapeHtml(token)}" class="lms-route-select lux-control" data-lux-native data-lux-picker-enhanced="true" data-lux-picker-label="Active session" data-lms-resource-key="${escapeHtml(resourceKey)}" data-lms-change="setLmsLiveActiveSession(this.dataset.lmsResourceKey, this.value)">
                 ${options}
             </select>
         </label>
