@@ -191,10 +191,10 @@ function renderStudentGradebookWorkspace(record, weights, options = null) {
                     </div>
                 </div>
                 <div class="gb-modern-stats">
-                    <div><span>Completed</span><strong>${summary.completedCount}</strong></div>
-                    <div><span>Pending Review</span><strong>${summary.pendingCount}</strong></div>
-                    <div><span>Missing Categories</span><strong>${summary.missingCore}</strong></div>
-                    <div><span>Letter</span>${renderGradebookLetterBadge(summary.outcome.letterLabel, summary.outcome.letterLabel)}</div>
+                    <div class="gb-modern-stat"><span>Completed</span><strong>${summary.completedCount}</strong></div>
+                    <div class="gb-modern-stat"><span>Pending Review</span><strong>${summary.pendingCount}</strong></div>
+                    <div class="gb-modern-stat"><span>Missing Categories</span><strong>${summary.missingCore}</strong></div>
+                    <div class="gb-modern-stat"><span>Letter</span>${renderGradebookLetterBadge(summary.outcome.letterLabel, summary.outcome.letterLabel)}</div>
                 </div>
             </div>
             <div class="gb-modern-stack">

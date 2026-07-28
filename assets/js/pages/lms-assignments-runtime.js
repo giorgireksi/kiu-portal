@@ -1,5 +1,9 @@
 /* LMS assignments/workspace runtime extracted from lms.js. */
 
+function buildLmsSubmissionDraftKey(resourceKey, assignmentId, userId = getCurrentUserId() || 'student') {
+    return `${resolveCanonicalLmsResourceKey(resourceKey)}::${assignmentId}::${userId}`;
+}
+
 function buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelId) {
     return `
         <div class="lms-route-panel">
@@ -522,4 +526,11 @@ function gradeLmsAssignmentSubmission(courseId, assignmentId, studentId) {
 
 if (typeof window !== 'undefined') {
     window.renderWorkspace = window.renderWorkspace || renderWorkspace;
+    window.buildLmsSubmissionDraftKey = window.buildLmsSubmissionDraftKey || buildLmsSubmissionDraftKey;
+    window.createAssignment = window.createAssignment || createAssignment;
+    window.submitAssignment = window.submitAssignment || submitAssignment;
+    window.deleteAssignment = window.deleteAssignment || deleteAssignment;
+    window.closeLmsAssignmentGradeModal = window.closeLmsAssignmentGradeModal || closeLmsAssignmentGradeModal;
+    window.saveLmsAssignmentSubmissionGrade = window.saveLmsAssignmentSubmissionGrade || saveLmsAssignmentSubmissionGrade;
+    window.gradeLmsAssignmentSubmission = window.gradeLmsAssignmentSubmission || gradeLmsAssignmentSubmission;
 }

@@ -36,6 +36,7 @@
         renderSocialPageNow,
         withBusy,
         activeDialog,
+        root,
         openPhotographyUploadFilePicker,
         patchPhotographyFollowButtons,
         photographyUploadForm,
@@ -48,6 +49,24 @@
         applyPhotographyUploadFile
     } = hooks;
 
+    function resolvePhotographyHook(name) {
+        const bag = window.__kiuSocialPhotographyHooks || {};
+        if (typeof bag[name] === 'function') return bag[name];
+        if (typeof window[name] === 'function') return window[name];
+        return null;
+    }
+
+    async function resolvePhotographyUploadFile(draft = {}) {
+        if (draft?.file) return draft.file;
+        const previewUrl = text(draft.previewObjectUrl || draft.previewUrl || '');
+        if (!previewUrl.startsWith('blob:')) return null;
+        const response = await fetch(previewUrl);
+        const blob = await response.blob();
+        const name = text(draft.fileName || 'photo.jpg') || 'photo.jpg';
+        const type = text(blob.type || 'image/jpeg') || 'image/jpeg';
+        return new File([blob], name, { type });
+    }
+
     if (
         typeof state !== 'function'
         || typeof photographyPosts !== 'function'
@@ -59,6 +78,7 @@
         || typeof renderSocialPageNow !== 'function'
         || typeof withBusy !== 'function'
         || typeof activeDialog !== 'function'
+        || typeof root !== 'function'
         || typeof openPhotographyUploadFilePicker !== 'function'
         || typeof patchPhotographyFollowButtons !== 'function'
         || typeof photographyUploadForm !== 'function'
@@ -67,7 +87,7 @@
         || typeof renderPhotographyUploadDialogNow !== 'function'
         || typeof revokePhotographyUploadPreview !== 'function'
         || typeof togglePortalSocialFollow !== 'function'
-        || typeof submitSocialPost !== 'function'
+        || typeof applyPhotographyUploadFile !== 'function'
     ) {
         throw new Error('Social photography hooks are unavailable.');
     }
@@ -99,6 +119,112 @@
         return text(state().ui?.photographySearch || '').toLowerCase();
     }
 
+    const GRID_THUMB_MAX_PX = 480;
+    const photoGridThumbCache = new Map();
+    let photoGridHydrateObserver = null;
+    let photoGridHydrateQueue = [];
+    let photoGridHydrateFrame = 0;
+
+    async function createPhotographyGridThumbUrl(fullSrc) {
+        const normalizedSrc = text(fullSrc || '');
+        if (!normalizedSrc) return '';
+        const cached = photoGridThumbCache.get(normalizedSrc);
+        if (cached) return cached instanceof Promise ? cached : cached;
+
+        const pending = (async () => {
+            try {
+                if (typeof createImageBitmap !== 'function' || typeof fetch !== 'function') {
+                    return normalizedSrc;
+                }
+                const response = await fetch(normalizedSrc);
+                if (!response.ok) throw new Error('thumb fetch failed');
+                const blob = await response.blob();
+                const bitmap = await createImageBitmap(blob, {
+                    resizeWidth: GRID_THUMB_MAX_PX,
+                    resizeHeight: GRID_THUMB_MAX_PX,
+                    resizeQuality: 'medium'
+                });
+                const canvas = document.createElement('canvas');
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                const ctx = canvas.getContext('2d', { alpha: false });
+                if (!ctx) {
+                    bitmap.close?.();
+                    return normalizedSrc;
+                }
+                ctx.drawImage(bitmap, 0, 0);
+                bitmap.close?.();
+                const thumbBlob = await new Promise((resolve) => {
+                    canvas.toBlob(resolve, 'image/jpeg', 0.84);
+                });
+                if (!thumbBlob) return normalizedSrc;
+                return URL.createObjectURL(thumbBlob);
+            } catch (error) {
+                return normalizedSrc;
+            }
+        })();
+
+        photoGridThumbCache.set(normalizedSrc, pending);
+        const resolved = await pending;
+        photoGridThumbCache.set(normalizedSrc, resolved);
+        return resolved;
+    }
+
+    function schedulePhotographyGridHydrationTick() {
+        if (photoGridHydrateFrame) return;
+        photoGridHydrateFrame = requestAnimationFrame(() => {
+            photoGridHydrateFrame = 0;
+            const batch = photoGridHydrateQueue.splice(0, 1);
+            batch.forEach((img) => {
+                void hydratePhotographyGridImage(img);
+            });
+            if (photoGridHydrateQueue.length) schedulePhotographyGridHydrationTick();
+        });
+    }
+
+    async function hydratePhotographyGridImage(img) {
+        if (!(img instanceof HTMLImageElement) || img.dataset.photoHydrated === '1') return;
+        const fullSrc = text(img.getAttribute('data-photo-src') || '');
+        if (!fullSrc) return;
+        img.dataset.photoHydrated = '1';
+        const thumbSrc = await createPhotographyGridThumbUrl(fullSrc);
+        if (!img.isConnected) return;
+        img.src = thumbSrc || fullSrc;
+        img.removeAttribute('data-photo-src');
+    }
+
+    function ensurePhotographyGridHydrator() {
+        if (photoGridHydrateObserver) return photoGridHydrateObserver;
+        photoGridHydrateObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const img = entry.target;
+                if (!(img instanceof HTMLImageElement)) return;
+                photoGridHydrateObserver.unobserve(img);
+                photoGridHydrateQueue.push(img);
+            });
+            if (photoGridHydrateQueue.length) schedulePhotographyGridHydrationTick();
+        }, { rootMargin: '240px 0px', threshold: 0.01 });
+        return photoGridHydrateObserver;
+    }
+
+    function bindPhotographyGridImages(root) {
+        const scope = root && root.querySelectorAll ? root : document;
+        const observer = ensurePhotographyGridHydrator();
+        scope.querySelectorAll('.social-photo-grid-tile-img[data-photo-src]:not([data-photo-hydrated="1"])').forEach((img) => {
+            observer.observe(img);
+        });
+    }
+
+    window.bindPhotographyGridImages = bindPhotographyGridImages;
+
+    function showPhotographyGridSkeleton() {
+        const stage = document.querySelector('.social-photo-shell .social-photo-content-stage');
+        if (!stage) return;
+        stage.classList.add('is-loading');
+        stage.innerHTML = renderGridSkeleton();
+    }
+
     function postImage(post) {
         const media = (Array.isArray(post?.media) ? post.media : []).find((item) => isImage(item));
         return media || null;
@@ -107,6 +233,10 @@
     function postImageSrc(post) {
         const media = postImage(post);
         return media ? fileUrl(media) : '';
+    }
+
+    function canRemovePhotographyPost(post) {
+        return text(post?.authorUserId) === currentUserId();
     }
 
     function isFollowingProfile(userId) {
@@ -234,6 +364,7 @@
         const saved = typeof isPostSaved === 'function' ? isPostSaved(post.id) : false;
         const caption = text(post.body || '');
         const authorHandle = escape(displayName(author));
+        const canRemove = canRemovePhotographyPost(post);
         const reactionPicker = ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
             <button class="lux-secondary-btn lux-secondary-btn-sm social-neo-post-reaction-btn ${viewerReaction === reactionType ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}" aria-label="${escape(reactionType)}">
                 <span>${typeof reactionEmoji === 'function' ? reactionEmoji(reactionType) : reactionType}</span>
@@ -253,6 +384,10 @@
                     ${text(author.id) !== currentUserId() ? `
                         <button class="${isFollowingProfile(author.id) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="photography-follow" data-user-id="${escape(text(author.id))}">
                             ${isFollowingProfile(author.id) ? 'Following' : 'Follow'}
+                        </button>
+                    ` : canRemove ? `
+                        <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm" type="button" data-action="photography-delete-open" data-post-id="${escape(normalizedPostId)}" aria-label="Remove photo" title="Remove photo">
+                            <i class="fas fa-trash" aria-hidden="true"></i> Remove
                         </button>
                     ` : ''}
                 </div>
@@ -295,8 +430,12 @@
         `;
     }
 
-    function renderPhotoExploreTile(post) {
-        const src = postImageSrc(post);
+    function postImageGridSrc(post) {
+        return postImageSrc(post);
+    }
+
+    function renderPhotoExploreTile(post, index = 0) {
+        const src = postImageGridSrc(post);
         if (!src) return '';
         const normalizedPostId = typeof postKey === 'function' ? postKey(post) : text(post.id);
         const author = accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId };
@@ -304,23 +443,32 @@
         const likeTotal = Object.values(reactionCounts).reduce((sum, value) => sum + Number(value || 0), 0);
 
         const caption = text(post.body || 'Campus photo');
+        const canRemove = canRemovePhotographyPost(post);
+        const fetchPriority = index < 8 ? 'auto' : 'low';
         return `
-            <button class="social-photo-grid-tile" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}" aria-label="View photo by ${escape(displayName(author))}${caption ? `: ${escape(caption)}` : ''}">
-                <img src="${escape(src)}" alt="" loading="lazy" decoding="async" onerror="this.hidden=true;this.closest('.social-photo-grid-tile')?.classList.add('is-broken')">
-                <span class="social-photo-grid-tile-fallback" aria-hidden="true"><i class="fas fa-image"></i></span>
-                <span class="social-photo-grid-tile-overlay">
-                    <span class="social-photo-grid-tile-author">${escape(displayName(author))}</span>
-                    ${likeTotal ? `<span class="social-photo-grid-tile-likes social-photo-mono">${escape(likeTotal)} appreciations</span>` : ''}
-                </span>
-            </button>
+            <div class="social-photo-grid-tile">
+                <button class="social-photo-grid-tile-open" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}" aria-label="View photo by ${escape(displayName(author))}${caption ? `: ${escape(caption)}` : ''}">
+                    <img class="social-photo-grid-tile-img" data-photo-src="${escape(src)}" alt="" loading="lazy" decoding="async" fetchpriority="${fetchPriority}" sizes="(max-width: 720px) 33vw, 240px" onerror="this.hidden=true;this.closest('.social-photo-grid-tile')?.classList.add('is-broken')">
+                    <span class="social-photo-grid-tile-fallback" aria-hidden="true"><i class="fas fa-image"></i></span>
+                    <span class="social-photo-grid-tile-overlay">
+                        <span class="social-photo-grid-tile-author">${escape(displayName(author))}</span>
+                        ${likeTotal ? `<span class="social-photo-grid-tile-likes social-photo-mono">${escape(likeTotal)} appreciations</span>` : ''}
+                    </span>
+                </button>
+                ${canRemove ? `
+                    <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm social-photo-grid-tile-remove" type="button" data-action="photography-delete-open" data-post-id="${escape(normalizedPostId)}" aria-label="Remove photo" title="Remove photo">
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                    </button>
+                ` : ''}
+            </div>
         `;
     }
 
     function renderPhotoExploreGrid(posts) {
-        const tiles = posts.map((post) => renderPhotoExploreTile(post)).filter(Boolean);
+        const tiles = posts.map((post, index) => renderPhotoExploreTile(post, index)).filter(Boolean);
         if (!tiles.length) return renderPhotoEmpty('explore');
         return `
-            <section class="social-photo-explore-grid" aria-label="Campus photo gallery">
+            <section class="social-photo-explore-grid" data-lux-transparency-exempt="1" aria-label="Campus photo gallery">
                 ${tiles.join('')}
             </section>
         `;
@@ -608,10 +756,17 @@
         const nextFeed = renderPhotoFeed(posts, tab);
         const stageEl = shell.querySelector('.social-photo-content-stage');
         if (stageEl) {
-            stageEl.outerHTML = nextFeed;
+            const parsed = document.createElement('div');
+            parsed.innerHTML = nextFeed;
+            const nextStage = parsed.firstElementChild;
+            if (nextStage) stageEl.replaceWith(nextStage);
+            else stageEl.innerHTML = nextFeed;
         } else {
             shell.insertAdjacentHTML('beforeend', nextFeed);
         }
+        const mountedStage = shell.querySelector('.social-photo-content-stage');
+        if (mountedStage) mountedStage.classList.remove('is-loading');
+        if (tab !== 'explore') bindPhotographyGridImages(mountedStage || shell);
         return true;
     };
 
@@ -627,13 +782,14 @@
         const dialogCommentTotal = dialogComments.length + Number(post.replyCount || 0);
         const src = postImageSrc(post);
         const caption = text(post.body || '');
+        const canRemove = canRemovePhotographyPost(post);
         const threadMarkup = typeof renderCommentThread === 'function'
             ? renderCommentThread(dialogComments, post, 'dialog')
             : '';
 
         return `
-            <div class="lux-glass-dialog-backdrop social-photo-ig-backdrop" data-action="dialog-close">
-                <div class="social-photo-ig-modal" data-action="noop">
+            <div class="lux-glass-dialog-backdrop social-photo-ig-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Comments">
+                <div class="social-photo-ig-modal lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-photo-ig-modal-body">
                         <div class="social-photo-ig-media-pane">
                             ${src ? `<img src="${escape(src)}" alt="${escape(caption || 'Campus photo')}">` : ''}
@@ -645,7 +801,14 @@
                                     <strong class="lux-glass-dialog-title">Comments</strong>
                                     <span class="lux-glass-dialog-subtitle social-photo-ig-comments-subtitle">${dialogCommentTotal ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'}` : 'No comments yet'}</span>
                                 </div>
-                                <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                                <div class="social-photo-ig-comments-head-actions">
+                                    ${canRemove ? `
+                                        <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm" type="button" data-action="photography-delete-open" data-post-id="${escape(dialogNormalizedPostId)}" aria-label="Remove photo" title="Remove photo">
+                                            <i class="fas fa-trash" aria-hidden="true"></i> Remove
+                                        </button>
+                                    ` : ''}
+                                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                                </div>
                             </div>
                             <div class="social-photo-ig-comment-scroll">
                                 <div class="lux-glass-dialog-comment-thread social-photo-ig-comment-thread" id="lux-glass-dialog-comment-thread">
@@ -667,6 +830,47 @@
                 </div>
             </div>
         `;
+    };
+
+    window.renderPhotographyDeleteDialog = function renderPhotographyDeleteDialog(dialog = {}) {
+        const postId = text(dialog.postId || '');
+        const post = findPhotographyPost(postId);
+        if (!post || !canRemovePhotographyPost(post)) return '';
+        const src = postImageSrc(post);
+        const caption = text(post.body || '');
+        const previewTitle = caption || 'Campus photo';
+        const previewImage = src
+            ? `<div class="social-photo-delete-preview-media"><img src="${escape(src)}" alt="${escape(previewTitle)}"></div>`
+            : '';
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card social-neo-delete-confirm lux-glass-dialog-card--social-glass" data-form="dialog-photography-delete" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                        <div class="social-neo-delete-confirm-title">
+                            <strong class="lux-glass-dialog-title">Remove photo</strong>
+                            <span class="lux-glass-dialog-subtitle">This permanently deletes your campus photo from Exposé.</span>
+                        </div>
+                    </div>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="social-neo-delete-confirm-preview">
+                    ${previewImage}
+                    <strong class="lux-glass-dialog-preview-title">${escape(previewTitle)}</strong>
+                </div>
+                <div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">The photo will be permanently removed for everyone.</div>
+                <label class="social-neo-item-line lux-glass-dialog-checkbox-line">
+                    <input type="checkbox" name="confirmPhotographyDelete" value="yes">
+                    <span class="lux-glass-dialog-checkbox-copy">I understand this photo will be permanently removed from Exposé.</span>
+                </label>
+                <div class="social-neo-delete-confirm-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-secondary-btn lux-primary-btn lux-btn-danger lux-glass-dialog-submit-btn" type="submit">Remove photo</button>
+                </div>
+                <input type="hidden" name="postId" value="${escape(postId)}">
+            </form>
+        </div>`;
     };
 
     window.renderPhotographyUploadDialog = function renderPhotographyUploadDialog(dialog = {}) {
@@ -746,7 +950,10 @@
         if (!isSocialPhotographyClickAction(action)) return false;
         if (action === 'photography-tab') {
             const rawTab = text(trigger.getAttribute('data-photography-tab') || 'explore') || 'explore';
-            state().ui.photographyTab = rawTab === 'gallery' || rawTab === 'contact' ? 'explore' : rawTab;
+            const nextTab = rawTab === 'gallery' || rawTab === 'contact' ? 'explore' : rawTab;
+            const wasGridTab = photoTab() !== 'explore';
+            state().ui.photographyTab = nextTab;
+            if (nextTab !== 'explore' && !wasGridTab) showPhotographyGridSkeleton();
             if (refreshPhotographyPanelStage()) return;
             return renderSocialPageNow('photography-tab');
         }
@@ -827,6 +1034,14 @@
             return openDialog('photography-comments', { postId });
         }
 
+        if (action === 'photography-delete-open') {
+            const postId = text(trigger.getAttribute('data-post-id'));
+            if (!postId) return;
+            const post = findPhotographyPost(postId);
+            if (!post || !canRemovePhotographyPost(post)) return;
+            return openDialog('photography-delete', { postId });
+        }
+
         if (action === 'photography-view-profile') {
             state().ui.photographyProfileUserId = text(trigger.getAttribute('data-user-id'));
             setPanel('photography');
@@ -872,46 +1087,95 @@
     window.isSocialPhotographyClickAction = isSocialPhotographyClickAction;
 
     function isSocialPhotographySubmitForm(formType) {
-        return text(formType || '') === 'photography-upload';
+        const form = text(formType || '');
+        return form === 'photography-upload' || form === 'dialog-photography-delete';
     }
 
     function handleSocialPhotographySubmit(formType, form, runtime, event) {
         if (!isSocialPhotographySubmitForm(formType)) return false;
-        if (formType === 'photography-upload') {
-            return withBusy(async () => {
-                const draft = runtime.ui?.photographyUploadDraft || {};
-                const file = draft.file || null;
-                const caption = text(draft.caption || form.photographyCaption?.value || '');
-                if (!file) throw new Error('Choose an image before publishing.');
-                if (typeof submitSocialPost !== 'function') throw new Error('Photo publishing is unavailable.');
-                const tags = text(draft.tags || form.photographyTags?.value || '')
-                    .split(',')
-                    .map((tag) => text(tag).replace(/^#/, ''))
-                    .filter(Boolean);
-                const published = await submitSocialPost(caption, {
-                    postType: 'photo',
-                    category: 'Photography',
-                    file,
-                    fileScope: 'social',
-                    photoMeta: {
-                        tags,
-                        location: text(draft.location || form.photographyLocation?.value || ''),
-                        facultyCode: currentFacultyCode()
-                    }
-                });
-                if (!published) throw new Error('Photo could not be published.');
-                revokePhotographyUploadPreview(runtime.ui.photographyUploadDraft);
-                runtime.ui.photographyUploadDraft = {};
-                runtime.ui.photographyUploadStep = 1;
-                runtime.ui.photographyTab = 'explore';
-                closeDialog();
-                setPanel('photography');
-                const host = root();
+        const busy = resolvePhotographyHook('withBusy') || withBusy;
+        if (typeof busy !== 'function') return false;
+
+        if (formType === 'dialog-photography-delete') {
+            return busy(async () => {
+                if (!form.confirmPhotographyDelete?.checked) throw new Error('Confirm removal before deleting this photo.');
+                const postId = text(form.postId?.value);
+                if (!postId) throw new Error('Photo could not be removed.');
+                const post = findPhotographyPost(postId);
+                if (!post || !canRemovePhotographyPost(post)) throw new Error('You can only remove photos you posted.');
+                const deletePost = resolvePhotographyHook('deletePortalSocialPost');
+                if (typeof deletePost !== 'function') throw new Error('Photo removal is unavailable.');
+                await deletePost(postId);
+                const closeDialogFn = resolvePhotographyHook('closeDialog') || closeDialog;
+                const invalidate = resolvePhotographyHook('invalidateSocialRenderCache');
+                const renderNow = resolvePhotographyHook('renderSocialPageNow') || renderSocialPageNow;
+                const patchFlash = resolvePhotographyHook('patchSocialFlash');
+                const rootFn = resolvePhotographyHook('root');
+                closeDialogFn();
+                const host = typeof rootFn === 'function' ? rootFn() : null;
                 if (host) host.__kiuLastRenderSignature = '';
-                renderSocialPageNow('photography-upload-submit');
+                if (typeof invalidate === 'function') invalidate({ center: true });
+                const refreshStage = resolvePhotographyHook('refreshPhotographyPanelStage');
+                if (typeof refreshStage === 'function' && refreshStage()) {
+                    if (typeof patchFlash === 'function') patchFlash();
+                    return;
+                }
+                renderNow('photography-deleted');
+                if (typeof patchFlash === 'function') patchFlash();
             });
         }
-        return false;
+
+        if (formType !== 'photography-upload') return false;
+        return busy(async () => {
+            const submitPost = resolvePhotographyHook('submitSocialPost');
+            const rootFn = resolvePhotographyHook('root');
+            const closeDialogFn = resolvePhotographyHook('closeDialog') || closeDialog;
+            const setPanelFn = resolvePhotographyHook('setPanel') || setPanel;
+            const renderNow = resolvePhotographyHook('renderSocialPageNow') || renderSocialPageNow;
+            const revokePreview = resolvePhotographyHook('revokePhotographyUploadPreview') || revokePhotographyUploadPreview;
+            const facultyCodeFn = resolvePhotographyHook('currentFacultyCode') || currentFacultyCode;
+            const patchFlash = resolvePhotographyHook('patchSocialFlash');
+            const live = state();
+            const draft = live.ui?.photographyUploadDraft || {};
+            const file = await resolvePhotographyUploadFile(draft);
+            const caption = text(draft.caption || form.photographyCaption?.value || '');
+            if (!file) throw new Error('Choose an image before publishing.');
+            if (typeof submitPost !== 'function') throw new Error('Photo publishing is unavailable.');
+            const tags = text(draft.tags || form.photographyTags?.value || '')
+                .split(',')
+                .map((tag) => text(tag).replace(/^#/, ''))
+                .filter(Boolean);
+            const published = await submitPost(caption, {
+                postType: 'photo',
+                category: 'Photography',
+                file,
+                fileScope: 'social',
+                photoMeta: {
+                    tags,
+                    location: text(draft.location || form.photographyLocation?.value || ''),
+                    facultyCode: facultyCodeFn()
+                }
+            });
+            if (!published) throw new Error('Photo could not be published.');
+            revokePreview(live.ui?.photographyUploadDraft);
+            live.ui.photographyUploadDraft = {};
+            live.ui.photographyUploadStep = 1;
+            live.ui.photographyTab = 'explore';
+            closeDialogFn();
+            setPanelFn('photography');
+            const host = typeof rootFn === 'function' ? rootFn() : null;
+            if (host) host.__kiuLastRenderSignature = '';
+            const invalidate = resolvePhotographyHook('invalidateSocialRenderCache');
+            if (typeof invalidate === 'function') invalidate({ center: true });
+            renderNow('photography-upload-submit');
+            const refreshStage = resolvePhotographyHook('refreshPhotographyPanelStage');
+            if (typeof refreshStage === 'function' && refreshStage()) {
+                if (typeof patchFlash === 'function') patchFlash();
+                return;
+            }
+            renderNow('post-created');
+            if (typeof patchFlash === 'function') patchFlash();
+        });
     }
 
     window.handleSocialPhotographySubmit = handleSocialPhotographySubmit;

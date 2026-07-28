@@ -8,14 +8,15 @@ function readSource(relativePath) {
 }
 
 describe('LMS whiteboard document interaction ux8', () => {
+    const css = readSource('assets/css/lux-page-bare-lite.css');
     it('gates pointer events by active tool', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const chromeRuntime = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
 
         expect(css).toContain('[data-lms-whiteboard-tool="select"] .lms-whiteboard-document-body');
         expect(css).toContain('[data-lms-whiteboard-tool="pen"] .lms-whiteboard-document-ink');
         expect(css).toContain('[data-lms-whiteboard-tool="eraser"] .lms-whiteboard-document-ink');
-        expect(runtime).toContain('stage.dataset.lmsWhiteboardTool = LMS_WHITEBOARD_UI.tool');
-        expect(runtime).toContain('syncLmsWhiteboardDocumentToolMode');
+        expect(chromeRuntime).toContain('stage.dataset.lmsWhiteboardTool = LMS_WHITEBOARD_UI.tool');
+        expect(chromeRuntime).toContain('syncLmsWhiteboardDocumentToolMode');
     });
 
     it('mounts chrome, ink canvas, and shell drag bindings', () => {
@@ -30,24 +31,28 @@ describe('LMS whiteboard document interaction ux8', () => {
         expect(docRuntime).toContain('parentDocumentId');
         expect(docRuntime).toContain('setLmsWhiteboardTool(\'select\')');
         expect(docRuntime).toContain('shellOrigin.left');
-        expect(docRuntime).toContain('scrollablePreview');
+        expect(docRuntime).toContain('isLmsWhiteboardDocumentScrollContentTarget');
         expect(docRuntime).not.toMatch(/closest\('iframe, \.lms-whiteboard-document-frame, \.lms-whiteboard-document-image'\)/);
         expect(docRuntime).toContain('img.draggable = false');
     });
 
     it('exposes shell drag and document stroke helpers from runtime', () => {
         const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const sessionRuntime = readSource('assets/js/pages/lms-whiteboard-session-runtime.js');
+        const chromeRuntime = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
+        const model = readSource('assets/js/pages/lms-whiteboard-model.js');
+        const paintRuntime = readSource('assets/js/pages/lms-whiteboard-paint-runtime.js');
 
         expect(runtime).toContain('function beginLmsWhiteboardShellDrag');
         expect(runtime).toContain('function attachLmsWhiteboardShellDragWindowListeners');
         expect(runtime).toContain('function beginLmsWhiteboardDocumentStroke');
         expect(runtime).toContain('function scaleLmsWhiteboardDocumentStrokePoints');
-        expect(runtime).toContain('function getActiveLmsWhiteboardShell');
+        expect(sessionRuntime).toContain('function getActiveLmsWhiteboardShell');
         expect(runtime).toContain('function worldToStageOffset');
-        expect(runtime).toContain("id: 'n'");
-        expect(runtime).toContain("id: 'e'");
-        expect(runtime).toContain('skipDocumentSync');
-        expect(runtime).toContain('data-lms-whiteboard-layers-list');
+        expect(model).toContain("id: 'n'");
+        expect(model).toContain("id: 'e'");
+        expect(paintRuntime).toContain('skipDocumentSync');
+        expect(chromeRuntime).toContain('data-lms-whiteboard-layers-list');
     });
 
     it('normalizes document-scoped strokes in backend service', () => {
@@ -80,8 +85,9 @@ describe('LMS whiteboard document interaction ux8', () => {
 
     it('skips document children on main canvas and converts inline editor coords', () => {
         const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const paintRuntime = readSource('assets/js/pages/lms-whiteboard-paint-runtime.js');
 
-        expect(runtime).toContain('if (element.parentDocumentId) return;');
+        expect(paintRuntime).toContain('if (element.parentDocumentId) return;');
         expect(runtime).toContain('documentLocalToWorld');
         expect(runtime).toContain('scaleLmsWhiteboardDocumentChildElements');
         expect(runtime).toContain('hitTestLmsWhiteboardDocumentChildLocal');
@@ -95,11 +101,36 @@ describe('LMS whiteboard document interaction ux8', () => {
         expect(css).toMatch(/\.lms-whiteboard-document-view\.is-selected \.lms-whiteboard-document-drag-ring/);
     });
 
-    it('supports resize zones, hover cursors, and document child resize', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+    it('supports explicit scroll and resize interaction modes on document badge', () => {
         const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
 
-        expect(runtime).toContain('function hitTestLmsWhiteboardResizeZone');
+        expect(docRuntime).toContain('documentInteractionMode');
+        expect(docRuntime).toContain('function getLmsWhiteboardDocumentInteractionMode');
+        expect(docRuntime).toContain('function setLmsWhiteboardDocumentInteractionMode');
+        expect(docRuntime).toContain('function applyLmsWhiteboardDocumentInteractionMode');
+        expect(docRuntime).toContain('function isLmsWhiteboardDocumentResizeMode');
+        expect(docRuntime).toContain('buildLmsWhiteboardDocumentBadgeMarkup');
+        expect(docRuntime).toContain('lms-whiteboard-document-badge-modes');
+        expect(docRuntime).toContain('data-lms-whiteboard-document-mode="scroll"');
+        expect(docRuntime).toContain('data-lms-whiteboard-document-mode="resize"');
+        expect(docRuntime).toContain('dataset.lmsWhiteboardDocumentMode');
+        expect(docRuntime).toContain('resolveLmsWhiteboardDocumentShellCanvas');
+        expect(docRuntime).toContain('buildLmsWhiteboardMoveDragStart');
+        expect(docRuntime).toContain('beginLmsWhiteboardCanvasGesture');
+        expect(docRuntime).toContain('buildLmsWhiteboardMoveDragStart');
+        expect(docRuntime).toContain('beginLmsWhiteboardCanvasGesture');
+        expect(css).toContain('[data-lms-whiteboard-document-mode="resize"] .lms-whiteboard-document-body');
+        expect(css).toContain('[data-lms-whiteboard-document-mode="resize"]');
+        expect(css).toContain('.lms-whiteboard-document-mode-btn.is-active');
+        expect(css).toContain('.lms-whiteboard-document-badge-label');
+    });
+
+    it('supports resize zones, hover cursors, and document child resize', () => {
+        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const model = readSource('assets/js/pages/lms-whiteboard-model.js');
+        const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
+
+        expect(model).toContain('function hitTestLmsWhiteboardResizeZone');
         expect(runtime).toContain('function getLmsWhiteboardResizeHandleCursor');
         expect(runtime).toContain('function applyLmsWhiteboardStrokeBoundsResize');
         expect(runtime).toContain('syncLmsWhiteboardPointerCursor');
@@ -107,16 +138,52 @@ describe('LMS whiteboard document interaction ux8', () => {
         expect(css).toContain('.lms-whiteboard-document-edge-handle');
         expect(css).toContain('cursor: nesw-resize');
         expect(docRuntime).toContain('lms-whiteboard-document-edge-handle');
-        expect(docRuntime).toContain('hitTestLmsWhiteboardDocumentShellResizeZone');
         expect(docRuntime).toContain('paintDocumentChildResizeHandles');
         expect(docRuntime).toContain('resize-document-child');
         expect(docRuntime).toContain('syncLmsWhiteboardDocumentPointerCursor');
     });
 
-    it('bumps lms cache to resize-cursor', () => {
-        const html = readSource('lms.html');
+    it('bumps lms cache to document mode toggles', () => {
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('20260729-wbdocmode5');
+    });
 
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('20260708-wb-shapes-v4');
+    it('defers heavy document repaint during layout-only reposition', () => {
+        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
+        const pointerRuntime = readSource('assets/js/pages/lms-whiteboard-pointer-runtime.js');
+        const paintRuntime = readSource('assets/js/pages/lms-whiteboard-paint-runtime.js');
+
+        expect(runtime).toContain('function abortLmsWhiteboardShellDrag');
+        expect(runtime).toContain('e.buttons === 0');
+        expect(runtime).toContain("document.addEventListener('pointerup', onEnd, true)");
+        expect(runtime).toContain('if (edgeHandle) return false');
+        expect(docRuntime).toContain('cancelLmsWhiteboardDocumentPdfPaint');
+        expect(docRuntime).toContain('RenderingCancelledException');
+        expect(docRuntime).toContain('layoutOnly');
+        expect(docRuntime).toContain('function getLmsWhiteboardDocumentChromeHandle');
+        expect(docRuntime).toContain('isLmsWhiteboardDocumentScrollContentTarget');
+        expect(docRuntime).toContain('syncLmsWhiteboardDocumentScrollState');
+        expect(docRuntime).toContain('lmsWhiteboardScrollable');
+        expect(pointerRuntime).toContain('repositionLmsWhiteboardDocumentViewers(canvas, { layoutOnly: true })');
+        expect(pointerRuntime).toContain('finalizeLmsWhiteboardDocumentLayout(canvas, element.id)');
+        expect(paintRuntime).toContain('layoutOnly: true');
+        expect(docRuntime).toContain('lms-whiteboard-document-html');
+        expect(docRuntime).not.toContain('sandbox=""');
+        expect(docRuntime).not.toContain('allow-scripts allow-same-origin');
+    });
+
+    it('locks document resize aspect using badge-aware shell resize', () => {
+        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+
+        expect(runtime).toContain('function getLmsWhiteboardDocumentBadgeHeight');
+        expect(runtime).toContain('function applyLmsWhiteboardDocumentShellResize');
+        expect(runtime).toContain('function getLmsWhiteboardDocumentContentAspect');
+        expect(runtime).toContain('if (edgeHandle) return false');
+        expect(runtime).toContain('return Boolean(getLmsWhiteboardDocumentContentAspect(element))');
+        expect(runtime).toContain('getLmsWhiteboardDocumentBadgeHeight');
+        expect(css).toContain('.lms-whiteboard-document-view.is-resizing .lms-whiteboard-document-ink');
+        expect(css).toMatch(/document-edge-handle\[data-handle="n"\][\s\S]*height:\s*10px/);
+        expect(readSource('assets/js/pages/lms-whiteboard-document-runtime.js')).toContain('clearLmsWhiteboardDocumentPointerCursor');
     });
 
     it('supports document ink marquee multi-select', () => {
@@ -131,12 +198,13 @@ describe('LMS whiteboard document interaction ux8', () => {
 
     it('supports text drag-to-size placement and resize editor sync', () => {
         const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const pointerRuntime = readSource('assets/js/pages/lms-whiteboard-pointer-runtime.js');
         const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
 
         expect(runtime).toContain('function finalizeLmsWhiteboardTextBox');
-        expect(runtime).toContain("LMS_WHITEBOARD_UI.tool === 'text'");
-        expect(runtime).toContain("tool === 'text' && finishedStroke");
-        expect(runtime).toContain("'sticky', 'text', 'image', 'document'");
+        expect(pointerRuntime).toContain("LMS_WHITEBOARD_UI.tool === 'text'");
+        expect(pointerRuntime).toContain("tool === 'text' && finishedStroke");
+        expect(pointerRuntime).toContain("'sticky', 'text', 'image', 'document'");
         expect(runtime).toContain('repositionLmsWhiteboardInlineEditor(canvas)');
         expect(docRuntime).toContain('function handleLmsWhiteboardDocumentTextCommit');
         expect(docRuntime).toMatch(/if \(tool === 'text'\)[\s\S]*LMS_WHITEBOARD_UI\.drawing = true/);

@@ -20,24 +20,26 @@ describe('LMS whiteboard document embed', () => {
 
     it('loads document runtime before main whiteboard runtime', () => {
         const html = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        const docIndex = html.indexOf('lms-whiteboard-document-runtime.js?v=20260708-wb-shapes-v4');
-        const mainIndex = html.indexOf('lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        const docIndex = html.indexOf('lms-whiteboard-document-runtime.js?v=20260729-wbdocresize6');
+        const mainIndex = html.indexOf('lms-whiteboard-runtime.js?v=20260729-wbdocresize6');
 
         expect(docIndex).toBeGreaterThan(-1);
         expect(mainIndex).toBeGreaterThan(docIndex);
     });
 
     it('accepts pdf, word, excel, and image uploads in the file input', () => {
+        const sessionRuntime = readSource('assets/js/pages/lms-whiteboard-session-runtime.js');
         const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
         const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
 
-        expect(runtime).toContain('accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv');
-        expect(runtime).toContain('isLmsWhiteboardImportableFile');
+        expect(sessionRuntime).toContain('accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv');
+        expect(docRuntime).toContain('isLmsWhiteboardImportableFile');
         expect(runtime).toContain('importLmsWhiteboardDocumentFile');
         expect(docRuntime).toContain('syncLmsWhiteboardDocumentLayer');
     });
 
     it('styles document overlay layer in route css', () => {
+        const css = readSource('assets/css/lux-page-bare-lite.css');
         expect(css).toContain('.lms-whiteboard-document-layer');
         expect(css).toContain('.lms-whiteboard-document-view');
         expect(css).toContain('.lms-whiteboard-document-frame');

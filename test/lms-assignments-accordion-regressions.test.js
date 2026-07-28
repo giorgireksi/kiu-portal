@@ -41,5 +41,11 @@ describe('LMS assignments week accordion regressions', () => {
         expect(bare).toContain('body.lux-route-lms .lms-week-accordion-head');
         expect(bare).toContain('body.lux-route-lms .lms-route-empty--week-panel');
         expect(bare).toContain('body.lux-route-lms .lms-assignment-student-detail-grid');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toContain('.lms-route-file-shell,');
+        expect(fouc).toContain('.lms-assignment-rubric-shell,');
+        expect(bare).not.toMatch(/body\.lux-route-lms \.lms-route-file-shell[\s\S]{0,120}background:\s*rgba/);
+        expect(bare).not.toMatch(/body\.lux-route-lms \.lms-assignment-rubric-shell[\s\S]{0,120}background:\s*rgba/);
+        expect(bare).toContain('body.lux-route-lms .lms-route-file-shell-title');
     });
 });

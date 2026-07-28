@@ -137,7 +137,7 @@
                 return 'orange';
             };
             const renderMetricCard = (icon, label, value, note, accent = '#f97316') => `
-                <article class="social-project-metric-card" data-project-tone="${projectToneFromAccent(accent)}">
+                <article class="social-project-metric-card lux-soft-chrome home-hover-chip" data-project-tone="${projectToneFromAccent(accent)}">
                     <span class="social-project-metric-icon"><i class="fas ${escape(icon)}"></i></span>
                     <div>
                         <small>${escape(label)}</small>
@@ -151,7 +151,7 @@
                 const circumference = 2 * Math.PI * 42;
                 const dash = circumference - ((normalized / 100) * circumference);
                 return `
-                    <article class="social-project-ring-card" data-project-tone="${projectToneFromAccent(accent)}">
+                    <article class="social-project-ring-card lux-soft-chrome" data-project-tone="${projectToneFromAccent(accent)}">
                         <svg viewBox="0 0 110 110" aria-hidden="true">
                             <circle cx="55" cy="55" r="42" class="social-project-ring-track"></circle>
                             <circle cx="55" cy="55" r="42" class="social-project-ring-value" stroke-dasharray="${circumference}" stroke-dashoffset="${dash}"></circle>
@@ -562,7 +562,7 @@
                 const maxMembers = countNum(project?.maxTeamSize || project?.targetTeamSize || project?.maxMembers || 0);
                 const capacityLabel = maxMembers > 0 ? `${memberCount}/${maxMembers}` : `${memberCount} members`;
                 return `
-                    <article class="social-project-card-new" data-action="project-open" data-project-id="${escape(text(project?.id))}">
+                    <article class="social-project-card-new home-hover-chip" data-action="project-open" data-project-id="${escape(text(project?.id))}">
                         <div class="social-project-card-new-status">
                             <span class="social-project-status-dot ${escape(statusDotClass)}"></span>
                             <span class="social-project-status-label">${escape(statusLabel)}</span>
@@ -601,7 +601,7 @@
                 const maxMembers = countNum(project?.maxTeamSize || project?.targetTeamSize || project?.maxMembers || 0);
                 const capacityLabel = maxMembers > 0 ? `${memberCount}/${maxMembers}` : `${memberCount}`;
                 return `
-                    <div class="social-project-row" data-action="project-open" data-project-id="${escape(text(project?.id))}">
+                    <div class="social-project-row home-hover-chip" data-action="project-open" data-project-id="${escape(text(project?.id))}">
                         <div class="social-project-row-status">
                             <span class="social-project-status-dot ${escape(statusDotClass)}"></span>
                             <span class="social-project-status-label">${escape(statusLabel)}</span>
@@ -805,11 +805,11 @@
                                             ${hubProjects.length
                                                 ? (hubViewMode === 'list'
                                                     ? `<div class="social-project-rows social-project-hub-list">${hubProjects.map(renderProjectRow).join('')}</div>`
-                                                    : `<div class="social-project-hub-grid">${hubProjects.map(renderProjectCard).join('')}<button class="social-project-card-new social-project-hub-cta-tile" type="button" data-action="project-create-open"><span class="social-project-hub-cta-icon"><i class="fas fa-plus"></i></span><strong>New workspace</strong><span class="social-project-hub-cta-copy">Start a project for your course or team</span></button></div>`)
+                                                    : `<div class="social-project-hub-grid">${hubProjects.map(renderProjectCard).join('')}<button class="social-project-card-new social-project-hub-cta-tile home-hover-chip" type="button" data-action="project-create-open"><span class="social-project-hub-cta-icon"><i class="fas fa-plus"></i></span><strong>New workspace</strong><span class="social-project-hub-cta-copy">Start a project for your course or team</span></button></div>`)
                                                 : `<div class="social-neo-empty">No projects match these filters. Try Mine, or create a group project for your course.</div>`}
                                         </div>
                                         <aside class="social-project-hub-rail">
-                                            <section class="social-project-hub-rail-card lux-soft-chrome">
+                                            <section class="social-project-hub-rail-card lux-soft-chrome home-hover-chip">
                                                 <div class="social-neo-section-head">
                                                     <div><strong>My Work</strong><span class="lms-route-meta-12">Tasks assigned to you.</span></div>
                                                     <span class="social-neo-pill">${escape(String(myWorkItems.length))}</span>
@@ -829,7 +829,7 @@
                                                     </button>`;
                                                 }).join('')}</div>` : `<div class="social-neo-empty">No open tasks assigned to you.</div>`}
                                             </section>
-                                            ${featuredProjects.length > 1 ? `<section class="social-project-hub-rail-card lux-soft-chrome">
+                                            ${featuredProjects.length > 1 ? `<section class="social-project-hub-rail-card lux-soft-chrome home-hover-chip">
                                                 <div class="social-neo-section-head">
                                                     <div><strong>Recently active</strong><span class="lms-route-meta-12">Projects with recent team activity.</span></div>
                                                 </div>
@@ -837,7 +837,7 @@
                                                     ${featuredProjects.slice(0, 5).map(renderProjectRow).join('')}
                                                 </div>
                                             </section>` : ''}
-                                            <section class="social-project-hub-rail-card lux-soft-chrome">
+                                            <section class="social-project-hub-rail-card lux-soft-chrome home-hover-chip">
                                                 <div class="social-neo-section-head">
                                                     <div><strong>Your load</strong><span class="lms-route-meta-12">Roles and assigned work.</span></div>
                                                 </div>
@@ -1183,16 +1183,16 @@
                             return `<p class="spt-desk-plan-health-schedule social-neo-muted" title="From forward / backward pass over dependencies">${escape(line)}</p>`;
                         })()}
                         <div class="spt-desk-plan-health-grid">
-                            <button type="button" class="spt-desk-plan-health-card" data-action="project-task-focus" data-focus="all" title="All tasks">
+                            <button type="button" class="spt-desk-plan-health-card home-hover-chip" data-action="project-task-focus" data-focus="all" title="All tasks">
                                 <strong>${donePctPlan}%</strong><span>Done</span>
                             </button>
-                            <button type="button" class="spt-desk-plan-health-card${focusCounts.critical ? ' is-warn' : ''}" data-action="project-task-focus" data-focus="${focusCounts.critical ? 'critical' : 'all'}" title="${focusCounts.critical ? 'Open critical tasks' : 'Add time estimates to unlock critical path'}">
+                            <button type="button" class="spt-desk-plan-health-card home-hover-chip${focusCounts.critical ? ' is-warn' : ''}" data-action="project-task-focus" data-focus="${focusCounts.critical ? 'critical' : 'all'}" title="${focusCounts.critical ? 'Open critical tasks' : 'Add time estimates to unlock critical path'}">
                                 <strong>${focusCounts.critical ? focusCounts.critical : '—'}</strong><span>Critical</span>
                             </button>
-                            <button type="button" class="spt-desk-plan-health-card${focusCounts.unassigned ? ' is-warn' : ''}" data-action="project-task-focus" data-focus="unassigned" title="Tasks without an owner">
+                            <button type="button" class="spt-desk-plan-health-card home-hover-chip${focusCounts.unassigned ? ' is-warn' : ''}" data-action="project-task-focus" data-focus="unassigned" title="Tasks without an owner">
                                 <strong>${focusCounts.unassigned}</strong><span>No owner</span>
                             </button>
-                            <button type="button" class="spt-desk-plan-health-card${focusCounts.overdue ? ' is-danger' : ''}" data-action="project-task-focus" data-focus="overdue" title="Overdue tasks">
+                            <button type="button" class="spt-desk-plan-health-card home-hover-chip${focusCounts.overdue ? ' is-danger' : ''}" data-action="project-task-focus" data-focus="overdue" title="Overdue tasks">
                                 <strong>${focusCounts.overdue}</strong><span>Overdue</span>
                             </button>
                         </div>
@@ -1204,7 +1204,7 @@
                         <div class="spt-desk-focus" role="tablist" aria-label="Focus">
                             <div class="spt-desk-focus-track">
                                 ${focusChipDefs.map(([id, label, count]) => `
-                                    <button type="button" role="tab" aria-selected="${focus === id ? 'true' : 'false'}" class="spt-desk-focus-chip${focus === id ? ' is-active' : ''}" data-action="project-task-focus" data-focus="${escape(id)}">
+                                    <button type="button" role="tab" aria-selected="${focus === id ? 'true' : 'false'}" class="spt-desk-focus-chip home-hover-chip${focus === id ? ' is-active' : ''}" data-action="project-task-focus" data-focus="${escape(id)}">
                                         <strong>${escape(label)}</strong>
                                         <span>${count}</span>
                                     </button>
@@ -1222,7 +1222,7 @@
                                             ['week', 'This week'],
                                             ['2weeks', '2 weeks']
                                         ].map(([id, label]) => `
-                                            <button type="button" class="spt-desk-focus-chip ${timeWindow === id ? 'is-active' : ''}" data-action="project-task-time-window" data-window="${escape(id)}" aria-pressed="${timeWindow === id ? 'true' : 'false'}">
+                                            <button type="button" class="spt-desk-focus-chip home-hover-chip ${timeWindow === id ? 'is-active' : ''}" data-action="project-task-time-window" data-window="${escape(id)}" aria-pressed="${timeWindow === id ? 'true' : 'false'}">
                                                 <strong>${escape(label)}</strong>
                                             </button>
                                         `).join('')}
@@ -1420,8 +1420,8 @@
                     );
                     const hygieneDismissed = hygieneHidden.has('desk-alert');
                     if (!hygieneDismissed) {
-                        if (overdueN > 0) hygieneBits.push(`<button type="button" class="spt-desk-hygiene-pill is-danger" data-action="project-task-focus" data-focus="overdue"><i class="fas fa-clock" aria-hidden="true"></i>${overdueN} overdue</button>`);
-                        if (unassignedN > 0) hygieneBits.push(`<button type="button" class="spt-desk-hygiene-pill is-warn" data-action="project-task-focus" data-focus="unassigned"><i class="fas fa-user-slash" aria-hidden="true"></i>${unassignedN} unassigned</button>`);
+                        if (overdueN > 0) hygieneBits.push(`<button type="button" class="spt-desk-hygiene-pill home-hover-chip is-danger" data-action="project-task-focus" data-focus="overdue"><i class="fas fa-clock" aria-hidden="true"></i>${overdueN} overdue</button>`);
+                        if (unassignedN > 0) hygieneBits.push(`<button type="button" class="spt-desk-hygiene-pill home-hover-chip is-warn" data-action="project-task-focus" data-focus="unassigned"><i class="fas fa-user-slash" aria-hidden="true"></i>${unassignedN} unassigned</button>`);
                     }
                     const deskHygieneHtml = (filteredTasks.length && hygieneBits.length) ? `
                         <div class="spt-desk-hygiene-bar spt-desk-hygiene-bar--slim" role="status" aria-label="Needs attention">
@@ -1514,7 +1514,7 @@
                                     ? `<button type="button" class="spt-desk-package-risk-icon" data-action="project-risk-open" data-project-id="${escape(projectId)}" data-group-id="${escape(section.id)}" title="${section.riskCount} risk${section.riskCount === 1 ? '' : 's'}" aria-label="Package risks"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i></button>`
                                     : '';
                                 return `
-                                    <section class="spt-desk-package is-health-${escape(healthId)} ${section.kind === 'ungrouped' ? 'is-ungrouped' : ''} ${isCollapsed ? 'is-collapsed' : ''} ${section.pct >= 100 && section.tasks.length ? 'is-complete' : ''}" data-package-id="${escape(section.id)}" data-health="${escape(healthId)}">
+                                    <section class="spt-desk-package lux-soft-chrome is-health-${escape(healthId)} ${section.kind === 'ungrouped' ? 'is-ungrouped' : ''} ${isCollapsed ? 'is-collapsed' : ''} ${section.pct >= 100 && section.tasks.length ? 'is-complete' : ''}" data-package-id="${escape(section.id)}" data-health="${escape(healthId)}">
                                         <header class="spt-desk-package-head">
                                             <button type="button" class="spt-desk-package-toggle" data-action="project-task-desk-toggle-package" data-package-id="${escape(section.id)}" aria-expanded="${showBody ? 'true' : 'false'}" title="${showBody ? 'Collapse' : 'Expand'}">
                                                 <i class="fas fa-chevron-${showBody ? 'down' : 'right'}" aria-hidden="true"></i>
@@ -1615,7 +1615,7 @@
                 `;
                 const body = taskViewMode === 'list' ? listBody : (taskViewMode === 'graph' ? graphBody : deskBody);
                 return `
-                    <section class="social-neo-card social-project-task-shell social-project-task-shell--roomy social-project-task-shell--desk" data-task-view="${escape(taskViewMode)}">
+                    <section class="social-neo-card social-project-task-shell social-project-task-shell--roomy social-project-task-shell--desk lux-soft-chrome" data-task-view="${escape(taskViewMode)}">
                         <div class="social-project-task-shell-header social-project-task-shell-header--roomy">
                             <div class="social-project-task-shell-heading">
                                 <div class="spt-desk-shell-brand">
@@ -1644,7 +1644,7 @@
             };
 
             const renderProjectChatLoading = (title, copy) => `
-                <section class="social-neo-card social-project-workspace-chat social-project-workspace-chat--loading">
+                <section class="social-neo-card social-project-workspace-chat social-project-workspace-chat--loading lux-soft-chrome home-hover-chip">
                     <div class="social-neo-empty-hero">
                         <i class="fas fa-comments"></i>
                         <strong>${escape(title)}</strong>
@@ -1663,7 +1663,7 @@
                     return renderProjectChatLoading('Loading workspace chat', 'Preparing threads, group tools, and call controls.');
                 }
                 if (!text(activeProject?.groupId || '')) {
-                    return `<div class="social-project-workspace-chat">${window.renderMessagesThreadShell(null, { emptyCopy: 'Project chat is unavailable — no linked group.' })}</div>`;
+                    return `<div class="social-project-workspace-chat">${window.renderMessagesThreadShell(null, { emptyCopy: 'Project chat is unavailable — no linked group.', chrome: 'workspace' })}</div>`;
                 }
                 const chat = resolveProjectWorkspaceChat(activeProject);
                 if (!chat) {
@@ -1687,7 +1687,7 @@
                 if (text(runtime.ui?.activeChatId || '') !== text(chat.id)) {
                     setActiveChat(chat.id);
                 }
-                return `<div class="social-project-workspace-chat">${window.renderMessagesThreadShell(chat)}</div>`;
+                return `<div class="social-project-workspace-chat">${window.renderMessagesThreadShell(chat, { chrome: 'workspace' })}</div>`;
             };
             const renderActivityTab = () => `
                 <section class="social-neo-card social-project-rich-panel">
@@ -1754,7 +1754,7 @@
             };
             return `
                 <div class="social-neo-stack social-projects-shell">
-                    <section class="social-neo-card social-project-detail-hero social-project-detail-hero-rich">
+                    <section class="social-neo-card social-project-detail-hero social-project-detail-hero-rich lux-soft-chrome">
                         <div class="social-project-detail-top">
                             <div class="social-project-detail-copy">
                                 <div class="social-neo-inline social-neo-inline-gap-10-wrap">
@@ -1792,7 +1792,7 @@
                             ${renderProgressRing(activeProject?.taskCompletionPercent || 0, 'Task completion', `${activeProject?.completedTaskCount || 0} of ${activeProject?.taskCount || 0}`, '#f97316')}
                             ${renderMetricCard('fa-wallet', 'Budget', formatBudgetMoney(activeProject?.budgetSpentTotal || 0, activeProject?.budgetCurrency || 'USD'), `${activeProject?.budgetUtilizationPercent || 0}% of ${formatBudgetMoney(activeProject?.budgetCap || activeProject?.budgetPlannedTotal || 0, activeProject?.budgetCurrency || 'USD')}`, '#f59336')}
                             ${renderMetricCard('fa-users', 'Team mix', activeProject?.memberCount || 0, `${(activeProject?.facultyMix || []).length} faculties`, '#8b5cf6')}
-                            <article class="social-project-metric-card social-project-metric-card-wide">
+                            <article class="social-project-metric-card social-project-metric-card-wide lux-soft-chrome home-hover-chip">
                                 <span class="social-project-metric-icon"><i class="fas fa-wave-square"></i></span>
                                 <div>
                                     <small>Activity pulse</small>

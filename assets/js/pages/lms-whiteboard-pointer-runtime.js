@@ -318,6 +318,17 @@ function onLmsWhiteboardPointerDown(event, resourceKey, canEdit, canvas, capture
 
 function onLmsWhiteboardPointerMove(event, resourceKey, canEdit, canvas) {
     canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : canEdit;
+    if (event.buttons === 0 && LMS_WHITEBOARD_UI.dragStart) {
+        if (LMS_WHITEBOARD_UI.shellDragWindowListeners) return;
+        if (typeof abortLmsWhiteboardShellDrag === 'function') {
+            abortLmsWhiteboardShellDrag(event);
+        } else {
+            LMS_WHITEBOARD_UI.dragStart = null;
+            LMS_WHITEBOARD_UI.historyGestureRecorded = false;
+            if (typeof clearLmsWhiteboardDocumentPointerCursor === 'function') clearLmsWhiteboardDocumentPointerCursor();
+        }
+        return;
+    }
     const point = canvasToWorld(canvas, event.clientX, event.clientY);
     LMS_WHITEBOARD_UI.lastPointer = point;
     if (typeof trackLmsWhiteboardCollabPointer === 'function') trackLmsWhiteboardCollabPointer(resourceKey, point);
@@ -340,7 +351,11 @@ function onLmsWhiteboardPointerMove(event, resourceKey, canEdit, canvas) {
         const element = workspace.elements.find(item => item.id === LMS_WHITEBOARD_UI.dragStart.element?.id);
         if (element) {
             const resizeOptions = {
-                aspectLock: shouldLmsWhiteboardResizeAspectLock(element, event.shiftKey),
+                aspectLock: shouldLmsWhiteboardResizeAspectLock(
+                    element,
+                    event.shiftKey,
+                    LMS_WHITEBOARD_UI.dragStart.handle
+                ),
                 local: Boolean(LMS_WHITEBOARD_UI.dragStart.documentLocal)
             };
             applyLmsWhiteboardElementResize(
@@ -353,6 +368,10 @@ function onLmsWhiteboardPointerMove(event, resourceKey, canEdit, canvas) {
             if (LMS_WHITEBOARD_UI.dragStart.documentLocal && element.parentDocumentId) {
                 if (typeof repaintLmsWhiteboardDocumentInk === 'function') {
                     repaintLmsWhiteboardDocumentInk(element.parentDocumentId);
+                }
+            } else if (element.type === 'document') {
+                if (typeof repositionLmsWhiteboardDocumentViewers === 'function') {
+                    repositionLmsWhiteboardDocumentViewers(canvas, { layoutOnly: true });
                 }
             } else {
                 paintLmsWhiteboardCanvas(resourceKey, null, { skipDocumentSync: true });
@@ -367,8 +386,8 @@ function onLmsWhiteboardPointerMove(event, resourceKey, canEdit, canvas) {
     }
     if (LMS_WHITEBOARD_UI.tool === 'select' && LMS_WHITEBOARD_UI.dragStart?.mode === 'move') {
         const workspace = ensureLmsWhiteboardWorkspace(resourceKey);
-        const dx = point.x - LMS_WHITEBOARD_UI.dragStart.x;
-        const dy = point.y - LMS_WHITEBOARD_UI.dragStart.y;
+        let dx = point.x - LMS_WHITEBOARD_UI.dragStart.x;
+        let dy = point.y - LMS_WHITEBOARD_UI.dragStart.y;
         const moveIds = LMS_WHITEBOARD_UI.dragStart.selectedIds?.length
             ? LMS_WHITEBOARD_UI.dragStart.selectedIds
             : [LMS_WHITEBOARD_UI.dragStart.element?.id].filter(Boolean);
@@ -416,9 +435,12 @@ function onLmsWhiteboardPointerMove(event, resourceKey, canEdit, canvas) {
             const element = workspace.elements.find(item => item.id === id);
             return Boolean(element?.parentDocumentId);
         });
-        paintLmsWhiteboardCanvas(resourceKey, null, { skipDocumentSync: movedDocuments });
+        paintLmsWhiteboardCanvas(resourceKey, null, {
+            skipDocumentSync: movedDocuments,
+            layoutOnlyDocuments: movedDocuments
+        });
         if (movedDocuments && typeof repositionLmsWhiteboardDocumentViewers === 'function') {
-            repositionLmsWhiteboardDocumentViewers(canvas);
+            repositionLmsWhiteboardDocumentViewers(canvas, { layoutOnly: true, resourceKey });
         }
         if (movedDocumentChildren) {
             const parentIds = new Set(moveIds.map(id => workspace.elements.find(item => item.id === id)?.parentDocumentId).filter(Boolean));
@@ -583,6 +605,9 @@ function onLmsWhiteboardPointerUp(event, resourceKey, canEdit, canvas, captureTa
                                 element.w,
                                 element.h
                             );
+                            if (typeof finalizeLmsWhiteboardDocumentLayout === 'function') {
+                                finalizeLmsWhiteboardDocumentLayout(canvas, element.id);
+                            }
                         }
                     }
                     saveLmsWhiteboardChange(resourceKey, reason, { op: { element } });
@@ -591,6 +616,9 @@ function onLmsWhiteboardPointerUp(event, resourceKey, canEdit, canvas, captureTa
         }
         LMS_WHITEBOARD_UI.historyGestureRecorded = false;
         LMS_WHITEBOARD_UI.dragStart = null;
+        document.querySelectorAll('.lms-whiteboard-document-view.is-dragging').forEach((node) => {
+            node.classList.remove('is-dragging');
+        });
         paintLmsWhiteboardCanvas(resourceKey, canvas);
     }
     } finally {

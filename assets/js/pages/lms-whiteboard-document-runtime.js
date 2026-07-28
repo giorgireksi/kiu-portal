@@ -109,7 +109,8 @@ function revokeLmsWhiteboardDocumentShellUrl(shell) {
 }
 
 const LMS_WHITEBOARD_A4_ASPECT = 210 / 297;
-const LMS_WHITEBOARD_DOCUMENT_BADGE_HEIGHT = 24;
+const LMS_WHITEBOARD_DOCUMENT_BADGE_HEIGHT = 28;
+window.LMS_WHITEBOARD_DOCUMENT_BADGE_HEIGHT = LMS_WHITEBOARD_DOCUMENT_BADGE_HEIGHT;
 
 function isLmsWhiteboardPdfMime(mimeType = '', fileName = '') {
     const mime = String(mimeType || '').toLowerCase();
@@ -119,6 +120,9 @@ function isLmsWhiteboardPdfMime(mimeType = '', fileName = '') {
 
 const LMS_WHITEBOARD_PDFJS_VERSION = '3.11.174';
 let lmsWhiteboardPdfJsLoading = null;
+const lmsWhiteboardPdfDocCache = new Map();
+/** @type {WeakMap<HTMLCanvasElement, { token: number, task: { cancel?: Function } | null }>} */
+const lmsWhiteboardPdfPaintState = new WeakMap();
 
 async function ensureLmsWhiteboardPdfJs() {
     if (window.pdfjsLib) return window.pdfjsLib;
@@ -142,40 +146,98 @@ async function ensureLmsWhiteboardPdfJs() {
     return lmsWhiteboardPdfJsLoading;
 }
 
-async function paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element = {}) {
+async function getLmsWhiteboardPdfDocument(element = {}) {
+    const storageKey = String(element.storageKey || '').trim();
+    if (!storageKey) throw new Error('PDF storage key missing.');
+    const cached = lmsWhiteboardPdfDocCache.get(storageKey);
+    if (cached) return cached instanceof Promise ? cached : cached;
+    const pending = (async () => {
+        const blob = await resolveLmsWhiteboardFileBlob(element);
+        if (!blob) throw new Error('PDF unavailable.');
+        const pdfjs = await ensureLmsWhiteboardPdfJs();
+        return pdfjs.getDocument({ data: await blob.arrayBuffer() }).promise;
+    })();
+    lmsWhiteboardPdfDocCache.set(storageKey, pending);
+    try {
+        const doc = await pending;
+        lmsWhiteboardPdfDocCache.set(storageKey, doc);
+        return doc;
+    } catch (error) {
+        lmsWhiteboardPdfDocCache.delete(storageKey);
+        throw error;
+    }
+}
+
+function getLmsWhiteboardDocumentPdfPaintKey(cssW = 0, cssH = 0, element = {}) {
+    return `scroll:${Math.max(1, Math.floor(cssW))}:${Number(element.pageIndex || 0)}`;
+}
+
+function cancelLmsWhiteboardDocumentPdfPaint(pdfCanvas) {
+    if (!pdfCanvas) return;
+    const state = lmsWhiteboardPdfPaintState.get(pdfCanvas);
+    if (!state) return;
+    state.token += 1;
+    try { state.task?.cancel?.(); } catch (error) {}
+    state.task = null;
+}
+
+async function paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element = {}, options = {}) {
     if (!pdfCanvas) return;
     const rect = pdfCanvas.getBoundingClientRect();
     const cssW = Math.max(1, Math.floor(rect.width));
     const cssH = Math.max(1, Math.floor(rect.height));
     if (cssW < 2 || cssH < 2) return;
+    const paintKey = getLmsWhiteboardDocumentPdfPaintKey(cssW, cssH, element);
+    if (!options.force && pdfCanvas.dataset.lmsWhiteboardPdfPaintKey === paintKey) return;
+
+    let state = lmsWhiteboardPdfPaintState.get(pdfCanvas);
+    if (!state) {
+        state = { token: 0, task: null };
+        lmsWhiteboardPdfPaintState.set(pdfCanvas, state);
+    }
+    try { state.task?.cancel?.(); } catch (error) {}
+    state.task = null;
+    const token = ++state.token;
+
     const dpr = window.devicePixelRatio || 1;
-    pdfCanvas.width = Math.round(cssW * dpr);
-    pdfCanvas.height = Math.round(cssH * dpr);
-    pdfCanvas.style.width = `${cssW}px`;
-    pdfCanvas.style.height = `${cssH}px`;
     const ctx = pdfCanvas.getContext('2d');
     if (!ctx) return;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, cssW, cssH);
     try {
-        const blob = await resolveLmsWhiteboardFileBlob(element);
-        if (!blob) throw new Error('PDF unavailable.');
-        const pdfjs = await ensureLmsWhiteboardPdfJs();
-        const doc = await pdfjs.getDocument({ data: await blob.arrayBuffer() }).promise;
+        const doc = await getLmsWhiteboardPdfDocument(element);
+        if (token !== state.token) return;
         const pageNumber = Math.max(1, Number(element.pageIndex || 0) + 1);
         const page = await doc.getPage(Math.min(pageNumber, doc.numPages || pageNumber));
+        if (token !== state.token) return;
         const baseViewport = page.getViewport({ scale: 1 });
-        const scale = Math.min(cssW / baseViewport.width, cssH / baseViewport.height);
+        const scale = cssW / baseViewport.width;
         const viewport = page.getViewport({ scale });
-        ctx.save();
-        ctx.translate((cssW - viewport.width) / 2, (cssH - viewport.height) / 2);
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        ctx.restore();
+        const paintH = Math.max(1, Math.ceil(viewport.height));
+        pdfCanvas.width = Math.round(cssW * dpr);
+        pdfCanvas.height = Math.round(paintH * dpr);
+        pdfCanvas.style.width = `${cssW}px`;
+        pdfCanvas.style.height = `${paintH}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cssW, paintH);
+        const renderTask = page.render({ canvasContext: ctx, viewport });
+        state.task = renderTask;
+        await renderTask.promise;
+        if (token !== state.token) return;
         element.pageAspect = Math.max(0.2, baseViewport.width / baseViewport.height);
-        await doc.destroy();
+        pdfCanvas.dataset.lmsWhiteboardPdfPaintKey = paintKey;
+        const viewShell = pdfCanvas.closest('[data-lms-whiteboard-document-view]');
+        if (viewShell) {
+            viewShell.dataset.lmsWhiteboardPdfPages = String(doc.numPages || 1);
+            syncLmsWhiteboardDocumentScrollState(viewShell);
+        }
+        state.task = null;
     } catch (error) {
+        if (token !== state.token) return;
+        const cancelled = error?.name === 'RenderingCancelledException'
+            || /cancel/i.test(String(error?.message || error || ''));
+        if (cancelled) return;
         console.warn('[whiteboard] PDF canvas render failed', error);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.fillStyle = '#64748b';
         ctx.font = '13px Inter, sans-serif';
         ctx.fillText('Could not render PDF.', 12, 24);
@@ -275,25 +337,18 @@ async function fetchLmsWhiteboardStoredFileBuffer(element = {}) {
     return blob.arrayBuffer();
 }
 
-async function buildLmsWhiteboardDocxSrcdoc(element = {}) {
+async function buildLmsWhiteboardDocxPreviewHtml(element = {}) {
     const cacheKey = `docx:${String(element.storageKey || '').trim()}`;
     if (LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey]) return LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey];
     const buffer = await fetchLmsWhiteboardStoredFileBuffer(element);
     const mammoth = await ensureLmsWhiteboardMammoth();
     const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
-    const html = `
-        <!DOCTYPE html><html><head><meta charset="utf-8">
-        <style>
-            html { margin: 0; height: 100%; overflow: auto; }
-            body { margin: 0; padding: 0; overflow: visible; font: 14px/1.5 Inter, sans-serif; color: #1f2937; background: #fff; }
-            p { margin: 0 0 0.75em; }
-            p:last-child { margin-bottom: 0; }
-        </style></head><body>${result.value || '<p>Empty document</p>'}</body></html>`;
+    const html = result.value || '<p>Empty document</p>';
     LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey] = html;
     return html;
 }
 
-async function buildLmsWhiteboardSpreadsheetSrcdoc(element = {}) {
+async function buildLmsWhiteboardSpreadsheetPreviewHtml(element = {}) {
     const cacheKey = `sheet:${String(element.storageKey || '').trim()}`;
     if (LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey]) return LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey];
     const buffer = await fetchLmsWhiteboardStoredFileBuffer(element);
@@ -302,17 +357,21 @@ async function buildLmsWhiteboardSpreadsheetSrcdoc(element = {}) {
     const sheetName = workbook.SheetNames?.[0];
     const sheet = sheetName ? workbook.Sheets[sheetName] : null;
     const table = sheet ? XLSX.utils.sheet_to_html(sheet) : '<p>Empty spreadsheet</p>';
-    const html = `
-        <!DOCTYPE html><html><head><meta charset="utf-8">
-        <style>
-            html { margin: 0; height: 100%; overflow: auto; }
-            body { margin: 0; padding: 0; overflow: visible; font: 13px/1.4 Inter, sans-serif; color: #1f2937; background: #fff; }
-            table { border-collapse: collapse; width: max-content; min-width: 100%; }
-            td, th { border: 1px solid #d1d5db; padding: 4px 8px; white-space: nowrap; }
-            th { background: #f3f4f6; font-weight: 600; }
-        </style></head><body>${table}</body></html>`;
-    LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey] = html;
-    return html;
+    LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey] = table;
+    return table;
+}
+
+function ensureLmsWhiteboardDocumentHtmlPreview(shell, body, fileName = '') {
+    shell.querySelector('iframe')?.remove();
+    let preview = shell.querySelector('.lms-whiteboard-document-html');
+    if (!preview) {
+        preview = document.createElement('div');
+        preview.className = 'lms-whiteboard-document-html lms-whiteboard-document-frame';
+        preview.setAttribute('role', 'document');
+        preview.setAttribute('aria-label', fileName || 'Document preview');
+        body.prepend(preview);
+    }
+    return preview;
 }
 
 const LMS_WHITEBOARD_DOCUMENT_HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
@@ -331,10 +390,118 @@ function buildLmsWhiteboardDocumentChromeMarkup() {
         ${edges}${handles}</div>`;
 }
 
+function clearLmsWhiteboardDocumentPointerCursor(shell = null) {
+    const scopes = shell
+        ? [shell]
+        : Array.from(document.querySelectorAll('[data-lms-whiteboard-document-view]'));
+    scopes.forEach((node) => {
+        if (!node) return;
+        node.style.removeProperty('cursor');
+        const ink = node.querySelector?.('[data-lms-whiteboard-document-ink]');
+        if (ink) {
+            ink.style.removeProperty('cursor');
+            if (!node.classList.contains('is-resizing')) ink.style.removeProperty('pointer-events');
+        }
+    });
+}
+
+function getLmsWhiteboardDocumentChromeHandle(event, shell) {
+    const fromTarget = event?.target?.closest?.('[data-lms-whiteboard-document-handle], [data-lms-whiteboard-document-edge-handle]');
+    if (fromTarget && shell?.contains(fromTarget)) {
+        return fromTarget.dataset.handle || fromTarget.dataset.lmsWhiteboardDocumentHandle || '';
+    }
+    return '';
+}
+
+function isLmsWhiteboardDocumentScrollContentTarget(event) {
+    return Boolean(event?.target?.closest?.(
+        '.lms-whiteboard-document-html, .lms-whiteboard-document-frame, .lms-whiteboard-document-image, '
+        + '.lms-whiteboard-document-pdf-canvas, [data-lms-whiteboard-document-body]'
+    ));
+}
+
+function syncLmsWhiteboardDocumentScrollState(shell) {
+    if (!shell) return;
+    const host = getLmsWhiteboardDocumentScrollHost(shell);
+    const scrollable = Boolean(host)
+        && (host.scrollHeight > host.clientHeight + 2 || host.scrollWidth > host.clientWidth + 2);
+    shell.dataset.lmsWhiteboardScrollable = scrollable ? 'true' : 'false';
+}
+
+const LMS_WHITEBOARD_DOCUMENT_INTERACTION_MODES = ['scroll', 'resize'];
+
+function getLmsWhiteboardDocumentInteractionMode(element = {}) {
+    const mode = String(element?.documentInteractionMode || 'scroll').trim();
+    return LMS_WHITEBOARD_DOCUMENT_INTERACTION_MODES.includes(mode) ? mode : 'scroll';
+}
+
+function isLmsWhiteboardDocumentResizeMode(shellOrElement = {}) {
+    if (shellOrElement?.dataset?.lmsWhiteboardDocumentMode != null) {
+        return shellOrElement.dataset.lmsWhiteboardDocumentMode === 'resize';
+    }
+    return getLmsWhiteboardDocumentInteractionMode(shellOrElement) === 'resize';
+}
+
+function buildLmsWhiteboardDocumentBadgeMarkup(fileName = 'Document') {
+    const safeName = typeof escapeHtml === 'function' ? escapeHtml(fileName) : fileName;
+    return `<div class="lms-whiteboard-document-badge">
+        <div class="lms-whiteboard-document-badge-move" data-lms-whiteboard-document-drag title="Drag to move">
+            <span class="lms-whiteboard-document-badge-label">${safeName}</span>
+        </div>
+        <span class="lms-whiteboard-document-badge-modes">
+            <button type="button" class="lms-whiteboard-document-mode-btn is-active" data-lms-whiteboard-document-mode="scroll" title="Scroll mode" aria-label="Scroll mode" aria-pressed="true"><i class="fas fa-arrows-up-down" aria-hidden="true"></i></button>
+            <button type="button" class="lms-whiteboard-document-mode-btn" data-lms-whiteboard-document-mode="resize" title="Resize mode" aria-label="Resize mode" aria-pressed="false"><i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i></button>
+        </span>
+    </div>`;
+}
+
+function ensureLmsWhiteboardDocumentBadge(shell, element = {}) {
+    if (!shell || shell.querySelector('[data-lms-whiteboard-document-mode]')) return;
+    const oldBadge = shell.querySelector('.lms-whiteboard-document-badge');
+    const fileName = element.fileName || oldBadge?.textContent?.trim() || 'Document';
+    const markup = buildLmsWhiteboardDocumentBadgeMarkup(fileName);
+    if (oldBadge) oldBadge.outerHTML = markup;
+    else shell.insertAdjacentHTML('beforeend', markup);
+}
+
+function applyLmsWhiteboardDocumentInteractionMode(shell, element = {}) {
+    if (!shell) return;
+    const mode = getLmsWhiteboardDocumentInteractionMode(element);
+    shell.dataset.lmsWhiteboardDocumentMode = mode;
+    const isSelected = shell.classList.contains('is-selected');
+    const chrome = shell.querySelector('[data-lms-whiteboard-document-chrome]');
+    if (chrome) chrome.hidden = !isSelected;
+    shell.querySelectorAll('[data-lms-whiteboard-document-mode]').forEach((btn) => {
+        const active = btn.dataset.lmsWhiteboardDocumentMode === mode;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    const ink = shell.querySelector('[data-lms-whiteboard-document-ink]');
+    if (ink && LMS_WHITEBOARD_UI.tool === 'select' && shell.dataset.lmsWhiteboardAnnotate !== 'true') {
+        ink.style.pointerEvents = mode === 'resize' ? 'auto' : 'painted';
+    }
+    syncLmsWhiteboardDocumentScrollState(shell);
+}
+
+function setLmsWhiteboardDocumentInteractionMode(resourceKey = '', elementId = '', mode = 'scroll') {
+    if (!LMS_WHITEBOARD_DOCUMENT_INTERACTION_MODES.includes(mode)) return;
+    const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
+        ? ensureLmsWhiteboardWorkspace(resourceKey)
+        : { elements: [] };
+    const element = (workspace.elements || []).find(item => item.id === elementId);
+    if (!element) return;
+    element.documentInteractionMode = mode;
+    const shell = document.querySelector(`[data-lms-whiteboard-document-view="${elementId}"]`);
+    if (shell) {
+        applyLmsWhiteboardDocumentInteractionMode(shell, element);
+        if (typeof syncLmsWhiteboardDocumentToolMode === 'function') syncLmsWhiteboardDocumentToolMode();
+    }
+}
+
 function hitTestLmsWhiteboardDocumentShellResizeZone(shell, clientX = 0, clientY = 0) {
     if (!shell) return '';
     const rect = shell.getBoundingClientRect();
-    const threshold = 10;
+    const threshold = 6;
     const left = clientX - rect.left;
     const top = clientY - rect.top;
     const right = rect.right - clientX;
@@ -427,34 +594,38 @@ function syncLmsWhiteboardDocumentPointerCursor(inkCanvas, shell, resourceKey = 
         return;
     }
 
+    const selectedIds = typeof getLmsWhiteboardSelectedIds === 'function' ? getLmsWhiteboardSelectedIds() : [];
+    const isSelected = selectedIds.includes(elementId);
     let cursor = 'default';
-    const shellHandle = event ? hitTestLmsWhiteboardDocumentShellResizeZone(shell, event.clientX, event.clientY) : '';
-    if (shellHandle) {
-        cursor = getLmsWhiteboardResizeHandleCursor(shellHandle);
-    } else if (event?.target?.closest?.('[data-lms-whiteboard-document-drag]')) {
-        const selectedIds = typeof getLmsWhiteboardSelectedIds === 'function' ? getLmsWhiteboardSelectedIds() : [];
-        cursor = selectedIds.includes(elementId) ? 'move' : 'default';
-    } else if (localPoint) {
-        const selectedIds = typeof getLmsWhiteboardSelectedIds === 'function' ? getLmsWhiteboardSelectedIds() : [];
-        if (selectedIds.length === 1) {
-            const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
-                ? ensureLmsWhiteboardWorkspace(resourceKey)
-                : { elements: [] };
-            const child = workspace.elements.find(item => item.id === selectedIds[0]);
-            if (child?.parentDocumentId === elementId && typeof hitTestLmsWhiteboardResizeZone === 'function') {
-                const resizeCursor = getLmsWhiteboardResizeHandleCursor(
-                    hitTestLmsWhiteboardResizeZone(localPoint, child, { local: true })
-                );
-                if (resizeCursor) cursor = resizeCursor;
+    if (isSelected && event && isLmsWhiteboardDocumentResizeMode(shell)) {
+        const chromeHandle = getLmsWhiteboardDocumentChromeHandle(event, shell);
+        if (chromeHandle) {
+            cursor = getLmsWhiteboardResizeHandleCursor(chromeHandle);
+        } else {
+            cursor = 'move';
+        }
+    }
+    if (cursor === 'default' && event?.target?.closest?.('[data-lms-whiteboard-document-drag]')) {
+        cursor = isSelected ? 'move' : 'default';
+    }
+    if ((cursor === 'move' || cursor === 'default') && localPoint && isSelected && isLmsWhiteboardDocumentResizeMode(shell)) {
+            if (selectedIds.length === 1) {
+                const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
+                    ? ensureLmsWhiteboardWorkspace(resourceKey)
+                    : { elements: [] };
+                const child = workspace.elements.find(item => item.id === selectedIds[0]);
+                if (child?.parentDocumentId === elementId && typeof hitTestLmsWhiteboardResizeZone === 'function') {
+                    const resizeCursor = getLmsWhiteboardResizeHandleCursor(
+                        hitTestLmsWhiteboardResizeZone(localPoint, child, { local: true })
+                    );
+                    if (resizeCursor) cursor = resizeCursor;
+                }
             }
-        }
-        if (cursor === 'default' && typeof findLmsWhiteboardDocumentChildAtPoint === 'function') {
-            if (findLmsWhiteboardDocumentChildAtPoint(resourceKey, elementId, localPoint)) cursor = 'move';
-        }
-        if (cursor === 'default' && selectedIds.includes(elementId)) cursor = 'move';
-    } else {
-        const selectedIds = typeof getLmsWhiteboardSelectedIds === 'function' ? getLmsWhiteboardSelectedIds() : [];
-        if (selectedIds.includes(elementId)) cursor = 'move';
+            if ((cursor === 'default' || cursor === 'move')
+                && typeof findLmsWhiteboardDocumentChildAtPoint === 'function'
+                && findLmsWhiteboardDocumentChildAtPoint(resourceKey, elementId, localPoint)) {
+                cursor = 'move';
+            }
     }
 
     syncLmsWhiteboardPointerCursor(target, cursor);
@@ -544,6 +715,10 @@ function attachLmsWhiteboardDocumentInkWindowListeners(resourceKey = '', onEnd =
         onEnd?.(event);
     };
     const moveHandler = (event) => {
+        if (event.buttons === 0 && LMS_WHITEBOARD_UI.dragStart) {
+            endHandler(event);
+            return;
+        }
         onMove?.(event);
     };
     lmsWhiteboardDocumentInkWindowListeners = { onEnd: endHandler, onMove: moveHandler };
@@ -738,7 +913,10 @@ function syncLmsWhiteboardDocumentSelectionChrome() {
             ? ensureLmsWhiteboardWorkspace(LMS_WHITEBOARD_UI.boundKey)
             : { elements: [] };
         const element = (workspace.elements || []).find(item => item.id === elementId);
+        ensureLmsWhiteboardDocumentBadge(shell, element || {});
+        if (element) applyLmsWhiteboardDocumentInteractionMode(shell, element);
         if (element && inkCanvas) paintLmsWhiteboardDocumentOverlayCanvas(inkCanvas, element, LMS_WHITEBOARD_UI.boundKey);
+        syncLmsWhiteboardDocumentScrollState(shell);
     });
 }
 
@@ -749,7 +927,13 @@ function syncLmsWhiteboardDocumentToolMode() {
         shell.dataset.lmsWhiteboardAnnotate = annotate ? 'true' : 'false';
         const ink = shell.querySelector('[data-lms-whiteboard-document-ink]');
         if (ink) {
-            ink.style.pointerEvents = (drawOnDocument || LMS_WHITEBOARD_UI.tool === 'select') ? 'auto' : 'none';
+            if (drawOnDocument) {
+                ink.style.pointerEvents = 'auto';
+            } else if (LMS_WHITEBOARD_UI.tool === 'select') {
+                ink.style.pointerEvents = shell.dataset.lmsWhiteboardDocumentMode === 'resize' ? 'auto' : 'painted';
+            } else {
+                ink.style.pointerEvents = 'none';
+            }
         }
     });
     repaintAllLmsWhiteboardDocumentInks();
@@ -852,60 +1036,158 @@ function handleLmsWhiteboardDocumentToolDown(event, shell, canvas, resourceKey =
     }
 }
 
+function getLmsWhiteboardDocumentScrollHost(shell) {
+    if (!shell) return null;
+    return shell.querySelector('.lms-whiteboard-document-html, .lms-whiteboard-document-frame')
+        || shell.querySelector('[data-lms-whiteboard-document-body]');
+}
+
+function scrollLmsWhiteboardDocumentHost(host, deltaX = 0, deltaY = 0) {
+    if (!host) return false;
+    const maxTop = Math.max(0, host.scrollHeight - host.clientHeight);
+    const maxLeft = Math.max(0, host.scrollWidth - host.clientWidth);
+    const nextTop = Math.max(0, Math.min(maxTop, host.scrollTop + deltaY));
+    const nextLeft = Math.max(0, Math.min(maxLeft, host.scrollLeft + deltaX));
+    if (nextTop === host.scrollTop && nextLeft === host.scrollLeft) return false;
+    host.scrollTop = nextTop;
+    host.scrollLeft = nextLeft;
+    return true;
+}
+
+async function stepLmsWhiteboardDocumentPage(resourceKey = '', elementId = '', shell = null, deltaY = 0) {
+    if (!resourceKey || !elementId || !shell || !deltaY) return false;
+    const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
+        ? ensureLmsWhiteboardWorkspace(resourceKey)
+        : { elements: [] };
+    const element = (workspace.elements || []).find(item => item.id === elementId);
+    if (!element) return false;
+    try {
+        const doc = await getLmsWhiteboardPdfDocument(element);
+        const numPages = Math.max(1, Number(doc.numPages) || 1);
+        const current = Math.max(0, Math.min(numPages - 1, Number(element.pageIndex) || 0));
+        const next = Math.max(0, Math.min(numPages - 1, current + (deltaY > 0 ? 1 : -1)));
+        if (next === current) return false;
+        element.pageIndex = next;
+        shell.dataset.lmsWhiteboardPdfPages = String(numPages);
+        const pdfCanvas = shell.querySelector('.lms-whiteboard-document-pdf-canvas');
+        if (pdfCanvas) {
+            pdfCanvas.dataset.lmsWhiteboardPdfPaintKey = '';
+            await paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element, { force: true });
+        }
+        return true;
+    } catch (error) {
+        console.warn('[whiteboard] PDF page step failed', error);
+        return false;
+    }
+}
+
+function handleLmsWhiteboardDocumentWheel(event, shell, resourceKey = '', elementId = '') {
+    if (!shell || LMS_WHITEBOARD_UI.tool !== 'select') return;
+    if (isLmsWhiteboardDocumentResizeMode(shell)) return;
+    if (LMS_WHITEBOARD_UI.dragStart || LMS_WHITEBOARD_UI.panning) return;
+    const scrollHost = getLmsWhiteboardDocumentScrollHost(shell);
+    if (!scrollHost) return;
+    event.stopPropagation();
+    const deltaY = Number(event.deltaY) || 0;
+    const deltaX = Number(event.deltaX) || 0;
+    const canScrollY = scrollHost.scrollHeight > scrollHost.clientHeight + 1;
+    const canScrollX = scrollHost.scrollWidth > scrollHost.clientWidth + 1;
+    if (canScrollY || canScrollX) {
+        if (scrollLmsWhiteboardDocumentHost(scrollHost, deltaX, deltaY)) {
+            event.preventDefault();
+            syncLmsWhiteboardDocumentScrollState(shell);
+            return;
+        }
+    }
+    if (shell.querySelector('.lms-whiteboard-document-pdf-canvas') && Math.abs(deltaY) > 0) {
+        event.preventDefault();
+        void stepLmsWhiteboardDocumentPage(resourceKey, elementId, shell, deltaY);
+    }
+}
+
+function resolveLmsWhiteboardDocumentShellCanvas(shell, fallbackCanvas = null) {
+    if (fallbackCanvas?.isConnected) return fallbackCanvas;
+    const stage = shell?.closest?.('[data-lms-whiteboard-region="stage"]');
+    return stage?.querySelector?.('.lms-whiteboard-canvas')
+        || document.querySelector('.lms-whiteboard-canvas');
+}
+
 function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey = '') {
     if (!shell || shell.dataset.lmsWhiteboardInteractionsBound) return;
     shell.dataset.lmsWhiteboardInteractionsBound = '1';
     const elementId = shell.dataset.lmsWhiteboardDocumentView;
-    const badge = shell.querySelector('[data-lms-whiteboard-document-drag]');
     const inkCanvas = shell.querySelector('[data-lms-whiteboard-document-ink]');
 
     const startShellMove = (event) => {
         if (LMS_WHITEBOARD_UI.tool !== 'select') return;
-        event.preventDefault();
-        event.stopPropagation();
-        if (typeof beginLmsWhiteboardShellDrag === 'function') {
-            beginLmsWhiteboardShellDrag(event, resourceKey, canvas, { elementId, mode: 'move' });
-        } else if (typeof setLmsWhiteboardSelection === 'function') {
-            setLmsWhiteboardSelection([elementId]);
-        }
-    };
-
-    badge?.addEventListener('pointerdown', startShellMove);
-
-    shell.addEventListener('pointermove', (event) => {
-        if (event.target.closest('[data-lms-whiteboard-document-ink]')) return;
+        const liveCanvas = resolveLmsWhiteboardDocumentShellCanvas(shell, canvas);
+        if (!liveCanvas || !resourceKey) return;
+        const canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : true;
+        if (!canEdit) return;
         const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
             ? ensureLmsWhiteboardWorkspace(resourceKey)
             : { elements: [] };
         const element = (workspace.elements || []).find(item => item.id === elementId);
-        if (!element) return;
-        const localPoint = inkEventToDocumentLocal(event, shell, element);
-        syncLmsWhiteboardDocumentPointerCursor(null, shell, resourceKey, elementId, localPoint, event);
-    });
-    shell.addEventListener('pointerleave', () => {
-        if (typeof refreshLmsWhiteboardPointerCursor === 'function') {
-            refreshLmsWhiteboardPointerCursor(canvas, { point: null });
+        if (!element || element.locked) return;
+        if (typeof canMoveLmsWhiteboardElement === 'function' && !canMoveLmsWhiteboardElement(element, resourceKey)) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (typeof setLmsWhiteboardSelection === 'function') {
+            setLmsWhiteboardSelection([elementId], { skipPaint: true });
+        }
+        if (typeof recordLmsWhiteboardHistoryGesture === 'function') recordLmsWhiteboardHistoryGesture(resourceKey);
+
+        const point = typeof canvasToWorld === 'function'
+            ? canvasToWorld(liveCanvas, event.clientX, event.clientY)
+            : { x: 0, y: 0 };
+        const selectedIds = typeof getLmsWhiteboardSelectedIds === 'function'
+            ? getLmsWhiteboardSelectedIds()
+            : [elementId];
+        LMS_WHITEBOARD_UI.dragStart = typeof buildLmsWhiteboardMoveDragStart === 'function'
+            ? buildLmsWhiteboardMoveDragStart(resourceKey, point, element, selectedIds)
+            : {
+                mode: 'move',
+                x: point.x,
+                y: point.y,
+                element: JSON.parse(JSON.stringify(element)),
+                selectedIds,
+                elements: { [elementId]: JSON.parse(JSON.stringify(element)) }
+            };
+
+        shell.classList.add('is-dragging');
+        if (typeof beginLmsWhiteboardCanvasGesture === 'function') {
+            beginLmsWhiteboardCanvasGesture(resourceKey, event, canEdit, liveCanvas);
+        } else if (typeof setLmsWhiteboardGestureState === 'function') {
+            setLmsWhiteboardGestureState(resourceKey, true);
+        }
+        liveCanvas.setPointerCapture?.(event.pointerId);
+        if (typeof paintLmsWhiteboardCanvas === 'function') {
+            paintLmsWhiteboardCanvas(resourceKey, liveCanvas, { skipDocumentSync: true });
+        }
+        if (typeof repositionLmsWhiteboardDocumentViewers === 'function') {
+            repositionLmsWhiteboardDocumentViewers(liveCanvas, { layoutOnly: true, resourceKey });
+        }
+    };
+
+    shell.querySelector('[data-lms-whiteboard-document-drag-ring]')?.addEventListener('pointerdown', startShellMove);
+
+    shell.addEventListener('pointerdown', (event) => {
+        const modeBtn = event.target.closest?.('button[data-lms-whiteboard-document-mode]');
+        if (modeBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            setLmsWhiteboardDocumentInteractionMode(resourceKey, elementId, modeBtn.dataset.lmsWhiteboardDocumentMode);
+            return;
+        }
+        if (event.target.closest('[data-lms-whiteboard-document-drag]')) {
+            startShellMove(event);
         }
     });
 
-    shell.addEventListener('pointerdown', (event) => {
-        if (LMS_WHITEBOARD_UI.tool !== 'select') return;
-        if (event.target.closest('[data-lms-whiteboard-document-handle], [data-lms-whiteboard-document-edge-handle], [data-lms-whiteboard-document-drag], [data-lms-whiteboard-document-drag-ring], [data-lms-whiteboard-document-ink]')) {
-            return;
-        }
-        const scrollablePreview = event.target.closest('iframe, .lms-whiteboard-document-frame');
-        if (scrollablePreview) {
-            if (typeof setLmsWhiteboardSelection === 'function') setLmsWhiteboardSelection([elementId]);
-            return;
-        }
-        if (typeof setLmsWhiteboardSelection === 'function') setLmsWhiteboardSelection([elementId]);
-        event.preventDefault();
-        event.stopPropagation();
-        if (typeof beginLmsWhiteboardShellDrag === 'function') {
-            beginLmsWhiteboardShellDrag(event, resourceKey, canvas, { elementId, mode: 'move' });
-        }
-    });
-    badge?.addEventListener('dblclick', async (event) => {
+    shell.addEventListener('dblclick', async (event) => {
+        if (!event.target.closest('[data-lms-whiteboard-document-drag]')) return;
         event.preventDefault();
         event.stopPropagation();
         const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
@@ -937,9 +1219,58 @@ function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey =
         }
     });
 
+    shell.addEventListener('pointermove', (event) => {
+        const dragStart = LMS_WHITEBOARD_UI.dragStart;
+        if (dragStart?.mode === 'move' && (dragStart.selectedIds || []).includes(elementId)) {
+            const liveCanvas = resolveLmsWhiteboardDocumentShellCanvas(shell, canvas);
+            const canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : true;
+            if (liveCanvas && typeof onLmsWhiteboardPointerMove === 'function') {
+                onLmsWhiteboardPointerMove(event, resourceKey, canEdit, liveCanvas);
+            }
+            return;
+        }
+        if (event.target.closest('[data-lms-whiteboard-document-ink]')) return;
+        const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
+            ? ensureLmsWhiteboardWorkspace(resourceKey)
+            : { elements: [] };
+        const element = (workspace.elements || []).find(item => item.id === elementId);
+        if (!element) return;
+        const localPoint = inkEventToDocumentLocal(event, shell, element);
+        syncLmsWhiteboardDocumentPointerCursor(null, shell, resourceKey, elementId, localPoint, event);
+    });
+    shell.addEventListener('pointerleave', () => {
+        clearLmsWhiteboardDocumentPointerCursor(shell);
+        if (typeof refreshLmsWhiteboardPointerCursor === 'function') {
+            refreshLmsWhiteboardPointerCursor(canvas, { point: null });
+        }
+    });
+    shell.addEventListener('wheel', (event) => {
+        handleLmsWhiteboardDocumentWheel(event, shell, resourceKey, elementId);
+    }, { passive: false });
+
+    // Badge/drag-ring move; body drag in scroll + resize modes (content scrolls only in scroll mode).
+    shell.addEventListener('pointerdown', (event) => {
+        if (LMS_WHITEBOARD_UI.tool !== 'select') return;
+        if (event.target.closest('[data-lms-whiteboard-document-handle], [data-lms-whiteboard-document-edge-handle], [data-lms-whiteboard-document-drag], [data-lms-whiteboard-document-drag-ring], [data-lms-whiteboard-document-mode], [data-lms-whiteboard-document-ink]')) {
+            return;
+        }
+        const selectedIds = typeof getLmsWhiteboardSelectedIds === 'function' ? getLmsWhiteboardSelectedIds() : [];
+        const isSelected = selectedIds.includes(elementId);
+        if (isSelected && !isLmsWhiteboardDocumentScrollContentTarget(event)) {
+            startShellMove(event);
+            return;
+        }
+        if (isLmsWhiteboardDocumentScrollContentTarget(event)) {
+            if (typeof setLmsWhiteboardSelection === 'function') setLmsWhiteboardSelection([elementId]);
+            return;
+        }
+        if (typeof setLmsWhiteboardSelection === 'function') setLmsWhiteboardSelection([elementId]);
+    });
+
     shell.querySelectorAll('[data-lms-whiteboard-document-handle], [data-lms-whiteboard-document-edge-handle]').forEach(handle => {
         handle.addEventListener('pointerdown', (event) => {
             if (LMS_WHITEBOARD_UI.tool !== 'select') return;
+            if (!isLmsWhiteboardDocumentResizeMode(shell)) return;
             event.preventDefault();
             event.stopPropagation();
             if (typeof beginLmsWhiteboardShellDrag === 'function') {
@@ -957,8 +1288,6 @@ function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey =
         const drawTools = ['pen', 'eraser', 'sticky', 'text'];
         if (tool !== 'select' && !drawTools.includes(tool)) return;
         if (tool !== 'select' && typeof canEditLmsWhiteboard === 'function' && !canEditLmsWhiteboard(resourceKey)) return;
-        event.preventDefault();
-        event.stopPropagation();
         const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
             ? ensureLmsWhiteboardWorkspace(resourceKey)
             : { elements: [] };
@@ -967,15 +1296,6 @@ function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey =
         const localPoint = inkEventToDocumentLocal(event, shell, element);
 
         if (tool === 'select') {
-            const shellHandle = hitTestLmsWhiteboardDocumentShellResizeZone(shell, event.clientX, event.clientY);
-            if (shellHandle && typeof beginLmsWhiteboardShellDrag === 'function') {
-                beginLmsWhiteboardShellDrag(event, resourceKey, canvas, {
-                    elementId,
-                    mode: 'resize',
-                    handle: shellHandle
-                });
-                return;
-            }
             const selectedIds = typeof getLmsWhiteboardSelectedIds === 'function' ? getLmsWhiteboardSelectedIds() : [];
             let resizeTarget = null;
             if (selectedIds.length === 1) {
@@ -987,6 +1307,8 @@ function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey =
             if (resizeTarget && typeof hitTestLmsWhiteboardResizeZone === 'function') {
                 const resizeHandle = hitTestLmsWhiteboardResizeZone(localPoint, resizeTarget, { local: true });
                 if (resizeHandle) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     if (typeof setLmsWhiteboardSelection === 'function') setLmsWhiteboardSelection([resizeTarget.id], { skipPaint: true });
                     if (typeof recordLmsWhiteboardHistoryGesture === 'function') recordLmsWhiteboardHistoryGesture(resourceKey);
                     LMS_WHITEBOARD_UI.dragStart = {
@@ -1005,6 +1327,8 @@ function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey =
                 }
             }
             if (childAtPoint) {
+                event.preventDefault();
+                event.stopPropagation();
                 const current = typeof getLmsWhiteboardSelectedIds === 'function' ? getLmsWhiteboardSelectedIds() : [];
                 if (current.includes(childAtPoint.id) && current.length > 1) {
                     if (typeof recordLmsWhiteboardHistoryGesture === 'function') recordLmsWhiteboardHistoryGesture(resourceKey);
@@ -1041,22 +1365,41 @@ function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey =
                 attachLmsWhiteboardDocumentInkWindowListeners(resourceKey, endInkGesture, inkWindowMove);
                 return;
             }
-            LMS_WHITEBOARD_UI.dragStart = {
-                mode: 'marquee',
-                documentLocal: true,
-                parentDocumentId: elementId,
-                x: localPoint.x,
-                y: localPoint.y,
-                x2: localPoint.x,
-                y2: localPoint.y,
-                additive: Boolean(event.shiftKey)
-            };
-            inkCanvas.setPointerCapture?.(event.pointerId);
-            attachLmsWhiteboardDocumentInkWindowListeners(resourceKey, endInkGesture, inkWindowMove);
-            repaintLmsWhiteboardDocumentInk(elementId);
+            if (!selectedIds.includes(elementId)) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (typeof setLmsWhiteboardSelection === 'function') setLmsWhiteboardSelection([elementId], { skipPaint: true });
+                repaintLmsWhiteboardDocumentInk(elementId);
+                return;
+            }
+            if (event.shiftKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (typeof recordLmsWhiteboardHistoryGesture === 'function') recordLmsWhiteboardHistoryGesture(resourceKey);
+                LMS_WHITEBOARD_UI.dragStart = {
+                    mode: 'marquee',
+                    documentLocal: true,
+                    parentDocumentId: elementId,
+                    x: localPoint.x,
+                    y: localPoint.y,
+                    x2: localPoint.x,
+                    y2: localPoint.y,
+                    additive: true
+                };
+                inkCanvas.setPointerCapture?.(event.pointerId);
+                attachLmsWhiteboardDocumentInkWindowListeners(resourceKey, endInkGesture, inkWindowMove);
+                repaintLmsWhiteboardDocumentInk(elementId);
+                return;
+            }
+            if (isLmsWhiteboardDocumentResizeMode(shell) && selectedIds.includes(elementId)) {
+                startShellMove(event);
+                return;
+            }
             return;
         }
 
+        event.preventDefault();
+        event.stopPropagation();
         if (tool === 'pen' && typeof beginLmsWhiteboardDocumentStroke === 'function') {
             beginLmsWhiteboardDocumentStroke(resourceKey, elementId, localPoint);
         } else if (tool === 'eraser' && typeof eraseLmsWhiteboardAtPoint === 'function') {
@@ -1120,6 +1463,16 @@ function bindLmsWhiteboardDocumentShellInteractions(shell, canvas, resourceKey =
 
         if (LMS_WHITEBOARD_UI.tool === 'select' && !LMS_WHITEBOARD_UI.dragStart) {
             syncLmsWhiteboardDocumentPointerCursor(inkCanvas, shell, resourceKey, elementId, localPoint, event);
+            return;
+        }
+
+        if (LMS_WHITEBOARD_UI.tool === 'select' && LMS_WHITEBOARD_UI.dragStart?.mode === 'move'
+            && (LMS_WHITEBOARD_UI.dragStart.selectedIds || []).includes(elementId)) {
+            const liveCanvas = resolveLmsWhiteboardDocumentShellCanvas(shell, canvas);
+            const canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : true;
+            if (liveCanvas && typeof onLmsWhiteboardPointerMove === 'function') {
+                onLmsWhiteboardPointerMove(event, resourceKey, canEdit, liveCanvas);
+            }
             return;
         }
 
@@ -1317,12 +1670,13 @@ function repositionLmsWhiteboardDocumentChrome(shell, canvas, element = {}) {
     });
 }
 
-function repositionLmsWhiteboardDocumentViewers(canvas) {
+function repositionLmsWhiteboardDocumentViewers(canvas, options = {}) {
     if (!canvas || typeof worldToStageOffset !== 'function') return;
+    const layoutOnly = Boolean(options.layoutOnly);
     const stage = canvas.closest('[data-lms-whiteboard-region="stage"]');
     const layer = stage?.querySelector('[data-lms-whiteboard-document-layer]');
     if (!layer) return;
-    const resourceKey = LMS_WHITEBOARD_UI.boundKey;
+    const resourceKey = options.resourceKey || LMS_WHITEBOARD_UI.shellDragResourceKey || LMS_WHITEBOARD_UI.boundKey;
     layer.querySelectorAll('[data-lms-whiteboard-document-view]').forEach(shell => {
         const elementId = shell.dataset.lmsWhiteboardDocumentView;
         const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
@@ -1343,13 +1697,51 @@ function repositionLmsWhiteboardDocumentViewers(canvas) {
         shell.style.top = `${offset.top}px`;
         shell.style.width = `${Math.max(offset.width, 80)}px`;
         shell.style.height = `${Math.max(offset.height, 80)}px`;
-        const inkCanvas = shell.querySelector('[data-lms-whiteboard-document-ink]');
-        if (inkCanvas) paintLmsWhiteboardDocumentOverlayCanvas(inkCanvas, element, resourceKey);
-        const pdfCanvas = shell.querySelector('.lms-whiteboard-document-pdf-canvas');
-        if (pdfCanvas) void paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element);
+        if (!layoutOnly) {
+            const inkCanvas = shell.querySelector('[data-lms-whiteboard-document-ink]');
+            if (inkCanvas) paintLmsWhiteboardDocumentOverlayCanvas(inkCanvas, element, resourceKey);
+            const pdfCanvas = shell.querySelector('.lms-whiteboard-document-pdf-canvas');
+            if (pdfCanvas) void paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element);
+        } else {
+            const pdfCanvas = shell.querySelector('.lms-whiteboard-document-pdf-canvas');
+            if (pdfCanvas) {
+                // Stretch last paint; never start a new PDF.js render while dragging/panning.
+                cancelLmsWhiteboardDocumentPdfPaint(pdfCanvas);
+                pdfCanvas.style.width = '100%';
+                pdfCanvas.style.height = '100%';
+            }
+        }
         repositionLmsWhiteboardDocumentChrome(shell, canvas, element);
         shell.classList.toggle('is-locked', Boolean(element.locked));
+        syncLmsWhiteboardDocumentScrollState(shell);
     });
+    if (!layoutOnly) {
+        syncLmsWhiteboardDocumentSelectionChrome();
+        syncLmsWhiteboardDocumentToolMode();
+    }
+}
+
+function finalizeLmsWhiteboardDocumentLayout(canvas, elementId = '') {
+    if (!canvas || !elementId) return;
+    const shell = document.querySelector(`[data-lms-whiteboard-document-view="${elementId}"]`);
+    if (!shell) return;
+    const resourceKey = LMS_WHITEBOARD_UI.boundKey;
+    const workspace = typeof ensureLmsWhiteboardWorkspace === 'function'
+        ? ensureLmsWhiteboardWorkspace(resourceKey)
+        : { elements: [] };
+    const element = (workspace.elements || []).find(item => item.id === elementId);
+    if (!element) return;
+    shell.classList.remove('is-resizing');
+    clearLmsWhiteboardDocumentPointerCursor(shell);
+    const inkCanvas = shell.querySelector('[data-lms-whiteboard-document-ink]');
+    if (inkCanvas) paintLmsWhiteboardDocumentOverlayCanvas(inkCanvas, element, resourceKey);
+    const pdfCanvas = shell.querySelector('.lms-whiteboard-document-pdf-canvas');
+    if (pdfCanvas) {
+        cancelLmsWhiteboardDocumentPdfPaint(pdfCanvas);
+        delete pdfCanvas.dataset.lmsWhiteboardPdfPaintKey;
+        void paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element, { force: true });
+    }
+    repositionLmsWhiteboardDocumentChrome(shell, canvas, element);
     syncLmsWhiteboardDocumentSelectionChrome();
     syncLmsWhiteboardDocumentToolMode();
 }
@@ -1365,6 +1757,7 @@ async function mountLmsWhiteboardDocumentViewer(shell, element = {}) {
 
     if (isLmsWhiteboardImageMime(mime, fileName)) {
         shell.querySelector('iframe')?.remove();
+        shell.querySelector('.lms-whiteboard-document-html')?.remove();
         let img = shell.querySelector('.lms-whiteboard-document-image');
         if (!img) {
             img = document.createElement('img');
@@ -1379,7 +1772,9 @@ async function mountLmsWhiteboardDocumentViewer(shell, element = {}) {
             if (!objectUrl) throw new Error('Image unavailable.');
             shell.dataset.lmsWhiteboardBlobUrl = objectUrl;
             img.alt = fileName || 'Image';
+            img.onload = () => syncLmsWhiteboardDocumentScrollState(shell);
             img.src = objectUrl;
+            syncLmsWhiteboardDocumentScrollState(shell);
         } catch (error) {
             img.removeAttribute('src');
             img.alt = 'Could not load image';
@@ -1388,16 +1783,12 @@ async function mountLmsWhiteboardDocumentViewer(shell, element = {}) {
     }
 
     shell.querySelector('.lms-whiteboard-document-image')?.remove();
-    let iframe = shell.querySelector('iframe');
-    if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.className = 'lms-whiteboard-document-frame';
-        iframe.title = fileName || 'Document';
-        body.prepend(iframe);
-    }
+    shell.querySelector('iframe')?.remove();
+    shell.querySelector('.lms-whiteboard-document-html')?.remove();
 
     if (mime.includes('pdf') || /\.pdf$/i.test(fileName)) {
         shell.querySelector('iframe')?.remove();
+        shell.querySelector('.lms-whiteboard-document-html')?.remove();
         let pdfCanvas = shell.querySelector('.lms-whiteboard-document-pdf-canvas');
         if (!pdfCanvas) {
             pdfCanvas = document.createElement('canvas');
@@ -1406,30 +1797,34 @@ async function mountLmsWhiteboardDocumentViewer(shell, element = {}) {
             body.prepend(pdfCanvas);
         }
         revokeLmsWhiteboardDocumentShellUrl(shell);
-        await paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element);
+        cancelLmsWhiteboardDocumentPdfPaint(pdfCanvas);
+        delete pdfCanvas.dataset.lmsWhiteboardPdfPaintKey;
+        await paintLmsWhiteboardDocumentPdfCanvas(pdfCanvas, element, { force: true });
         return;
     }
 
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    iframe.removeAttribute('src');
+    const preview = ensureLmsWhiteboardDocumentHtmlPreview(shell, body, fileName);
 
     if (isLmsWhiteboardWordMime(mime, fileName)) {
+        preview.className = 'lms-whiteboard-document-html lms-whiteboard-document-frame is-docx';
         try {
-            iframe.srcdoc = await buildLmsWhiteboardDocxSrcdoc(element);
+            preview.innerHTML = await buildLmsWhiteboardDocxPreviewHtml(element);
         } catch (error) {
-            iframe.srcdoc = '<p style="font:13px sans-serif;padding:12px;">Could not preview document.</p>';
+            preview.innerHTML = '<p class="lms-whiteboard-document-message">Could not preview document.</p>';
         }
         return;
     }
     if (isLmsWhiteboardSpreadsheetMime(mime, fileName)) {
+        preview.className = 'lms-whiteboard-document-html lms-whiteboard-document-frame is-sheet';
         try {
-            iframe.srcdoc = await buildLmsWhiteboardSpreadsheetSrcdoc(element);
+            preview.innerHTML = await buildLmsWhiteboardSpreadsheetPreviewHtml(element);
         } catch (error) {
-            iframe.srcdoc = '<p style="font:13px sans-serif;padding:12px;">Could not preview spreadsheet.</p>';
+            preview.innerHTML = '<p class="lms-whiteboard-document-message">Could not preview spreadsheet.</p>';
         }
         return;
     }
-    iframe.srcdoc = '<p style="font:13px sans-serif;padding:12px;">Preview not available for this file type.</p>';
+    preview.className = 'lms-whiteboard-document-html lms-whiteboard-document-frame';
+    preview.innerHTML = '<p class="lms-whiteboard-document-message">Preview not available for this file type.</p>';
 }
 
 function syncLmsWhiteboardDocumentLayer(resourceKey = '', canvas = null) {
@@ -1464,15 +1859,14 @@ function syncLmsWhiteboardDocumentLayer(resourceKey = '', canvas = null) {
             shell = document.createElement('div');
             shell.className = 'lms-whiteboard-document-view';
             shell.dataset.lmsWhiteboardDocumentView = element.id;
-            const safeName = typeof escapeHtml === 'function' ? escapeHtml(element.fileName || 'Document') : (element.fileName || 'Document');
             shell.innerHTML = `
                 ${buildLmsWhiteboardDocumentChromeMarkup()}
-                <div class="lms-whiteboard-document-body" data-lms-whiteboard-document-body>
-                    <iframe class="lms-whiteboard-document-frame" title="${safeName}" sandbox="allow-scripts allow-same-origin"></iframe>
-                </div>
+                <div class="lms-whiteboard-document-body" data-lms-whiteboard-document-body></div>
                 <canvas class="lms-whiteboard-document-ink" data-lms-whiteboard-document-ink aria-hidden="true"></canvas>
-                <div class="lms-whiteboard-document-badge" data-lms-whiteboard-document-drag title="Select (V): scroll inside · drag bar to move">${safeName}</div>`;
+                ${buildLmsWhiteboardDocumentBadgeMarkup(element.fileName || 'Document')}`;
             layer.appendChild(shell);
+            element.documentInteractionMode = getLmsWhiteboardDocumentInteractionMode(element);
+            applyLmsWhiteboardDocumentInteractionMode(shell, element);
             bindLmsWhiteboardDocumentShellInteractions(shell, targetCanvas, resourceKey);
         }
         void mountLmsWhiteboardDocumentViewer(shell, element);
@@ -1518,6 +1912,7 @@ async function importLmsWhiteboardDocumentFile(resourceKey = '', file = null, po
             pageIndex: 0,
             pageCount: 1,
             pageAspect: isLmsWhiteboardPdfMime(file.type, fileName) ? aspectRatio : undefined,
+            documentInteractionMode: 'scroll',
             authorId: typeof getLmsWhiteboardActorId === 'function' ? getLmsWhiteboardActorId() : ''
         };
         if (typeof normalizeLmsWhiteboardBox === 'function') normalizeLmsWhiteboardBox(element);
@@ -1537,8 +1932,16 @@ async function importLmsWhiteboardDocumentFile(resourceKey = '', file = null, po
     }
 }
 
+window.syncLmsWhiteboardDocumentScrollState = syncLmsWhiteboardDocumentScrollState;
+window.getLmsWhiteboardDocumentInteractionMode = getLmsWhiteboardDocumentInteractionMode;
+window.isLmsWhiteboardDocumentResizeMode = isLmsWhiteboardDocumentResizeMode;
+window.setLmsWhiteboardDocumentInteractionMode = setLmsWhiteboardDocumentInteractionMode;
+window.applyLmsWhiteboardDocumentInteractionMode = applyLmsWhiteboardDocumentInteractionMode;
 window.syncLmsWhiteboardDocumentLayer = syncLmsWhiteboardDocumentLayer;
 window.repositionLmsWhiteboardDocumentViewers = repositionLmsWhiteboardDocumentViewers;
+window.finalizeLmsWhiteboardDocumentLayout = finalizeLmsWhiteboardDocumentLayout;
+window.clearLmsWhiteboardDocumentPointerCursor = clearLmsWhiteboardDocumentPointerCursor;
+window.getLmsWhiteboardDocumentPdfPaintKey = getLmsWhiteboardDocumentPdfPaintKey;
 window.syncLmsWhiteboardDocumentSelectionChrome = syncLmsWhiteboardDocumentSelectionChrome;
 window.syncLmsWhiteboardDocumentToolMode = syncLmsWhiteboardDocumentToolMode;
 window.syncLmsWhiteboardDocumentPointerCursor = syncLmsWhiteboardDocumentPointerCursor;

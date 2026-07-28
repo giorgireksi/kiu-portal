@@ -28,10 +28,25 @@ describe('social-project-workspace-ui.test', () => {
 
     it('bare-lite includes project workspace paint hooks', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const panel = readSource('assets/js/pages/social-workspace-panel.js');
+        const messages = readSource('assets/js/pages/social-messages.js');
 
-        expect(bare).toContain('.social-project-metric-card::before');
-        expect(bare).toContain('.social-project-detail-hero-rich::after');
-        expect(bare).toContain('.social-project-hero-grid');
+        expect(bare).toContain('.social-project-card-new {');
+        expect(bare).toContain('.spt-desk-package-head {');
+        expect(bare).toContain('.social-project-workspace-chat .social-neo-messages__thread-shell');
+        expect(fouc).toContain('.social-project-workspace-chat');
+        expect(panel).toMatch(/renderMessagesThreadShell\([^)]*chrome:\s*'workspace'/);
+        expect(messages).toContain("text(options?.chrome || '') === 'workspace'");
+        expect(messages).toContain('lux-soft-chrome home-hover-chip');
+        expect(fouc).toContain('.social-project-metric-card::before');
+        expect(fouc).toContain('.social-project-detail-hero-rich::after');
+        expect(fouc).toMatch(/lux-route-social \[data-lux-glass-root="1"\][\s\S]*\.social-project-card-new/);
+        expect(panel).toContain('social-project-detail-hero social-project-detail-hero-rich lux-soft-chrome');
+        expect(panel).toContain('social-project-metric-card-wide lux-soft-chrome home-hover-chip');
+        expect(bare).toContain('.social-project-detail-top {');
+        expect(bare).toContain('.social-project-ring-card svg {');
+        expect(bare).toContain('.social-project-hero-tab-icon');
         expect(bare).not.toMatch(/button\.social-project-tab-pill/);
     });
 });

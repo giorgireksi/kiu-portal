@@ -38,11 +38,12 @@ describe('social-project-health-ui', () => {
         expect(stackBlock).toContain('[data-project-task-graph-stage]');
         expect(stackBlock).not.toContain('.social-project-task-graph-anchor *');
         expect(stackBlock).toContain('.social-project-task-graph-immersive-topbar');
-        expect(stackBlock).toContain('pointer-events: auto !important');
+        expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-topbar');
+        expect(stackBlock).toMatch(/social-project-task-graph-stack--child-open[\s\S]{0,400}\.social-project-task-graph-immersive-topbar[\s\S]{0,180}pointer-events:\s*none\s*!important/);
         expect(stackBlock).toContain('.social-project-task-graph-stack--child-open');
         expect(stackBlock).toContain('.social-project-task-graph-child-slot[hidden]');
-        expect(stackBlock).toMatch(/\.social-project-task-graph-child-slot:has\(> \.lux-glass-dialog-backdrop\)[\s\S]{0,260}top:\s*var\(--ptg-chrome-top/);
-        expect(stackBlock).toMatch(/\.social-project-task-graph-child-slot \{[\s\S]{0,120}position:\s*static/);
+        expect(stackBlock).not.toMatch(/\.social-project-task-graph-child-slot:has\(> \.lux-glass-dialog-backdrop\)[\s\S]{0,260}top:\s*var\(--ptg-chrome-top/);
+        expect(stackBlock).not.toMatch(/\.social-project-task-graph-child-slot \{[\s\S]{0,120}position:\s*static/);
         expect(stackBlock).toContain('.social-project-task-graph-child-slot .social-project-health-stack .lux-glass-dialog-backdrop');
     });
 
@@ -66,7 +67,7 @@ describe('social-project-health-ui', () => {
 
         const modals = readSource('assets/css/lux-modals.css');
         expect(modals).toContain('.social-project-task-graph-child-slot [data-lux-transparency-exempt="1"].lux-glass-dialog-card--social-glass');
-        expect(modals).toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}var\(--lux-modal-glass-blur,\s*var\(--lux-popup-shell-blur\)\)/);
+        expect(modals).toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}color-mix\(in srgb, var\(--lux-studio-dialog-bg/);
         expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,900}var\(--lux-panel-modal-section\)/);
 
         const dialogs = readSource('assets/js/pages/social-workspace-dialogs.js');
@@ -88,6 +89,7 @@ describe('social-project-health-ui', () => {
         expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-body');
         expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-footer');
         expect(stackBlock).toMatch(/\.social-project-task-graph-immersive-footer[\s\S]{0,200}display:\s*none !important/);
+        expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-detail-rail');
         expect(stackBlock).toMatch(/social-project-task-graph-stack--child-open[\s\S]{0,900}\.social-project-task-graph-immersive-body[\s\S]{0,180}opacity:\s*0\.55/);
         expect(stackBlock).not.toMatch(/social-project-task-graph-stack--child-open[\s\S]{0,900}\.social-project-task-graph-immersive-body[\s\S]{0,120}visibility:\s*hidden/);
         expect(stackBlock).toContain('opacity: 0.55');
@@ -104,8 +106,16 @@ describe('social-project-health-ui', () => {
     it('lux-modals overrides warmglass for graph child-slot stacked backdrops', () => {
         const modals = readSource('assets/css/lux-modals.css');
         expect(modals).toContain('.social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card)');
-        expect(modals).toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}rgba\(0, 0, 0, 0\.45\)/);
-        expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}rgba\(2, 6, 23, 0\.86\)/);
+        expect(modals).toMatch(/social-project-task-graph-child-slot[\s\S]{0,700}--lux-panel-veil-dark/);
+        expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}rgba\(0, 0, 0, 0\.45\)/);
+        expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,900}var\(--lux-warmglass-overlay-light\)/);
+    });
+
+    it('lux-modals uses near-opaque studio shells in task-map child slot', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toMatch(
+            /social-project-task-graph-child-slot[\s\S]{0,500}color-mix\(in srgb, var\(--lux-studio-dialog-bg[\s\S]{0,40}97%, transparent\)/
+        );
     });
 
     it('lux-modals defines fullscreen health and plan-picker shells', () => {

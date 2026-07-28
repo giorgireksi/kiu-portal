@@ -110,6 +110,9 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(bare).toContain(':is(.lms-route-input, .lms-route-select, .lms-route-textarea).lux-control');
         expect(bare).not.toMatch(/\.lms-route-input,\s*\nbody\.lux-route-lms \.lms-route-select[\s\S]*?background:\s*rgba\(var\(--lux-glass-tint-rgb/);
         expect(fouc).toContain('.gb-modern-hero');
+        expect(fouc).toContain('.gb-modern-stat,');
+        expect(bare).toContain('body.lux-route-lms .gb-modern-hero h2');
+        expect(bare).toContain('body.lux-route-lms .gb-modern-stat > strong');
         expect(bare).toContain('body.lux-route-lms .lms-session-planner-page');
         expect(bare).toContain('body.lux-route-lms .lms-session-hero');
         expect(bare).toContain('body.lux-route-lms #lms-content-area.lms-tab-sessions');

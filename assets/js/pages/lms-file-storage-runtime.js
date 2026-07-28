@@ -229,10 +229,25 @@ function ensureSharedLmsFileInput() {
         input = document.createElement('input');
         input.type = 'file';
         input.id = 'shared-lms-file-input';
-        input.hidden = true;
+        input.className = 'lms-shared-file-input';
+        input.setAttribute('tabindex', '-1');
+        input.setAttribute('aria-hidden', 'true');
         document.body.appendChild(input);
     }
     return input;
+}
+
+function openSharedLmsFilePicker(input) {
+    if (!input) return;
+    if (typeof input.showPicker === 'function') {
+        try {
+            input.showPicker();
+            return;
+        } catch (error) {
+            // Fall back to click when showPicker is blocked outside a user gesture.
+        }
+    }
+    input.click();
 }
 
 function storeLmsDraftFile(kind, key, fileRecord) {
@@ -278,16 +293,30 @@ function pickLocalLmsFile(kind, key, labelId, accept = '*/*') {
             storeLmsDraftFile(kind, key, {
                 ...draft
             });
-            const label = document.getElementById(labelId);
-            if (label) label.innerHTML = `<i class="fas fa-paperclip"></i> ${escapeHtml(file.name)}`;
+            if (kind === 'material' && typeof syncLmsMaterialDraftUi === 'function') {
+                syncLmsMaterialDraftUi(key, labelId);
+            } else {
+                const label = document.getElementById(labelId);
+                if (label) label.innerHTML = `<i class="fas fa-paperclip"></i> ${escapeHtml(file.name)}`;
+            }
         } catch (error) {
             console.error('Could not prepare LMS file upload.', error);
             alert('That file could not be prepared for upload.');
         }
     };
-    input.click();
+    openSharedLmsFilePicker(input);
 }
 
 window.getLmsFileBlob = getLmsFileBlob;
 window.putLmsFileBlob = putLmsFileBlob;
 window.buildLmsStoredFileStorageKey = buildLmsStoredFileStorageKey;
+window.ensureSharedLmsFileInput = ensureSharedLmsFileInput;
+window.openSharedLmsFilePicker = openSharedLmsFilePicker;
+window.pickLocalLmsFile = pickLocalLmsFile;
+window.downloadStoredFileByKey = downloadStoredFileByKey;
+window.getLmsDraftFile = getLmsDraftFile;
+window.storeLmsDraftFile = storeLmsDraftFile;
+window.clearLmsDraftFile = clearLmsDraftFile;
+window.persistLmsStoredFile = persistLmsStoredFile;
+window.getStoredFileDownloadHtml = getStoredFileDownloadHtml;
+window.renderLmsStoredFileAttachmentShell = renderLmsStoredFileAttachmentShell;

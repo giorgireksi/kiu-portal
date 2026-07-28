@@ -8,11 +8,14 @@ function readSource(relativePath) {
 }
 
 describe('LMS whiteboard document scroll fix ux8', () => {
-    it('guards wheel zoom over document views in select', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+    const css = readSource('assets/css/lux-page-bare-lite.css');
+    const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
 
-        expect(runtime).toContain("event.target.closest?.('[data-lms-whiteboard-document-view]')");
-        expect(runtime).toContain("tool === 'select'");
+    it('guards wheel zoom over document views in select', () => {
+        const pointerRuntime = readSource('assets/js/pages/lms-whiteboard-pointer-runtime.js');
+
+        expect(pointerRuntime).toContain("event.target.closest?.('[data-lms-whiteboard-document-view]')");
+        expect(pointerRuntime).toContain("tool === 'select'");
     });
 
     it('keeps ink above preview for scroll and visibility', () => {
@@ -39,15 +42,30 @@ describe('LMS whiteboard document scroll fix ux8', () => {
 
     it('keeps select tool document body scrollable without view-level blocking', () => {
         expect(css).toContain('[data-lms-whiteboard-tool="select"] .lms-whiteboard-document-body');
+        expect(css).toMatch(/\[data-lms-whiteboard-tool="select"\] \.lms-whiteboard-document-body[\s\S]*overflow:\s*auto/);
+        expect(css).toMatch(/\[data-lms-whiteboard-tool="select"\] \.lms-whiteboard-document-ink[\s\S]*pointer-events:\s*painted/);
         expect(css).not.toMatch(/\[data-lms-whiteboard-tool="select"\] \.lms-whiteboard-document-view\s*\{[^}]*pointer-events:\s*none/);
     });
 
-    it('adds scrollable docx srcdoc styles', () => {
-        const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
+    it('forwards wheel scroll inside document shells and steps pdf pages', () => {
+        expect(docRuntime).toContain('function handleLmsWhiteboardDocumentWheel');
+        expect(docRuntime).toContain('function getLmsWhiteboardDocumentScrollHost');
+        expect(docRuntime).toContain('function stepLmsWhiteboardDocumentPage');
+        expect(docRuntime).toContain('function syncLmsWhiteboardDocumentScrollState');
+        expect(docRuntime).toContain('function getLmsWhiteboardDocumentChromeHandle');
+        expect(docRuntime).toContain("mode === 'resize' ? 'auto' : 'painted'");
+        expect(docRuntime).toContain('isLmsWhiteboardDocumentResizeMode(shell)');
+    });
 
-        expect(docRuntime).toContain('html { margin: 0; height: 100%; overflow: auto; }');
-        expect(docRuntime).toContain('body { margin: 0; padding: 0; overflow: visible;');
-        expect(docRuntime).toContain('p:last-child { margin-bottom: 0; }');
+    it('gates document wheel to scroll mode only', () => {
+        expect(docRuntime).toContain('if (isLmsWhiteboardDocumentResizeMode(shell)) return;');
+    });
+
+    it('adds scrollable docx preview surface', () => {
+        expect(docRuntime).toContain('buildLmsWhiteboardDocxPreviewHtml');
+        expect(docRuntime).toContain('lms-whiteboard-document-html lms-whiteboard-document-frame is-docx');
+        expect(css).toMatch(/\[data-lms-whiteboard-tool="select"\] \.lms-whiteboard-document-html[\s\S]*overflow:\s*auto/);
+        expect(css).toContain('.lms-whiteboard-document-html.is-docx p:last-child');
     });
 
     it('bumps cache to doc-annotate', () => {

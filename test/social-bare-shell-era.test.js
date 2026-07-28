@@ -69,6 +69,7 @@ describe('social bare shell era', () => {
         expect(bare).toContain('.social-neo-event-feature');
         expect(bare).toContain('.social-neo-lost-found-hero');
         expect(bare).toContain('.social-neo-workspace-rail-reveal');
+        expect(bare).toContain('#social-neo-workspace-nav-reveal-region');
         expect(bare).toContain('.social-neo-side-link.is-active');
         expect(bare).toContain('.social-neo-feed-hero-tab');
         expect(bare).toContain('.is-focused');
@@ -81,6 +82,14 @@ describe('social bare shell era', () => {
         expect(bare).toContain('.sn-alerts-panel');
         expect(bare).toContain('.sn-alert-card::before');
         expect(bare).toContain('.social-project-overview-columns');
+        expect(bare).toContain('.social-project-health-badge');
+        expect(bare).toContain('.social-project-graph-preview-viewport');
+        expect(bare).toContain('.social-project-card-new-cta');
+        const overviewBlock = bare.slice(
+            bare.indexOf('/* Social: overview dashboard zones */'),
+            bare.indexOf('/* Social: project task map */')
+        );
+        expect(overviewBlock).not.toContain('--sn-');
         expect(bare).toContain('.social-project-hub-layout');
         expect(bare).toContain('.social-neo-workspace-hub-section {');
         expect(bare).toContain('.social-project-hub-filter-label {');
@@ -195,6 +204,13 @@ describe('social bare shell era', () => {
     it('registers social-neo-card in fouc-ht nested matte allowlist', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toMatch(/\[data-lux-glass-root="1"\][\s\S]*\.social-neo-card/);
+    });
+
+    it('registers project workspace chips in fouc-ht social matte allowlist', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toMatch(/lux-route-social \[data-lux-glass-root="1"\][\s\S]*\.social-project-card-new/);
+        expect(fouc).toContain('.spt-desk-package,');
+        expect(fouc).toContain('.social-project-metric-card,');
     });
 
     it('social shells use fouc-ht hover SSOT (not bare-lite panel paint)', () => {

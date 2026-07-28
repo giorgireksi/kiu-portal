@@ -31,6 +31,8 @@ describe('social-alerts-panel-ui.test', () => {
 
         expect(shell).toContain('lux-secondary-btn social-neo-side-link social-neo-workspace-nav-btn');
         expect(shell).toContain('lux-secondary-btn lux-secondary-btn-sm social-neo-workspace-rail-reveal');
+        expect(shell).toContain('social-neo-workspace-nav-reveal-region');
+        expect(shell).toContain('renderShellWorkspaceNavReveal');
     });
 
     it('bare-lite includes alerts filter grid and card paint', () => {

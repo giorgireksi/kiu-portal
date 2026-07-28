@@ -538,7 +538,11 @@ describe('Q&A hub interaction render guardrails', () => {
 describe('Q&A open chat guardrails', () => {
     it('posts questions instantly and opens replies to every logged-in viewer', () => {
         const source = ssvcHubAndQa();
-
+        const qaModule = readAsset('assets/js/pages/student-service-qa.js');
+        const ops = readAsset('assets/js/pages/student-service-ops-runtime.js');
+        expect(ops).toContain('resolveStudentServiceExportImpl(name)');
+        expect(qaModule).toContain('window.submitStudentServiceQuestion = submitStudentServiceQuestion');
+        expect(qaModule).toContain('syncStudentServiceDraftQuestionFromDom');
         expect(source).toContain("alert('Your question was posted.');");
         expect(source).not.toContain('submitted for review');
         expect(source).toContain('student-service-qa-thread-compose');

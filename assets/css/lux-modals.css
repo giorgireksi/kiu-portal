@@ -1165,34 +1165,57 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   background: transparent;
 }
 #social-neo-overlay-portal .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card--social-glass),
+#social-neo-overlay-portal .lux-glass-dialog-backdrop:has(> .social-photo-ig-modal),
 #social-neo-overlay-portal .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card) {
   background: var(--lux-warmglass-overlay-dark);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card--social-glass),
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-backdrop:has(> .social-photo-ig-modal),
 :is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card) {
   background: var(--lux-warmglass-overlay-light);
 }
-/* Task-map child slot: dim scrim like Lux Studio — graph stays visible underneath; panel carries frost. */
+/* Task-map child slot: strong scrim so map + rail stay behind the popup. */
 #social-neo-overlay-portal .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card),
 #social-neo-overlay-portal .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--project-health-fs:has(> .lux-glass-dialog-card),
-#social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card) {
-  background: rgba(0, 0, 0, 0.45);
+#social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card),
+#social-neo-overlay-portal .social-project-health-child-slot .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card),
+#social-neo-overlay-portal .social-project-health-child-slot > .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card) {
+  background: var(--lux-panel-veil-dark, rgba(0, 0, 0, 0.55));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 :is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card),
 :is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--project-health-fs:has(> .lux-glass-dialog-card),
-:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card) {
-  background: var(--lux-warmglass-overlay-light);
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card),
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .social-project-health-child-slot .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card),
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .social-project-health-child-slot > .lux-glass-dialog-backdrop:has(> .lux-glass-dialog-card) {
+  background: color-mix(in srgb, var(--lux-shell-background, #fff) 52%, transparent);
 }
-/* Task-map child popups: same frosted shell as other social-glass dialogs. */
+/* Task-map child popups: near-opaque studio shells (readable over busy graph). */
 #social-neo-overlay-portal .social-project-task-graph-child-slot [data-lux-transparency-exempt="1"].lux-glass-dialog-card--social-glass,
 #social-neo-overlay-portal .social-project-health-child-slot [data-lux-transparency-exempt="1"].lux-glass-dialog-card--social-glass {
-  border: 1px solid var(--lux-popup-shell-border);
-  background: var(--lux-modal-glass-surface, var(--lux-popup-shell-surface));
-  box-shadow: var(--lux-modal-glass-shadow, var(--lux-popup-shell-shadow));
-  backdrop-filter: var(--lux-modal-glass-blur, var(--lux-popup-shell-blur));
-  -webkit-backdrop-filter: var(--lux-modal-glass-blur, var(--lux-popup-shell-blur));
+  border: 1px solid var(--lux-studio-dialog-border, var(--lux-popup-shell-border));
+  background: color-mix(in srgb, var(--lux-studio-dialog-bg, var(--lux-popup-shell-surface)) 97%, transparent);
+  box-shadow: var(--lux-studio-dialog-shadow, var(--lux-modal-glass-shadow, var(--lux-popup-shell-shadow)));
+  backdrop-filter: var(--lux-popup-shell-blur);
+  -webkit-backdrop-filter: var(--lux-popup-shell-blur);
+}
+/* Studio shells win on migrated health/risk/task dialogs (stacked or standalone). */
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-health-fs.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--health-plan-pick.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-risk.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-task-detail.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-task-create.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-task-delete.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].lux-glass-dialog-card--project-column-tasks.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].sptg-history-dialog.lux-studio-panel,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"].sptg-schedule-help-dialog.lux-studio-panel {
+  border: 1px solid var(--lux-studio-dialog-border);
+  background: var(--lux-studio-dialog-bg);
+  box-shadow: var(--lux-studio-dialog-shadow);
+  backdrop-filter: var(--lux-popup-shell-blur);
+  -webkit-backdrop-filter: var(--lux-popup-shell-blur);
+  color: var(--lux-text);
 }
 /* Health/Risk/history: studio chip paint from lux-studio.css — layout only here. */
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.sph-week-item,
@@ -1201,9 +1224,26 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.sptg-schedule-help-row,
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.spr-section,
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.spr-task-select,
-#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.spr-group-select {
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.spr-group-select,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.sph-pick-row {
   width: 100%;
   text-align: left;
+}
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.sph-pick-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 10px 12px;
+  border-radius: 11px;
+}
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn.sph-pick-row.is-selected {
+  border: 1.5px solid color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
+  background: var(--lux-studio-chip-surface-active);
+  box-shadow:
+    var(--lux-studio-chip-shadow-active),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 18%, transparent);
 }
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-control-btn:is(
   .spr-section,
@@ -1259,6 +1299,11 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   padding: 0;
   gap: 0;
   overflow: hidden;
+  display: grid;
+}
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .sph-verdict.lux-studio-section > div {
+  padding: 15px 16px;
+  min-width: 0;
 }
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .lux-studio-body .sph-hygiene {
   margin-top: 0;
@@ -2461,6 +2506,139 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
     overflow: auto;
   }
 }
+
+/* Photography comments: IG-style split modal (image + comments). */
+#social-neo-overlay-portal .social-photo-ig-backdrop > .social-photo-ig-modal {
+  width: min(1180px, calc(100vw - 32px));
+  max-width: 1180px;
+  height: min(92dvh, 920px);
+  max-height: min(92dvh, 920px);
+  margin: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 16px;
+}
+#social-neo-overlay-portal .social-photo-ig-modal-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+}
+#social-neo-overlay-portal .social-photo-ig-media-pane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--lux-text) 6%, transparent);
+}
+#social-neo-overlay-portal .social-photo-ig-media-pane img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+#social-neo-overlay-portal .social-photo-ig-comments-pane {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
+  border-left: 1px solid var(--lux-popup-shell-border, var(--lux-border));
+  background: transparent;
+}
+#social-neo-overlay-portal .social-photo-ig-sheet-handle {
+  display: none;
+}
+#social-neo-overlay-portal .social-photo-ig-comments-head {
+  flex-shrink: 0;
+  padding: 16px 18px 12px;
+  margin: 0;
+  border-bottom: 1px solid var(--lux-popup-shell-border, var(--lux-border));
+}
+#social-neo-overlay-portal .social-photo-ig-comments-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+#social-neo-overlay-portal .social-photo-ig-comment-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#social-neo-overlay-portal .social-photo-ig-comment-thread {
+  padding: 14px 18px 8px;
+  min-height: 120px;
+}
+#social-neo-overlay-portal .social-photo-ig-comment-thread .social-neo-empty {
+  padding: 32px 0;
+  text-align: center;
+}
+#social-neo-overlay-portal .social-photo-ig-comment-compose {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-shrink: 0;
+  margin: 0 18px 18px;
+  padding: 14px 18px 0;
+  border-top: 1px solid var(--lux-popup-shell-border, var(--lux-border));
+}
+#social-neo-overlay-portal .social-photo-ig-comment-compose .lux-glass-dialog-comment-compose-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+#social-neo-overlay-portal .social-photo-ig-comment-compose .social-neo-comment-compose-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+#social-neo-overlay-portal .social-photo-ig-comment-compose .social-neo-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+@media (max-width: 860px) {
+  #social-neo-overlay-portal .social-photo-ig-backdrop > .social-photo-ig-modal {
+    width: min(100vw - 16px, 1180px);
+    height: min(96dvh, 920px);
+    max-height: min(96dvh, 920px);
+  }
+  #social-neo-overlay-portal .social-photo-ig-modal-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(220px, 42vh) minmax(0, 1fr);
+  }
+  #social-neo-overlay-portal .social-photo-ig-comments-pane {
+    border-left: 0;
+    border-top: 1px solid var(--lux-popup-shell-border, var(--lux-border));
+  }
+  #social-neo-overlay-portal .social-photo-ig-sheet-handle {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--lux-text-muted) 45%, transparent);
+  }
+  #social-neo-overlay-portal .social-photo-ig-comments-head {
+    padding: 10px 16px 12px;
+  }
+  #social-neo-overlay-portal .social-photo-ig-comment-compose {
+    margin: 0 12px 12px;
+    padding-top: 12px;
+  }
+}
+
 #social-neo-overlay-portal [data-lux-transparency-exempt="1"] .spt-detail-section.lux-studio-section {
   display: flex;
   flex-direction: column;
@@ -2870,10 +3048,17 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
     z-index: 2;
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-backdrop--project-health-fs:not(.lux-glass-dialog-backdrop--stacked-child) .sph-fs-topbar,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-health-child-slot .lux-glass-dialog-backdrop .sph-fs-topbar,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--project-health-fs .sph-fs-topbar,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child .sph-fs-topbar {
+    background: color-mix(in srgb, var(--lux-studio-dialog-bg, var(--lux-popup-shell-surface)) 90%, transparent);
+    backdrop-filter: var(--lux-popup-shell-blur);
+    -webkit-backdrop-filter: var(--lux-popup-shell-blur);
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--project-health-fs .sph-fs-topbar,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child .sph-fs-topbar,
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-health-child-slot .lux-glass-dialog-backdrop .sph-fs-topbar {
-    background: rgba(8, 12, 20, 0.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: var(--lux-studio-dialog-bg, var(--lux-popup-shell-surface));
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .sph-fs-topbar-actions {
     display: inline-flex;
@@ -2895,10 +3080,50 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
     z-index: 2;
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-backdrop--project-health-fs:not(.lux-glass-dialog-backdrop--stacked-child) .sph-fs-footer,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-health-child-slot .lux-glass-dialog-backdrop .sph-fs-footer,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--project-health-fs .sph-fs-footer {
+    background: color-mix(in srgb, var(--lux-studio-dialog-bg, var(--lux-popup-shell-surface)) 90%, transparent);
+    backdrop-filter: var(--lux-popup-shell-blur);
+    -webkit-backdrop-filter: var(--lux-popup-shell-blur);
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--project-health-fs .sph-fs-footer,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child .sph-fs-footer,
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-health-child-slot .lux-glass-dialog-backdrop .sph-fs-footer {
-    background: rgba(8, 12, 20, 0.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: var(--lux-studio-dialog-bg, var(--lux-popup-shell-surface));
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .sph-health-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-studio-chip-border);
+    background: var(--lux-studio-chip-surface);
+    font-size: 10.5px;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .sph-health-badge[data-health="good"] {
+    color: var(--lux-success);
+    border-color: color-mix(in srgb, var(--lux-success) 35%, var(--lux-studio-chip-border));
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .sph-health-badge[data-health="warn"] {
+    color: var(--lux-warning);
+    border-color: color-mix(in srgb, var(--lux-warning) 35%, var(--lux-studio-chip-border));
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .sph-health-badge[data-health="critical"] {
+    color: var(--lux-danger);
+    border-color: color-mix(in srgb, var(--lux-danger) 35%, var(--lux-studio-chip-border));
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .lux-glass-dialog-body--project-health.lux-studio-body {
+    gap: 14px;
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .sph-hygiene {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-glass-dialog-card--project-health-fs .sph-verdict--fs {
     grid-template-columns: 1.5fr repeat(4, minmax(0, 1fr));
@@ -2995,7 +3220,7 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   align-items: stretch;
   justify-content: stretch;
   padding: 0;
-  background: rgba(2, 6, 23, 0.72);
+  background: var(--lux-panel-veil-dark, rgba(0, 0, 0, 0.45));
   z-index: 10050;
 }
 #social-neo-overlay-portal .lux-glass-dialog-backdrop--stacked-child {

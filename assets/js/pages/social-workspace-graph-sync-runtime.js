@@ -818,7 +818,7 @@
             let rail = body?.querySelector('.social-project-task-graph-detail-rail');
             if (!rail && body) {
                 rail = document.createElement('aside');
-                rail.className = 'social-project-task-graph-detail-rail';
+                rail.className = 'social-project-task-graph-detail-rail lux-soft-chrome';
                 rail.setAttribute('data-lux-transparency-exempt', '1');
                 body.appendChild(rail);
             }

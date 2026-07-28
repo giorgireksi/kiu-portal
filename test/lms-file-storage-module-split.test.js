@@ -13,7 +13,7 @@ describe('LMS file storage module split', () => {
         const lmsSource = readSource('assets/js/pages/lms.js');
         const fileStorageRuntimeSource = readSource('assets/js/pages/lms-file-storage-runtime.js');
         expect(lmsHtml).not.toContain('assets/js/pages/lms-file-storage-runtime.js');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-file-storage-runtime.js?v=20260518-lmsfiles1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-file-storage-runtime.js?v=20260729-lmsmatupload1');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('function ensureLmsContentRuntime()');
         expect(fileStorageRuntimeSource).toContain('function supportsLmsIndexedFileStorage()');
         expect(fileStorageRuntimeSource).toContain('function openLmsFileStorageDb()');
@@ -25,7 +25,9 @@ describe('LMS file storage module split', () => {
         expect(fileStorageRuntimeSource).toContain("actionsClass = 'lms-route-file-shell-actions'");
         expect(fileStorageRuntimeSource).not.toContain('style="padding:8px 12px; font-size:12px; display:inline-flex; align-items:center; gap:6px;"');
         expect(fileStorageRuntimeSource).toContain('function ensureSharedLmsFileInput()');
-        expect(fileStorageRuntimeSource).toContain('input.hidden = true;');
+        expect(fileStorageRuntimeSource).toContain('lms-shared-file-input');
+        expect(fileStorageRuntimeSource).toContain('function openSharedLmsFilePicker(input)');
+        expect(fileStorageRuntimeSource).toContain('window.pickLocalLmsFile = pickLocalLmsFile');
         expect(fileStorageRuntimeSource).toContain('function storeLmsDraftFile(kind, key, fileRecord)');
         expect(fileStorageRuntimeSource).toContain('function pickLocalLmsFile(kind, key, labelId, accept = \'*/*\')');
         expect(lmsSource).not.toContain('function supportsLmsIndexedFileStorage()');

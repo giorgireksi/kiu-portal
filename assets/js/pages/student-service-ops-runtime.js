@@ -12,6 +12,10 @@
 
 function ssForwardToLoadedModule(hasModule, ensureModule, name, localFn, args, fallback) {
     if (typeof hasModule === 'function' && hasModule()) {
+        const impl = typeof resolveStudentServiceExportImpl === 'function'
+            ? resolveStudentServiceExportImpl(name)
+            : undefined;
+        if (typeof impl === 'function' && impl !== localFn) return impl.apply(null, args);
         const w = window[name];
         if (typeof w === 'function' && w !== localFn) return w.apply(null, args);
     }

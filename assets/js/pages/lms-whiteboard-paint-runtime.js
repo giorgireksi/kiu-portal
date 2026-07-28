@@ -90,7 +90,10 @@ function paintLmsWhiteboardCanvas(resourceKey = '', targetCanvas = null, options
         const canEditNow = typeof canEditLmsWhiteboard === 'function' && canEditLmsWhiteboard(resourceKey);
         syncLmsWhiteboardSelectionToolbar(resourceKey, canEditNow);
         if (options.skipDocumentSync) {
-            if (typeof repositionLmsWhiteboardDocumentViewers === 'function') repositionLmsWhiteboardDocumentViewers(canvas);
+            if (typeof repositionLmsWhiteboardDocumentViewers === 'function') {
+                // Gestures (pan/move/resize) must never kick off PDF.js re-renders.
+                repositionLmsWhiteboardDocumentViewers(canvas, { layoutOnly: true });
+            }
         } else if (typeof syncLmsWhiteboardDocumentLayer === 'function') {
             syncLmsWhiteboardDocumentLayer(resourceKey, canvas);
         } else if (typeof repositionLmsWhiteboardDocumentViewers === 'function') {

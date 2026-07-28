@@ -194,7 +194,7 @@
                 },
                 {
                     is: 'isSocialPhotographySubmitForm',
-                    fallback: (t) => t === 'photography-upload',
+                    fallback: (t) => t === 'photography-upload' || t === 'dialog-photography-delete',
                     has: hasSocialPhotographyModule,
                     ensure: ensureSocialPhotographyModule,
                     handle: 'handleSocialPhotographySubmit'
@@ -221,7 +221,14 @@
                     handle: 'handleSocialProfileSubmit'
                 }
             ], { invoke: (handler) => handler(formType, form, runtime, event) });
-            if (submitDomain.matched) return submitDomain.result;
+            if (!submitDomain.matched) return;
+            try {
+                const result = submitDomain.result;
+                if (result && typeof result.then === 'function') await result;
+            } catch (error) {
+                console.error('[Social] Submit action failed:', formType, error);
+                flashSocialError(error?.message || 'Action failed.');
+            }
         }
 
         function handlePointerDown(event) {

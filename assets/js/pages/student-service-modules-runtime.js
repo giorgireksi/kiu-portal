@@ -44,7 +44,7 @@
 
         const STUDENT_SERVICE_QA_THREAD_URL = 'assets/js/pages/student-service-qa-thread-runtime.js?v=20260728-ssqathr3';
         const STUDENT_SERVICE_QA_STAFF_URL = 'assets/js/pages/student-service-qa-staff-runtime.js?v=20260728-ssqastaff3';
-        const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260728-ssqa5';
+        const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260729-ssqathread1';
         const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260728-sssvc4';
         const STUDENT_SERVICE_FILTERS_MODULE_URL = 'assets/js/pages/student-service-filters.js?v=20260728-ssvc-filters2';
         const STUDENT_SERVICE_ATTACHMENTS_MODULE_URL = 'assets/js/pages/student-service-attachments.js?v=20260728-ssvc-attach3';
@@ -139,6 +139,9 @@
 
         function rerenderStudentServicePageAfterModuleLoad() {
             invalidateStudentServiceRenderSignature();
+            if (typeof window.invalidateStudentServiceStores === 'function') {
+                window.invalidateStudentServiceStores();
+            }
             renderStudentServicePage();
         }
 

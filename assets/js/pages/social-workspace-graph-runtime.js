@@ -1255,7 +1255,7 @@
             const tid = text(taskId);
             if (!pid || !tid) return;
             const menu = document.createElement('div');
-            menu.className = 'sptg-context-menu social-neo-menu';
+            menu.className = 'sptg-context-menu lux-soft-chrome social-neo-menu';
             menu.setAttribute('data-project-task-graph-context-menu', '1');
             menu.setAttribute('data-lux-transparency-exempt', '1');
             menu.setAttribute('role', 'menu');

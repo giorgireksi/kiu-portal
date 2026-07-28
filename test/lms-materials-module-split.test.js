@@ -13,7 +13,13 @@ describe('LMS materials module split', () => {
         const lmsSource = readSource('assets/js/pages/lms.js');
         const materialsSource = readSource('assets/js/pages/lms-materials-runtime.js');
         expect(lmsHtml).not.toContain('assets/js/pages/lms-materials-runtime.js');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-materials-runtime.js?v=20260714-lmspro2');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-materials-runtime.js?v=20260729-lmsmatupload1');
+        expect(materialsSource).toContain('data-lms-material-draft-file');
+        expect(materialsSource).toContain('function syncLmsMaterialDraftUi(resourceKey, labelId = \'\')');
+        expect(materialsSource).toContain('window.createLmsMaterial = window.createLmsMaterial || createLmsMaterial');
+        expect(readSource('assets/js/pages/lms-quiz-workspace-session-runtime.js')).toContain("switchLMSTab(getCurrentLmsActiveTab(), { force: true })");
+        expect(readSource('assets/js/app/api-lms-portal-runtime.js')).toContain('protectedQuizMonitorAccessDenied');
+        expect(readSource('assets/js/app/api-lms-portal-runtime.js')).toContain('suppressDiagnostic: true');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('function ensureLmsContentRuntime()');
         expect(materialsSource).toContain('renderLmsWeekPanelEmptyState(');
         expect(materialsSource).toContain('function renderLmsMaterialsLibrary(resourceKey)');

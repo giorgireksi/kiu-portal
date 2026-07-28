@@ -32,6 +32,7 @@
     }
 
     function normalizeStudentServiceAnswer(answer = {}, index = 0) {
+        if (!answer || typeof answer !== 'object') return null;
         return {
             id: String(answer.id || `svc-answer-${index + 1}`),
             questionId: String(answer.questionId || ''),
@@ -96,11 +97,12 @@
     }
 
     function normalizeStudentServiceQuestion(question = {}, index = 0) {
+        if (!question || typeof question !== 'object') return null;
         const normalizedCategory = STUDENT_SERVICE_CATEGORIES.includes(question.category)
             ? question.category
             : 'General Question';
         const answers = Array.isArray(question.answers)
-            ? question.answers.map(normalizeStudentServiceAnswer)
+            ? question.answers.map(normalizeStudentServiceAnswer).filter(Boolean)
             : [];
         const authorUserId = String(question.authorUserId || question.authorId || question.studentId || '');
         return {
@@ -597,7 +599,7 @@
                             <span class="student-service-qa-thread-modal-icon-chip"><i class="fas fa-comments" aria-hidden="true"></i></span>
                             <div class="student-service-qa-thread-modal-title-wrap">
                                 <div class="student-service-kicker">Q&A thread</div>
-                                <strong id="student-service-question-thread-modal-title">${ssEscape(question.title || 'Question thread')}</strong>
+                                <strong id="student-service-question-thread-modal-title" class="lux-page-title">${ssEscape(question.title || 'Question thread')}</strong>
                                 <span class="lux-panel-copy">${ssEscape(authorLabel)} · ${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
                             </div>
                         </div>
@@ -870,6 +872,16 @@
             return;
         }
         closeStudentServiceQuestionComposerModal();
+    }
+
+    function syncStudentServiceDraftQuestionFromDom(root = document.getElementById('student-service-modal-root')) {
+        if (!root) return;
+        root.querySelectorAll('[data-student-service-draft-question-field]').forEach((node) => {
+            const field = node.dataset.studentServiceDraftQuestionField || '';
+            if (!field) return;
+            const value = node.type === 'checkbox' ? node.checked : node.value;
+            setStudentServiceDraftQuestionField(field, value);
+        });
     }
 
     function setStudentServiceDraftQuestionField(field, value) {
@@ -1359,9 +1371,13 @@
     }
 
     async function submitStudentServiceQuestion() {
+        syncStudentServiceDraftQuestionFromDom();
         const currentUser = getStudentServiceCurrentUser();
         const role = getEffectiveUserRole();
-        if (!currentUser || role !== USER_ROLES.STUDENT) return;
+        if (!currentUser || role !== USER_ROLES.STUDENT) {
+            alert('Only students can post questions in the Q&A feed.');
+            return;
+        }
         const ui = ensureStudentServiceUiState();
         const draftQuestion = ui.draftQuestion || buildStudentServiceDefaultDraftQuestion();
         const title = String(draftQuestion.title || '').trim();
@@ -1595,7 +1611,7 @@
     __kiuSsApi.patchStudentServiceOpenQuestionThread = patchStudentServiceOpenQuestionThread;
     __kiuSsApi.setStudentServiceQuestionFilter = setStudentServiceQuestionFilter;
     __kiuSsApi.setStudentServiceQuestionComposerExpanded = setStudentServiceQuestionComposerExpanded;
-    __kiuSsApi.setStudentServiceDraftQuestionField = setStudentServiceDraftQuestionField;
+    __kiuSsApi.setStudentServiceDraftQuestionField = window.setStudentServiceDraftQuestionField = setStudentServiceDraftQuestionField;
     __kiuSsApi.openStudentServiceQuestion = openStudentServiceQuestion;
     __kiuSsApi.getStudentServiceQuestionStatusLabel = getStudentServiceQuestionStatusLabel;
     __kiuSsApi.getStudentServiceQuestionStatusClass = getStudentServiceQuestionStatusClass;
@@ -1618,8 +1634,8 @@
     __kiuSsApi.renderStudentServiceAnswerThreadNode = renderStudentServiceAnswerThreadNode;
     __kiuSsApi.renderStudentServiceQuestionDetailActionsMarkup = renderStudentServiceQuestionDetailActionsMarkup;
     __kiuSsApi.renderStudentServiceQuestionDetail = renderStudentServiceQuestionDetail;
-    __kiuSsApi.submitStudentServiceQuestion = submitStudentServiceQuestion;
-    __kiuSsApi.submitStudentServiceQuestionAnswer = submitStudentServiceQuestionAnswer;
+    __kiuSsApi.submitStudentServiceQuestion = window.submitStudentServiceQuestion = submitStudentServiceQuestion;
+    __kiuSsApi.submitStudentServiceQuestionAnswer = window.submitStudentServiceQuestionAnswer = submitStudentServiceQuestionAnswer;
     __kiuSsApi.setStudentServiceQuestionOwnerResolution = setStudentServiceQuestionOwnerResolution;
     __kiuSsApi.setStudentServiceQuestionFeedback = setStudentServiceQuestionFeedback;
     __kiuSsApi.setStudentServiceAnswerFeedback = setStudentServiceAnswerFeedback;

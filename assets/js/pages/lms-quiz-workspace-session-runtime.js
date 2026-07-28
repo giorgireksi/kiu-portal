@@ -502,7 +502,7 @@ function getCurrentLmsActiveTab() {
 }
 
 function rerenderCurrentLmsTab() {
-    switchLMSTab(getCurrentLmsActiveTab());
+    switchLMSTab(getCurrentLmsActiveTab(), { force: true });
 }
 
 function resolveLmsQuizWorkspace(courseKey = currentLmsQuizCourseKey || currentCourseId) {

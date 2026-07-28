@@ -34,6 +34,8 @@ describe('student-service-inbox-runtime peel', () => {
         expect(inbox).toContain('function buildStudentServiceInboxDefaultDraftTicket()');
         expect(inbox).toContain('draftTicket: resolveStudentServiceDefaultDraftTicket()');
         expect(inbox).toContain('ui.draftTicket = resolveStudentServiceDefaultDraftTicket()');
-        expect(inbox).toContain("__ssModuleForward('Filters', 'getStudentServicePublishedInboxFilterLayout', () => ({ version: 1, filters: [] }))");
+        expect(inbox).toContain('function studentServiceModuleNormalizerReady');
+        expect(inbox).toContain('pruneStudentServiceQuestionRecords');
+        expect(inbox).toContain('qaStoresPending');
     });
 });

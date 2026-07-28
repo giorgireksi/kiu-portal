@@ -104,6 +104,15 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   -webkit-backdrop-filter: var(--lux-popup-shell-blur);
   box-shadow: var(--lux-studio-dialog-shadow);
 }
+#social-neo-overlay-portal .lux-studio-panel.lux-glass-dialog-card {
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-studio-head .lux-glass-dialog-title {
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-studio-head .lux-glass-dialog-subtitle {
+  color: var(--lux-text-muted);
+}
 
 #lux-studio-backdrop .lux-studio-panel {
   position: relative;

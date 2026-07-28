@@ -153,7 +153,7 @@ describe('social-panel-model', () => {
         expect(page).toMatch(/const activeNavPanels = window\.activeNavPanels/);
         expect(page).toMatch(/KiuSocialPanelModel/);
         expect(page).toMatch(/const filterFeedForHome = window\.filterFeedForHome/);
-        expect(page).toMatch(/const photographyPosts = window\.photographyPosts/);
+        expect(page).toMatch(/const photographyPosts = \(typeof window\.getPortalPhotographyPosts === 'function'/);
         expect(page).toMatch(/const postingScopeOptions = window\.postingScopeOptions/);
         expect(html).toMatch(/<script\s+type="module"\s+src="assets\/js\/pages\/social-panel-model\.js/);
         expect(html).toContain('social-panel-model-bridge.js');

@@ -53,6 +53,7 @@
         function fetchAccountsByIds(...a) { return __lookup('fetchAccountsByIds')(...a); }
         function refreshFeed(...a) { return __lookup('refreshFeed')(...a); }
         function ensureActiveChat(...a) { return __lookup('ensureActiveChat')(...a); }
+        function routeToSocial(...a) { return __lookup('routeToSocial')(...a); }
         const runtime = d.runtime || window.__kiuSocialLiteRuntime;
         void d;
 
@@ -122,10 +123,16 @@ async function createPost(body, options = {}) {
         const existing = Array.isArray(runtime.feed) ? runtime.feed : [];
         runtime.feed = [created, ...existing.filter((item) => text(item?.id) !== text(created.id))];
         await Promise.all([loadSocialState(true), refreshFeed(true)]);
+        // Feed refresh can return before the new post is indexed — keep the mutation visible.
+        const refreshed = Array.isArray(runtime.feed) ? runtime.feed : [];
+        if (!refreshed.some((item) => text(item?.id) === text(created.id))) {
+            runtime.feed = [created, ...refreshed.filter((item) => text(item?.id) !== text(created.id))];
+        }
         await fetchAccountsByIds([created.authorUserId]);
         setFlash('Post published.', 'success', { skipRender: true });
         queueRender('post-created');
     }
+    if (!created) throw new Error('Post could not be published.');
     return created;
 }
 

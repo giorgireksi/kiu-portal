@@ -103,15 +103,22 @@
             if (rootNode) rootNode.classList.toggle('social-neo-workspace-nav-collapsed', on);
         }
 
-        function renderShellWorkspaceNav(activePanel) {
-            const panels = activeNavPanels();
-            const collapsed = ensureWorkspaceNavCollapsedState();
-            syncWorkspaceNavCollapsedClass(collapsed);
+        function renderShellWorkspaceNavReveal() {
+            ensureWorkspaceNavCollapsedState();
+            syncWorkspaceNavCollapsedClass();
             return `
                 <button type="button" class="lux-secondary-btn lux-secondary-btn-sm social-neo-workspace-rail-reveal" data-action="workspace-nav-expand" aria-label="Show workspace navigation" title="Show navigation">
                     <i class="fas fa-angles-right" aria-hidden="true"></i>
                     <span>Nav</span>
                 </button>
+            `;
+        }
+
+        function renderShellWorkspaceNav(activePanel) {
+            const panels = activeNavPanels();
+            const collapsed = ensureWorkspaceNavCollapsedState();
+            syncWorkspaceNavCollapsedClass(collapsed);
+            return `
                 <aside class="social-neo-workspace-nav" aria-label="Social Workspace navigation" ${collapsed ? 'hidden' : ''}>
                     <section class="social-neo-card social-neo-workspace-nav-card">
                         <div class="social-neo-section-head social-neo-rail-head">
@@ -487,12 +494,21 @@
             const overlay = ensureSocialOverlayPortal();
             let rootNode = host.querySelector('#social-neo-root');
             if (rootNode) {
+                let workspaceNavReveal = rootNode.querySelector('#social-neo-workspace-nav-reveal-region');
+                if (!workspaceNavReveal) {
+                    workspaceNavReveal = document.createElement('div');
+                    workspaceNavReveal.id = 'social-neo-workspace-nav-reveal-region';
+                    const shell = rootNode.querySelector('.social-neo-shell');
+                    if (shell) rootNode.insertBefore(workspaceNavReveal, shell);
+                    else rootNode.appendChild(workspaceNavReveal);
+                }
                 return {
                     root: rootNode,
                     flash: rootNode.querySelector('#social-neo-flash-region'),
                     topbar: rootNode.querySelector('#social-neo-topbar-region'),
                     command: rootNode.querySelector('#social-neo-command-region'),
                     workspaceNav: rootNode.querySelector('#social-neo-workspace-nav-region'),
+                    workspaceNavReveal,
                     center: rootNode.querySelector('#social-neo-center-region'),
                     drawer: rootNode.querySelector('#social-neo-drawer-region'),
                     mobileTab: rootNode.querySelector('#social-neo-mobile-tab-region'),
@@ -508,6 +524,7 @@
                     <div id="social-neo-flash-region"></div>
                     <div id="social-neo-topbar-region"></div>
                     <div id="social-neo-command-region"></div>
+                    <div id="social-neo-workspace-nav-reveal-region"></div>
                     <div class="social-neo-shell" data-lux-glass-root="1">
                         <div id="social-neo-workspace-nav-region"></div>
                         <div class="social-neo-center" id="social-neo-center-region"></div>
@@ -622,6 +639,7 @@
             ensureWorkspaceNavCollapsedState,
             setWorkspaceNavCollapsed,
             syncWorkspaceNavCollapsedClass,
+            renderShellWorkspaceNavReveal,
             renderShellWorkspaceNav,
             updateSocialMeasuredChrome,
             syncSocialVisualViewport,

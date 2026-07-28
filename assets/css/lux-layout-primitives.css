@@ -607,6 +607,32 @@
   color: var(--lux-text-muted);
 }
 
+.student-service-qa-card-author-name,
+.student-service-qa-answer-author-name {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--lux-text);
+}
+
+.student-service-qa-answer-author-role {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lux-text-muted);
+}
+
+.student-service-qa-card-stat {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+.student-service-qa-thread-modal-title-wrap strong,
+#student-service-question-thread-modal-title {
+  color: var(--lux-text);
+}
+
 .student-service-track-compact-inline-counts,
 .student-service-student-hub-track-compact-count strong {
   font-size: 12px;

@@ -108,18 +108,21 @@ function isImage(media) {
 }
 
 function getPortalPhotographyPosts(feed) {
+    // Call with no args so the portal/lite implementation uses live runtime.feed.
+    // Passing [] (from an unhooked state()) permanently empties Exposé.
+    const invoke = (fn) => (arguments.length ? fn(feed) : fn());
     const hook = hooks().getPortalPhotographyPosts;
-    if (typeof hook === 'function') return hook(feed);
+    if (typeof hook === 'function') return invoke(hook);
     if (typeof window.getPortalPhotographyPosts === 'function') {
-        try { return window.getPortalPhotographyPosts(feed); } catch (error) { return null; }
+        try { return invoke(window.getPortalPhotographyPosts); } catch (error) { return null; }
     }
     return null;
 }
 
 function photographyPosts() {
-    const feed = Array.isArray(state().feed) ? state().feed : [];
-    const fromPortal = getPortalPhotographyPosts(feed);
+    const fromPortal = getPortalPhotographyPosts();
     if (Array.isArray(fromPortal)) return fromPortal;
+    const feed = Array.isArray(state().feed) ? state().feed : [];
     return feed.filter((post) => text(post?.category) === 'Photography'
         && Array.isArray(post?.media)
         && post.media.some((media) => isImage(media)));

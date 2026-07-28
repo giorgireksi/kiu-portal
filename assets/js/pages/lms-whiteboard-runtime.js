@@ -787,6 +787,10 @@ function applyLmsWhiteboardLineResize(element = {}, base = {}, handle = '', poin
 
 function applyLmsWhiteboardElementResize(element = {}, base = {}, handle = '', point = {}, options = {}) {
     if (!element || !base || !handle) return;
+    if (element.type === 'document') {
+        applyLmsWhiteboardDocumentShellResize(element, base, handle, point, options);
+        return;
+    }
     if (isLmsWhiteboardShapeLineElement(element)) {
         applyLmsWhiteboardLineResize(element, base, handle, point, options);
         return;
@@ -872,10 +876,61 @@ function isLmsWhiteboardDocumentImageElement(element = {}) {
         && isLmsWhiteboardImageMime(element.mimeType, element.fileName);
 }
 
-function shouldLmsWhiteboardResizeAspectLock(element = {}, shiftKey = false) {
+function getLmsWhiteboardDocumentBadgeHeight() {
+    return Number(window.LMS_WHITEBOARD_DOCUMENT_BADGE_HEIGHT) || 24;
+}
+
+function documentShellContentBox(box = {}) {
+    const h = Number(box.h) || 0;
+    const sign = h < 0 ? -1 : 1;
+    const badgeH = getLmsWhiteboardDocumentBadgeHeight();
+    const contentH = Math.max(1, Math.abs(h) - badgeH);
+    return {
+        x: box.x,
+        y: box.y,
+        w: box.w,
+        h: sign * contentH
+    };
+}
+
+function getLmsWhiteboardDocumentContentAspect(element = {}) {
+    if (Number(element.pageAspect) > 0) return Number(element.pageAspect);
+    if (!isLmsWhiteboardDocumentImageElement(element)) return null;
+    const bounds = typeof getLmsWhiteboardElementBounds === 'function'
+        ? getLmsWhiteboardElementBounds(element)
+        : null;
+    const totalH = Math.abs(bounds?.h ?? element.h ?? 1);
+    const badgeH = getLmsWhiteboardDocumentBadgeHeight();
+    const contentH = Math.max(1, totalH - badgeH);
+    const contentW = Math.abs(bounds?.w ?? element.w ?? 1);
+    return contentW / contentH;
+}
+
+function shouldLmsWhiteboardResizeAspectLock(element = {}, shiftKey = false, handle = '') {
     if (shiftKey) return false;
+    const edgeHandle = ['n', 's', 'e', 'w'].includes(String(handle || '').trim());
+    if (element.type === 'document') {
+        if (edgeHandle) return false;
+        return Boolean(getLmsWhiteboardDocumentContentAspect(element));
+    }
     if (element.type === 'image' || element.type === 'ellipse') return true;
     return isLmsWhiteboardDocumentImageElement(element);
+}
+
+function applyLmsWhiteboardDocumentShellResize(element = {}, base = {}, handle = '', point = {}, options = {}) {
+    if (!element || !base || !handle) return;
+    const contentBase = documentShellContentBox(base);
+    const contentElement = documentShellContentBox(element);
+    applyLmsWhiteboardResize(contentElement, contentBase, handle, point, {
+        ...options,
+        skipNormalize: true
+    });
+    const sign = (contentElement.h || 0) < 0 ? -1 : 1;
+    element.x = contentElement.x;
+    element.y = contentElement.y;
+    element.w = contentElement.w;
+    element.h = contentElement.h + (sign * getLmsWhiteboardDocumentBadgeHeight());
+    if (!options.skipNormalize && typeof normalizeLmsWhiteboardBox === 'function') normalizeLmsWhiteboardBox(element);
 }
 
 function scaleLmsWhiteboardDocumentChildElements(resourceKey = '', documentId = '', oldW = 1, oldH = 1, newW = 1, newH = 1) {
@@ -1552,20 +1607,76 @@ function detachLmsWhiteboardShellDragWindowListeners() {
     window.removeEventListener('pointermove', listeners.onMove);
     window.removeEventListener('pointerup', listeners.onEnd);
     window.removeEventListener('pointercancel', listeners.onEnd);
+    document.removeEventListener('pointermove', listeners.onMove, true);
+    document.removeEventListener('pointerup', listeners.onEnd, true);
+    document.removeEventListener('pointercancel', listeners.onEnd, true);
     LMS_WHITEBOARD_UI.shellDragWindowListeners = null;
+}
+
+function abortLmsWhiteboardShellDrag(event = null) {
+    const canvas = LMS_WHITEBOARD_UI.shellDragCanvas
+        || document.querySelector('.lms-whiteboard-canvas');
+    const resourceKey = LMS_WHITEBOARD_UI.shellDragResourceKey || LMS_WHITEBOARD_UI.boundKey;
+    const captureTarget = LMS_WHITEBOARD_UI.shellDragCaptureTarget;
+    const wasResize = LMS_WHITEBOARD_UI.dragStart?.mode === 'resize';
+    const resizingShell = document.querySelector('.lms-whiteboard-document-view.is-resizing');
+    const resizingElementId = resizingShell?.dataset.lmsWhiteboardDocumentView
+        || LMS_WHITEBOARD_UI.dragStart?.element?.id
+        || '';
+    detachLmsWhiteboardShellDragWindowListeners();
+    document.querySelectorAll('.lms-whiteboard-document-view.is-dragging, .lms-whiteboard-document-view.is-resizing').forEach((node) => {
+        node.classList.remove('is-dragging', 'is-resizing');
+    });
+    if (LMS_WHITEBOARD_UI.dragStart && resourceKey && canvas) {
+        const canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : true;
+        try {
+            onLmsWhiteboardPointerUp(event || { pointerId: null, buttons: 0 }, resourceKey, canEdit, canvas);
+        } catch (error) {
+            LMS_WHITEBOARD_UI.dragStart = null;
+            LMS_WHITEBOARD_UI.historyGestureRecorded = false;
+        }
+    } else {
+        LMS_WHITEBOARD_UI.dragStart = null;
+        LMS_WHITEBOARD_UI.historyGestureRecorded = false;
+    }
+    if (wasResize && resizingElementId && canvas && typeof finalizeLmsWhiteboardDocumentLayout === 'function') {
+        finalizeLmsWhiteboardDocumentLayout(canvas, resizingElementId);
+    }
+    if (typeof clearLmsWhiteboardDocumentPointerCursor === 'function') {
+        clearLmsWhiteboardDocumentPointerCursor();
+    }
+    if (canvas && typeof refreshLmsWhiteboardPointerCursor === 'function') {
+        refreshLmsWhiteboardPointerCursor(canvas, { point: null });
+    }
+    try { captureTarget?.releasePointerCapture?.(event?.pointerId); } catch (error) {}
+    LMS_WHITEBOARD_UI.shellDragCanvas = null;
+    LMS_WHITEBOARD_UI.shellDragResourceKey = '';
+    LMS_WHITEBOARD_UI.shellDragCaptureTarget = null;
+    if (resourceKey) setLmsWhiteboardGestureState(resourceKey, false);
 }
 
 function attachLmsWhiteboardShellDragWindowListeners(pointerId = 0, captureTarget = null) {
     detachLmsWhiteboardShellDragWindowListeners();
-    const onMove = (e) => updateLmsWhiteboardShellDrag(e);
-    const onEnd = (e) => {
-        endLmsWhiteboardShellDrag(e);
-        captureTarget?.releasePointerCapture?.(pointerId);
+    const onMove = (e) => {
+        // Lost button-up (capture glitch) — stop sticky follow immediately.
+        if (e.buttons === 0) {
+            abortLmsWhiteboardShellDrag(e);
+            return;
+        }
+        if (pointerId && e.pointerId != null && e.pointerId !== pointerId) return;
+        updateLmsWhiteboardShellDrag(e);
     };
-    LMS_WHITEBOARD_UI.shellDragWindowListeners = { onMove, onEnd };
+    const onEnd = (e) => {
+        if (pointerId && e.pointerId != null && e.pointerId !== pointerId) return;
+        abortLmsWhiteboardShellDrag(e);
+    };
+    LMS_WHITEBOARD_UI.shellDragWindowListeners = { onMove, onEnd, pointerId };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onEnd);
     window.addEventListener('pointercancel', onEnd);
+    document.addEventListener('pointermove', onMove, true);
+    document.addEventListener('pointerup', onEnd, true);
+    document.addEventListener('pointercancel', onEnd, true);
 }
 
 function beginLmsWhiteboardShellDrag(event, resourceKey = '', canvas = null, options = {}) {
@@ -1581,6 +1692,7 @@ function beginLmsWhiteboardShellDrag(event, resourceKey = '', canvas = null, opt
     if (mode === 'move' && typeof canMoveLmsWhiteboardElement === 'function' && !canMoveLmsWhiteboardElement(element, resourceKey)) return false;
     setLmsWhiteboardSelection([elementId], { skipPaint: true });
     const point = canvasToWorld(canvas, event.clientX, event.clientY);
+    const shell = document.querySelector(`[data-lms-whiteboard-document-view="${elementId}"]`);
     if (mode === 'resize' && handle) {
         recordLmsWhiteboardHistoryGesture(resourceKey);
         LMS_WHITEBOARD_UI.dragStart = {
@@ -1590,6 +1702,9 @@ function beginLmsWhiteboardShellDrag(event, resourceKey = '', canvas = null, opt
             y: point.y,
             element: JSON.parse(JSON.stringify(element))
         };
+        shell?.classList.add('is-resizing');
+        const ink = shell?.querySelector('[data-lms-whiteboard-document-ink]');
+        if (ink) ink.style.pointerEvents = 'none';
     } else if (mode === 'move') {
         recordLmsWhiteboardHistoryGesture(resourceKey);
         const selectedIds = getLmsWhiteboardSelectedIds();
@@ -1611,10 +1726,12 @@ function beginLmsWhiteboardShellDrag(event, resourceKey = '', canvas = null, opt
     }
     LMS_WHITEBOARD_UI.shellDragCanvas = canvas;
     LMS_WHITEBOARD_UI.shellDragResourceKey = resourceKey;
-    LMS_WHITEBOARD_UI.shellDragCaptureTarget = event.target || null;
-    if (event.target?.setPointerCapture) event.target.setPointerCapture(event.pointerId);
-    attachLmsWhiteboardShellDragWindowListeners(event.pointerId, event.target);
-    document.querySelector(`[data-lms-whiteboard-document-view="${elementId}"]`)?.classList.add('is-dragging');
+    const captureEl = shell || event.currentTarget || event.target || null;
+    LMS_WHITEBOARD_UI.shellDragCaptureTarget = captureEl;
+    if (captureEl?.setPointerCapture) captureEl.setPointerCapture(event.pointerId);
+    attachLmsWhiteboardShellDragWindowListeners(event.pointerId, captureEl);
+    setLmsWhiteboardGestureState(resourceKey, true);
+    if (mode === 'move') shell?.classList.add('is-dragging');
     paintLmsWhiteboardCanvas(resourceKey, canvas);
     return true;
 }
@@ -1625,30 +1742,31 @@ function updateLmsWhiteboardShellDrag(event) {
     if (!canvas || !resourceKey || !LMS_WHITEBOARD_UI.dragStart) return;
     const canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : true;
     onLmsWhiteboardPointerMove(event, resourceKey, canEdit, canvas);
+    const dragStart = LMS_WHITEBOARD_UI.dragStart;
+    if (dragStart?.mode !== 'move' || typeof repositionLmsWhiteboardDocumentViewers !== 'function') return;
+    const workspace = ensureLmsWhiteboardWorkspace(resourceKey);
+    const moveIds = dragStart.selectedIds?.length
+        ? dragStart.selectedIds
+        : [dragStart.element?.id].filter(Boolean);
+    const movedDocument = moveIds.some((id) => workspace.elements.find(item => item.id === id)?.type === 'document');
+    if (movedDocument) repositionLmsWhiteboardDocumentViewers(canvas, { layoutOnly: true, resourceKey });
 }
 
 function endLmsWhiteboardShellDrag(event) {
-    detachLmsWhiteboardShellDragWindowListeners();
-    document.querySelectorAll('.lms-whiteboard-document-view.is-dragging').forEach((node) => {
-        node.classList.remove('is-dragging');
-    });
-    const canvas = LMS_WHITEBOARD_UI.shellDragCanvas;
-    const resourceKey = LMS_WHITEBOARD_UI.shellDragResourceKey || LMS_WHITEBOARD_UI.boundKey;
-    const captureTarget = LMS_WHITEBOARD_UI.shellDragCaptureTarget;
-    if (!canvas || !resourceKey) {
-        LMS_WHITEBOARD_UI.dragStart = null;
-        LMS_WHITEBOARD_UI.shellDragCanvas = null;
-        LMS_WHITEBOARD_UI.shellDragResourceKey = '';
-        LMS_WHITEBOARD_UI.shellDragCaptureTarget = null;
-        return;
-    }
-    const canEdit = typeof canEditLmsWhiteboard === 'function' ? canEditLmsWhiteboard(resourceKey) : true;
-    onLmsWhiteboardPointerUp(event, resourceKey, canEdit, canvas);
-    captureTarget?.releasePointerCapture?.(event?.pointerId);
-    LMS_WHITEBOARD_UI.shellDragCanvas = null;
-    LMS_WHITEBOARD_UI.shellDragResourceKey = '';
-    LMS_WHITEBOARD_UI.shellDragCaptureTarget = null;
+    abortLmsWhiteboardShellDrag(event);
 }
+
+function bindLmsWhiteboardShellDragEscapeOnce() {
+    if (window.__lmsWhiteboardShellDragEscapeBound) return;
+    window.__lmsWhiteboardShellDragEscapeBound = true;
+    window.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        if (!LMS_WHITEBOARD_UI.dragStart && !LMS_WHITEBOARD_UI.shellDragWindowListeners) return;
+        event.preventDefault();
+        abortLmsWhiteboardShellDrag({ pointerId: null, buttons: 0 });
+    });
+}
+bindLmsWhiteboardShellDragEscapeOnce();
 
 function beginLmsWhiteboardDocumentStroke(resourceKey = '', documentId = '', localPoint = {}) {
     recordLmsWhiteboardHistoryGesture(resourceKey);

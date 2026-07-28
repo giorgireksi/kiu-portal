@@ -617,7 +617,7 @@
                 ? `<div class="spt-desk-row-tools">${mapBtn}${editBtn}</div>`
                 : '';
             return `
-                <article class="spt-desk-card spt-desk-row ${rowMods}" data-task-id="${escape(text(task.id))}" data-status="${escape(statusId)}" data-priority="${escape(priority)}" data-depth="${depth}" data-signal="${escape(signalTone)}" data-lux-transparency-exempt="1" style="--spt-depth:${depth}" role="listitem">
+                <article class="spt-desk-card spt-desk-row lux-soft-chrome home-hover-chip ${rowMods}" data-task-id="${escape(text(task.id))}" data-status="${escape(statusId)}" data-priority="${escape(priority)}" data-depth="${depth}" data-signal="${escape(signalTone)}" style="--spt-depth:${depth}" role="listitem">
                     <div class="spt-desk-row-rail" data-status="${escape(statusId)}" data-signal="${escape(signalTone)}" aria-hidden="true"></div>
                     <div class="spt-desk-row-mainline spt-desk-row-mainline--fluid spt-desk-row-mainline--fill">
                         <div class="spt-desk-col spt-desk-col-task">

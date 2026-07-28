@@ -22,6 +22,8 @@ describe('social-project-task-desk-ui', () => {
         expect(deskBlock).toContain('.spt-desk-focus-chip');
         expect(deskBlock).toContain('.spt-desk-package');
         expect(deskBlock).toContain('.spt-desk-more-filters');
+        expect(deskBlock).toContain('.spt-desk--v2');
+        expect(deskBlock).toContain('.spt-desk-hygiene-bar');
         expect(deskBlock).not.toContain('--sn-');
         expect(deskBlock).not.toContain('--spt-accent');
     });
@@ -30,6 +32,9 @@ describe('social-project-task-desk-ui', () => {
         const panel = readSource('assets/js/pages/social-workspace-panel.js');
 
         expect(panel).toContain('social-project-task-shell--desk');
+        expect(panel).toContain('social-project-task-shell--desk lux-soft-chrome');
         expect(panel).toContain('spt-desk-toolbar');
+        expect(panel).toContain('spt-desk--v2');
+        expect(panel).toContain('spt-desk-hygiene-bar');
     });
 });

@@ -864,8 +864,11 @@
             userId: text(user.id),
             limit: '24'
         });
-        if (text(runtime.ui.feedScopeType)) query.set('scopeType', text(runtime.ui.feedScopeType));
-        if (text(runtime.ui.feedScopeId)) query.set('scopeId', text(runtime.ui.feedScopeId));
+        const activePanel = text(runtime.ui?.activePanel || 'feed') || 'feed';
+        if (activePanel === 'feed') {
+            if (text(runtime.ui.feedScopeType)) query.set('scopeType', text(runtime.ui.feedScopeType));
+            if (text(runtime.ui.feedScopeId)) query.set('scopeId', text(runtime.ui.feedScopeId));
+        }
         runtime.feedPromise = portalRequest(`/api/social/feed?${query.toString()}`)
             .then(async (payload) => {
                 runtime.feed = Array.isArray(payload?.items) ? payload.items : [];
@@ -1419,7 +1422,7 @@
             readFileAsDataUrl, fileUrl, isImageFile, nowLabel,
             makeId: typeof makeId === 'function' ? makeId : (typeof window.makeId === 'function' ? window.makeId : undefined),
             unique, chatTitle, markChatMessagesRead,
-            fetchAccountsByIds, refreshFeed, ensureActiveChat,
+            fetchAccountsByIds, refreshFeed, ensureActiveChat, routeToSocial,
             runtime
         })
         : {};

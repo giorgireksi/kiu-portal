@@ -1,6 +1,52 @@
 /* LMS materials runtime extracted from lms.js. */
 
+function buildLmsMaterialDraftFileShellHtml(draft = null) {
+    if (!draft) {
+        return `
+            <div class="lms-route-file-shell lms-material-draft-file is-empty" data-lms-material-draft-file>
+                <div class="lms-route-kv-label">Selected file</div>
+                <div class="lms-route-file-shell-title">No file attached yet</div>
+                <div class="lms-route-file-shell-meta">Use Upload File to choose a PDF, slide deck, or reference document.</div>
+            </div>
+        `;
+    }
+    return `
+        <div class="lms-route-file-shell lms-material-draft-file" data-lms-material-draft-file>
+            <div class="lms-route-kv-label">Selected file</div>
+            <div class="lms-route-file-shell-title">${escapeHtml(draft.name || 'Attachment')}</div>
+            <div class="lms-route-file-shell-meta">${escapeHtml(draft.type || 'application/octet-stream')}</div>
+        </div>
+    `;
+}
+
+function syncLmsMaterialDraftUi(resourceKey, labelId = '') {
+    resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+    const draft = typeof getLmsDraftFile === 'function' ? getLmsDraftFile('material', resourceKey) : null;
+    const resolvedLabelId = labelId || `lms-material-file-label-${toDomToken(resourceKey)}`;
+    const label = document.getElementById(resolvedLabelId);
+    if (label) {
+        label.classList.toggle('is-positive', Boolean(draft));
+        label.innerHTML = draft
+            ? `<i class="fas fa-paperclip"></i> ${escapeHtml(draft.name)}`
+            : 'No file selected yet';
+    }
+    const shell = document.querySelector('[data-lms-material-draft-file]');
+    if (shell) {
+        shell.outerHTML = buildLmsMaterialDraftFileShellHtml(draft);
+    }
+    const titleInput = document.getElementById('new-material-title');
+    if (draft && titleInput && !titleInput.value.trim()) {
+        const baseName = String(draft.name || '').replace(/\.[^.]+$/, '').trim();
+        if (baseName) titleInput.value = baseName;
+    }
+}
+
 function buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId) {
+    const draft = typeof getLmsDraftFile === 'function' ? getLmsDraftFile('material', resourceKey) : null;
+    const pillClass = draft ? 'lms-route-pill is-positive' : 'lms-route-pill';
+    const pillHtml = draft
+        ? `<i class="fas fa-paperclip"></i> ${escapeHtml(draft.name)}`
+        : 'No file selected yet';
     return `
         <div class="lms-route-panel lms-route-panel-compact">
             <div class="lms-route-card-head lms-route-card-head-mb-16">
@@ -8,9 +54,10 @@ function buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId) {
                     <div class="lms-route-card-title">Upload Material</div>
                     <div class="lms-route-copy lms-route-copy-mt-6">Add lecture notes, slides, PDFs, or reference files for this teaching group.</div>
                 </div>
-                <div id="${fileLabelId}" class="lms-route-pill">No file selected yet</div>
+                <div id="${fileLabelId}" class="${pillClass}">${pillHtml}</div>
             </div>
-            <div class="lms-route-field-grid">
+            ${buildLmsMaterialDraftFileShellHtml(draft)}
+            <div class="lms-route-field-grid lms-route-field-grid-mt-12">
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-material-title">Material Title</label>
                     <input id="new-material-title" class="lms-route-input lux-control" type="text" placeholder="Material title">
@@ -244,4 +291,10 @@ function moveLmsMaterial(resourceKey, materialId, direction = 0) {
 
 if (typeof window !== 'undefined') {
     window.renderLmsMaterialsLibrary = window.renderLmsMaterialsLibrary || renderLmsMaterialsLibrary;
+    window.createLmsMaterial = window.createLmsMaterial || createLmsMaterial;
+    window.deleteLmsMaterial = window.deleteLmsMaterial || deleteLmsMaterial;
+    window.toggleLmsMaterialPinned = window.toggleLmsMaterialPinned || toggleLmsMaterialPinned;
+    window.toggleLmsMaterialArchived = window.toggleLmsMaterialArchived || toggleLmsMaterialArchived;
+    window.moveLmsMaterial = window.moveLmsMaterial || moveLmsMaterial;
+    window.syncLmsMaterialDraftUi = window.syncLmsMaterialDraftUi || syncLmsMaterialDraftUi;
 }

@@ -61,7 +61,7 @@
                     </div>
                     <div class="social-neo-workspace-hero-stats">
                         ${stats.map((stat) => `
-                            <article class="social-neo-workspace-hero-stat lux-strip-card surface-card">
+                            <article class="social-neo-workspace-hero-stat lux-strip-card surface-card home-hover-chip">
                                 <strong>${escape(String(stat.value))}</strong>
                                 <span>${escape(stat.label)}</span>
                             </article>

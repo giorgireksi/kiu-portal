@@ -145,11 +145,11 @@
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260714-community-click1';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
     const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260726-socfix35';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260726-socfix35';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260729-photogrid2';
     const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260726-socfix35';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
-    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260727-socshell13';
+    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260728-socworkspace2';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
     const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260728-socshell22';
     const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260728-socinvite1';
@@ -171,15 +171,15 @@
     const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260728-socport1';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
-    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260726-socfix44';
+    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260728-socworkspace2';
     const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260726-socstack48';
     const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260726-socstack47';
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260726-socstack50';
-    const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260726-socstack48';
+    const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260728-socworkspace1';
     const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260728-socport4';
     const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260728-socport4';
     const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260728-socport4';
-    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260728-socinvite1';
+    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260728-socworkspace1';
     const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260726-socstack47';
     const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260726-socstack50';
     const DIRECTORY_REFRESH_MS = 180;
@@ -350,6 +350,7 @@
                         <div id="social-neo-flash-region"></div>
                         <div id="social-neo-topbar-region"></div>
                         <div id="social-neo-command-region"></div>
+                        <div id="social-neo-workspace-nav-reveal-region"></div>
                         <div class="social-neo-shell">
                             <div id="social-neo-workspace-nav-region"></div>
                             <div class="social-neo-center" id="social-neo-center-region"></div>
@@ -1360,7 +1361,9 @@
      * @param {string} filterId - One of 'all'|'following'|'groups'|'pages'|'campus'.
      * @returns {Array<Object>} Filtered subset of posts.
      */
-    const photographyPosts = window.photographyPosts || (window.KiuSocialPanelModel || {}).photographyPosts;
+    const photographyPosts = (typeof window.getPortalPhotographyPosts === 'function'
+        ? window.getPortalPhotographyPosts
+        : (window.photographyPosts || (window.KiuSocialPanelModel || {}).photographyPosts));
     const filterFeedForHome = window.filterFeedForHome || (window.KiuSocialPanelModel || {}).filterFeedForHome;
     const classifyNotification = window.classifyNotification || (window.KiuSocialAlertsModel || {}).classifyNotification;
     const ALERTS_CATEGORIES = window.ALERTS_CATEGORIES || (window.KiuSocialAlertsModel || {}).ALERTS_CATEGORIES;
@@ -1425,7 +1428,7 @@
     const {
         readWorkspaceNavCollapsed, writeWorkspaceNavCollapsed, isWorkspaceNavCollapsed,
         ensureWorkspaceNavCollapsedState, setWorkspaceNavCollapsed, syncWorkspaceNavCollapsedClass,
-        renderShellWorkspaceNav,
+        renderShellWorkspaceNavReveal, renderShellWorkspaceNav,
         updateSocialMeasuredChrome, syncSocialVisualViewport, bindSocialScrollChromeObserver,
         bindSocialLayoutObserver, centerScrollOverflows,
         isSocialMessagesPanel, isSocialAlertsPanel, isSocialInboxPanel,
@@ -1516,7 +1519,7 @@
             renderProjectsWorkspacePanelClassic, renderProjectsPanel, renderPagesPanel,
             renderEventsPanel, renderSurveysPanel, renderPhotographyPanel, renderLostFoundPanel,
             renderMessagesPanel, renderAlertsPanel, renderProfilePageBody,
-            renderShellWorkspaceNav, renderShellDrawer, renderMobileTabBar,
+            renderShellWorkspaceNavReveal, renderShellWorkspaceNav, renderShellDrawer, renderMobileTabBar,
             revealShell, syncSocialVisualShell,
             syncSocialScrollLayout, migrateSocialScrollOnLockChange,
             scheduleSocialCenterScrollRepair, syncEventDescScrollRails,
@@ -1800,6 +1803,18 @@
         sendPortalSocialConnectionRequest, respondPortalSocialConnectionRequest, removePortalSocialConnection, queueDirectoryRefresh
     });
 
+    window.__kiuSocialPanelHooks = Object.assign(window.__kiuSocialPanelHooks || {}, {
+        state,
+        text,
+        isImage,
+        getPortalPhotographyPosts: typeof window.getPortalPhotographyPosts === 'function'
+            ? window.getPortalPhotographyPosts
+            : photographyPosts,
+        relationshipBuckets,
+        currentUser,
+        currentUserId
+    });
+
     window.__kiuSocialLostFoundHooks = window.__kiuSocialLostFoundHooks || {};
     Object.assign(window.__kiuSocialLostFoundHooks, {
         state, currentUser, text, escape, currentFacultyCode,
@@ -1915,10 +1930,14 @@
         currentFacultyCode, photographyPosts, relationshipBuckets, fileUrl, isImage,
         renderCommentNode, renderCommentThread, renderPostReactionMetrics, reactionEmoji, reactionLabel,
         postKey, isPostSaved, controlId, setPanel, openDialog,
-        closeDialog, renderSocialPageNow, withBusy, activeDialog, openPhotographyUploadFilePicker,
+        closeDialog, renderSocialPageNow, withBusy, activeDialog, root, openPhotographyUploadFilePicker,
         patchPhotographyFollowButtons, photographyUploadForm, reactToPortalSocialPost, refreshPhotographyPanelStage, renderPhotographyUploadDialogNow,
-        revokePhotographyUploadPreview, togglePortalSocialFollow, submitSocialPost, applyPhotographyUploadFile
+        revokePhotographyUploadPreview, togglePortalSocialFollow, patchSocialFlash, invalidateSocialRenderCache,
+        deletePortalSocialPost: typeof window.deletePortalSocialPost === 'function' ? window.deletePortalSocialPost : null,
+        submitSocialPost: typeof window.submitSocialPost === 'function' ? window.submitSocialPost : submitSocialPost,
+        applyPhotographyUploadFile
     });
+    window.applyPhotographyUploadFile = applyPhotographyUploadFile;
 
     window.__kiuSocialAlertsHooks = window.__kiuSocialAlertsHooks || {};
     Object.assign(window.__kiuSocialAlertsHooks, {

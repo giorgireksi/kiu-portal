@@ -65,6 +65,10 @@
                 && typeof window.renderPhotographyCommentsDialog === 'function') {
                 return window.renderPhotographyCommentsDialog(dialog);
             }
+            if (kind === 'photography-delete' && deps.hasSocialPhotographyModule()
+                && typeof window.renderPhotographyDeleteDialog === 'function') {
+                return window.renderPhotographyDeleteDialog(dialog);
+            }
 
             if (kindOwned('GROUP_OWNED_DIALOG_KINDS', GROUP_FALLBACK, kind)) {
                 if (deps.hasSocialGroupsModule() && typeof window.renderGroupOwnedDialog === 'function') {

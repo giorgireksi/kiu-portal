@@ -12,6 +12,7 @@
             } catch (error) {
                 const message = error?.message || 'Action failed.';
                 if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(message, 'danger');
+                if (typeof window.patchSocialFlash === 'function') window.patchSocialFlash();
                 if (!error?.userFacing) console.error('[Social] Action failed:', error);
             }
         }
@@ -42,7 +43,7 @@
         const __shellNav = (typeof window.createKiuSocialShellNavApi === 'function'
             ? window.createKiuSocialShellNavApi({
                 text, state, setPanel, invalidateSocialRenderCache, renderSocialPageNow, withBusy,
-                pruneExpiredLostFoundItems, refreshPhotographyPanelStage, currentUserId, activeDialog,
+                pruneExpiredLostFoundItems, refreshPhotographyPanelStage, refreshPortalSocialFeed, currentUserId, activeDialog,
                 shouldRestoreStackedDialog, restorePreviousDialog, closeDialog, closeSocialWorkspaceNavAnimated,
                 setWorkspaceNavCollapsed, root, findSocialGroupById, openDialog,
                 navigateToEntity: typeof window.navigateToEntity === 'function' ? window.navigateToEntity : () => {},
@@ -72,7 +73,12 @@
                 flashSocialError: (message) => {
                     if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(message, 'danger');
                 },
-                applyPhotographyUploadFile: typeof window.applyPhotographyUploadFile === 'function' ? window.applyPhotographyUploadFile : () => {},
+                applyPhotographyUploadFile: (...args) => {
+                    const fn = typeof window.applyPhotographyUploadFile === 'function'
+                        ? window.applyPhotographyUploadFile
+                        : null;
+                    if (fn) return fn(...args);
+                },
                 hasSocialFeedModule, ensureSocialFeedModule, hasSocialWorkspaceModule, ensureSocialWorkspaceModule,
                 hasSocialGroupsModule, ensureSocialGroupsModule, hasSocialPagesModule, ensureSocialPagesModule,
                 hasSocialEventsModule, ensureSocialEventsModule, hasSocialSurveysModule, ensureSocialSurveysModule,

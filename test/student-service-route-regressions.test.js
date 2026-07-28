@@ -50,6 +50,8 @@ describe('student-service route regressions', () => {
         expect(primitives).toContain('.student-service-kicker');
         expect(primitives).toContain('.student-service-command-bar-stat');
         expect(primitives).toContain('.student-service-qa-card-title');
+        expect(primitives).toContain('.student-service-qa-card-author-name');
+        expect(primitives).toContain('.student-service-qa-card-stat');
     });
 
     it('bare-lite student-service block is layout-only', () => {
@@ -70,6 +72,10 @@ describe('student-service route regressions', () => {
         expect(block).not.toMatch(/student-service-zone\s*\{[^}]*background:/);
         expect(block).not.toMatch(/student-service-zone\s*\{[^}]*box-shadow:/);
         expect(block).not.toMatch(/student-service-qa-card\s*\{[^}]*background:/);
+        expect(block).toContain('body.lux-route-student-service .student-service-qa-avatar');
+        expect(block).toContain('body.lux-route-student-service .student-service-qa-chip-row');
+        expect(block).toContain('#student-service-modal-root .student-service-qa-detail--modal');
+        expect(block).toContain('#student-service-modal-root .student-service-qa-thread-reply');
         expect(block).not.toMatch(/student-service-qa-composer-modal\s*\{[^}]*background:/);
     });
 
@@ -99,6 +105,14 @@ describe('student-service route regressions', () => {
         const modalBlock = fouc.split('/* Student Service modal portal:')[1]?.split('/* Social soft-chrome shells')[0] || '';
         expect(modalBlock).toContain('#student-service-modal-root');
         expect(modalBlock).toContain('.student-service-qa-composer-modal');
+        expect(modalBlock).toContain('.student-service-qa-thread-modal');
+        expect(modalBlock).toContain('.student-service-qa-answer-card');
+        expect(modalBlock).toContain('.student-service-qa-thread-reply');
+    });
+
+    it('qa thread modal uses shared typography on title', () => {
+        const qa = readSource('assets/js/pages/student-service-qa.js');
+        expect(qa).toContain('id="student-service-question-thread-modal-title" class="lux-page-title"');
     });
 
     it('qa composer modal uses shared typography on title', () => {

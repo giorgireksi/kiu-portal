@@ -242,10 +242,10 @@
                     ${dragAttrs}
                     role="group" tabindex="0"
                     aria-label="Package ${escape(text(group?.name || 'Group'))} · ${escape(countLabel)}${ownerId ? ` · ${escape(displayName(assigneeAccount))}` : ''}${ariaSignals ? ` · ${escape(ariaSignals)}` : ''}${isPackageCritical ? ' · critical path' : ''}">
-                    <rect class="social-project-task-graph-hit" x="0" y="0" width="${w}" height="${h}" fill="transparent" pointer-events="all"></rect>
+                    <rect class="social-project-task-graph-hit" x="0" y="0" width="${w}" height="${h}"></rect>
                     <foreignObject class="social-project-task-graph-card-fo" x="${-foPad}" y="${-foPad}" width="${w + foPad * 2}" height="${h + foPad * 2}">
                         <div xmlns="http://www.w3.org/1999/xhtml" class="social-project-task-graph-card-fo-inner" style="width:${w + foPad * 2}px;height:${h + foPad * 2}px;padding:${foPad}px;box-sizing:border-box;">
-                            <div class="social-project-task-graph-group" data-graph-card-inner="1" style="width:${w}px;height:${h}px;" data-lux-transparency-exempt="1" data-pct="${pct}" ${attentionAttrs}>
+                            <div class="social-project-task-graph-group lux-soft-chrome home-hover-chip" data-graph-card-inner="1" style="width:${w}px;height:${h}px;" data-lux-transparency-exempt="1" data-pct="${pct}" ${attentionAttrs}>
                                 ${linkHandles}
                                 <div class="social-project-task-graph-group-head">
                                     <i class="fas fa-layer-group" aria-hidden="true"></i>
@@ -415,10 +415,10 @@
                     ${detailAction}${selectAction}${dragAttrs}
                     role="button" tabindex="0"
                     aria-label="Open task ${escape(text(task?.title || 'Task'))}">
-                    <rect class="social-project-task-graph-hit" x="0" y="0" width="${w}" height="${h}" fill="transparent" pointer-events="all"></rect>
+                    <rect class="social-project-task-graph-hit" x="0" y="0" width="${w}" height="${h}"></rect>
                     <foreignObject class="social-project-task-graph-card-fo" x="${-foPad}" y="${-foPad}" width="${w + foPad * 2}" height="${h + foPad * 2}">
                         <div xmlns="http://www.w3.org/1999/xhtml" class="social-project-task-graph-card-fo-inner" style="width:${w + foPad * 2}px;height:${h + foPad * 2}px;padding:${foPad}px;box-sizing:border-box;">
-                            <div class="social-project-task-graph-card${isOverdue ? ' is-overdue' : ''}${isInProgress ? ' is-active' : ''}${compact ? ' is-compact' : ''}${isMilestone ? ' is-milestone' : ''} graph-card-headline" data-graph-card-inner="1" style="width:${w}px;min-height:${h}px;height:${h}px;box-sizing:border-box;" data-status="${escape(statusId)}" data-lux-transparency-exempt="1" title="${escape(text(task?.title || 'Task'))}"${cardActionAttrs}>
+                            <div class="social-project-task-graph-card lux-soft-chrome home-hover-chip${isOverdue ? ' is-overdue' : ''}${isInProgress ? ' is-active' : ''}${compact ? ' is-compact' : ''}${isMilestone ? ' is-milestone' : ''} graph-card-headline" data-graph-card-inner="1" style="width:${w}px;min-height:${h}px;height:${h}px;box-sizing:border-box;" data-status="${escape(statusId)}" data-lux-transparency-exempt="1" title="${escape(text(task?.title || 'Task'))}"${cardActionAttrs}>
                                 ${linkHandles}
                                 <div class="social-project-task-graph-card-stripe${isMilestone ? ' is-milestone' : ''}" data-status="${escape(statusId)}"></div>
                                 <div class="social-project-task-graph-card-body">
@@ -1002,7 +1002,7 @@
                 <div class="social-project-task-graph-health">
                     <div class="social-project-task-graph-health-grid">
                         ${PROJECT_TASK_COLUMNS.map((column) => `
-                            <div class="social-project-task-graph-health-metric is-${escape(column.tone)}" data-status="${escape(column.id)}">
+                            <div class="social-project-task-graph-health-metric lux-soft-chrome is-${escape(column.tone)}" data-status="${escape(column.id)}">
                                 <strong>${escape(String(counts[column.id] || 0))}</strong>
                                 <span>${escape(column.label)}</span>
                             </div>
@@ -1044,7 +1044,7 @@
             if (!taskCount) {
                 if (!scope.mineOnly) return '';
                 return `
-                <section class="lux-glass-dialog-group-section social-project-task-graph-rail-overview-section">
+                <section class="lux-glass-dialog-group-section social-project-task-graph-rail-overview-section lux-soft-chrome home-hover-chip">
                     <div class="lux-glass-dialog-group-section-head">
                         <strong>Schedule</strong>
                         <span>Your tasks only</span>
@@ -1062,23 +1062,23 @@
                     ? 'tasks on the critical path of your filtered map'
                     : 'any delay here delays the whole project');
             return `
-                <section class="lux-glass-dialog-group-section social-project-task-graph-rail-overview-section">
+                <section class="lux-glass-dialog-group-section social-project-task-graph-rail-overview-section lux-soft-chrome home-hover-chip">
                     <div class="lux-glass-dialog-group-section-head">
                         <strong>Schedule</strong>
                         <span>${escape(scopeLabel)}</span>
                     </div>
                     <div class="social-project-task-graph-schedule-overview" data-lux-transparency-exempt="1">
-                        <div class="social-project-task-graph-schedule-stat">
+                        <div class="social-project-task-graph-schedule-stat lux-soft-chrome home-hover-chip">
                             <span class="social-project-task-graph-schedule-stat-label">Shortest finish</span>
                             <span class="social-project-task-graph-schedule-stat-value">${escape(formatProjectScheduleHours(totalDuration))}</span>
                             <span class="social-project-task-graph-schedule-stat-hint">${escape(finishHint)}</span>
                         </div>
-                        ${plannedFinishDate ? `<div class="social-project-task-graph-schedule-stat">
+                        ${plannedFinishDate ? `<div class="social-project-task-graph-schedule-stat lux-soft-chrome home-hover-chip">
                             <span class="social-project-task-graph-schedule-stat-label">Planned finish</span>
                             <span class="social-project-task-graph-schedule-stat-value">${escape(plannedFinishDate)}</span>
                             <span class="social-project-task-graph-schedule-stat-hint">from project start date + shortest finish (no weekends)</span>
                         </div>` : ''}
-                        <div class="social-project-task-graph-schedule-stat">
+                        <div class="social-project-task-graph-schedule-stat lux-soft-chrome home-hover-chip">
                             <span class="social-project-task-graph-schedule-stat-label">Critical path</span>
                             <span class="social-project-task-graph-schedule-stat-value is-critical">${escape(String(criticalCount))} task${criticalCount === 1 ? '' : 's'}</span>
                             <span class="social-project-task-graph-schedule-stat-hint">${criticalHint}</span>
@@ -1142,7 +1142,7 @@
             return `
                 <div class="social-project-task-graph-detail-rail-empty" data-lux-transparency-exempt="1">
                     ${renderProjectTaskGraphRailOverview(project, runtime, tasks)}
-                    <section class="lux-glass-dialog-group-section social-project-task-graph-inspector-section-card">
+                    <section class="lux-glass-dialog-group-section social-project-task-graph-inspector-section-card lux-soft-chrome home-hover-chip">
                         <div class="lux-glass-dialog-group-section-head">
                             <strong>Select a task</strong>
                             <span>Click any card on the map to review status, people, links, and quick actions.</span>
@@ -1547,7 +1547,7 @@
                     ? 'No open tasks assigned to you. Turn off Only mine to see the full map.'
                     : 'No tasks yet. Add a task to populate the map.'}</div>`;
             const railContent = renderProjectTaskGraphDetailRailContent(project, runtime, projectTasks);
-            const detailRailMarkup = `<aside class="social-project-task-graph-detail-rail${railContent.empty ? ' is-empty' : ''}" data-lux-transparency-exempt="1">${railContent.markup}</aside>`;
+            const detailRailMarkup = `<aside class="social-project-task-graph-detail-rail lux-soft-chrome${railContent.empty ? ' is-empty' : ''}" data-lux-transparency-exempt="1">${railContent.markup}</aside>`;
             const modeToolbar = canContribute && linkFromId ? `
                 <div class="social-project-tab-row social-project-task-graph-mode-toolbar" data-lux-transparency-exempt="1" role="group" aria-label="Link actions">
                     <button class="lux-secondary-btn" type="button" data-action="project-task-graph-link-cancel"><i class="fas fa-times"></i> Cancel</button>
@@ -1590,7 +1590,7 @@
                 <div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--project-task-graph" data-action="noop" role="presentation">
                     <div class="lux-glass-dialog-card lux-glass-dialog-card--project-task-graph-fullscreen" data-action="noop" data-lux-transparency-exempt="1" role="dialog" aria-modal="true" aria-label="Task map">
                         <div class="social-project-task-graph-immersive">
-                            <header class="social-project-task-graph-immersive-topbar">
+                            <header class="social-project-task-graph-immersive-topbar lux-soft-chrome">
                                 <div class="social-project-task-graph-immersive-title">
                                     <strong><i class="fas fa-diagram-project" aria-hidden="true"></i> Task map</strong>
                                     <span>${escape(text(project.name || 'Project'))}</span>
@@ -1621,7 +1621,7 @@
                                 </div>
                                 ${detailRailMarkup}
                             </div>
-                            <footer class="social-project-task-graph-immersive-footer">
+                            <footer class="social-project-task-graph-immersive-footer lux-soft-chrome">
                                 <div class="social-project-task-graph-footer-main" data-lux-transparency-exempt="1" aria-label="Task status and progress">
                                     ${renderProjectTaskGraphHealth(allTasks, runtime)}
                                     ${renderProjectTaskGraphStatusMini(project, allTasks)}

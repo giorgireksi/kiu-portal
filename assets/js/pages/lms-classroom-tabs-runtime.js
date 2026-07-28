@@ -9,7 +9,7 @@ const LMS_GRADEBOOK_MODULE_URLS = Object.freeze([
     'assets/js/pages/gradebook-history-ui-runtime.js?v=20260720-gbsize1',
     'assets/js/pages/gradebook-quiz-map-runtime.js?v=20260720-h2b',
     'assets/js/pages/gradebook-model.js?v=20260720-gbsize1',
-    'assets/js/pages/gradebook-weights-runtime.js?v=20260720-gbsize1',
+    'assets/js/pages/gradebook-weights-runtime.js?v=20260729-lmsgbui1',
     'assets/js/pages/gradebook-components-runtime.js?v=20260720-h2b',
     'assets/js/pages/gradebook-workspace.js?v=20260720-gbsize1',
     'assets/js/pages/gradebook-staff.js?v=20260720-gbsize1'
@@ -30,15 +30,15 @@ const LMS_WHITEBOARD_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-whiteboard-collab-runtime.js?v=20260708-wb-shapes-v4',
     'assets/js/pages/lms-whiteboard-history-runtime.js?v=20260708-wb-shapes-v4',
     'assets/js/pages/lms-whiteboard-minimap-runtime.js?v=20260708-wb-shapes-v4',
-    'assets/js/pages/lms-whiteboard-document-runtime.js?v=20260708-wb-shapes-v4',
+    'assets/js/pages/lms-whiteboard-document-runtime.js?v=20260729-wbdocmode5',
     'assets/js/pages/lms-whiteboard-model.js?v=20260720-w25wb1',
     'assets/js/pages/lms-whiteboard-model-bridge.js?v=20260720-w25wb1',
-    'assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260728-wbpan1',
-    'assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260719-wbchrome1',
+    'assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260729-wbdocmode5',
+    'assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260729-wbdocresize4',
     'assets/js/pages/lms-whiteboard-chrome-runtime.js?v=20260728-wbchrome2',
     'assets/js/pages/lms-whiteboard-session-runtime.js?v=20260720-wbsession1',
     'assets/js/pages/lms-whiteboard-selection-runtime.js?v=20260728-wbpan1',
-    'assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1'
+    'assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5',
 ]);
 const LMS_QUIZ_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1',
@@ -46,10 +46,10 @@ const LMS_QUIZ_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-quiz-model-bridge.js?v=20260720-w25quiz1',
     'assets/js/pages/lms-quiz-blue-runtime.js?v=20260719-lmsblue1',
     'assets/js/pages/lms-quiz-focus-runtime.js?v=20260719-quizfocus1',
-    'assets/js/pages/lms-quiz-workspace-session-runtime.js?v=20260720-quizsess1',
+    'assets/js/pages/lms-quiz-workspace-session-runtime.js?v=20260729-lmsmatcache1',
     'assets/js/pages/lms-quiz-workspace-review-runtime.js?v=20260720-w18',
     'assets/js/pages/lms-quiz-workspace-runtime.js?v=20260728-lmquiz4',
-    'assets/js/pages/lms-protected-quiz-runtime.js?v=20260714-lmspro2'
+    'assets/js/pages/lms-protected-quiz-runtime.js?v=20260729-lmsassignfix1'
 ]);
 const LMS_CALLS_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1'
@@ -61,11 +61,11 @@ const LMS_INTERACTION_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-interaction-messages-runtime.js?v=20260714-lmspro2'
 ]);
 const LMS_CONTENT_MODULE_URLS = Object.freeze([
-    'assets/js/pages/lms-file-storage-runtime.js?v=20260518-lmsfiles1',
+    'assets/js/pages/lms-file-storage-runtime.js?v=20260729-lmsmatupload1',
     'assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2',
     'assets/js/pages/lms-content-library-runtime.js?v=20260714-lmspro2',
-    'assets/js/pages/lms-materials-runtime.js?v=20260714-lmspro2',
-    'assets/js/pages/lms-assignments-runtime.js?v=20260714-lmspro2'
+    'assets/js/pages/lms-materials-runtime.js?v=20260729-lmsmatupload1',
+    'assets/js/pages/lms-assignments-runtime.js?v=20260729-lmsassignfix1'
 ]);
 const LMS_PERSONAL_DASHBOARD_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-personal-dashboard-runtime.js?v=20260715-lms-lazy2'
@@ -213,7 +213,9 @@ function isLmsContentRuntimeReady() {
     return typeof window.ensureLmsWeeksForKey === 'function'
         && typeof window.renderLmsMaterialsLibrary === 'function'
         && typeof window.renderLmsConceptsLibrary === 'function'
-        && typeof window.renderWorkspace === 'function';
+        && typeof window.renderWorkspace === 'function'
+        && typeof window.pickLocalLmsFile === 'function'
+        && typeof window.createLmsMaterial === 'function';
 }
 
 function isLmsPersonalDashboardRuntimeReady() {

@@ -110,6 +110,7 @@
         const renderMessagesPanel = dep('renderMessagesPanel');
         const renderAlertsPanel = dep('renderAlertsPanel');
         const renderProfilePageBody = dep('renderProfilePageBody');
+        const renderShellWorkspaceNavReveal = dep('renderShellWorkspaceNavReveal');
         const renderShellWorkspaceNav = dep('renderShellWorkspaceNav');
         const renderShellDrawer = dep('renderShellDrawer');
         const renderMobileTabBar = dep('renderMobileTabBar');
@@ -893,6 +894,8 @@ function renderSocialPageNow(reason = 'manual') {
         if (!forceRender && reason !== 'boot' && !/-module$/.test(reason) && host.__kiuLastRenderSignature === renderSignature) {
             syncSocialOverlayLock();
             if (typeof window.renderSocialCallOverlay === 'function') window.renderSocialCallOverlay();
+            // Flash can be queued while signature is unchanged (e.g. withBusy errors during an open dialog).
+            if (runtime.flash?.message) patchSocialFlash();
             return;
         }
         const renderPlan = resolveSocialRenderPlan(reason, activePanel, runtime);
@@ -932,6 +935,7 @@ function renderSocialPageNow(reason = 'manual') {
             setSocialRegionMarkup(shell.command, '');
         }
         if (!forceCenterOnly) {
+            setSocialRegionMarkup(shell.workspaceNavReveal, renderShellWorkspaceNavReveal());
             setSocialRegionMarkup(shell.workspaceNav, renderShellWorkspaceNav(activePanel));
         }
         if (renderPlan.center) {
@@ -948,6 +952,9 @@ function renderSocialPageNow(reason = 'manual') {
             if (activePanel === 'events') syncEventDescScrollRails(host);
             if (typeof window.enhanceUniversalPickers === 'function') {
                 try { window.enhanceUniversalPickers(shell.center); } catch (e) {}
+            }
+            if (activePanel === 'photography' && typeof window.bindPhotographyGridImages === 'function') {
+                try { window.bindPhotographyGridImages(shell.center); } catch (e) {}
             }
         }
         if (renderPlan.drawer) setSocialRegionMarkup(shell.drawer, renderShellDrawer(activePanel));

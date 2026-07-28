@@ -34,6 +34,8 @@ describe('LMS whiteboard file preview fix', () => {
         expect(docRuntime).toContain('lms-whiteboard-document-pdf-canvas');
         expect(docRuntime).toContain('lms-whiteboard-document-image');
         expect(docRuntime).toContain('storageBackend: uploaded.storageBackend');
+        expect(docRuntime).toContain('lmsWhiteboardPdfDocCache');
+        expect(docRuntime).toContain('lmsWhiteboardPdfPaintKey');
     });
 
     it('exports indexeddb helpers and treats external as bridge upload', () => {
@@ -59,7 +61,7 @@ describe('LMS whiteboard file preview fix', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-document-runtime.js?v=20260708-wb-shapes-v4');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-document-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
     });
 });

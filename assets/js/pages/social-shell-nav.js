@@ -17,6 +17,7 @@
         const withBusy = deps.withBusy || ((fn) => fn());
         const pruneExpiredLostFoundItems = deps.pruneExpiredLostFoundItems || (async () => {});
         const refreshPhotographyPanelStage = deps.refreshPhotographyPanelStage || (() => false);
+        const refreshPortalSocialFeed = deps.refreshPortalSocialFeed || (async () => []);
         const currentUserId = deps.currentUserId || (() => '');
         const activeDialog = deps.activeDialog || (() => null);
         const shouldRestoreStackedDialog = deps.shouldRestoreStackedDialog || (() => false);
@@ -275,6 +276,17 @@
                 }
                 state().ui.photographyProfileUserId = '';
                 setPanel('photography');
+                if (!wasOnPhotography) {
+                    return {
+                        handled: true,
+                        result: withBusy(async () => {
+                            await refreshPortalSocialFeed(true);
+                            invalidateSocialRenderCache({ center: true });
+                            if (refreshPhotographyPanelStage()) return;
+                            renderSocialPageNow(tab ? 'photography-tab' : 'panel-photography');
+                        })
+                    };
+                }
                 if (wasOnPhotography && tab && tab !== previousTab && refreshPhotographyPanelStage()) {
                     return { handled: true };
                 }

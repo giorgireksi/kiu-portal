@@ -43,20 +43,21 @@ describe('LMS whiteboard viewport import', () => {
         expect(docRuntime).toContain('LMS_WHITEBOARD_DOCUMENT_BADGE_HEIGHT');
         expect(docRuntime).toContain('fill: 0.55');
         expect(docRuntime).toContain('ensureLmsWhiteboardSheetJs');
-        expect(docRuntime).toContain('buildLmsWhiteboardSpreadsheetSrcdoc');
+        expect(docRuntime).toContain('buildLmsWhiteboardSpreadsheetPreviewHtml');
         expect(docRuntime).toContain('lms-whiteboard-document-image');
         expect(docRuntime).toContain('isLmsWhiteboardSpreadsheetMime');
     });
 
     it('accepts excel files in the file picker', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const sessionRuntime = readSource('assets/js/pages/lms-whiteboard-session-runtime.js');
 
-        expect(runtime).toContain('.xls,.xlsx,.csv');
-        expect(runtime).toContain('Drop PDF, Word, Excel, or images here');
+        expect(sessionRuntime).toContain('.xls,.xlsx,.csv');
+        expect(sessionRuntime).toContain('Drop PDF, Word, Excel, or images here');
     });
 
     it('overlays document badge and removes whiteboard panel padding', () => {
-        expect(css).toMatch(/\.lms-whiteboard-document-body[\s\S]*bottom:\s*24px;/);
+        const css = readSource('assets/css/lux-page-bare-lite.css');
+        expect(css).toMatch(/\.lms-whiteboard-document-body[\s\S]*bottom:\s*28px;/);
         expect(css).toMatch(/\.lms-whiteboard-panel\.lms-live-panel[\s\S]*padding:\s*0;/);
         expect(css).toContain('background: #fff');
     });
@@ -73,7 +74,7 @@ describe('LMS whiteboard viewport import', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-document-runtime.js?v=20260708-wb-shapes-v4');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-document-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
     });
 });

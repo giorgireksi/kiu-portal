@@ -42,7 +42,9 @@ describe('social workspace messaging regressions', () => {
             .not.toMatch(/function refreshNotifications\(\.\.\.a\) \{ return __lookup\('refreshNotifications'\)/);
         expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
             .toMatch(/function fetchAccountsByIds\(\.\.\.a\) \{ return __lookup\('fetchAccountsByIds'\)/);
-        expect(runtime).toMatch(/fetchAccountsByIds, refreshFeed, ensureActiveChat/);
+        expect(runtime).toMatch(/fetchAccountsByIds, refreshFeed, ensureActiveChat, routeToSocial/);
+        expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
+            .toMatch(/function routeToSocial\(\.\.\.a\) \{ return __lookup\('routeToSocial'\)/);
         expect(runtime).toMatch(/ensureCallMedia, attachLocalCallPreview/);
         expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
             .toMatch(/function ensureCallMedia\(\.\.\.a\) \{ return __lookup\('ensureCallMedia'\)/);

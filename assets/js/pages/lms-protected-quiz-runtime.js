@@ -86,6 +86,10 @@ async function refreshProtectedQuizMonitorLiveData(force = false) {
     try {
         const context = resolveLmsQuizWorkspace(courseKey);
         if (!context?.resourceKey) return null;
+        const canFetchPortalMonitor = typeof canFetchProtectedQuizMonitorFromPortal === 'function'
+            ? canFetchProtectedQuizMonitorFromPortal(context.resourceKey)
+            : true;
+        if (!canFetchPortalMonitor) return null;
         const monitor = await fetchProtectedQuizMonitor(context.resourceKey);
         if (!monitor) return null;
         protectedQuizMonitorRuntime = { pending: false, groupKey: context.resourceKey, data: monitor };
@@ -804,7 +808,13 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
     contentArea.innerHTML = `<div class="lms-route-panel"><div class="lms-route-copy">Loading protected quiz monitoring - </div></div>`;
     let monitor = null;
     try {
-        monitor = options.monitorOverride || await fetchProtectedQuizMonitor(context.resourceKey);
+        const canFetchPortalMonitor = typeof canFetchProtectedQuizMonitorFromPortal === 'function'
+            ? canFetchProtectedQuizMonitorFromPortal(context.resourceKey)
+            : true;
+        monitor = options.monitorOverride
+            || (canFetchPortalMonitor && typeof fetchProtectedQuizMonitor === 'function'
+                ? await fetchProtectedQuizMonitor(context.resourceKey)
+                : null);
         protectedQuizMonitorRuntime = { pending: false, groupKey: context.resourceKey, data: monitor };
     } catch (error) {
         protectedQuizMonitorRuntime = { pending: false, groupKey: context.resourceKey, data: null };

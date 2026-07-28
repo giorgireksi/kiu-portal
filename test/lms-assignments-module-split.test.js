@@ -13,7 +13,9 @@ describe('LMS assignments module split', () => {
         const assignmentsSource = readSource('assets/js/pages/lms-assignments-runtime.js');
         const routeCss = ''; /* purged retired lms-route.css */
 
-        expect(lmsHtml).toContain('assets/js/pages/lms-assignments-runtime.js?v=20260518-lmsassignments1');
+        expect(assignmentsSource).toContain('function buildLmsSubmissionDraftKey(resourceKey, assignmentId, userId = getCurrentUserId() || \'student\')');
+        expect(assignmentsSource).toContain('window.submitAssignment = window.submitAssignment || submitAssignment');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-assignments-runtime.js?v=20260729-lmsassignfix1');
         expect(assignmentsSource).toContain('function renderWorkspace(courseId)');
         expect(assignmentsSource).toContain('async function createAssignment(courseId)');
         expect(assignmentsSource).toContain('async function submitAssignment(courseId, assignmentId)');
@@ -57,7 +59,7 @@ describe('LMS assignments module split', () => {
         expect(assignmentsSource).toContain('class="lms-route-file-shell lms-assignment-attachment-empty-shell"');
         expect(assignmentsSource).toContain('class="lms-route-file-shell lms-route-actions-mt-12 lms-assignment-grade-empty-shell"');
         expect(assignmentsSource).toContain("overlay.id = 'lms-assignment-grade-modal'");
-        expect(assignmentsSource).toContain("overlay.className = 'lms-quiz-board-overlay lms-assignment-grade-overlay'");
+        expect(assignmentsSource).toContain("overlay.className = 'lms-quiz-board-overlay lms-assignment-grade-overlay lms-glass-dialog-overlay'");
         expect(assignmentsSource).toContain('class="lms-route-card-grid lms-assignment-grade-summary-grid"');
         expect(assignmentsSource).toContain('class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card"');
         expect(assignmentsSource).toContain('class="lms-route-card lms-route-panel-compact lms-assignment-grade-response-card"');

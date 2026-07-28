@@ -14,7 +14,8 @@ const CSS_DIR = path.resolve(__dirname, '../assets/css');
 // After HEAD structure restore + fade→panel aliases only (no exact-dup merges).
 // Ratcheted down after 2026-07 hard-clean (LMS+timetable skins archived out of live path).
 // Ratcheted down after 2026-07 mobile/layout/base legacy chrome diet.
-const BASELINE = { boxShadow: 129, backdropFilter: 26 };
+// Ratcheted 2026-07 after social project overview + task-map CSS restore (ported from deleted social-projects-lms.css).
+const BASELINE = { boxShadow: 220, backdropFilter: 27 };
 
 function listLiveCssFiles(dir) {
   const out = [];

@@ -304,11 +304,32 @@ async function createProtectedQuizLaunchTicket(quizId, payload = {}) {
     return result || null;
 }
 
+const protectedQuizMonitorAccessDenied = Object.create(null);
+
 async function fetchProtectedQuizMonitor(groupKey, quizId = '') {
-    const safeGroupKey = encodeURIComponent(String(groupKey || '').trim());
+    const normalizedGroupKey = String(groupKey || '').trim();
+    if (!normalizedGroupKey) return null;
+    if (protectedQuizMonitorAccessDenied[normalizedGroupKey]) return null;
+    const safeGroupKey = encodeURIComponent(normalizedGroupKey);
     const suffix = quizId ? `?quizId=${encodeURIComponent(String(quizId || '').trim())}` : '';
-    const payload = await kiuPortalFetch(`/api/protected-quizzes/group/${safeGroupKey}/monitor${suffix}`);
-    return payload?.monitor || null;
+    try {
+        const payload = await kiuPortalFetch(`/api/protected-quizzes/group/${safeGroupKey}/monitor${suffix}`, {
+            suppressDiagnostic: true
+        });
+        return payload?.monitor || null;
+    } catch (error) {
+        const status = Number(error?.status || 0);
+        if (status === 403 || status === 404) {
+            protectedQuizMonitorAccessDenied[normalizedGroupKey] = true;
+            return null;
+        }
+        throw error;
+    }
+}
+
+function canFetchProtectedQuizMonitorFromPortal(groupKey = '') {
+    const normalizedGroupKey = String(groupKey || '').trim();
+    return Boolean(normalizedGroupKey) && !protectedQuizMonitorAccessDenied[normalizedGroupKey];
 }
 
 async function fetchProtectedQuizAttempts(courseId, quizId) {
@@ -837,6 +858,7 @@ async function completeMicrosoftPortalLoginFromUrl() {
             submitLmsLiveQuizJoin,
             createProtectedQuizLaunchTicket,
             fetchProtectedQuizMonitor,
+            canFetchProtectedQuizMonitorFromPortal,
             fetchProtectedQuizAttempts,
             fetchProtectedQuizClientAttempt,
             postProtectedQuizHeartbeat,

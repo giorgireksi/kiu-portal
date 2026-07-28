@@ -88,6 +88,22 @@
             __filterForwards[name] = fn;
             return fn;
         }
+        function studentServiceModuleNormalizerReady(moduleKind, name) {
+            const has = moduleKind === 'Filters' ? hasStudentServiceFiltersModule
+                : moduleKind === 'Qa' ? hasStudentServiceQaModule
+                : moduleKind === 'Tickets' ? hasStudentServiceTicketsModule
+                : moduleKind === 'Attachments' ? hasStudentServiceAttachmentsModule
+                : hasStudentServiceServiceModule;
+            if (!has()) return false;
+            const resolve = typeof window.resolveStudentServiceExportImpl === 'function'
+                ? window.resolveStudentServiceExportImpl
+                : (n) => window[n];
+            const impl = resolve(name);
+            return typeof impl === 'function' && impl !== __filterForwards[name];
+        }
+        function pruneStudentServiceQuestionRecords(questions = []) {
+            return (questions || []).filter(question => question && typeof question === 'object');
+        }
         const getStudentServiceDefaultSearchFilter = __ssModuleForward('Filters', 'getStudentServiceDefaultSearchFilter', null);
         const buildStudentServiceMinimalInboxFilterLayout = __ssModuleForward('Filters', 'buildStudentServiceMinimalInboxFilterLayout', null);
         const isStudentServiceCustomInboxFilter = __ssModuleForward('Filters', 'isStudentServiceCustomInboxFilter', false);
@@ -668,36 +684,51 @@
                 .filter(macro => macro.message);
 
             if (!Array.isArray(KIU_STATE.studentServiceQuestions)) KIU_STATE.studentServiceQuestions = [];
-            KIU_STATE.studentServiceQuestions = (KIU_STATE.studentServiceQuestions || [])
-                .map(normalizeStudentServiceQuestion)
-                .sort((a, b) => {
-                    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-                    if (a.featured !== b.featured) return a.featured ? -1 : 1;
-                    return ssParseTime(b.updatedAt || b.createdAt) - ssParseTime(a.updatedAt || a.createdAt);
-                });
+            const qaStoresReady = studentServiceModuleNormalizerReady('Qa', 'normalizeStudentServiceQuestion')
+                && studentServiceModuleNormalizerReady('Qa', 'normalizeStudentServiceAnswer');
+            if (qaStoresReady) {
+                KIU_STATE.studentServiceQuestions = pruneStudentServiceQuestionRecords(KIU_STATE.studentServiceQuestions)
+                    .map(normalizeStudentServiceQuestion)
+                    .filter(Boolean)
+                    .sort((a, b) => {
+                        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+                        if (a.featured !== b.featured) return a.featured ? -1 : 1;
+                        return ssParseTime(b.updatedAt || b.createdAt) - ssParseTime(a.updatedAt || a.createdAt);
+                    });
 
-            if (!Array.isArray(KIU_STATE.studentServiceAnswers)) KIU_STATE.studentServiceAnswers = [];
-            const answerMap = new Map();
-            KIU_STATE.studentServiceQuestions.forEach(question => {
-                question.answers = (question.answers || []).map(normalizeStudentServiceAnswer);
-                question.answers.forEach(answer => {
+                if (!Array.isArray(KIU_STATE.studentServiceAnswers)) KIU_STATE.studentServiceAnswers = [];
+                const answerMap = new Map();
+                KIU_STATE.studentServiceQuestions.forEach(question => {
+                    question.answers = (question.answers || []).map(normalizeStudentServiceAnswer).filter(Boolean);
+                    question.answers.forEach(answer => {
+                        answerMap.set(answer.id, preferStudentServiceAnswerRecord(answerMap.get(answer.id), answer));
+                    });
+                });
+                (KIU_STATE.studentServiceAnswers || []).map(normalizeStudentServiceAnswer).filter(Boolean).forEach(answer => {
                     answerMap.set(answer.id, preferStudentServiceAnswerRecord(answerMap.get(answer.id), answer));
                 });
-            });
-            (KIU_STATE.studentServiceAnswers || []).map(normalizeStudentServiceAnswer).forEach(answer => {
-                answerMap.set(answer.id, preferStudentServiceAnswerRecord(answerMap.get(answer.id), answer));
-            });
-            KIU_STATE.studentServiceAnswers = [...answerMap.values()].sort((a, b) => ssParseTime(a.createdAt) - ssParseTime(b.createdAt));
-            KIU_STATE.studentServiceQuestions.forEach(question => {
-                const questionId = String(question.id || '').trim();
-                question.answers = [...answerMap.values()]
-                    .filter(answer => String(answer.questionId) === questionId)
-                    .sort((left, right) => ssParseTime(left.createdAt || left.updatedAt) - ssParseTime(right.createdAt || right.updatedAt));
-            });
+                KIU_STATE.studentServiceAnswers = [...answerMap.values()].sort((a, b) => ssParseTime(a.createdAt) - ssParseTime(b.createdAt));
+                KIU_STATE.studentServiceQuestions.forEach(question => {
+                    const questionId = String(question.id || '').trim();
+                    question.answers = [...answerMap.values()]
+                        .filter(answer => String(answer.questionId) === questionId)
+                        .sort((left, right) => ssParseTime(left.createdAt || left.updatedAt) - ssParseTime(right.createdAt || right.updatedAt));
+                });
+            } else {
+                KIU_STATE.studentServiceQuestions = pruneStudentServiceQuestionRecords(KIU_STATE.studentServiceQuestions);
+            }
+
+            if (!Array.isArray(KIU_STATE.studentServiceAnswers)) KIU_STATE.studentServiceAnswers = [];
 
             if (!Array.isArray(KIU_STATE.studentServiceReviewQueue)) KIU_STATE.studentServiceReviewQueue = [];
 
-            STUDENT_SERVICE_RUNTIME.storesNormalizedRevision = STUDENT_SERVICE_RUNTIME.storesRevision;
+            const qaStoresPending = !qaStoresReady && (
+                pruneStudentServiceQuestionRecords(KIU_STATE.studentServiceQuestions).length > 0
+                || (KIU_STATE.studentServiceAnswers || []).length > 0
+            );
+            if (!qaStoresPending) {
+                STUDENT_SERVICE_RUNTIME.storesNormalizedRevision = STUDENT_SERVICE_RUNTIME.storesRevision;
+            }
             return {
                 articles: KIU_STATE.studentServiceArticles,
                 tickets: KIU_STATE.studentServiceTickets,
