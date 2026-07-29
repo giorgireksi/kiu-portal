@@ -22,7 +22,7 @@ function renderGradebookScoreHistoryPanel(options = {}) {
         if (options.compactEmpty) {
             return `
             <div class="gb-score-history-panel gb-score-history-panel--empty">
-                <div class="gb-empty-state gb-empty-state--inline lms-route-copy">
+                <div class="gb-empty-state gb-empty-state--inline lux-empty-state lux-panel-copy">
                     <i class="fas fa-clock-rotate-left"></i>
                     <span>No score history yet — changes appear after you save.</span>
                 </div>
@@ -31,10 +31,10 @@ function renderGradebookScoreHistoryPanel(options = {}) {
         }
         return `
             <div class="gb-score-history-panel gb-score-history-panel--empty">
-                <div class="gb-empty-state lms-route-copy">
+                <div class="gb-empty-state lux-empty-state">
                     <i class="fas fa-clock-rotate-left"></i>
-                    <strong class="lms-route-card-title">No score history yet</strong>
-                    <span>Score changes will appear here after you save.</span>
+                    <strong class="lux-empty-state__title lms-route-card-title">No score history yet</strong>
+                    <span class="lux-empty-state__copy lux-panel-copy">Score changes will appear here after you save.</span>
                 </div>
             </div>
         `;
@@ -53,18 +53,18 @@ function renderGradebookScoreHistoryPanel(options = {}) {
         const olderItem = timelineRef[index + 1] || null;
         const changeLabel = formatGradebookScoreHistoryChangeLabel(historyItem, olderItem);
         const changeMarkup = changeLabel
-            ? `<div class="gb-score-history-change lms-route-copy">${escapeHtml(changeLabel)}</div>`
+            ? `<div class="gb-score-history-change lux-panel-copy">${escapeHtml(changeLabel)}</div>`
             : '';
-        const rowClass = `gb-score-history-row${isCurrent ? ' is-current' : ''}`;
+        const rowClass = `gb-score-history-row lux-soft-chrome home-hover-chip${isCurrent ? ' is-current' : ''}`;
         const rowBody = `
             <div class="gb-score-history-scoreline">
-                <strong>${escapeHtml(scoreLabel)}</strong>
-                ${isCurrent ? '<span class="gb-status-badge lux-status-pill is-graded">Current</span>' : ''}
+                <strong class="lux-card-copy">${escapeHtml(scoreLabel)}</strong>
+                ${isCurrent ? '<span class="gb-status-badge lux-status-pill home-hover-chip is-graded">Current</span>' : ''}
             </div>
             ${changeMarkup}
             <div class="gb-score-history-meta">
-                <span class="lms-route-meta-12">${escapeHtml(formatAssessmentHistoryTimestamp(historyItem.updatedAt))}</span>
-                ${historyItem.updatedBy ? `<span class="lms-route-meta-12">${escapeHtml(historyItem.updatedBy)}</span>` : ''}
+                <span class="lms-route-meta-12 lux-panel-copy">${escapeHtml(formatAssessmentHistoryTimestamp(historyItem.updatedAt))}</span>
+                ${historyItem.updatedBy ? `<span class="lms-route-meta-12 lux-panel-copy">${escapeHtml(historyItem.updatedBy)}</span>` : ''}
             </div>
         `;
         if (!interactiveHistory) {
@@ -89,7 +89,7 @@ function renderGradebookScoreHistoryPanel(options = {}) {
         ? hiddenTimeline.map((historyItem, index) => buildRow(historyItem, index + visibleTimeline.length, timeline)).join('')
         : '';
     const expandToggle = hiddenTimeline.length
-        ? `<button type="button" class="gb-score-history-toggle lms-route-copy" data-gradebook-click="toggle-score-history" data-gradebook-expand-label="Show all ${timeline.length} changes" data-gradebook-collapse-label="Show fewer changes">Show all ${timeline.length} changes</button>`
+        ? `<button type="button" class="gb-score-history-toggle lux-panel-copy" data-gradebook-click="toggle-score-history" data-gradebook-expand-label="Show all ${timeline.length} changes" data-gradebook-collapse-label="Show fewer changes">Show all ${timeline.length} changes</button>`
         : '';
     return `
         <div class="gb-score-history-panel${options.compact ? ' is-compact' : ''}">

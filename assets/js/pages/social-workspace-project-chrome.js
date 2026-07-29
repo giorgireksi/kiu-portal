@@ -51,7 +51,7 @@
             ];
             const sectionsHtml = text(metrics.sectionsHtml || '');
             return `
-                <section class="social-neo-card social-neo-workspace-hero social-neo-community-panel social-neo-community-panel--workspace">
+                <section class="social-neo-card social-neo-workspace-hero social-neo-community-panel social-neo-community-panel--workspace home-hover-chip">
                     <div class="social-neo-workspace-hero-head">
                         <div class="social-neo-workspace-hero-actions">
                             <button class="lux-primary-btn social-neo-workspace-hero-create-btn" type="button" data-action="project-create-open">
@@ -59,9 +59,9 @@
                             </button>
                         </div>
                     </div>
-                    <div class="social-neo-workspace-hero-stats">
+                    <div class="social-neo-workspace-hero-stats home-hover-chip">
                         ${stats.map((stat) => `
-                            <article class="social-neo-workspace-hero-stat lux-strip-card surface-card home-hover-chip">
+                            <article class="social-neo-workspace-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                                 <strong>${escape(String(stat.value))}</strong>
                                 <span>${escape(stat.label)}</span>
                             </article>

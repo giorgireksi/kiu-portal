@@ -70,8 +70,8 @@
 @media (prefers-reduced-motion: reduce) {
   .modal-overlay,
   .modal-content,
-  :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay),
-  :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) > * {
+  :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay),
+  :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) > * {
     transition-duration: 0.01ms !important;
   }
 }
@@ -253,20 +253,25 @@
 }
 [data-lux-transparency-exempt="1"] :is( .lux-hub-form-modal-head,
   .registration-structured-modal-head,
-  .sch-modal-head:not(.sch-modal-head-accent) ),
+  .sch-modal-head:not(.sch-modal-head-accent),
+  .newsx-publisher-header,
+  .admin-orders-thread-header,
+  .admin-orders-create-head ),
   [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-head ) {
   background: var(--lux-panel-modal-head-tint);
   border-bottom: 1px solid var(--lux-modal-glass-border);
   color: var(--lux-text);
 }
 [data-lux-transparency-exempt="1"] :is( .lux-hub-form-modal-foot,
-  .sch-modal-foot ) {
+  .sch-modal-foot,
+  .newsx-publisher-footer ) {
   border-top: 1px solid var(--lux-modal-glass-border);
   background: var(--lux-panel-modal-foot-tint);
   color: var(--lux-text-muted);
 }
 :is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .lux-hub-form-modal-foot,
-  .sch-modal-foot ) {
+  .sch-modal-foot,
+  .newsx-publisher-footer ) {
   background: var(--lux-panel-modal-foot-tint-light);
 }
 [data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .lux-glass-dialog-card--social-glass *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *, .admin-orders-create-head *, .admin-orders-create-foot-actions *, .admin-orders-thread-header-actions *, .admin-orders-thread-composer-actions *, .orders-recipient-action-row *, .orders-compose-head *, #admin-orders-root .orders-admin-command-actions *)) {
@@ -298,33 +303,76 @@
 }
 
 /* Scheduler session modal — warmglass head, foot, sections, conflict callout. */
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-mode-chip {
-  background: rgba(var(--lux-accent-rgb), 0.14);
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  flex-shrink: 0;
+}
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--lux-text);
+}
+[data-lux-transparency-exempt="1"] #schModalOverlay :is(.sch-modal-subtitle, .sch-modal-week) {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+[data-lux-transparency-exempt="1"] :is(#schModalOverlay, #schPresetManagerOverlay) .sch-modal-close-muted.lux-secondary-btn {
+  flex: 0 0 auto;
+  min-width: var(--lux-primary-btn-min-height, 46px);
+  width: var(--lux-primary-btn-min-height, 46px);
+  height: var(--lux-primary-btn-min-height, 46px);
+  padding: 0;
+}
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-mode-chip.home-hover-chip {
   color: var(--lux-accent-2);
-  border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+}
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 18px;
+  display: grid;
+  gap: 12px;
+  color: var(--lux-text);
+}
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px;
+  flex-shrink: 0;
 }
 [data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-foot .sch-create-btn.lux-primary-btn {
   min-width: 240px;
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-form-section {
+[data-lux-transparency-exempt="1"] :is(#schModalOverlay, #schPresetManagerOverlay) .sch-form-section.home-hover-chip {
   display: grid;
   gap: 12px;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section);
-  box-shadow: var(--lux-warmglass-section-shadow);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
-:is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] #schModalOverlay .sch-form-section {
-  border-color: var(--lux-modal-glass-border);
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-body {
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-form-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
   color: var(--lux-text);
 }
 [data-lux-transparency-exempt="1"] #schModalOverlay :is(
-  .sch-form-section-title,
   .sch-input-group > label,
   .sch-input-label-row label
 ) {
@@ -363,15 +411,29 @@
 [data-lux-transparency-exempt="1"] #schModalOverlay input[type='number'].lux-control {
   color: var(--lux-btn-label, var(--lux-text));
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-preset-manage-link {
-  color: var(--lux-accent-2);
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-preset-manage-link.lux-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
   text-transform: none;
   letter-spacing: 0.04em;
+  min-height: auto;
+  padding: 4px 10px;
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-preset-manage-link:hover {
-  color: var(--lux-text);
+[data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert {
+  display: none;
 }
 [data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert.show {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  font-size: 13px;
+  line-height: 1.5;
   font-weight: 600;
   letter-spacing: normal;
   text-transform: none;
@@ -405,6 +467,103 @@
 :is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] #schModalOverlay :is(.lux-control, .lux-picker-btn--compact) {
   text-shadow: none;
 }
+/* Volumetric fog parameters dialog — typography + field paint; shell from §1–§2 exempt warmglass. */
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 0 12px;
+  flex-shrink: 0;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-head > div:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-title {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--lux-text);
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-sub {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+  max-width: 42ch;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--lux-modal-glass-border);
+  background: transparent;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  cursor: pointer;
+  flex-shrink: 0;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-close:is(:hover, :focus-visible) {
+  color: var(--lux-text);
+  border-color: rgba(var(--lux-accent-rgb), 0.16);
+  background: rgba(var(--lux-accent-rgb), 0.08);
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 14px 4px 8px;
+  display: grid;
+  gap: 12px;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop :is(.lux-bg-mode-panel-copy, .lux-bg-mode-panel-hint) {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-fog-profile-add-row .lux-modern-field {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-fog-profile-add-row .lux-modern-field::placeholder {
+  color: color-mix(in srgb, var(--lux-text) 58%, transparent);
+  opacity: 1;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-transparency-label {
+  color: var(--lux-text);
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-transparency-value {
+  color: var(--lux-text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-fog-color-copy strong {
+  color: var(--lux-text);
+  font-weight: 700;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-fog-color-hex {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-studio-label {
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-fog-profile-empty,
+[data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-fog-profile-edit-copy {
+  color: var(--lux-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
 /* ── §3 light-mode popup text — full contrast (mirrors dark popup token aliasing) ── */
 :is(html.lux-light-mode, body.lux-light-mode) :is(
   #lux-studio-backdrop,
@@ -437,7 +596,7 @@
   --kiu-text-muted: var(--kiu-text-main);
 }
 /* ── §4 portal glass-dialog overlays (canonical + aliases) + quiz board layout ── */
-:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) {
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) {
   position: fixed;
   inset: 0;
   z-index: 2400;
@@ -461,30 +620,30 @@
 .sch-modal-overlay[hidden]:not(.is-open):not(.is-closing) {
   display: none !important;
 }
-:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-open {
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-open {
   opacity: 1;
   pointer-events: auto;
   transition-duration: var(--lux-popup-anim-duration);
 }
-:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-closing:not(.is-open) {
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-closing:not(.is-open) {
   opacity: 0;
   pointer-events: none;
 }
-:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) > * {
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) > * {
   transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
   opacity: 0;
   transition: transform var(--lux-popup-anim-close-duration) ease, opacity var(--lux-popup-anim-close-duration) ease;
 }
-:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-open > * {
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-open > * {
   transform: translateY(0) scale(1);
   opacity: 1;
   transition-duration: var(--lux-popup-anim-duration);
 }
-:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-closing:not(.is-open) > * {
+:is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay).is-closing:not(.is-open) > * {
   transform: translateY(var(--lux-popup-slide-offset)) scale(var(--lux-popup-scale-closed));
   opacity: 0;
 }
-:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) {
+:is(html.lux-light-mode, body.lux-light-mode) :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .lms-quiz-board-overlay, .gb-modal-overlay, .study-card-assessment-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop, .admin-reg-course-modal-overlay, .sch-modal-overlay) {
   background: var(--lux-warmglass-overlay-light);
 }
 :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop) > :is(.lux-glass-dialog-card, .lms-quiz-board-modal, .registration-section-picker-dialog),
@@ -3569,6 +3728,29 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   }
 }
 
+/* ── §7c2 survey-results dialog interior ── */
+#social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-surveys-results-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--survey-results .lux-glass-dialog-group-section {
+  overflow: visible;
+  contain: none;
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-survey-results-question {
+  overflow: visible;
+  contain: none;
+}
+
+@media (max-width: 640px) {
+  #social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-surveys-results-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* ── §7d event-create dialog interior (toggle row section chrome) ── */
 [data-lux-transparency-exempt="1"] .lux-glass-dialog-card--event-create {
   --event-create-section: color-mix(in srgb, var(--lux-text) 4%, var(--lux-panel-fill));
@@ -4276,6 +4458,19 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
 }
 
 /* ── News publisher / sections / confirm modal interiors (layout only) ── */
+[data-lux-transparency-exempt="1"] .newsx-publisher-modal :is(
+  .newsx-publisher-section-tab.home-hover-chip,
+  .newsx-editor-ribbon.home-hover-chip,
+  .newsx-publisher-pane.home-hover-chip,
+  :is(.newsx-publisher-radio-card, .lux-check-card, .newsx-publisher-toggle-card).home-hover-chip,
+  .newsx-attachment-chip.home-hover-chip
+) {
+  border: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-modal-section);
+  box-shadow: var(--lux-warmglass-section-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
 .newsx-publisher-modal {
   width: min(960px, 94vw);
   max-width: min(960px, 94vw);
@@ -4321,8 +4516,6 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   font: inherit;
   font-size: 12px;
   font-weight: 800;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
   color: var(--lux-text-muted);
 }
 .newsx-publisher-section-tab.is-active {
@@ -4386,9 +4579,12 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   gap: 12px;
   flex-wrap: wrap;
   padding: 0 20px 20px;
-  border-top: 1px solid var(--lux-modal-glass-border);
   margin-top: 4px;
   padding-top: 16px;
+}
+.newsx-publisher-footer-actions:not(.newsx-publisher-footer-actions--start) {
+  justify-content: flex-end;
+  margin-left: auto;
 }
 .newsx-publisher-footer-actions--start { margin-right: auto; }
 .newsx-sections-list {
@@ -4440,9 +4636,11 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   gap: 8px;
   padding: 6px 10px;
   border-radius: 12px;
+  font-size: 12px;
+}
+.newsx-attachment-chip:not(.home-hover-chip) {
   background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
   border: 1px solid var(--lux-modal-glass-border);
-  font-size: 12px;
 }
 .newsx-attachment-remove {
   appearance: none;
@@ -4527,8 +4725,6 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   gap: 8px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
 }
 .newsx-publisher-modal .newsx-editor-ribbon-group {
   display: inline-flex;
@@ -4638,8 +4834,6 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   gap: 10px;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
   cursor: pointer;
 }
 .newsx-publisher-modal :is(.newsx-publisher-radio-card, .lux-check-card) strong {
@@ -4695,14 +4889,21 @@ body.admin-library-modal-open {
   gap: 10px;
   flex-wrap: wrap;
 }
+.admin-library-modal-copy {
+  line-height: 1.6;
+}
+.admin-library-modal-head .admin-library-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  min-width: 0;
+}
 .admin-library-modal-body {
   display: grid;
   gap: 18px;
   padding: 22px;
-}
-.admin-library-modal-copy {
-  color: var(--lux-text-muted);
-  line-height: 1.6;
+  min-width: 0;
 }
 .admin-library-param-row {
   display: grid;
@@ -4719,8 +4920,6 @@ body.admin-library-modal-open {
   gap: 10px;
   padding: 16px 18px;
   border-radius: 20px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
 }
 .admin-library-param-title {
   font-size: 12px;
@@ -4743,8 +4942,6 @@ body.admin-library-modal-open {
   color: var(--lux-text);
   font-size: 12px;
   font-weight: 700;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
 }
 .admin-library-chip button {
   border: 0;
@@ -4787,8 +4984,6 @@ body.admin-library-modal-open {
   align-items: center;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
   cursor: default;
 }
 .admin-library-schema-field-row.admin-library-schema-field-droplist {
@@ -4829,27 +5024,27 @@ body.admin-library-modal-open {
   align-items: center;
   gap: 8px;
 }
-.admin-library-schema-btn-options:not(.lux-primary-btn):not(.lux-secondary-btn),
-.admin-library-schema-btn-remove:not(.lux-primary-btn):not(.lux-secondary-btn) {
+.admin-library-schema-btn-options,
+.admin-library-schema-btn-remove {
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  padding: 0;
   border-radius: 10px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-control);
-  color: var(--lux-text);
   display: inline-grid;
   place-items: center;
   cursor: pointer;
 }
-.admin-library-schema-btn-remove:not(.lux-primary-btn):not(.lux-secondary-btn):hover {
+.admin-library-schema-btn-remove:hover {
   color: var(--lux-red, #de6262);
-  border-color: rgba(220, 116, 116, 0.28);
 }
 .admin-library-schema-add-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   align-items: end;
+  padding: 16px 18px;
+  border-radius: 16px;
 }
 .admin-library-schema-add-form .lux-primary-btn {
   grid-column: 1 / -1;
@@ -4905,7 +5100,6 @@ body.admin-library-modal-open {
   text-align: center;
   color: var(--lux-text-muted);
   border-radius: 14px;
-  border: 1px dashed var(--lux-modal-glass-border);
 }
 
 /* Droplist editor */
@@ -4916,6 +5110,8 @@ body.admin-library-modal-open {
 .admin-library-schema-droplist-editor-body {
   display: grid;
   gap: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
 }
 .admin-library-schema-droplist-editor-add {
   display: grid;
@@ -4935,6 +5131,38 @@ body.admin-library-modal-open {
   color: var(--lux-text-soft);
 }
 
+.admin-library-sections-modal.lux-glass-dialog-card {
+  width: min(760px, 96vw);
+  max-height: min(88vh, 920px);
+}
+
+.admin-library-modal-body--sections.lux-glass-dialog-body {
+  gap: 18px;
+}
+
+.admin-library-modal-foot--split.lux-glass-dialog-form-actions {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-library-modal-foot--split .admin-library-modal-copy {
+  margin: 0;
+  text-align: left;
+}
+
+.admin-library-sections-add-row.lux-soft-chrome.home-hover-chip {
+  padding: 14px 16px;
+  border-radius: 14px;
+  min-width: 0;
+}
+
+.admin-library-sections-modal .admin-library-sections-add-row.lux-soft-chrome.home-hover-chip,
+.admin-library-sections-modal .admin-library-sections-panel.lux-soft-chrome.home-hover-chip,
+.admin-library-sections-modal .admin-library-section-row.lux-soft-chrome.home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
 /* Sections manager */
 .admin-library-sections-add-row {
   display: grid;
@@ -4945,9 +5173,16 @@ body.admin-library-modal-open {
 .admin-library-sections-panel {
   display: grid;
   gap: 12px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  min-width: 0;
 }
-.admin-library-sections-panel-head strong {
-  font-size: 14px;
+.admin-library-sections-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
 }
 .admin-library-sections-list {
   display: grid;
@@ -4962,21 +5197,21 @@ body.admin-library-modal-open {
   align-items: center;
   padding: 12px 14px;
   border-radius: 14px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
 }
 .admin-library-section-row-meta {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 .admin-library-section-row-title {
-  font-size: 14px;
-  font-weight: 800;
+  display: block;
 }
 .admin-library-section-row-count {
+  display: block;
+  margin: 0;
   font-size: 11px;
-  color: var(--lux-text-muted);
+  font-weight: 600;
+  line-height: 1.45;
 }
 .admin-library-section-row-actions {
   display: inline-flex;
@@ -4987,8 +5222,7 @@ body.admin-library-modal-open {
 .admin-library-section-remove-confirm {
   display: grid;
   gap: 8px;
-  font-size: 12px;
-  color: var(--lux-text-muted);
+  min-width: 0;
 }
 .admin-library-section-remove-actions {
   display: flex;
@@ -4996,11 +5230,18 @@ body.admin-library-modal-open {
   flex-wrap: wrap;
 }
 .admin-library-sections-empty {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
   padding: 18px;
   text-align: center;
-  color: var(--lux-text-muted);
   border-radius: 14px;
-  border: 1px dashed var(--lux-modal-glass-border);
+}
+
+.admin-library-sections-modal .admin-library-sections-panel.lux-soft-chrome.home-hover-chip,
+.admin-library-sections-modal .admin-library-section-row.lux-soft-chrome.home-hover-chip {
+  contain: none;
+  overflow: visible;
 }
 
 @media (max-width: 720px) {
@@ -5031,6 +5272,18 @@ body.admin-library-modal-open {
 body.admin-orders-modal-open {
   overflow: hidden;
 }
+[data-lux-transparency-exempt="1"] .admin-orders-thread-modal :is(
+  .admin-orders-thread-chat-log.home-hover-chip,
+  .admin-orders-thread-msg-bubble.home-hover-chip,
+  .admin-orders-thread-attachment.home-hover-chip,
+  .admin-orders-thread-composer.home-hover-chip
+) {
+  border: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-modal-section);
+  box-shadow: var(--lux-warmglass-section-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
 .admin-orders-create-modal.modal-content,
 .admin-orders-thread-modal.modal-content {
   width: 100%;
@@ -5058,7 +5311,6 @@ body.admin-orders-modal-open {
   justify-content: space-between;
   gap: 16px;
   padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--lux-modal-glass-border);
 }
 .admin-orders-create-grid {
   display: grid;
@@ -5125,8 +5377,6 @@ body.admin-orders-modal-open {
   gap: 12px;
   padding: 14px;
   border-radius: 18px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
 }
 .admin-orders-thread-msg-row {
   display: grid;
@@ -5150,8 +5400,6 @@ body.admin-orders-modal-open {
 .admin-orders-thread-msg-bubble {
   padding: 12px 14px;
   border-radius: 16px;
-  border: 1px solid var(--lux-modal-glass-border);
-  background: var(--lux-panel-modal-section, var(--lux-warmglass-section));
 }
 .admin-orders-thread-msg-bubble.is-mine {
   border-color: rgba(var(--lux-accent-rgb), 0.24);
@@ -5173,7 +5421,6 @@ body.admin-orders-modal-open {
   gap: 6px;
   padding: 8px 10px;
   border-radius: 999px;
-  border: 1px solid var(--lux-modal-glass-border);
   color: var(--lux-text);
   text-decoration: none;
   font-size: 12px;
@@ -5194,6 +5441,8 @@ body.admin-orders-modal-open {
 .admin-orders-thread-composer {
   display: grid;
   gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
 }
 .admin-orders-thread-composer-input {
   min-height: 96px;

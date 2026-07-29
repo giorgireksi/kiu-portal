@@ -13,11 +13,11 @@
     <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260726-frostedpopup1">
     <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
     <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
-    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260726-libcss1">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260729-libmodal3">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-panelhost1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260728-libcss5">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260728-libcss5">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260728-libcss5">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260729-libshell2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260729-libshell2">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260729-libshell2">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
 </head>
@@ -33,7 +33,7 @@
 
         <div class="admin-library-shell" data-lux-glass-root="1" data-admin-library-shell="1">
         <section class="alib-workspace" aria-label="Admin library workspace">
-            <section class="alib-panel alib-panel--entry lux-soft-chrome">
+            <section class="alib-panel alib-panel--entry lux-soft-chrome home-hover-chip">
                 <div class="lux-card-head">
                     <div>
                         <div class="lux-card-title">Add New Book</div>
@@ -80,7 +80,7 @@
                 </div>
             </section>
 
-            <section class="alib-panel alib-panel--filters lux-soft-chrome" hidden>
+            <section class="alib-panel alib-panel--filters lux-soft-chrome home-hover-chip" hidden>
                 <div class="lux-card-head">
                     <div>
                         <div class="lux-card-title">Catalog Controls</div>
@@ -88,11 +88,11 @@
                     </div>
                 </div>
                 <div class="admin-library-metric-row admin-library-metric-row--compact">
-                    <div class="lux-stat-card admin-library-metric-card">
+                    <div class="lux-stat-card admin-library-metric-card home-hover-chip">
                         <span class="admin-library-metric-label">Catalog Entries</span>
                         <strong id="admin-library-total-metric" class="admin-library-metric-value">0</strong>
                     </div>
-                    <div class="lux-stat-card admin-library-metric-card">
+                    <div class="lux-stat-card admin-library-metric-card home-hover-chip">
                         <span class="admin-library-metric-label">Visible View</span>
                         <strong id="admin-library-filtered-metric" class="admin-library-metric-value">0</strong>
                     </div>
@@ -118,7 +118,7 @@
             </section>
         </section>
 
-        <section class="lux-strip-card admin-library-catalog-card lux-soft-chrome" aria-label="Shared catalog">
+        <section class="lux-strip-card admin-library-catalog-card lux-soft-chrome home-hover-chip" aria-label="Shared catalog">
             <div class="admin-library-catalog-head">
                 <div class="admin-library-catalog-tabs-rail lux-scroll-rail lux-scroll-rail--horizontal" data-lux-scroll-rail data-admin-library-catalog-tabs-rail="true" data-lux-scroll-axis="horizontal">
                     <div class="lux-scroll-rail__controls admin-library-catalog-tabs-rail__controls admin-library-catalog-tabs-rail__controls--start" hidden aria-hidden="true">
@@ -201,7 +201,7 @@
                 <div class="admin-library-schema-section-head">
                     <strong>Add New Field</strong>
                 </div>
-                <div class="admin-library-schema-add-form">
+                <div class="admin-library-schema-add-form home-hover-chip">
                     <label class="lux-picker-field">
                         <span class="lux-picker-label">Field Label</span>
                         <input id="schema-new-label" type="text" class="lux-control admin-library-modal-input" placeholder="e.g. ISBN">
@@ -247,7 +247,7 @@
                 <strong id="schema-droplist-editor-title">Edit Options</strong>
                 <span class="admin-library-modal-copy">Add or remove options for this droplist field. Changes apply to the catalog form and table filters.</span>
             </div>
-            <div class="admin-library-schema-droplist-editor-body" id="schema-droplist-editor">
+            <div class="admin-library-schema-droplist-editor-body home-hover-chip" id="schema-droplist-editor">
                 <div class="admin-library-schema-droplist-editor-add">
                     <label class="lux-picker-field">
                         <span class="lux-picker-label">New Option</span>
@@ -274,31 +274,33 @@
         </div>
     </div>
 </div>
-<div id="library-sections-overlay" class="modal-overlay admin-library-modal-overlay" data-admin-library-sections-overlay="true" data-lux-modal-overlay aria-hidden="true">
-    <div id="admin-library-sections-modal" class="modal-content admin-library-modal admin-library-sections-modal" data-lux-transparency-exempt="1">
-        <div class="modal-header admin-library-modal-head">
-            <h3><i class="fas fa-layer-group"></i> Manage Catalog Sections</h3>
-            <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-sections-modal="true"><i class="fas fa-times"></i> Close</button>
+<div id="library-sections-overlay" class="modal-overlay admin-library-modal-overlay lux-glass-dialog-overlay" data-admin-library-sections-overlay="true" data-lux-modal-overlay aria-hidden="true">
+    <div id="admin-library-sections-modal" class="lux-glass-dialog-card lux-glass-dialog-card--form admin-library-modal admin-library-sections-modal" role="dialog" aria-modal="true" data-lux-transparency-exempt="1">
+        <div class="lux-glass-dialog-section-head lux-glass-dialog-head admin-library-modal-head">
+            <div class="lux-glass-dialog-heading">
+                <strong class="lux-glass-dialog-title admin-library-modal-title"><i class="fas fa-layer-group" aria-hidden="true"></i> Manage Catalog Sections</strong>
+            </div>
+            <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn" aria-label="Close" data-admin-library-close-sections-modal="true"><i class="fas fa-times"></i></button>
         </div>
-        <div class="modal-body admin-library-modal-body">
-            <div class="admin-library-modal-copy">Add new catalog sections or remove existing ones. Removing a section also deletes all books inside it.</div>
-            <div class="admin-library-sections-add-row">
+        <div class="lux-glass-dialog-body admin-library-modal-body admin-library-modal-body--sections">
+            <p class="lux-panel-copy admin-library-modal-copy">Add new catalog sections or remove existing ones. Removing a section also deletes all books inside it.</p>
+            <div class="admin-library-sections-add-row lux-soft-chrome home-hover-chip">
                 <label class="lux-picker-field">
                     <span class="lux-picker-label">Section Label</span>
-                    <input id="section-new-label" type="text" class="lux-control admin-library-modal-input" placeholder="e.g. Reference">
+                    <input id="section-new-label" type="text" class="lux-control admin-library-modal-input" placeholder="e.g. Reference" autocomplete="off">
                 </label>
-                <button class="lux-primary-btn" type="button" data-admin-library-add-catalog-section="true" data-lux-skip-modern-button="true"><i class="fas fa-plus"></i> Add section</button>
+                <button class="lux-primary-btn home-hover-chip" type="button" data-admin-library-add-catalog-section="true" data-lux-skip-modern-button="true"><i class="fas fa-plus"></i> Add section</button>
             </div>
-            <div class="admin-library-sections-panel">
+            <div class="admin-library-sections-panel lux-soft-chrome home-hover-chip">
                 <div class="admin-library-sections-panel-head">
-                    <strong>Current Sections</strong>
+                    <strong class="lux-section-kicker admin-library-sections-panel-kicker">Current Sections</strong>
                 </div>
                 <div id="admin-library-sections-list" class="admin-library-sections-list"></div>
             </div>
         </div>
-        <div class="modal-footer admin-library-modal-foot">
-            <span class="admin-library-modal-copy">Section changes are saved immediately.</span>
-            <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-sections-modal="true">Close</button>
+        <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions admin-library-modal-foot admin-library-modal-foot--split">
+            <span class="lux-panel-copy admin-library-modal-copy">Section changes are saved immediately.</span>
+            <button class="lux-secondary-btn home-hover-chip close-btn" type="button" data-admin-library-close-sections-modal="true">Close</button>
         </div>
     </div>
 </div>
@@ -311,7 +313,7 @@
 <script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
 <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260720-w18"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
-    <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+    <script defer src="assets/js/app/auth.js?v=20260729-sse4292"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604821637"></script>
 <script defer src="assets/js/app/state-admin-exam-runtime.js?v=20260720-e4exam1"></script>
 <script defer src="assets/js/app/state-deleted-staff-runtime.js?v=20260720-w18"></script>
@@ -320,7 +322,7 @@
     <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
 <script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
 <script defer src="assets/js/shared/utilities.js?v=20260725-legacypurge1"></script>
-<script defer src="assets/js/shared/lux-transparency.js?v=20260725-popupunify1"></script>
+<script defer src="assets/js/shared/lux-transparency.js?v=20260729-libmodal3"></script>
     <script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
 <script defer src="assets/js/features/luxury-palette-runtime.js?v=20260719-luxpal1"></script>
 <script defer src="assets/js/features/luxury-atmosphere-runtime.js?v=20260723-gpuperf4p"></script>
@@ -335,7 +337,7 @@
 <script defer src="assets/js/features/luxury-shell-chrome.js?v=20260726-teleportfix1"></script>
 <script defer src="assets/js/shared/library-catalog-sync.js?v=20260714-libcleanup1"></script>
 <script defer src="assets/js/shared/library-catalog-view.js?v=20260714-libcleanup1"></script>
-<script defer src="assets/js/pages/admin-library.js?v=20260726-libperf1"></script>
+<script defer src="assets/js/pages/admin-library.js?v=20260729-libmodal3"></script>
 <script>
 function initAdminLibraryRouteGate() {
     const effectiveRole = typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : 'admin';

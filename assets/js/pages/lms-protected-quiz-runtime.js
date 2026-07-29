@@ -859,7 +859,7 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
                 `).join('')
                 : '<div class="lms-protected-monitor-audit-empty">No audit trail yet.</div>';
             return `
-                <details class="lms-protected-monitor-details">
+                <details class="lms-protected-monitor-details home-hover-chip">
                     <summary class="lms-protected-monitor-summary">
                         <div class="lms-protected-monitor-head">
                             <div>

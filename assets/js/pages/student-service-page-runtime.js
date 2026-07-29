@@ -760,7 +760,7 @@ function __kiuSspExpose(map) {
                 }
                 await syncStudentServiceWorkspaceBackendSession();
                 if (typeof scheduleKiuRealtimeBootstrap === 'function') {
-                    scheduleKiuRealtimeBootstrap(true);
+                    scheduleKiuRealtimeBootstrap();
                 }
                 bindStudentServiceRealtimeRefreshListener();
                 bindStudentServiceDelegatedInteractions();

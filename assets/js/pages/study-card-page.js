@@ -256,9 +256,21 @@ function resolveStudyCardGradeRecord(courseId, groupId, enrolledStudents, studen
 
 function closeStudyCardAssessmentWindow() {
     const existing = document.getElementById('study-card-assessment-window');
-    if (existing) existing.remove();
-    document.body.classList.remove('study-card-assessment-open');
-    delete window.__studyCardActiveGradeRecord;
+    if (!existing) {
+        document.body.classList.remove('study-card-assessment-open');
+        delete window.__studyCardActiveGradeRecord;
+        return;
+    }
+    const finishClose = () => {
+        existing.remove();
+        document.body.classList.remove('study-card-assessment-open');
+        delete window.__studyCardActiveGradeRecord;
+    };
+    if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+        window.closeLuxGlassDialogOverlay(existing, { onDone: finishClose });
+        return;
+    }
+    finishClose();
 }
 
 function bindStudyCardAssessmentDelegates() {
@@ -287,8 +299,8 @@ function renderStudyCardAssessmentStatChips(subject = {}) {
     const pendingCount = Number(summary?.pendingCount || 0);
     return `
         <div class="study-card-assessment-window__chips">
-            <span class="lux-status-pill study-card-assessment-window__chip"><i class="fas fa-circle-check"></i> Graded ${completedCount}</span>
-            <span class="lux-status-pill study-card-assessment-window__chip"><i class="fas fa-hourglass-half"></i> Pending ${pendingCount}</span>
+            <span class="lux-status-pill home-hover-chip study-card-assessment-window__chip"><i class="fas fa-circle-check"></i> Graded ${completedCount}</span>
+            <span class="lux-status-pill home-hover-chip study-card-assessment-window__chip"><i class="fas fa-hourglass-half"></i> Pending ${pendingCount}</span>
         </div>
     `;
 }
@@ -302,7 +314,7 @@ function renderStudyCardAssessmentBody(subject = {}) {
         : '';
     const activityHint = activityMarkup
         ? ''
-        : '<p class="study-card-assessment-hint lms-route-copy">No recorded activity yet. Categories above will show history once staff posts scores.</p>';
+        : '<p class="study-card-assessment-hint lux-panel-copy">No recorded activity yet. Categories above will show history once staff posts scores.</p>';
 
     return `
         <div class="study-card-assessment-layout">
@@ -313,8 +325,8 @@ function renderStudyCardAssessmentBody(subject = {}) {
             ${activityMarkup ? `
                 <section class="study-card-assessment-panel study-card-assessment-panel--activity lux-soft-chrome lms-route-panel lms-route-panel-compact">
                     <div class="study-card-assessment-panel-head">
-                        <div class="lms-route-field-label study-card-assessment-panel-kicker">Recent activity</div>
-                        <p class="lms-route-copy study-card-assessment-panel-copy">Latest submissions and score updates.</p>
+                        <div class="lux-section-kicker study-card-assessment-panel-kicker">Recent activity</div>
+                        <p class="lux-panel-copy study-card-assessment-panel-copy">Latest submissions and score updates.</p>
                     </div>
                     ${activityMarkup}
                 </section>
@@ -340,12 +352,13 @@ function openStudyCardAssessmentWindow(cacheKey) {
     const overlay = document.createElement('div');
     overlay.id = 'study-card-assessment-window';
     overlay.className = 'study-card-assessment-overlay';
+    overlay.setAttribute('data-lux-transparency-exempt', '1');
     overlay.onclick = (event) => {
         if (event.target === overlay) closeStudyCardAssessmentWindow();
     };
 
     overlay.innerHTML = `
-        <div class="study-card-assessment-window lux-soft-chrome">
+        <div class="study-card-assessment-window">
             <div class="study-card-assessment-window__header">
                 <div class="study-card-assessment-window__copy">
                     <div class="lux-section-kicker study-card-summary-kicker">Subject assessment</div>
@@ -356,7 +369,7 @@ function openStudyCardAssessmentWindow(cacheKey) {
                 </div>
                 <div class="study-card-assessment-window__actions">
                     <span class="grade-circle study-card-grade-circle study-card-grade-circle--${escapeHtml(subject.letterMeta?.toneToken || 'grade-f')}${subject.letterMeta?.label === '-' ? ' is-empty' : ''}">${escapeHtml(subject.letterMeta?.label || '-')}</span>
-                    <span class="lux-status-pill study-card-assessment-pill"><i class="fas fa-chart-line"></i> Score ${escapeHtml(String(subject.overallScore || 0))}</span>
+                    <span class="lux-status-pill home-hover-chip study-card-assessment-pill"><i class="fas fa-chart-line"></i> Score ${escapeHtml(String(subject.overallScore || 0))}</span>
                     <button type="button" class="lux-secondary-btn" data-study-card-assessment-close>
                         <i class="fas fa-window-minimize"></i> Minimize
                     </button>
@@ -369,6 +382,11 @@ function openStudyCardAssessmentWindow(cacheKey) {
     `;
 
     document.body.appendChild(overlay);
+    if (typeof window.openLuxGlassDialogOverlay === 'function') {
+        window.openLuxGlassDialogOverlay(overlay);
+    } else {
+        overlay.classList.add('is-open');
+    }
     const syncGradebookOverlayVisuals = () => {
         if (typeof syncGradebookVisualCustomProperties === 'function') {
             syncGradebookVisualCustomProperties(overlay);
@@ -398,16 +416,16 @@ function renderStudyCardSummaryRegion(context) {
                 <div class="lux-page-title study-card-summary-title">${escapeHtml(context.latestTermLabel || 'No active term')}</div>
                 <p class="lux-card-copy study-card-summary-copy">Semester-by-semester grade signals and assessment history for the courses currently attached to your student record.</p>
                 <div class="study-card-summary-chip-row">
-                    <span class="lux-status-pill"><i class="fas fa-layer-group"></i> ${context.totalSemesters} semester${context.totalSemesters === 1 ? '' : 's'}</span>
-                    <span class="lux-status-pill"><i class="fas fa-book"></i> ${context.totalSubjects} subject${context.totalSubjects === 1 ? '' : 's'}</span>
-                    <span class="lux-status-pill"><i class="fas fa-award"></i> ${context.totalEcts} ECTS tracked</span>
-                    <span class="lux-status-pill"><i class="fas fa-chart-line"></i> ${escapeHtml(context.averageScoreLabel)}</span>
+                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-layer-group"></i> ${context.totalSemesters} semester${context.totalSemesters === 1 ? '' : 's'}</span>
+                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-book"></i> ${context.totalSubjects} subject${context.totalSubjects === 1 ? '' : 's'}</span>
+                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-award"></i> ${context.totalEcts} ECTS tracked</span>
+                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-chart-line"></i> ${escapeHtml(context.averageScoreLabel)}</span>
                 </div>
             </div>
             <aside class="lux-hero-side lux-focus-panel study-card-summary-focus lux-soft-chrome home-hover-chip" aria-label="Study card summary">
                 <div class="lux-focus-panel__head lux-hero-side-head">
                     <div class="lux-focus-panel__kicker">Academic record</div>
-                    <span class="lux-focus-panel__chip lux-status-pill">${context.totalEcts} ECTS</span>
+                    <span class="lux-focus-panel__chip lux-status-pill home-hover-chip">${context.totalEcts} ECTS</span>
                 </div>
                 <div class="lux-focus-panel__body">
                     <div class="lux-focus-panel__title">${context.totalSubjects} subjects</div>

@@ -542,7 +542,7 @@
     function renderStudentServiceInboxFilterEditorRowMarkup(filter, index, total) {
         const editableOptions = getStudentServiceEditableCustomFilterOptions(filter.options);
         return `
-            <article class="student-service-inbox-filter-editor-row" role="listitem" data-student-service-inbox-filter-editor-row="${index}">
+            <article class="student-service-inbox-filter-editor-row lux-soft-chrome" role="listitem" data-student-service-inbox-filter-editor-row="${index}">
                 <div class="student-service-inbox-filter-editor-row-head">
                     <label class="student-service-inbox-filter-editor-toggle">
                         <input type="checkbox" data-student-service-inbox-filter-editor-field="enabled" data-student-service-inbox-filter-editor-filter-index="${index}"${filter.enabled ? ' checked' : ''}>
@@ -585,7 +585,7 @@
                     <div class="student-service-inbox-filter-editor-accent" aria-hidden="true"></div>
                     <header class="student-service-inbox-filter-editor-head">
                         <div class="student-service-inbox-filter-editor-heading">
-                            <span class="student-service-inbox-filter-editor-icon-chip" aria-hidden="true"><i class="fas fa-sliders-h"></i></span>
+                            <span class="student-service-inbox-filter-editor-icon-chip lux-soft-chrome" aria-hidden="true"><i class="fas fa-sliders-h"></i></span>
                             <div class="student-service-inbox-filter-editor-title-wrap">
                                 <div class="student-service-kicker">Inbox workspace</div>
                                 <strong id="student-service-inbox-filter-editor-title">Edit inbox filters</strong>

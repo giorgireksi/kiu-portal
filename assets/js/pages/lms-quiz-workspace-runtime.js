@@ -540,7 +540,7 @@ function openLmsQuizBoardModal(page = null) {
                             </button>
                         `).join('')}
                     </div>
-                    <span class="lux-status-pill is-muted lms-quiz-board-count-pill">${escapeHtml(String(meta.items.length))} total in this section</span>
+                    <span class="lux-status-pill home-hover-chip is-muted lms-quiz-board-count-pill">${escapeHtml(String(meta.items.length))} total in this section</span>
                 </div>
                 <div class="lms-quiz-board-card-list lux-scrollbar">
                 ${meta.items.length
@@ -811,24 +811,24 @@ function renderLmsStaffQuizWorkspace(context) {
 
     contentArea.innerHTML = upgradeLmsLegacyMarkup(`
         <div class="lms-quiz-studio-shell lms-quiz-builder">
-            <div class="lms-quiz-studio-hero">
+            <div class="lms-quiz-studio-hero lux-soft-chrome home-hover-chip">
                 <div class="lms-quiz-studio-hero-head">
                     <div>
-                        <div class="lms-quiz-studio-kicker">LMS Quiz Builder</div>
-                        <div class="lms-quiz-studio-title">${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
-                        <div class="lms-quiz-studio-copy">Draft first, publish only to students who are actually in class, then review full quiz papers from one place.</div>
+                        <div class="lux-section-kicker lms-quiz-studio-kicker">LMS Quiz Builder</div>
+                        <div class="lux-page-title lms-quiz-studio-title">${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
+                        <div class="lux-panel-copy lms-quiz-studio-copy">Draft first, publish only to students who are actually in class, then review full quiz papers from one place.</div>
                     </div>
                     <div class="lms-quiz-studio-hero-pills">
-                        <span class="lms-quiz-studio-hero-pill"><i class="fas fa-layer-group"></i> ${escapeHtml(context.group?.name || context.groupId)}</span>
-                        <span class="lms-quiz-studio-hero-pill"><i class="fas fa-users"></i> ${context.students.length} students</span>
+                        <span class="lux-status-pill home-hover-chip lms-quiz-studio-hero-pill"><i class="fas fa-layer-group"></i> ${escapeHtml(context.group?.name || context.groupId)}</span>
+                        <span class="lux-status-pill home-hover-chip lms-quiz-studio-hero-pill"><i class="fas fa-users"></i> ${context.students.length} students</span>
                     </div>
                 </div>
             </div>
             <div class="lms-quiz-studio-stat-grid">
-                <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Draft Quizzes</div><div class="lms-quiz-studio-stat-value">${workspace.drafts.length}</div></div>
-                <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Published Quizzes</div><div class="lms-quiz-studio-stat-value">${workspace.published.length}</div></div>
-                <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Base Pool Questions</div><div class="lms-quiz-studio-stat-value">${draft?.questions?.length || 0}</div></div>
-                <div class="lms-quiz-studio-stat-card ${alertSummary.alertCount > 0 ? 'is-alert' : ''}"><div class="lms-quiz-studio-stat-label">${alertSummary.alertCount > 0 ? 'Live Alerts' : 'Variant Mode'}</div><div class="lms-quiz-studio-stat-value">${alertSummary.alertCount > 0 ? alertSummary.alertCount : (draft?.variantEnabled ? (draft?.variants?.length || draft?.variantCount || 0) : 'Off')}</div><div class="lms-quiz-studio-stat-copy">${alertSummary.alertCount > 0 ? `${alertSummary.alertedStudents} student${alertSummary.alertedStudents === 1 ? '' : 's'} need attention` : escapeHtml(variantSummaryLabel)}</div></div>
+                <div class="lms-quiz-studio-stat-card lux-soft-chrome home-hover-chip"><div class="lux-section-kicker lms-quiz-studio-stat-label">Draft Quizzes</div><div class="lms-quiz-studio-stat-value">${workspace.drafts.length}</div></div>
+                <div class="lms-quiz-studio-stat-card lux-soft-chrome home-hover-chip"><div class="lux-section-kicker lms-quiz-studio-stat-label">Published Quizzes</div><div class="lms-quiz-studio-stat-value">${workspace.published.length}</div></div>
+                <div class="lms-quiz-studio-stat-card lux-soft-chrome home-hover-chip"><div class="lux-section-kicker lms-quiz-studio-stat-label">Base Pool Questions</div><div class="lms-quiz-studio-stat-value">${draft?.questions?.length || 0}</div></div>
+                <div class="lms-quiz-studio-stat-card lux-soft-chrome home-hover-chip ${alertSummary.alertCount > 0 ? 'is-alert' : ''}"><div class="lux-section-kicker lms-quiz-studio-stat-label">${alertSummary.alertCount > 0 ? 'Live Alerts' : 'Variant Mode'}</div><div class="lms-quiz-studio-stat-value">${alertSummary.alertCount > 0 ? alertSummary.alertCount : (draft?.variantEnabled ? (draft?.variants?.length || draft?.variantCount || 0) : 'Off')}</div><div class="lux-panel-copy lms-quiz-studio-stat-copy">${alertSummary.alertCount > 0 ? `${alertSummary.alertedStudents} student${alertSummary.alertedStudents === 1 ? '' : 's'} need attention` : escapeHtml(variantSummaryLabel)}</div></div>
             </div>
             ${alertSummary.alertCount > 0 ? `<div class="lms-quiz-studio-alert-summary">
                 <div class="lms-quiz-studio-alert-summary-head">
@@ -872,7 +872,7 @@ function renderLmsStaffQuizWorkspace(context) {
                 </div>
                 <div class="lms-live-monitor-grid">
                     ${liveMonitorEntries.slice(0, 8).map(entry => `
-                        <div class="lms-live-monitor-card">
+                        <div class="lms-live-monitor-card home-hover-chip">
                             <div class="lms-live-monitor-card-head">
                                 <div>
                                     <div class="lms-live-monitor-student-name">${escapeHtml(entry.studentName)}</div>
@@ -1195,7 +1195,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                             ? `${studentQuestionCount} questions  -  ${quiz.durationMinutes || 20} min${studentVariantSummary}  -  ${sessionGate.status === 'live' ? 'Session live' : sessionGate.message || 'Waiting for session'}`
                             : `${studentQuestionCount} questions  -  ${quiz.durationMinutes || 20} min${studentVariantSummary}`;
                 return `
-                    <div data-lms-student-quiz-card="true" class="lms-student-quiz-card">
+                    <div data-lms-student-quiz-card="true" class="lms-student-quiz-card lux-soft-chrome home-hover-chip">
                         <div class="lms-student-quiz-card-head">
                             <div>
                                 <div class="lms-student-quiz-card-title-row">
@@ -1216,27 +1216,27 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                         </div>
                     </div>
                 `;
-            }).join('') : `<div class="lms-quiz-empty-state"><i class="fas fa-file-signature lms-empty-state-icon"></i><div class="lms-empty-state-title">No quizzes are visible yet</div><div class="lms-empty-state-copy">Published quizzes for ${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)} will appear here when they are started or scheduled.</div></div>`;
+            }).join('') : `<div class="lux-empty-state lms-quiz-empty-state"><i class="fas fa-file-signature lms-empty-state-icon"></i><div class="lux-empty-state__title">No quizzes are visible yet</div><div class="lux-empty-state__copy">Published quizzes for ${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)} will appear here when they are started or scheduled.</div></div>`;
 
             contentArea.innerHTML = upgradeLmsLegacyMarkup(`
                 <div class="lms-quiz-studio-shell lms-quiz-builder">
-                    <div class="lms-quiz-studio-hero">
-                        <div class="lms-quiz-studio-kicker">My Quizzes</div>
-                        <div class="lms-quiz-studio-title">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}</div>
-                        <div class="lms-quiz-studio-copy">Students can only answer and submit. Quiz opening and ending are controlled by the professor or teaching assistant.</div>
+                    <div class="lms-quiz-studio-hero lux-soft-chrome home-hover-chip">
+                        <div class="lux-section-kicker lms-quiz-studio-kicker">My Quizzes</div>
+                        <div class="lux-page-title lms-quiz-studio-title">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}</div>
+                        <div class="lux-panel-copy lms-quiz-studio-copy">Students can only answer and submit. Quiz opening and ending are controlled by the professor or teaching assistant.</div>
                         <div class="lms-quiz-studio-hero-pills">
-                            <span class="lms-quiz-studio-hero-pill">
+                            <span class="lux-status-pill home-hover-chip lms-quiz-studio-hero-pill">
                                 <i class="fas fa-user"></i> ${escapeHtml(studentName)}
                             </span>
-                            <span class="lms-quiz-studio-hero-pill">
+                            <span class="lux-status-pill home-hover-chip lms-quiz-studio-hero-pill">
                                 <i class="fas fa-id-badge"></i> ${escapeHtml(studentId)}
                             </span>
                         </div>
                     </div>
                     <div class="lms-quiz-studio-stat-grid">
-                        <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Visible Quizzes</div><div class="lms-quiz-studio-stat-value">${quizzes.length}</div></div>
-                        <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Submitted</div><div class="lms-quiz-studio-stat-value">${submittedCount}</div></div>
-                        <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Graded</div><div class="lms-quiz-studio-stat-value">${gradedCount}</div></div>
+                        <div class="lms-quiz-studio-stat-card lux-soft-chrome home-hover-chip"><div class="lux-section-kicker lms-quiz-studio-stat-label">Visible Quizzes</div><div class="lms-quiz-studio-stat-value">${quizzes.length}</div></div>
+                        <div class="lms-quiz-studio-stat-card lux-soft-chrome home-hover-chip"><div class="lux-section-kicker lms-quiz-studio-stat-label">Submitted</div><div class="lms-quiz-studio-stat-value">${submittedCount}</div></div>
+                        <div class="lms-quiz-studio-stat-card lux-soft-chrome home-hover-chip"><div class="lux-section-kicker lms-quiz-studio-stat-label">Graded</div><div class="lms-quiz-studio-stat-value">${gradedCount}</div></div>
                     </div>
                     <div class="lms-student-quiz-card-list">${cards}</div>
                 </div>
@@ -1376,10 +1376,10 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                     ${selectedQuiz.instructions ? `<div class="lms-quiz-studio-copy">${escapeHtml(selectedQuiz.instructions)}</div>` : ''}
                 </div>
                 <div class="lms-quiz-studio-stat-grid">
-                    <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Questions</div><div class="lms-quiz-studio-stat-value">${activeQuestions.length}</div></div>
-                    <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Total Points</div><div class="lms-quiz-studio-stat-value">${getAdminQuizTotalScore(variantScopedQuiz)}</div></div>
-                    <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Manual Review</div><div class="lms-quiz-studio-stat-value">${manualMax > 0 ? `${manualMax} pts` : 'No'}</div></div>
-                    <div class="lms-quiz-studio-stat-card${warningCount > 0 || outsideActionCount > 0 ? ' is-alert' : ''}"><div class="lms-quiz-studio-stat-label">Outside Actions</div><div class="lms-quiz-studio-stat-value">${outsideActionCount}</div><div class="lms-quiz-studio-stat-copy">Warnings ${warningCount} / ${protectionConfig.maxWarnings}</div></div>
+                    <div class="lms-quiz-studio-stat-card home-hover-chip"><div class="lms-quiz-studio-stat-label">Questions</div><div class="lms-quiz-studio-stat-value">${activeQuestions.length}</div></div>
+                    <div class="lms-quiz-studio-stat-card home-hover-chip"><div class="lms-quiz-studio-stat-label">Total Points</div><div class="lms-quiz-studio-stat-value">${getAdminQuizTotalScore(variantScopedQuiz)}</div></div>
+                    <div class="lms-quiz-studio-stat-card home-hover-chip"><div class="lms-quiz-studio-stat-label">Manual Review</div><div class="lms-quiz-studio-stat-value">${manualMax > 0 ? `${manualMax} pts` : 'No'}</div></div>
+                    <div class="lms-quiz-studio-stat-card home-hover-chip${warningCount > 0 || outsideActionCount > 0 ? ' is-alert' : ''}"><div class="lms-quiz-studio-stat-label">Outside Actions</div><div class="lms-quiz-studio-stat-value">${outsideActionCount}</div><div class="lms-quiz-studio-stat-copy">Warnings ${warningCount} / ${protectionConfig.maxWarnings}</div></div>
                 </div>
                 ${focusState.active && focusState.warningMessage ? `<div class="lms-student-quiz-notice is-warning lms-quiz-state-notice lms-quiz-state-notice--warning"><div class="lms-quiz-state-notice-title">Warning recorded</div><div class="lms-quiz-state-notice-copy">${escapeHtml(focusState.warningMessage)}. TA / professor can see this on their monitoring screen.</div></div>` : ''}
                 ${latestProctorEvent ? `<div class="lms-student-quiz-notice is-muted lms-quiz-state-notice lms-quiz-state-notice--latest-event"><div class="lms-quiz-state-notice-title">Latest monitoring event</div><div class="lms-quiz-state-notice-copy">${escapeHtml(latestProctorEvent.note || latestProctorEvent.type || 'Activity logged')}</div><div class="lms-student-quiz-notice-meta lms-quiz-state-notice-meta">${escapeHtml(formatLmsDateTime(latestProctorEvent.createdAt))}</div></div>` : ''}

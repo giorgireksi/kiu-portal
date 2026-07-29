@@ -627,6 +627,26 @@ function enhanceLmsTabExperience(tab, courseId = currentCourseId) {
         if (card.classList.contains('lms-week-accordion-panel')) return;
         card.classList.add('lms-pro-surface');
     });
+    const hoverChipSkipSelector = '.lms-interaction-messenger, [data-lux-glass-root="1"], .lms-whiteboard-shell, .lms-whiteboard-stage';
+    contentArea.querySelectorAll('.lms-route-card:not(.lms-week-accordion-panel), .lms-call-classroom').forEach(el => {
+        if (el.closest(hoverChipSkipSelector)) return;
+        if (el.closest('.lms-week-accordion-body') && el.classList.contains('lms-route-card')) return;
+        if (!el.classList.contains('home-hover-chip')) el.classList.add('home-hover-chip');
+    });
+    contentArea.querySelectorAll('.lms-route-panel.lms-session-marker-board, .lms-route-pill, .lms-session-marker-type-chip, .lms-session-marker-slot, .lms-member-row, .lms-member-overview-panel').forEach(el => {
+        if (el.closest(hoverChipSkipSelector)) return;
+        if (!el.classList.contains('home-hover-chip')) el.classList.add('home-hover-chip');
+    });
+    syncAllLmsRouteTabHoverChips();
+}
+
+function syncLmsRouteTabHoverChip(tab) {
+    if (!tab?.classList) return;
+    tab.classList.toggle('home-hover-chip', !tab.classList.contains('is-active'));
+}
+
+function syncAllLmsRouteTabHoverChips() {
+    document.querySelectorAll('#page-lms-inner [data-lms-tab]').forEach(syncLmsRouteTabHoverChip);
 }
 
 function switchLMSTab(tab, options = {}) {
@@ -689,7 +709,7 @@ function switchLMSTab(tab, options = {}) {
         tabEl.setAttribute('aria-pressed', 'true');
         tabEl.scrollIntoView?.({ block: 'nearest', inline: 'center' });
     }
-    
+    syncAllLmsRouteTabHoverChips();
     const contentArea = document.getElementById('lms-content-area');
     const gbWrapper = ensureLmsGradebookShell();
     const tabCourseKey = getLmsTabCourseKey(tab);

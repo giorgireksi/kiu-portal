@@ -91,6 +91,8 @@
         const ensureSocialLostFoundModule = dep('ensureSocialLostFoundModule');
         const hasSocialSurveysModule = dep('hasSocialSurveysModule');
         const ensureSocialSurveysModule = dep('ensureSocialSurveysModule');
+        const hasSocialResearchModule = dep('hasSocialResearchModule');
+        const ensureSocialResearchModule = dep('ensureSocialResearchModule');
         const hasSocialWorkspaceModule = dep('hasSocialWorkspaceModule');
         const ensureSocialWorkspaceModule = dep('ensureSocialWorkspaceModule');
         const queueDeferredModuleRender = dep('queueDeferredModuleRender');
@@ -105,6 +107,7 @@
         const renderPagesPanel = dep('renderPagesPanel');
         const renderEventsPanel = dep('renderEventsPanel');
         const renderSurveysPanel = dep('renderSurveysPanel');
+        const renderResearchPanel = dep('renderResearchPanel');
         const renderPhotographyPanel = dep('renderPhotographyPanel');
         const renderLostFoundPanel = dep('renderLostFoundPanel');
         const renderMessagesPanel = dep('renderMessagesPanel');
@@ -147,8 +150,8 @@
         const PANEL_KEY = d.PANEL_KEY ?? window.PANEL_KEY;
         const CHAT_KEY = d.CHAT_KEY ?? window.CHAT_KEY ?? 'KIU_SOCIAL_ACTIVE_CHAT';
         let renderDebounceTimer = 0;
-        const SOCIAL_TAB_SCROLL_RESET_RE = /^(panel|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|feed-tab)$/;
-        const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
+        const SOCIAL_TAB_SCROLL_RESET_RE = /^(panel|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|feed-tab)$/;
+        const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|research-input|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
         void d;
 
 function reactionEmoji(reactionType) {
@@ -547,7 +550,7 @@ function readFileAsDataUrl(file) {
 function setPanel(panel) {
     const runtime = state();
     const normalizedPanel = text(panel).toLowerCase() === 'lost-found' ? 'lost-and-found' : text(panel);
-    const nextPanel = ['feed', 'community', 'groups', 'workspace', 'projects', 'pages', 'events', 'surveys', 'photography', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(normalizedPanel) ? normalizedPanel : 'feed';
+    const nextPanel = ['feed', 'community', 'groups', 'workspace', 'projects', 'research', 'pages', 'events', 'surveys', 'photography', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(normalizedPanel) ? normalizedPanel : 'feed';
     const panelChanged = runtime.ui.activePanel !== nextPanel;
     const drawerChanged = runtime.ui.shellDrawerOpen !== false;
     const workspaceNavChanged = runtime.ui.workspaceNavOpen !== false;
@@ -776,6 +779,8 @@ function renderActivePanelMarkup(activePanel) {
                         ? renderEventsPanel()
                         : activePanel === 'surveys'
                             ? renderSurveysPanel()
+                        : activePanel === 'research'
+                            ? renderResearchPanel()
                         : activePanel === 'photography'
                             ? renderPhotographyPanel()
                         : activePanel === 'lost-and-found'
@@ -836,6 +841,8 @@ const renderDialog = (typeof window.createKiuSocialDialogRenderer === 'function'
         ensureSocialLostFoundModule,
         hasSocialSurveysModule,
         ensureSocialSurveysModule,
+        hasSocialResearchModule,
+        ensureSocialResearchModule,
         hasSocialWorkspaceModule,
         ensureSocialWorkspaceModule
     })
@@ -1096,7 +1103,7 @@ function renderSocialPageNow(reason = 'manual') {
     };
     // Docs actions render synchronously so a subsequent center:false render
     // (toast/flash/dialog-close) can't clear the pending timer and swallow
-    const fastPath = reason === 'boot' || /^(comment-|post-react|post-save|post-pin|post-updated|post-deleted|post-shared|connection-|page-follow|page-report|flash|dialog-|survey-closed|survey-deleted|survey-response-submitted|survey-created|survey-take-|survey-results-|social-bootstrap|event-rsvp|event-created|event-deleted|event-rsvp-optimistic|event-rsvp-rollback|group-membership|group-request|group-member-removed|group-updated|group-left|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|panel-|feed-tab|feed-scope|community-tab|pages-tab|groups-tab|events-tab|directory-search|directory-role|report-resolve|mobile-nav|alerts-filter|messages-filter|profile-view|project-|projects-back)/.test(reason);
+    const fastPath = reason === 'boot' || /^(comment-|post-react|post-save|post-pin|post-updated|post-deleted|post-shared|connection-|page-follow|page-report|flash|dialog-|survey-closed|survey-deleted|survey-response-submitted|survey-created|survey-take-|survey-results-|research-tab|research-create-open|research-input|research-reader-|research-saved|research-deleted|research-created|social-bootstrap|event-rsvp|event-created|event-deleted|event-rsvp-optimistic|event-rsvp-rollback|group-membership|group-request|group-member-removed|group-updated|group-left|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|panel-|feed-tab|feed-scope|community-tab|pages-tab|groups-tab|events-tab|directory-search|directory-role|report-resolve|mobile-nav|alerts-filter|messages-filter|profile-view|project-|projects-back)/.test(reason);
     renderDebounceTimer = setTimeout(renderCallback, fastPath ? 0 : 80);
 }
 

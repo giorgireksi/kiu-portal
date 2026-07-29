@@ -168,6 +168,85 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(bare).toContain('#lms-content-area > [data-lms-tab-loading]');
     });
 
+    it('quiz studio student shell uses shared typography and shell classes', () => {
+        const quiz = read('assets/js/pages/lms-quiz-workspace-runtime.js');
+        const bare = read('assets/css/lux-page-bare-lite.css');
+        const fouc = read('assets/css/lux-fouc-ht.css');
+
+        expect(quiz).toContain('lux-section-kicker lms-quiz-studio-kicker">My Quizzes');
+        expect(quiz).toContain('lux-page-title lms-quiz-studio-title');
+        expect(quiz).toContain('lux-panel-copy lms-quiz-studio-copy');
+        expect(quiz).toContain('lux-status-pill home-hover-chip lms-quiz-studio-hero-pill');
+        expect(quiz).toContain('lux-empty-state lms-quiz-empty-state');
+        expect(quiz).toContain('lux-empty-state__title">No quizzes are visible yet');
+        expect(quiz).toContain('lms-student-quiz-card lux-soft-chrome home-hover-chip');
+        expect(fouc).toContain('.lms-quiz-empty-state');
+        expect(bare).not.toMatch(/\.lms-quiz-studio-hero-pill\s*\{[^}]*background:\s*rgba/);
+    });
+
+    it('student gradebook shell uses shared typography, shells, and hover chips', () => {
+        const sectionQuiz = read('assets/js/pages/lms-section-quiz-runtime.js');
+        const weights = read('assets/js/pages/gradebook-weights-runtime.js');
+        const gradebookStaff = read('assets/js/pages/gradebook-staff.js');
+        const bare = read('assets/css/lux-page-bare-lite.css');
+        const fouc = read('assets/css/lux-fouc-ht.css');
+        const primitives = read('assets/css/lux-layout-primitives.css');
+        const tabsRuntime = read('assets/js/pages/lms-classroom-tabs-runtime.js');
+
+        expect(sectionQuiz).toContain('lux-section-kicker lms-route-inline lms-route-inline-gap-8"><i class="fas fa-chart-line"></i> Grades');
+        expect(sectionQuiz).toContain('id="dynamic-gb-title" class="lux-page-title lms-route-title');
+        expect(sectionQuiz).toContain('lux-panel-copy lms-route-copy lms-route-copy-mt-6');
+        expect(gradebookStaff).toContain('gb-student-context-bar lux-soft-chrome home-hover-chip');
+        expect(gradebookStaff).toContain('lux-card-copy gb-student-context-title');
+        expect(gradebookStaff).toContain('lux-panel-copy gb-student-context-copy-line');
+        expect(sectionQuiz).not.toContain('gradebook-assessment-controls" class="lms-route-panel');
+        expect(gradebookStaff).toContain('lux-section-kicker lms-route-field-label gb-modern-kicker');
+        expect(weights).toContain('gb-modern-hero lux-soft-chrome home-hover-chip');
+        expect(weights).toContain('is-student-clickable home-hover-chip');
+        expect(weights).toMatch(/studentView \|\| studyCardOverlay \? ' lux-soft-chrome home-hover-chip'/);
+        expect(weights).toContain('gb-modern-study-card-pointer lux-panel-copy');
+        expect(bare).not.toMatch(/body\.lux-route-lms button\.gb-weight-row\.is-student-clickable:hover\s*\{[^}]*border-color/);
+        expect(fouc).toContain('.gb-modern-hero.lux-soft-chrome');
+        expect(fouc).toContain('.gb-weight-card.lux-soft-chrome');
+        expect(primitives).toContain('#dynamic-gb-title.lux-page-title');
+        expect(primitives).toContain('.gb-modern-hero h2.lux-page-title');
+        expect(weights).toContain('gb-weight-row-meta lux-panel-copy');
+        expect(weights).toContain('gb-weight-row-history-hint lux-panel-copy');
+        expect(weights).toContain('gb-weight-stat is-earned lux-panel-copy');
+        expect(weights).toContain('lux-card-copy gb-weight-row-title');
+        expect(primitives).toContain('.gb-weight-row-title.lux-card-copy');
+        expect(primitives).toContain('.gb-weight-stat.is-earned.lux-panel-copy');
+        expect(weights).toContain('gb-composition-legend-stat is-earned lux-panel-copy');
+        expect(bare).toContain('.gb-student-context-copy');
+        expect(bare).toContain('.gb-scheme-progress-section');
+        expect(fouc).toContain('.gb-student-context-bar.lux-soft-chrome.home-hover-chip');
+        expect(primitives).toContain('.gb-composition-legend-stat.is-earned.lux-panel-copy');
+        expect(tabsRuntime).toContain('gradebook-weights-runtime.js?v=20260729-lmsgbshare4');
+    });
+
+    it('category history modal uses shared shells and portal CSS', () => {
+        const workspace = read('assets/js/pages/gradebook-workspace.js');
+        const historyUi = read('assets/js/pages/gradebook-history-ui-runtime.js');
+        const bare = read('assets/css/lux-page-bare-lite.css');
+        const fouc = read('assets/css/lux-fouc-ht.css');
+        const primitives = read('assets/css/lux-layout-primitives.css');
+        const tabsRuntime = read('assets/js/pages/lms-classroom-tabs-runtime.js');
+
+        expect(workspace).toContain('gb-category-history-card lux-soft-chrome home-hover-chip');
+        expect(workspace).toContain('lux-card-copy gb-category-history-title');
+        expect(workspace).toContain('gb-category-history-empty');
+        expect(workspace).toContain('renderLmsGlassDialogCard');
+        expect(historyUi).toContain('gb-score-history-row lux-soft-chrome home-hover-chip');
+        expect(bare).toContain('#gradebook-category-history-modal .gb-category-history-shell');
+        expect(bare).toContain('#gradebook-category-history-modal .gb-category-history-body');
+        expect(fouc).toContain('#gradebook-category-history-modal');
+        expect(fouc).toContain('.gb-category-history-card.lux-soft-chrome');
+        expect(primitives).toContain('.gb-category-history-title.lux-card-copy');
+        expect(primitives).toContain('.gb-category-history-score-value.lux-page-title');
+        expect(tabsRuntime).toContain('gradebook-workspace.js?v=20260729-lmsgbshare3');
+        expect(tabsRuntime).toContain('gradebook-history-ui-runtime.js?v=20260729-lmsgbshare3');
+    });
+
     it('clears LMS tab content before each render to avoid stacked panels', () => {
         const shell = read('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
         expect(shell).toMatch(/function prepareLmsContentAreaForTab[\s\S]*contentArea\.innerHTML = ''/);

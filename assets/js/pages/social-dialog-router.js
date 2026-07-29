@@ -142,6 +142,15 @@
                 deps.ensureSocialSurveysModule().catch(() => null);
                 return '';
             }
+            if (kind === 'research-create') {
+                if (deps.hasSocialResearchModule() && typeof window.renderResearchCreateDialog === 'function') {
+                    return window.renderResearchCreateDialog(state());
+                }
+                deps.ensureSocialResearchModule()
+                    .then(() => queueDeferredModuleRender('research-module'))
+                    .catch(() => null);
+                return '';
+            }
             if (kind === 'survey-results') {
                 if (deps.hasSocialSurveysModule() && typeof window.renderSurveyResultsDialog === 'function') {
                     const survey = surveyById(dialog.surveyId);

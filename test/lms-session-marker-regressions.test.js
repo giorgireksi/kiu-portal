@@ -70,7 +70,9 @@ describe('lms session marker regressions', () => {
     });
 
     it('styles marked LMS UI with marker-{type} classes', () => {
-        expect(runtimeSource).toContain('lms-session-marker-card is-${escapeHtml(status)} marker-${lmsSessionMarkerClassToken(marker.type)}');
+        expect(runtimeSource).toContain('lms-session-marker-card home-hover-chip is-${escapeHtml(status)}');
+        expect(runtimeSource).toContain('lms-route-pill lux-pill home-hover-chip');
+        expect(runtimeSource).toContain('lms-session-marker-type-chip home-hover-chip');
         expect(sessionsRuntimeSource).toContain('lms-session-marker-slot-badge marker-${lmsSessionMarkerClassToken');
         expect(runtimeSource).toContain('class="lms-session-marker-type-chip');
         expect(runtimeSource).not.toContain('lms-session-marker-type-chip marker-${lmsSessionMarkerClassToken(type)}');
@@ -96,6 +98,20 @@ describe('lms session marker regressions', () => {
         expect(bareLiteCss).toContain('.lms-session-marker-composer.is-collapsed .lms-session-marker-body');
     });
 
+    it('uses global home-hover-chip on marker board shells and week pill', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+
+        expect(runtimeSource).toContain('lms-session-marker-board home-hover-chip');
+        expect(runtimeSource).toContain('lms-session-marker-composer home-hover-chip');
+        expect(runtimeSource).toContain('lms-session-marker-card home-hover-chip');
+        expect(runtimeSource).toContain('lms-route-pill home-hover-chip"><i class="fas fa-calendar-week"></i>');
+        expect(fouc).toMatch(
+            /body\.lux-route-lms #page-lms-inner \[data-lux-glass-root="1"\] :is\([\s\S]*?\.lms-session-marker-card[\s\S]*?\.lms-route-pill\.home-hover-chip/
+        );
+        expect(fouc).toContain('.lms-route-pill.home-hover-chip');
+        expect(bareLiteCss).toContain('.lms-route-pill:not(.home-hover-chip)');
+    });
+
     it('keeps timetable marker tone classes visible', () => {
         expect(bareLiteCss).toContain('body.lux-route-timetable .has-session-marker');
         expect(bareLiteCss).toContain('body.lux-route-timetable .schedule-marker-badge');
@@ -113,7 +129,10 @@ describe('lms session marker regressions', () => {
     it('surfaces next session on sessions hero, group tiles, and student subject deck', () => {
         expect(runtimeSource).toContain('renderLmsNextSessionHtml(nextSession, \'hero\')');
         expect(sessionsRuntimeSource).toContain('class="lms-group-next-session"');
-        expect(sessionsRuntimeSource).toContain('Next session');
+        expect(sessionsRuntimeSource).toContain('lux-pill home-hover-chip lms-next-session-badge');
+        expect(sessionsRuntimeSource).toContain('lms-route-stat-value lms-next-session-date');
+        expect(sessionsRuntimeSource).toContain('lux-card-copy lms-next-session-detail');
+        expect(sessionsRuntimeSource).toContain('lux-card-meta lms-next-session-instructor');
         expect(runtimeSource).not.toContain('Official weekly session');
     });
 
@@ -129,5 +148,6 @@ describe('lms session marker regressions', () => {
         expect(bareLiteCss).toContain('body.lux-route-lms .lms-next-session-badge.is-live');
         expect(bareLiteCss).toContain('body.lux-route-lms .lms-next-session-badge.is-today');
         expect(bareLiteCss).toContain('body.lux-route-lms .lms-next-session-card.is-empty');
+        expect(bareLiteCss).toContain('body.lux-route-lms .lms-next-session-card.is-empty .lms-next-session-empty');
     });
 });

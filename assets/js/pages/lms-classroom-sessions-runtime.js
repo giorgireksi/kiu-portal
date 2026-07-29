@@ -128,9 +128,9 @@ function renderLmsNextSessionHtml(model, variant = 'hero') {
             return `<span class="lms-next-session-inline is-empty"><i class="far fa-clock"></i> ${escapeHtml(emptyCopy)}</span>`;
         }
         return `
-            <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card is-empty">
+            <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card home-hover-chip is-empty">
                 <div class="lms-route-field-label">Next session</div>
-                <strong>${escapeHtml(emptyCopy)}</strong>
+                <div class="lux-card-copy lms-next-session-empty">${escapeHtml(emptyCopy)}</div>
             </div>
         `;
     }
@@ -143,15 +143,15 @@ function renderLmsNextSessionHtml(model, variant = 'hero') {
         return `<div class="lms-group-next-session"><i class="far fa-clock"></i> <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(dayLine)} · ${escapeHtml(model.time || 'TBD')} · ${escapeHtml(model.room || 'Room TBD')}</div>`;
     }
     if (variant === 'inline') {
-        return `<span class="lms-next-session-inline"><i class="far fa-clock"></i> Next session · <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(model.day || 'Day TBD')} ${escapeHtml(model.time || 'TBD')}</span>`;
+        return `<span class="lms-next-session-inline"><i class="far fa-clock"></i> Next session · <span class="lux-pill home-hover-chip lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(model.day || 'Day TBD')} ${escapeHtml(model.time || 'TBD')}</span>`;
     }
     return `
-        <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card">
+        <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card home-hover-chip">
             <div class="lms-route-field-label">Next session</div>
-            <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span>
-            <strong>${escapeHtml(dayLine)}</strong>
-            <div>${escapeHtml(timeLine)}</div>
-            <div>${escapeHtml(instructorLine)}</div>
+            <span class="lux-pill home-hover-chip lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span>
+            <div class="lms-route-stat-value lms-next-session-date">${escapeHtml(dayLine)}</div>
+            <div class="lux-card-copy lms-next-session-detail">${escapeHtml(timeLine)}</div>
+            <div class="lux-card-meta lms-next-session-instructor">${escapeHtml(instructorLine)}</div>
         </div>
     `;
 }
@@ -181,7 +181,7 @@ function renderLmsSessionMarkerPreviewHtml(courseKey = currentCourseId) {
                 const typeMeta = candidate.existingMarker ? getLmsSessionMarkerTypeMeta(candidate.existingMarker.type) : null;
                 const markerClass = candidate.existingMarker ? ` marker-${lmsSessionMarkerClassToken(candidate.existingMarker.type)}` : '';
                 return `
-                    <label class="lms-session-marker-slot${candidate.disabled ? ' is-disabled' : ''}${candidate.existingMarker ? ' is-marked' : ''}${markerClass}">
+                    <label class="lms-session-marker-slot home-hover-chip${candidate.disabled ? ' is-disabled' : ''}${candidate.existingMarker ? ' is-marked' : ''}${markerClass}">
                         <input type="checkbox" class="lms-session-marker-slot-check" value="${escapeHtml(candidate.sessionKey)}" data-session-key="${escapeHtml(candidate.sessionKey)}" ${candidate.disabled ? 'disabled' : ''} ${candidate.existingMarker ? 'checked' : ''}>
                         <div class="lms-session-marker-slot-body">
                             <div class="lms-session-marker-slot-head">

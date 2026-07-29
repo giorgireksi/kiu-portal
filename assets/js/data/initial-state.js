@@ -96,6 +96,7 @@ function createEmptySocialHubState() {
         surveys: [],
         surveyQuestions: [],
         surveyResponses: [],
+        researchPublications: [],
         ui: {},
         draftFiles: {},
         migrationVersion: 5

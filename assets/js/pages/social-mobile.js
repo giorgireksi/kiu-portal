@@ -152,7 +152,7 @@
     function getActiveSocialPanel() {
         const runtime = getSocialRuntime();
         const panel = normalizeSocialPanel(runtime?.ui?.activePanel || 'feed');
-        return ['feed', 'community', 'workspace', 'projects', 'events', 'photography', 'lost-and-found', 'surveys', 'messages', 'alerts', 'profile'].includes(panel) ? panel : 'feed';
+        return ['feed', 'community', 'workspace', 'projects', 'research', 'events', 'photography', 'lost-and-found', 'surveys', 'messages', 'alerts', 'profile'].includes(panel) ? panel : 'feed';
     }
 
     function activeMobileNavKey(panel = getActiveSocialPanel()) {
@@ -162,7 +162,7 @@
         if (normalizedPanel === 'photography') return 'photography';
         if (normalizedPanel === 'events') return 'events';
         if (normalizedPanel === 'lost-and-found') return 'lost-and-found';
-        if (normalizedPanel === 'surveys') return 'more';
+        if (normalizedPanel === 'surveys' || normalizedPanel === 'research') return 'more';
         if (normalizedPanel === 'messages' || normalizedPanel === 'alerts') return 'inbox';
         return 'home';
     }
@@ -401,6 +401,10 @@
                     <button class="mob-sheet-nav-btn" type="button" data-social-panel="surveys">
                         <i class="fas fa-clipboard-list"></i>
                         <span>Surveys</span>
+                    </button>
+                    <button class="mob-sheet-nav-btn" type="button" data-social-panel="research">
+                        <i class="fas fa-book-open"></i>
+                        <span>Research</span>
                     </button>
                     <button class="mob-sheet-nav-btn" type="button" data-social-panel="profile" data-social-profile-tab="saved">
                         <i class="fas fa-bookmark"></i>

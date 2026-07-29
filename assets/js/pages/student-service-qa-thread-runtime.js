@@ -141,8 +141,17 @@ function handleStudentServiceQaThreadClick(event) {
     if (answerHelpfulButton) {
 
         event.preventDefault();
+        event.stopPropagation();
 
-        setStudentServiceAnswerFeedback(
+        const setAnswerFeedback = typeof window.setStudentServiceAnswerFeedback === 'function'
+            ? window.setStudentServiceAnswerFeedback
+            : window.KiuStudentService?.setStudentServiceAnswerFeedback;
+        if (typeof setAnswerFeedback !== 'function') {
+            if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
+            return true;
+        }
+
+        setAnswerFeedback(
 
             answerHelpfulButton.dataset.studentServiceQuestionId || '',
 
@@ -201,6 +210,7 @@ function handleStudentServiceQaThreadClick(event) {
     if (replyToAnswerButton) {
 
         event.preventDefault();
+        event.stopPropagation();
 
         setStudentServiceReplyTarget(
 

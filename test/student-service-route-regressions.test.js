@@ -76,6 +76,8 @@ describe('student-service route regressions', () => {
         expect(block).toContain('body.lux-route-student-service .student-service-qa-chip-row');
         expect(block).toContain('#student-service-modal-root .student-service-qa-detail--modal');
         expect(block).toContain('#student-service-modal-root .student-service-qa-thread-reply');
+        expect(block).toContain('#student-service-modal-root .student-service-guidance-workspace');
+        expect(block).toContain('#student-service-modal-root .student-service-guidance-pane');
         expect(block).not.toMatch(/student-service-qa-composer-modal\s*\{[^}]*background:/);
     });
 
@@ -102,12 +104,55 @@ describe('student-service route regressions', () => {
         expect(fouc).toContain('Student Service primary shells: frosted panel glass');
         expect(fouc).toContain('body.lux-unified-shell #page-student-service :is(');
         expect(fouc).toContain('--lux-panel-blur-filter');
-        const modalBlock = fouc.split('/* Student Service modal portal:')[1]?.split('/* Social soft-chrome shells')[0] || '';
+        const modalBlock = fouc.split('/* Student Service modal portal:')[1]?.split('/* Orders inbox page:')[0] || '';
         expect(modalBlock).toContain('#student-service-modal-root');
+        expect(modalBlock).toContain('var(--lux-warmglass-overlay-dark)');
+        expect(modalBlock).toContain('var(--lux-warmglass-overlay-light)');
+        expect(modalBlock).toContain('backdrop-filter: none');
+        expect(modalBlock).not.toContain('blur(6px)');
+        expect(modalBlock).toContain('var(--lux-panel-fill)');
+        expect(modalBlock).toContain('var(--lux-panel-blur-filter)');
         expect(modalBlock).toContain('.student-service-qa-composer-modal');
         expect(modalBlock).toContain('.student-service-qa-thread-modal');
-        expect(modalBlock).toContain('.student-service-qa-answer-card');
         expect(modalBlock).toContain('.student-service-qa-thread-reply');
+        expect(modalBlock).toContain('.social-neo-comment-bubble.lux-soft-chrome');
+        expect(modalBlock).toContain('.social-neo-comment-reply-form.lux-soft-chrome.home-hover-chip');
+        expect(modalBlock).toContain('.student-service-find-search');
+        expect(modalBlock).toContain('.student-service-ticket-card.is-selected');
+        expect(modalBlock).toContain('.student-service-guidance-pane.lux-soft-chrome');
+    });
+
+    it('qa feed cards and pills use home-hover-chip', () => {
+        const qa = readSource('assets/js/pages/student-service-qa.js');
+        expect(qa).toContain('student-service-zone student-service-qa-composer-card home-hover-chip');
+        expect(qa).toContain('student-service-qa-card home-hover-chip');
+        expect(qa).toContain('student-service-pill home-hover-chip');
+    });
+
+    it('qa thread and delete modals use panel hosts and soft-chrome inners', () => {
+        const qa = readSource('assets/js/pages/student-service-qa.js');
+        const chrome = readSource('assets/js/pages/student-service-chrome.js');
+        const bareLite = readSource('assets/css/lux-page-bare-lite.css');
+        expect(qa).toContain('class="student-service-qa-thread-modal"');
+        expect(qa).not.toContain('student-service-qa-thread-modal lux-soft-chrome');
+        expect(qa).toContain('student-service-qa-thread-modal-scroll lux-glass-dialog-comment-scroll');
+        expect(qa).toContain('student-service-qa-thread-modal-compose');
+        expect(qa).toContain('lux-glass-dialog-comment-thread student-service-qa-thread-comments');
+        expect(qa).toContain('lux-glass-dialog-comment-preview lux-soft-chrome home-hover-chip');
+        expect(qa).toContain('lux-glass-dialog-comment-post-head');
+        expect(bareLite).toContain('#student-service-modal-root .lux-glass-dialog-comment-thread');
+        expect(bareLite).toContain('#social-neo-overlay-portal .lux-glass-dialog-comment-thread');
+        expect(qa).toContain('student-service-qa-composer-modal"');
+        expect(qa).not.toContain('student-service-qa-composer-modal lux-soft-chrome');
+        expect(qa).toContain('social-neo-comment-bubble lux-soft-chrome home-hover-chip');
+        expect(qa).toContain('student-service-qa-inline-reply-banner lux-soft-chrome');
+        expect(qa).toContain('student-service-qa-thread-reply student-service-qa-reply-shell lux-soft-chrome');
+        expect(qa).toContain('student-service-qa-comment-reply-shell lux-soft-chrome home-hover-chip');
+        expect(qa).toContain('student-service-qa-reply-context social-neo-muted');
+        expect(bareLite).toContain('#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form');
+        expect(bareLite).toContain('#student-service-modal-root .lux-glass-dialog-comment-thread .student-service-qa-reply-context');
+        expect(chrome).not.toContain("'lux-soft-chrome'");
+        expect(chrome).toContain('student-service-qa-delete-confirm-icon-chip lux-soft-chrome');
     });
 
     it('qa thread modal uses shared typography on title', () => {
@@ -118,6 +163,12 @@ describe('student-service route regressions', () => {
     it('qa composer modal uses shared typography on title', () => {
         const qa = readSource('assets/js/pages/student-service-qa.js');
         expect(qa).toContain('id="student-service-question-composer-modal-title" class="lux-page-title"');
+    });
+
+    it('guidance modal uses shared typography on title and copy', () => {
+        const ops = readSource('assets/js/pages/student-service-ops-runtime.js');
+        expect(ops).toContain('id="student-service-guidance-modal-title" class="lux-page-title"');
+        expect(ops).toContain('class="lux-panel-copy">Browse official guidance before opening a private case.');
     });
 
     it('qa feed markup uses shared typography classes', () => {

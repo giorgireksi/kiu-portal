@@ -123,13 +123,15 @@ describe('index widget wave 2 regressions', () => {
   });
 
   it('keeps social portfolio and events summary widgets aligned to index hero-side and strip-card classes', () => {
-    const socialJs = readSource('assets/js/pages/social-page.js');
+    const socialEventsJs = readSource('assets/js/pages/social-events.js');
+    const socialPortfolioJs = readSource('assets/js/pages/social-workspace-portfolio-ui.js');
 
-    expect(socialJs).toContain('class="social-neo-events-hero-stat lux-strip-card surface-card');
-    expect(socialJs).toContain('class="social-neo-card social-portfolio-hero lux-hero-stage"');
-    expect(socialJs).toContain('class="social-portfolio-hero-main lux-hero-main"');
-    expect(socialJs).toContain('class="social-portfolio-hero-side lux-hero-side"');
-    expect(socialJs).toContain('class="social-portfolio-stat-tile lux-strip-card surface-card"');
+    expect(socialEventsJs).toContain('class="social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip');
+    expect(socialEventsJs).toContain('social-neo-event-feature social-neo-event-feature--${escape(tone)} home-hover-chip');
+    expect(socialEventsJs).toContain('social-neo-events-hub-section social-neo-events-list-card home-hover-chip');
+    expect(socialPortfolioJs).toContain('class="social-neo-card social-neo-portfolio-hero social-neo-community-panel social-neo-community-panel--portfolio home-hover-chip');
+    expect(socialPortfolioJs).toContain('class="social-neo-portfolio-hero-stats home-hover-chip');
+    expect(socialPortfolioJs).toContain('class="social-neo-portfolio-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip');
   });
 
   it('keeps admin-scheduler quick widgets aligned to index strip-card classes', () => {

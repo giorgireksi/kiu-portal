@@ -32,7 +32,7 @@ describe('library route regressions.test', () => {
     it('loads shared panel SSOT stack with library workspace layout CSS', () => {
         const html = readSource('library.html');
         expect(html).toContain('frostedpopup1');
-        expect(html).toContain('libcss5');
+        expect(html).toContain('nestedhover3');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).not.toContain('library-route.css');
         expect(html).toContain('library-catalog-filters-panel lux-soft-chrome home-hover-chip');
@@ -58,7 +58,8 @@ describe('library route regressions.test', () => {
         expect(block).toContain('.admin-library-catalog-table thead th');
         expect(block).toContain('admin-library-empty-row');
         expect(fouc).toContain('Library catalog primary shells: frosted panel glass');
-        expect(fouc).toContain('body.lux-unified-shell #page-library :is(\n  .library-catalog-filters-panel,\n  .admin-library-catalog-card\n)');
+        expect(fouc).toContain('.admin-library-tab-btn.home-hover-chip');
+        expect(fouc).toContain('.admin-library-empty-state.home-hover-chip');
         expect(fouc).toContain('--lux-panel-blur-filter');
     });
 

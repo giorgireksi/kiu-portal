@@ -25,6 +25,7 @@
             lostFoundItems: [],
             surveys: [],
             surveyResponses: [],
+            researchPublications: [],
             savedPosts: []
         },
         feed: [],
@@ -177,6 +178,15 @@
             surveyResultsPayload: null,
             surveyDraftQuestions: [],
             surveyDraftScope: '',
+            researchTab: 'faculty',
+            researchSearch: '',
+            researchFormat: 'all',
+            researchFaculty: '',
+            researchReaderId: '',
+            researchPdfViewMode: 'scroll',
+            researchPdfZoom: 1,
+            researchPdfPage: 1,
+            researchDraft: null,
             toasts: [],
             storyViewerOpen: false,
             storyViewerIndex: 0,
@@ -773,7 +783,7 @@
     async function loadSocialState(force = false, options = {}) {
         const user = currentUser();
         if (!user?.id) {
-            runtime.social = { profiles: {}, pages: [], groups: [], projects: [], portfolios: [], relationships: [], events: [], rsvps: [], reports: [], lostFoundItems: [], surveys: [], surveyResponses: [], savedPosts: [] };
+            runtime.social = { profiles: {}, pages: [], groups: [], projects: [], portfolios: [], relationships: [], events: [], rsvps: [], reports: [], lostFoundItems: [], surveys: [], surveyResponses: [], researchPublications: [], savedPosts: [] };
             return runtime.social;
         }
         if (runtime.socialPromise && !force) return runtime.socialPromise;
@@ -798,6 +808,7 @@
                     lostFoundItems: Array.isArray(social?.lostFoundItems) ? social.lostFoundItems : [],
                     surveys: Array.isArray(social?.surveys) ? social.surveys : [],
                     surveyResponses: Array.isArray(social?.surveyResponses) ? social.surveyResponses : [],
+                    researchPublications: Array.isArray(social?.researchPublications) ? social.researchPublications : [],
                     savedPosts: []
                 };
                 await fetchAccountsByIds(collectSocialAccountIds(runtime.social));
@@ -1231,7 +1242,7 @@
     }
 
     function setPanel(panel) {
-        runtime.ui.activePanel = ['feed', 'community', 'projects', 'events', 'photography', 'lost-and-found', 'surveys', 'messages', 'alerts', 'profile'].includes(text(panel)) ? text(panel) : 'feed';
+        runtime.ui.activePanel = ['feed', 'community', 'projects', 'research', 'events', 'photography', 'lost-and-found', 'surveys', 'messages', 'alerts', 'profile'].includes(text(panel)) ? text(panel) : 'feed';
         writeStore(PANEL_KEY, runtime.ui.activePanel);
         queueRender('panel');
     }
@@ -1462,6 +1473,9 @@
         createEvent,
         updateEvent,
         createSurvey,
+        createResearchPublication,
+        toggleResearchSave,
+        deleteResearchPublication,
         closeSurvey,
         respondSurvey,
         loadSurveyResults,
@@ -1704,6 +1718,9 @@
     createPortalSocialEvent: createEvent,
     updatePortalSocialEvent: updateEvent,
     createPortalSocialSurvey: createSurvey,
+    createPortalSocialResearch: createResearchPublication,
+    togglePortalSocialResearchSave: toggleResearchSave,
+    deletePortalSocialResearch: deleteResearchPublication,
     closePortalSocialSurvey: closeSurvey,
     respondPortalSocialSurvey: respondSurvey,
     loadPortalSocialSurveyResults: loadSurveyResults,

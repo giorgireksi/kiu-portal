@@ -122,6 +122,7 @@ const CSS_OWNED_CHIP_SELECTOR = [
     '.lux-person-card',
     '.lux-subcard',
     '.surface-card',
+    '.home-hover-chip',
 ].join(', ');
 
 function hasOwnedClassPrefix(el, prefixes) {
@@ -178,23 +179,43 @@ function isRouteOwnedSurface(el) {
     }
 
     if (document.body.classList.contains('lux-route-admin-scheduler')
-        && el.closest?.('#page-admin-scheduler')) {
+        && (el.closest?.('#page-admin-scheduler')
+            || el.closest?.('#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay'))) {
         if (hasOwnedClassPrefix(el, ['sch-', 'palette-'])
             || el.matches?.('.lux-strip-card')
+            || el.matches?.(
+                '.sch-form-section.home-hover-chip, .sch-conflict-alert.home-hover-chip, ' +
+                '.sch-modal-mode-chip.home-hover-chip, .sch-preset-manage-item.home-hover-chip, ' +
+                '.sch-modal-close-muted.home-hover-chip, .sch-preset-manage-link.home-hover-chip'
+            )
             || ((el.tagName === 'SELECT' || el.tagName === 'INPUT')
-                && el.closest?.('.sch-control-group, .lux-picker-field, .sch-board-toolbar-row, .sch-search-shell, .lux-glass-dialog-card'))) {
+                && el.closest?.('.sch-control-group, .lux-picker-field, .sch-board-toolbar-row, .sch-search-shell, .lux-glass-dialog-card, #schModalOverlay, #schPresetManagerOverlay'))) {
             return true;
         }
     }
 
     if (document.body.classList.contains('lux-route-staff') && el.closest?.('#staff-content')) {
         if (hasOwnedClassPrefix(el, ['staff-hub-']) || el.closest?.('.staff-hub-form-settings')) return true;
+        if (el.matches?.(
+            '.staff-hub-builder-rail.home-hover-chip, .staff-hub-builder-canvas.home-hover-chip, ' +
+            '.staff-hub-profile-panel.home-hover-chip, .staff-hub-section-field-workspace.home-hover-chip, ' +
+            '.staff-hub-profile-row.home-hover-chip, .staff-hub-studio-field-row.home-hover-chip, ' +
+            '.staff-hub-builder-type.home-hover-chip, .staff-hub-studio-quick-btn.home-hover-chip, ' +
+            '.staff-hub-copy-bar.home-hover-chip, .staff-hub-profile-list-shell.home-hover-chip'
+        )) return true;
     }
 
     if (document.body.classList.contains('lux-route-students-admin')
         && el.closest?.('#students-content')
         && !el.closest?.('#students-admin-lms-modal')) {
         if (hasOwnedClassPrefix(el, ['students-hub-']) || el.closest?.('.students-hub-form-settings')) return true;
+        if (el.matches?.(
+            '.students-hub-builder-rail.home-hover-chip, .students-hub-builder-canvas.home-hover-chip, ' +
+            '.students-hub-profile-panel.home-hover-chip, .students-hub-section-field-workspace.home-hover-chip, ' +
+            '.students-hub-profile-row.home-hover-chip, .students-hub-studio-field-row.home-hover-chip, ' +
+            '.students-hub-builder-type.home-hover-chip, .students-hub-studio-quick-btn.home-hover-chip, ' +
+            '.students-hub-copy-bar.home-hover-chip, .students-hub-profile-list-shell.home-hover-chip'
+        )) return true;
     }
 
     if (document.body.classList.contains('lux-route-study-card')
@@ -243,7 +264,11 @@ function isRouteOwnedSurface(el) {
         && (el.closest?.('#page-library') || el.classList.contains('admin-library-modal'))) {
         if (el.matches?.(
             '.alib-panel, .admin-library-chip, .admin-library-param-group, .library-catalog-filters-panel, ' +
-            '.admin-library-catalog-card, .admin-library-tabs, .admin-library-catalog-foot, .admin-library-modal'
+            '.admin-library-catalog-card, .admin-library-tabs, .admin-library-catalog-foot, .admin-library-modal, ' +
+            '.admin-library-schema-field-row.home-hover-chip, .admin-library-schema-add-form.home-hover-chip, ' +
+            '.admin-library-schema-empty.home-hover-chip, .admin-library-schema-droplist-editor-body.home-hover-chip, ' +
+            '.admin-library-sections-panel.home-hover-chip, .admin-library-section-row.home-hover-chip, ' +
+            '.admin-library-chip.home-hover-chip, .admin-library-param-group.home-hover-chip'
         )) return true;
     }
 
@@ -274,7 +299,17 @@ function isCssOwnedSurface(el) {
 function isRegistrationGlassHost(el) {
     if (!el?.matches || !document.body.classList.contains('lux-route-registration')) return false;
     if (!el.closest?.('#page-registration')) return false;
-    return el.matches('.page-hero') || el.getAttribute('data-lux-glass-root') === '1';
+    return el.matches('.registration-studio-shell[data-lux-glass-root="1"]');
+}
+
+/** Registration matte chips + active tab — CSS owns paint; never flatten at max transparency. */
+function shouldPreserveRegistrationCssPaint(el) {
+    if (!el?.matches || !document.body.classList.contains('lux-route-registration')) return false;
+    if (!el.closest?.('#page-registration')) return false;
+    if (isRegistrationGlassHost(el)) return true;
+    if (el.classList.contains('home-hover-chip')) return true;
+    if (el.classList.contains('reg-tab') && el.classList.contains('active')) return true;
+    return false;
 }
 
 const GLOBAL_DYNAMIC_PAINT_CLASSES = new Set([
@@ -346,6 +381,7 @@ Object.assign(window, {
     isRouteOwnedSurface,
     isCssOwnedSurface,
     isRegistrationGlassHost,
+    shouldPreserveRegistrationCssPaint,
     shouldApplyDynamicBackground,
     shouldKeepRouteFadeCssBackground,
     shouldKeepHomeFadeCssBackground,
@@ -612,6 +648,7 @@ const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
     '.dashboard-card', '.tabs-container', '.modal-content', '.page-hero', '.lux-modern-surface', '.lux-modern-table',
     '.lux-utility-panel', '.lux-person-card', '.lux-stack', '#page-admin-scheduler .sch-sidebar',
     '#page-admin-scheduler .sch-grid-shell',
+    '#page-timetable .sch-grid-shell',
     '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
     '#page-admin-scheduler .sch-grid-tag',
     '#page-admin-scheduler .sch-empty-state', '#page-admin-scheduler .sch-grid-empty', '.lux-lms-group-card',
@@ -968,11 +1005,11 @@ function updateTransparency(value, options = {}) {
     const TIMETABLE_GRID_CELL_CLASS_NAMES = [
         'sch-header-row', 'sch-time-col', 'sch-time-labels', 'sch-day-col', 'sch-time-slot', 'sch-body', 'sch-lane',
         'sch-slot-bg', 'sch-event', 'sch-day-lanes',
-        'schedule-grid-shell'
+        'sch-grid-shell'
     ];
     const isTimetableGridCell = (el) => {
         if (!document.body.classList.contains('lux-route-timetable') || !el?.classList) return false;
-        if (!el.closest?.('.lux-timetable-grid-shell, .schedule-grid-shell[data-tt-grid="1"]')) return false;
+        if (!el.closest?.('.sch-grid-shell[data-tt-grid="1"]')) return false;
         return TIMETABLE_GRID_CELL_CLASS_NAMES.some((className) => el.classList.contains(className));
     };
     const isTableGridCell = (el, tableSelector) => (
@@ -983,8 +1020,12 @@ function updateTransparency(value, options = {}) {
         isTimetableGridCell(el) ||
         structuralClasses.some((className) => el.classList.contains(className)) ||
         (document.body.classList.contains('lux-route-admin-scheduler')
-            && Boolean(el.closest?.('#page-admin-scheduler'))
+            && (Boolean(el.closest?.('#page-admin-scheduler')) || Boolean(el.closest?.('#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay')))
             && isRouteOwnedSurface(el)) ||
+        (document.body.classList.contains('lux-route-admin-scheduler') && (
+            el.classList.contains('sch-modal') ||
+            el.closest?.('#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay')
+        )) ||
         (document.body.classList.contains('lux-route-admin-library') && (
             el.classList.contains('admin-library-modal') ||
             el.classList.contains('admin-library-modal-overlay') ||
@@ -1059,8 +1100,7 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('lux-timetable-view-row') ||
         el.classList.contains('schedule-view-row') ||
         el.classList.contains('lux-timetable-command-grid') ||
-        el.classList.contains('lux-timetable-grid-shell') ||
-        (el.classList.contains('schedule-grid-shell') && el.dataset?.ttGrid === '1')
+        (el.classList.contains('sch-grid-shell') && el.dataset?.ttGrid === '1')
     );
 
     const blurPx = `${blurAmount}px`;
@@ -1183,7 +1223,7 @@ function updateTransparency(value, options = {}) {
             if (isStructuralSurface(el)) {
                 
                 if (percentage >= 99 && document.body.classList.contains('lux-route-registration') && el.closest?.('#page-registration')) {
-                    if (isRegistrationGlassHost(el)) {
+                    if (shouldPreserveRegistrationCssPaint(el)) {
                         stripInlineGlassPaint(el, transparencySignature);
                         return;
                     }
@@ -1210,7 +1250,7 @@ function updateTransparency(value, options = {}) {
             }
 
             if (percentage >= 99 && isCssOwnedSurface(el) && el.closest?.('#page-registration')) {
-                if (isRegistrationGlassHost(el)) {
+                if (shouldPreserveRegistrationCssPaint(el)) {
                     stripInlineGlassPaint(el, transparencySignature);
                     return;
                 }

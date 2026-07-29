@@ -558,13 +558,13 @@ function renderLmsEmbeddedStaffAssessmentBar(criterionMeta, assessmentNumber, pe
                 </div>
             </div>
             ${selectedQuizDisplay ? `
-                <div class="lms-route-card lms-route-panel-compact gb-staff-linked-small is-${pendingReviewCount ? 'pending' : 'ready'}">
+                <div class="lms-route-card lms-route-panel-compact home-hover-chip gb-staff-linked-small is-${pendingReviewCount ? 'pending' : 'ready'}">
                     <div class="lms-route-field-label gb-modern-kicker">Selected LMS quiz</div>
                     <strong class="lms-route-card-title">${escapeHtml(selectedQuizDisplay.title)}</strong>
                     ${selectedQuizDisplay.subtitle ? `<div class="gb-staff-linked-subtitle lms-route-copy lms-route-meta-12">${escapeHtml(selectedQuizDisplay.subtitle)}</div>` : ''}
                     ${pendingReviewCount
-                        ? `<span class="gb-status-badge lux-status-pill is-pending"><i class="fas fa-triangle-exclamation"></i> ${pendingReviewCount} need manual evaluation</span>`
-                        : `<span class="gb-status-badge lux-status-pill is-graded"><i class="fas fa-circle-check"></i> No pending manual evaluation</span>`}
+                        ? `<span class="gb-status-badge lux-status-pill home-hover-chip is-pending"><i class="fas fa-triangle-exclamation"></i> ${pendingReviewCount} need manual evaluation</span>`
+                        : `<span class="gb-status-badge lux-status-pill home-hover-chip is-graded"><i class="fas fa-circle-check"></i> No pending manual evaluation</span>`}
                 </div>
             ` : ''}
         </div>
@@ -623,7 +623,7 @@ function renderFacultyRosterListItems(students, weights, criterionMeta, assessme
             const rowTitle = enrollmentMeta
                 ? `${student.name || studentId} · ${enrollmentMeta}`
                 : String(student.name || studentId);
-            const pendingBadge = pending ? '<span class="gb-status-badge lux-status-pill is-pending">Pending</span>' : '';
+            const pendingBadge = pending ? '<span class="gb-status-badge lux-status-pill home-hover-chip is-pending">Pending</span>' : '';
             return `
                 <button type="button" class="gb-lms-staff-roster-row gb-lms-staff-roster-row--compact${isActive ? ' is-active' : ''}" data-lux-visual-skip="1" data-gradebook-click="lms-gb-select-student" data-gradebook-student-id="${escapeHtml(studentId)}" title="${escapeHtml(rowTitle)}">
                     <div class="gb-lms-staff-roster-main">
@@ -725,7 +725,7 @@ function renderLmsEmbeddedStaffRosterList(students, weights, criterionMeta, asse
     if (isFacultyRoster) {
         const rosterContent = renderFacultyRosterListItems(students, weights, criterionMeta, assessmentNumber, selectedStudentId);
         return `
-        <aside class="gb-lms-staff-roster gb-lms-staff-roster--faculty lms-route-card lms-route-panel-compact lux-soft-chrome">
+        <aside class="gb-lms-staff-roster gb-lms-staff-roster--faculty lms-route-card lms-route-panel-compact lux-soft-chrome home-hover-chip">
             <div class="gb-lms-staff-roster-head">
                 <div>
                     <div class="lms-route-field-label gb-modern-kicker">Roster</div>
@@ -776,7 +776,7 @@ function renderLmsEmbeddedStaffRosterList(students, weights, criterionMeta, asse
                         <div class="gb-lms-staff-roster-meta">
                             ${renderGradebookLetterBadge(outcome.letterLabel, outcome.letterLabel)}
                             <span class="gb-lms-staff-roster-score">${escapeHtml(outcome.scoreLabel)}% overall</span>
-                            ${pending ? '<span class="gb-status-badge lux-status-pill is-pending">Pending</span>' : ''}
+                            ${pending ? '<span class="gb-status-badge lux-status-pill home-hover-chip is-pending">Pending</span>' : ''}
                         </div>
                     </div>
                 </button>
@@ -787,7 +787,7 @@ function renderLmsEmbeddedStaffRosterList(students, weights, criterionMeta, asse
         ? `${filtered.length} of ${roster.length} students`
         : `${roster.length} students`;
     return `
-        <aside class="gb-lms-staff-roster lms-route-card lms-route-panel-compact">
+        <aside class="gb-lms-staff-roster lms-route-card lms-route-panel-compact home-hover-chip">
             <div class="gb-lms-staff-roster-head">
                 <div>
                     <div class="lms-route-field-label gb-modern-kicker">Roster</div>
@@ -822,13 +822,13 @@ function renderLmsEmbeddedStaffGradingBreakdown(summary, criterionMeta) {
             <tr class="${isActiveRow ? 'is-active-assessment' : ''}">
                 <td>${escapeHtml(meta.label)}</td>
                 <td><strong>${escapeHtml(scoreLabel)}</strong></td>
-                <td><span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span></td>
+                <td><span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span></td>
             </tr>
         `;
     }).join('');
     if (isFaculty) {
         return `
-        <details class="lms-route-card lms-route-panel-compact lux-soft-chrome gb-lms-staff-breakdown gb-lms-staff-breakdown--faculty" open>
+        <details class="lms-route-card lms-route-panel-compact lux-soft-chrome home-hover-chip gb-lms-staff-breakdown gb-lms-staff-breakdown--faculty" open>
             <summary>
                 <div class="gb-lms-staff-breakdown-head">
                     <div>
@@ -895,7 +895,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
     if (isFaculty) {
         return `
         <div class="gb-lms-staff-focus">
-            <div class="gb-lms-staff-student-hero lms-route-card lms-route-panel-compact lux-soft-chrome">
+            <div class="gb-lms-staff-student-hero lms-route-card lms-route-panel-compact lux-soft-chrome home-hover-chip">
                 <div class="gb-lms-staff-student-hero-top">
                     <div class="gb-lms-staff-focus-identity">
                         <strong class="lms-route-card-title">${escapeHtml(studentName || studentId)}</strong>
@@ -905,7 +905,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                     <div class="gb-lms-staff-focus-summary">
                         ${renderGradebookLetterBadge(outcome.letterLabel, outcome.letterLabel)}
                         <span class="gb-lms-staff-focus-overall">${escapeHtml(outcome.scoreLabel)}%</span>
-                        ${pendingReview ? '<span class="gb-status-badge lux-status-pill is-pending">Active pending</span>' : ''}
+                        ${pendingReview ? '<span class="gb-status-badge lux-status-pill home-hover-chip is-pending">Active pending</span>' : ''}
                     </div>
                 </div>
                 <div class="gb-lms-staff-student-hero-actions">
@@ -920,7 +920,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                     </button>
                 </div>
             </div>
-            <div class="lms-route-card lms-route-panel-compact lux-soft-chrome gb-lms-staff-active-card${hasGradedScore ? ' has-graded-score' : ''}"${hasGradedScore ? ` style="--gb-score-progress:${scoreProgressPct}"` : ''}>
+            <div class="lms-route-card lms-route-panel-compact lux-soft-chrome home-hover-chip gb-lms-staff-active-card${hasGradedScore ? ' has-graded-score' : ''}"${hasGradedScore ? ` style="--gb-score-progress:${scoreProgressPct}"` : ''}>
                 <div class="gb-lms-staff-active-head">
                     <div>
                         <div class="lms-route-field-label gb-modern-kicker">Active assessment</div>
@@ -944,7 +944,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                 <p class="lms-route-copy gb-lms-staff-add-hint gb-lms-staff-active-footer">${hintCopy}</p>
             </div>
             <div class="gb-lms-staff-insight-panels">
-                <details class="lms-route-card lms-route-panel-compact lux-soft-chrome gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
+                <details class="lms-route-card lms-route-panel-compact lux-soft-chrome home-hover-chip gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
                     <summary>
                         <div class="gb-lms-staff-score-history-head">
                             <div>
@@ -983,7 +983,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                 <div class="gb-lms-staff-focus-summary">
                     ${renderGradebookLetterBadge(outcome.letterLabel, outcome.letterLabel)}
                     <span class="gb-lms-staff-focus-overall">${escapeHtml(outcome.scoreLabel)}%</span>
-                    ${pendingReview ? '<span class="gb-status-badge lux-status-pill is-pending">Active pending</span>' : ''}
+                    ${pendingReview ? '<span class="gb-status-badge lux-status-pill home-hover-chip is-pending">Active pending</span>' : ''}
                 </div>
             </div>
             <div class="gb-lms-staff-detail-actions lms-route-panel lms-route-panel-compact">
@@ -997,14 +997,14 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                     <i class="fas fa-user-graduate"></i> Portal preview
                 </button>
             </div>
-            <div class="lms-route-card lms-route-panel-compact gb-lms-staff-active-card">
+            <div class="lms-route-card lms-route-panel-compact home-hover-chip gb-lms-staff-active-card">
                 <div class="gb-lms-staff-active-head">
                     <div>
                         <div class="lms-route-field-label gb-modern-kicker">Active assessment</div>
                         <h3 class="lms-route-card-title">${escapeHtml(criterionMeta.label)} ${escapeHtml(String(assessmentNumber))}</h3>
                         ${entryDisplay?.title ? `<p class="lms-route-copy">${escapeHtml(entryDisplay.title)}</p>` : ''}
                     </div>
-                    <span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}"><i class="fas ${escapeHtml(status.icon)}"></i> ${escapeHtml(status.label)}</span>
+                    <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}"><i class="fas ${escapeHtml(status.icon)}"></i> ${escapeHtml(status.label)}</span>
                 </div>
                 ${renderLmsStaffScoreEditorBlock({
                     studentId,
@@ -1021,7 +1021,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                 ${linkedQuizSource ? `<div class="gb-lms-staff-detail-actions lms-route-panel lms-route-panel-compact"><button type="button" class="lux-secondary-btn gb-modern-action" data-gradebook-click="open-linked-quiz" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion="${escapeHtml(String(criterionMeta.key))}" data-gradebook-number="${escapeHtml(String(assessmentNumber))}"><i class="fas fa-file-alt"></i> ${pendingReview ? 'Evaluate quiz' : 'Open paper'}</button></div>` : ''}
                 <p class="lms-route-copy gb-lms-staff-add-hint">${hintCopy}</p>
             </div>
-            <details class="lms-route-card lms-route-panel-compact gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
+            <details class="lms-route-card lms-route-panel-compact home-hover-chip gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
                 <summary>
                     <div class="gb-lms-staff-score-history-head">
                         <div>
@@ -1329,15 +1329,15 @@ function initGradebook() {
         };
         if (controlsRoot) {
             controlsRoot.innerHTML = `
-                <div class="gb-student-context-bar">
-                    <div>
-                        <div class="lms-route-field-label gb-modern-kicker">Official LMS Record</div>
-                        <strong>Read-only student grade view</strong>
-                        <span>Scores are synchronized with quizzes, exams, manual classroom assessments, and the Study Card record.</span>
+                <div class="gb-student-context-bar lux-soft-chrome home-hover-chip">
+                    <div class="gb-student-context-copy">
+                        <div class="lux-section-kicker lms-route-field-label gb-modern-kicker">Official LMS Record</div>
+                        <strong class="lux-card-copy gb-student-context-title">Read-only student grade view</strong>
+                        <p class="lux-panel-copy gb-student-context-copy-line">Scores are synchronized with quizzes, exams, manual classroom assessments, and the Study Card record.</p>
                     </div>
                     <div class="gb-context-actions">
-                        <span class="gb-status-badge lux-status-pill is-graded"><i class="fas fa-lock"></i> Student view</span>
-                        <span class="gb-status-badge lux-status-pill is-missing"><i class="fas fa-users"></i> Group record</span>
+                        <span class="gb-status-badge lux-status-pill home-hover-chip is-graded"><i class="fas fa-lock"></i> Student view</span>
+                        <span class="gb-status-badge lux-status-pill home-hover-chip is-missing"><i class="fas fa-users"></i> Group record</span>
                     </div>
                 </div>
             `;
@@ -1384,13 +1384,13 @@ function initGradebook() {
                         subjectId: resolveGradebookCourseIdForWeights(currentGradebookSection?.courseId)
                     })}
                     ${selectedQuizDisplay ? `
-                    <div class="lms-route-card lms-route-panel-compact gb-staff-linked-small is-${pendingReviewStudents.length ? 'pending' : 'ready'}">
+                    <div class="lms-route-card lms-route-panel-compact home-hover-chip gb-staff-linked-small is-${pendingReviewStudents.length ? 'pending' : 'ready'}">
                         <div class="lms-route-field-label gb-modern-kicker">Selected LMS Quiz</div>
                         <strong class="lms-route-card-title">${escapeHtml(selectedQuizDisplay.title)}</strong>
                         ${selectedQuizDisplay.subtitle ? `<div class="gb-staff-linked-subtitle lms-route-copy lms-route-meta-12">${escapeHtml(selectedQuizDisplay.subtitle)}</div>` : ''}
                         ${pendingReviewStudents.length
-                            ? `<span class="gb-status-badge lux-status-pill is-pending"><i class="fas fa-triangle-exclamation"></i> ${pendingReviewStudents.length} need manual evaluation</span>`
-                            : `<span class="gb-status-badge lux-status-pill is-graded"><i class="fas fa-circle-check"></i> No pending manual evaluation</span>`}
+                            ? `<span class="gb-status-badge lux-status-pill home-hover-chip is-pending"><i class="fas fa-triangle-exclamation"></i> ${pendingReviewStudents.length} need manual evaluation</span>`
+                            : `<span class="gb-status-badge lux-status-pill home-hover-chip is-graded"><i class="fas fa-circle-check"></i> No pending manual evaluation</span>`}
                     </div>
                 ` : ''}
                 </div>
@@ -1483,7 +1483,7 @@ function initGradebook() {
                             compact: true,
                             readOnlyHistory: isStaffModernGradebookContext()
                         })}
-                        ${currentEntryDisplay?.linked ? `<div class="lms-route-card lms-route-panel-compact gb-roster-linked-summary ${quizStatusClass}"><div class="gb-roster-linked-title">${escapeHtml(currentEntryDisplay.title)}</div>${currentEntryDisplay.subtitle ? `<div class="gb-roster-linked-subtitle">${escapeHtml(currentEntryDisplay.subtitle)}</div>` : ''}${pendingReview ? `<div class="gb-roster-linked-note is-pending"><i class="fas fa-triangle-exclamation"></i> Manual answer still waiting</div>` : ''}</div>` : ''}
+                        ${currentEntryDisplay?.linked ? `<div class="lms-route-card lms-route-panel-compact home-hover-chip gb-roster-linked-summary ${quizStatusClass}"><div class="gb-roster-linked-title">${escapeHtml(currentEntryDisplay.title)}</div>${currentEntryDisplay.subtitle ? `<div class="gb-roster-linked-subtitle">${escapeHtml(currentEntryDisplay.subtitle)}</div>` : ''}${pendingReview ? `<div class="gb-roster-linked-note is-pending"><i class="fas fa-triangle-exclamation"></i> Manual answer still waiting</div>` : ''}</div>` : ''}
                     </div>
                 </td>
             </tr>

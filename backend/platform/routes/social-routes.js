@@ -163,6 +163,84 @@ function registerSocialRoutes(app, deps = {}) {
         response.json({ ok: true, ...result });
     });
 
+    app.get('/api/social/research', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const items = store.listSocialResearchPublications(request.query || {}, actorUserId);
+        response.json({ ok: true, items, total: items.length });
+    });
+
+    app.get('/api/social/research/:id', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const publication = store.getSocialResearchPublication(request.params.id, actorUserId);
+        if (!publication) {
+            sendError(response, 404, 'Publication not found.');
+            return;
+        }
+        response.json({ ok: true, publication });
+    });
+
+    app.post('/api/social/research', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const publication = store.createSocialResearchPublication(request.body || {}, actorUserId);
+        if (!publication) {
+            sendError(response, 400, 'Publication could not be created.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, publication });
+    });
+
+    app.patch('/api/social/research/:id', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const publication = store.updateSocialResearchPublication(request.params.id, request.body || {}, actorUserId);
+        if (!publication) {
+            sendError(response, 400, 'Publication could not be updated.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, publication });
+    });
+
+    app.post('/api/social/research/:id/save', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const publication = store.toggleSocialResearchSave(request.params.id, actorUserId);
+        if (!publication) {
+            sendError(response, 400, 'Publication could not be saved.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, publication });
+    });
+
+    app.delete('/api/social/research/:id', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const result = store.deleteSocialResearchPublication(request.params.id, actorUserId);
+        if (!result) {
+            sendError(response, 400, 'Publication could not be deleted.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, ...result });
+    });
+
     app.post('/api/social/pages', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;

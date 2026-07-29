@@ -93,7 +93,7 @@
         const sectionsHtml = text(metrics.sectionsHtml || '');
         const merged = Boolean(sectionsHtml);
         return `
-            <section class="social-neo-card social-neo-events-hero${merged ? ' is-merged' : ''}">
+            <section class="social-neo-card social-neo-events-hero home-hover-chip${merged ? ' is-merged' : ''}">
                 <div class="social-neo-events-hero-head">
                     <div class="social-neo-events-hero-actions">
                         <button class="lux-primary-btn social-neo-events-create-trigger" type="button" data-action="event-create-open">
@@ -102,15 +102,15 @@
                         </button>
                     </div>
                 </div>
-                <div class="social-neo-events-hero-stats">
-                    ${stats.map((stat) => `
-                        <article class="social-neo-events-hero-stat lux-strip-card surface-card">
+                <div class="social-neo-events-hero-stats home-hover-chip">
+                        ${stats.map((stat) => `
+                        <article class="social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                             <strong>${escape(String(stat.value))}</strong>
                             <span>${escape(stat.label)}</span>
                         </article>
                     `).join('')}
                 </div>
-                <div class="social-neo-events-hero-grid">
+                <div class="social-neo-events-hero-grid home-hover-chip">
                     ${tabs.map((tab) => `
                         <button class="lux-secondary-btn social-neo-events-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-events" data-events-tab="${escape(tab.tab)}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
                             <span class="social-neo-events-hero-tab-icon"><i class="fas ${escape(tab.icon)}"></i></span>
@@ -179,7 +179,7 @@
             const eventId = text(item.id);
             const scopeLabel = text(item.scopeName || (tone === 'university' ? 'Campus-wide official listing' : 'Community event feed'));
             return `
-                <article class="social-neo-event-feature social-neo-event-feature--${escape(tone)}">
+                <article class="social-neo-event-feature social-neo-event-feature--${escape(tone)} home-hover-chip">
                     ${item.imageUrl ? `
                         <div class="social-neo-event-feature-cover">
                             <img src="${escape(item.imageUrl)}" alt="${escape(title)}">
@@ -261,11 +261,11 @@
 
         function renderEventGroups(list, tone, emptyCopy) {
             const events = sortEventsByStart(list);
-            if (!events.length) return `<div class="social-neo-empty social-neo-events-empty">${escape(emptyCopy)}</div>`;
+            if (!events.length) return `<div class="social-neo-empty social-neo-events-empty home-hover-chip">${escape(emptyCopy)}</div>`;
             return events.map((item) => {
                 const title = text(item.title || 'Untitled event');
                 return `
-                <section class="social-neo-event-date-group">
+                <section class="social-neo-event-date-group home-hover-chip">
                     <div class="social-neo-event-date-group-head">
                         <div>
                             <strong>${escape(eventDateLabel(item))}</strong>
@@ -284,7 +284,7 @@
 
         function renderManagedEventsCard(title, list, emptyCopy) {
             return `
-                <div class="social-neo-events-hub-section social-neo-events-manage-card">
+                <div class="social-neo-events-hub-section social-neo-events-manage-card home-hover-chip">
                     <div class="social-neo-section-head">
                         <div>
                             <strong>${escape(title)}</strong>
@@ -293,7 +293,7 @@
                     </div>
                     <div class="social-neo-list">
                         ${list.length ? list.map((item) => `
-                            <article class="social-neo-entity-card social-neo-events-manage-item">
+                            <article class="social-neo-entity-card social-neo-events-manage-item home-hover-chip">
                                 <div>
                                     <strong>${escape(text(item.title || 'Untitled event'))}</strong>
                                     <span>${escape(item?.startsAt ? when(item.startsAt) : 'Time to be announced')}</span>
@@ -306,14 +306,14 @@
                                     </button>
                                 </div>
                             </article>
-                        `).join('') : `<div class="social-neo-empty social-neo-events-empty">${escape(emptyCopy)}</div>`}
+                        `).join('') : `<div class="social-neo-empty social-neo-events-empty home-hover-chip">${escape(emptyCopy)}</div>`}
                     </div>
                 </div>
             `;
         }
 
         const studyGroupsListCard = `
-            <div class="social-neo-events-hub-section social-neo-events-list-card">
+            <div class="social-neo-events-hub-section social-neo-events-list-card home-hover-chip">
                 <div class="social-neo-section-head">
                     <div>
                         <strong>Active study groups</strong>
@@ -322,7 +322,7 @@
                 </div>
                 <div class="social-neo-list">
                     ${studyGroups.length ? studyGroups.map((group) => `
-                        <article class="social-neo-entity-card social-neo-entity-card--study">
+                        <article class="social-neo-entity-card social-neo-entity-card--study home-hover-chip">
                             <div>
                                 <strong>${escape(text(group.name || 'Study Group'))}</strong>
                                 <span>${escape(text(group.description || ''))}</span>
@@ -376,7 +376,7 @@
                 <div class="social-neo-events-hub-body social-neo-events-lane social-neo-events-lane--university ${universitySectionState}">
                     <div class="social-neo-events-content">
                         ${renderManagedEventsCard('Your official events', manageableUniversityEvents, 'You have not published any removable official events yet.')}
-                        <div class="social-neo-events-hub-section social-neo-events-list-card">
+                        <div class="social-neo-events-hub-section social-neo-events-list-card home-hover-chip">
                             <div class="social-neo-section-head">
                                 <div>
                                     <strong>Official university calendar</strong>
@@ -400,7 +400,7 @@
                     <div class="social-neo-events-hub-body social-neo-events-lane social-neo-events-lane--student ${studentSectionState}">
                         <div class="social-neo-events-content">
                             ${renderManagedEventsCard('Your student events', manageableStudentEvents, 'You have not created any removable student events yet.')}
-                            <div class="social-neo-events-hub-section social-neo-events-list-card">
+                            <div class="social-neo-events-hub-section social-neo-events-list-card home-hover-chip">
                                 <div class="social-neo-section-head">
                                     <div>
                                         <strong>Student event calendar</strong>

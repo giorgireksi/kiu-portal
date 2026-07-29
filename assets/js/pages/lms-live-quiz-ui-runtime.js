@@ -69,7 +69,7 @@ function renderLmsLiveRosterPanel(resourceKey, session = null) {
         ? `<button type="button" class="lux-secondary-btn lms-live-import-btn-mt-10" data-lms-click="seedLmsLiveQuizRoster(${lmsInlineArg(resourceKey)})"><i class="fas fa-user-plus"></i> Seed roster for testing</button>`
         : '';
     return `
-        <div class="lms-live-card">
+        <div class="lms-live-card home-hover-chip">
             <div class="lms-live-label">Group roster</div>
             <div class="lms-live-copy lms-route-copy-mt-6">${escapeHtml(rosterHint)}</div>
             ${seedButton}
@@ -800,7 +800,7 @@ function restoreLmsLiveQuizDraftFields(snapshot = null, resourceKey = '') {
 function renderLmsLiveStaffQueueMarkup(session, resourceKey) {
     const currentQuestion = getLmsLiveCurrentQuestion(session);
     if (!session?.questions?.length) {
-        return `<div class="lms-live-card lms-live-queue-empty-card"><div class="lms-live-copy lms-live-queue-empty-copy">No questions yet. Add one from the right panel.</div></div>`;
+        return `<div class="lms-live-card home-hover-chip lms-live-queue-empty-card"><div class="lms-live-copy lms-live-queue-empty-copy">No questions yet. Add one from the right panel.</div></div>`;
     }
     return session.questions.map((question, index) => {
         const isActive = currentQuestion && String(currentQuestion.id) === String(question.id);
@@ -1424,7 +1424,7 @@ function renderLmsLiveStaffWorkspace(context) {
                 <section class="lms-live-layout">
                     <div class="lms-live-panel" data-lms-live-region="stage">${stage}</div>
                     <aside class="lms-live-side-stack">
-                        <div class="lms-live-card">
+                        <div class="lms-live-card home-hover-chip">
                         <div class="lms-live-label">Leaderboard</div>
                             <div class="lms-live-score-list lms-live-score-list-mt-12" data-lms-live-region="leaderboard">${renderLmsLiveScoreList(runtimeSession, 10)}</div>
                         </div>
@@ -1473,7 +1473,7 @@ function renderLmsLiveStaffWorkspace(context) {
                 </div>
                 <aside class="lms-live-side-stack">
                     ${renderLmsLiveRosterPanel(resourceKey, runtimeSession)}
-                    <div class="lms-live-card">
+                    <div class="lms-live-card home-hover-chip">
                         <div data-lms-live-region="session-header">${renderLmsLiveSessionCardHeader(resourceKey, workspace.sessions, editingSession)}</div>
                         <div class="lms-live-form-grid lms-live-form-grid-mt-12">
                             <div data-lms-live-region="session-fields">${renderLmsLiveSessionFieldsMarkup(resourceKey, editingSession)}</div>
@@ -1481,7 +1481,7 @@ function renderLmsLiveStaffWorkspace(context) {
                             <div data-lms-live-region="session-actions">${renderLmsLiveSessionActionsMarkup(resourceKey)}</div>
                         </div>
                     </div>
-                    <div class="lms-live-card">
+                    <div class="lms-live-card home-hover-chip">
                         <div class="lms-live-label">Add question</div>
                         <div class="lms-live-form-grid lms-live-form-grid-mt-12">
                             <label class="lms-route-field">
@@ -1515,17 +1515,17 @@ function renderLmsLiveStaffWorkspace(context) {
                             <button type="button" class="lux-primary-btn" data-lms-click="addLmsLiveQuestion(${lmsInlineArg(resourceKey)})"><i class="fas fa-plus"></i> Add question</button>
                         </div>
                     </div>
-                    <div class="lms-live-card">
+                    <div class="lms-live-card home-hover-chip">
                         <div class="lms-live-label">Import questions</div>
                         <div class="lms-live-copy">One line per question: Question | A | B | C | D | correct letter | seconds</div>
                         <textarea id="lms-live-import-${escapeHtml(token)}" class="lms-route-textarea lux-control" rows="5" placeholder="What is 2+2? | 3 | 4 | 5 | 6 | B | 30"></textarea>
                         <button type="button" class="lux-secondary-btn lms-live-import-btn-mt-10" data-lms-click="importLmsLiveQuestionsFromText(${lmsInlineArg(resourceKey)})"><i class="fas fa-file-import"></i> Import</button>
                     </div>
-                    <div class="lms-live-card">
+                    <div class="lms-live-card home-hover-chip">
                         <div class="lms-live-label">Leaderboard</div>
                         <div class="lms-live-score-list lms-live-score-list-mt-12" data-lms-live-region="leaderboard">${renderLmsLiveScoreList(runtimeSession)}</div>
                     </div>
-                    <div class="lms-live-card">
+                    <div class="lms-live-card home-hover-chip">
                         <div class="lms-live-label">Answer split</div>
                         <div class="lms-live-breakdown-wrap-mt-12" data-lms-live-region="breakdown">${renderLmsLiveQuestionBreakdown(runtimeSession, currentQuestion)}</div>
                     </div>
@@ -1602,7 +1602,7 @@ function renderLmsLiveStudentWorkspace(context) {
 function renderLmsLiveQuizLoadingShell() {
     return `
         <div class="lms-live-shell">
-            <div class="lms-live-card lms-live-sync-card is-syncing">
+            <div class="lms-live-card home-hover-chip lms-live-sync-card is-syncing">
                 <div class="lms-live-label"><i class="fas fa-rotate fa-spin"></i> Loading live quiz</div>
                 <div class="lms-live-copy lms-route-copy-mt-6">Syncing the latest session from the server…</div>
             </div>

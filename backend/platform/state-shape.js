@@ -28,6 +28,7 @@ function createEmptySocialState() {
         surveys: [],
         surveyQuestions: [],
         surveyResponses: [],
+        researchPublications: [],
         migrationVersion: 7
     };
 }

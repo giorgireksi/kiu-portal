@@ -231,6 +231,7 @@ return {
         '#lux-home-shell .lux-home-merged.lux-soft-chrome',
         '#lux-home-shell .lux-home-grid',
         '#page-admin-scheduler .sch-grid-shell',
+        '#page-timetable .sch-grid-shell',
         '#page-staff .staff-hub-command-panel',
         '#page-chancellery .chancellery-queue-panel',
         '#lms-content-area .lms-quiz-builder .lms-quiz-studio-main-card'
@@ -475,7 +476,10 @@ return {
         // Study card owns shell paint via --sc-fade-* (study-card-route.css); skip lux-modern-surface stamp.
         if (document.body?.classList?.contains('lux-route-study-card')) return true;
         if (node.closest?.('#page-study-card, .study-card-command-deck, .study-card-page-shell')) return true;
-        if (node.closest('#page-registration .reg-tabs')) return true;
+        if (document.body?.classList?.contains('lux-route-registration') && node.closest?.('#page-registration')) {
+            if (node.matches?.('.page-hero, [data-lux-glass-root="1"], .reg-tab, .reg-tabs')) return true;
+            if (node.classList?.contains('home-hover-chip')) return true;
+        }
         if (node.classList?.contains('curriculum-library-scroll-btn')) return true;
         if (node.classList?.contains('curriculum-library-scroll-controls')) return true;
         if (node.classList?.contains('lux-scroll-rail__btn')) return true;
@@ -844,10 +848,10 @@ return {
                         <div class="page-hero-title lux-home-loading-title">Preparing your KIU workspace</div>
                         <div class="lux-card-copy">Loading the faculty-scoped home dashboard, recent updates, schedule context, registration status, and quick actions for the active portal role.</div>
                         <div class="lux-pill-row">
-                            <span class="lux-status-pill is-muted"><i class="fas fa-layer-group"></i> Home shell</span>
-                            <span class="lux-status-pill is-muted"><i class="fas fa-bell"></i> Notifications</span>
-                            <span class="lux-status-pill is-muted"><i class="fas fa-calendar-week"></i> Schedule</span>
-                            <span class="lux-status-pill is-muted"><i class="fas fa-user-shield"></i> Role context</span>
+                            <span class="lux-status-pill home-hover-chip is-muted"><i class="fas fa-layer-group"></i> Home shell</span>
+                            <span class="lux-status-pill home-hover-chip is-muted"><i class="fas fa-bell"></i> Notifications</span>
+                            <span class="lux-status-pill home-hover-chip is-muted"><i class="fas fa-calendar-week"></i> Schedule</span>
+                            <span class="lux-status-pill home-hover-chip is-muted"><i class="fas fa-user-shield"></i> Role context</span>
                         </div>
                     </div>
                 </section>

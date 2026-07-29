@@ -476,7 +476,7 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="students-hub-info-card is-full lux-data-card">
+            <section class="students-hub-info-card is-full lux-data-card home-hover-chip">
                 <span>Admin actions</span>
                 <div class="students-hub-inline-actions students-hub-inline-actions--spaced lux-btn-row-stack">
                     <button class="lux-secondary-btn" type="button" data-student-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
@@ -651,18 +651,18 @@
         `;
 
         return `
-            <div class="students-hub-shell">
+            <div class="students-hub-shell" data-lux-glass-root="1">
 
-                <section class="students-hub-controls students-admin-controls students-hub-controls--adaptive">
+                <section class="students-hub-controls students-admin-controls students-hub-controls--adaptive home-hover-chip">
                     ${directoryControlsMarkup}
                 </section>
 
-                <section class="students-hub-directory-panel">
+                <section class="students-hub-directory-panel home-hover-chip">
                     <div class="students-hub-directory-head">
                         <div>
-                            <div class="students-hub-overline">Student directory</div>
-                            <h2 class="students-hub-section-title">Operational records</h2>
-                            <p class="students-hub-section-copy">Open full profile pages, review readiness, and act on enrollment or account issues directly from the table.</p>
+                            <div class="students-hub-overline lux-section-kicker">Student directory</div>
+                            <h2 class="students-hub-section-title lux-card-title">Operational records</h2>
+                            <p class="students-hub-section-copy lux-card-copy">Open full profile pages, review readiness, and act on enrollment or account issues directly from the table.</p>
                         </div>
                         <div class="students-hub-inline-actions">
                             <button class="lux-secondary-btn" type="button" data-student-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
@@ -1230,7 +1230,7 @@
         if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
         const urls = [
             'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix11',
-            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix11'
+            'assets/js/pages/form-builder-runtime.js?v=20260729-hubbuilder1'
         ];
         __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
             const existing = document.querySelector(`script[src="${src}"]`);

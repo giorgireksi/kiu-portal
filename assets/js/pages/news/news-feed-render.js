@@ -207,7 +207,7 @@ function renderNewsHeaderBar(currentUser) {
     const filters = runtime.feedFilters || {};
     const manager = canManageNews();
     return `
-        <section class="newsx-header-bar newsx-filter" data-lux-picker-scroll-exempt>
+        <section class="newsx-header-bar newsx-filter home-hover-chip" data-lux-picker-scroll-exempt>
             <div class="newsx-header-top">
                 <div class="newsx-header-copy">
                     <div class="newsx-kicker"><i class="fas fa-broadcast-tower newsx-icon-leading"></i> University News</div>
@@ -269,13 +269,13 @@ function renderNewsFeedStateMarkup() {
     }
     if (runtime.loading && !runtime.posts.length) {
         return `
-            <div class="surface-card lux-soft-chrome newsx-panel newsx-feed-card newsx-loading-card">
+            <div class="surface-card lux-soft-chrome newsx-panel newsx-feed-card newsx-loading-card home-hover-chip">
                 <div class="newsx-loading-line is-120"></div>
                 <div class="newsx-loading-line is-70"></div>
                 <div class="newsx-loading-line is-50"></div>
                 <div class="newsx-loading-block"></div>
             </div>
-            <div class="surface-card lux-soft-chrome newsx-panel newsx-feed-card newsx-loading-card">
+            <div class="surface-card lux-soft-chrome newsx-panel newsx-feed-card newsx-loading-card home-hover-chip">
                 <div class="newsx-loading-line is-90"></div>
                 <div class="newsx-loading-line is-55"></div>
                 <div class="newsx-loading-line is-40"></div>
@@ -293,7 +293,7 @@ function ensureNewsPostShell(host, postId) {
     let shell = host.querySelector('[data-news-post-shell="1"]');
     if (!shell) {
         host.innerHTML = `
-            <article class="surface-card lux-soft-chrome newsx-panel newsx-feed-card newsx-post-card--editorial" data-news-post-shell="1" data-news-post-id="${escapeHtml(postId)}">
+            <article class="surface-card lux-soft-chrome newsx-panel newsx-feed-card newsx-post-card--editorial home-hover-chip" data-news-post-shell="1" data-news-post-id="${escapeHtml(postId)}">
                 <div data-news-post-header="1"></div>
                 <div data-news-post-body="1"></div>
                 <div data-news-post-replies="1"></div>

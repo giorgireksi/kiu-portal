@@ -40,7 +40,7 @@ describe('timetable route regressions', () => {
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).toContain('lux-page-bare-lite.css');
         expect(html).toContain('assets/js/shared/utilities.js?v=');
-        expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260717-softchrome1');
+        expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260729-ttgrid1');
         expect(html).toContain('assets/js/features/navigation.js?v=20260605-ttboot1');
         expect(html).not.toContain('assets/js/pages/planner.js');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
@@ -63,7 +63,10 @@ describe('timetable route regressions', () => {
         expect(html).not.toMatch(/lux-timetable-week-nav[^>]*lux-card|lux-card[^>]*lux-timetable-week-nav/);
         expect(html).not.toContain('lux-timetable-next-compact');
         expect(html).not.toContain('id="timetable-insight-next"');
-        expect(html).toContain('class="lux-timetable-hero-focus lux-hero-side home-hover-chip"');
+        expect(html).toContain('class="lux-timetable-hero-focus lux-hero-side lux-focus-panel home-hover-chip"');
+        expect(html).toContain('page-hero-badge lux-pill lux-timetable-hero-badge home-hover-chip');
+        expect(html).toContain('lux-focus-panel__chip lux-timetable-focus-time home-hover-chip');
+        expect(html).toContain('class="schedule-chip lux-status-pill home-hover-chip is-muted lux-timetable-chip"');
         expect(html).toContain('lux-timetable-focus-subline');
         expect(html).toContain('id="timetable-hero-focus-time"');
         expect(html).toContain('id="timetable-hero-focus-facts"');
@@ -86,7 +89,7 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain("container.dataset.scheduleSurfaceView = view;");
         expect(timetableRuntime).toContain('function getScheduleToneToken(facultyCode) {');
         expect(timetableRuntime).toContain('function buildScheduleToneDataAttribute(facultyCode) {');
-        expect(timetableRuntime).not.toContain('lux-soft-chrome');
+        expect(timetableRuntime).toContain('sch-empty-week-notice lux-soft-chrome');
         expect(timetableRuntime).toContain('schedule-session-card lux-timetable-session-card');
         expect(timetableRuntime).toContain('function renderTimetable() {');
         expect(timetableRuntime).toContain('[data-schedule-current-week], [data-timetable-action="current-week"]');
@@ -96,8 +99,18 @@ describe('timetable route regressions', () => {
         expect(navigationSource).toContain('refreshStandaloneDesktopRouteContent(pageId, { reason: \'standalone-default-content\' })');
         expect(timetableRuntime).toContain('emptyMessage: `No timetable sessions found for ${formatWeekRangeLabel(weekStart)}.`');
         expect(timetableRuntime).not.toContain('schedule-session-modal');
-        expect(timetableRuntime).toContain("shell.className = `schedule-grid-shell lux-timetable-grid-shell");
+        expect(timetableRuntime).toContain("shell.className = `sch-grid-shell");
+        expect(timetableRuntime).toContain("shell.dataset.luxGlassRoot = '1'");
         expect(timetableRuntime).toContain("shell.dataset.ttGrid = '1'");
+        expect(timetableRuntime).toContain('sch-grid-topline');
+        expect(timetableRuntime).toContain('timetable-grid-week-label');
+        expect(timetableRuntime).toContain('sch-grid-root');
+        expect(timetableRuntime).toContain('sch-time-col--header');
+        expect(timetableRuntime).toContain('sch-day-col-label');
+        expect(timetableRuntime).toContain('sch-time-slot-copy');
+        expect(timetableRuntime).toContain("is-today");
+        expect(timetableRuntime).toContain("shell.style.setProperty('--sch-slot-height'");
+        expect(timetableRuntime).toContain("shell.style.setProperty('--sch-slot-count'");
         expect(timetableRuntime).toContain('queueLuxuryTransparencyRefresh');
         expect(timetableRuntime).toContain('lux-timetable-view-switcher home-hover-chip');
         expect(timetableRuntime).toContain('lux-timetable-week-nav home-hover-chip');
@@ -105,12 +118,12 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain('lux-timetable-day-section home-hover-chip');
         expect(timetableRuntime).toContain('lux-timetable-session-card home-hover-chip');
         expect(timetableRuntime).toContain('home-hover-chip ${emptyClassName}');
-        expect(timetableRuntime).toContain('class="schedule-chip lux-status-pill is-muted lux-timetable-chip"');
-        expect(timetableRuntime).toContain("shell.style.setProperty('--sch-shell-min-height',");
-        expect(timetableRuntime).toContain("body.style.setProperty('--sch-body-min-height',");
+        expect(timetableRuntime).toContain('class="schedule-chip lux-status-pill home-hover-chip is-muted lux-timetable-chip"');
+        expect(timetableRuntime).not.toContain("shell.style.setProperty('--sch-shell-min-height',");
+        expect(timetableRuntime).not.toContain("body.style.setProperty('--sch-body-min-height',");
         expect(timetableRuntime).toContain("section.className = 'schedule-day-section lux-timetable-day-section home-hover-chip';");
-        expect(timetableRuntime).toContain('class="sch-time-slot lux-timetable-time-slot" style="--sch-slot-height:');
-        expect(timetableRuntime).toContain('class="sch-slot-bg lux-timetable-slot-bg" style="--sch-slot-height:');
+        expect(timetableRuntime).toContain('class="sch-time-slot"><span class="sch-time-slot-copy"');
+        expect(timetableRuntime).toContain('class="sch-slot-bg"');
         expect(timetableRuntime).toContain('class="schedule-now-line" style="--sch-now-top:');
         expect(timetableRuntime).toContain('class="schedule-session-grid lux-timetable-session-grid${dayItems.length >= 4 ? \' lux-timetable-session-grid--dense\' : \'\'}"');
         expect(timetableRuntime).toContain('class="schedule-session-card lux-timetable-session-card home-hover-chip${markerClass}"');
@@ -123,19 +136,23 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain('lux-timetable-session-grid--dense');
         expect(timetableRuntime).toContain('class="schedule-session-meta-row lux-timetable-session-meta-row"');
         expect(timetableRuntime).toContain('class="lux-secondary-btn schedule-session-action lux-timetable-session-action"');
-        expect(timetableRuntime).toContain('class="sch-time-col lux-timetable-time-col"');
-        expect(timetableRuntime).toContain('class="sch-day-col lux-timetable-day-col ${isToday ? \'today\' : \'\'}"');
-        expect(timetableRuntime).toContain('dayLanes.className = \'sch-day-lanes lux-timetable-day-lanes\';');
-        expect(timetableRuntime).toContain('class="sch-lane lux-timetable-lane"');
+        expect(timetableRuntime).toContain('class="sch-day-col${isToday ? \' is-today\' : \'\'}"');
+        expect(timetableRuntime).toContain('dayLanes.className = \'sch-day-lanes\'');
+        expect(timetableRuntime).toContain('class="sch-lane"');
+        expect(timetableRuntime).not.toContain('lux-timetable-day-lanes');
         expect(timetableRuntime).toContain("board.className = 'schedule-sessions-board lux-timetable-sessions-board';");
-        expect(timetableRuntime).toContain('class="ev-draft sch-week-badge lux-timetable-week-badge" ${toneAttr}>WEEK</div>');
-        expect(timetableRuntime).toContain('class="sch-event lux-timetable-event${markerClass}" ${toneAttr} style="--sch-event-top:');
-        expect(timetableRuntime).toContain('class="sch-event-topline lux-timetable-event-topline"');
-        expect(timetableRuntime).toContain('class="sch-event-code lux-timetable-event-code"');
-        expect(timetableRuntime).toContain('class="sch-event-pill lux-timetable-event-pill"');
-        expect(timetableRuntime).toContain('class="ev-title lux-timetable-event-title"');
-        expect(timetableRuntime).toContain('class="ev-meta lux-timetable-event-meta"');
-        expect(timetableRuntime).toContain("showScheduleSurfaceEmpty(container, emptyMessage, 'schedule-grid-empty lux-timetable-grid-empty');");
+        expect(timetableRuntime).toContain('<div class="ev-draft">WEEK</div>');
+        expect(timetableRuntime).toContain('class="sch-event${markerClass}" ${toneAttr} style="--sch-event-top:');
+        expect(timetableRuntime).toContain('data-sch-event-tone=');
+        expect(timetableRuntime).not.toContain('lux-timetable-event');
+        expect(timetableRuntime).toContain('buildTimetableEmptyWeekNotice');
+        expect(timetableRuntime).toContain('sch-empty-week-notice');
+        expect(timetableRuntime).not.toMatch(
+            /renderUnifiedWeeklyScheduleGrid[\s\S]*?showScheduleSurfaceEmpty\(container, emptyMessage/
+        );
+        expect(timetableRuntime).toContain('syncTimetableFilterDefaults');
+        expect(timetableRuntime).toContain('KIU_STATE.activeSemester');
+        expect(timetableRuntime).toContain('syncTimetableFilterDefaults()');
         expect(timetableRuntime).toContain('lux-primary-btn');
         expect(timetableRuntime).toContain('lux-secondary-btn');
         expect(timetableRuntime).not.toContain('style="height:${slotHeight}px; cursor:default;"');
@@ -150,6 +167,7 @@ describe('timetable route regressions', () => {
         expect(existsSync(join(process.cwd(), 'assets/css/admin-scheduler-route.css'))).toBe(false);
         expect(timetableRuntime).toContain('function formatTimetableHeroFocusTitle(session)');
         expect(timetableRuntime).toContain('function renderTimetableHeroFocusPanel(');
+        expect(timetableRuntime).toContain('lux-hero-signal home-hover-chip');
         expect(timetableRuntime).toContain('function renderTimetableHeroFocusFacts(session');
         expect(timetableRuntime).not.toContain('timetable-insight-next');
         expect(timetableRuntime).not.toContain('renderTimetableNextCompactFacts');
@@ -159,7 +177,7 @@ describe('timetable route regressions', () => {
         expect(luxTransparency).toContain('const isTimetableGridCell = (el) => {');
         expect(luxTransparency).toContain('TIMETABLE_GRID_CELL_CLASS_NAMES');
         expect(luxTransparency).toContain('isTimetableGridCell(el) ||');
-        expect(luxTransparency).toContain('.lux-timetable-grid-shell, .schedule-grid-shell[data-tt-grid="1"]');
+        expect(luxTransparency).toContain('.sch-grid-shell[data-tt-grid="1"]');
         expect(luxTransparency).not.toContain('const isTimetableLargeSurface');
         expect(luxTransparency).not.toContain('if (isTimetableLargeSurface)');
         expect(luxTransparency).not.toContain("'.lux-timetable-command', '.lux-timetable-insight'");
@@ -182,15 +200,17 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain("var ht=setInterval(function(){if(typeof window.navigate==='function')");
     });
 
-    it('marks layout-only shell and glass-root stage host', () => {
+    it('marks layout-only shell and glass-root grid host', () => {
         const html = readSource('timetable.html');
+        const runtime = readSource('assets/js/pages/timetable-runtime.js');
         expect(html).toContain('data-lux-layout-only="1"');
-        expect(html).toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
+        expect(html).not.toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
+        expect(runtime).toContain("shell.dataset.luxGlassRoot = '1'");
     });
 
     it('uses shared layout primitives and typography in static shell', () => {
         const html = readSource('timetable.html');
-        expect(html).toContain('ttshare9');
+        expect(html).toContain('ttgrid1');
         expect(html).toContain('lux-timetable-command home-hover-chip');
         expect(html).toContain('lux-timetable-filters home-hover-chip');
         expect(html).toContain('lux-timetable-view-switcher home-hover-chip');
@@ -201,6 +221,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('lux-card-copy lux-card-meta');
         expect(html).toContain('lux-route-field-label');
         expect(html).toMatch(/id="tt-filter-sem"[^>]*lux-control|class="[^"]*lux-control[^"]*"[^>]*id="tt-filter-sem"/);
+        expect(html).not.toMatch(/id="tt-filter-sem"[\s\S]*?<option value="1" selected>/);
         expect(html).toContain('id="timetable-stage-copy" class="lux-card-copy"');
     });
 
@@ -250,14 +271,22 @@ describe('timetable route regressions', () => {
         expect(fouc).toContain('.schedule-day-section');
     });
 
+    it('shares admin scheduler grid layout and paint with timetable route', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(bare).toContain(':is(#page-admin-scheduler, #page-timetable) .sch-grid-shell');
+        expect(bare).toContain(':is(#page-admin-scheduler #scheduler-grid, #page-timetable #timetable-grid)');
+        expect(bare).toContain('body.lux-route-timetable #page-timetable .sch-grid-shell');
+        expect(fouc).toMatch(/:is\(body\.lux-route-admin-scheduler #page-admin-scheduler, body\.lux-route-timetable #page-timetable\) \.sch-header-row/);
+    });
+
     it('fouc-ht resets timetable page shell motion and chips lift on hover/touch', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toContain('.lux-timetable-command');
         expect(fouc).toContain('.lux-timetable-session-card');
-        expect(fouc).toMatch(/body\.lux-route-timetable \.lux-timetable-page :is\([\s\S]*\.lux-timetable-command[\s\S]*\):hover[\s\S]*--home-chip-hover-lift/);
-        expect(fouc).toMatch(/body\.lux-route-timetable \.lux-timetable-page :is\(\.page-hero, \.lux-timetable-stage\)/);
-        expect(fouc).toMatch(/@media \(hover: none\)[\s\S]*schedule-empty-state[\s\S]*:active[\s\S]*--home-chip-hover-lift/);
-        const ttBlock = fouc.split('/* Timetable page: matte inners')[1]?.split('/* Picker hosts are layout-only')[0] || '';
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*var\(--home-chip-hover-lift/);
+        expect(fouc).toMatch(/:is\(\.page-hero, \[data-lux-glass-root="1"\]\):not\(\.home-hover-chip\)[\s\S]*transition:\s*none/);
+        const ttBlock = fouc.split('/* Timetable + registration pages')[1]?.split('/* Picker hosts are layout-only')[0] || '';
         expect(ttBlock).not.toMatch(/@media \(hover: hover\)[\s\S]*\.lux-timetable-command[\s\S]*:active[\s\S]*translate3d\(0,\s*0,\s*0\)/);
     });
 
@@ -275,10 +304,10 @@ describe('timetable route regressions', () => {
 
     it('fouc-ht does not treat picker fields as timetable matte hover shells', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
-        const ttBlock = fouc.split('/* Timetable page: matte inners')[1]?.split('/* Social soft-chrome shells')[0] || '';
+        const ttBlock = fouc.split('/* Timetable + registration pages')[1]?.split('/* Picker hosts are layout-only')[0] || '';
         expect(ttBlock).not.toContain('.lux-picker-field,');
-        expect(ttBlock).toContain('.lux-timetable-page .lux-picker-field');
-        expect(ttBlock).toMatch(/>\s*\*:not\(\.lux-picker-panel\)/);
+        expect(fouc).toContain('.lux-timetable-page .lux-picker-field');
+        expect(fouc).toMatch(/body\.lux-unified-shell :is\([\s\S]*\.home-hover-chip[\s\S]*>\s*\*:not\(\.lux-picker-panel\)/);
     });
 
     it('timetable page panels avoid corner text clip and hero badges use pill matte', () => {
@@ -289,7 +318,9 @@ describe('timetable route regressions', () => {
         expect(bare).toContain('body.lux-route-timetable .lux-timetable-hero-focus');
         expect(bare).toContain('body.lux-route-timetable .lux-timetable-stage');
         expect(bare).toContain('max-width: 56ch');
-        expect(fouc).toMatch(/body\.lux-route-timetable \.lux-timetable-page :is\(\.page-hero-badge, \.lux-timetable-hero-badge\)[\s\S]*border-radius:\s*999px/);
+        expect(fouc).toMatch(/body\.lux-route-timetable \.lux-timetable-page :is\(\.page-hero-badge\.home-hover-chip, \.lux-timetable-hero-badge\.home-hover-chip\)[\s\S]*border-radius:\s*999px/);
+        expect(fouc).toContain('.lux-timetable-hero-focus .lux-hero-signal.home-hover-chip');
+        expect(fouc).toContain('.lux-timetable-hero-focus .lux-focus-panel__chip.home-hover-chip');
         expect(fouc).toMatch(/body\.lux-route-timetable \.lux-timetable-page[\s\S]*overflow:\s*visible/);
     });
 });

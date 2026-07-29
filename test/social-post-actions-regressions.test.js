@@ -121,7 +121,7 @@ describe('social post actions regressions', () => {
         expect(readSource('assets/css/lux-modals.css')).toContain('.sns-comment-dialog-bubble');
         expect(readSource('assets/css/lux-modals.css')).not.toMatch(/\.sns-comment-dialog-bubble\s*\{[^}]*background:/);
         expect(readSource('assets/css/lux-fouc-ht.css')).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--comments');
-        expect(readSource('assets/css/lux-fouc-ht.css')).toContain('.lux-glass-dialog-card--comments:has(.home-hover-chip:hover)');
+        expect(readSource('assets/css/lux-fouc-ht.css')).not.toContain('.lux-glass-dialog-card--comments:has(.home-hover-chip:hover)');
         expect(readSource('assets/css/lux-modals.css')).toContain('.lux-glass-dialog-card--comments.lux-glass-dialog-card--social-glass');
         expect(readSource('assets/css/lux-modals.css')).toContain('.lux-glass-dialog-backdrop--comment-delete');
         expect(feedModule).not.toContain('isCommentDialog()) {\n                return withBusy(() => deleteCommentInline');

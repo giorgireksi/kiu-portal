@@ -50,33 +50,36 @@ function removeStudentServiceAnswersFromSnapshot(questionId, removedAnswerIds = 
     return;
 }
 
-function mergeStudentServiceQuestionSnapshot(question = {}) {
-    if (hasStudentServiceQaModule()
-        && typeof window.mergeStudentServiceQuestionSnapshot === 'function'
-        && window.mergeStudentServiceQuestionSnapshot !== mergeStudentServiceQuestionSnapshot) {
-        return window.mergeStudentServiceQuestionSnapshot.apply(null, arguments);
+function resolveStudentServiceBootstrapExport(name, localFn) {
+    if (typeof resolveStudentServiceExportImpl === 'function') {
+        const fromBag = resolveStudentServiceExportImpl(name);
+        if (typeof fromBag === 'function' && fromBag !== localFn) return fromBag;
     }
-    ensureStudentServiceQaModule().catch(() => null);
+    const fromBag = window.KiuStudentService?.[name];
+    if (typeof fromBag === 'function' && fromBag !== localFn) return fromBag;
+    const fromWindow = window[name];
+    if (typeof fromWindow === 'function' && fromWindow !== localFn) return fromWindow;
+    return null;
+}
+
+function mergeStudentServiceQuestionSnapshot(question = {}) {
+    const impl = resolveStudentServiceBootstrapExport('mergeStudentServiceQuestionSnapshot', mergeStudentServiceQuestionSnapshot);
+    if (impl) return impl.apply(null, arguments);
+    if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
     return;
 }
 
 function removeStudentServiceQuestionFromSnapshot(questionId) {
-    if (hasStudentServiceQaModule()
-        && typeof window.removeStudentServiceQuestionFromSnapshot === 'function'
-        && window.removeStudentServiceQuestionFromSnapshot !== removeStudentServiceQuestionFromSnapshot) {
-        return window.removeStudentServiceQuestionFromSnapshot.apply(null, arguments);
-    }
-    ensureStudentServiceQaModule().catch(() => null);
+    const impl = resolveStudentServiceBootstrapExport('removeStudentServiceQuestionFromSnapshot', removeStudentServiceQuestionFromSnapshot);
+    if (impl) return impl.apply(null, arguments);
+    if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
     return;
 }
 
 function removeStudentServiceQuestionCard(questionId) {
-    if (hasStudentServiceQaModule()
-        && typeof window.removeStudentServiceQuestionCard === 'function'
-        && window.removeStudentServiceQuestionCard !== removeStudentServiceQuestionCard) {
-        return window.removeStudentServiceQuestionCard.apply(null, arguments);
-    }
-    ensureStudentServiceQaModule().catch(() => null);
+    const impl = resolveStudentServiceBootstrapExport('removeStudentServiceQuestionCard', removeStudentServiceQuestionCard);
+    if (impl) return impl.apply(null, arguments);
+    if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
     return;
 }
 

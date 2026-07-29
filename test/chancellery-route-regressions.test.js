@@ -27,9 +27,9 @@ describe('chancellery route regressions', () => {
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');
     });
 
-    it('loads shared layout primitives and chshare2 cache', () => {
+    it('loads shared layout primitives and chshare3 cache', () => {
         const html = readSource('chancellery.html');
-        expect(html).toContain('chshare2');
+        expect(html).toContain('chshare3');
         expect(html).toContain('lux-layout-primitives.css');
     });
 
@@ -42,13 +42,19 @@ describe('chancellery route regressions', () => {
         expect(js).toContain('filter-shell lux-chancellery-command-bar home-hover-chip');
         expect(js).toContain('lux-chancellery-list-panel home-hover-chip');
         expect(js).toContain('lux-chancellery-detail-panel home-hover-chip');
-        expect(js).toContain('lux-chancellery-finance-card');
+        expect(js).toContain('lux-page-title lux-chancellery-card-title');
+        expect(js).toContain('lux-chancellery-subcard lux-soft-chrome home-hover-chip');
+        expect(js).toContain('lux-chancellery-thread-entry lux-soft-chrome home-hover-chip');
+        expect(js).toContain('resolveChancelleryGroupLabel');
+        expect(js).toContain('lux-focus-panel__chip lux-status-pill home-hover-chip');
         expect(js).not.toContain('lux-chancellery-main-panel');
     });
 
     it('shared layout primitives define chancellery text roles', () => {
         const primitives = readSource('assets/css/lux-layout-primitives.css');
-        expect(primitives).toContain('.lux-chancellery-card-title');
+        expect(primitives).toContain('.lux-chancellery-card-title.lux-page-title');
+        expect(primitives).toContain('.lux-chancellery-subcard-copy.lux-panel-copy');
+        expect(primitives).toContain('.lux-thread-author.lux-card-copy');
         expect(primitives).toContain('.lux-chancellery-stat-label');
         expect(primitives).toContain('.lux-chancellery-queue-subject');
     });
@@ -59,6 +65,8 @@ describe('chancellery route regressions', () => {
         expect(chanBlock).toContain('body.lux-route-chancellery #page-chancellery');
         expect(chanBlock).toContain('body.lux-route-chancellery .lux-chancellery-workspace-split');
         expect(chanBlock).toContain('body.lux-route-chancellery .lux-chancellery-queue-item');
+        expect(chanBlock).toContain('body.lux-route-chancellery .lux-chancellery-card-head');
+        expect(chanBlock).toContain('body.lux-route-chancellery .lux-chancellery-thread-entry.lux-soft-chrome.home-hover-chip');
         expect(chanBlock).toContain('body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-side.home-hover-chip');
         expect(chanBlock).toContain('body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-signals.lux-hero-signal-list');
         expect(chanBlock).not.toMatch(/backdrop-filter/);
@@ -69,9 +77,12 @@ describe('chancellery route regressions', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toContain('body.lux-route-chancellery #page-chancellery');
         expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\([\s\S]*\.lux-chancellery-list-panel/);
-        expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\(\.page-hero, \[data-chancellery-shell="1"\]\)/);
-        expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\([\s\S]*\.lux-chancellery-command-bar[\s\S]*\):hover[\s\S]*--home-chip-hover-lift/);
-        expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\([\s\S]*\.lux-chancellery-hero-side \.lux-hero-signal/);
+        expect(fouc).toContain('.lux-chancellery-subcard.lux-soft-chrome');
+        expect(fouc).toContain('.lux-chancellery-thread-entry.lux-soft-chrome');
+        expect(fouc).toContain('[data-lux-glass-root="1"]):not(.home-hover-chip)');
+        expect(fouc).toContain('transition: none');
+        expect(fouc).toMatch(/body\.lux-route-chancellery #page-chancellery :is\([\s\S]*\.lux-chancellery-hero-side \.lux-hero-signal\.home-hover-chip/);
+        expect(fouc).toContain('.lux-chancellery-hero-side .lux-focus-panel__chip.lux-status-pill.home-hover-chip');
         expect(fouc).toContain('body.lux-route-chancellery #page-chancellery .lux-picker-field');
     });
 });

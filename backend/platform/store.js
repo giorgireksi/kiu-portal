@@ -238,6 +238,14 @@ const {
     submitSocialSurveyResponse
 } = require('./domains/social-surveys-service');
 const {
+    createSocialResearchPublication,
+    deleteSocialResearchPublication,
+    getSocialResearchPublication,
+    listSocialResearchPublications,
+    toggleSocialResearchSave,
+    updateSocialResearchPublication
+} = require('./domains/social-research-service');
+const {
     buildExamSessionCourseKey,
     buildProtectedQuizClientUrl,
     createExamPortalLaunchTicket,
@@ -1954,7 +1962,7 @@ class PlatformStore {
         return this.decorateStudentServiceQuestion(question, actorId);
     }
 
-    setStudentServiceAnswerFeedback(questionId, answerId, actorId = '') {
+    setStudentServiceAnswerFeedback(questionId, answerId, actorId = '', payload = {}) {
         const serviceState = this.ensureStudentServiceState();
         const normalizedQuestionId = String(questionId || '').trim();
         const normalizedAnswerId = String(answerId || '').trim();
@@ -1973,8 +1981,11 @@ class PlatformStore {
             return { error: 'Only published answers may be rated.', status: 409 };
         }
         const hadVote = asArray(answer.helpfulVotes).some(entry => entry.userId === normalizedActorId);
+        const wantHelpful = typeof payload?.helpful === 'boolean'
+            ? payload.helpful
+            : !hadVote;
         answer.helpfulVotes = asArray(answer.helpfulVotes).filter(entry => entry.userId !== normalizedActorId);
-        if (!hadVote) {
+        if (wantHelpful) {
             answer.helpfulVotes.push({
                 userId: normalizedActorId,
                 updatedAt: nowIso()
@@ -4652,6 +4663,30 @@ class PlatformStore {
     getSocialSurveyResults(surveyId, viewerUserId = '') { return getSocialSurveyResults.call(this, surveyId, viewerUserId); }
 
     deleteSocialSurvey(surveyId, actorId = '') { return deleteSocialSurvey.call(this, surveyId, actorId); }
+
+    listSocialResearchPublications(filters = {}, viewerUserId = '') {
+        return listSocialResearchPublications.call(this, filters, viewerUserId);
+    }
+
+    getSocialResearchPublication(publicationId, viewerUserId = '') {
+        return getSocialResearchPublication.call(this, publicationId, viewerUserId);
+    }
+
+    createSocialResearchPublication(payload = {}, actorId = '') {
+        return createSocialResearchPublication.call(this, payload, actorId);
+    }
+
+    updateSocialResearchPublication(publicationId, payload = {}, actorId = '') {
+        return updateSocialResearchPublication.call(this, publicationId, payload, actorId);
+    }
+
+    toggleSocialResearchSave(publicationId, actorId = '') {
+        return toggleSocialResearchSave.call(this, publicationId, actorId);
+    }
+
+    deleteSocialResearchPublication(publicationId, actorId = '') {
+        return deleteSocialResearchPublication.call(this, publicationId, actorId);
+    }
 
     removeChatMessage(chatId, messageId, actorId = '') {
         const normalizedChatId = socialText(chatId);

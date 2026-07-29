@@ -643,19 +643,19 @@
         `;
 
         return `
-            <div class="staff-hub-shell">
+            <div class="staff-hub-shell" data-lux-glass-root="1">
 
 
-                <section class="staff-hub-controls staff-admin-controls staff-hub-controls--adaptive">
+                <section class="staff-hub-controls staff-admin-controls staff-hub-controls--adaptive home-hover-chip">
                     ${directoryControlsMarkup}
                 </section>
 
-                <section class="staff-hub-directory-panel">
+                <section class="staff-hub-directory-panel home-hover-chip">
                     <div class="staff-hub-directory-head">
                         <div>
-                            <div class="staff-hub-overline">Staff directory</div>
-                            <h2 class="staff-hub-section-title">Operational records</h2>
-                            <p class="staff-hub-section-copy">Open full profile pages, review readiness, and act on account or staffing issues directly from the table.</p>
+                            <div class="staff-hub-overline lux-section-kicker">Staff directory</div>
+                            <h2 class="staff-hub-section-title lux-card-title">Operational records</h2>
+                            <p class="staff-hub-section-copy lux-card-copy">Open full profile pages, review readiness, and act on account or staffing issues directly from the table.</p>
                         </div>
                         <div class="staff-hub-inline-actions lux-btn-row-stack">
                             <button class="lux-secondary-btn" type="button" data-staff-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
@@ -1156,7 +1156,7 @@
         if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
         const urls = [
             'assets/js/pages/form-builder-actions-runtime.js?v=20260726-stafffix11',
-            'assets/js/pages/form-builder-runtime.js?v=20260726-stafffix11'
+            'assets/js/pages/form-builder-runtime.js?v=20260729-hubbuilder1'
         ];
         __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
             const existing = document.querySelector(`script[src="${src}"]`);

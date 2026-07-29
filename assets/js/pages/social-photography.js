@@ -372,7 +372,7 @@
         `).join('');
 
         return `
-            <article class="social-neo-card social-neo-post-card social-photo-feed-card">
+            <article class="social-neo-card social-neo-post-card social-photo-feed-card home-hover-chip">
                 <div class="social-neo-post-head social-photo-feed-head">
                     <button class="social-neo-post-author social-neo-clickable" type="button" data-action="photography-view-profile" data-user-id="${escape(text(author.id))}">
                         ${avatar(author)}
@@ -446,7 +446,7 @@
         const canRemove = canRemovePhotographyPost(post);
         const fetchPriority = index < 8 ? 'auto' : 'low';
         return `
-            <div class="social-photo-grid-tile">
+            <div class="social-photo-grid-tile home-hover-chip">
                 <button class="social-photo-grid-tile-open" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}" aria-label="View photo by ${escape(displayName(author))}${caption ? `: ${escape(caption)}` : ''}">
                     <img class="social-photo-grid-tile-img" data-photo-src="${escape(src)}" alt="" loading="lazy" decoding="async" fetchpriority="${fetchPriority}" sizes="(max-width: 720px) 33vw, 240px" onerror="this.hidden=true;this.closest('.social-photo-grid-tile')?.classList.add('is-broken')">
                     <span class="social-photo-grid-tile-fallback" aria-hidden="true"><i class="fas fa-image"></i></span>

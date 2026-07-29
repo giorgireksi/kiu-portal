@@ -36,6 +36,8 @@
             when
         } = deps;
 
+        const portfolioPill = (innerHtml, extra = '') => `<span class="social-neo-pill lux-status-pill home-hover-chip ${extra}">${innerHtml}</span>`;
+
         function renderPortfolioHero(runtime, metrics = {}) {
             const canCreate = Boolean(metrics.canCreate);
             const allEntries = Array.isArray(metrics.allEntries) ? metrics.allEntries : [];
@@ -60,7 +62,7 @@
                 <button class="lux-primary-btn social-neo-portfolio-hero-create-btn" type="button" data-action="portfolio-create-open">
                     <i class="fas fa-pen"></i> ${hasDraft ? 'Continue my portfolio' : 'Build my portfolio'}
                 </button>
-                ${hasDraft ? `<span class="social-neo-pill social-portfolio-draft-pill"><strong>Draft saved</strong><span>Ready to publish</span></span>` : ''}
+                ${hasDraft ? `${portfolioPill('<strong>Draft saved</strong><span>Ready to publish</span>', 'social-portfolio-draft-pill')}` : ''}
             ` : '';
             const bodyHtml = text(metrics.bodyHtml || '');
             const merged = Boolean(bodyHtml);
@@ -95,7 +97,7 @@
                 </div>
             ` : '';
             return `
-                <section class="social-neo-card social-neo-portfolio-hero social-neo-community-panel social-neo-community-panel--portfolio${merged ? ' is-merged' : ''}">
+                <section class="social-neo-card social-neo-portfolio-hero social-neo-community-panel social-neo-community-panel--portfolio home-hover-chip${merged ? ' is-merged' : ''}">
                     <div class="social-neo-portfolio-hero-head">
                         <div class="social-neo-portfolio-hero-actions">
                             ${createCta}
@@ -104,9 +106,9 @@
                             </button>
                         </div>
                     </div>
-                    <div class="social-neo-portfolio-hero-stats">
+                    <div class="social-neo-portfolio-hero-stats home-hover-chip">
                         ${stats.map((stat) => `
-                            <article class="social-neo-portfolio-hero-stat lux-strip-card surface-card">
+                            <article class="social-neo-portfolio-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                                 <strong>${escape(String(stat.value))}</strong>
                                 <span>${escape(stat.label)}</span>
                             </article>
@@ -274,22 +276,22 @@
                     <div class="social-neo-section-head">
                         <div><strong>${isOwn ? 'Your portfolio' : 'Portfolio highlights'}</strong><span>${isOwn ? 'Showcase projects, research, design, and startup work inside campus social.' : 'Visible showcase entries from this profile.'}</span></div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap">
-                            <span class="social-neo-pill"><strong>${escape(items.length)}</strong><span>Visible</span></span>
+                            <span class="social-neo-pill lux-status-pill home-hover-chip"><strong>${escape(items.length)}</strong><span>Visible</span></span>
                             ${isOwn ? `<button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="profile-portfolio-open"><i class="fas fa-briefcase"></i> Open Portfolio</button>` : ''}
                         </div>
                     </div>
                     ${items.length ? `
                         <div class="social-portfolio-mini-grid">
                             ${items.map((entry) => `
-                                <article class="social-portfolio-mini-card">
+                                <article class="social-portfolio-mini-card home-hover-chip">
                                     <div class="social-neo-badge-row">
-                                        <span class="social-neo-pill">${escape(portfolioAudienceLabel(entry.visibilityMode))}</span>
-                                        <span class="social-neo-pill">${escape(entry.status)}</span>
+                                        ${portfolioPill(escape(portfolioAudienceLabel(entry.visibilityMode)))}
+                                        ${portfolioPill(escape(entry.status))}
                                     </div>
                                     <strong>${escape(entry.title)}</strong>
                                     <p>${escape(entry.summary || entry.description || 'Portfolio entry')}</p>
                                     <div class="social-neo-inline social-neo-inline-between-gap-8-wrap">
-                                        <div class="social-neo-badge-row">${entry.hashtags.slice(0, 2).map((tag) => `<span class="social-neo-pill">#${escape(tag.replace(/^#/, ''))}</span>`).join('')}</div>
+                                        <div class="social-neo-badge-row">${entry.hashtags.slice(0, 2).map((tag) => portfolioPill(`#${escape(tag.replace(/^#/, ''))}`)).join('')}</div>
                                         <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-open" data-project-id="${escape(entry.id)}">Open</button>
                                     </div>
                                 </article>
@@ -339,7 +341,7 @@
                             const mediaUrl = mediaPreview ? fileUrl(mediaPreview) : '';
                             const featured = index === 0 || (index > 0 && index % 5 === 0);
                             return `
-                                <article class="social-neo-post-card social-portfolio-card lux-soft-chrome ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
+                                <article class="social-neo-post-card social-portfolio-card lux-soft-chrome home-hover-chip ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
                                     <div class="social-portfolio-card-head">
                                         <div class="social-neo-person">
                                             ${avatar(owner, 'social-neo-avatar-sm')}
@@ -349,10 +351,10 @@
                                             </div>
                                         </div>
                                         <div class="social-neo-badge-row">
-                                            ${featured ? `<span class="social-neo-pill social-portfolio-featured-pill"><strong>Featured</strong><span>Showcase pick</span></span>` : ''}
-                                            <span class="social-neo-pill">${escape(portfolioAudienceLabel(entry.visibilityMode))}</span>
-                                            <span class="social-neo-pill">${escape(entry.status === 'published' ? 'Published' : 'Draft')}</span>
-                                            <span class="social-neo-pill">${escape(when(entry.updatedAt || entry.createdAt))}</span>
+                                            ${featured ? portfolioPill('<strong>Featured</strong><span>Showcase pick</span>', 'social-portfolio-featured-pill') : ''}
+                                            ${portfolioPill(escape(portfolioAudienceLabel(entry.visibilityMode)))}
+                                            ${portfolioPill(escape(entry.status === 'published' ? 'Published' : 'Draft'))}
+                                            ${portfolioPill(escape(when(entry.updatedAt || entry.createdAt)))}
                                         </div>
                                     </div>
                                     ${mediaUrl && isImage(mediaPreview) ? `<div class="social-portfolio-cover"><img src="${escape(mediaUrl)}" alt="${escape(entry.title)}"></div>` : ''}
@@ -360,8 +362,8 @@
                                         <h3>${escape(entry.title)}</h3>
                                         <p>${escape(isOpen ? (entry.description || entry.summary || 'Portfolio showcase') : (entry.summary || entry.description || 'Portfolio showcase'))}</p>
                                         <div class="social-neo-badge-row">
-                                            ${(entry.facultyCodes || []).slice(0, 3).map((facultyCode) => `<span class="social-neo-pill">${escape(facultyLabel(facultyCode))}</span>`).join('')}
-                                            ${(entry.skillTags || []).slice(0, 4).map((skill) => `<span class="social-neo-pill">${escape(skill)}</span>`).join('')}
+                                            ${(entry.facultyCodes || []).slice(0, 3).map((facultyCode) => portfolioPill(escape(facultyLabel(facultyCode)))).join('')}
+                                            ${(entry.skillTags || []).slice(0, 4).map((skill) => portfolioPill(escape(skill))).join('')}
                                             ${(entry.hashtags || []).slice(0, 4).map((tag) => `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">#${escape(text(tag).replace(/^#/, ''))}</button>`).join('')}
                                         </div>
                                     </div>
@@ -383,7 +385,7 @@
                                                     ${entry.mediaItems.slice(0, 6).map((item) => {
                                                         const url = fileUrl(item);
                                                         if (url && isImage(item)) return `<img src="${escape(url)}" alt="${escape(text(item.name || entry.title))}">`;
-                                                        return `<span class="social-neo-pill">${escape(text(item.name || 'Attachment'))}</span>`;
+                                                        return portfolioPill(escape(text(item.name || 'Attachment')));
                                                     }).join('')}
                                                 </div>
                                             ` : ''}
@@ -391,12 +393,12 @@
                                     ` : ''}
                                     <div class="social-portfolio-actions">
                                         ${entry.isPortfolioDocument ? `
-                                            <button class="lux-secondary-btn" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>
-                                            ${entry.canEdit ? `<button class="lux-primary-btn" type="button" data-action="portfolio-create-open"><i class="fas fa-pen"></i> Edit portfolio</button>` : `<button class="lux-primary-btn" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
+                                            <button class="lux-secondary-btn home-hover-chip" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>
+                                            ${entry.canEdit ? `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-create-open"><i class="fas fa-pen"></i> Edit portfolio</button>` : `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
                                         ` : `
-                                            <button class="lux-secondary-btn" type="button" data-action="${isOpen ? 'projects-back' : 'project-open'}" data-project-id="${escape(entry.id)}">${isOpen ? 'Hide details' : 'Open entry'}</button>
-                                            ${entry.canEdit ? `<button class="lux-primary-btn" type="button" data-action="portfolio-edit" data-project-id="${escape(entry.id)}"><i class="fas fa-pen"></i> Edit</button>` : `<button class="lux-primary-btn" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
-                                            ${entry.canEdit ? `<button class="lux-secondary-btn" type="button" data-action="portfolio-delete" data-project-id="${escape(entry.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
+                                            <button class="lux-secondary-btn home-hover-chip" type="button" data-action="${isOpen ? 'projects-back' : 'project-open'}" data-project-id="${escape(entry.id)}">${isOpen ? 'Hide details' : 'Open entry'}</button>
+                                            ${entry.canEdit ? `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-edit" data-project-id="${escape(entry.id)}"><i class="fas fa-pen"></i> Edit</button>` : `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
+                                            ${entry.canEdit ? `<button class="lux-secondary-btn home-hover-chip" type="button" data-action="portfolio-delete" data-project-id="${escape(entry.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                                         `}
                                     </div>
                                 </article>

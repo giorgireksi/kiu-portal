@@ -34,7 +34,7 @@ describe('scheduler and LMS regressions', () => {
     const tabsSrc = readFileSync(join(process.cwd(), 'assets/js/pages/lms-classroom-tabs-runtime.js'), 'utf8');
     expect(tabsSrc).toContain('assets/js/shared/messenger.js');
     expect(lmsHtml).not.toContain('assets/js/pages/lms-quiz-workspace-runtime.js');
-    expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-quiz-workspace-runtime.js?v=20260728-lmquiz4');
+    expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-quiz-workspace-runtime.js?v=20260729-lmquizshare1');
 
     expect(quizWorkspaceSource).toContain('function normalizeLmsQuizBuilderDraftState(draft, context)');
     expect(quizWorkspaceSource).toContain('function normalizeLmsQuizBuilderAllowedStudentIds(studentIds = [])');

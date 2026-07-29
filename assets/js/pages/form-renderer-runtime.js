@@ -279,7 +279,7 @@ function __kiuFormRenExpose(map) {
 
         let valueMarkup = '';
         if (formatted.isChips && Array.isArray(formatted.display)) {
-            valueMarkup = `<div class="${H.hub}-chips ${H.hub}-chips--spaced">${formatted.display.map((item) => `<span class="${H.hub}-chip lux-status-pill">${escapeHtml(item)}</span>`).join('')}</div>`;
+            valueMarkup = `<div class="${H.hub}-chips ${H.hub}-chips--spaced">${formatted.display.map((item) => `<span class="${H.hub}-chip lux-status-pill home-hover-chip">${escapeHtml(item)}</span>`).join('')}</div>`;
         } else if (formatted.isMultiline) {
             valueMarkup = `<p class="${H.hub}-profile-field-value${emptyClass}">${escapeHtml(formatted.display)}</p>`;
         } else {
@@ -287,7 +287,7 @@ function __kiuFormRenExpose(map) {
         }
 
         return `
-            <div class="${H.hub}-profile-field${widthClass}" data-${H.data}-field-key="${escapeHtml(field.key)}">
+            <div class="${H.hub}-profile-field lux-soft-chrome home-hover-chip${widthClass}" data-${H.data}-field-key="${escapeHtml(field.key)}">
                 <span class="${H.hub}-profile-field-label">${escapeHtml(field.label)}</span>
                 ${valueMarkup}
             </div>
@@ -330,7 +330,7 @@ function __kiuFormRenExpose(map) {
         const sectionTotal = sectionMeta.total || 1;
         const anchorId = profileSectionAnchorId(section.id);
         return `
-            <section class="${H.hub}-form-section lux-data-card" id="${escapeHtml(anchorId)}" data-${H.data}-section-id="${escapeHtml(section.id)}">
+            <section class="${H.hub}-form-section lux-data-card home-hover-chip" id="${escapeHtml(anchorId)}" data-${H.data}-section-id="${escapeHtml(section.id)}">
                 <div class="${H.hub}-form-section-head">
                     <div>
                         <span class="${H.hub}-overline">Section ${sectionIndex} of ${sectionTotal}</span>

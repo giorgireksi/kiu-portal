@@ -280,8 +280,37 @@
             if (typeof window === 'undefined' || window.__studentServiceRealtimeRefreshBound) return;
             window.__studentServiceRealtimeRefreshBound = true;
             window.addEventListener('kiu:student-service-updated', () => {
+                const runtime = window.STUDENT_SERVICE_RUNTIME || {};
+                if (Number(runtime.suppressRealtimeRefreshUntil || 0) > Date.now()) return;
+                if (runtime.pendingAnswerHelpfulIds?.size) return;
                 fetchStudentServiceBootstrap(true)
                     .then(() => {
+                        if (Number(runtime.suppressRealtimeRefreshUntil || 0) > Date.now()) return;
+                        if (runtime.pendingAnswerHelpfulIds?.size) return;
+                        const ui = typeof window.ensureStudentServiceUiState === 'function'
+                            ? window.ensureStudentServiceUiState()
+                            : null;
+                        const openQuestionId = String(ui?.selectedQuestionId || '').trim();
+                        const patchThread = window.patchStudentServiceOpenQuestionThread
+                            || window.KiuStudentService?.patchStudentServiceOpenQuestionThread;
+                        const isModalOpen = window.isStudentServiceQuestionThreadModalOpen
+                            || window.KiuStudentService?.isStudentServiceQuestionThreadModalOpen;
+                        if (
+                            openQuestionId
+                            && typeof patchThread === 'function'
+                            && typeof isModalOpen === 'function'
+                            && isModalOpen()
+                        ) {
+                            if (patchThread(openQuestionId)) {
+                                const patchStats = window.patchStudentServiceQuestionCardStats
+                                    || window.KiuStudentService?.patchStudentServiceQuestionCardStats;
+                                if (typeof patchStats === 'function') patchStats(openQuestionId);
+                                const syncSig = window.syncStudentServiceRenderSignature
+                                    || window.KiuStudentService?.syncStudentServiceRenderSignature;
+                                if (typeof syncSig === 'function') syncSig();
+                                return;
+                            }
+                        }
                         invalidateStudentServiceRenderSignature();
                         renderStudentServicePage();
                     })

@@ -49,7 +49,8 @@ describe('orders route regressions.test', () => {
 
     it('fouc-ht orders inbox block paints matte inners and frosted primary shells', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
-        const block = fouc.split('/* Orders inbox page:')[1]?.split('/* Social soft-chrome shells:')[0] || '';
+        const block = fouc.split('/* Orders inbox page:')[1]?.split('/* Social comments dialog:')[0] || '';
+        const frosted = fouc.split('/* Orders inbox primary shells:')[1]?.split('/* Global luxury hover motion')[0] || '';
         expect(block).toContain('body.lux-route-orders');
         expect(block).toContain('.orders-list-wrap');
         expect(block).toContain('.orders-item');
@@ -65,17 +66,17 @@ describe('orders route regressions.test', () => {
         expect(block).toContain('#page-orders.lux-page-shell');
         expect(block).toContain('.orders-inbox-shell[data-lux-glass-root="1"]');
         expect(block).toContain('.lux-summary-surface:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)');
-        expect(block).toContain('backdrop-filter: var(--lux-panel-blur-filter) !important');
-        expect(block).toContain('Orders inbox primary shells: frosted panel glass (beats lux-summary-surface neutralize)');
-        expect(block).toContain('--home-chip-hover-lift');
+        expect(fouc).toContain('Orders inbox primary shells: frosted panel glass (not matte soft-chrome)');
+        expect(frosted).toContain('backdrop-filter: var(--lux-panel-blur-filter) !important');
+        expect(block).not.toContain('--home-chip-hover-lift');
         expect(block).toContain('.orders-inbox-hero-side');
-        expect(block).toContain('.lux-status-pill');
+        expect(block).toContain('.lux-status-pill.home-hover-chip');
         expect(block).toContain('.orders-item');
         expect(block).toContain('.lux-pill.lux-soft-chrome');
-        expect(block).toContain(':has(.lux-hero-signal:hover)');
-        expect(block).toContain(':has(:is(');
+        expect(block).not.toContain(':has(.lux-hero-signal:hover)');
+        expect(block).not.toContain(':has(:is(');
         expect(block).toContain('.home-hover-chip');
-        expect(fouc).toContain('Orders inbox primary shells: frosted panel glass');
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*var\(--home-chip-hover-lift/);
         expect(fouc).toContain('--lux-panel-blur-filter');
         expect(fouc).toMatch(/body\.lux-unified-shell :is\(\.home-hover-chip, \.lux-card:not\(\.orders-inbox-hero\)/);
         expect(fouc).toMatch(/body\.lux-unified-shell :is\(#page-orders, #orders-inbox-root\)[\s\S]*backdrop-filter: var\(--lux-panel-blur-filter\) !important/);
@@ -87,7 +88,7 @@ describe('orders route regressions.test', () => {
         expect(inbox).toContain('data-lux-glass-root="1"');
         expect(inbox).toContain('orders-inbox-hero lux-summary-surface');
         expect(inbox).toContain('lux-pill lux-soft-chrome home-hover-chip');
-        expect(inbox).toContain('lux-status-pill');
+        expect(inbox).toContain('lux-hero-signal home-hover-chip');
         expect(inbox).toContain('class="lux-control"');
     });
 });

@@ -339,14 +339,14 @@ function renderAdminOrderAttachmentGallery(attachments = []) {
         if (file.storageKey && typeof getPortalStoredFileUrl === 'function') {
             href = getPortalStoredFileUrl(file.storageKey);
         }
-        return `<a class="admin-orders-thread-attachment" href="${href}" download="${name}" target="_blank" rel="noopener"><i class="fas fa-paperclip"></i> ${name}</a>`;
+        return `<a class="admin-orders-thread-attachment home-hover-chip" href="${href}" download="${name}" target="_blank" rel="noopener"><i class="fas fa-paperclip"></i> ${name}</a>`;
     }).join('')}</div>`;
 }
 
 function renderAdminOrderThreadDraftChips(composerId = 'order-thread-reply') {
     const drafts = getAdminOrdersThreadDraftFiles(composerId);
     if (!drafts.length) return '';
-    return `<div class="admin-orders-thread-draft-chips">${drafts.map((file, index) => `<span class="lux-status-pill is-muted admin-orders-thread-draft-chip">${escapeHtml(file.name || 'file')}<button type="button" data-admin-order-thread-remove-draft="${index}" aria-label="Remove attachment">&times;</button></span>`).join('')}</div>`;
+    return `<div class="admin-orders-thread-draft-chips">${drafts.map((file, index) => `<span class="lux-status-pill home-hover-chip is-muted admin-orders-thread-draft-chip">${escapeHtml(file.name || 'file')}<button type="button" data-admin-order-thread-remove-draft="${index}" aria-label="Remove attachment">&times;</button></span>`).join('')}</div>`;
 }
 
 function pickAdminOrderThreadAttachments(composerId = 'order-thread-reply') {
@@ -608,22 +608,22 @@ function buildAdminOrdersRolePillsMarkup(roleCounts, selectedCount) {
     const serviceCount = roleCounts[USER_ROLES.STUDENT_SERVICE] || 0;
     const adminCount = roleCounts[USER_ROLES.ADMIN] || 0;
     return `
-        <span class="lux-status-pill is-info">${selectedCount} selected</span>
-        <span class="lux-status-pill is-info">${studentCount} students</span>
-        <span class="lux-status-pill is-success">${professorCount} professors</span>
-        <span class="lux-status-pill is-warning">${taCount} TAs</span>
-        <span class="lux-status-pill is-muted">${serviceCount} student service</span>
-        <span class="lux-status-pill is-muted">${adminCount} admins</span>
+        <span class="lux-status-pill home-hover-chip is-info">${selectedCount} selected</span>
+        <span class="lux-status-pill home-hover-chip is-info">${studentCount} students</span>
+        <span class="lux-status-pill home-hover-chip is-success">${professorCount} professors</span>
+        <span class="lux-status-pill home-hover-chip is-warning">${taCount} TAs</span>
+        <span class="lux-status-pill home-hover-chip is-muted">${serviceCount} student service</span>
+        <span class="lux-status-pill home-hover-chip is-muted">${adminCount} admins</span>
     `;
 }
 
 const ADMIN_ORDERS_ROLE_COUNT_PILL_DEFS = [
-    { key: 'selected', className: 'lux-status-pill is-info' },
-    { key: 'student', className: 'lux-status-pill is-info' },
-    { key: 'professor', className: 'lux-status-pill is-success' },
-    { key: 'ta', className: 'lux-status-pill is-warning' },
-    { key: 'student_service', className: 'lux-status-pill is-muted' },
-    { key: 'admin', className: 'lux-status-pill is-muted' }
+    { key: 'selected', className: 'lux-status-pill home-hover-chip is-info' },
+    { key: 'student', className: 'lux-status-pill home-hover-chip is-info' },
+    { key: 'professor', className: 'lux-status-pill home-hover-chip is-success' },
+    { key: 'ta', className: 'lux-status-pill home-hover-chip is-warning' },
+    { key: 'student_service', className: 'lux-status-pill home-hover-chip is-muted' },
+    { key: 'admin', className: 'lux-status-pill home-hover-chip is-muted' }
 ];
 
 function mountAdminOrdersRoleCountPills(container) {
@@ -734,10 +734,10 @@ function renderAdminOrdersCommandCard(container, uiState, selectedRecipients, ro
     container.innerHTML = `
         <div class="orders-admin-command-layout">
             <div class="orders-admin-command-copy">
-                <div class="lux-card-title">Create Official Order</div>
-                <div class="lux-card-copy">Dispatch institutional orders to all account types inside the current faculty.</div>
+                <div class="lux-card-title orders-admin-section-title">Create Official Order</div>
+                <div class="lux-panel-copy orders-admin-section-copy">Dispatch institutional orders to all account types inside the current faculty.</div>
                 <div class="lux-pill-row orders-admin-command-pills" data-admin-orders-command-pills="1"></div>
-                <div class="orders-admin-command-draft" data-admin-orders-command-draft="1">${escapeHtml(draftHint)}</div>
+                <div class="lux-panel-copy orders-admin-command-draft" data-admin-orders-command-draft="1">${escapeHtml(draftHint)}</div>
             </div>
             <div class="orders-admin-command-actions">
                 <button class="lux-primary-btn orders-admin-command-cta" type="button" data-admin-orders-open-create-modal="1">
@@ -754,8 +754,8 @@ function mountAdminOrdersComposePanelRegions(container, uiState, today) {
     container.innerHTML = `
         <div class="lux-card-head">
             <div>
-                <div class="lux-card-title">Compose Order</div>
-                <div class="lux-card-copy">This order will appear in the selected users' Orders page.</div>
+                <div class="lux-card-title orders-admin-section-title">Compose Order</div>
+                <div class="lux-panel-copy orders-admin-section-copy">This order will appear in the selected users' Orders page.</div>
             </div>
         </div>
         <div class="orders-compose-head">
@@ -1025,8 +1025,8 @@ function ensureAdminOrdersModals() {
             <div class="admin-orders-create-modal modal-content" data-lux-transparency-exempt="1">
                 <div class="admin-orders-create-head">
                     <div>
-                        <div class="lux-card-title">Create Official Order</div>
-                        <div class="lux-card-copy">Select recipients, compose the order, then publish to their Orders inbox.</div>
+                        <div class="lux-card-title orders-admin-section-title">Create Official Order</div>
+                        <div class="lux-panel-copy orders-admin-section-copy">Select recipients, compose the order, then publish to their Orders inbox.</div>
                     </div>
                     <button type="button" class="lux-secondary-btn" data-admin-orders-close-create-modal="true" aria-label="Close create order modal"><i class="fas fa-times"></i></button>
                 </div>
@@ -1157,7 +1157,7 @@ function ensureAdminOrdersShell(root) {
 function createAdminOrdersRoleFilterButton(role, active) {
     const label = role === 'all' ? 'All' : getOrderRoleShortLabel(role);
     return createOrdersNode('button', {
-        className: `lux-status-pill ${active ? 'is-info' : 'is-muted'}`.trim(),
+        className: `lux-status-pill home-hover-chip ${active ? 'is-info' : 'is-muted'}`.trim(),
         text: label,
         attrs: {
             type: 'button',
@@ -1233,14 +1233,14 @@ function mountAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiState
 
     const head = createOrdersNode('div', { className: 'lux-card-head' });
     const headCopy = createOrdersNode('div');
-    headCopy.appendChild(createOrdersNode('div', { className: 'lux-card-title', text: 'Select Recipients' }));
+    headCopy.appendChild(createOrdersNode('div', { className: 'lux-card-title orders-admin-section-title', text: 'Select Recipients' }));
     headCopy.appendChild(createOrdersNode('div', {
-        className: 'lux-card-copy',
+        className: 'lux-panel-copy orders-admin-section-copy',
         text: `Search one person or mark many at once inside ${facultyLabel}.`
     }));
     head.appendChild(headCopy);
     head.appendChild(createOrdersNode('span', {
-        className: 'lux-status-pill is-info',
+        className: 'lux-status-pill home-hover-chip is-info',
         text: `${selectedRecipients.length} selected`
     }));
     fragment.appendChild(head);
@@ -1314,7 +1314,7 @@ function createAdminRecipientRow(user, selectedRecipientSet) {
         text: user.nameEn || user.name || user.id
     }));
     titleRow.appendChild(createOrdersNode('span', {
-        className: 'lux-status-pill is-muted',
+        className: 'lux-status-pill home-hover-chip is-muted',
         text: getOrderRoleLabel(user.role)
     }));
     copy.appendChild(titleRow);
@@ -1427,10 +1427,10 @@ function renderAdminOrdersFilterPanel(uiState, facultyLabel, filteredCount, tota
     return `
         <div class="lux-card-head">
             <div>
-                <div class="lux-card-title">Filter Sent Orders</div>
-                <div class="lux-card-copy">Narrow official orders and announcements issued inside ${escapeHtml(facultyLabel)}.</div>
+                <div class="lux-card-title orders-admin-section-title">Filter Sent Orders</div>
+                <div class="lux-panel-copy orders-admin-section-copy">Narrow official orders and announcements issued inside ${escapeHtml(facultyLabel)}.</div>
             </div>
-            <span class="lux-status-pill is-info">${filteredCount} matching</span>
+            <span class="lux-status-pill home-hover-chip is-info">${filteredCount} matching</span>
         </div>
         <div class="orders-admin-filter-grid">
             <label class="lux-picker-field orders-admin-filter-field orders-admin-filter-field--wide">
@@ -1463,7 +1463,7 @@ function renderAdminOrdersFilterPanel(uiState, facultyLabel, filteredCount, tota
             </label>
         </div>
         <div class="orders-admin-filter-foot">
-            <span class="lux-status-pill is-muted">${totalCount} total in faculty</span>
+            <span class="lux-status-pill home-hover-chip is-muted">${totalCount} total in faculty</span>
         </div>
     `;
 }
@@ -1472,7 +1472,7 @@ function renderAdminOrdersSentInboxPanel(container, orders, selectedOrderId) {
     if (!container) return;
     const emptyMessage = orders.length
         ? ''
-        : '<div class="orders-admin-sent-empty">No sent orders matched the current filters.</div>';
+        : '<div class="lux-empty-state lux-panel-copy orders-admin-sent-empty">No sent orders matched the current filters.</div>';
     const listMarkup = orders.length ? `
         <div class="orders-admin-sent-list">
             ${orders.map((order) => {
@@ -1482,12 +1482,12 @@ function renderAdminOrdersSentInboxPanel(container, orders, selectedOrderId) {
                 return `
                     <button type="button" class="orders-admin-sent-item ${selected ? 'is-selected' : ''}" data-admin-order-open="${escapeHtml(order.id)}">
                         <div class="orders-admin-sent-item__main">
-                            <div class="orders-admin-sent-item__title">${escapeHtml(order.title)}</div>
-                            <div class="orders-admin-sent-item__meta">${escapeHtml(order.id)} · ${escapeHtml(order.type)} · ${escapeHtml(order.createdDate || '—')}</div>
+                            <div class="lux-card-copy orders-admin-sent-item__title">${escapeHtml(order.title)}</div>
+                            <div class="lux-panel-copy orders-admin-sent-item__meta">${escapeHtml(order.id)} · ${escapeHtml(order.type)} · ${escapeHtml(order.createdDate || '—')}</div>
                         </div>
                         <div class="orders-admin-sent-item__side">
-                            <span class="lux-status-pill is-muted">${recipientCount} recipients</span>
-                            <span class="lux-status-pill is-info">${escapeHtml(kindLabel)}</span>
+                            <span class="lux-status-pill home-hover-chip is-muted">${recipientCount} recipients</span>
+                            <span class="lux-status-pill home-hover-chip is-info">${escapeHtml(kindLabel)}</span>
                         </div>
                     </button>
                 `;
@@ -1498,10 +1498,10 @@ function renderAdminOrdersSentInboxPanel(container, orders, selectedOrderId) {
     container.innerHTML = `
         <div class="lux-card-head">
             <div>
-                <div class="lux-card-title">Sent Items</div>
-                <div class="lux-card-copy">Open an order to review the thread, attachments, and replies.</div>
+                <div class="lux-card-title orders-admin-section-title">Sent Items</div>
+                <div class="lux-panel-copy orders-admin-section-copy">Open an order to review the thread, attachments, and replies.</div>
             </div>
-            <span class="lux-status-pill is-muted">${orders.length} shown</span>
+            <span class="lux-status-pill home-hover-chip is-muted">${orders.length} shown</span>
         </div>
         ${listMarkup}
     `;
@@ -1519,7 +1519,7 @@ function renderAdminOrderThreadBubble(entry, order) {
                 <span class="admin-orders-thread-msg-role">${escapeHtml(getOrderRoleLabel(entry.authorRole))}</span>
                 <span class="admin-orders-thread-msg-time">${escapeHtml(formatAdminOrderDateTime(entry.createdAt))}</span>
             </div>
-            <div class="admin-orders-thread-msg-bubble ${isMine ? 'is-mine' : ''}">
+            <div class="admin-orders-thread-msg-bubble home-hover-chip ${isMine ? 'is-mine' : ''}">
                 ${entry.message ? `<div class="admin-orders-thread-msg-text">${escapeHtml(entry.message)}</div>` : ''}
                 ${attachmentGallery}
             </div>
@@ -1534,15 +1534,15 @@ function renderAdminOrderThreadChatLog(order) {
         .filter(Boolean)
         .join('');
     return `
-        <div class="admin-orders-thread-chat-log lux-scrollbar" data-admin-order-thread-chat-log="1">
-            ${bubbles || '<div class="orders-admin-sent-empty">No messages yet.</div>'}
+        <div class="admin-orders-thread-chat-log lux-scrollbar home-hover-chip" data-admin-order-thread-chat-log="1">
+            ${bubbles || '<div class="lux-empty-state lux-panel-copy orders-admin-sent-empty">No messages yet.</div>'}
         </div>
     `;
 }
 
 function renderAdminOrderThreadComposer(orderId) {
     return `
-        <div class="admin-orders-thread-composer">
+        <div class="admin-orders-thread-composer home-hover-chip">
             <textarea class="lux-control admin-orders-thread-composer-input" rows="3" data-admin-order-thread-input="1" placeholder="Write a reply or add an internal follow-up..."></textarea>
             ${renderAdminOrderThreadDraftChips()}
             <div class="admin-orders-thread-composer-actions">
@@ -1561,11 +1561,11 @@ function renderAdminOrderThreadShell(order) {
         <div class="admin-orders-thread-shell" data-admin-order-thread-shell="1">
             <div class="admin-orders-thread-header">
                 <div>
-                    <div class="lux-card-title">${escapeHtml(order.title)}</div>
-                    <div class="lux-card-copy">${escapeHtml(order.type)} · Effective ${escapeHtml(order.effectiveDate || '—')} · ${recipientCount} recipients</div>
+                    <div class="lux-card-title orders-admin-section-title">${escapeHtml(order.title)}</div>
+                    <div class="lux-panel-copy orders-admin-section-copy">${escapeHtml(order.type)} · Effective ${escapeHtml(order.effectiveDate || '—')} · ${recipientCount} recipients</div>
                 </div>
                 <div class="admin-orders-thread-header-actions">
-                    <span class="lux-status-pill is-muted">${escapeHtml(order.status || 'Active')}</span>
+                    <span class="lux-status-pill home-hover-chip is-muted">${escapeHtml(order.status || 'Active')}</span>
                     <button type="button" class="lux-secondary-btn" data-admin-order-delete="${escapeHtml(order.id)}"><i class="fas fa-trash"></i> Delete</button>
                     <button type="button" class="lux-secondary-btn" data-admin-orders-close-thread-modal="true" aria-label="Close thread"><i class="fas fa-times"></i></button>
                 </div>

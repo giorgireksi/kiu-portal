@@ -13,7 +13,9 @@ describe('LMS members panel regressions', () => {
         const membersBlock = classroomSource.match(/function renderLmsMembersSection[\s\S]*?(?=\nfunction )/)?.[0] || '';
 
         expect(membersBlock).toContain('const buildMemberRow =');
-        expect(membersBlock).toContain('class="lms-member-row"');
+        expect(membersBlock).toContain('class="lms-member-row home-hover-chip"');
+        expect(membersBlock).toContain('lms-route-pill lux-pill home-hover-chip');
+        expect(membersBlock).toContain('lms-member-overview-panel home-hover-chip');
         expect(membersBlock).toContain('class="lms-member-row-list"');
         expect(membersBlock).toContain('class="lms-member-section"');
         expect(membersBlock).not.toContain('lms-member-card-kv-grid');
@@ -33,6 +35,6 @@ describe('LMS members panel regressions', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(html).toContain('lmworkspace7');
+        expect(html).toContain('lmsmemberhover1');
     });
 });

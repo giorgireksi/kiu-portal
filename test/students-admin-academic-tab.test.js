@@ -90,6 +90,7 @@ describe('students-admin academic tab redesign', () => {
         const html = readSource('students-admin.html');
         const timetable = readSource('assets/js/pages/timetable-runtime.js');
         const runtime = readSource('assets/js/pages/student-academic-runtime.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
 
         expect(html).toContain('timetable-runtime.js');
         expect(html).not.toContain('timetable-route.css');
@@ -107,11 +108,16 @@ describe('students-admin academic tab redesign', () => {
         expect(timetable).toContain('currentWeekButtonMarkup');
         expect(timetable).toContain('getStudentScheduleItemsForWeek');
         expect(runtime).toContain('students-hub-academic-overview');
-        expect(runtime).toContain('students-hub-academic-schedule-canvas');
-        expect(runtime).toContain('students-hub-academic-subjects-modal');
-        expect(runtime).toContain('students-hub-academic-modal-empty');
-        expect(runtime).toContain('students-hub-academic-modal-toolbar');
-        expect(runtime).toContain('students-hub-academic-modal-search');
+        expect(runtime).toContain('lux-data-card home-hover-chip students-hub-academic-overview');
+        expect(runtime).toContain('students-hub-academic-schedule-card is-embed-compact');
+        expect(runtime).not.toContain('home-hover-chip students-hub-academic-schedule-card');
+        expect(runtime).toContain('home-hover-chip students-hub-academic-section');
+        expect(html).toContain('layout-schedule.css');
+        expect(timetable).toContain('if (profileMode) delete shell.dataset.luxGlassRoot');
+        expect(timetable).toContain('Profile embeds already expose week nav');
+        expect(timetable).toContain('lux-secondary-btn schedule-week-arrow lux-timetable-week-arrow');
+        expect(bare).toContain('.students-hub-academic-schedule-card .sch-grid-tag');
+        expect(bare).toContain('.students-hub-academic-schedule-card .schedule-week-label');
         expect(existsSync(join(process.cwd(), 'assets/css/students-admin-lms.css'))).toBe(false);
     });
 });

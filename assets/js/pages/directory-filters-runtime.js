@@ -687,7 +687,7 @@
         const droplistSearchMarkup = hasActiveFieldFilters ? `
             <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--droplist-search">
                 <div class="${H.hub}-filter-deck-heading">
-                    <span class="${H.hub}-filter-deck-kicker">Droplist search</span>
+                    <span class="${H.hub}-filter-deck-kicker lux-section-kicker">Droplist search</span>
                 </div>
                 <div class="${H.hub}-droplist-search-row">
                     <div class="${H.hub}-search-wrap ${H.hub}-field">
@@ -710,7 +710,7 @@
         const blueprintSectionMarkup = blueprintFilters.length ? `
             <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--fields">
                 <div class="${H.hub}-filter-deck-heading">
-                    <span class="${H.hub}-filter-deck-kicker">Directory field filters</span>
+                    <span class="${H.hub}-filter-deck-kicker lux-section-kicker">Directory field filters</span>
                     ${customizeLinkMarkup}
                 </div>
                 ${filtersBodyMarkup}
@@ -728,7 +728,7 @@
         const chipsMarkup = chips.length
             ? chips.map(([label, value, clearKey, clearKind]) => `
                 <button
-                    class="${H.hub}-chip lux-status-pill is-clickable"
+                    class="${H.hub}-chip lux-status-pill home-hover-chip is-clickable"
                     type="button"
                     data-${H.data}-action="clear-filter-chip"
                     data-filter-clear-key="${esc(clearKey)}"
@@ -740,15 +740,15 @@
 
         const activeFiltersMarkup = chipsMarkup
             ? chipsMarkup
-            : `<span class="${H.hub}-chip lux-status-pill is-muted">No active filters</span>`;
+            : `<span class="${H.hub}-chip lux-status-pill home-hover-chip is-muted">No active filters</span>`;
 
         return `
             <div class="${H.hub}-controls-head">
                 <div class="${H.hub}-controls-copy">
-                    <div class="${H.hub}-overline"><i class="fas fa-filter"></i> Directory controls</div>
-                    <h2 class="${H.hub}-section-title">${H.sectionTitle}</h2>
-                    <p class="${H.hub}-section-copy">
-                        <span class="${H.hub}-result-pill">${visibleCount} result${visibleCount === 1 ? '' : 's'}</span>
+                    <div class="${H.hub}-overline lux-section-kicker"><i class="fas fa-filter"></i> Directory controls</div>
+                    <h2 class="${H.hub}-section-title lux-card-title">${H.sectionTitle}</h2>
+                    <p class="${H.hub}-section-copy lux-card-copy">
+                        <span class="${H.hub}-result-pill home-hover-chip">${visibleCount} result${visibleCount === 1 ? '' : 's'}</span>
                         ${H.sectionCopy}
                     </p>
                 </div>

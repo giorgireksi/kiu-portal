@@ -45,8 +45,30 @@ describe('student service route split', () => {
     it('dedupes parallel SSE connects with an in-flight guard', () => {
         const auth = readSource('assets/js/app/auth.js');
         const connectBlock = auth.split('function connectKiuRealtimeEventStream(')[1]?.split('\nfunction ')[0] || '';
+        const bootstrapBlock = auth.split('async function bootstrapKiuRealtimeBridge(')[1]?.split('\nfunction ')[0] || '';
+        const scheduleBlock = auth.split('function scheduleKiuRealtimeBootstrap(')[1]?.split('\nfunction ')[0]
+            || auth.split('function scheduleKiuRealtimeBootstrap(')[1]?.split('\nasync function ')[0]
+            || '';
 
         expect(connectBlock).toContain('sseConnectInFlight');
         expect(connectBlock).toContain('if (runtime.sseConnectInFlight) return');
+        expect(bootstrapBlock).toContain('if (runtime.bootstrapPromise) return runtime.bootstrapPromise');
+        expect(bootstrapBlock).toContain('if (!hasActiveStream && !isKiuRealtimeSseBlocked())');
+        expect(scheduleBlock).toContain('if (isKiuRealtimeSseBlocked()) return');
+        expect(scheduleBlock).toContain('if (runtime.bootstrapPromise) return');
+    });
+
+    it('forwards snapshot merge stubs through KiuStudentService bag not only window', () => {
+        const bootstrap = readSource('assets/js/pages/student-service-bootstrap-runtime.js');
+        const qa = readSource('assets/js/pages/student-service-qa.js');
+        expect(bootstrap).toContain('function resolveStudentServiceBootstrapExport(name, localFn)');
+        expect(bootstrap).toContain("resolveStudentServiceExportImpl(name)");
+        expect(bootstrap).toContain('window.KiuStudentService?.[name]');
+        const mergeStub = bootstrap.split('function mergeStudentServiceQuestionSnapshot(')[1]?.split('\nfunction ')[0] || '';
+        expect(mergeStub).toContain("resolveStudentServiceBootstrapExport('mergeStudentServiceQuestionSnapshot'");
+        expect(qa).toContain('window.mergeStudentServiceQuestionSnapshot = mergeStudentServiceQuestionSnapshot');
+        expect(qa).toContain('mergeStudentServiceQuestionSnapshot,');
+        expect(qa).toContain('getStudentServiceQuestionById,');
+        expect(qa).toContain('findStudentServiceAnswerRecord,');
     });
 });

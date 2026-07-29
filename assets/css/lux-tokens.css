@@ -423,6 +423,7 @@ body.lux-full-paint {
     0 0 0 1px rgba(var(--lux-accent-rgb), 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --home-chip-hover-lift: -3px;
+  --home-chip-hover-lift-nested: -1px;
   /* Chip/picker glass — accent fade fill (inner shells only) */
   --home-chip-glass-fill: color-mix(in srgb, var(--home-glass-fill) 72%, transparent);
   /* Merged-desk inners: light tint + accent surface; desk keeps sole frost blur */

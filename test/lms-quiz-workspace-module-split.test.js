@@ -14,7 +14,7 @@ describe('LMS quiz workspace module split', () => {
         expect(tabs).toContain('LMS_QUIZ_MODULE_URLS');
         expect(tabs).toContain('assets/js/pages/lms-quiz-workspace-session-runtime.js');
         expect(tabs).toContain('assets/js/pages/lms-quiz-workspace-review-runtime.js');
-        expect(tabs).toContain('assets/js/pages/lms-quiz-workspace-runtime.js?v=20260728-lmquiz4');
+        expect(tabs).toContain('assets/js/pages/lms-quiz-workspace-runtime.js?v=20260729-lmquizshare1');
         expect(tabs).toContain('assets/js/pages/lms-quiz-focus-runtime.js');
         expect(lmsHtml).not.toMatch(/lms-quiz-workspace-runtime\.js\?v=20260518-lmsquizworkspace1/);
         expect(existsSync(join(process.cwd(), 'assets/css/lms-route.css'))).toBe(false);
@@ -82,6 +82,7 @@ describe('LMS quiz workspace module split', () => {
         const authSource = readSource('assets/js/app/auth.js');
 
         expect(host).toContain('lms-quiz-card');
+        expect(host).toContain('lux-section-kicker lms-quiz-studio-kicker">My Quizzes');
         expect(host).toContain('class="lms-quiz-studio-control lux-control"');
         expect(host).toContain('class="lms-quiz-question-control lux-control"');
         expect(host).toContain('class="lms-quiz-option-input lux-control"');

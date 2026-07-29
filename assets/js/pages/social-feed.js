@@ -505,7 +505,7 @@ function __kiuFeedExpose(map) {
                 </div>
                 <div class="social-neo-feed-hero-stats">
                     ${stats.map((stat) => `
-                        <article class="social-neo-feed-hero-stat social-neo-events-hero-stat lux-strip-card surface-card">
+                        <article class="social-neo-feed-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                             <strong>${escape(String(stat.value))}</strong>
                             <span>${escape(stat.label)}</span>
                         </article>

@@ -103,6 +103,21 @@
         ].join('||');
     }
 
+    function buildResearchFingerprint(runtime) {
+        const items = Array.isArray(runtime?.social?.researchPublications) ? runtime.social.researchPublications : [];
+        return [
+            String(items.length),
+            items.slice(0, 48).map((item) => [
+                text(item?.id),
+                text(item?.status),
+                text(item?.authorLane),
+                text(item?.format),
+                item?.isSaved ? '1' : '0',
+                text(item?.updatedAt || item?.publishedAt || item?.createdAt)
+            ].join(':')).join('|')
+        ].join('||');
+    }
+
     function buildEventsFingerprint(runtime) {
         const items = Array.isArray(runtime?.social?.events) ? runtime.social.events : [];
         return [
@@ -324,6 +339,12 @@
             text(ui.surveysSearch || ''),
             text(ui.surveyTakingId || ''),
             text(ui.surveyResultsId || ''),
+            text(ui.researchTab || 'faculty'),
+            text(ui.researchSearch || ''),
+            text(ui.researchFormat || 'all'),
+            text(ui.researchFaculty || ''),
+            text(ui.researchReaderId || ''),
+            text(ui.researchPdfViewMode || 'scroll'),
             text(ui.profileTab || ''),
             Boolean(ui.editProfileMode),
             text(ui.photographyTab || 'explore'),
@@ -355,6 +376,7 @@
             buildRelationshipsFingerprint(runtime),
             buildLostFoundFingerprint(runtime),
             buildSurveysFingerprint(runtime),
+            buildResearchFingerprint(runtime),
             buildEventsFingerprint(runtime),
             buildGroupsFingerprint(runtime),
             buildNotificationsFingerprint(runtime),
@@ -370,7 +392,7 @@
         ].join('|');
     }
 
-    const SOCIAL_FORCE_RENDER_REASON_RE = /^(feed-tab|feed-scope|feed-error|hydrate|hydrate-accounts|hydrate-error|social-bootstrap|post-created|post-updated|post-deleted|post-shared|dialog-|post-submit|connection-|community-tab|pages-tab|pages-search|page-open-profile|page-about-more|page-members-open|page-members-filter|page-members-search|page-post-compose-open|post-compose-open|post-compose-attach-filter|post-compose-attach-pick-add|post-compose-entity-remove|post-compose-attach-search|post-compose-file|page-post-file|page-profile-post|page-profile-back|page-profile-tab|page-profile-edit-|page-post-type|page-create-open|page-wizard-next|page-wizard-prev|page-follow|groups-tab|group-create-open|group-leave-wizard-next|group-leave-wizard-prev|group-member-add|group-member-remove|group-member-search|group-member-faculty|group-membership|group-request|group-member-removed|group-updated|group-left|project-create-open|portfolio-create-open|project-creator-member-add|project-creator-member-remove|project-member-search|project-invite-faculty|project-faculty-toggle|project-left|project-chat-ready|project-open-chat|project-column-tasks-|project-task-detail-|project-task-created|project-task-updated|project-task-priority-|project-task-budget|project-task-filter|project-task-search|project-task-toggle-my|project-budget-settings-saved|project-budget-category-|project-budget-expense-|directory|directory-search|directory-role|events-tab|event-create-open|event-edit-open|event-created|event-updated|event-deleted|event-rsvp|event-rsvp-optimistic|event-rsvp-rollback|lost-found-create-open|lost-found-delete|lost-found-mark-found|lost-found-save|lost-found-created|lost-found-updated|lost-found-deleted|lost-found-marked-found|lost-found-expired|panel-lost-and-found|panel-feed|panel-community|panel-events|panel-pages|panel-groups|panel-workspace|panel-projects|panel-profile|profile-view|surveys-tab|surveys-lane|surveys-input|survey-create-open|survey-create-input|survey-created|survey-take-open|survey-take-close|survey-results-open|survey-results-close|survey-response-submitted|survey-deleted|survey-closed|survey-close|survey-export|survey-question-|panel-surveys|photography-|panel-photography|message-|chat|chat-read|chat-upsert|message-sent|message-delete|message-file|chat-hide|group-thread-search-|group-thread-panel-close|thread-jump-latest|group-panel-file-filter|notification-read|notifications-refresh|panel-messages|panel-alerts|portfolio-panel-tab|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|project-task-desk-expand|project-task-desk-tree-toggle|project-task-desk-hygiene-dismiss|project-task-time-window|project-task-desk-view-save|project-task-desk-view-delete|project-task-desk-view-load|project-task-desk-view-clear|project-task-desk-link-start|project-task-desk-link-cancel|project-task-desk-link-pick|project-task-desk-dep-add-parent|project-task-desk-dep-add-child|project-task-desk-dep-remove|task-graph-group-member|escape-workspace-nav|alerts-mark|report-resolve)/;
+    const SOCIAL_FORCE_RENDER_REASON_RE = /^(feed-tab|feed-scope|feed-error|hydrate|hydrate-accounts|hydrate-error|social-bootstrap|post-created|post-updated|post-deleted|post-shared|dialog-|post-submit|connection-|community-tab|pages-tab|pages-search|page-open-profile|page-about-more|page-members-open|page-members-filter|page-members-search|page-post-compose-open|post-compose-open|post-compose-attach-filter|post-compose-attach-pick-add|post-compose-entity-remove|post-compose-attach-search|post-compose-file|page-post-file|page-profile-post|page-profile-back|page-profile-tab|page-profile-edit-|page-post-type|page-create-open|page-wizard-next|page-wizard-prev|page-follow|groups-tab|group-create-open|group-leave-wizard-next|group-leave-wizard-prev|group-member-add|group-member-remove|group-member-search|group-member-faculty|group-membership|group-request|group-member-removed|group-updated|group-left|project-create-open|portfolio-create-open|project-creator-member-add|project-creator-member-remove|project-member-search|project-invite-faculty|project-faculty-toggle|project-left|project-chat-ready|project-open-chat|project-column-tasks-|project-task-detail-|project-task-created|project-task-updated|project-task-priority-|project-task-budget|project-task-filter|project-task-search|project-task-toggle-my|project-budget-settings-saved|project-budget-category-|project-budget-expense-|directory|directory-search|directory-role|events-tab|event-create-open|event-edit-open|event-created|event-updated|event-deleted|event-rsvp|event-rsvp-optimistic|event-rsvp-rollback|lost-found-create-open|lost-found-delete|lost-found-mark-found|lost-found-save|lost-found-created|lost-found-updated|lost-found-deleted|lost-found-marked-found|lost-found-expired|panel-lost-and-found|panel-feed|panel-community|panel-events|panel-pages|panel-groups|panel-workspace|panel-projects|panel-profile|profile-view|surveys-tab|surveys-lane|surveys-input|survey-create-open|survey-create-input|survey-created|survey-take-open|survey-take-close|survey-results-open|survey-results-close|survey-response-submitted|survey-deleted|survey-closed|survey-close|survey-export|survey-question-|panel-surveys|research-tab|research-input|research-create-open|research-created|research-reader-open|research-reader-close|research-saved|research-deleted|panel-research|photography-|panel-photography|message-|chat|chat-read|chat-upsert|message-sent|message-delete|message-file|chat-hide|group-thread-search-|group-thread-panel-close|thread-jump-latest|group-panel-file-filter|notification-read|notifications-refresh|panel-messages|panel-alerts|portfolio-panel-tab|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|project-task-desk-expand|project-task-desk-tree-toggle|project-task-desk-hygiene-dismiss|project-task-time-window|project-task-desk-view-save|project-task-desk-view-delete|project-task-desk-view-load|project-task-desk-view-clear|project-task-desk-link-start|project-task-desk-link-cancel|project-task-desk-link-pick|project-task-desk-dep-add-parent|project-task-desk-dep-add-child|project-task-desk-dep-remove|task-graph-group-member|escape-workspace-nav|alerts-mark|report-resolve)/;
 
     function isSocialForceRenderReason(reason) {
         return SOCIAL_FORCE_RENDER_REASON_RE.test(text(reason));
@@ -385,6 +407,7 @@
         buildRelationshipsFingerprint,
         buildLostFoundFingerprint,
         buildSurveysFingerprint,
+        buildResearchFingerprint,
         buildEventsFingerprint,
         buildGroupsFingerprint,
         buildDirectoryFingerprint,

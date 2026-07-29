@@ -436,7 +436,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
         visibleNames.forEach((name) => {
             const item = document.createElement('div');
-            item.className = 'sch-preset-manage-item';
+            item.className = 'sch-preset-manage-item home-hover-chip';
             item.setAttribute('role', 'listitem');
             const lowerName = name.toLowerCase();
             const badges = [];

@@ -188,6 +188,13 @@ function activeNavPanels() {
         icon: 'fa-briefcase',
         count: Array.isArray(social.projects) ? social.projects.length : 0
     }, {
+        id: 'research',
+        label: 'Research',
+        helper: 'Papers, articles & PDFs',
+        icon: 'fa-book-open',
+        count: (Array.isArray(social.researchPublications) ? social.researchPublications : [])
+            .filter((item) => text(item?.status) === 'published').length
+    }, {
         id: 'pages',
         label: 'Pages',
         helper: 'Official & followed',
@@ -277,6 +284,23 @@ function getSocialPanelConfig(activePanel, runtime) {
             pills: [
                 { label: 'Entries', value: Array.isArray(runtime.social?.projects) ? runtime.social.projects.length : 0 },
                 { label: 'Published', value: (Array.isArray(runtime.social?.projects) ? runtime.social.projects : []).filter((project) => text(project?.status || '') === 'published').length },
+                { label: 'Role', value: roleLabel(currentUser()?.role) }
+            ]
+        },
+        research: {
+            title: 'Research',
+            description: 'Long-form articles and PDF scholarship — faculty and student streams stay separate.',
+            pills: [
+                {
+                    label: 'Faculty',
+                    value: (Array.isArray(runtime.social?.researchPublications) ? runtime.social.researchPublications : [])
+                        .filter((item) => text(item?.authorLane) === 'faculty' && text(item?.status) === 'published').length
+                },
+                {
+                    label: 'Student',
+                    value: (Array.isArray(runtime.social?.researchPublications) ? runtime.social.researchPublications : [])
+                        .filter((item) => text(item?.authorLane) === 'student' && text(item?.status) === 'published').length
+                },
                 { label: 'Role', value: roleLabel(currentUser()?.role) }
             ]
         },

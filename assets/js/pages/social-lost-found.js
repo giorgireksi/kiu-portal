@@ -84,6 +84,7 @@
         const sectionClasses = [
             'social-neo-card',
             'social-neo-lost-found-hero',
+            'home-hover-chip',
             merged ? 'is-merged' : '',
         ].filter(Boolean).join(' ');
         return `
@@ -101,15 +102,15 @@
                         </button>
                     </div>
                 </div>
-                <div class="social-neo-lost-found-hero-stats social-neo-lost-found-hero-stats--dual">
+                <div class="social-neo-lost-found-hero-stats social-neo-lost-found-hero-stats--dual home-hover-chip">
                     ${stats.map((stat) => `
-                        <article class="social-neo-lost-found-hero-stat social-neo-events-hero-stat lux-strip-card surface-card">
+                        <article class="social-neo-lost-found-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                             <strong>${escape(String(stat.value))}</strong>
                             <span>${escape(stat.label)}</span>
                         </article>
                     `).join('')}
                 </div>
-                <div class="social-neo-lost-found-hero-toolbar">
+                <div class="social-neo-lost-found-hero-toolbar home-hover-chip">
                     <label for="${escape(searchId)}">
                         <span class="social-neo-label">Search</span>
                         <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" name="lostFoundSearch" placeholder="Search title, category, location, or author" value="${escape(searchValue)}">
@@ -312,22 +313,25 @@
             const canManage = isOwn || isModerator;
             const canRemove = isOwn || isModerator;
             const canMarkFound = isOwn && item.status === 'lost';
+            const statusLabel = text(item.status) === 'found' ? 'Found' : 'Lost';
+            const statusTone = text(item.status) === 'found' ? 'is-success' : 'is-warning';
+            const pill = (label, extra = '') => `<span class="social-neo-pill lux-status-pill home-hover-chip ${extra}">${label}</span>`;
             return `
-                <article class="social-neo-card social-neo-entity-card social-neo-lf-card">
+                <article class="social-neo-card social-neo-entity-card social-neo-lf-card home-hover-chip">
                     <div class="social-neo-inline social-neo-inline-between-start-wrap social-neo-lf-card-head">
                         <div class="social-neo-person social-neo-person-start-gap-12 social-neo-lf-card-person">
                             ${avatar(author, 'social-neo-avatar-sm')}
                             <div>
                                 <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-title-row">
                                     <strong>${escape(text(item.title || 'Untitled listing'))}</strong>
-                                    <span class="social-neo-pill">Lost</span>
+                                    ${pill(escape(statusLabel), statusTone)}
                                 </div>
                                 <div class="social-neo-muted social-neo-badge-row-mt-4 social-neo-lf-card-meta">${escape(displayName(author))}</div>
                             </div>
                         </div>
                         <div class="social-neo-inline social-neo-inline-end-gap-8-wrap social-neo-lf-card-summary">
-                            <span class="social-neo-pill">${escape(text(item.category || 'General'))}</span>
-                            ${text(item.eventDate) ? `<span class="social-neo-pill"><i class="fas fa-calendar"></i> ${escape(when(item.eventDate))}</span>` : ''}
+                            ${pill(escape(text(item.category || 'General')))}
+                            ${text(item.eventDate) ? pill(`<i class="fas fa-calendar"></i> ${escape(when(item.eventDate))}`) : ''}
                         </div>
                     </div>
                     <div class="${item.imageUrl ? 'social-neo-grid-2' : 'social-neo-stack'} social-neo-grid-tight social-neo-grid-mt-12 social-neo-lf-card-media-grid ${item.imageUrl ? 'social-neo-lf-card-media-grid-has-media' : 'social-neo-lf-card-media-grid-no-media'}">
@@ -335,9 +339,9 @@
                         <div class="social-neo-stack social-neo-lf-card-content ${item.imageUrl ? 'social-neo-lf-card-content-has-media' : 'social-neo-lf-card-content-full'}">
                             <div class="social-neo-muted">${escape(text(item.description || 'No description provided.'))}</div>
                             <div class="social-neo-badge-row">
-                                ${text(item.locationText) ? `<span class="social-neo-pill"><i class="fas fa-location-dot"></i> ${escape(item.locationText)}</span>` : ''}
-                                ${text(item.expiresAt) ? `<span class="social-neo-pill"><i class="fas fa-hourglass-end"></i> Ends ${escape(when(item.expiresAt))}</span>` : ''}
-                                ${text(item.updatedAt) ? `<span class="social-neo-pill"><i class="fas fa-clock"></i> Updated ${escape(when(item.updatedAt))}</span>` : ''}
+                                ${text(item.locationText) ? pill(`<i class="fas fa-location-dot"></i> ${escape(item.locationText)}`) : ''}
+                                ${text(item.expiresAt) ? pill(`<i class="fas fa-hourglass-end"></i> Ends ${escape(when(item.expiresAt))}`) : ''}
+                                ${text(item.updatedAt) ? pill(`<i class="fas fa-clock"></i> Updated ${escape(when(item.updatedAt))}`) : ''}
                             </div>
                             <div class="social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-lf-card-actions">
                                 <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-actions-main">

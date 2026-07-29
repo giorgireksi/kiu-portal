@@ -118,48 +118,82 @@
             const normalizedQuestionId = String(questionId || '').trim();
             const normalizedAnswerId = String(answerId || '').trim();
             if (!normalizedQuestionId || !normalizedAnswerId) return;
-            if (triggerButton?.dataset.studentServiceHelpfulPending === 'true') return;
+            const runtime = (typeof STUDENT_SERVICE_RUNTIME === 'object' && STUDENT_SERVICE_RUNTIME)
+                || window.STUDENT_SERVICE_RUNTIME
+                || {};
+            if (!runtime.pendingAnswerHelpfulIds) runtime.pendingAnswerHelpfulIds = new Set();
+            if (
+                triggerButton?.dataset.studentServiceHelpfulPending === 'true'
+                || runtime.pendingAnswerHelpfulIds.has(normalizedAnswerId)
+            ) return;
             const questionBefore = getStudentServiceQuestionById(normalizedQuestionId);
             const answerBefore = findStudentServiceAnswerRecord(questionBefore, normalizedAnswerId);
-            const wasHelpful = isStudentServiceAnswerHelpfulVoted(answerBefore || {});
-            const optimisticAnswer = answerBefore
-                ? {
-                    ...answerBefore,
-                    viewerHelpfulVote: !wasHelpful,
-                    helpfulCount: Math.max(0, Number(answerBefore.helpfulCount || 0) + (wasHelpful ? -1 : 1))
-                }
-                : null;
+            const wasHelpful = answerBefore
+                ? isStudentServiceAnswerHelpfulVoted(answerBefore)
+                : triggerButton?.getAttribute('aria-pressed') === 'true';
+            const nextHelpful = !wasHelpful;
+            const optimisticAnswer = {
+                ...(answerBefore || {}),
+                viewerHelpfulVote: nextHelpful,
+                helpfulCount: Math.max(0, Number(answerBefore?.helpfulCount || 0) + (wasHelpful ? -1 : 1)),
+                updatedAt: typeof ssNowIso === 'function' ? ssNowIso() : new Date().toISOString()
+            };
+            runtime.pendingAnswerHelpfulIds.add(normalizedAnswerId);
+            runtime.suppressRealtimeRefreshUntil = Date.now() + 2000;
             if (triggerButton) {
                 triggerButton.dataset.studentServiceHelpfulPending = 'true';
-                if (optimisticAnswer) updateStudentServiceAnswerHelpfulButton(triggerButton, optimisticAnswer);
-                triggerStudentServiceHelpfulAnimation(triggerButton, !wasHelpful);
+                updateStudentServiceAnswerHelpfulButton(triggerButton, optimisticAnswer);
+                triggerStudentServiceHelpfulAnimation(triggerButton, nextHelpful);
+            }
+            if (answerBefore && questionBefore && typeof mergeStudentServiceQuestionSnapshot === 'function') {
+                mergeStudentServiceQuestionSnapshot({
+                    ...questionBefore,
+                    answers: (questionBefore.answers || []).map((answer) => (
+                        String(answer.id) === normalizedAnswerId ? { ...answer, ...optimisticAnswer } : answer
+                    )),
+                    updatedAt: optimisticAnswer.updatedAt
+                });
             }
             try {
                 const payload = await postStudentService(
                     STUDENT_SERVICE_API_PATHS.questionAnswerFeedback(normalizedQuestionId, normalizedAnswerId),
-                    {}
+                    { helpful: nextHelpful }
                 );
                 if (payload?.question) mergeStudentServiceQuestionSnapshot(payload.question);
+                const answerFromPayload = findStudentServiceAnswerRecord(payload?.question, normalizedAnswerId)
+                    || findStudentServiceAnswerRecord(getStudentServiceQuestionById(normalizedQuestionId), normalizedAnswerId)
+                    || optimisticAnswer;
+                if (triggerButton) updateStudentServiceAnswerHelpfulButton(triggerButton, answerFromPayload);
                 const patched = runStudentServiceScrollPreserved(() => {
-                    if (patchStudentServiceAnswerHelpfulBtn(normalizedQuestionId, normalizedAnswerId)) {
+                    if (patchStudentServiceAnswerHelpfulBtn(normalizedQuestionId, normalizedAnswerId, { triggerButton })) {
                         syncStudentServiceRenderSignature();
+                        if (triggerButton) flashStudentServiceActionButton(triggerButton, 'success');
                         return true;
                     }
                     if (patchStudentServiceOpenQuestionThread(normalizedQuestionId)) {
+                        syncStudentServiceRenderSignature();
+                        if (triggerButton) flashStudentServiceActionButton(triggerButton, 'success');
+                        return true;
+                    }
+                    if (triggerButton) {
+                        updateStudentServiceAnswerHelpfulButton(triggerButton, answerFromPayload);
+                        flashStudentServiceActionButton(triggerButton, 'success');
                         syncStudentServiceRenderSignature();
                         return true;
                     }
                     return false;
                 });
-                if (!patched) await refreshStudentServiceDataAndRender();
+                if (!patched) await refreshStudentServiceDataAndRender(false);
             } catch (error) {
                 console.error('Student Service answer feedback failed.', error);
+                if (questionBefore) mergeStudentServiceQuestionSnapshot(questionBefore);
                 if (triggerButton && answerBefore) {
                     updateStudentServiceAnswerHelpfulButton(triggerButton, answerBefore);
                     flashStudentServiceActionButton(triggerButton, 'error');
                 }
                 alert(error?.message || 'Feedback could not be saved.');
             } finally {
+                runtime.pendingAnswerHelpfulIds.delete(normalizedAnswerId);
                 if (triggerButton) delete triggerButton.dataset.studentServiceHelpfulPending;
             }
         }

@@ -52,9 +52,48 @@ describe('students admin route regressions.test', () => {
         const directoryJs = readSource('assets/js/pages/directory-filters-runtime.js');
         expect(directoryJs).not.toContain('useCompactDeck');
         expect(directoryJs).toContain('filter-deck-section--fields');
+        expect(builderJs).toContain('lux-section-kicker');
+        expect(builderJs).toContain('section-title lux-card-title');
+        expect(builderJs).toContain('section-copy lux-panel-copy');
+        expect(builderJs).toContain('builder-rail lux-soft-chrome home-hover-chip');
+        expect(builderJs).toContain('builder-canvas lux-soft-chrome home-hover-chip');
+        expect(builderJs).toContain('data-lux-glass-root="1"');
+        expect(builderJs).toContain('profile-panel lux-data-card home-hover-chip');
+        expect(builderJs).toContain('section-field-workspace lux-data-card home-hover-chip');
+        expect(builderJs).toContain('profile-row home-hover-chip');
+        expect(builderJs).toContain('studio-field-row home-hover-chip');
+        expect(builderJs).toContain('studio-quick-btn home-hover-chip');
+        expect(readSource('assets/css/lux-layout-primitives.css')).toContain('.students-hub-section-title.lux-card-title');
+        expect(fouc).toContain('.students-hub-builder-rail.lux-soft-chrome.home-hover-chip');
+        expect(fouc).toContain('#students-content');
+        expect(bare).toContain('.students-hub-form-settings[data-lux-glass-root="1"]');
+        expect(bare).not.toMatch(/\.students-hub-profile-row\.home-hover-chip[\s\S]*?background:\s*var\(--lux-hub-row/);
+        expect(html).toContain('hubbuilder1');
         expect(builderJs).toContain("data-${H.data}-builder-action");
         expect(actionsJs).toContain("'__studentFormBuilderBound'");
         expect(studentsJs).toContain('__studentFormBuilderBound');
         expect(studentsJs).toContain("__KIU_FORM_BUILDER_NS__ = 'student'");
+    });
+
+    it('wires directory hub shell glass host and hover panels', () => {
+        const studentsJs = readSource('assets/js/pages/students-command-center.js');
+        const staffJs = readSource('assets/js/pages/staff-command-center.js');
+        const directoryJs = readSource('assets/js/pages/directory-filters-runtime.js');
+        const sharedJs = readSource('assets/js/pages/command-center-shared-utils.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+
+        expect(studentsJs).toContain('class="students-hub-shell" data-lux-glass-root="1"');
+        expect(studentsJs).toContain('students-hub-controls students-admin-controls students-hub-controls--adaptive home-hover-chip');
+        expect(studentsJs).toContain('students-hub-directory-panel home-hover-chip');
+        expect(staffJs).toContain('class="staff-hub-shell" data-lux-glass-root="1"');
+        expect(staffJs).toContain('staff-hub-controls staff-admin-controls staff-hub-controls--adaptive home-hover-chip');
+        expect(staffJs).toContain('staff-hub-directory-panel home-hover-chip');
+        expect(directoryJs).toContain('result-pill home-hover-chip');
+        expect(sharedJs).toContain('lux-status-pill home-hover-chip');
+        expect(fouc).toContain('.students-hub-controls');
+        expect(fouc).toContain('.students-hub-controls.home-hover-chip');
+        expect(fouc).toContain('.students-hub-directory-panel.home-hover-chip');
+        expect(bare).toContain('.students-hub-controls.home-hover-chip .students-hub-filter-deck');
     });
 });

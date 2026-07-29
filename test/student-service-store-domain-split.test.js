@@ -246,6 +246,14 @@ describe('student service store domain split', () => {
         const unvotedAnswer = (unvoted.answers || []).find(answer => answer.id === comment.id);
         expect(unvotedAnswer?.helpfulCount).toBe(0);
         expect(unvotedAnswer?.viewerHelpfulVote).toBe(false);
+
+        const setOn = store.setStudentServiceAnswerFeedback('svc-question-1', comment.id, 'student-1', { helpful: true });
+        const setOnAnswer = (setOn.answers || []).find(answer => answer.id === comment.id);
+        expect(setOnAnswer?.viewerHelpfulVote).toBe(true);
+        const setOnAgain = store.setStudentServiceAnswerFeedback('svc-question-1', comment.id, 'student-1', { helpful: true });
+        const setOnAgainAnswer = (setOnAgain.answers || []).find(answer => answer.id === comment.id);
+        expect(setOnAgainAnswer?.helpfulCount).toBe(1);
+        expect(setOnAgainAnswer?.viewerHelpfulVote).toBe(true);
     });
 
     it('clears acceptedAnswerId when the accepted comment is deleted', () => {

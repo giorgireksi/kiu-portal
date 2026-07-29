@@ -97,7 +97,8 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain('student-service-qa-mode-btn');
         expect(source).toContain('student-service-qa-field-row');
         expect(source).toContain('student-service-qa-anonymous-toggle');
-        expect(source).toContain('student-service-qa-similar-title');
+        expect(source).not.toContain('student-service-qa-similar-title');
+        expect(source).not.toContain('getStudentServiceSimilarQuestions');
         expect(source).toContain('student-service-qa-composer-modal-actions');
         expect(source).toContain('student-service-qa-card-author-name');
         expect(source).toContain('student-service-qa-card-author-date');
@@ -193,9 +194,9 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).toContain('assets/js/shared/lux-scroll-rail.js?v=20260608-scrollrail2');
         expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2');
         expect(studentServiceHtml).toContain('assets/js/shared/student-service-api-paths.js?v=20260626-ssvc-inbox-filters');
-        expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260728-ssrender3');
-        expect(studentServiceHtml).toContain('student-service-bootstrap-runtime.js?v=20260727-ssboot2');
-        expect(studentServiceHtml).toContain('student-service-page-runtime.js?v=20260728-ssboot3');
+        expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260728-ssrender6');
+        expect(studentServiceHtml).toContain('student-service-bootstrap-runtime.js?v=20260729-ssmerge1');
+        expect(studentServiceHtml).toContain('student-service-page-runtime.js?v=20260729-sse4292');
         expect(studentServiceHtml.indexOf('student-service-bootstrap-runtime.js'))
             .toBeLessThan(studentServiceHtml.indexOf('student-service-page-runtime.js'));
         expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260626-ssvc-inbox-filters');
@@ -229,6 +230,7 @@ describe('Student Service split workspace regressions', () => {
 
     it('renders guidance modal as a search-only split workspace without lane cards or topic picker', () => {
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
+        const opsModule = readAsset('assets/js/pages/student-service-ops-runtime.js');
         const studentServiceJs = ssvcHubAndQa();
 
         expect(serviceModule).not.toContain('renderStudentServiceLaneRailMarkup');
@@ -240,6 +242,10 @@ describe('Student Service split workspace regressions', () => {
         expect(serviceModule).toContain('Search articles and guidance');
         expect(serviceModule).toContain('renderStudentServiceGuidanceBrowserMarkup');
         expect(serviceModule).toContain('data-student-service-open-guidance-modal="true"');
+        expect(serviceModule).toContain('student-service-kicker lux-section-kicker">Guidance articles');
+        expect(serviceModule).toContain('home-hover-chip lux-soft-chrome" data-student-service-find-guidance="1"');
+        expect(opsModule).toContain('id="student-service-guidance-modal-title" class="lux-page-title"');
+        expect(opsModule).toContain('class="lux-panel-copy">Browse official guidance before opening a private case.');
         expect(studentServiceJs).not.toContain('setStudentServiceGuidanceTopicFilter');
     });
 
@@ -252,8 +258,8 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain('function bindStudentServiceDelegatedInteractions()');
         expect(source).toContain('function handleStudentServiceRootClick(');
         expect(source).toContain('function handleStudentServiceModalDocumentClick(');
-        expect(source).toContain("const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260626-ssvc-qa-header-merge1';");
-        expect(source).toContain("const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260628-ssvc-hub-merge';");
+        expect(source).toContain("const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260729-ssmerge1';");
+        expect(source).toContain("const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260728-sssvc4';");
         expect(source).toContain('function bindStudentServiceRealtimeRefreshListener(');
         expect(source).toContain('window.buildStudentServiceArticleFingerprint = buildStudentServiceArticleFingerprint;');
         expect(serviceModule).toContain('buildStudentServiceGuidanceBrowserContext');
@@ -263,7 +269,7 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain('function syncStudentServiceWorkspaceBackendSession(');
         expect(source).toContain('window.syncStudentServiceWorkspaceBackendSession = syncStudentServiceWorkspaceBackendSession;');
         expect(source).toContain('function buildStudentServiceArticleFingerprint(');
-        expect(source).toContain('scheduleKiuRealtimeBootstrap(true)');
+        expect(source).toContain('scheduleKiuRealtimeBootstrap()');
         expect(source).toContain('await syncStudentServiceWorkspaceBackendSession();');
         expect(source).toContain('function getStudentServicePublicInboxFilterLayout(');
         expect(source + readAsset('assets/js/pages/student-service-filters.js')).toContain('function getStudentServicePublishedInboxFilterLayout(');
@@ -589,6 +595,10 @@ describe('Q&A card interaction guardrails', () => {
 
         expect(source).toContain('student-service-qa-thread-comments');
         expect(source).toContain('student-service-qa-thread-compose');
+        expect(source).toContain('student-service-qa-thread-modal-scroll lux-glass-dialog-comment-scroll');
+        expect(source).toContain('student-service-qa-thread-modal-compose');
+        expect(source).toContain('lux-glass-dialog-comment-thread student-service-qa-thread-comments');
+        expect(source).toContain('lux-glass-dialog-comment-preview lux-soft-chrome home-hover-chip');
         expect(source).toContain('data-student-service-reply-input="${ssEscape(question.id)}"');
         expect(source).toContain('data-lux-skip-modern-button="true" data-student-service-open-question=');
         expect(source).toContain("skipLuxButton: 'data-lux-skip-modern-button=\"true\"'");
@@ -654,6 +664,7 @@ describe('Q&A comment reply guardrails', () => {
         expect(source).toContain('if (!parentId || !answerIds.has(parentId))');
         expect(source).toContain('threadChildrenHtml');
         expect(source).toContain('preferStudentServiceAnswerRecord');
+        expect(source).toContain('incomingTime >= existingTime');
         expect(source).toContain('answer.authorUserId');
         expect(source).toContain('includeStudentServiceThreadParents(visibleAnswers, allQuestionAnswers)');
         expect(source).toContain('.filter(answer => String(answer.questionId) === questionId)');
@@ -669,11 +680,13 @@ describe('Q&A comment reply guardrails', () => {
         expect(source).toContain('function mergeStudentServiceQuestionSnapshot(');
         expect(source).toContain('function appendStudentServiceReplyNode(');
         expect(source).toContain('data-student-service-reply-answer-id=');
-        expect(source).toContain('student-service-qa-comment-reply-shell" data-student-service-reply-answer-id');
+        expect(source).toContain('student-service-qa-comment-reply-shell lux-soft-chrome home-hover-chip" data-student-service-reply-answer-id');
+        expect(source).toContain('body.querySelector(\':scope > .student-service-qa-comment-reply-shell, :scope > .social-neo-comment-reply-form\')?.remove()');
         expect(source).not.toContain('student-service-qa-comment-reply-shell student-service-qa-reply-shell');
         expect(source).toContain('ui.replyingToAnswerId');
         expect(source).toContain('resolveStudentServiceReplyShell(triggerElement)');
         expect(source).toContain('if (payload?.question) mergeStudentServiceQuestionSnapshot(payload.question);');
+        expect(source).toContain('KIU_STATE.studentServiceAnswers[answerIndex] = record');
         expect(source).toContain('pendingReplyParentAnswerId');
         expect(source).toContain('student-service-qa-parent-answer-id');
         expect(source).toContain('isStudentServiceInlineReplyOpen()');
@@ -784,16 +797,27 @@ describe('Q&A comment reply guardrails', () => {
         const questionFeedbackBlock = extractStudentServiceFnBlock(source, 'setStudentServiceQuestionFeedback');
         expect(questionFeedbackBlock).not.toContain('refreshStudentServiceDataAndRender()');
         expect(source).toContain('function patchStudentServiceAnswerHelpfulBtn(');
+        expect(source).toContain('article.social-neo-comment[data-student-service-answer-id=');
+        const answerFeedbackBlock = extractStudentServiceFnBlock(source, 'setStudentServiceAnswerFeedback');
+        expect(answerFeedbackBlock).toContain('patchStudentServiceAnswerHelpfulBtn(normalizedQuestionId, normalizedAnswerId, { triggerButton })');
+        expect(answerFeedbackBlock).toContain('studentServiceHelpfulPending');
+        expect(answerFeedbackBlock).toContain('pendingAnswerHelpfulIds');
+        expect(answerFeedbackBlock).toContain('{ helpful: nextHelpful }');
+        expect(answerFeedbackBlock).toContain('suppressRealtimeRefreshUntil');
+        expect(answerFeedbackBlock).toContain('triggerStudentServiceHelpfulAnimation');
+        expect(answerFeedbackBlock).toContain('updateStudentServiceAnswerHelpfulButton');
+        expect(answerFeedbackBlock).toContain('answerFromPayload');
+        expect(answerFeedbackBlock).toContain('findStudentServiceAnswerRecord(payload?.question, normalizedAnswerId)');
+        expect(source).toContain('window.mergeStudentServiceQuestionSnapshot = mergeStudentServiceQuestionSnapshot');
+        expect(source).toContain('mergeStudentServiceQuestionSnapshot,');
+        expect(source).toContain('getStudentServiceQuestionById,');
+        expect(source).toContain('findStudentServiceAnswerRecord,');
         expect(source).toContain('function renderStudentServiceQuestionHelpfulButtonMarkup(');
         expect(source).toContain('function renderStudentServiceAnswerHelpfulButtonMarkup(');
         expect(source).toContain('function updateStudentServiceAnswerHelpfulButton(');
         expect(source).toContain('function triggerStudentServiceHelpfulAnimation(');
         expect(source).toContain('student-service-qa-question-helpful-btn');
         expect(source).toContain('student-service-qa-answer-helpful-label');
-        const answerFeedbackBlock = extractStudentServiceFnBlock(source, 'setStudentServiceAnswerFeedback');
-        expect(answerFeedbackBlock).toContain('studentServiceHelpfulPending');
-        expect(answerFeedbackBlock).toContain('triggerStudentServiceHelpfulAnimation');
-        expect(answerFeedbackBlock).toContain('updateStudentServiceAnswerHelpfulButton');
         expect(source).toContain('function flashStudentServiceActionButton(');
         expect(source).toContain('flashStudentServiceActionButton(triggerButton, \'success\')');
         expect(source).toContain('preventScroll: true');

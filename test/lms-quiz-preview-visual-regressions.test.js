@@ -24,6 +24,8 @@ describe('LMS quiz preview visual regressions', () => {
         expect(statsBlock).not.toContain('--lux-panel-control');
         expect(quizSource).toContain('lms-quiz-board-toolbar lux-soft-chrome');
         expect(quizSource).toContain('lms-quiz-card lux-soft-chrome home-hover-chip');
+        const sessionSource = readSource('assets/js/pages/lms-quiz-workspace-session-runtime.js');
+        expect(sessionSource).toContain('lms-quiz-card lux-soft-chrome home-hover-chip');
         expect(quizSource).toContain('lms-quiz-card-title lms-route-card-title');
         expect(quizSource).toContain('lms-quiz-card-stats lux-soft-chrome');
         expect(quizSource).toContain('renderLmsGlassDialogCard');

@@ -43,6 +43,9 @@ describe('news bare shell', () => {
     it('dual-writes lux-soft-chrome on feed cards', () => {
         const feed = readSource('assets/js/pages/news/news-feed-render.js');
         expect(feed).toContain('lux-soft-chrome newsx-panel newsx-feed-card');
+        expect(feed).toContain('newsx-header-bar newsx-filter home-hover-chip');
+        expect(feed).toContain('newsx-feed-card newsx-loading-card home-hover-chip');
+        expect(feed).toContain('newsx-feed-card newsx-post-card--editorial home-hover-chip');
     });
 
     it('uses shared shell classes and home-hover-chip on news sidebar', () => {
@@ -55,14 +58,18 @@ describe('news bare shell', () => {
         expect(feed).toContain('newsx-section-key lux-card-meta lms-route-meta-12');
         expect(bare).toContain('body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip');
         expect(bare).not.toMatch(/#portal-news-root \.newsx-sidebar\s*\{[^}]*--lux-panel-surface/);
-        expect(fouc).toContain('body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip');
-        expect(fouc).toMatch(/body\.lux-route-news #portal-news-root \.newsx-sidebar\.home-hover-chip:hover[\s\S]*--home-chip-hover-lift/);
+        expect(fouc).toContain('body.lux-route-news #portal-news-root :is(');
+        expect(fouc).toContain('.newsx-header-bar');
+        expect(fouc).toContain('.lux-empty-state');
+        expect(fouc).toContain('.lux-empty-state.newsx-empty');
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*var\(--home-chip-hover-lift/);
     });
 
     it('styles markdown and publisher editor chrome in shared CSS', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         const modals = readSource('assets/css/lux-modals.css');
         const controls = readSource('assets/css/lux-controls.css');
+        const publisher = readSource('assets/js/pages/news/news-publisher.js');
         expect(bare).toContain('.newsx-card-body--rich :is(.newsx-md-h2');
         expect(bare).toContain('a.newsx-attachment-chip');
         expect(bare).toContain('.newsx-section-btn.lux-secondary-btn');
@@ -72,5 +79,15 @@ describe('news bare shell', () => {
         expect(modals).toContain('.newsx-publisher-modal .newsx-rich-editor');
         expect(modals).toContain('.newsx-publisher-modal :is(.newsx-publisher-radio-card, .lux-check-card');
         expect(modals).toContain('.newsx-confirm-title');
+        expect(modals).toContain('[data-lux-transparency-exempt="1"] .newsx-publisher-modal :is(');
+        expect(modals).toContain('.newsx-publisher-section-tab.home-hover-chip');
+        expect(modals).toContain('.newsx-publisher-header');
+        expect(modals).toContain('.newsx-publisher-footer');
+        expect(publisher).toContain('newsx-publisher-section-tab home-hover-chip');
+        expect(publisher).toContain('newsx-editor-ribbon home-hover-chip');
+        expect(publisher).toContain('newsx-publisher-radio-card home-hover-chip');
+        expect(publisher).toContain('newsx-publisher-toggle-card home-hover-chip');
+        expect(publisher).toContain('newsx-publisher-pane home-hover-chip');
+        expect(publisher).toContain('newsx-attachment-chip home-hover-chip');
     });
 });

@@ -73,8 +73,8 @@ describe('personal data route regressions', () => {
         expect(fouc).toMatch(/body\.lux-route-personal-data #page-personal-data :is\([\s\S]*\.personal-data-kpi-card/);
         expect(fouc).toContain('.personal-data-merged');
         expect(fouc).toContain('.personal-data-subjects-table-wrap');
-        expect(fouc).toMatch(/body\.lux-route-personal-data #page-personal-data :is\(\.page-hero, \.personal-data-workspace\)/);
-        expect(fouc).toMatch(/body\.lux-route-personal-data #page-personal-data :is\([\s\S]*\.personal-data-identity-card[\s\S]*\):hover[\s\S]*--home-chip-hover-lift/);
+        expect(fouc).toMatch(/\[data-lux-glass-root="1"\]:not\(\.home-hover-chip\)[\s\S]*transition:\s*none/);
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*var\(--home-chip-hover-lift/);
         expect(fouc).toContain('body.lux-route-personal-data #page-personal-data .lux-picker-field');
     });
 });

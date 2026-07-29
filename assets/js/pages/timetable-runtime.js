@@ -275,10 +275,20 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
         if (weekLabelNode) {
             weekLabelNode.textContent = formatWeekRangeLabel(normalizedWeek);
         }
+        const gridWeekLabel = document.getElementById('timetable-grid-week-label');
+        if (gridWeekLabel) {
+            gridWeekLabel.textContent = formatWeekRangeLabel(normalizedWeek);
+        }
         if (currentWeekButton) {
             currentWeekButton.className = getTimetableCurrentWeekButtonClass(isCurrent);
             currentWeekButton.dataset.scheduleCurrentWeek = '1';
             currentWeekButton.removeAttribute('data-timetable-action');
+        }
+        const gridCurrentWeekButton = document.getElementById('timetable-grid-week-current');
+        if (gridCurrentWeekButton) {
+            gridCurrentWeekButton.className = getTimetableGridWeekCurrentButtonClass(isCurrent);
+            gridCurrentWeekButton.textContent = getTimetableGridWeekCurrentButtonLabel(isCurrent);
+            gridCurrentWeekButton.dataset.scheduleCurrentWeek = '1';
         }
         if (sessionsOverviewNode) {
             sessionsOverviewNode.innerHTML = `<i class="fas fa-layer-group"></i> ${overview.sessionCount} sessions`;
@@ -317,11 +327,11 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
         weekNav.className = 'schedule-week-nav schedule-week-nav-embed-compact';
         const currentWeekButtonMarkup = isCurrent ? '' : currentButtonMarkup;
         weekNav.innerHTML = localizeHtmlMarkup(`
-            <button type="button" class="schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="-1" aria-label="Previous Week">
+            <button type="button" class="lux-secondary-btn schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="-1" aria-label="Previous Week">
                 <i class="fas fa-chevron-left"></i>
             </button>
             ${weekLabelMarkup}
-            <button type="button" class="schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="1" aria-label="Next Week">
+            <button type="button" class="lux-secondary-btn schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="1" aria-label="Next Week">
                 <i class="fas fa-chevron-right"></i>
             </button>
             ${currentWeekButtonMarkup}
@@ -376,14 +386,43 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
     const overviewRow = document.createElement('div');
     overviewRow.className = 'schedule-overview-row lux-timetable-overview-row home-hover-chip';
     overviewRow.innerHTML = localizeHtmlMarkup(`
-        <span class="schedule-chip lux-status-pill is-muted lux-timetable-chip"><i class="fas fa-layer-group"></i> ${overview.sessionCount} sessions</span>
-        <span class="schedule-chip lux-status-pill is-muted lux-timetable-chip"><i class="fas fa-calendar-week"></i> ${overview.dayCount} active days</span>
-        <span class="schedule-chip lux-status-pill is-muted lux-timetable-chip"><i class="far fa-clock"></i> ${overview.totalHours.toFixed(1)} planned hours</span>
-        <span class="schedule-chip schedule-chip-soft lux-status-pill lux-timetable-chip"><i class="fas fa-user-clock"></i> ${escapeHtml(roleLabel)}</span>
+        <span class="schedule-chip lux-status-pill home-hover-chip is-muted lux-timetable-chip"><i class="fas fa-layer-group"></i> ${overview.sessionCount} sessions</span>
+        <span class="schedule-chip lux-status-pill home-hover-chip is-muted lux-timetable-chip"><i class="fas fa-calendar-week"></i> ${overview.dayCount} active days</span>
+        <span class="schedule-chip lux-status-pill home-hover-chip is-muted lux-timetable-chip"><i class="far fa-clock"></i> ${overview.totalHours.toFixed(1)} planned hours</span>
+        <span class="schedule-chip schedule-chip-soft lux-status-pill home-hover-chip lux-timetable-chip"><i class="fas fa-user-clock"></i> ${escapeHtml(roleLabel)}</span>
     `);
 
     toolbar.append(weekNav, overviewRow);
     container.append(toggleRow, toolbar);
+}
+
+function syncTimetableFilterDefaults() {
+    const semesterSelect = document.getElementById('tt-filter-sem');
+    if (semesterSelect && semesterSelect.dataset.timetableFilterInit !== '1') {
+        const activeSemester = parseInt(
+            (typeof KIU_STATE !== 'undefined' && KIU_STATE.activeSemester) || 3,
+            10
+        );
+        const semesterValue = String(Number.isFinite(activeSemester) ? activeSemester : 3);
+        if (Array.from(semesterSelect.options).some((option) => option.value === semesterValue)) {
+            semesterSelect.value = semesterValue;
+        }
+        semesterSelect.dataset.timetableFilterInit = '1';
+    }
+
+    const facultySelect = document.getElementById('tt-filter-fac');
+    const role = typeof getEffectiveUserRole === 'function'
+        ? getEffectiveUserRole()
+        : (getCurrentUser()?.role || USER_ROLES.STUDENT);
+    if (facultySelect && role === USER_ROLES.ADMIN && facultySelect.dataset.timetableFilterInit !== '1') {
+        const facultyCode = typeof getCurrentFaculty === 'function'
+            ? getCurrentFaculty()
+            : normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
+        if (Array.from(facultySelect.options).some((option) => option.value === facultyCode)) {
+            facultySelect.value = facultyCode;
+        }
+        facultySelect.dataset.timetableFilterInit = '1';
+    }
 }
 
 function syncTimetableStaticControls(weekStart, items, options = {}) {
@@ -657,9 +696,9 @@ function renderTimetableHeroFocusPanel(nextSession, weekStart, marker, markerMet
     setNodeContent('timetable-hero-focus-copy', `${dayLabel} · ${roomLabel} · ${groupLabel}`);
     setNodeHtml('timetable-hero-focus-facts', renderTimetableHeroFocusFacts(nextSession, marker, markerMeta));
     setNodeHtml('timetable-hero-focus-meta', [
-        `<span><i class="fas fa-location-dot"></i> ${escapeHtml(roomLabel)}</span>`,
-        `<span><i class="fas fa-user"></i> ${escapeHtml(instructorName)}</span>`,
-        `<span><i class="fas fa-layer-group"></i> ${escapeHtml(groupLabel)}</span>`
+        `<span class="lux-hero-signal home-hover-chip"><i class="fas fa-location-dot"></i> ${escapeHtml(roomLabel)}</span>`,
+        `<span class="lux-hero-signal home-hover-chip"><i class="fas fa-user"></i> ${escapeHtml(instructorName)}</span>`,
+        `<span class="lux-hero-signal home-hover-chip"><i class="fas fa-layer-group"></i> ${escapeHtml(groupLabel)}</span>`
     ].join(''));
 }
 
@@ -771,7 +810,7 @@ function syncTimetableNarrative(weekStart, items, options = {}) {
         setNodeContent('timetable-hero-focus-copy', `Nothing is scheduled for ${formatWeekRangeLabel(weekStart)} yet.`);
         setHeroFocusCopyVisible(true);
         setNodeHtml('timetable-hero-focus-facts', '');
-        setNodeHtml('timetable-hero-focus-meta', '<span><i class="fas fa-moon"></i> Quiet week</span>');
+        setNodeHtml('timetable-hero-focus-meta', '<span class="lux-hero-signal home-hover-chip"><i class="fas fa-moon"></i> Quiet week</span>');
         setNodeContent('timetable-insight-busiest', '0 sessions across 0 days');
         setNodeContent('timetable-insight-busiest-copy', 'This week is empty, so there is no peak day yet.');
         setInsightList('timetable-insight-busiest-list', [
@@ -965,7 +1004,68 @@ function getScheduleToneToken(facultyCode) {
 }
 
 function buildScheduleToneDataAttribute(facultyCode) {
-    return `data-sch-tone="${escapeHtml(getScheduleToneToken(facultyCode))}"`;
+    return `data-sch-event-tone="${escapeHtml(getScheduleToneToken(facultyCode))}"`;
+}
+
+function getTimetableGridWeekCurrentButtonClass(isCurrent) {
+    return isCurrent
+        ? 'lux-primary-btn sch-week-current-btn is-current-week'
+        : 'lux-secondary-btn sch-week-current-btn';
+}
+
+function getTimetableGridWeekCurrentButtonLabel(isCurrent) {
+    return isCurrent ? 'Current week' : 'Jump to current';
+}
+
+function renderTimetableGridTopline(shell, weekStart, options = {}) {
+    const isCurrentWeek = weekStart === getCurrentWeekStartISO();
+    const profileMode = options.profileMode === true;
+    let topline = shell.querySelector(':scope > .sch-grid-topline');
+    if (!topline) {
+        topline = document.createElement('div');
+        topline.className = 'sch-grid-topline';
+        shell.prepend(topline);
+    }
+    // Profile embeds already expose week nav in compact controls — avoid duplicate chrome.
+    const weekNavMarkup = profileMode
+        ? `<strong class="sch-grid-week-label">${escapeHtml(formatWeekRangeLabel(weekStart))}</strong>`
+        : `<strong id="timetable-grid-week-label" class="sch-grid-week-label">${escapeHtml(formatWeekRangeLabel(weekStart))}</strong>
+            <div class="sch-week-nav">
+                <button type="button" class="lux-secondary-btn sch-week-arrow" data-timetable-week-shift="-1" aria-label="Previous week"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                <button type="button" id="timetable-grid-week-current" class="${getTimetableGridWeekCurrentButtonClass(isCurrentWeek)}" data-schedule-current-week="1">${escapeHtml(getTimetableGridWeekCurrentButtonLabel(isCurrentWeek))}</button>
+                <button type="button" class="lux-secondary-btn sch-week-arrow" data-timetable-week-shift="1" aria-label="Next week"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+            </div>`;
+    topline.innerHTML = localizeHtmlMarkup(`
+        <div class="sch-grid-topline-start">
+            <span class="sch-grid-tag">GMT+4</span>
+            <span class="sch-grid-tag sch-grid-tag-soft">Schedule live</span>
+        </div>
+        <div class="sch-grid-topline-end">
+            ${weekNavMarkup}
+        </div>
+    `);
+}
+
+function ensureTimetableGridHost(shell, usePageGridId) {
+    let gridHost = shell.querySelector(':scope > #timetable-grid, :scope > [data-timetable-grid-host="1"]');
+    if (!gridHost) {
+        gridHost = document.createElement('div');
+        if (usePageGridId) {
+            gridHost.id = 'timetable-grid';
+        } else {
+            gridHost.dataset.timetableGridHost = '1';
+        }
+        gridHost.setAttribute('aria-live', 'polite');
+        shell.appendChild(gridHost);
+    }
+    return gridHost;
+}
+
+function buildTimetableEmptyWeekNotice(weekStart, message) {
+    const notice = document.createElement('div');
+    notice.className = 'sch-empty-week-notice lux-soft-chrome';
+    notice.textContent = message || `No sessions scheduled for ${formatWeekRangeLabel(weekStart)}.`;
+    return notice;
 }
 
 function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
@@ -977,36 +1077,50 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     const timeSlots = options.timeSlots || ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
     const normalizedItems = (items || []).map(item => normalizeScheduleSurfaceItem(item, weekStart));
     const columns = getWeeklyScheduleColumns(normalizedItems, weekStart);
-    const slotHeight = options.slotHeight || 100;
-    const shellHeaderPad = options.shellHeaderPad ?? 100;
+    const slotHeight = options.slotHeight || 96;
     const minEventHeight = options.minEventHeight ?? 42;
     const eventHeightInset = options.eventHeightInset ?? 6;
     const emptyMessage = options.emptyMessage || `No schedule sessions found for ${formatWeekRangeLabel(weekStart)}.`;
     const profileMode = options.profileMode === true;
+    const usePageGridId = container.id === 'timetable-master-container';
     const { frame } = showScheduleSurfaceFrame(container);
-    let shell = frame.querySelector(':scope > .schedule-grid-shell');
+    let shell = frame.querySelector(':scope > .sch-grid-shell');
     if (!shell) {
         shell = document.createElement('div');
         frame.replaceChildren(shell);
     }
-    shell.className = `schedule-grid-shell lux-timetable-grid-shell${profileMode ? ' is-profile' : ''}`;
+    shell.className = `sch-grid-shell${profileMode ? ' is-profile' : ''}`;
     shell.dataset.ttGrid = '1';
-    shell.style.setProperty('--sch-shell-min-height', `${timeSlots.length * slotHeight + shellHeaderPad}px`);
+    // Profile embeds sit inside an existing glass host — avoid nested blur roots.
+    if (profileMode) delete shell.dataset.luxGlassRoot;
+    else shell.dataset.luxGlassRoot = '1';
+    shell.style.setProperty('--sch-slot-height', `${slotHeight}px`);
+    shell.style.setProperty('--sch-slot-count', String(timeSlots.length));
 
-    let headerRow = shell.querySelector(':scope > .sch-header-row');
+    renderTimetableGridTopline(shell, weekStart, { profileMode });
+    const gridHost = ensureTimetableGridHost(shell, usePageGridId);
+
+    let root = gridHost.querySelector(':scope > .sch-grid-root');
+    if (!root) {
+        root = document.createElement('div');
+        gridHost.replaceChildren(root);
+    }
+    root.className = 'sch-grid-root';
+    root.dataset.schedulerWeekState = isCurrentWeek ? 'current' : 'selected';
+
+    let headerRow = root.querySelector(':scope > .sch-header-row');
     if (!headerRow) {
         headerRow = document.createElement('div');
         headerRow.className = 'sch-header-row';
-        shell.appendChild(headerRow);
+        root.appendChild(headerRow);
     }
 
-    let body = shell.querySelector(':scope > .sch-body');
+    let body = root.querySelector(':scope > .sch-body');
     if (!body) {
         body = document.createElement('div');
         body.className = 'sch-body';
-        shell.appendChild(body);
+        root.appendChild(body);
     }
-    body.style.setProperty('--sch-body-min-height', `${timeSlots.length * slotHeight}px`);
 
     let timeLabels = body.querySelector(':scope > .sch-time-labels');
     if (!timeLabels) {
@@ -1018,21 +1132,22 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     let dayLanes = body.querySelector(':scope > .sch-day-lanes');
     if (!dayLanes) {
         dayLanes = document.createElement('div');
-        dayLanes.className = 'sch-day-lanes lux-timetable-day-lanes';
+        dayLanes.className = 'sch-day-lanes';
         body.appendChild(dayLanes);
     }
 
-    let headerHtml = `<div class="sch-time-col lux-timetable-time-col">GMT+4</div>`;
+    let headerHtml = `<div class="sch-time-col sch-time-col--header"><div class="sch-time-col-copy">GMT+4</div></div>`;
 
     weekEntries.forEach((entry, index) => {
         const isToday = isCurrentWeek && (new Date().getDay() === (index === 6 ? 0 : index + 1));
-        headerHtml += `<div class="sch-day-col lux-timetable-day-col ${isToday ? 'today' : ''}"><span class="sch-day-name">${entry.en}</span><div class="sch-day-meta">${entry.shortDate}${isToday ? ' &middot; Today' : ''}</div></div>`;
+        const metaLabel = `${entry.shortDate}${isToday ? ' · Today' : ''}`;
+        headerHtml += `<div class="sch-day-col${isToday ? ' is-today' : ''}"><div class="sch-day-col-label">${escapeHtml(entry.en)}</div><div class="sch-day-col-meta">${escapeHtml(metaLabel)}</div></div>`;
     });
     headerRow.innerHTML = localizeHtmlMarkup(headerHtml);
 
     let timeLabelHtml = '';
     timeSlots.forEach(time => {
-        timeLabelHtml += `<div class="sch-time-slot lux-timetable-time-slot" style="--sch-slot-height:${slotHeight}px;"><span>${time}</span></div>`;
+        timeLabelHtml += `<div class="sch-time-slot"><span class="sch-time-slot-copy">${escapeHtml(time)}</span></div>`;
     });
     timeLabels.innerHTML = localizeHtmlMarkup(timeLabelHtml);
 
@@ -1044,9 +1159,9 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
     columns.forEach((column, columnIndex) => {
-        lanesHtml += `<div class="sch-lane lux-timetable-lane">`;
-        timeSlots.forEach(time => {
-            lanesHtml += `<div class="sch-slot-bg lux-timetable-slot-bg" style="--sch-slot-height:${slotHeight}px;"></div>`;
+        lanesHtml += `<div class="sch-lane">`;
+        timeSlots.forEach(() => {
+            lanesHtml += `<div class="sch-slot-bg"></div>`;
         });
 
         if (options.showNowLine !== false && isCurrentWeek && columnIndex === todayColumnIndex && nowMinutes >= scheduleStartMinutes && nowMinutes <= scheduleEndMinutes) {
@@ -1074,23 +1189,20 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
             const extraBadge = marker
                 ? `<div class="ev-draft schedule-marker-badge marker-${scheduleMarkerClassToken(marker.type)}"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(markerMeta.label)}</div>`
                 : item.isWeekOverride
-                ? `<div class="ev-draft sch-week-badge lux-timetable-week-badge" ${toneAttr}>WEEK</div>`
+                ? `<div class="ev-draft">WEEK</div>`
                 : '';
             const markerNote = marker
                 ? `<div class="ev-meta schedule-grid-marker-note"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(marker.title || markerMeta.label)}${marker.note ? ` - ${escapeHtml(marker.note)}` : ''}</div>`
                 : '';
 
-            lanesHtml += `<div class="sch-event lux-timetable-event${markerClass}" ${toneAttr} style="--sch-event-top:${topPx}px; --sch-event-height:${heightPx}px;">
+            lanesHtml += `<div class="sch-event${markerClass}" ${toneAttr} style="--sch-event-top:${topPx}px; --sch-event-height:${heightPx}px;">
                 ${extraBadge}
-                <div class="sch-event-topline lux-timetable-event-topline">
-                    <div class="sch-event-code lux-timetable-event-code">${subjectLabel}${groupLabel ? ` <span>(${groupLabel})</span>` : ''}</div>
-                    <div class="sch-event-pill lux-timetable-event-pill">${sessionTypeLabel}</div>
-                </div>
-                <div class="ev-title lux-timetable-event-title">${escapeHtml(item.subjectTitle || item.courseName || item.courseCode || item.courseId || 'Session')}</div>
-                <div class="ev-meta lux-timetable-event-meta"><i class="far fa-clock"></i> ${escapeHtml(item.startTime)} - ${escapeHtml(item.endTime)}</div>
-                <div class="ev-meta lux-timetable-event-meta"><i class="fas fa-location-dot"></i> ${roomLabel} &middot; ${durMin} min</div>
-                <div class="ev-meta lux-timetable-event-meta"><i class="fas fa-user"></i> ${professorLabel}</div>
-                <div class="ev-meta lux-timetable-event-meta"><i class="fas fa-building"></i> ${facultyLabel}</div>
+                <div class="ev-title">${escapeHtml(item.subjectTitle || item.courseName || item.courseCode || item.courseId || 'Session')} <span class="ev-title-meta">(${subjectLabel}${groupLabel ? ` · ${groupLabel}` : ''})</span></div>
+                <div class="ev-meta"><i class="fas fa-tag"></i> ${sessionTypeLabel}</div>
+                <div class="ev-meta"><i class="far fa-clock"></i> ${escapeHtml(item.startTime)} - ${escapeHtml(item.endTime)} · ${durMin} min</div>
+                <div class="ev-meta"><i class="fas fa-location-dot"></i> ${roomLabel}</div>
+                <div class="ev-meta"><i class="fas fa-user"></i> ${professorLabel}</div>
+                <div class="ev-meta"><i class="fas fa-building"></i> ${facultyLabel}</div>
                 ${markerNote}
             </div>`;
         });
@@ -1099,21 +1211,25 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     });
     dayLanes.innerHTML = localizeHtmlMarkup(lanesHtml);
 
+    gridHost.querySelectorAll(':scope > .sch-empty-week-notice').forEach((node) => node.remove());
     if (!normalizedItems.length) {
-        showScheduleSurfaceEmpty(container, emptyMessage, 'schedule-grid-empty lux-timetable-grid-empty');
-        frame.hidden = false;
-        return;
+        gridHost.appendChild(buildTimetableEmptyWeekNotice(
+            weekStart,
+            `No sessions scheduled for ${formatWeekRangeLabel(weekStart)}.`
+        ));
     }
 
     const { empty } = ensureScheduleSurfaceRegions(container);
     empty.className = '';
     empty.innerHTML = '';
     empty.hidden = true;
+    frame.hidden = false;
 }
 
 function renderTimetable() {
     const container = document.getElementById('timetable-master-container');
     if (!container) return; // Not on the timetable page
+    syncTimetableFilterDefaults();
     const weekStart = getTimetableWeekStartForRender();
     const targetSem = document.getElementById('tt-filter-sem')
         ? parseInt(document.getElementById('tt-filter-sem').value, 10)
@@ -1135,7 +1251,7 @@ function renderTimetable() {
         emptyTitle: 'No sessions for the selected week',
         emptyMessage: `No timetable sessions found for ${formatWeekRangeLabel(weekStart)}.`
     });
-    const gridShell = document.querySelector('#page-timetable .lux-timetable-grid-shell');
+    const gridShell = document.querySelector('#page-timetable .sch-grid-shell[data-tt-grid="1"]');
     if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
         window.queueLuxuryTransparencyRefresh(undefined, gridShell ? { roots: [gridShell] } : undefined);
     } else if (typeof window.updateTransparency === 'function') {
@@ -1251,7 +1367,7 @@ function renderStudentAdminScheduleEmbed(studentId) {
         roleLabel: 'Student schedule'
     });
     renderScheduleSurfaceInto(canvas, items, embedSurfaceOptions);
-    const gridShell = canvas.querySelector('.lux-timetable-grid-shell');
+    const gridShell = canvas.querySelector('.sch-grid-shell[data-tt-grid="1"]');
     if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
         window.queueLuxuryTransparencyRefresh(undefined, gridShell ? { roots: [gridShell] } : undefined);
     }

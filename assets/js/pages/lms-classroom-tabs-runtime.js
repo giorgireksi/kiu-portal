@@ -6,13 +6,13 @@ function __kiuLmsTabsExpose(map){Object.keys(map).forEach((k)=>{__kiuLmsTabsApi[
 
 /* Tab-owned heavy modules: load on first Grades / Live Quiz / Whiteboard / Quiz / Calls / Interaction use. */
 const LMS_GRADEBOOK_MODULE_URLS = Object.freeze([
-    'assets/js/pages/gradebook-history-ui-runtime.js?v=20260720-gbsize1',
+    'assets/js/pages/gradebook-history-ui-runtime.js?v=20260729-lmsgbshare3',
     'assets/js/pages/gradebook-quiz-map-runtime.js?v=20260720-h2b',
     'assets/js/pages/gradebook-model.js?v=20260720-gbsize1',
-    'assets/js/pages/gradebook-weights-runtime.js?v=20260729-lmsgbhead1',
+    'assets/js/pages/gradebook-weights-runtime.js?v=20260729-lmsgbshare4',
     'assets/js/pages/gradebook-components-runtime.js?v=20260720-h2b',
-    'assets/js/pages/gradebook-workspace.js?v=20260720-gbsize1',
-    'assets/js/pages/gradebook-staff.js?v=20260720-gbsize1'
+    'assets/js/pages/gradebook-workspace.js?v=20260729-lmsgbshare3',
+    'assets/js/pages/gradebook-staff.js?v=20260729-lmsgbshare5'
 ]);
 const LMS_LIVE_QUIZ_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2',
@@ -48,7 +48,7 @@ const LMS_QUIZ_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-quiz-focus-runtime.js?v=20260719-quizfocus1',
     'assets/js/pages/lms-quiz-workspace-session-runtime.js?v=20260729-lmsmatcache1',
     'assets/js/pages/lms-quiz-workspace-review-runtime.js?v=20260720-w18',
-    'assets/js/pages/lms-quiz-workspace-runtime.js?v=20260728-lmquiz4',
+    'assets/js/pages/lms-quiz-workspace-runtime.js?v=20260729-lmquizshare1',
     'assets/js/pages/lms-protected-quiz-runtime.js?v=20260729-lmsassignfix1'
 ]);
 const LMS_CALLS_MODULE_URLS = Object.freeze([
@@ -68,7 +68,7 @@ const LMS_CONTENT_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-assignments-runtime.js?v=20260729-lmsassignfix1'
 ]);
 const LMS_PERSONAL_DASHBOARD_MODULE_URLS = Object.freeze([
-    'assets/js/pages/lms-personal-dashboard-runtime.js?v=20260715-lms-lazy2'
+    'assets/js/pages/lms-personal-dashboard-runtime.js?v=20260729-lmspdshare1'
 ]);
 
 const lmsRuntimeEnsurePromises = Object.create(null);
@@ -939,21 +939,21 @@ function renderLmsSessionMarkerCards(courseKey = currentCourseId) {
                 const schedule = getLmsSessionScheduleForWeek(courseKey, marker.weekStart) || marker;
                 const status = marker.weekStart === currentWeek ? 'current' : (marker.weekStart > currentWeek ? 'upcoming' : 'past');
                 return `
-                    <article class="lms-route-card lms-route-panel-compact lms-session-marker-card is-${escapeHtml(status)} marker-${lmsSessionMarkerClassToken(marker.type)}">
+                    <article class="lms-route-card lms-route-panel-compact lms-session-marker-card home-hover-chip is-${escapeHtml(status)} marker-${lmsSessionMarkerClassToken(marker.type)}">
                         <div class="lms-session-marker-icon"><i class="fas ${escapeHtml(typeMeta.icon)}"></i></div>
                         <div class="lms-session-marker-main">
                             <div class="lms-session-marker-kicker">
-                                <span>${escapeHtml(typeMeta.label)}</span>
-                                <span>${escapeHtml(getLmsSectionMeta(marker.sectionType).label)}</span>
-                                <span>${escapeHtml(status === 'current' ? 'This week' : status)}</span>
+                                <span class="lux-card-meta">${escapeHtml(typeMeta.label)}</span>
+                                <span class="lux-card-meta">${escapeHtml(getLmsSectionMeta(marker.sectionType).label)}</span>
+                                <span class="lux-card-meta">${escapeHtml(status === 'current' ? 'This week' : status)}</span>
                             </div>
-                            <h3>${escapeHtml(marker.title || typeMeta.label)}</h3>
-                            <div class="lms-session-marker-schedule">
+                            <h3 class="lux-card-title lms-session-marker-title">${escapeHtml(marker.title || typeMeta.label)}</h3>
+                            <div class="lms-session-marker-schedule lux-card-copy">
                                 <span><i class="fas fa-calendar-week"></i> ${escapeHtml(typeof formatWeekRangeLabel === 'function' ? formatWeekRangeLabel(marker.weekStart) : marker.weekStart)}</span>
                                 <span><i class="far fa-clock"></i> ${escapeHtml(schedule.day || marker.day || 'Day TBD')} ${escapeHtml(schedule.time || marker.time || 'TBD')}-${escapeHtml(schedule.endTime || marker.endTime || 'TBD')}</span>
                                 <span><i class="fas fa-location-dot"></i> ${escapeHtml(schedule.room || marker.room || 'Room TBD')}</span>
                             </div>
-                            ${marker.note ? `<p>${escapeHtml(marker.note)}</p>` : ''}
+                            ${marker.note ? `<p class="lux-card-copy lms-session-marker-note">${escapeHtml(marker.note)}</p>` : ''}
                         </div>
                         ${canManage ? `
                             <button type="button" class="lux-secondary-btn lms-session-marker-remove" data-lms-click="deleteLmsSessionMarker(${lmsInlineArg(marker.id)}, ${lmsInlineArg(courseKey)})">
@@ -965,6 +965,12 @@ function renderLmsSessionMarkerCards(courseKey = currentCourseId) {
             }).join('')}
         </div>
     `;
+}
+
+function refreshLmsTabSectionExperience(tab, courseId = currentCourseId) {
+    if (typeof enhanceLmsTabExperience === 'function') {
+        enhanceLmsTabExperience(tab, courseId);
+    }
 }
 
 function renderLmsSessionsSection(courseId = currentCourseId) {
@@ -1001,7 +1007,7 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                 { label: 'Upcoming', value: upcomingCount }
             ])}
             ${canManage ? `
-                <section class="lms-route-panel lms-route-panel-compact lms-session-marker-composer" id="lms-session-marker-composer">
+                <section class="lms-route-panel lms-route-panel-compact lms-session-marker-composer home-hover-chip" id="lms-session-marker-composer">
                     <div class="lms-session-marker-toolbar">
                         <div class="lms-session-marker-toolbar-main">
                             <span class="lms-bulk-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
@@ -1021,7 +1027,7 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                             <div class="lms-session-marker-filter-bar">
                                 <div class="lms-session-marker-type-chips" role="group" aria-label="Marker type">
                                     ${Object.entries(LMS_SESSION_MARKER_TYPES).map(([type, meta]) => `
-                                        <button type="button" class="lms-session-marker-type-chip${type === 'quiz' ? ' is-active' : ''}" data-marker-type="${escapeHtml(type)}" aria-pressed="${type === 'quiz' ? 'true' : 'false'}" data-lms-click="setLmsSessionMarkerType(${lmsInlineArg(type)})">
+                                        <button type="button" class="lms-session-marker-type-chip home-hover-chip${type === 'quiz' ? ' is-active' : ''}" data-marker-type="${escapeHtml(type)}" aria-pressed="${type === 'quiz' ? 'true' : 'false'}" data-lms-click="setLmsSessionMarkerType(${lmsInlineArg(type)})">
                                             <span class="lms-session-marker-type-chip-icon"><i class="fas ${escapeHtml(meta.icon)}"></i></span>
                                             <span class="lms-session-marker-type-chip-label">${escapeHtml(meta.label)}</span>
                                         </button>
@@ -1069,18 +1075,19 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                     </div>
                 </section>
             ` : ''}
-            <section class="lms-route-panel lms-session-marker-board">
+            <section class="lms-route-panel lms-session-marker-board home-hover-chip">
                 <div class="lms-route-card-head">
                     <div>
                         <div class="lms-route-card-title">Marked Sessions</div>
                         <div class="lms-route-copy lms-route-copy-mt-6">These are the group sessions that will stand out in the timetable for enrolled students.</div>
                     </div>
-                    <span class="lms-route-pill"><i class="fas fa-calendar-week"></i> ${escapeHtml(typeof formatWeekRangeLabel === 'function' ? formatWeekRangeLabel(currentWeek) : currentWeek)}</span>
+                    <span class="lms-route-pill home-hover-chip"><i class="fas fa-calendar-week"></i> ${escapeHtml(typeof formatWeekRangeLabel === 'function' ? formatWeekRangeLabel(currentWeek) : currentWeek)}</span>
                 </div>
                 ${renderLmsSessionMarkerCards(courseId)}
             </section>
         </div>
     `;
+    refreshLmsTabSectionExperience('sessions', courseId);
 }
 
 function createLmsSessionMarkers(courseId = currentCourseId) {
@@ -1266,7 +1273,7 @@ function renderLmsMembersSection(courseId) {
     const canViewMemberDetails = typeof canManageLmsGroupContent === 'function' && canManageLmsGroupContent();
 
     const buildRolePill = (label, tone) => `
-        <span class="lms-route-pill ${tone}">
+        <span class="lms-route-pill lux-pill home-hover-chip ${tone}">
             ${escapeHtml(label)}
         </span>
     `;
@@ -1278,7 +1285,7 @@ function renderLmsMembersSection(courseId) {
         const memberEmail = member?.email || '';
         const facultyLabel = getFacultyLabel(member?.facultyCode || member?.faculty || group?.faculty || subject?.faculty || getCurrentFaculty());
         const youBadge = currentViewerId && String(memberId || '') === currentViewerId
-            ? '<span class="lms-route-pill is-you">You</span>'
+            ? '<span class="lms-route-pill lux-pill home-hover-chip is-you">You</span>'
             : '';
         const metaParts = [
             facultyLabel,
@@ -1290,13 +1297,13 @@ function renderLmsMembersSection(courseId) {
             ? `<div class="lms-member-row__meta" title="${metaLine}">${metaLine}</div>`
             : '';
         return `
-            <article class="lms-member-row">
+            <article class="lms-member-row home-hover-chip">
                 <div class="lms-member-row__person">
                     <div class="lms-route-avatar lms-member-row__avatar ${tone}" aria-hidden="true">
                         ${escapeHtml(initials)}
                     </div>
                     <div class="lms-member-row__copy">
-                        <div class="lms-member-row__name">${escapeHtml(displayName)}</div>
+                        <div class="lux-card-title lms-member-row__name">${escapeHtml(displayName)}</div>
                         ${detailsMeta}
                     </div>
                 </div>
@@ -1340,7 +1347,7 @@ function renderLmsMembersSection(courseId) {
 
     contentArea.innerHTML = `
         <div class="lms-route-stack lms-member-stack">
-            <div class="lms-route-panel lms-member-overview-panel">
+            <div class="lms-route-panel lms-member-overview-panel home-hover-chip">
                 <div class="lms-route-card-head lms-member-overview-head">
                     <div class="lms-route-inline lms-route-inline-gap-12 lms-route-inline-center">
                         <i class="fas fa-users lms-route-icon-accent"></i>
@@ -1350,8 +1357,8 @@ function renderLmsMembersSection(courseId) {
                         </div>
                     </div>
                     <div class="lms-route-actions lms-member-overview-actions">
-                        <span class="lms-route-pill"><i class="fas fa-user-graduate"></i> ${students.length} students</span>
-                        <span class="lms-route-pill"><i class="fas fa-door-open"></i> ${escapeHtml(group?.room || 'TBD')}</span>
+                        <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-user-graduate"></i> ${students.length} students</span>
+                        <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-door-open"></i> ${escapeHtml(group?.room || 'TBD')}</span>
                     </div>
                 </div>
             </div>
@@ -1373,7 +1380,7 @@ function renderLmsMembersSection(courseId) {
                         <div class="lms-member-section-title">Students in This Group</div>
                         <div class="lms-route-copy lms-member-section-copy">${escapeHtml(studentSectionCopy)}</div>
                     </div>
-                    <span class="lms-route-pill"><i class="fas fa-users"></i> ${students.length} student${students.length === 1 ? '' : 's'}</span>
+                    <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-users"></i> ${students.length} student${students.length === 1 ? '' : 's'}</span>
                 </div>
                 <div class="lms-member-row-list">
                     ${studentRows}
@@ -1381,6 +1388,7 @@ function renderLmsMembersSection(courseId) {
             </section>
         </div>
     `;
+    refreshLmsTabSectionExperience('members', courseId);
 }
 
 function createLmsInteractionMessageId() {

@@ -29,6 +29,21 @@ function escapeChancelleryHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function coerceChancelleryText(value, fallback = '') {
+    if (value == null || value === '') return fallback;
+    if (typeof value === 'object') {
+        return String(value.name || value.label || value.title || value.id || fallback).trim() || fallback;
+    }
+    return String(value).trim() || fallback;
+}
+
+function resolveChancelleryGroupLabel(request = {}) {
+    return coerceChancelleryText(
+        request.groupName ?? request.recipientContext?.groupName ?? request.groupId,
+        'No group'
+    );
+}
+
 function normalizeChancelleryKey(value) {
     const normalized = cleanupEncodingArtifacts(String(value || ''))
         .trim()
@@ -160,7 +175,7 @@ function resolveChancelleryRecipientContext(subjectId, groupId) {
     const ta = typeof resolveUserFromName === 'function' ? resolveUserFromName(usersById, group?.ta || '') : null;
     return {
         faculty: normalizeFacultyCode(group?.faculty || subject?.faculty || getCurrentFaculty(), 'ECON'),
-        groupName: group?.name || groupId || '',
+        groupName: group?.name || coerceChancelleryText(groupId, ''),
         professorId: String(professor?.id || ''),
         professorName: professor?.nameEn || professor?.name || group?.prof || '',
         taId: String(ta?.id || ''),
@@ -216,8 +231,12 @@ function normalizeChancelleryRequest(request = {}) {
         studentName: request.studentName || request.student || 'Student',
         subjectId: String(request.subjectId || ''),
         subjectName,
-        groupId: String(request.groupId || ''),
-        groupName: request.groupName || recipientContext.groupName || request.groupId || '',
+        groupId: coerceChancelleryText(request.groupId, ''),
+        groupName: resolveChancelleryGroupLabel({
+            groupName: request.groupName || recipientContext.groupName,
+            groupId: request.groupId,
+            recipientContext
+        }),
         faculty: recipientContext.faculty || normalizeFacultyCode(request.faculty || getCurrentFaculty(), 'ECON'),
         message: initialMessage,
         status,
@@ -337,9 +356,14 @@ function getChancelleryStatusMeta(status) {
     return { label: normalized, tone: 'muted', icon: 'fas fa-timeline' };
 }
 
+function getChancelleryHeroFocusChip(status) {
+    const meta = getChancelleryStatusMeta(status);
+    return `<span class="lux-focus-panel__chip lux-status-pill home-hover-chip lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}"><i class="${meta.icon}"></i> ${escapeChancelleryHtml(meta.label)}</span>`;
+}
+
 function getChancelleryStatusPill(status) {
     const meta = getChancelleryStatusMeta(status);
-    return `<span class="lux-status-pill lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}"><i class="${meta.icon}"></i> ${escapeChancelleryHtml(meta.label)}</span>`;
+    return `<span class="lux-status-pill home-hover-chip lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}"><i class="${meta.icon}"></i> ${escapeChancelleryHtml(meta.label)}</span>`;
 }
 
 function getChancelleryKindPillClass(kindMeta) {
@@ -590,16 +614,16 @@ function renderChancelleryThread(request) {
                     : 'staff';
             const typeLabel = entry.kind === 'status' ? 'Status update' : entry.authorRole || 'message';
             return `
-                <div class="lux-thread-entry lux-chancellery-thread-entry is-${entryType}">
-                    <div class="lux-thread-head">
-                        <div>
-                            <div class="lux-thread-author">${escapeChancelleryHtml(entry.authorName || 'System')}</div>
-                            <div class="lux-thread-meta">${escapeChancelleryHtml(typeLabel)}</div>
+                <div class="lux-thread-entry lux-chancellery-thread-entry lux-soft-chrome home-hover-chip is-${entryType}">
+                    <div class="lux-thread-head lux-chancellery-thread-head">
+                        <div class="lux-chancellery-thread-copy">
+                            <div class="lux-card-copy lux-thread-author">${escapeChancelleryHtml(entry.authorName || 'System')}</div>
+                            <div class="lux-panel-copy lux-thread-meta">${escapeChancelleryHtml(typeLabel)}</div>
                         </div>
-                        <div class="lux-thread-time">${escapeChancelleryHtml(formatChancelleryDate(entry.createdAt, true))}</div>
+                        <div class="lux-panel-copy lux-thread-time">${escapeChancelleryHtml(formatChancelleryDate(entry.createdAt, true))}</div>
                     </div>
-                    <div class="lux-thread-message">${escapeChancelleryHtml(entry.message || '')}</div>
-                    ${entry.status ? `<div class="lux-meta lux-chancellery-thread-status"><strong>Workflow state:</strong> ${escapeChancelleryHtml(entry.status)}</div>` : ''}
+                    <div class="lux-panel-copy lux-thread-message">${escapeChancelleryHtml(entry.message || '')}</div>
+                    ${entry.status ? `<div class="lux-panel-copy lux-meta lux-chancellery-thread-status"><strong>Workflow state:</strong> ${escapeChancelleryHtml(entry.status)}</div>` : ''}
                 </div>
             `;
         }).join('')
@@ -629,7 +653,7 @@ function renderChancelleryRequestList(requests, selectedCaseId) {
                         ${getChancelleryStatusPill(request.status)}
                     </div>
                     <div class="lux-inline-meta lux-chancellery-inline-meta lux-chancellery-queue-meta">
-                        <span>${escapeChancelleryHtml(request.groupName || request.groupId || 'No group selected')}</span>
+                        <span>${escapeChancelleryHtml(resolveChancelleryGroupLabel(request))}</span>
                         <span>${escapeChancelleryHtml(formatChancelleryDate(request.createdAt))}</span>
                     </div>
                     <div class="lux-meta">${escapeChancelleryHtml(getChancelleryLatestPreview(request).slice(0, 170))}</div>
@@ -645,7 +669,7 @@ function renderChancelleryComposeForm(subjects) {
             <div class="lux-card-head lux-chancellery-card-head">
                 <div>
                     <div class="lux-section-kicker lux-page-kicker"><i class="fas fa-file-circle-plus"></i> New request</div>
-                    <div class="lux-card-title lux-chancellery-card-title">Submit appeal or retake</div>
+                    <div class="lux-page-title lux-chancellery-card-title">Submit appeal or retake</div>
                 </div>
             </div>
             <div class="lux-field-grid lux-field-grid--inline">
@@ -686,17 +710,17 @@ function renderChancelleryCaseMeta(request) {
     ].filter(Boolean).map(name => escapeChancelleryHtml(name)).join('<br>');
     return `
         <div class="lux-subcards lux-chancellery-subcards-spaced">
-            <div class="lux-subcard lux-chancellery-subcard">
-                <div class="lux-overline">Recipients</div>
-                <div class="lux-meta">${recipients}</div>
+            <div class="lux-subcard lux-chancellery-subcard lux-soft-chrome home-hover-chip">
+                <div class="lux-section-kicker lux-chancellery-subcard-kicker">Recipients</div>
+                <div class="lux-panel-copy lux-chancellery-subcard-copy">${recipients}</div>
             </div>
-            <div class="lux-subcard lux-chancellery-subcard">
-                <div class="lux-overline">Faculty</div>
-                <div class="lux-meta">${escapeChancelleryHtml(facultyLabel)}</div>
+            <div class="lux-subcard lux-chancellery-subcard lux-soft-chrome home-hover-chip">
+                <div class="lux-section-kicker lux-chancellery-subcard-kicker">Faculty</div>
+                <div class="lux-panel-copy lux-chancellery-subcard-copy">${escapeChancelleryHtml(facultyLabel)}</div>
             </div>
-            <div class="lux-subcard lux-chancellery-subcard">
-                <div class="lux-overline">Submitted</div>
-                <div class="lux-meta">${escapeChancelleryHtml(formatChancelleryDate(request.createdAt, true))}</div>
+            <div class="lux-subcard lux-chancellery-subcard lux-soft-chrome home-hover-chip">
+                <div class="lux-section-kicker lux-chancellery-subcard-kicker">Submitted</div>
+                <div class="lux-panel-copy lux-chancellery-subcard-copy">${escapeChancelleryHtml(formatChancelleryDate(request.createdAt, true))}</div>
             </div>
         </div>
     `;
@@ -707,14 +731,14 @@ function renderChancelleryCaseDetailPanel(request, options = {}) {
     const headKicker = staff ? 'Selected request' : 'Case';
     const metaLine = staff
         ? [request.id, request.studentName, deriveChancelleryTypeLabel(request.requestKind)]
-        : [request.id, deriveChancelleryTypeLabel(request.requestKind), request.groupName || request.groupId || 'No group'];
+        : [request.id, deriveChancelleryTypeLabel(request.requestKind), resolveChancelleryGroupLabel(request)];
     return `
         <div class="lux-card-head lux-chancellery-card-head">
-            <div>
+            <div class="lux-chancellery-card-copy">
                 <div class="lux-section-kicker lux-page-kicker"><i class="fas fa-timeline"></i> ${headKicker}</div>
-                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(request.subjectName)}</div>
+                <div class="lux-page-title lux-chancellery-card-title">${escapeChancelleryHtml(request.subjectName)}</div>
                 <div class="lux-inline-meta lux-chancellery-inline-meta">
-                    ${metaLine.map(item => `<span>${escapeChancelleryHtml(item)}</span>`).join('')}
+                    ${metaLine.map(item => `<span class="lux-panel-copy">${escapeChancelleryHtml(item)}</span>`).join('')}
                 </div>
             </div>
             <div class="lux-chancellery-status-actions">
@@ -729,7 +753,7 @@ function renderChancelleryCaseDetailPanel(request, options = {}) {
             </div>
         </div>
         ${renderChancelleryCaseMeta(request)}
-        <div class="lux-card-title lux-chancellery-section-title">Thread</div>
+        <div class="lux-section-kicker lux-chancellery-section-title">Thread</div>
         ${renderChancelleryThread(request)}
         ${staff ? `
             <div class="lux-chancellery-thread-region">
@@ -812,8 +836,8 @@ function renderChancelleryWorkspace({ listTitle, listCopy, requests, selectedReq
                 <section class="lux-chancellery-list-panel home-hover-chip">
                     <div class="lux-actions-between lux-chancellery-actions-between">
                         <div>
-                            <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(listTitle)}</div>
-                            ${listCopy ? `<div class="lux-card-copy lux-chancellery-card-copy">${escapeChancelleryHtml(listCopy)}</div>` : ''}
+                            <div class="lux-page-title lux-chancellery-card-title">${escapeChancelleryHtml(listTitle)}</div>
+                            ${listCopy ? `<div class="lux-panel-copy lux-chancellery-card-copy">${escapeChancelleryHtml(listCopy)}</div>` : ''}
                         </div>
                     </div>
                     <div class="lux-chancellery-list-region">${renderChancelleryRequestList(requests, selectedRequest?.id || '')}</div>
@@ -859,7 +883,7 @@ function renderChancelleryStudentFinancePanel() {
             </div>
             <div class="lux-stat-card lux-strip-card home-hover-chip lux-chancellery-finance-card">
                 <div class="lux-card-meta lux-chancellery-stat-label">Status</div>
-                <div id="finance-status-note" class="lux-status-pill lux-chancellery-finance-pill is-${tone}">${escapeChancelleryHtml(statusLabel)}</div>
+                <div id="finance-status-note" class="lux-status-pill home-hover-chip lux-chancellery-finance-pill is-${tone}">${escapeChancelleryHtml(statusLabel)}</div>
             </div>
             <div class="lux-stat-card lux-strip-card home-hover-chip lux-chancellery-finance-card">
                 <div class="lux-card-meta lux-chancellery-stat-label">Note</div>
@@ -931,10 +955,7 @@ function renderChancelleryHero({ isStudent, uiState, headingTitle, headingCopy, 
                 <aside class="lux-hero-side lux-chancellery-hero-side lux-timetable-hero-focus lux-focus-panel home-hover-chip" aria-label="Chancellery case load">
                     <div class="lux-focus-panel__head">
                         <div class="lux-focus-panel__kicker">Case load</div>
-                        ${getChancelleryStatusPill(heroStatusLabel).replace(
-                            'class="lux-status-pill',
-                            'class="lux-focus-panel__chip lux-status-pill'
-                        )}
+                        ${getChancelleryHeroFocusChip(heroStatusLabel)}
                     </div>
                     <div class="lux-focus-panel__body">
                         <div class="lux-focus-panel__title">${escapeChancelleryHtml((heroRows.find((row) => row.label === 'Open') || heroRows[0] || { value: '0' }).value)} open</div>
@@ -942,7 +963,7 @@ function renderChancelleryHero({ isStudent, uiState, headingTitle, headingCopy, 
                     </div>
                     <div class="lux-focus-panel__meta lux-hero-signal-list lux-chancellery-hero-signals" aria-label="Case metrics">
                         ${heroRows.map(row => `
-                            <span class="lux-hero-signal">
+                            <span class="lux-hero-signal home-hover-chip">
                                 <span>${escapeChancelleryHtml(row.label)}</span>
                                 <strong>${escapeChancelleryHtml(row.value)}</strong>
                             </span>
@@ -1248,7 +1269,7 @@ function patchChancelleryHero(heroEl, context) {
     const pillEl = heroEl.querySelector('.lux-chancellery-hero-side .lux-status-pill, .lux-chancellery-hero-side .lux-focus-panel__chip');
     if (pillEl) {
         const meta = getChancelleryStatusMeta(context.heroStatusLabel);
-        pillEl.className = `lux-focus-panel__chip lux-status-pill lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}`;
+        pillEl.className = `lux-focus-panel__chip lux-status-pill home-hover-chip lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}`;
         pillEl.innerHTML = `<i class="${meta.icon}"></i> ${escapeChancelleryHtml(meta.label)}`;
     }
 
@@ -1424,10 +1445,10 @@ function renderFinancialLedger() {
     if (!statusBox) return;
     if (balance <= 0) {
         statusBox.innerHTML = '<i class="fas fa-check-circle"></i> All fees are paid';
-        statusBox.className = 'lux-status-pill lux-chancellery-finance-pill is-success';
+        statusBox.className = 'lux-status-pill home-hover-chip lux-chancellery-finance-pill is-success';
     } else {
         statusBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Outstanding balance';
-        statusBox.className = 'lux-status-pill lux-chancellery-finance-pill is-warning';
+        statusBox.className = 'lux-status-pill home-hover-chip lux-chancellery-finance-pill is-warning';
     }
 }
 

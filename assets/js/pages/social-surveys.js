@@ -147,7 +147,7 @@
         const bodyHtml = text(options.bodyHtml || '');
         const merged = Boolean(bodyHtml);
         return `
-            <section class="social-neo-card social-neo-surveys-hero${merged ? ' is-merged' : ''}">
+            <section class="social-neo-card social-neo-surveys-hero home-hover-chip${merged ? ' is-merged' : ''}">
                 <div class="social-neo-surveys-hero-head">
                     <div class="social-neo-surveys-hero-copy">
                         <span class="social-neo-section-kicker">${escape(laneCopy.kicker)}</span>
@@ -163,15 +163,15 @@
                     </div>
                     ` : ''}
                 </div>
-                <div class="social-neo-surveys-hero-stats">
+                <div class="social-neo-surveys-hero-stats home-hover-chip">
                     ${stats.map((stat) => `
-                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card">
+                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                             <strong>${escape(String(stat.value))}</strong>
                             <span>${escape(stat.label)}</span>
                         </article>
                     `).join('')}
                 </div>
-                <div class="social-neo-surveys-hero-grid social-neo-surveys-hero-grid--lanes">
+                <div class="social-neo-surveys-hero-grid social-neo-surveys-hero-grid--lanes home-hover-chip">
                     ${laneTabs.map((entry) => `
                         <button class="lux-secondary-btn social-neo-surveys-hero-tab ${activeLane === entry.lane ? 'is-focused' : ''}" type="button"
                                 data-action="surveys-lane-${escape(entry.lane)}" aria-pressed="${activeLane === entry.lane ? 'true' : 'false'}">
@@ -183,7 +183,7 @@
                         </button>
                     `).join('')}
                 </div>
-                <div class="social-neo-surveys-hero-grid">
+                <div class="social-neo-surveys-hero-grid home-hover-chip">
                     ${tabs.map((entry) => `
                         <button class="lux-secondary-btn social-neo-surveys-hero-tab ${activeTab === entry.tab ? 'is-focused' : ''}" type="button"
                                 data-action="panel-surveys" data-surveys-tab="${escape(entry.tab)}" aria-pressed="${activeTab === entry.tab ? 'true' : 'false'}">
@@ -195,7 +195,7 @@
                         </button>
                     `).join('')}
                 </div>
-                <div class="social-neo-surveys-hero-toolbar">
+                <div class="social-neo-surveys-hero-toolbar home-hover-chip">
                     <label for="${escape(searchId)}">
                         <span class="social-neo-label">Search</span>
                         <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" name="surveysSearch" placeholder="Search title, organizer, or audience" value="${escape(searchValue)}">
@@ -407,16 +407,16 @@
     function renderChoiceResults(item) {
         const options = [...(Array.isArray(item.options) ? item.options : [])].sort((left, right) => Number(right.count || 0) - Number(left.count || 0));
         if (!options.length) {
-            return `<div class="social-neo-survey-results-empty"><i class="fas fa-chart-simple"></i><span>No responses yet for this question.</span></div>`;
+            return `<div class="social-neo-survey-results-empty lux-soft-chrome home-hover-chip"><i class="fas fa-chart-simple"></i><span class="lux-card-copy">No responses yet for this question.</span></div>`;
         }
         return `
             <div class="social-neo-list social-neo-survey-result-rows">
                 ${options.map((option, index) => `
-                    <article class="social-neo-survey-result-row" style="--survey-stagger: ${index}">
+                    <article class="social-neo-survey-result-row home-hover-chip" style="--survey-stagger: ${index}">
                         <div class="social-neo-survey-result-row-head">
                             <span class="social-neo-survey-result-rank">#${index + 1}</span>
                             <strong class="social-neo-survey-result-label">${escape(text(option.label))}</strong>
-                            <span class="social-neo-pill social-neo-survey-result-pill">${escape(String(option.percent || 0))}%</span>
+                            <span class="social-neo-pill social-neo-survey-result-pill home-hover-chip">${escape(String(option.percent || 0))}%</span>
                             <span class="social-neo-muted social-neo-survey-result-count">${escape(String(option.count || 0))} vote${Number(option.count || 0) === 1 ? '' : 's'}</span>
                         </div>
                         <div class="social-neo-survey-result-bar is-animated" style="--survey-pct: ${escape(String(option.percent || 0))}"></div>
@@ -429,18 +429,18 @@
     function renderRatingResults(item) {
         const histogram = buildRatingHistogram(item.distribution);
         if (!histogram.some((bin) => bin.count > 0) && !Number.isFinite(item.average)) {
-            return `<div class="social-neo-survey-results-empty"><i class="fas fa-star"></i><span>No ratings submitted yet.</span></div>`;
+            return `<div class="social-neo-survey-results-empty lux-soft-chrome home-hover-chip"><i class="fas fa-star"></i><span class="lux-card-copy">No ratings submitted yet.</span></div>`;
         }
         return `
             <div class="social-neo-survey-results-rating-summary">
-                <div class="social-neo-survey-results-rating-avg">
+                <div class="social-neo-survey-results-rating-avg lux-soft-chrome home-hover-chip">
                     <div class="social-neo-survey-results-stars" aria-hidden="true">${renderRatingStars(Number(item.average) || 0)}</div>
                     <strong>${escape(String(item.average || 0))}</strong>
                     <span class="social-neo-muted">average</span>
                 </div>
                 <div class="social-neo-survey-results-rating-histogram">
                     ${histogram.map((bin) => `
-                        <div class="social-neo-survey-results-rating-bin">
+                        <div class="social-neo-survey-results-rating-bin home-hover-chip">
                             <span class="social-neo-survey-results-rating-bin-label">${escape(String(bin.value))}★</span>
                             <div class="social-neo-survey-result-bar is-animated is-compact" style="--survey-pct: ${escape(String(bin.percent || 0))}"></div>
                             <span class="social-neo-muted">${escape(String(bin.count || 0))}</span>
@@ -456,13 +456,13 @@
         const no = Number(item.no || 0);
         const total = yes + no;
         if (!total) {
-            return `<div class="social-neo-survey-results-empty"><i class="fas fa-circle-question"></i><span>No yes/no responses yet.</span></div>`;
+            return `<div class="social-neo-survey-results-empty lux-soft-chrome home-hover-chip"><i class="fas fa-circle-question"></i><span class="lux-card-copy">No yes/no responses yet.</span></div>`;
         }
         const yesPct = Math.round((yes / total) * 100);
         const noPct = 100 - yesPct;
         return `
             <div class="social-neo-survey-results-yesno">
-                <div class="social-neo-survey-results-yesno-track" style="--survey-yes-pct: ${yesPct}">
+                <div class="social-neo-survey-results-yesno-track lux-soft-chrome home-hover-chip" style="--survey-yes-pct: ${yesPct}">
                     <span class="social-neo-survey-results-yesno-yes">Yes ${escape(String(yesPct))}% (${escape(String(yes))})</span>
                     <span class="social-neo-survey-results-yesno-no">No ${escape(String(noPct))}% (${escape(String(no))})</span>
                 </div>
@@ -473,13 +473,13 @@
     function renderTextResults(item) {
         const responses = Array.isArray(item.textResponses) ? item.textResponses.filter(Boolean) : [];
         if (!responses.length) {
-            return `<div class="social-neo-survey-results-empty"><i class="fas fa-quote-left"></i><span>No written responses to show.</span></div>`;
+            return `<div class="social-neo-survey-results-empty lux-soft-chrome home-hover-chip"><i class="fas fa-quote-left"></i><span class="lux-card-copy">No written responses to show.</span></div>`;
         }
         const visible = responses.slice(0, 8);
         return `
             <div class="social-neo-list social-neo-survey-results-quotes">
                 ${visible.map((entry, index) => `
-                    <blockquote class="social-neo-survey-results-quote" style="--survey-stagger: ${index}">
+                    <blockquote class="social-neo-survey-results-quote lux-soft-chrome home-hover-chip" style="--survey-stagger: ${index}">
                         <p>${escape(text(entry))}</p>
                     </blockquote>
                 `).join('')}
@@ -494,18 +494,18 @@
         if (questionType === 'rating') return renderRatingResults(item);
         if (questionType === 'yes_no') return renderYesNoResults(item);
         if (surveyQuestionIsText(questionType)) return renderTextResults(item);
-        return `<div class="social-neo-survey-results-empty"><i class="fas fa-circle-info"></i><span>Results are not available for this question type.</span></div>`;
+        return `<div class="social-neo-survey-results-empty lux-soft-chrome home-hover-chip"><i class="fas fa-circle-info"></i><span class="lux-card-copy">Results are not available for this question type.</span></div>`;
     }
 
     function renderQuestionResultCard(item, index) {
         return `
-            <section class="lux-glass-dialog-group-section social-neo-survey-results-question" style="--survey-stagger: ${index}">
+            <section class="lux-glass-dialog-group-section social-neo-survey-results-question lux-soft-chrome home-hover-chip" style="--survey-stagger: ${index}">
                 <div class="lux-glass-dialog-group-section-head social-neo-survey-results-question-head">
                     <div>
-                        <strong>Question ${index + 1}</strong>
-                        <span>${escape(text(item.prompt))}</span>
+                        <strong class="lux-card-title">Question ${index + 1}</strong>
+                        <span class="lux-card-copy">${escape(text(item.prompt))}</span>
                     </div>
-                    <span class="social-neo-pill social-neo-survey-results-type-pill">${escape(surveyQuestionTypeLabel(item.questionType))}</span>
+                    <span class="social-neo-pill social-neo-survey-results-type-pill home-hover-chip">${escape(surveyQuestionTypeLabel(item.questionType))}</span>
                 </div>
                 ${renderQuestionResultBody(item)}
             </section>
@@ -524,25 +524,25 @@
         ].filter(Boolean);
         const questionsMarkup = resultItems.length
             ? resultItems.map((item, index) => renderQuestionResultCard(item, index)).join('')
-            : `<div class="social-neo-survey-results-empty social-neo-survey-results-empty--panel"><i class="fas fa-chart-column"></i><strong>No question results yet</strong><span>Responses will appear here once participants submit answers.</span></div>`;
+            : `<div class="social-neo-survey-results-empty social-neo-survey-results-empty--panel lux-soft-chrome home-hover-chip"><i class="fas fa-chart-column"></i><strong class="lux-card-title">No question results yet</strong><span class="lux-card-copy">Responses will appear here once participants submit answers.</span></div>`;
 
         return `
             <div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--survey-create lux-glass-dialog-card--survey-results lux-glass-dialog-card lux-glass-dialog-card--social-glass social-neo-surveys-results-dialog" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-head social-neo-surveys-hero-head social-neo-surveys-results-dialog-head">
                         <div class="social-neo-surveys-hero-copy">
-                            <span class="social-neo-section-kicker"><i class="fas fa-chart-column" aria-hidden="true"></i> Survey results</span>
-                            <h2>${escape(text(survey.title))}</h2>
-                            <p>${metaParts.join(' · ')}</p>
-                            ${text(survey.description) ? `<p class="social-neo-survey-results-desc">${escape(text(survey.description))}</p>` : ''}
+                            <span class="social-neo-section-kicker lux-section-kicker"><i class="fas fa-chart-column" aria-hidden="true"></i> Survey results</span>
+                            <h2 class="lux-card-title">${escape(text(survey.title))}</h2>
+                            <p class="lux-card-copy">${metaParts.join(' · ')}</p>
+                            ${text(survey.description) ? `<p class="social-neo-survey-results-desc lux-card-copy">${escape(text(survey.description))}</p>` : ''}
                         </div>
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close results"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-surveys-hero-stats social-neo-surveys-results-kpis">
-                        <article class="social-neo-surveys-hero-stat"><strong>${escape(String(responseCount))}</strong><span>Responses</span></article>
-                        <article class="social-neo-surveys-hero-stat"><strong>${escape(String(questionCount))}</strong><span>Questions</span></article>
-                        <article class="social-neo-surveys-hero-stat"><strong>${escape(surveyStatusLabel(survey))}</strong><span>Status</span></article>
-                        <article class="social-neo-surveys-hero-stat"><strong>${escape(surveyAudienceLabel(survey))}</strong><span>Audience</span></article>
+                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(responseCount))}</strong><span>Responses</span></article>
+                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(questionCount))}</strong><span>Questions</span></article>
+                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(surveyStatusLabel(survey))}</strong><span>Status</span></article>
+                        <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(surveyAudienceLabel(survey))}</strong><span>Audience</span></article>
                     </div>
                     <div class="lux-scroll-rail lux-glass-dialog-body lux-glass-dialog-body--survey-results" data-lux-scroll-rail>
                         <div class="lux-scroll-rail__controls social-neo-survey-results-scroll-controls" aria-hidden="true">
@@ -561,11 +561,11 @@
                     <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions social-neo-surveys-results-dialog-actions">
                         ${survey.viewerCanManage ? `
                             <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-surveys-results-actions">
-                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-export" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-file-export"></i> Export JSON</button>
-                                ${text(survey.status) === 'published' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-close" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-lock"></i> Close survey</button>` : ''}
+                                <button class="lux-secondary-btn lux-secondary-btn-sm home-hover-chip" type="button" data-action="survey-export" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-file-export"></i> Export JSON</button>
+                                ${text(survey.status) === 'published' ? `<button class="lux-secondary-btn lux-secondary-btn-sm home-hover-chip" type="button" data-action="survey-close" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-lock"></i> Close survey</button>` : ''}
                             </div>
                         ` : '<span class="social-neo-flex-spacer"></span>'}
-                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="dialog-close">Close</button>
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn home-hover-chip" type="button" data-action="dialog-close">Close</button>
                     </div>
                 </div>
             </div>
@@ -580,7 +580,7 @@
         const hasResponded = Boolean(survey.viewerHasResponded);
         const canViewResults = Boolean(survey.viewerCanViewResults);
         return `
-            <article class="social-neo-card social-neo-entity-card social-neo-survey-card" data-survey-id="${escape(text(survey.id))}">
+            <article class="social-neo-card social-neo-entity-card social-neo-survey-card home-hover-chip" data-survey-id="${escape(text(survey.id))}">
                 <div class="social-neo-inline social-neo-inline-between-start-wrap social-neo-survey-card-head">
                     <div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-survey-card-title-row">
@@ -938,10 +938,10 @@
                 </div>
                 <div class="lux-glass-dialog-body lux-glass-dialog-body--survey-create">
                 <div class="social-neo-surveys-hero-stats">
-                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(formatSurveyQuestionCountStat(draftQuestions))}</strong><span>Questions</span></article>
-                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(audienceStatLabel)}</strong><span>Audience</span></article>
-                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(closesStatLabel)}</strong><span>Closes</span></article>
-                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(visibilityStatLabel)}</strong><span>Visibility</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(formatSurveyQuestionCountStat(draftQuestions))}</strong><span>Questions</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(audienceStatLabel)}</strong><span>Audience</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(closesStatLabel)}</strong><span>Closes</span></article>
+                    <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(visibilityStatLabel)}</strong><span>Visibility</span></article>
                 </div>
                 <section class="lux-glass-dialog-group-section">
                     <div class="lux-glass-dialog-group-section-head">

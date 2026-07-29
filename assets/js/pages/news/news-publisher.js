@@ -20,7 +20,7 @@ function patchNewsPublisherAttachmentRegion() {
             </label>
             <div class="newsx-attachment-chip-row">
                 ${attachments.map((file, index) => `
-                    <span class="newsx-attachment-chip">
+                    <span class="newsx-attachment-chip home-hover-chip">
                         <i class="fas fa-${isNewsImageAttachment(file) ? 'image' : 'file'}"></i>
                         ${escapeHtml(String(file.name || `File ${index + 1}`))}
                         <button type="button" class="newsx-attachment-remove" data-news-remove-attachment="${escapeHtml(String(file.id || index))}" aria-label="Remove attachment"><i class="fas fa-times"></i></button>
@@ -127,7 +127,7 @@ function renderNewsPublisherSectionNavInner() {
     return PUBLISHER_SECTIONS.map(section => {
         const isActive = activeSection === section.id;
         return `
-            <button type="button" role="tab" class="newsx-publisher-section-tab ${isActive ? 'is-active' : ''}" data-news-publisher-section-nav="${section.id}" data-lux-skip-modern-button="true" aria-selected="${isActive ? 'true' : 'false'}">
+            <button type="button" role="tab" class="newsx-publisher-section-tab home-hover-chip ${isActive ? 'is-active' : ''}" data-news-publisher-section-nav="${section.id}" data-lux-skip-modern-button="true" aria-selected="${isActive ? 'true' : 'false'}">
                 <span class="newsx-publisher-section-tab-icon" aria-hidden="true"><i class="fas ${section.icon}"></i></span>
                 <span class="newsx-publisher-section-tab-text">
                     <strong>${escapeHtml(section.label)}</strong>
@@ -385,7 +385,7 @@ function scheduleNewsEditorToolbarSync() {
 
 function renderNewsEditorRibbon() {
     return `
-        <div class="newsx-editor-ribbon" data-news-editor-toolbar="1" aria-label="Formatting ribbon">
+        <div class="newsx-editor-ribbon home-hover-chip" data-news-editor-toolbar="1" aria-label="Formatting ribbon">
             <div class="newsx-editor-ribbon-group">
                 <button type="button" class="newsx-md-snippet-btn lux-modern-button" data-news-editor-cmd="undo" data-lux-button-tone="secondary" aria-label="Undo"><i class="fas fa-rotate-left"></i></button>
                 <button type="button" class="newsx-md-snippet-btn lux-modern-button" data-news-editor-cmd="redo" data-lux-button-tone="secondary" aria-label="Redo"><i class="fas fa-rotate-right"></i></button>
@@ -607,7 +607,7 @@ function syncNewsComposeTypographyUi() {
 
 function renderNewsPublisherPaneShell(sectionId, title, copy, bodyMarkup, activeSection) {
     return `
-        <section class="newsx-publisher-pane ${activeSection === sectionId ? 'is-active' : ''}" data-news-publisher-pane="${sectionId}" data-news-publisher-section="${sectionId}" ${activeSection === sectionId ? '' : 'hidden'}>
+        <section class="newsx-publisher-pane home-hover-chip ${activeSection === sectionId ? 'is-active' : ''}" data-news-publisher-pane="${sectionId}" data-news-publisher-section="${sectionId}" ${activeSection === sectionId ? '' : 'hidden'}>
             <header class="newsx-publisher-pane-header">
                 <h3 class="newsx-publisher-pane-title">${escapeHtml(title)}</h3>
                 ${copy ? `<p class="newsx-publisher-pane-copy">${escapeHtml(copy)}</p>` : ''}
@@ -658,7 +658,7 @@ function renderNewsPublisherMessagePane(activeSection) {
                         </label>
                         <div class="newsx-attachment-chip-row">
                             ${attachments.map((file, index) => `
-                                <span class="newsx-attachment-chip">
+                                <span class="newsx-attachment-chip home-hover-chip">
                                     <i class="fas fa-${isNewsImageAttachment(file) ? 'image' : 'file'}"></i>
                                     ${escapeHtml(String(file.name || `File ${index + 1}`))}
                                     <button type="button" class="newsx-attachment-remove" data-news-remove-attachment="${escapeHtml(String(file.id || index))}" aria-label="Remove attachment"><i class="fas fa-times"></i></button>
@@ -678,11 +678,11 @@ function renderNewsPublisherAudiencePane(activeSection) {
     const audienceMode = ui.audienceMode === 'restricted' || isPublisherAudienceRestricted(compose) ? 'restricted' : 'everyone';
     return renderNewsPublisherPaneShell('audience', 'Audience', 'Who should see this announcement?', `
         <div class="newsx-publisher-audience-mode">
-            <label class="newsx-publisher-radio-card">
+            <label class="newsx-publisher-radio-card home-hover-chip">
                 <input type="radio" name="news_audience_mode" value="everyone" ${audienceMode === 'everyone' ? 'checked' : ''} data-news-audience-mode="everyone">
                 <span><strong>Everyone on campus</strong><span class="newsx-meta">No role or faculty filters</span></span>
             </label>
-            <label class="newsx-publisher-radio-card">
+            <label class="newsx-publisher-radio-card home-hover-chip">
                 <input type="radio" name="news_audience_mode" value="restricted" ${audienceMode === 'restricted' ? 'checked' : ''} data-news-audience-mode="restricted">
                 <span><strong>Restrict to specific groups</strong><span class="newsx-meta">Roles, faculties, or course scope</span></span>
             </label>
@@ -692,7 +692,7 @@ function renderNewsPublisherAudiencePane(activeSection) {
                 <div class="newsx-meta newsx-meta-label">Roles</div>
                 <div class="newsx-publisher-audience-grid">
                     ${ROLE_OPTIONS.map(([roleId, label]) => `
-                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card">
+                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card home-hover-chip">
                             <input id="news-role-${escapeHtml(toFieldToken(roleId))}" name="news_role_${escapeHtml(toFieldToken(roleId))}" type="checkbox" ${compose.audienceRoles.includes(roleId) ? 'checked' : ''} data-news-audience-role="${escapeHtml(roleId)}">
                             <div><strong>${escapeHtml(label)}</strong></div>
                         </label>
@@ -703,7 +703,7 @@ function renderNewsPublisherAudiencePane(activeSection) {
                 <div class="newsx-meta newsx-meta-label">Faculties</div>
                 <div class="newsx-publisher-audience-grid">
                     ${getFacultyOptions().map(option => `
-                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card">
+                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card home-hover-chip">
                             <input id="news-faculty-${escapeHtml(toFieldToken(option.code))}" name="news_faculty_${escapeHtml(toFieldToken(option.code))}" type="checkbox" ${compose.audienceFacultyCodes.includes(option.code) ? 'checked' : ''} data-news-audience-faculty="${escapeHtml(option.code)}">
                             <div><strong>${escapeHtml(option.label)}</strong><div class="newsx-meta">${escapeHtml(option.code)}</div></div>
                         </label>
@@ -750,7 +750,7 @@ function renderNewsPublisherPresentationPane(activeSection) {
             <div class="newsx-meta">Choose whether readers can comment publicly, reply privately, both, or not at all.</div>
         </div>
         <div class="newsx-publisher-delivery-toggles">
-            <label class="newsx-check lux-check-card newsx-publisher-toggle-card">
+            <label class="newsx-check lux-check-card newsx-publisher-toggle-card home-hover-chip">
                 <input id="news-compose-pinned" name="news_compose_pinned" type="checkbox" ${compose.pinned ? 'checked' : ''} data-news-compose-boolean="pinned">
                 <div><strong>Pin to top</strong><span class="newsx-meta">Keep above other feed items</span></div>
             </label>
@@ -764,11 +764,11 @@ function renderNewsPublisherSchedulePane(activeSection) {
     const scheduleMode = ui.scheduleMode === 'scheduled' ? 'scheduled' : 'immediate';
     return renderNewsPublisherPaneShell('schedule', 'Schedule', 'When the announcement goes live on the feed.', `
         <div class="newsx-publisher-schedule-mode">
-            <label class="newsx-publisher-radio-card">
+            <label class="newsx-publisher-radio-card home-hover-chip">
                 <input type="radio" name="news_schedule_mode" value="immediate" ${scheduleMode === 'immediate' ? 'checked' : ''} data-news-schedule-mode="immediate">
                 <span><strong>Publish immediately</strong><span class="newsx-meta">Goes live as soon as you publish</span></span>
             </label>
-            <label class="newsx-publisher-radio-card">
+            <label class="newsx-publisher-radio-card home-hover-chip">
                 <input type="radio" name="news_schedule_mode" value="scheduled" ${scheduleMode === 'scheduled' ? 'checked' : ''} data-news-schedule-mode="scheduled">
                 <span><strong>Schedule for later</strong><span class="newsx-meta">Choose a future publish time</span></span>
             </label>

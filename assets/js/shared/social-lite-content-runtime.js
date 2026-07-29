@@ -877,6 +877,80 @@ async function createSurvey(input = {}) {
     return payload?.survey || null;
 }
 
+async function createResearchPublication(input = {}) {
+    const actorId = currentUserId();
+    if (!actorId) throw new Error('Session required.');
+    let pdf = null;
+    if (text(input.format).toLowerCase() === 'pdf' && input.file && typeof uploadPortalStoredFile === 'function') {
+        const uploaded = await uploadPortalStoredFile(input.file, 'research');
+        if (uploaded?.storageKey) {
+            pdf = {
+                storageKey: uploaded.storageKey,
+                fileName: text(uploaded.name || input.file.name || 'document.pdf'),
+                mimeType: text(uploaded.type || input.file.type || 'application/pdf'),
+                sizeBytes: Number(uploaded.size || input.file.size || 0) || 0,
+                pageCount: Number(input.pageCount || 0) || 0
+            };
+        }
+    }
+    if (text(input.format).toLowerCase() === 'pdf' && !pdf && input.file) {
+        const dataUrl = text(input.file.dataUrl) || (typeof readFileAsDataUrl === 'function' ? await readFileAsDataUrl(input.file) : '');
+        if (dataUrl) {
+            pdf = {
+                storageKey: '',
+                fileName: text(input.file.name || 'document.pdf'),
+                mimeType: text(input.file.type || 'application/pdf'),
+                sizeBytes: Number(input.file.size || 0) || 0,
+                pageCount: 0,
+                dataUrl
+            };
+        }
+    }
+    const payload = await portalRequest('/api/social/research', {
+        method: 'POST',
+        body: JSON.stringify({
+            title: text(input.title),
+            abstract: text(input.abstract),
+            bodyText: text(input.bodyText || input.body),
+            format: text(input.format || 'article') || 'article',
+            authorLane: text(input.authorLane || ''),
+            facultyCode: text(input.facultyCode || ''),
+            topics: input.topics,
+            doiOrUrl: text(input.doiOrUrl || ''),
+            courseCode: text(input.courseCode || ''),
+            advisorName: text(input.advisorName || ''),
+            pdf,
+            publish: input.publish !== false && text(input.status) !== 'draft',
+            status: text(input.status || '') || undefined
+        })
+    });
+    await loadSocialState(true);
+    setFlash(input.publish === false || text(input.status) === 'draft' ? 'Draft saved.' : 'Publication published.', 'success', { skipRender: true });
+    return payload?.publication || null;
+}
+
+async function toggleResearchSave(publicationId) {
+    const actorId = currentUserId();
+    if (!actorId) throw new Error('Session required.');
+    const payload = await portalRequest(`/api/social/research/${encodeURIComponent(text(publicationId))}/save`, {
+        method: 'POST',
+        body: JSON.stringify({})
+    });
+    await loadSocialState(true);
+    return payload?.publication || null;
+}
+
+async function deleteResearchPublication(publicationId) {
+    const actorId = currentUserId();
+    if (!actorId) throw new Error('Session required.');
+    const payload = await portalRequest(`/api/social/research/${encodeURIComponent(text(publicationId))}`, {
+        method: 'DELETE'
+    });
+    await loadSocialState(true);
+    setFlash('Publication deleted.', 'success', { skipRender: true });
+    return payload || null;
+}
+
 async function closeSurvey(surveyId) {
     const actorId = currentUserId();
     if (!actorId) throw new Error('Session required.');
@@ -1240,6 +1314,9 @@ async function leaveGroupCall(chatId) {
             createEvent,
             updateEvent,
             createSurvey,
+            createResearchPublication,
+            toggleResearchSave,
+            deleteResearchPublication,
             closeSurvey,
             respondSurvey,
             loadSurveyResults,

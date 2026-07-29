@@ -700,7 +700,7 @@
 
     function renderAcademicSubjectSection(listKey, title, count, description) {
         return `
-            <button class="students-hub-form-section lux-data-card students-hub-academic-section students-hub-academic-section-btn"
+            <button class="students-hub-form-section lux-data-card home-hover-chip students-hub-academic-section students-hub-academic-section-btn"
                     type="button"
                     data-student-action="open-academic-subjects"
                     data-academic-list="${escapeHtml(listKey)}">
@@ -955,7 +955,7 @@
 
         return `
             <div class="students-hub-academic-stack">
-                <section class="students-hub-form-section lux-data-card students-hub-academic-overview">
+                <section class="students-hub-form-section lux-data-card home-hover-chip students-hub-academic-overview">
                     <div class="students-hub-academic-overview-grid">
                         <div class="students-hub-academic-overview-meta">
                             <div><span>Program</span><strong>${escapeHtml(programLabel)}</strong></div>
@@ -1045,20 +1045,20 @@
                 : 'is-success';
         return `
             <div class="students-hub-profile-metrics">
-                <article class="students-hub-profile-metric lux-data-card">
+                <article class="students-hub-profile-metric lux-data-card home-hover-chip">
                     <span>GPA</span>
                     <strong>${escapeHtml(snapshot.performance.secondary)}</strong>
                 </article>
-                <article class="students-hub-profile-metric lux-data-card">
+                <article class="students-hub-profile-metric lux-data-card home-hover-chip">
                     <span>ECTS</span>
                     <strong>${escapeHtml(String(snapshot.completedEcts))} done</strong>
                     <small>${escapeHtml(String(snapshot.enrolledEcts))} enrolled</small>
                 </article>
-                <article class="students-hub-profile-metric lux-data-card">
+                <article class="students-hub-profile-metric lux-data-card home-hover-chip">
                     <span>Subjects</span>
                     <strong>${escapeHtml(String(snapshot.subjectCount))}</strong>
                 </article>
-                <article class="students-hub-profile-metric lux-data-card">
+                <article class="students-hub-profile-metric lux-data-card home-hover-chip">
                     <span>Mobility</span>
                     <div class="students-hub-profile-metric-chips">
                         ${renderStatusChip(mobilityLabel)}

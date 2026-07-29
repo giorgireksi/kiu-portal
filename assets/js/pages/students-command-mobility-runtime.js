@@ -41,7 +41,7 @@
         `).join('') : '<article class="students-hub-list-item"><strong>No transfer history</strong><small>Internal transfers will appear here after execution.</small></article>';
         const isInternalTransfer = mobility.category === 'internal_transfer';
         return `
-            <section class="students-hub-form-section lux-data-card">
+            <section class="students-hub-form-section lux-data-card home-hover-chip">
                 <div class="students-hub-section-head">
                     <h3>Mobility & transfer</h3>
                     <p>Track exchange programs, internal transfers, and agreement metadata for this student.</p>
@@ -88,7 +88,7 @@
                     <button class="lux-secondary-btn${isInternalTransfer ? '' : ' is-hidden'}" type="button" data-student-action="execute-transfer" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-right-left"></i> Execute internal transfer</button>
                 </div>
             </section>
-            <section class="students-hub-info-card is-full lux-data-card">
+            <section class="students-hub-info-card is-full lux-data-card home-hover-chip">
                 <span>Transfer history</span>
                 <div class="students-hub-list students-hub-list--spaced">${historyRows}</div>
             </section>

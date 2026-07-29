@@ -333,7 +333,7 @@
 
     function renderSummaryChip(label, value) {
         return `
-            <span class="ex2-summary-chip lux-soft-chrome">
+            <span class="ex2-summary-chip lux-soft-chrome home-hover-chip">
                 <span class="ex2-summary-chip-label">${escapeHtml(label)}</span>
                 <strong class="ex2-summary-chip-value">${escapeHtml(value)}</strong>
             </span>

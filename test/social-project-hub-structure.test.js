@@ -23,10 +23,27 @@ describe('social-project-hub-structure (bare-shell era)', () => {
         expect(panel).toContain('social-project-hub-rail-card lux-soft-chrome home-hover-chip');
         expect(panel).toContain('social-project-card-new home-hover-chip');
         expect(panel).toContain('social-project-metric-card lux-soft-chrome home-hover-chip');
+        expect(panel).toContain('social-project-hub-discover lux-soft-chrome home-hover-chip');
+        expect(panel).toContain('social-project-hub-filterbar lux-soft-chrome home-hover-chip');
         expect(panel).toContain('lms-route-meta-12');
+
+        const chrome = readSource('assets/js/pages/social-workspace-project-chrome.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(chrome).toContain('social-neo-community-panel--workspace home-hover-chip');
+        expect(chrome).toContain('social-neo-workspace-hero-stats home-hover-chip');
+        expect(chrome).toContain('social-neo-workspace-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip');
+        expect(fouc).toContain('.social-neo-workspace-hero-stat');
+        expect(fouc).toContain('.social-neo-workspace-hero-stats');
 
         expect(bare).toContain('.social-project-hub-layout {');
         expect(bare).toContain('.social-neo-workspace-hub-section');
+        expect(bare).toMatch(/\.social-project-hub-filterbar \{[\s\S]{0,180}?overflow:\s*visible/);
+        const hubSectionRule = bare.slice(
+            bare.indexOf('body.lux-route-social .social-neo-workspace-hub-section,'),
+            bare.indexOf('body.lux-route-social .social-project-hub-search-row')
+        );
+        expect(hubSectionRule).toContain('overflow: visible');
+        expect(hubSectionRule).not.toContain('--social-chip-surface');
         expect(bare).toContain('.social-project-hub-main-head strong {');
         expect(bare).toContain('.social-project-card-new-title {');
         expect(bare).toContain('.social-project-card-new-progress-bar {');

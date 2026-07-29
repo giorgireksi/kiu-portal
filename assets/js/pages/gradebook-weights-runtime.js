@@ -70,16 +70,16 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                         <span class="is-remaining" ${buildGradebookTrackDataAttributes(remainingPct)}></span>
                     </div>
                     <div class="gb-composition-legend is-inline">
-                        <span><i class="is-earned"></i> Earned ${totalEarned.toFixed(1)} pts</span>
-                        <span><i class="is-pending"></i> Pending ${totalPending.toFixed(1)} pts</span>
-                        <span><i class="is-remaining"></i> Remaining ${totalRemaining.toFixed(1)} pts</span>
+                        <span class="gb-composition-legend-stat is-earned lux-panel-copy"><i class="is-earned" aria-hidden="true"></i> Earned ${totalEarned.toFixed(1)} pts</span>
+                        <span class="gb-composition-legend-stat is-pending lux-panel-copy"><i class="is-pending" aria-hidden="true"></i> Pending ${totalPending.toFixed(1)} pts</span>
+                        <span class="gb-composition-legend-stat is-remaining lux-panel-copy"><i class="is-remaining" aria-hidden="true"></i> Remaining ${totalRemaining.toFixed(1)} pts</span>
                     </div>
                 </div>`
         : '';
-    const weightCardClass = `lms-route-card lms-route-panel-compact${studyCardOverlay ? ' lux-soft-chrome' : ''} gb-modern-card gb-weight-card${studentView ? ' is-student-view' : ''}${studyCardOverlay ? ' is-study-card-overlay' : ''}`;
+    const weightCardClass = `lms-route-card lms-route-panel-compact${studentView || studyCardOverlay ? ' lux-soft-chrome home-hover-chip' : ''} gb-modern-card gb-weight-card${studentView ? ' is-student-view' : ''}${studyCardOverlay ? ' is-study-card-overlay' : ''}`;
     const schemeKickerClass = 'lms-route-field-label gb-modern-kicker lux-section-kicker';
-    const schemeTitleClass = 'lms-route-card-title';
-    const schemeCopyClass = 'lms-route-copy';
+    const schemeTitleClass = 'lms-route-card-title lux-page-title';
+    const schemeCopyClass = 'lms-route-copy lux-panel-copy';
     return `
         <div class="${weightCardClass}">
             <div class="gb-modern-card-head">
@@ -89,7 +89,7 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                     <p class="${schemeCopyClass}">${escapeHtml(cardCopy)}</p>
                     ${overallStripMarkup}
                 </div>
-                <span class="gb-status-badge lux-status-pill is-graded">${courseTotal} pts</span>
+                <span class="gb-status-badge lux-status-pill home-hover-chip is-graded">${courseTotal} pts</span>
             </div>
             ${referenceTableMarkup}
             ${summary ? `
@@ -102,9 +102,9 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                         <span class="is-remaining" ${buildGradebookTrackDataAttributes(remainingPct)}></span>
                 </div>
                 <div class="gb-composition-legend${studyCardOverlay ? ' is-inline' : ''}">
-                        <span><i class="is-earned"></i> Earned ${totalEarned.toFixed(1)} pts</span>
-                        <span><i class="is-pending"></i> Pending ${totalPending.toFixed(1)} pts</span>
-                        <span><i class="is-remaining"></i> Remaining ${totalRemaining.toFixed(1)} pts</span>
+                        <span class="gb-composition-legend-stat is-earned lux-panel-copy"><i class="is-earned" aria-hidden="true"></i> Earned ${totalEarned.toFixed(1)} pts</span>
+                        <span class="gb-composition-legend-stat is-pending lux-panel-copy"><i class="is-pending" aria-hidden="true"></i> Pending ${totalPending.toFixed(1)} pts</span>
+                        <span class="gb-composition-legend-stat is-remaining lux-panel-copy"><i class="is-remaining" aria-hidden="true"></i> Remaining ${totalRemaining.toFixed(1)} pts</span>
                 </div>`}
             <div class="gb-weight-stack">
                         ${progressRows.map(row => {
@@ -122,11 +122,11 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                             const rowAccentStyle = studyCardOverlay ? ` style="--gb-row-accent: ${escapeHtml(row.color || '#22c55e')}"` : '';
                             const dotMarkup = studyCardOverlay ? '<span class="gb-weight-row-dot" aria-hidden="true"></span>' : '';
                             const rowAttrs = studentView
-                                ? ` type="button" class="gb-weight-row gb-weight-row--${escapeHtml(schemeKey)} is-student-clickable${compactRowClass}" data-gradebook-click="open-category-history" data-gradebook-criterion="${escapeHtml(criterionKey)}"${altCriterionKey ? ` data-gradebook-criterion-alt="${escapeHtml(altCriterionKey)}"` : ''} data-gradebook-category-label="${escapeHtml(row.label)}"${skipModernButton}${rowAccentStyle}`
+                                ? ` type="button" class="gb-weight-row gb-weight-row--${escapeHtml(schemeKey)} is-student-clickable home-hover-chip${compactRowClass}" data-gradebook-click="open-category-history" data-gradebook-criterion="${escapeHtml(criterionKey)}"${altCriterionKey ? ` data-gradebook-criterion-alt="${escapeHtml(altCriterionKey)}"` : ''} data-gradebook-category-label="${escapeHtml(row.label)}"${skipModernButton}${rowAccentStyle}`
                                 : ` class="gb-weight-row gb-weight-row--${escapeHtml(schemeKey)}${compactRowClass}"${rowAccentStyle}`;
                             const rowTag = studentView ? 'button' : 'div';
                             const historyHintMarkup = studentView && !studyCardOverlay
-                                ? '<span class="gb-weight-row-history-hint">View history <i class="fas fa-chevron-right"></i></span>'
+                                ? '<span class="gb-weight-row-history-hint lux-panel-copy">View history <i class="fas fa-chevron-right"></i></span>'
                                 : '';
                             const chevronMarkup = studyCardOverlay && studentView
                                 ? '<span class="gb-weight-row-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>'
@@ -138,19 +138,19 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                                 ? ''
                                 : `
                         <div class="gb-weight-detail">
-                                    <span class="gb-weight-stat is-earned">Earned ${row.earned.toFixed(1)} pts</span>
-                                    <span class="gb-weight-stat is-pending">Pending ${row.pending.toFixed(1)} pts</span>
-                                    <span class="gb-weight-stat is-remaining">Remaining ${row.remaining.toFixed(1)} pts</span>
+                                    <span class="gb-weight-stat is-earned lux-panel-copy">Earned ${row.earned.toFixed(1)} pts</span>
+                                    <span class="gb-weight-stat is-pending lux-panel-copy">Pending ${row.pending.toFixed(1)} pts</span>
+                                    <span class="gb-weight-stat is-remaining lux-panel-copy">Remaining ${row.remaining.toFixed(1)} pts</span>
                         </div>`;
                             return `
                             <${rowTag}${rowAttrs}>
                         <div class="gb-weight-label">
                                     <div class="gb-weight-label-main">
-                            ${dotMarkup}<strong>${escapeHtml(row.label)}</strong>
-                                        ${metaLine ? `<span class="gb-weight-row-meta">${escapeHtml(metaLine)}</span>` : ''}
+                            ${dotMarkup}<strong class="lux-card-copy gb-weight-row-title">${escapeHtml(row.label)}</strong>
+                                        ${metaLine ? `<span class="gb-weight-row-meta lux-panel-copy">${escapeHtml(metaLine)}</span>` : ''}
                                         ${historyHintMarkup}
                                     </div>
-                                    ${metaLine ? '' : `<span>${Math.round(row.weightPoints)} pts max</span>`}
+                                    ${metaLine ? '' : `<span class="lux-panel-copy">${Math.round(row.weightPoints)} pts max</span>`}
                         </div>
                         ${scoreBadgeMarkup}
                         ${chevronMarkup}
@@ -176,12 +176,12 @@ function renderStudentGradebookWorkspace(record, weights, options = null) {
     const summary = getGradebookModernSummary(safeRecord, weights, { rosterId: currentRosterId });
     return `
         <div class="gb-modern-workspace">
-            <div class="lms-route-panel lms-route-panel-pad-16-20 gb-modern-hero">
+            <div class="lms-route-panel lms-route-panel-pad-16-20 gb-modern-hero lux-soft-chrome home-hover-chip">
                 <div class="gb-modern-hero-main">
                     <div>
-                        <div class="gb-modern-kicker">Grades</div>
-                        <h2>${escapeHtml(safeRecord.name || 'Student Gradebook')}</h2>
-                        <p>Transcript-style view of quizzes, homework, exams, retakes, pending reviews, and final grade prediction.</p>
+                        <div class="lux-section-kicker gb-modern-kicker">Grades</div>
+                        <h2 class="lux-page-title">${escapeHtml(safeRecord.name || 'Student Gradebook')}</h2>
+                        <p class="lux-panel-copy">Transcript-style view of quizzes, homework, exams, retakes, pending reviews, and final grade prediction.</p>
                     </div>
                     <div class="gb-score-orbit" data-gb-progress="${escapeHtml(String(summary.progressPercent * 3.6))}">
                         <div>
@@ -191,16 +191,16 @@ function renderStudentGradebookWorkspace(record, weights, options = null) {
                     </div>
                 </div>
                 <div class="gb-modern-stats">
-                    <div class="gb-modern-stat"><span>Completed</span><strong>${summary.completedCount}</strong></div>
-                    <div class="gb-modern-stat"><span>Pending Review</span><strong>${summary.pendingCount}</strong></div>
-                    <div class="gb-modern-stat"><span>Missing Categories</span><strong>${summary.missingCore}</strong></div>
-                    <div class="gb-modern-stat"><span>Letter</span>${renderGradebookLetterBadge(summary.outcome.letterLabel, summary.outcome.letterLabel)}</div>
+                    <div class="gb-modern-stat home-hover-chip"><span>Completed</span><strong>${summary.completedCount}</strong></div>
+                    <div class="gb-modern-stat home-hover-chip"><span>Pending Review</span><strong>${summary.pendingCount}</strong></div>
+                    <div class="gb-modern-stat home-hover-chip"><span>Missing Categories</span><strong>${summary.missingCore}</strong></div>
+                    <div class="gb-modern-stat home-hover-chip"><span>Letter</span>${renderGradebookLetterBadge(summary.outcome.letterLabel, summary.outcome.letterLabel)}</div>
                 </div>
             </div>
             <div class="gb-modern-stack">
                 ${renderGradebookModernWeights(weights, summary, { studentView: true, rosterId: currentRosterId })}
             </div>
-            <p class="gb-modern-study-card-pointer">Full assessment transcript, per-item history, and timeline are available on your <a href="study-card.html">Study Card</a> for each subject.</p>
+            <p class="gb-modern-study-card-pointer lux-panel-copy">Full assessment transcript, per-item history, and timeline are available on your <a href="study-card.html">Study Card</a> for each subject.</p>
         </div>
     `;
 }

@@ -548,7 +548,7 @@
                         <h3 class="exam-session-hero-title">${escapeHtml(session.title || session.subjectName || 'Scheduled exam')}</h3>
                         <div class="lms-route-copy">${escapeHtml(session.subjectName || session.subjectId || '')} | ${escapeHtml(session.variantLabel || 'Variant')} | ${escapeHtml(getSessionGroupLabel(session))}</div>
                     </div>
-                    <span class="exam-status lux-status-pill lux-status-pill--soft exam-status-${escapeHtml(status)}" data-session-spotlight-status>${escapeHtml(status)}</span>
+                    <span class="exam-status lux-status-pill home-hover-chip lux-status-pill--soft exam-status-${escapeHtml(status)}" data-session-spotlight-status>${escapeHtml(status)}</span>
                 </div>
                 <div class="exam-card-meta">
                     <div><strong>Window</strong><span>${escapeHtml(formatDateTime(session.startAt))} to ${escapeHtml(formatDateTime(session.endAt))}</span></div>
@@ -572,7 +572,7 @@
                         <div class="exam-card-title">${escapeHtml(session.title || session.subjectName || 'Scheduled exam')}</div>
                         <div class="exam-card-copy">${escapeHtml(session.subjectName || session.subjectId || '')} | ${escapeHtml(session.variantLabel || 'Variant')} | ${escapeHtml(getSessionGroupLabel(session))}</div>
                     </div>
-                    <span class="exam-status lux-status-pill lux-status-pill--soft exam-status-${escapeHtml(status)}" data-session-status>${escapeHtml(status)}</span>
+                    <span class="exam-status lux-status-pill home-hover-chip lux-status-pill--soft exam-status-${escapeHtml(status)}" data-session-status>${escapeHtml(status)}</span>
                 </div>
                 <div class="exam-card-meta">
                     <div><strong>Start</strong><span>${escapeHtml(formatDateTime(session.startAt))}</span></div>
@@ -605,7 +605,7 @@
 
         const statusNode = card.querySelector('[data-session-status]');
         if (statusNode) {
-            statusNode.className = `exam-status lux-status-pill lux-status-pill--soft exam-status-${status}`;
+            statusNode.className = `exam-status lux-status-pill home-hover-chip lux-status-pill--soft exam-status-${status}`;
             statusNode.textContent = status;
         }
 
@@ -625,7 +625,7 @@
 
         const statusNode = node.querySelector('[data-session-spotlight-status]');
         if (statusNode) {
-            statusNode.className = `exam-status lux-status-pill lux-status-pill--soft exam-status-${status}`;
+            statusNode.className = `exam-status lux-status-pill home-hover-chip lux-status-pill--soft exam-status-${status}`;
             statusNode.textContent = status;
         }
 

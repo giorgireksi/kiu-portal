@@ -13,6 +13,7 @@ describe('home dashboard shell hover lift', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         expect(tokens).toContain('--home-fade-shadow-hover:');
         expect(tokens).toContain('--home-chip-hover-lift: -3px');
+        expect(tokens).toContain('--home-chip-hover-lift-nested: -1px');
         expect(tokens).toMatch(/body\.lux-full-paint[\s\S]*--home-fade-shadow-hover:/);
         expect(tokens).toMatch(/body\.lux-light-mode\.lux-full-paint[\s\S]*--home-fade-shadow-hover:/);
     });
@@ -23,6 +24,17 @@ describe('home dashboard shell hover lift', () => {
         expect(widgets).not.toMatch(
             /\.lux-grid-widget[\s\S]*:hover > \.lux-grid-widget-body[\s\S]*transform:\s*translate3d\(0,\s*-3px,\s*0\)/
         );
+    });
+
+    it('lifts matte interactive shells and supports coarse-pointer active lift', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toContain('.lux-module-option.lux-soft-chrome');
+        expect(fouc).toContain('.student-service-qa-card');
+        expect(fouc).toContain('.newsx-header-bar');
+        expect(fouc).toContain('.admin-library-catalog-card.lux-soft-chrome');
+        expect(fouc).toContain('.student-service-pill');
+        expect(fouc).toContain('.lux-empty-state');
+        expect(fouc).toMatch(/@media \(hover: none\), \(pointer: coarse\)[\s\S]*\.student-service-qa-card[\s\S]*:active/);
     });
 
     it('lifts only bordered soft-chrome chips inside widgets', () => {
@@ -48,6 +60,10 @@ describe('home dashboard shell hover lift', () => {
         expect(fouc).not.toMatch(/\.home-hover-shell:hover[\s\S]*translate3d\(0,\s*-3px,\s*0\)/);
         expect(fouc).toMatch(/\.home-hover-chip[\s\S]*var\(--home-chip-hover-lift/);
         expect(fouc).not.toMatch(/home-hover-chip:hover:not\(:has\(/);
+        expect(fouc).not.toMatch(/\.home-hover-chip:has\(\.home-hover-chip:hover\)[\s\S]*transform:\s*none/);
+        expect(fouc).toMatch(/\.home-hover-chip:has\(\.home-hover-chip\)[\s\S]*contain:\s*none/);
+        expect(fouc).toMatch(/\[data-lux-glass-root="1"\]\):not\(\.home-hover-chip\)[\s\S]*transition:\s*none/);
+        expect(fouc).toMatch(/\.lux-status-pill\.home-hover-chip[\s\S]*--home-chip-hover-lift-nested/);
         expect(fouc).toMatch(/\.home-hover-chip[\s\S]*contain:\s*paint/);
         expect(fouc).toMatch(/\.home-hover-chip[\s\S]*::after/);
         expect(fouc).not.toMatch(/home-hover-chip[\s\S]*filter:\s*brightness/);

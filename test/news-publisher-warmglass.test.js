@@ -11,6 +11,20 @@ describe('news publisher warmglass regressions (bare-shell era)', () => {
         expect(css).toContain('--lux-warmglass-overlay-light');
     });
 
+    it('consolidates publisher interior chip paint under exempt matte SSOT', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        const publisher = readSource('assets/js/pages/news/news-publisher.js');
+
+        expect(modals).toContain('[data-lux-transparency-exempt="1"] .newsx-publisher-modal :is(');
+        expect(modals).toContain('.newsx-editor-ribbon.home-hover-chip');
+        expect(modals).toContain('.newsx-attachment-chip.home-hover-chip');
+        expect(modals).toMatch(/\.newsx-publisher-section-tab\s*\{[^}]*cursor:\s*pointer/);
+        expect(modals).not.toMatch(/\.newsx-publisher-section-tab\s*\{[^}]*background:\s*var\(--lux-panel-modal-section/);
+        expect(publisher).toContain('newsx-publisher-section-tab home-hover-chip');
+        expect(publisher).toContain('newsx-editor-ribbon home-hover-chip');
+        expect(publisher).toContain('newsx-publisher-radio-card home-hover-chip');
+    });
+
     it('uses bare shell on news.html with modal overlay markup', () => {
         const html = readSource('news.html');
 

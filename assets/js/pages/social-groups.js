@@ -139,11 +139,11 @@
                 </button>
             </div>`;
         return `
-            <section class="social-neo-card social-neo-groups-hero social-neo-community-panel social-neo-community-panel--groups${merged ? ' is-merged' : ''}">
+            <section class="social-neo-card social-neo-groups-hero social-neo-community-panel social-neo-community-panel--groups home-hover-chip${merged ? ' is-merged' : ''}">
                 <div class="social-neo-groups-hero-head">
                     ${createCta}
                 </div>
-                <div class="social-neo-groups-hero-grid">
+                <div class="social-neo-groups-hero-grid home-hover-chip">
                     ${tabs.map((tab) => `
                         <button class="lux-secondary-btn social-neo-groups-hero-tab ${!tab.action && activeTab === tab.tab ? 'is-focused' : ''}" type="button" data-action="${escape(tab.action || 'panel-groups')}" ${tab.action ? '' : `data-groups-tab="${escape(tab.tab)}"`} aria-pressed="${!tab.action && activeTab === tab.tab ? 'true' : 'false'}">
                             <span class="social-neo-groups-hero-tab-icon"><i class="fas ${escape(tab.icon)}"></i></span>
@@ -178,7 +178,7 @@
             const pinnedCount = Array.isArray(group.pinnedPostIds) ? group.pinnedPostIds.length : 0;
             const description = text(group.description || '') || 'No description yet.';
             return `
-                <article class="social-neo-card social-neo-group-card">
+                <article class="social-neo-card social-neo-group-card home-hover-chip">
                     <div class="social-neo-group-card-header">
                         <div class="social-neo-group-card-icon social-neo-group-card-avatar">${groupAvatar(group)}</div>
                         <div class="social-neo-group-card-title">
@@ -731,7 +731,7 @@
                         </div>
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>`;
-            const panelStat = (value, label) => `<article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${value}</strong><span>${label}</span></article>`;
+            const panelStat = (value, label) => `<article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${value}</strong><span>${label}</span></article>`;
             const formatBytes = (bytes) => {
                 const n = Number(bytes || 0);
                 if (!n) return '';

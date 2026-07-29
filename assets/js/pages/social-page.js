@@ -144,18 +144,20 @@
     }
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260714-community-click1';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
-    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260726-socfix35';
+    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260729-lfpills1';
     const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260729-photogrid2';
-    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260726-socfix35';
+    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260729-surveyshell1';
+    const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260729-research4';
+    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260729-researchcopy1';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260728-socworkspace2';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
-    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260728-socshell22';
-    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260728-socinvite1';
+    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260729-herostats1';
+    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260729-groupshover1';
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
     const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260728-socshell25';
-    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260728-socshell25';
+    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260729-pageshover2';
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260726-socfix20';
@@ -171,15 +173,15 @@
     const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260728-socport1';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
-    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260728-socworkspace2';
+    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260729-workspacestat1';
     const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260726-socstack48';
     const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260726-socstack47';
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260726-socstack50';
     const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260728-socworkspace1';
     const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260728-socport4';
     const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260728-socport4';
-    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260728-socport4';
-    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260728-socworkspace1';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260729-portfeed1';
+    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260729-workspacestat1';
     const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260726-socstack47';
     const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260726-socstack50';
     const DIRECTORY_REFRESH_MS = 180;
@@ -332,6 +334,7 @@
     let socialLostFoundModulePromise = null;
     let socialPhotographyModulePromise = null;
     let socialSurveysModulePromise = null;
+    let socialResearchModulePromise = null;
     let socialMessagesModulePromise = null;
     let socialProfileModulePromise = null;
     let socialDesktopModulePrefetchScheduled = false;
@@ -874,6 +877,80 @@
             socialSurveysModulePromise = null;
         });
         return socialSurveysModulePromise;
+    }
+    function hasSocialResearchModule() {
+        return Boolean(
+            window.__KIU_SOCIAL_RESEARCH_MODULE_LOADED
+            && typeof window.renderResearchPanel === 'function'
+            && window.renderResearchPanel !== renderResearchPanel
+        );
+    }
+    function ensureSocialResearchModule() {
+        if (hasSocialResearchModule()) return Promise.resolve(true);
+        if (socialResearchModulePromise) return socialResearchModulePromise;
+        socialResearchModulePromise = Promise.resolve()
+            .then(() => {
+                if (window.__KIU_SOCIAL_RESEARCH_PDF_RUNTIME_LOADED) return true;
+                return new Promise((resolve, reject) => {
+                    const existing = document.querySelector(`script[src="${SOCIAL_RESEARCH_PDF_RUNTIME_URL}"]`);
+                    if (existing) {
+                        if (window.__KIU_SOCIAL_RESEARCH_PDF_RUNTIME_LOADED || existing.dataset.kiuLoaded === '1') {
+                            resolve(true);
+                            return;
+                        }
+                        existing.addEventListener('load', () => {
+                            existing.dataset.kiuLoaded = '1';
+                            resolve(true);
+                        }, { once: true });
+                        existing.addEventListener('error', () => reject(new Error('Social research PDF runtime could not be loaded.')), { once: true });
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = SOCIAL_RESEARCH_PDF_RUNTIME_URL;
+                    script.defer = true;
+                    script.addEventListener('load', () => {
+                        script.dataset.kiuLoaded = '1';
+                        resolve(true);
+                    }, { once: true });
+                    script.addEventListener('error', () => reject(new Error('Social research PDF runtime could not be loaded.')), { once: true });
+                    document.head.appendChild(script);
+                });
+            })
+            .then(() => {
+                if (hasSocialResearchModule()) return true;
+                return new Promise((resolve, reject) => {
+                    const existing = document.querySelector(`script[src="${SOCIAL_RESEARCH_MODULE_URL}"]`);
+                    if (existing) {
+                        if (hasSocialResearchModule() || existing.dataset.kiuLoaded === '1') {
+                            resolve(true);
+                            return;
+                        }
+                        existing.addEventListener('load', () => {
+                            existing.dataset.kiuLoaded = '1';
+                            resolve(true);
+                        }, { once: true });
+                        existing.addEventListener('error', () => reject(new Error('Social research module could not be loaded.')), { once: true });
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = SOCIAL_RESEARCH_MODULE_URL;
+                    script.defer = true;
+                    script.addEventListener('load', () => {
+                        script.dataset.kiuLoaded = '1';
+                        resolve(true);
+                    }, { once: true });
+                    script.addEventListener('error', () => reject(new Error('Social research module could not be loaded.')), { once: true });
+                    document.head.appendChild(script);
+                });
+            })
+            .catch((error) => {
+                console.error('Social research module load failed.', error);
+                throw error;
+            })
+            .finally(() => {
+                socialResearchModulePromise = null;
+            });
+        return socialResearchModulePromise;
     }
     function hasSocialMessagesModule() {
         return Boolean(
@@ -1456,10 +1533,10 @@
         ensureSocialAlertsModule, ensureSocialCommunityModule, ensureSocialFeedModule,
         ensureSocialGroupsModule, ensureSocialLostFoundModule, ensureSocialMessagesModule,
         ensureSocialEventsModule, ensureSocialPagesModule, ensureSocialPhotographyModule, ensureSocialProfileModule,
-        ensureSocialSurveysModule, ensureSocialWorkspaceModule, escape, feedScopeOptions,
+        ensureSocialSurveysModule, ensureSocialResearchModule, ensureSocialWorkspaceModule, escape, feedScopeOptions,
         hasSocialAlertsModule, hasSocialCommunityModule, hasSocialFeedModule, hasSocialGroupsModule,
         hasSocialEventsModule, hasSocialLostFoundModule, hasSocialMessagesModule, hasSocialPagesModule,
-        hasSocialPhotographyModule, hasSocialSurveysModule, hasSocialWorkspaceModule,
+        hasSocialPhotographyModule, hasSocialSurveysModule, hasSocialResearchModule, hasSocialWorkspaceModule,
         normalizeComposerEntityLinks, normalizeProjectTaskStatusId, openDialog, photographyPosts,
         portfolioEntriesForViewer, postEntityLinks, queueDeferredModuleRender,
         renderProjectHealthPlanCardHtml, renderProjectHealthPlanPickBodyHtml, resolveEntityLinkMeta,
@@ -1480,6 +1557,7 @@
         renderPost, renderPostComposeDialog, renderRelationshipActions,
         renderPostComposeShareSection, renderPostComposeAttachResultsHtml,
         renderCommunityPanel, renderProjectsWorkspacePanelClassic, renderLostFoundPanel, renderSurveysPanel,
+        renderResearchPanel,
         renderPhotographyPanel, renderMessagesPanel, renderCommunityHero,
         renderWorkspaceHero, renderPortfolioHero, renderProjectTaskFormFields,
         buildProjectCreateInviteContext, resolveActiveSocialProject, renderProjectTaskChecklistBlock,
@@ -1512,12 +1590,13 @@
             hasSocialProfileModule, ensureSocialProfileModule,
             hasSocialLostFoundModule, ensureSocialLostFoundModule,
             hasSocialSurveysModule, ensureSocialSurveysModule,
+            hasSocialResearchModule, ensureSocialResearchModule,
             hasSocialWorkspaceModule, ensureSocialWorkspaceModule,
             scheduleDirectoryPrefetch, scheduleDeferredDesktopModulePrefetch,
             queueDeferredModuleRender, closeSocialWorkspaceNavAnimated,
             renderFeedPanel, renderCommunityPanel, renderGroupsPanel,
             renderProjectsWorkspacePanelClassic, renderProjectsPanel, renderPagesPanel,
-            renderEventsPanel, renderSurveysPanel, renderPhotographyPanel, renderLostFoundPanel,
+            renderEventsPanel, renderSurveysPanel, renderResearchPanel, renderPhotographyPanel, renderLostFoundPanel,
             renderMessagesPanel, renderAlertsPanel, renderProfilePageBody,
             renderShellWorkspaceNavReveal, renderShellWorkspaceNav, renderShellDrawer, renderMobileTabBar,
             revealShell, syncSocialVisualShell,
@@ -1757,10 +1836,11 @@
         ensureSocialAlertsModule, ensureSocialCommunityModule, ensureSocialFeedModule,
         ensureSocialEventsModule, ensureSocialGroupsModule, ensureSocialLostFoundModule,
         ensureSocialMessagesModule, ensureSocialPagesModule, ensureSocialPhotographyModule,
-        ensureSocialProfileModule, ensureSocialSurveysModule, ensureSocialWorkspaceModule,
+        ensureSocialProfileModule, ensureSocialSurveysModule, ensureSocialResearchModule, ensureSocialWorkspaceModule,
         escape, feedScopeOptions, hasSocialAlertsModule, hasSocialCommunityModule, hasSocialFeedModule,
         hasSocialEventsModule, hasSocialGroupsModule, hasSocialLostFoundModule, hasSocialMessagesModule,
-        hasSocialPagesModule, hasSocialPhotographyModule, hasSocialProfileModule, hasSocialSurveysModule, hasSocialWorkspaceModule,
+        hasSocialPagesModule, hasSocialPhotographyModule, hasSocialProfileModule, hasSocialSurveysModule,
+        hasSocialResearchModule, hasSocialWorkspaceModule,
         listAttachableEntities, normalizeComposerEntityLinks, normalizeProjectTaskStatusId, openDialog,
         photographyPosts, portfolioEntriesForViewer, postEntityLinks, queueDeferredModuleRender,
         renderFileChip, renderPostComposeAttachResultsHtml, renderPostComposeShareSection,
@@ -1838,6 +1918,24 @@
         fromDateTimeLocalValue, restorePreviousDialog, isStaffAccount, parseSurveyQuestionsFromForm, parseSurveyScopeValue,
         collectSurveyAnswersFromForm, isSurveyAnswerProvided, addPortalSocialToast, flashSurveySubmitButton, setSurveySubmitButtonIcon,
         setSurveySubmitButtonLabel, waitForSurveySubmitAnimation
+    });
+
+    window.__kiuOpenSocialDialog = openDialog;
+    window.__kiuCloseSocialDialog = closeDialog;
+    window.__kiuSocialResearchHooks = window.__kiuSocialResearchHooks || {};
+    Object.assign(window.__kiuSocialResearchHooks, {
+        state, currentUser, currentUserId, text, escape, when, controlId,
+        openDialog, closeDialog, setPanel, renderSocialPageNow, withBusy,
+        invalidateSocialRenderCache,
+        // Use window.* lookups — bare identifiers throw if portal APIs were not exported yet
+        // and would abort this Object.assign before openDialog is wired (silent Publish no-op).
+        createPortalSocialResearch: window.createPortalSocialResearch,
+        togglePortalSocialResearchSave: window.togglePortalSocialResearchSave,
+        deletePortalSocialResearch: window.deletePortalSocialResearch,
+        fileUrl: typeof fileUrl === 'function' ? fileUrl : window.resolvePortalSocialFileUrl,
+        addPortalSocialToast: typeof window.addPortalSocialToast === 'function'
+            ? window.addPortalSocialToast
+            : () => {}
     });
 
     window.__kiuSocialEventsHooks = window.__kiuSocialEventsHooks || {};

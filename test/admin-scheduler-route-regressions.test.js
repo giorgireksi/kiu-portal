@@ -41,6 +41,7 @@ describe('admin scheduler route regressions.test', () => {
 
     it('uses sch-modal-overlay shells for scheduler modals', () => {
         const html = readSource('admin-scheduler.html');
+        expect(html).toContain('schmodal2');
         expect(html).toContain('sch-modal-overlay');
         expect(html).toContain('class="sch-modal"');
         expect(html).toContain('sch-modal-mode-chip');
@@ -115,7 +116,7 @@ describe('admin scheduler route regressions.test', () => {
         expect(html).toContain('class="sch-week-nav"');
         expect(html).toContain('class="sch-grid-week-label"');
         expect(html).toContain('class="sch-grid-empty lux-soft-chrome"');
-        expect(html).toContain('sch-preset-manage-empty" class="sch-empty-state lux-summary-surface lux-summary-surface--panel"');
+        expect(html).toContain('sch-preset-manage-empty" class="sch-empty-state lux-summary-surface lux-summary-surface--panel home-hover-chip"');
         expect(html).not.toContain('lux-timetable-stage');
         expect(html).toContain('defer src="assets/js/pages/admin-scheduler.js');
         expect(html).toContain('defer src="assets/js/features/index-luxury.js');
@@ -134,6 +135,9 @@ describe('admin scheduler route regressions.test', () => {
         const modalTemplate = html.match(/<template id="sch-modal-template">[\s\S]*?<\/template>/)?.[0] || '';
         expect(modalTemplate).toContain('class="sch-input-group"');
         expect(modalTemplate).not.toContain('lux-glass-dialog-field');
+        expect(modalTemplate).toContain('sch-form-section home-hover-chip');
+        expect(modalTemplate).toContain('lux-secondary-btn sch-modal-close-muted');
+        expect(modalTemplate).toContain('lux-secondary-btn sch-preset-manage-link home-hover-chip');
         expect(modalTemplate).toContain('sch-modal-mode-chip');
         expect(modalTemplate).toContain('sch-input-label-spacer');
         expect(html).toContain('class="lux-primary-btn sch-week-current-btn"');
@@ -159,7 +163,9 @@ describe('admin scheduler route regressions.test', () => {
         const js = readSource('assets/js/pages/admin-scheduler.js');
 
         expect(js).toContain('lux-secondary-btn sch-preset-manage-delete-btn');
-        expect(fouc).toMatch(/#schPresetManagerOverlay \.sch-preset-manage-item[\s\S]*?var\(--lux-btn-well-soft\)/);
+        expect(js).toContain("item.className = 'sch-preset-manage-item home-hover-chip'");
+        expect(fouc).toContain('.sch-preset-manage-item.home-hover-chip');
+        expect(fouc).toContain('--lux-soft-chrome-surface');
         expect(fouc).not.toMatch(/#schPresetManagerOverlay \.sch-preset-manage-search[\s\S]*?var\(--lux-panel-control/);
         expect(bare).toMatch(/\.sch-search-shell \.lux-control[\s\S]*?padding-left:\s*40px/);
         expect(bare).not.toMatch(/#schPresetManagerOverlay \.sch-combo-save-input[\s\S]*?border-radius:\s*14px/);
@@ -178,7 +184,7 @@ describe('admin scheduler route regressions.test', () => {
         expect(js).not.toContain('openLuxGlassDialogOverlay');
         expect(js).toContain('isStandaloneAdminSchedulerPage');
         expect(js).toContain('paletteSearchOnly: true');
-        expect(js).toContain('sch-preset-manage-delete-btn');
+        expect(js).toContain("item.className = 'sch-preset-manage-item home-hover-chip'");
         expect(js).toContain('lux-secondary-btn sch-preset-manage-delete-btn');
         expect(luxuryJs).toContain('isStandaloneSchedulerRouteActive');
     });
@@ -186,11 +192,13 @@ describe('admin scheduler route regressions.test', () => {
     it('session modal copy stays readable on CTA fields and conflict alerts', () => {
         const modals = readSource('assets/css/lux-modals.css');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
-        expect(modals).toContain("#schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger']");
+        expect(modals).toContain('#schModalOverlay .sch-conflict-alert.show[data-conflict-state=\'danger\']');
         expect(modals).toContain('#schModalOverlay .lux-control::placeholder');
         expect(modals).toMatch(/#schModalOverlay[\s\S]*?\.sch-inline-required[\s\S]*?#f87171/);
-        expect(modals).toContain('#schModalOverlay .sch-form-section');
-        expect(modals).toContain('--lux-panel-modal-section');
+        expect(modals).toContain(':is(#schModalOverlay, #schPresetManagerOverlay) .sch-form-section.home-hover-chip');
+        expect(modals).not.toMatch(/#schModalOverlay[^\{]*\.sch-form-section\.home-hover-chip\s*\{[^}]*background:\s*var\(--lux-panel-modal-section/);
+        expect(fouc).toContain('#schModalOverlay');
+        expect(fouc).toContain('.sch-form-section.home-hover-chip');
         expect(fouc).not.toContain("#schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger']");
     });
 
@@ -206,6 +214,7 @@ describe('admin scheduler route regressions.test', () => {
         const html = readSource('admin-scheduler.html');
         const tokens = readSource('assets/css/lux-tokens.css');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const modals = readSource('assets/css/lux-modals.css');
         const chrome = readSource('assets/js/features/luxury-shell-chrome.js');
 
         expect(html).toContain('id="schModalOverlay" data-admin-scheduler-modal-overlay="true" data-lux-transparency-exempt="1"');
@@ -218,6 +227,13 @@ describe('admin scheduler route regressions.test', () => {
         expect(tokens).toContain('--lux-panel-control:');
         expect(tokens).toContain('--lux-elev-1:');
         expect(bare).not.toMatch(/#schModalOverlay[\s\S]*min-height:\s*48px[\s\S]*padding:\s*12px 14px/);
+        expect(bare).not.toMatch(
+            /\[id="schModalOverlay"\][\s\S]*?\.sch-modal-title\s*\{[\s\S]*?font-size/
+        );
+        expect(bare).not.toMatch(/\[id="schModalOverlay"\][\s\S]*\.sch-form-section-title\s*\{/);
+        expect(modals).toMatch(
+            /\[data-lux-transparency-exempt="1"\] #schModalOverlay \.sch-modal-foot[\s\S]*?justify-content:\s*flex-end/
+        );
         expect(chrome).toContain('originalParent.insertBefore(node, nativeSelect)');
     });
 });

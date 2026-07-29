@@ -104,6 +104,9 @@ describe('social bare shell era', () => {
         expect(bare).toContain('.social-portfolio-feed');
         expect(bare).toContain('.social-portfolio-card');
         expect(bare).toContain('.portfolio-panel-tab');
+        expect(bare).toContain('.social-neo-research-shell');
+        expect(bare).toContain('.social-neo-research-grid');
+        expect(bare).toContain('.social-neo-research-pdf-shell');
         expect(bare).toContain('.social-neo-pages-hero-grid');
         expect(bare).toContain('.social-neo-pages-grid');
         expect(bare).toContain('.social-neo-pages-empty-state');
@@ -221,26 +224,15 @@ describe('social bare shell era', () => {
         );
         expect(cardBlock).not.toContain('--lux-panel-surface');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
-        expect(fouc).toContain('body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal)');
-        expect(fouc).toContain('.social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card)');
-        expect(fouc).toContain('[class*="-hub-section"]');
-        expect(fouc).toContain('.social-neo-empty');
-        expect(fouc).toContain('.social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))');
-        expect(fouc).toContain('.social-neo-messages__inbox');
+        expect(fouc).toContain('body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal)');
+        expect(fouc).toContain('.social-project-task-graph-card.lux-soft-chrome');
         expect(fouc).toContain('.social-neo-messages__thread-shell');
-        expect(fouc).not.toMatch(/Social soft-chrome shells[\s\S]*\.social-neo-chat-item/);
-        expect(fouc).not.toContain('.social-neo-call-card');
         expect(bare).toContain('--msg-stream-bg');
-        expect(fouc).toContain('var(--home-chip-hover-lift, -3px)');
-        expect(fouc).toContain('/* Social comments dialog: matte inners inside overlay portal');
+        expect(fouc).toMatch(/\.home-hover-chip[\s\S]*var\(--home-chip-hover-lift/);
+        expect(fouc).not.toMatch(/\.home-hover-chip:has\(\.home-hover-chip:hover\)[\s\S]*transform:\s*none/);
+        expect(fouc).toContain('/* Social comments dialog: matte inners (motion → global .home-hover-chip SSOT). */');
         expect(fouc).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--comments :is(');
-        const socialShellBlock = fouc.split('/* Social soft-chrome shells')[1]?.split('@media (prefers-reduced-motion: reduce)')[0] || '';
-        expect(socialShellBlock).not.toMatch(/\):active\s*\{[\s\S]*transform:\s*translate3d\(0,\s*0,\s*0\)/);
-        expect(socialShellBlock).not.toContain('.social-neo-card:is(.is-merged, :has(.lux-universal-picker-field)):hover');
-        expect(socialShellBlock).not.toContain('.social-neo-card:is(.is-merged, :has(.lux-universal-picker-field)):active');
-        expect(socialShellBlock).not.toContain('.social-neo-messages__inbox');
-        expect(socialShellBlock).toMatch(/\.social-neo-card[\s\S]*:has\(:is\([\s\S]*\.social-neo-entity-card[\s\S]*\):hover\)[\s\S]*transform:\s*none/);
-        expect(socialShellBlock).toMatch(/@media \(hover: none\)[\s\S]*\.social-neo-card:not\(\.is-merged\)[\s\S]*:active[\s\S]*var\(--home-chip-hover-lift/);
+        expect(fouc).not.toContain('/* Social soft-chrome shells: same hover lift');
     });
 
     it('keeps social overlay portal and dialog backdrop fixed above the page', () => {

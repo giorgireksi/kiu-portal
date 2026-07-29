@@ -63,12 +63,23 @@ describe('admin orders route regressions.test', () => {
         expect(fouc).toContain('[data-lux-glass-root="1"] .lux-status-pill');
         expect(controls).toContain('#admin-orders-root');
         expect(controls).toContain('.lux-status-pill.is-info');
-        expect(workspace).toContain('lux-pill-row orders-admin-command-pills');
+        expect(workspace).toContain('lux-card-title orders-admin-section-title');
+        expect(workspace).toContain('lux-panel-copy orders-admin-section-copy');
+        expect(workspace).toContain('lux-empty-state lux-panel-copy orders-admin-sent-empty');
+        expect(readSource('assets/css/lux-layout-primitives.css')).toContain('.orders-admin-section-title.lux-card-title');
         expect(fouc).toContain('.orders-admin-sent-item');
+        expect(fouc).toContain('.orders-admin-sent-empty');
         expect(workspace).toContain('lux-picker-field orders-admin-filter-field');
         expect(workspace).toContain('admin-orders-create-modal modal-content" data-lux-transparency-exempt="1"');
         expect(workspace).not.toContain('data-lux-btn-density="dense"');
         expect(workspace).not.toContain('admin-orders-create-modal modal-content lux-panel');
+        expect(workspace).toContain('admin-orders-thread-chat-log lux-scrollbar home-hover-chip');
+        expect(workspace).toContain('admin-orders-thread-msg-bubble home-hover-chip');
+        expect(workspace).toContain('admin-orders-thread-composer home-hover-chip');
+        expect(workspace).toContain('admin-orders-thread-attachment home-hover-chip');
+        expect(modals).toContain('[data-lux-transparency-exempt="1"] .admin-orders-thread-modal :is(');
+        expect(modals).toContain('.admin-orders-thread-header');
+        expect(fouc).toContain('.admin-orders-thread-chat-log.home-hover-chip:has(.home-hover-chip)');
     });
 
     it('uses fullscreen admin-orders modals without transparency flicker on open', () => {

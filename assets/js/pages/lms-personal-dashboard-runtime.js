@@ -77,9 +77,7 @@ function getLmsPersonalDashboardShareScope() {
     const parsed = typeof parseLmsCourseKey === 'function'
         ? parseLmsCourseKey(courseKey)
         : { courseId: courseKey, groupId: '', sectionType: '' };
-    const courseId = typeof getLmsPersonalDashboardCourseId === 'function'
-        ? getLmsPersonalDashboardCourseId(courseKey)
-        : String(parsed.courseId || courseKey || '').trim();
+    const courseId = resolveLmsPersonalDashboardCourseId(courseKey);
     const groupId = String(parsed.groupId || '').trim();
     const sectionType = typeof getCurrentLmsSectionType === 'function'
         ? String(getCurrentLmsSectionType() || '').trim()
@@ -192,7 +190,7 @@ function renderLmsPersonalDashboardShareButton(resourceKey = '') {
     return `
         <button type="button" class="lux-secondary-btn lms-personal-dashboard-share-trigger${isPrivate ? '' : ' is-shared'}" data-lms-personal-dashboard-action="open-share-panel" title="Manage who can open this workspace">
             <i class="fas fa-share-nodes"></i> Share
-            <span class="lms-personal-dashboard-share-trigger-summary">${escapeHtml(summary)}</span>
+            <span class="lux-status-pill home-hover-chip lms-personal-dashboard-share-trigger-summary">${escapeHtml(summary)}</span>
         </button>`;
 }
 
@@ -216,40 +214,40 @@ function renderLmsPersonalDashboardSharePanel(resourceKey = '') {
                 </div>`;
         }).join('')
         : `
-            <div class="lms-personal-dashboard-share-empty">
+            <div class="lux-empty-state lms-personal-dashboard-share-empty">
                 <i class="fas fa-user-group" aria-hidden="true"></i>
-                <p>Couldn't load classmates for this group.</p>
-                <span>Open a course section, or try again after enrollment data loads.</span>
+                <div class="lux-empty-state__title">Couldn't load classmates for this group.</div>
+                <div class="lux-empty-state__copy">Open a course section, or try again after enrollment data loads.</div>
             </div>`;
     return `
         <div class="lms-personal-dashboard-share-overlay" data-lms-personal-dashboard-share-overlay="" hidden>
-            <div class="lms-personal-dashboard-share-panel lms-live-card" data-lms-personal-dashboard-share-panel="" role="dialog" aria-modal="true" aria-labelledby="lms-personal-dashboard-share-title">
+            <div class="lms-personal-dashboard-share-panel lux-soft-chrome home-hover-chip" data-lms-personal-dashboard-share-panel="" role="dialog" aria-modal="true" aria-labelledby="lms-personal-dashboard-share-title">
                 <div class="lms-personal-dashboard-share-panel-head">
                     <div class="lms-personal-dashboard-share-panel-title">
                         <span class="lms-personal-dashboard-share-panel-icon"><i class="fas fa-share-nodes" aria-hidden="true"></i></span>
                         <div>
-                            <strong id="lms-personal-dashboard-share-title">Share workspace</strong>
-                            <p class="lms-personal-dashboard-share-panel-copy">Who can open your live board. Combine instructors, whole group, and people — classmates get the higher of group or personal access.</p>
+                            <strong id="lms-personal-dashboard-share-title" class="lux-page-title">Share workspace</strong>
+                            <p class="lux-panel-copy lms-personal-dashboard-share-panel-copy">Who can open your live board. Combine instructors, whole group, and people — classmates get the higher of group or personal access.</p>
                         </div>
                     </div>
                     <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn lms-personal-dashboard-share-close" data-lms-personal-dashboard-action="close-share-panel" aria-label="Close share panel"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="lms-personal-dashboard-share-section">
-                    <div class="lms-route-eyebrow lms-personal-dashboard-share-section-label"><i class="fas fa-chalkboard-user"></i> Instructors</div>
+                    <div class="lux-section-kicker lms-personal-dashboard-share-section-label"><i class="fas fa-chalkboard-user"></i> Instructors</div>
                     <div class="lms-personal-dashboard-share-section-row">
-                        <span class="lms-personal-dashboard-share-section-copy">All TAs &amp; professors on this course</span>
+                        <span class="lux-panel-copy lms-personal-dashboard-share-section-copy">All TAs &amp; professors on this course</span>
                         ${renderLmsPersonalDashboardShareLevelGroup('set-workspace-share', staffShare)}
                     </div>
                 </div>
                 <div class="lms-personal-dashboard-share-section">
-                    <div class="lms-route-eyebrow lms-personal-dashboard-share-section-label"><i class="fas fa-users"></i> Whole group</div>
+                    <div class="lux-section-kicker lms-personal-dashboard-share-section-label"><i class="fas fa-users"></i> Whole group</div>
                     <div class="lms-personal-dashboard-share-section-row">
-                        <span class="lms-personal-dashboard-share-section-copy">Everyone in your section group</span>
+                        <span class="lux-panel-copy lms-personal-dashboard-share-section-copy">Everyone in your section group</span>
                         ${renderLmsPersonalDashboardShareLevelGroup('set-group-share', groupShare)}
                     </div>
                 </div>
                 <div class="lms-personal-dashboard-share-section lms-personal-dashboard-share-section--people">
-                    <div class="lms-route-eyebrow lms-personal-dashboard-share-section-label"><i class="fas fa-user-group"></i> Specific classmates</div>
+                    <div class="lux-section-kicker lms-personal-dashboard-share-section-label"><i class="fas fa-user-group"></i> Specific classmates</div>
                     <label class="lms-personal-dashboard-share-search">
                         <i class="fas fa-search" aria-hidden="true"></i>
                         <input type="search" class="lms-personal-dashboard-share-search-input" data-lms-personal-dashboard-action="filter-peer-share" placeholder="Search classmates" autocomplete="off">
@@ -323,9 +321,9 @@ function renderLmsPersonalDashboardSharedWithMePanel() {
     if (isLmsPersonalDashboardStaffMonitor()) return '';
     return `
         <div class="lms-personal-dashboard-shared-with-me" data-lms-personal-dashboard-shared-with-me="">
-            <div class="lms-route-eyebrow lms-route-inline lms-route-inline-gap-8"><i class="fas fa-share-nodes"></i> Shared with me</div>
+            <div class="lux-section-kicker lms-route-inline lms-route-inline-gap-8"><i class="fas fa-share-nodes"></i> Shared with me</div>
             <div class="lms-personal-dashboard-shared-with-me-list" data-lms-personal-dashboard-shared-with-me-list="">
-                <div class="lms-live-copy">Loading shared boards…</div>
+                <div class="lux-panel-copy">Loading shared boards…</div>
             </div>
         </div>`;
 }
@@ -334,14 +332,12 @@ async function refreshLmsPersonalDashboardSharedWithMe() {
     const list = document.querySelector('[data-lms-personal-dashboard-shared-with-me-list]');
     if (!list || isLmsPersonalDashboardStaffMonitor()) return;
     if (typeof fetchLmsPersonalDashboardSharedWithMe !== 'function') {
-        list.innerHTML = '<div class="lms-live-copy">Shared boards unavailable.</div>';
+        list.innerHTML = '<div class="lux-panel-copy">Shared boards unavailable.</div>';
         return;
     }
-    const courseId = typeof getLmsPersonalDashboardCourseId === 'function'
-        ? getLmsPersonalDashboardCourseId()
-        : '';
+    const courseId = resolveLmsPersonalDashboardCourseId();
     if (!courseId) {
-        list.innerHTML = '<div class="lms-live-copy">Open a course group first.</div>';
+        list.innerHTML = '<div class="lux-panel-copy">Open a course group first.</div>';
         return;
     }
     try {
@@ -349,7 +345,7 @@ async function refreshLmsPersonalDashboardSharedWithMe() {
         const response = await fetchLmsPersonalDashboardSharedWithMe(courseId, scope);
         const items = Array.isArray(response?.items) ? response.items : [];
         if (!items.length) {
-            list.innerHTML = '<div class="lms-live-copy">No classmates have shared a board with you yet.</div>';
+            list.innerHTML = '<div class="lux-panel-copy">No classmates have shared a board with you yet.</div>';
             return;
         }
         const roster = getLmsPersonalDashboardClassmateRoster();
@@ -359,10 +355,10 @@ async function refreshLmsPersonalDashboardSharedWithMe() {
             const name = nameById.get(ownerId) || `Student ${ownerId}`;
             const level = String(item.shareLevel || item.staffShareLevel || 'view').trim() || 'view';
             const badge = level === 'edit'
-                ? '<span class="lms-personal-dashboard-share-badge is-edit">Edit</span>'
-                : '<span class="lms-personal-dashboard-share-badge is-view">View</span>';
+                ? '<span class="lux-status-pill home-hover-chip lms-personal-dashboard-share-badge is-edit">Edit</span>'
+                : '<span class="lux-status-pill home-hover-chip lms-personal-dashboard-share-badge is-view">View</span>';
             return `
-                <div class="lms-personal-dashboard-shared-with-me-row">
+                <div class="lms-personal-dashboard-shared-with-me-row lux-soft-chrome home-hover-chip">
                     <span class="lms-personal-dashboard-peer-share-name">${escapeHtml(name)} ${badge}</span>
                     <button type="button" class="lux-secondary-btn" data-lms-personal-dashboard-action="open-shared-workspace" data-student-id="${escapeHtml(ownerId)}" data-student-name="${escapeHtml(name)}">
                         <i class="fas fa-user-pen"></i> Open
@@ -370,7 +366,7 @@ async function refreshLmsPersonalDashboardSharedWithMe() {
                 </div>`;
         }).join('');
     } catch (_error) {
-        list.innerHTML = '<div class="lms-live-copy">Shared boards could not be loaded.</div>';
+        list.innerHTML = '<div class="lux-panel-copy">Shared boards could not be loaded.</div>';
     }
 }
 
@@ -417,10 +413,10 @@ function handleLmsPersonalDashboardPageHide() {
 function renderLmsPersonalDashboardShareBadge(snapshot = {}) {
     const share = String(snapshot.staffShare || 'none').trim() || 'none';
     if (share === 'view') {
-        return '<span class="lms-personal-dashboard-share-badge is-view">View shared</span>';
+        return '<span class="lux-status-pill home-hover-chip lms-personal-dashboard-share-badge is-view">View shared</span>';
     }
     if (share === 'edit') {
-        return '<span class="lms-personal-dashboard-share-badge is-edit">Edit shared</span>';
+        return '<span class="lux-status-pill home-hover-chip lms-personal-dashboard-share-badge is-edit">Edit shared</span>';
     }
     return '';
 }
@@ -442,14 +438,12 @@ function renderLmsPersonalDashboardShareControl(snapshot = {}) {
         </label>`;
 }
 
-function getLmsPersonalDashboardCourseId() {
+function resolveLmsPersonalDashboardCourseId(courseKey) {
+    const key = courseKey ?? (typeof window.currentCourseId !== 'undefined' ? window.currentCourseId : currentCourseId);
     if (typeof window.getLmsPersonalDashboardCourseId === 'function') {
-        return window.getLmsPersonalDashboardCourseId(
-            typeof window.currentCourseId !== 'undefined' ? window.currentCourseId : currentCourseId
-        );
+        return window.getLmsPersonalDashboardCourseId(key);
     }
-    const courseKey = typeof window.currentCourseId !== 'undefined' ? window.currentCourseId : currentCourseId;
-    const raw = String(courseKey || '').trim();
+    const raw = String(key || '').trim();
     if (!raw.includes('::')) return raw;
     return raw.split('::')[0].trim();
 }
@@ -496,7 +490,7 @@ function renderLmsPersonalDashboardHistoryList(items = []) {
         const emptyCopy = staffMonitor
             ? LMS_PERSONAL_DASHBOARD_STAFF_HISTORY_EMPTY_COPY
             : LMS_PERSONAL_DASHBOARD_HISTORY_EMPTY_COPY;
-        return `<div class="lms-live-copy lms-personal-dashboard-history-empty">${escapeHtml(emptyCopy)}</div>`;
+        return `<div class="lux-empty-state lms-personal-dashboard-history-empty"><div class="lux-empty-state__copy">${escapeHtml(emptyCopy)}</div></div>`;
     }
     return snapshots.map(snapshot => {
         const snapshotId = String(snapshot.id || '').trim();
@@ -509,7 +503,7 @@ function renderLmsPersonalDashboardHistoryList(items = []) {
         const deleteButton = (!staffMonitor && !isAutosave) ? `
                 <button type="button" class="lux-secondary-btn" data-lms-personal-dashboard-action="delete-snapshot" data-lms-personal-dashboard-snapshot="${escapeHtml(snapshotId)}" data-lms-personal-dashboard-resource-key="${escapeHtml(ownerResourceKey)}">Delete</button>` : '';
         return `
-        <div class="lms-personal-dashboard-history-item${isAutosave ? ' is-autosave' : ''}" data-lms-personal-dashboard-snapshot="${escapeHtml(snapshotId)}" data-lms-personal-dashboard-resource-key="${escapeHtml(ownerResourceKey)}">
+        <div class="lms-personal-dashboard-history-item lux-soft-chrome home-hover-chip${isAutosave ? ' is-autosave' : ''}" data-lms-personal-dashboard-snapshot="${escapeHtml(snapshotId)}" data-lms-personal-dashboard-resource-key="${escapeHtml(ownerResourceKey)}">
             <div class="lms-personal-dashboard-history-copy">
                 <strong>${escapeHtml(snapshot.label || 'Saved progress')}</strong>
                 ${formatLmsPersonalDashboardHistoryBadge(snapshot)}
@@ -555,7 +549,7 @@ function destroyLmsPersonalDashboardOverlay(options = {}) {
 function renderLmsPersonalDashboardShortcutsColumn() {
     return `
             <aside class="lms-personal-dashboard-shortcuts" aria-label="Course shortcuts">
-                <div class="lms-route-eyebrow lms-route-inline lms-route-inline-gap-8"><i class="fas fa-compass"></i> Course tabs</div>
+                <div class="lux-section-kicker lms-route-inline lms-route-inline-gap-8"><i class="fas fa-compass"></i> Course tabs</div>
                 <div class="lms-personal-dashboard-shortcut-list">
                     ${renderLmsPersonalDashboardShortcuts()}
                 </div>
@@ -587,26 +581,26 @@ function renderLmsPersonalDashboardMarkup(resourceKey = '') {
     const staffNotice = staffMonitor
         ? (() => {
             if (workspace?.ui?.accessDenied) {
-                return `<span class="lms-personal-dashboard-staff-notice is-denied">${escapeHtml(workspace.ui.syncError || 'This student has not shared their workspace yet.')}</span>`;
+                return `<span class="lux-status-pill lms-personal-dashboard-staff-notice is-denied">${escapeHtml(workspace.ui.syncError || 'This student has not shared their workspace yet.')}</span>`;
             }
             if (staffShareLevel === 'edit') {
-                return '<span class="lms-personal-dashboard-staff-notice is-edit">Editing enabled by student</span>';
+                return '<span class="lux-status-pill lms-personal-dashboard-staff-notice is-edit">Editing enabled by student</span>';
             }
             if (staffShareLevel === 'view') {
-                return '<span class="lms-personal-dashboard-staff-notice">Viewing student workspace (view only)</span>';
+                return '<span class="lux-status-pill lms-personal-dashboard-staff-notice">Viewing student workspace (view only)</span>';
             }
-            return '<span class="lms-personal-dashboard-staff-notice is-denied">This student has not shared their workspace yet.</span>';
+            return '<span class="lux-status-pill lms-personal-dashboard-staff-notice is-denied">This student has not shared their workspace yet.</span>';
         })()
         : '';
     const guestCanEdit = staffMonitor && canEditLmsPersonalDashboardAsGuest(resourceKey);
     const shareCallout = staffMonitor ? '' : `
-        <p class="lms-personal-dashboard-share-callout">Progress autosaves automatically. Use <strong>Share</strong> to give instructors, your whole group, or specific classmates access. Named History rows are optional checkpoints.</p>`;
+        <p class="lux-panel-copy lms-personal-dashboard-share-callout">Progress autosaves automatically. Use <strong>Share</strong> to give instructors, your whole group, or specific classmates access. Named History rows are optional checkpoints.</p>`;
     const shareButton = staffMonitor ? '' : renderLmsPersonalDashboardShareButton(resourceKey);
     const sharePanel = staffMonitor ? '' : renderLmsPersonalDashboardSharePanel(resourceKey);
     const showOwnerChrome = !staffMonitor;
     const showGuestEditChrome = guestCanEdit;
     const autosaveStatus = (showOwnerChrome || showGuestEditChrome)
-        ? '<span class="lms-personal-dashboard-autosave-status" data-lms-personal-dashboard-autosave-status="">Autosave on</span>'
+        ? '<span class="lms-personal-dashboard-autosave-status lux-panel-copy" data-lms-personal-dashboard-autosave-status="">Autosave on</span>'
         : '';
     const saveButton = showOwnerChrome ? `
                 <button type="button" class="lux-secondary-btn lms-personal-dashboard-save-named" data-lms-personal-dashboard-action="save-snapshot">
@@ -623,9 +617,9 @@ function renderLmsPersonalDashboardMarkup(resourceKey = '') {
             </section>
             <aside class="lms-personal-dashboard-history" aria-label="Saved progress">
                 ${sharedWithMePanel}
-                <div class="lms-route-eyebrow lms-route-inline lms-route-inline-gap-8"><i class="fas fa-clock-rotate-left"></i> History</div>
+                <div class="lux-section-kicker lms-route-inline lms-route-inline-gap-8"><i class="fas fa-clock-rotate-left"></i> History</div>
                 <div class="lms-personal-dashboard-history-list" data-lms-personal-dashboard-history-list="">
-                    <div class="lms-live-copy lms-personal-dashboard-history-empty">Loading saved progress…</div>
+                    <div class="lux-panel-copy lms-personal-dashboard-history-empty">Loading saved progress…</div>
                 </div>
             </aside>
         </div>`;
@@ -664,7 +658,7 @@ function getLmsPersonalDashboardHistoryScopeOptions() {
 }
 
 async function loadLmsPersonalDashboardHistory(courseId = '') {
-    const normalizedCourseId = String(courseId || getLmsPersonalDashboardCourseId() || '').trim();
+    const normalizedCourseId = String(courseId || resolveLmsPersonalDashboardCourseId() || '').trim();
     if (!normalizedCourseId) return [];
     const scopeOptions = getLmsPersonalDashboardHistoryScopeOptions();
     if (isLmsPersonalDashboardStaffMonitor()) {
@@ -1271,7 +1265,6 @@ if (typeof window !== 'undefined') {
         handleLmsPersonalDashboardSectionSwitch,
         getLmsPersonalDashboardResourceKey,
         getLmsPersonalDashboardActiveResourceKey,
-        getLmsPersonalDashboardCourseId,
         isLmsPersonalDashboardOpen,
         isLmsPersonalDashboardStaffMonitor,
         destroyLmsPersonalDashboardOverlay,

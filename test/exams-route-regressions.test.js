@@ -58,7 +58,7 @@ describe('exams route regressions.test', () => {
         expect(fouc).toContain('.ex2-builder-step-body');
         expect(fouc).toContain('.ex2-panel:not(:has(.lux-universal-picker-field))');
         const builder = readSource('assets/js/pages/exams-console-builder.js');
-        expect(builder).toContain('ex2-summary-chip lux-soft-chrome');
+        expect(builder).toContain('ex2-summary-chip lux-soft-chrome home-hover-chip');
         expect(builder).toContain('ex2-question-card lux-soft-chrome');
         expect(builder).toContain('ex2-qnav-bar lux-soft-chrome');
         expect(builder).toContain('ex2-auto-gen-box lux-soft-chrome');
@@ -78,7 +78,7 @@ describe('exams route regressions.test', () => {
         expect(bare).toContain(':is(.lms-route-input, .lms-route-select, .lms-route-textarea).lux-control');
         expect(bare).not.toContain(':is(.ex2-input, .ex2-textarea, .ex2-select).lux-control {\n    padding: 0;');
         expect(fouc).toContain('.ex2-builder-summary-strip.lux-soft-chrome');
-        expect(fouc).toContain('body.lux-unified-shell.lux-route-exams #admin-exams-root :is(');
+        expect(fouc).toContain('body.lux-unified-shell.lux-route-exams #admin-exams-root [data-lux-glass-root="1"] :is(');
         expect(fouc).toContain('.ex2-rq-column');
         expect(fouc).toContain('var(--home-chip-hover-lift, -3px)');
         const admin = readSource('assets/js/pages/exams-console-admin.js');

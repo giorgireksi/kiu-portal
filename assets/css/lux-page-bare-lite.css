@@ -1329,8 +1329,8 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   }
 }
 
-/* ── Admin scheduler: layout only (paint → lux-fouc-ht / lux-controls / layout-schedule-board) ── */
-#page-admin-scheduler {
+/* ── Admin scheduler + timetable grid: layout only (paint → lux-fouc-ht / lux-controls / layout-schedule-board) ── */
+:is(#page-admin-scheduler, #page-timetable) {
   --sch-shell-gap: 18px;
   --sch-sidebar-width: 368px;
   --sch-panel-radius: 28px;
@@ -1577,19 +1577,19 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   align-content: start;
   min-width: 0;
 }
-#page-admin-scheduler .sch-grid-wrap {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-wrap {
   display: grid;
   gap: 12px;
   padding: 0;
   flex: none;
   overflow: visible;
 }
-#page-admin-scheduler .sch-grid-shell {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-shell {
   padding: 18px;
   overflow: hidden;
   min-height: calc(100vh - var(--lux-topbar-height, 64px) - 56px);
 }
-#page-admin-scheduler .sch-grid-topline {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1597,19 +1597,19 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   flex-wrap: wrap;
   padding-bottom: 14px;
 }
-#page-admin-scheduler .sch-grid-topline-start,
-#page-admin-scheduler .sch-grid-topline-end {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-start,
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-end {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   min-width: 0;
 }
-#page-admin-scheduler .sch-grid-topline-end {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-end {
   margin-left: auto;
   justify-content: flex-end;
 }
-#page-admin-scheduler .sch-grid-week-label {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-week-label {
   font-family: 'DM Mono', monospace;
   font-size: 12px;
   font-weight: 700;
@@ -1617,7 +1617,7 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   color: var(--lux-text);
   white-space: nowrap;
 }
-#page-admin-scheduler .sch-grid-tag {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1631,35 +1631,35 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-#page-admin-scheduler .sch-grid-tag-soft {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-tag-soft {
   color: var(--lux-text);
 }
-#page-admin-scheduler .sch-week-nav {
+:is(#page-admin-scheduler, #page-timetable) .sch-week-nav {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-#page-admin-scheduler .sch-week-arrow {
+:is(#page-admin-scheduler, #page-timetable) .sch-week-arrow {
   width: 46px;
   min-width: 46px;
   height: 46px;
   padding: 0;
   justify-content: center;
 }
-#page-admin-scheduler .sch-week-current-btn {
+:is(#page-admin-scheduler, #page-timetable) .sch-week-current-btn {
   min-height: 46px;
   padding: 0 18px;
   justify-content: center;
 }
-#page-admin-scheduler #scheduler-grid {
+:is(#page-admin-scheduler #scheduler-grid, #page-timetable #timetable-grid) {
   overflow-x: auto;
   padding-bottom: 6px;
 }
-#page-admin-scheduler .sch-grid-root {
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-root {
   min-width: 1420px;
   contain: layout style paint;
 }
-#page-admin-scheduler .sch-header-row {
+:is(#page-admin-scheduler, #page-timetable) .sch-header-row {
   display: grid;
   grid-template-columns: 92px repeat(7, minmax(180px, 1fr));
   border: 1px solid var(--sch-grid-border);
@@ -1669,14 +1669,14 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   position: static;
   top: auto;
 }
-#page-admin-scheduler .sch-time-col,
-#page-admin-scheduler .sch-day-col {
+:is(#page-admin-scheduler, #page-timetable) .sch-time-col,
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col {
   min-height: 74px;
   padding: 14px 14px 12px;
   border-right: 1px solid var(--sch-grid-chrome-border);
   background: var(--sch-grid-chrome-bg);
 }
-#page-admin-scheduler .sch-time-col {
+:is(#page-admin-scheduler, #page-timetable) .sch-time-col {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
@@ -1687,10 +1687,10 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   width: auto;
   flex-shrink: unset;
 }
-#page-admin-scheduler .sch-time-col-copy {
+:is(#page-admin-scheduler, #page-timetable) .sch-time-col-copy {
   font-family: 'DM Mono', monospace;
 }
-#page-admin-scheduler .sch-day-col {
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1700,16 +1700,16 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   flex: unset;
   width: auto;
 }
-#page-admin-scheduler .sch-day-col-label {
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col-label {
   font-size: 14px;
   font-weight: 800;
   color: var(--lux-text);
 }
-#page-admin-scheduler .sch-day-col-meta {
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col-meta {
   font-size: 11px;
   color: var(--lux-text-muted);
 }
-#page-admin-scheduler .sch-body {
+:is(#page-admin-scheduler, #page-timetable) .sch-body {
   display: grid;
   grid-template-columns: 92px minmax(0, 1fr);
   border: 1px solid var(--sch-grid-border);
@@ -1719,7 +1719,7 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   min-width: 0;
   position: relative;
 }
-#page-admin-scheduler .sch-time-labels {
+:is(#page-admin-scheduler, #page-timetable) .sch-time-labels {
   display: grid;
   grid-auto-rows: var(--sch-slot-height);
   background: var(--sch-grid-chrome-bg);
@@ -1727,7 +1727,7 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   width: auto;
   flex-shrink: unset;
 }
-#page-admin-scheduler .sch-time-slot {
+:is(#page-admin-scheduler, #page-timetable) .sch-time-slot {
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -1736,10 +1736,10 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   height: auto;
   position: static;
 }
-#page-admin-scheduler .sch-time-slot:first-child {
+:is(#page-admin-scheduler, #page-timetable) .sch-time-slot:first-child {
   border-top: 0;
 }
-#page-admin-scheduler .sch-time-slot-copy {
+:is(#page-admin-scheduler, #page-timetable) .sch-time-slot-copy {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -1757,31 +1757,67 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   top: auto;
   font-weight: 600;
 }
-#page-admin-scheduler .sch-day-lanes {
+:is(#page-admin-scheduler, #page-timetable) .sch-day-lanes {
   display: grid;
   grid-template-columns: repeat(7, minmax(180px, 1fr));
   flex: unset;
   min-width: 0;
 }
-#page-admin-scheduler .sch-lane {
+:is(#page-admin-scheduler, #page-timetable) .sch-lane {
   position: relative;
-  min-height: calc(var(--sch-slot-height) * 11);
+  min-height: calc(var(--sch-slot-height) * var(--sch-slot-count, 11));
   display: grid;
-  grid-template-rows: repeat(11, var(--sch-slot-height));
+  grid-template-rows: repeat(var(--sch-slot-count, 11), var(--sch-slot-height));
   border-left: 1px solid var(--sch-grid-chrome-border);
   background: var(--sch-grid-lane-bg);
   contain: layout style paint;
   flex: unset;
 }
-#page-admin-scheduler .sch-slot-bg {
+:is(#page-admin-scheduler, #page-timetable) .sch-slot-bg {
   border-top: 1px solid var(--sch-grid-muted-border);
   background: var(--sch-grid-lane-bg);
   height: auto;
   transition: background 0.18s ease, box-shadow 0.18s ease;
 }
-#page-admin-scheduler .sch-info-banner,
-#page-admin-scheduler .sch-empty-week-notice,
-#page-admin-scheduler .sch-grid-empty {
+
+body.lux-route-timetable #page-timetable .sch-grid-shell {
+  min-height: 0;
+  padding: 14px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile {
+  --sch-slot-height: 36px;
+  padding: 10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-root {
+  min-width: min(1420px, 100%);
+}
+
+body.lux-route-timetable #page-timetable .schedule-now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--sch-now-top, 0);
+  z-index: 12;
+  pointer-events: none;
+  border-top: 2px solid color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 72%, transparent);
+}
+
+body.lux-route-timetable #page-timetable .schedule-now-line span {
+  position: absolute;
+  right: 8px;
+  top: -10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, transparent);
+  color: var(--lux-text);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-info-banner,
+:is(#page-admin-scheduler, #page-timetable) .sch-empty-week-notice,
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-empty {
   margin-top: 14px;
 }
 #page-admin-scheduler .sch-form-section {
@@ -1870,28 +1906,15 @@ body.lux-route-admin-scheduler .sch-modal-foot {
 body.lux-route-admin-scheduler .sch-modal-head {
   border-bottom: 1px solid var(--sch-grid-border, var(--lux-border));
 }
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-modal-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-body.lux-route-admin-scheduler .sch-modal-title,
 body.lux-route-admin-scheduler .quiz-modal-title {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 28px;
   line-height: 1.08;
 }
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-modal-subtitle,
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-modal-week {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--lux-text-muted);
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  line-height: 1.08;
 }
 body.lux-route-admin-scheduler .sch-modal-subtitle,
 body.lux-route-admin-scheduler .quiz-modal-subtitle,
@@ -1925,12 +1948,8 @@ body.lux-route-admin-scheduler .sch-modal-body {
   flex: 1 1 auto;
   min-height: 0;
 }
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-modal-body {
-  gap: 14px;
-  padding: 14px 18px 18px;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"].is-open .sch-modal-body,
-body.lux-route-admin-scheduler #schPresetManagerOverlay.is-open .sch-modal-body {
+body.lux-route-admin-scheduler #schPresetManagerOverlay.is-open .sch-modal-body,
+body.lux-route-admin-scheduler #profQuizModalOverlay.is-open .sch-modal-body {
   overscroll-behavior: contain;
 }
 body.lux-route-admin-scheduler .sch-modal-body-pad {
@@ -1942,8 +1961,8 @@ body.lux-route-admin-scheduler .sch-modal-foot {
 body.lux-route-admin-scheduler .sch-modal-foot-between {
   justify-content: space-between;
 }
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-form-section,
-body.lux-route-admin-scheduler #profQuizModalOverlay .sch-form-section {
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-form-section:not(.home-hover-chip),
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-form-section:not(.home-hover-chip) {
   gap: 12px;
   padding: 0;
   border: 0;
@@ -1954,12 +1973,6 @@ body.lux-route-admin-scheduler #profQuizModalOverlay .sch-form-section {
 body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-form-section-head {
   display: grid;
   gap: 4px;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-form-section-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  text-transform: none;
 }
 body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-row-subject,
 body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-row-two,
@@ -1975,19 +1988,6 @@ body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-label-row {
 body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-label-row label {
   margin-bottom: 0;
 }
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-preset-manage-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  white-space: nowrap;
-}
 body.lux-route-admin-scheduler [id="schModalOverlay"] .lux-picker-field {
   display: block;
   position: relative;
@@ -1998,14 +1998,12 @@ body.lux-route-admin-scheduler [id="schModalOverlay"] .lux-picker-field {
 body.lux-route-admin-scheduler [id="schModalOverlay"] .lux-picker-btn {
   width: 100%;
   min-width: 0;
-  min-height: 48px;
 }
 body.lux-route-admin-scheduler [id="schModalOverlay"] input[type="time"],
 body.lux-route-admin-scheduler [id="schModalOverlay"] input[type="number"],
 body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-readonly {
   width: 100%;
   min-width: 0;
-  border-radius: 16px;
 }
 body.lux-route-admin-scheduler [id="schModalOverlay"] input[type="time"] {
   appearance: auto;
@@ -2073,19 +2071,6 @@ body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-searc
   padding: 10px 12px;
   border-radius: 14px;
   outline: none;
-}
-body.lux-route-admin-scheduler .sch-conflict-alert {
-  display: none;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  border: 1px solid transparent;
-  font-size: 13px;
-  line-height: 1.5;
-}
-body.lux-route-admin-scheduler .sch-conflict-alert.show {
-  display: flex;
 }
 #page-admin-scheduler .sch-input-label-row {
   display: flex;
@@ -3595,16 +3580,28 @@ body.lux-route-lms .lms-route-stat-value {
 body.lux-route-lms .lms-session-official-card,
 body.lux-route-lms .lms-next-session-card {
     display: grid;
-    gap: 6px;
+    gap: 8px;
     align-content: start;
     padding: 14px 16px;
     border-radius: 16px;
+    min-width: 0;
 }
 
-body.lux-route-lms .lms-session-official-card strong,
-body.lux-route-lms .lms-next-session-card strong {
+body.lux-route-lms .lms-next-session-card .lms-route-stat-value {
+    margin-top: 0;
     font-size: 1.05rem;
     line-height: 1.2;
+}
+
+body.lux-route-lms .lms-next-session-card .lux-card-copy,
+body.lux-route-lms .lms-next-session-card .lux-card-meta {
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.lux-route-lms .lms-next-session-card.is-empty .lms-next-session-empty {
+    color: var(--lux-text-muted);
+    font-weight: 600;
 }
 
 /* Sessions tab (retired route skin → shared bare-lite layout). */
@@ -3645,9 +3642,8 @@ body.lux-route-lms .lms-route-title-mt-10 {
     margin-top: 10px;
 }
 
-body.lux-route-lms .lms-next-session-card.is-empty strong {
-    color: var(--lux-text-muted);
-    font-weight: 600;
+body.lux-route-lms .lms-next-session-card .lms-next-session-badge {
+    align-self: flex-start;
 }
 
 body.lux-route-lms .lms-session-marker-board,
@@ -3984,7 +3980,13 @@ body.lux-route-lms .lms-session-marker-kicker {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-lms .lms-session-marker-main h3 {
+body.lux-route-lms .lms-session-marker-card.home-hover-chip:has(.home-hover-chip) {
+    contain: none;
+    overflow: visible;
+}
+
+body.lux-route-lms .lms-session-marker-main h3,
+body.lux-route-lms .lms-session-marker-title {
     margin: 0;
     font-size: 1rem;
     line-height: 1.25;
@@ -4076,7 +4078,6 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .lms-route-field-label.gb-
 body.lux-route-lms .gb-modern-hero h2,
 body.lux-route-lms .gb-modern-card-head h3 {
     margin: 6px 0 0;
-    color: var(--lux-text);
 }
 
 body.lux-route-lms .gb-modern-card-head h3 {
@@ -4089,7 +4090,6 @@ body.lux-route-lms .gb-modern-hero h2 {
 
 body.lux-route-lms .gb-modern-hero p {
     margin: 8px 0 0;
-    color: var(--lux-text-muted);
     max-width: 56ch;
 }
 
@@ -4172,6 +4172,12 @@ body.lux-route-lms .gb-modern-card-head .lms-route-copy {
     max-width: 62ch;
 }
 
+body.lux-route-lms .gb-scheme-progress-section {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+}
+
 body.lux-route-lms .gb-scheme-progress-head {
     display: grid;
     gap: 6px;
@@ -4186,20 +4192,28 @@ body.lux-route-lms .gb-student-context-bar {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    gap: 12px 16px;
     flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+    padding: 14px 16px;
+    border-radius: 16px;
 }
 
-body.lux-route-lms .gb-student-context-bar strong {
-    display: block;
-    margin-top: 4px;
-    color: var(--lux-text);
+body.lux-route-lms .gb-student-context-copy {
+    display: grid;
+    gap: 6px;
+    flex: 1 1 16rem;
+    min-width: 0;
 }
 
-body.lux-route-lms .gb-student-context-bar > div > span {
+body.lux-route-lms .gb-student-context-title {
     display: block;
-    margin-top: 6px;
-    color: var(--lux-text-muted);
+    margin: 0;
+}
+
+body.lux-route-lms .gb-student-context-copy-line {
+    margin: 0;
     max-width: 62ch;
 }
 
@@ -4246,17 +4260,34 @@ body.lux-route-lms .gb-composition-legend {
     display: flex;
     flex-wrap: wrap;
     gap: 10px 14px;
+    margin-top: 2px;
+}
+
+body.lux-route-lms .gb-composition-legend-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    margin: 0;
     font-size: 12px;
-    color: var(--lux-text-muted);
+    font-weight: 700;
+    line-height: 1.45;
+    white-space: normal;
+}
+
+body.lux-route-lms .gb-composition-legend-stat.lux-panel-copy {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
 }
 
 body.lux-route-lms .gb-composition-legend i {
     display: inline-block;
+    flex-shrink: 0;
     width: 10px;
     height: 10px;
     margin-right: 6px;
     border-radius: 999px;
-    vertical-align: -1px;
+    vertical-align: middle;
 }
 
 body.lux-route-lms .gb-composition-legend .is-earned {
@@ -4295,10 +4326,6 @@ body.lux-route-lms button.gb-weight-row.is-student-clickable {
     cursor: pointer;
 }
 
-body.lux-route-lms button.gb-weight-row.is-student-clickable:hover {
-    border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
-}
-
 body.lux-route-lms .gb-weight-label {
     grid-area: label;
     min-width: 0;
@@ -4309,19 +4336,13 @@ body.lux-route-lms .gb-weight-label-main {
     gap: 4px;
 }
 
-body.lux-route-lms .gb-weight-label-main strong {
-    color: var(--lux-text);
-}
-
 body.lux-route-lms .gb-weight-row-meta {
     font-size: 12px;
-    color: var(--lux-text-muted);
 }
 
 body.lux-route-lms .gb-weight-row-history-hint {
     font-size: 11px;
     font-weight: 700;
-    color: rgb(var(--lux-accent-rgb));
 }
 
 body.lux-route-lms .gb-weight-detail {
@@ -4335,15 +4356,6 @@ body.lux-route-lms .gb-weight-detail {
 body.lux-route-lms .gb-weight-stat {
     font-size: 11px;
     font-weight: 700;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-lms .gb-weight-stat.is-earned {
-    color: rgb(var(--lux-accent-rgb));
-}
-
-body.lux-route-lms .gb-weight-stat.is-pending {
-    color: color-mix(in srgb, rgb(245, 158, 11) 82%, var(--lux-text));
 }
 
 body.lux-route-lms .gb-weight-track {
@@ -4360,18 +4372,10 @@ body.lux-route-lms .gb-scheme-reference-total {
 
 body.lux-route-lms .gb-modern-study-card-pointer {
     margin: 0;
-    font-size: 13px;
-    color: var(--lux-text-muted);
 }
 
 body.lux-route-lms .gb-modern-study-card-pointer a {
-    color: rgb(var(--lux-accent-rgb));
     font-weight: 700;
-}
-
-:is(html.lux-light-mode, body.lux-light-mode) body.lux-route-lms .gb-weight-stat.is-pending,
-:is(html.lux-light-mode, body.lux-light-mode) body.lux-route-lms .gb-weight-row-history-hint {
-    color: color-mix(in srgb, rgb(180, 83, 9) 88%, var(--lux-text));
 }
 
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-lms-staff-layout {
@@ -4548,9 +4552,79 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-score-edit-optional {
 
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .lux-glass-dialog-card {
     min-width: 0;
+}
+
+/* Category history portal (layout only — shell → lux-modals; paint → lux-fouc-ht). */
+#gradebook-category-history-modal[hidden] {
+    display: none !important;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-shell {
+    width: min(720px, calc(100vw - 32px));
+    max-height: min(88vh, 820px);
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-body {
+    display: grid;
+    gap: 12px;
+    overflow: auto;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-card {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 16px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-card-head > div:first-child {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-score {
+    display: grid;
+    justify-items: end;
+    gap: 6px;
+    text-align: right;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-comment {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border-radius: 14px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-comment > i {
+    margin-top: 2px;
+    color: rgb(var(--lux-accent-rgb));
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-empty.lux-empty-state {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+    padding: 28px 16px;
+    text-align: center;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-score-history-panel.is-compact {
+    margin-top: 2px;
 }
 
 /* Evaluation history / full grader modal (layout only — shell → lux-modals). */
@@ -5122,19 +5196,19 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     background: linear-gradient(180deg, rgba(245, 158, 11, 0.14), rgba(245, 158, 11, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal) .gb-status-badge.lux-status-pill.is-missing {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-missing {
     border-color: rgba(148, 163, 184, 0.28);
     color: #cbd5e1;
     background: linear-gradient(180deg, rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal) .gb-status-badge.lux-status-pill.is-graded {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-graded {
     border-color: rgba(16, 185, 129, 0.28);
     color: #9bf3c8;
     background: linear-gradient(180deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal) .gb-status-badge.lux-status-pill.is-pending {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-pending {
     border-color: rgba(245, 158, 11, 0.28);
     color: #fde68a;
     background: linear-gradient(180deg, rgba(245, 158, 11, 0.14), rgba(245, 158, 11, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
@@ -5145,7 +5219,8 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-letter-badge.grade-a {
     color: #047857;
 }
@@ -5155,7 +5230,8 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-letter-badge.grade-b {
     color: #1d4ed8;
 }
@@ -5165,14 +5241,16 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-letter-badge.grade-c,
 :is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-letter-badge.grade-pending {
     color: #b45309;
 }
@@ -5182,7 +5260,8 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-letter-badge.grade-d {
     color: #6d28d9;
 }
@@ -5192,7 +5271,8 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-letter-badge.grade-f {
     color: #b91c1c;
 }
@@ -5202,7 +5282,8 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-status-badge.lux-status-pill.is-missing {
     color: #475569;
 }
@@ -5212,7 +5293,8 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-status-badge.lux-status-pill.is-graded {
     color: #047857;
 }
@@ -5222,39 +5304,43 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #faculty-master-container,
     #student-evaluation-history-modal,
     #gradebook-score-edit-modal,
-    #gradebook-comment-modal
+    #gradebook-comment-modal,
+    #gradebook-category-history-modal
 ) .gb-status-badge.lux-status-pill.is-pending {
     color: #b45309;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-scoreline {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-scoreline {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-scoreline strong {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-scoreline strong {
     font-size: 15px;
     font-weight: 800;
     line-height: 1.2;
     color: var(--lux-text);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-meta {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 12px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-meta .lms-route-meta-12 {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-meta .lms-route-meta-12 {
     font-size: 12px;
     font-weight: 600;
     line-height: 1.45;
     color: var(--lux-text-muted);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) button.gb-score-history-toggle.lms-route-copy {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(
+    button.gb-score-history-toggle.lms-route-copy,
+    button.gb-score-history-toggle.lux-panel-copy
+) {
     padding: 0;
     border: 0;
     background: transparent;
@@ -5267,7 +5353,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-roster-id,
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-roster-assessment,
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-roster-score,
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-count {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-count {
     font-size: 12px;
     font-weight: 600;
     line-height: 1.45;
@@ -5395,33 +5481,37 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     }
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-panel {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-panel {
     display: grid;
     gap: 10px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-list {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-list {
     display: grid;
     gap: 8px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) :is(button, div).gb-score-history-row {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(button, div).gb-score-history-row {
     display: grid;
     gap: 4px;
     width: 100%;
     padding: 10px 12px;
     border-radius: 12px;
-    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
+    border: 0;
     background: transparent;
     color: inherit;
     text-align: left;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) button.gb-score-history-row {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(button, div).gb-score-history-row:not(.lux-soft-chrome) {
+    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) button.gb-score-history-row {
     cursor: pointer;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) div.gb-score-history-row.is-current {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(button, div).gb-score-history-row.is-current:not(.lux-soft-chrome) {
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.14);
 }
@@ -5506,11 +5596,14 @@ body.lux-route-lms .lms-route-pill {
     min-height: 30px;
     padding: 0 12px;
     border-radius: 999px;
-    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.24);
     font-size: 12px;
     font-weight: 700;
     color: var(--lux-text-muted);
+}
+
+body.lux-route-lms .lms-route-pill:not(.home-hover-chip) {
+    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
+    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.24);
 }
 
 body.lux-route-lms .lms-route-field-grid {
@@ -6177,6 +6270,12 @@ body.lux-route-lms .lms-member-row__avatar.is-student {
     color: var(--lux-text);
 }
 
+body.lux-route-lms .lms-member-overview-panel.home-hover-chip:has(.home-hover-chip),
+body.lux-route-lms .lms-member-row.home-hover-chip {
+    contain: none;
+    overflow: visible;
+}
+
 body.lux-route-lms .lms-member-row__name {
     font-weight: 700;
     line-height: 1.2;
@@ -6585,9 +6684,10 @@ body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-hero-pills {
     gap: 8px;
 }
 
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-kicker,
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-main-kicker,
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-stat-label,
+body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-stat-label {
+    margin: 0;
+}
+
 body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-week-label {
     font-size: 11px;
     font-weight: 800;
@@ -6596,8 +6696,6 @@ body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-week-label {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-title,
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-main-title,
 body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-saved-subtitle {
     margin-top: 6px;
     font-size: clamp(20px, 2vw, 24px);
@@ -6606,32 +6704,16 @@ body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-saved-subtitle {
     color: var(--lux-text);
 }
 
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-copy,
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-main-copy,
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-stat-copy {
-    margin-top: 6px;
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-hero-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.16);
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--lux-text);
-}
-
 body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-stat-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 14px;
+}
+
+body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-student-quiz-card-list {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
 }
 
 body.lux-route-lms #lms-content-area.lms-tab-quiz .lms-quiz-studio-stat-value {
@@ -11236,12 +11318,20 @@ body.lux-route-registration #page-registration.registration-page {
 
 body.lux-route-registration .registration-page-stack {
     display: grid;
-    gap: 14px;
+    gap: 0;
     padding: 12px 0 84px;
 }
 
+body.lux-route-registration .registration-studio-shell {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    overflow: visible;
+    min-width: 0;
+}
+
 body.lux-route-timetable .lux-timetable-hero.page-hero,
-body.lux-route-registration .registration-hero-shell.page-hero,
+body.lux-route-registration .registration-studio-shell > .registration-hero-shell.page-hero,
 body.lux-route-chancellery .lux-chancellery-hero-card.page-hero {
     padding: 20px 22px 16px;
     min-height: 0;
@@ -11326,6 +11416,7 @@ body.lux-route-registration .registration-page-stack :is(
     .registration-workspace-note,
     .registration-state-title,
     .registration-state-meta,
+    .registration-state-summary,
     .registration-render-error-title,
     .registration-render-error-copy
 ) {
@@ -11334,8 +11425,16 @@ body.lux-route-registration .registration-page-stack :is(
     overflow-wrap: anywhere;
 }
 
+body.lux-route-registration .registration-studio-shell > .registration-studio-deck {
+    display: grid;
+    gap: 14px;
+    padding: 14px 20px 20px;
+    overflow: visible;
+}
+
 body.lux-route-registration .registration-metrics-band {
     gap: 14px;
+    margin: 0;
 }
 
 body.lux-route-registration .registration-insight-card {
@@ -11345,23 +11444,18 @@ body.lux-route-registration .registration-insight-card {
     min-width: 0;
 }
 
-body.lux-route-registration .lux-timetable-stage.registration-workspace {
-    padding: 22px 24px 24px;
+body.lux-route-registration .registration-studio-shell > .lux-timetable-stage.registration-workspace {
+    padding: 18px 24px 24px;
     overflow: visible;
 }
 
-body.lux-route-registration .registration-command-band.lux-timetable-command {
-    margin-top: 0;
-    padding: 16px;
-    border-radius: 18px;
-}
-
-body.lux-route-registration .registration-term-shell.lux-timetable-filters {
+body.lux-route-registration .registration-command-band {
     display: grid;
     gap: 12px;
-    padding: 14px;
+    margin: 0;
+    padding: 14px 16px;
     border-radius: 16px;
-    min-width: min(360px, 100%);
+    min-width: 0;
 }
 
 body.lux-route-registration .reg-tabs {
@@ -11376,7 +11470,6 @@ body.lux-route-registration .reg-tab {
     padding: 12px 14px;
     border: 0;
     border-radius: 16px;
-    background: transparent;
     color: var(--lux-text);
     font-size: 11px;
     font-weight: 700;
@@ -11390,7 +11483,7 @@ body.lux-route-registration .reg-tab {
 body.lux-route-registration .reg-tab.active {
     color: #fff8ef;
     border-color: transparent;
-    background: linear-gradient(135deg, color-mix(in srgb, var(--lux-accent) 94%, transparent), var(--lux-accent-2, var(--lux-accent)));
+    background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
     box-shadow: var(--lux-elev-2);
 }
 
@@ -12209,17 +12302,73 @@ body.lux-route-chancellery .lux-chancellery-thread {
     gap: 12px;
 }
 
-body.lux-route-chancellery .lux-chancellery-thread-entry {
-    display: grid;
-    gap: 10px;
-    padding: 14px 16px;
-    border-radius: 14px;
-}
-
 body.lux-route-chancellery .lux-chancellery-subcards-spaced {
     display: grid;
     gap: 12px;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+body.lux-route-chancellery .lux-chancellery-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 16px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+body.lux-route-chancellery .lux-chancellery-card-copy {
+    display: grid;
+    gap: 6px;
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+body.lux-route-chancellery .lux-chancellery-inline-meta {
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-chancellery .lux-chancellery-inline-meta .lux-panel-copy {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+body.lux-route-chancellery .lux-chancellery-subcard.lux-soft-chrome.home-hover-chip {
+    display: grid;
+    gap: 6px;
+    padding: 12px 14px;
+    min-width: 0;
+    border-radius: 14px;
+}
+
+body.lux-route-chancellery .lux-chancellery-thread-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-chancellery .lux-chancellery-thread-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+body.lux-route-chancellery .lux-chancellery-thread-entry.lux-soft-chrome.home-hover-chip {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    min-width: 0;
+    border-radius: 14px;
+}
+
+body.lux-route-chancellery .lux-chancellery-detail-panel.home-hover-chip,
+body.lux-route-chancellery .lux-chancellery-detail-body {
+    contain: none;
+    overflow: visible;
 }
 
 /* Chancellery route: shared hero focus panel typography (surfaces → lux-fouc-ht). */
@@ -13087,15 +13236,23 @@ body.lux-route-student-service #student-service-modal-root :is(
     color: var(--lux-text);
 }
 
-body.lux-route-student-service #student-service-modal-root :is(
-    .student-service-guidance-modal,
-    .student-service-qa-thread-modal
-) {
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-modal {
     position: relative;
-    width: min(720px, 100%);
+    width: min(920px, calc(100vw - 32px));
     max-height: min(88vh, 900px);
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr);
+    overflow: hidden;
+    border-radius: 24px;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal {
+    position: relative;
+    width: min(1040px, calc(100vw - 32px));
+    max-height: min(90dvh, 920px);
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     overflow: hidden;
     border-radius: 24px;
     color: var(--lux-text);
@@ -13192,13 +13349,183 @@ body.lux-route-student-service #student-service-modal-root :is(
 body.lux-route-student-service #student-service-modal-root :is(
     .student-service-qa-composer-modal-body,
     .student-service-guidance-modal-body,
-    .student-service-qa-thread-modal-body,
     .student-service-ticket-thread-modal-body,
     .student-service-inbox-filter-editor-body
 ) {
     min-height: 0;
     overflow-y: auto;
     padding: 0 24px 20px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-modal-body {
+    display: grid;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-browser {
+    display: grid;
+    gap: 14px;
+    min-height: 0;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-toolbar .student-service-find-search {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 14px;
+    min-height: min(52vh, 520px);
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-pane {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-pane-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px 10px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-pane-body {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-find-guidance-list {
+    gap: 8px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal-scroll.lux-glass-dialog-comment-scroll {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal-compose {
+    flex-shrink: 0;
+    border-top: 0;
+    padding: 0 18px 18px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal-scroll:has(.student-service-qa-detail--modal.is-inline-reply-open) + .student-service-qa-thread-modal-compose {
+    display: none;
+}
+
+/* Comment dialog layout (SS QA modal — mirrors social comments dialog). */
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-preview {
+    padding: 14px 18px;
+    margin: 14px 18px 0;
+    display: grid;
+    gap: 10px;
+    border-radius: 14px;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-post-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-post-head strong {
+    font-size: 14px;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-post-head .social-neo-muted {
+    font-size: 12px;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-post-body {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--lux-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-post-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    padding-top: 6px;
+    border-top: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-panel-border-soft));
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-thread {
+    flex: none;
+    overflow: visible;
+    padding: 14px 18px 8px;
+    min-height: 120px;
+}
+
+body.lux-unified-shell.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment {
+    contain: none;
+    overflow: visible;
+    isolation: auto;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-children {
+    overflow: visible;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-thread .student-service-qa-empty-note {
+    padding: 32px 0;
+    text-align: center;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-detail--modal .student-service-qa-detail-actions {
+    margin: 12px 18px 0;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-compose {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 14px 18px;
+    border-top: 0;
+    box-shadow: none;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-compose .lux-glass-dialog-comment-compose-main,
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-compose .social-neo-comment-compose-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-compose .social-neo-comment-compose-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-compose .student-service-qa-reply-input {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 body.lux-route-student-service #student-service-modal-root .student-service-qa-delete-confirm-preview {
@@ -13255,25 +13582,19 @@ body.lux-route-student-service #student-service-modal-root .student-service-pill
     cursor: pointer;
 }
 
-body.lux-route-student-service #student-service-modal-root .student-service-qa-similar-strip {
-    display: grid;
-    gap: 10px;
-}
-
-body.lux-route-student-service #student-service-modal-root .student-service-qa-similar-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
 body.lux-route-student-service #student-service-modal-root .student-service-qa-detail--modal {
     display: grid;
     gap: 16px;
 }
 
 body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-question,
-body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-comments,
-body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-compose {
+body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-comments {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal-compose .student-service-qa-thread-compose {
     display: grid;
     gap: 12px;
     min-width: 0;
@@ -13302,8 +13623,17 @@ body.lux-route-student-service #student-service-modal-root .student-service-qa-i
     color: var(--lux-text);
 }
 
-body.lux-route-student-service #student-service-modal-root .student-service-qa-detail--modal.is-inline-reply-open .student-service-qa-thread-compose {
-    display: none;
+body.lux-route-student-service #student-service-modal-root .student-service-qa-detail--modal .student-service-qa-detail-actions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    padding-bottom: 2px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-detail--modal .student-service-qa-detail-actions .lux-secondary-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 body.lux-route-student-service #student-service-modal-root .student-service-qa-detail-body {
@@ -13345,8 +13675,6 @@ body.lux-route-student-service #student-service-modal-root .social-neo-comment-b
     gap: 8px;
     padding: 12px 14px;
     border-radius: 16px;
-    background: color-mix(in srgb, var(--lux-bg) 72%, transparent);
-    border: 1px solid color-mix(in srgb, var(--lux-soft-chrome-border-accent) 80%, transparent);
 }
 
 body.lux-route-student-service #student-service-modal-root .student-service-qa-answer-author {
@@ -13377,14 +13705,6 @@ body.lux-route-student-service #student-service-modal-root .social-neo-comment-a
     gap: 8px;
 }
 
-body.lux-route-student-service #student-service-modal-root .social-neo-comment-children {
-    display: grid;
-    gap: 10px;
-    margin-top: 10px;
-    padding-left: 14px;
-    border-left: 2px solid color-mix(in srgb, var(--lux-soft-chrome-border-accent) 70%, transparent);
-}
-
 body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-reply {
     display: flex;
     align-items: flex-start;
@@ -13410,9 +13730,6 @@ body.lux-route-student-service #student-service-modal-root .student-service-qa-r
     min-width: 0;
     min-height: 42px;
     resize: vertical;
-    color: var(--lux-text);
-    background: color-mix(in srgb, var(--lux-bg) 78%, transparent);
-    border: 1px solid var(--lux-soft-chrome-border-accent);
     border-radius: 14px;
     padding: 10px 12px;
 }
@@ -13481,12 +13798,33 @@ body.lux-route-student-service #student-service-modal-root .student-service-inbo
     body.lux-route-student-service #student-service-modal-root :is(
         .student-service-qa-composer-modal-body,
         .student-service-guidance-modal-body,
-        .student-service-qa-thread-modal-body,
         .student-service-ticket-thread-modal-body,
         .student-service-inbox-filter-editor-body,
         .student-service-qa-delete-confirm-preview
     ) {
         padding: 0 16px 16px;
+    }
+
+    body.lux-route-student-service #student-service-modal-root .student-service-guidance-workspace {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: min(44vh, 420px);
+    }
+
+    body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal-compose {
+        padding: 0 12px 12px;
+    }
+
+    body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-preview {
+        margin: 12px 12px 0;
+        padding: 12px 14px;
+    }
+
+    body.lux-route-student-service #student-service-modal-root .lux-glass-dialog-comment-thread,
+    body.lux-route-student-service #student-service-modal-root .student-service-qa-detail--modal .student-service-qa-detail-actions {
+        padding-left: 12px;
+        padding-right: 12px;
+        margin-left: 0;
+        margin-right: 0;
     }
 
     body.lux-route-student-service #student-service-modal-root :is(
@@ -13664,6 +14002,7 @@ body.lux-route-students-admin #students-content .students-hub-hero-controls
 
 body.lux-route-staff #staff-content .staff-hub-kicker,
 body.lux-route-staff #staff-content .staff-hub-overline,
+body.lux-route-students-admin #students-content .students-hub-kicker,
 body.lux-route-students-admin #students-content .students-hub-overline
 {
     display: inline-flex;
@@ -13734,6 +14073,7 @@ body.lux-route-students-admin #students-content .students-hub-hero-toolbar .stud
 /* === Hub typography + text readability (staff + students global) === */
 body.lux-route-staff #staff-content .staff-hub-kicker,
 body.lux-route-staff #staff-content .staff-hub-overline,
+body.lux-route-students-admin #students-content .students-hub-kicker,
 body.lux-route-students-admin #students-content .students-hub-overline
 {
     color: rgba(var(--lux-accent-rgb), 0.88);
@@ -13803,6 +14143,7 @@ body.lux-route-staff #staff-content .staff-hub-filter-grid,
 body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary,
 body.lux-route-staff #staff-content .staff-hub-form-grid,
 body.lux-route-staff #staff-content .staff-hub-info-grid,
+body.lux-route-students-admin #students-content .students-hub-form-grid,
 body.lux-route-students-admin #students-content .students-hub-info-grid
 {
     display: grid;
@@ -13988,6 +14329,13 @@ body.lux-route-students-admin #students-content .students-hub-filter-deck
 body.lux-route-students-admin #students-content .students-hub-filter-deck
 {
     border-radius: 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls.home-hover-chip .staff-hub-filter-deck,
+body.lux-route-students-admin #students-content .students-hub-controls.home-hover-chip .students-hub-filter-deck
+{
+    border: 0;
+    background: transparent;
 }
 
 body.lux-route-staff #staff-content .staff-hub-filter-deck-section,
@@ -14369,6 +14717,7 @@ body.lux-route-students-admin #students-content .students-hub-chip[data-student-
 
 body.lux-route-staff #staff-content .staff-hub-field,
 body.lux-route-staff #staff-command-modal-root .staff-hub-field,
+body.lux-route-students-admin #students-content .students-hub-field,
 body.lux-route-students-admin #students-admin-modal-root .students-hub-field
 {
     display: grid;
@@ -14410,6 +14759,7 @@ body.lux-route-students-admin #students-admin-modal-root .students-hub-field lab
 
 body.lux-route-staff #staff-content textarea.staff-hub-control,
 body.lux-route-staff #staff-command-modal-root textarea.staff-hub-control,
+body.lux-route-students-admin #students-content textarea.students-hub-control,
 body.lux-route-students-admin #students-admin-modal-root textarea.students-hub-control
 {
     min-height: 104px;
@@ -14533,6 +14883,7 @@ body.lux-route-students-admin #students-content .students-hub-person
 
 body.lux-route-staff #staff-content .staff-hub-avatar,
 body.lux-route-staff #staff-command-modal-root .staff-hub-avatar,
+body.lux-route-students-admin #students-content .students-hub-avatar,
 body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar
 {
     width: 48px;
@@ -14547,6 +14898,7 @@ body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar
 
 body.lux-route-staff #staff-content .staff-hub-avatar img,
 body.lux-route-staff #staff-command-modal-root .staff-hub-avatar img,
+body.lux-route-students-admin #students-content .students-hub-avatar img,
 body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar img
 {
     width: 100%;
@@ -14556,6 +14908,7 @@ body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar im
 
 body.lux-route-staff #staff-content .staff-hub-avatar.is-large,
 body.lux-route-staff #staff-command-modal-root .staff-hub-avatar.is-large,
+body.lux-route-students-admin #students-content .students-hub-avatar.is-large,
 body.lux-route-students-admin #students-admin-modal-root .students-hub-avatar.is-large
 {
     width: 84px;
@@ -14594,15 +14947,17 @@ body.lux-route-students-admin #students-content .students-hub-progress-track
     height: 7px;
     overflow: hidden;
     border-radius: 999px;
+    background: rgba(var(--lux-accent-rgb), 0.12);
 }
 
 body.lux-route-staff #staff-content .staff-hub-progress-fill,
 body.lux-route-students-admin #students-content .students-hub-progress-fill
 {
     display: block;
-    width: var(--staff-hub-progress, 0%);
+    width: var(--students-hub-progress, var(--staff-hub-progress, 0%));
     height: 100%;
     border-radius: inherit;
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
     transition: width 0.24s ease;
 }
 
@@ -14740,15 +15095,21 @@ body.lux-route-students-admin #students-content .students-hub-profile-body .stud
     gap: 16px;
     padding: 18px 18px 18px 20px;
     border-radius: 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section:not(.home-hover-chip)
+{
     border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10)) !important;
     background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.03)) !important;
     box-shadow: none !important;
     border-left: 3px solid rgba(var(--lux-accent-rgb), 0.34) !important;
 }
 
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section,
-html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section:not(.home-hover-chip),
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-form-section:not(.home-hover-chip),
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section:not(.home-hover-chip),
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-form-section:not(.home-hover-chip)
 {
     background: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.34)) !important;
 }
@@ -14800,18 +15161,29 @@ body.lux-route-students-admin #students-content .students-hub-profile-body .stud
     gap: 8px;
     min-width: 0;
     padding: 12px 14px;
-    border-radius: 10px;
+    border-radius: var(--lux-field-radius, 10px);
+    transition: background 180ms ease, border-color 180ms ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field:not(.home-hover-chip)
+{
     border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
     background: rgba(var(--lux-accent-rgb), 0.03);
     border-left: 3px solid rgba(var(--lux-accent-rgb), 0.18);
-    transition: background 180ms ease, border-color 180ms ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field:hover,
-body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field:hover
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field:not(.home-hover-chip):hover,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field:not(.home-hover-chip):hover
 {
     background: rgba(var(--lux-accent-rgb), 0.06);
     border-left-color: rgba(var(--lux-accent-rgb), 0.32);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field.home-hover-chip,
+body.lux-route-students-admin #students-content .students-hub-profile-body .students-hub-profile-field.home-hover-chip
+{
+    border-radius: var(--lux-field-radius, 10px);
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field.is-full,
@@ -14827,7 +15199,7 @@ body.lux-route-students-admin #students-content .students-hub-profile-body .stud
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgba(var(--lux-accent-rgb), 0.82);
+    color: var(--lux-text-muted, rgba(var(--lux-accent-rgb), 0.82));
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-body .staff-hub-profile-field-value,
@@ -14928,6 +15300,412 @@ body.lux-route-students-admin #students-content .students-hub-info-grid
 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
+/* Students profile: metrics, academic stack, info cards (layout + type only). */
+body.lux-route-students-admin #students-content .students-hub-profile-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+    flex: 1 1 100%;
+    width: 100%;
+}
+
+body.lux-route-students-admin #students-content .students-hub-profile-metric {
+    display: grid;
+    gap: 6px;
+    padding: 14px 16px;
+    min-width: 0;
+}
+
+body.lux-route-students-admin #students-content .students-hub-profile-metric > span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-students-admin #students-content .students-hub-profile-metric > strong {
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1.15;
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-profile-metric > small {
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-students-admin #students-content .students-hub-profile-metric-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+body.lux-route-students-admin #students-content .students-hub-chips,
+body.lux-route-students-admin #students-content .students-hub-chips--spaced {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+body.lux-route-students-admin #students-content .students-hub-chips--spaced {
+    margin-top: 10px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-section-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.25;
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-section-head p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-students-admin #students-content .students-hub-info-card {
+    display: grid;
+    gap: 8px;
+    padding: 14px 16px;
+    min-width: 0;
+}
+
+body.lux-route-students-admin #students-content .students-hub-info-card.is-full {
+    grid-column: 1 / -1;
+}
+
+body.lux-route-students-admin #students-content .students-hub-info-card > span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-students-admin #students-content .students-hub-info-card > strong {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-info-card > p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-list {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-list--spaced {
+    margin-top: 8px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-list-item {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-list-item strong {
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-list-item small {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-students-admin #students-content .students-hub-field.is-hidden,
+body.lux-route-students-admin #students-content .students-hub-inline-actions .is-hidden {
+    display: none !important;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-stack {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-overview-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr);
+    gap: 16px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-overview-meta,
+body.lux-route-students-admin #students-content .students-hub-academic-overview-scores {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-overview-meta > div,
+body.lux-route-students-admin #students-content .students-hub-academic-overview-scores > div {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-overview-meta span,
+body.lux-route-students-admin #students-content .students-hub-academic-overview-scores span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-overview-meta strong,
+body.lux-route-students-admin #students-content .students-hub-academic-overview-scores strong {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-progress {
+    display: grid;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-progress-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-progress-head strong {
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-progress-head span,
+body.lux-route-students-admin #students-content .students-hub-academic-progress-stats {
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-progress-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-progress-track {
+    height: 8px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-section-btn {
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-section-head {
+    align-items: center;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-count {
+    margin-left: 6px;
+    font-weight: 800;
+    color: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-section-cta {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--lux-text-muted);
+    white-space: nowrap;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-blueprint {
+    border: 0;
+    padding: 0;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-blueprint > summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--lux-text-muted);
+    margin-bottom: 10px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card.is-embed-compact {
+    overflow: hidden;
+    --sch-pill-radius: 999px;
+    --sch-grid-border: var(--lux-border, rgba(255, 255, 255, 0.08));
+    --sch-grid-chrome-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.04));
+    --sch-grid-chrome-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 12%, transparent);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-shell.is-profile {
+    --sch-slot-height: 36px;
+    padding: 10px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-root {
+    min-width: min(1420px, 100%);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-controls {
+    margin-bottom: 10px;
+}
+
+/* Academic schedule embed: shared sch/lux text + button chrome (page hosts stay timetable/scheduler). */
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .schedule-toolbar-embed-compact,
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .schedule-week-nav-embed-compact {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .schedule-week-nav-embed-compact {
+    min-height: 44px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .schedule-week-arrow.lux-secondary-btn {
+    width: var(--lux-secondary-btn-min-height, 44px);
+    min-width: var(--lux-secondary-btn-min-height, 44px);
+    height: var(--lux-secondary-btn-min-height, 44px);
+    padding: 0;
+    justify-content: center;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .schedule-week-label,
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .lux-timetable-week-label {
+    min-width: 170px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-topline-start,
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-topline-end {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-topline-end {
+    margin-left: auto;
+    justify-content: flex-end;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-week-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--lux-text);
+    white-space: nowrap;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--sch-pill-radius, 999px);
+    border: 1px solid var(--sch-grid-border, var(--lux-border));
+    background: var(--lux-soft-chrome-surface, rgba(255, 255, 255, 0.04));
+    color: var(--lux-text-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-grid-tag-soft {
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-day-col-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-day-col-meta,
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-time-col-copy {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-time-slot-copy {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-day-col.is-today .sch-day-col-label,
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-day-col.is-today .sch-day-col-meta {
+    color: var(--lux-accent, var(--lux-text));
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-schedule-card .sch-empty-week-notice {
+    margin-top: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lux-text-muted);
+}
+
+@media (max-width: 980px) {
+    body.lux-route-students-admin #students-content .students-hub-profile-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.lux-route-students-admin #students-content .students-hub-academic-overview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    body.lux-route-students-admin #students-content .students-hub-profile-metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
 body.lux-route-staff #staff-command-modal-root[hidden],
 body.lux-route-students-admin #students-admin-modal-root[hidden]
 {
@@ -15672,6 +16450,12 @@ body.lux-route-students-admin #students-content .students-hub-form-settings{
     gap: 18px;
 }
 
+body.lux-route-staff #staff-content .staff-hub-form-settings[data-lux-glass-root="1"],
+body.lux-route-students-admin #students-content .students-hub-form-settings[data-lux-glass-root="1"]{
+    padding: 22px 24px;
+    border-radius: var(--lux-panel-radius, 22px);
+}
+
 body.lux-route-staff #staff-content .staff-hub-form-settings-head,
 body.lux-route-students-admin #students-content .students-hub-form-settings-head{
     display: flex;
@@ -15688,18 +16472,9 @@ body.lux-route-students-admin #students-content .students-hub-form-settings-copy
     max-width: 760px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-form-settings-copy strong,
-body.lux-route-students-admin #students-content .students-hub-form-settings-copy strong{
-    font-size: 18px;
-    line-height: 1.2;
-}
-
 body.lux-route-staff #staff-content .staff-hub-form-settings-copy p,
 body.lux-route-students-admin #students-content .students-hub-form-settings-copy p{
     margin: 6px 0 0;
-    font-size: 13px;
-    line-height: 1.55;
-    color: var(--lux-text-muted);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-layout,
@@ -15752,16 +16527,12 @@ body.lux-route-students-admin #students-content .students-hub-builder-rail-count
 
 body.lux-route-staff #staff-content .staff-hub-builder-rail-head strong,
 body.lux-route-students-admin #students-content .students-hub-builder-rail-head strong{
-    font-size: 16px;
-    line-height: 1.2;
+    margin: 0;
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-rail-head p,
 body.lux-route-students-admin #students-content .students-hub-builder-rail-head p{
     margin: 0;
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--lux-text-muted);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-type-list,
@@ -15787,15 +16558,28 @@ body.lux-route-students-admin #students-content .students-hub-builder-type-btn{
     color: var(--lux-text);
     text-align: left;
     cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-builder-type:not(.home-hover-chip),
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-builder-type-btn:not(.home-hover-chip){
     transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-builder-type:hover,
-body.lux-route-students-admin #students-content .students-hub-builder-type:hover,
-body.lux-route-staff #staff-content .staff-hub-builder-type-btn:hover,
-body.lux-route-students-admin #students-content .students-hub-builder-type-btn:hover{
+body.lux-route-staff #staff-content .staff-hub-builder-type:not(.home-hover-chip):hover,
+body.lux-route-students-admin #students-content .students-hub-builder-type:not(.home-hover-chip):hover,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn:not(.home-hover-chip):hover,
+body.lux-route-students-admin #students-content .students-hub-builder-type-btn:not(.home-hover-chip):hover{
     border-color: rgba(var(--lux-accent-rgb), 0.22);
     transform: translateY(-1px);
+}
+
+body.lux-route-staff #staff-content .staff-hub-builder-type.home-hover-chip:hover,
+body.lux-route-students-admin #students-content .students-hub-builder-type.home-hover-chip:hover,
+body.lux-route-staff #staff-content .staff-hub-builder-type-btn.home-hover-chip:hover,
+body.lux-route-students-admin #students-content .students-hub-builder-type-btn.home-hover-chip:hover{
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-type.is-active,
@@ -15899,16 +16683,12 @@ body.lux-route-students-admin #students-content .students-hub-builder-canvas-cop
 
 body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy strong,
 body.lux-route-students-admin #students-content .students-hub-builder-canvas-copy strong{
-    font-size: var(--staff-builder-type-display, 18px);
-    line-height: 1.2;
+    margin: 0;
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-canvas-copy p,
 body.lux-route-students-admin #students-content .students-hub-builder-canvas-copy p{
     margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--lux-text-muted);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-canvas-stats,
@@ -16021,9 +16801,6 @@ body.lux-route-students-admin #students-content .students-hub-profile-type-pill{
 body.lux-route-staff #staff-content .staff-hub-profile-panel-head p,
 body.lux-route-students-admin #students-content .students-hub-profile-panel-head p{
     margin: 0;
-    font-size: 12px;
-    color: var(--lux-text-muted);
-    line-height: 1.45;
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-add,
@@ -16032,14 +16809,22 @@ body.lux-route-students-admin #students-content .students-hub-profile-add{
     flex-shrink: 0;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-list-shell,
-body.lux-route-students-admin #students-content .students-hub-profile-list-shell{
+body.lux-route-staff #staff-content .staff-hub-profile-list-shell:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-profile-list-shell:not(.home-hover-chip){
     display: grid;
     gap: 6px;
     padding: 10px;
     border-radius: 12px;
     border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
     background: rgba(var(--lux-accent-rgb), 0.03);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-list-shell.home-hover-chip,
+body.lux-route-students-admin #students-content .students-hub-profile-list-shell.home-hover-chip{
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 12px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-list-columns,
@@ -16075,23 +16860,32 @@ body.lux-route-students-admin #students-content .students-hub-profile-row{
     align-items: center;
     padding: 10px 12px;
     border-radius: 12px;
-    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
-    background: var(--lux-hub-row, rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.085));
     cursor: pointer;
     position: relative;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-profile-row:not(.home-hover-chip){
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
+    background: var(--lux-hub-row, rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.085));
     transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-profile-row:hover,
-body.lux-route-students-admin #students-content .students-hub-profile-row:hover{
+body.lux-route-staff #staff-content .staff-hub-profile-row:not(.home-hover-chip):hover,
+body.lux-route-students-admin #students-content .students-hub-profile-row:not(.home-hover-chip):hover{
     background: var(--lux-hub-row-hover, rgba(var(--lux-accent-rgb), 0.10));
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-active,
 body.lux-route-students-admin #students-content .students-hub-profile-row.is-active{
     border-color: rgba(var(--lux-accent-rgb), 0.34);
-    background: rgba(var(--lux-accent-rgb), 0.09);
     box-shadow: var(--lux-hub-active-row-shadow, var(--lux-elev-1));
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-active:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-active:not(.home-hover-chip){
+    background: rgba(var(--lux-accent-rgb), 0.09);
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-row.is-new,
@@ -16364,9 +17158,6 @@ body.lux-route-students-admin #students-content .students-hub-workspace-head-cop
 body.lux-route-staff #staff-content .staff-hub-workspace-head-context,
 body.lux-route-students-admin #students-content .students-hub-workspace-head-context{
     margin: 0;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--lux-text);
 }
 
 body.lux-route-staff #staff-content .staff-hub-field-workspace-filter,
@@ -16768,9 +17559,6 @@ body.lux-route-students-admin #students-content .students-hub-copy-bar{
 body.lux-route-staff #staff-content .staff-hub-copy-bar-helper,
 body.lux-route-students-admin #students-content .students-hub-copy-bar-helper{
     margin: 0;
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--lux-text-muted);
 }
 
 body.lux-route-staff #staff-content .staff-hub-copy-bar-controls,
@@ -17141,7 +17929,6 @@ body.lux-route-students-admin #students-content .students-hub-builder-empty-stat
     gap: 10px;
     padding: 48px 24px;
     text-align: center;
-    color: var(--lux-text-muted);
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-empty.is-inline,
@@ -17160,16 +17947,13 @@ body.lux-route-students-admin #students-content .students-hub-builder-empty-stat
 
 body.lux-route-staff #staff-content .staff-hub-builder-empty-state strong,
 body.lux-route-students-admin #students-content .students-hub-builder-empty-state strong{
-    font-size: 15px;
-    color: var(--lux-text);
+    margin: 0;
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-empty-state p,
 body.lux-route-students-admin #students-content .students-hub-builder-empty-state p{
     margin: 0;
     max-width: 320px;
-    font-size: 12px;
-    line-height: 1.45;
 }
 
 body.lux-route-staff #staff-content .staff-hub-builder-empty-icon,
@@ -17346,8 +18130,6 @@ body.lux-route-students-admin #students-content .students-hub-studio-save-bar{
 
 body.lux-route-staff #staff-content .staff-hub-studio-save-status,
 body.lux-route-students-admin #students-content .students-hub-studio-save-status{
-    font-size: 12px;
-    font-weight: 700;
     letter-spacing: 0.02em;
 }
 
@@ -17689,9 +18471,13 @@ body.lux-route-students-admin #students-content .students-hub-studio-field-row{
     gap: 8px;
     padding: 10px;
     border-radius: 12px;
-    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
     overflow: visible;
     position: relative;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-field-row:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-studio-field-row:not(.home-hover-chip){
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
 body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-dragging,
@@ -18122,8 +18908,8 @@ body.lux-route-students-admin #students-content .students-hub-studio-quick-label
     color: var(--lux-text-muted);
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-btn,
-body.lux-route-students-admin #students-content .students-hub-studio-quick-btn{
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn:not(.home-hover-chip),
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn:not(.home-hover-chip){
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -18131,6 +18917,19 @@ body.lux-route-students-admin #students-content .students-hub-studio-quick-btn{
     border-radius: 999px;
     border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
     background: rgba(var(--lux-accent-rgb), 0.06);
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn.home-hover-chip,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn.home-hover-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
     color: var(--lux-text);
     font-size: 11px;
     font-weight: 800;
@@ -18151,8 +18950,8 @@ body.lux-route-students-admin #students-content .students-hub-studio-quick-add.i
     font-size: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-studio-quick-btn:hover,
-body.lux-route-students-admin #students-content .students-hub-studio-quick-btn:hover{
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn:not(.home-hover-chip):hover,
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn:not(.home-hover-chip):hover{
     border-color: rgba(var(--lux-accent-rgb), 0.28);
 }
 
@@ -19336,10 +20135,17 @@ html.lux-light-mode body.lux-route-news #portal-news-root :is(
   padding: 28px;
 }
 #page-library .admin-library-empty-row { pointer-events: none; }
+#page-library .admin-library-empty-row .admin-library-empty-state.home-hover-chip {
+  pointer-events: auto;
+}
 #page-library .admin-library-empty-state {
   display: grid;
   justify-items: center;
   gap: 10px;
+}
+#page-library .admin-library-empty-state.home-hover-chip {
+  padding: 22px 24px;
+  border-radius: 16px;
 }
 #page-library .admin-library-empty-state i {
   font-size: 24px;
@@ -19891,8 +20697,6 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-draft {
   margin-top: 10px;
-  color: var(--lux-text-muted);
-  font-size: 13px;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid {
   display: grid;
@@ -19933,17 +20737,11 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
   box-shadow: var(--lux-hub-inset-ring-soft, var(--lux-elev-1));
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--lux-text);
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__meta {
   margin-top: 6px;
-  color: var(--lux-text-muted);
-  font-size: 12px;
-  line-height: 1.45;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__side {
   display: flex;
@@ -19955,7 +20753,6 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-admin-sent-empty {
   padding: 24px 18px;
   text-align: center;
-  color: var(--lux-text-muted);
   border: 1px dashed var(--lux-border);
   border-radius: 16px;
 }
@@ -20078,28 +20875,6 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(
   padding: 0 0 16px;
   border-bottom: 1px solid var(--lux-border);
 }
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(
-  #admin-orders-root,
-  .admin-orders-create-modal,
-  .admin-orders-thread-modal
-) .lux-card-title,
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-copy .lux-card-title {
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  color: var(--lux-text);
-}
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(
-  #admin-orders-root,
-  .admin-orders-create-modal,
-  .admin-orders-thread-modal
-) .lux-card-copy,
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-copy .lux-card-copy {
-  margin-top: 6px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--lux-text-muted);
-}
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
   padding-bottom: 4px;
 }
@@ -20127,13 +20902,6 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
   display: grid;
   gap: 8px;
   min-width: 0;
-}
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-picker-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--lux-text-muted);
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item {
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
@@ -20870,10 +21638,13 @@ body.lux-route-social :is(
   .social-neo-pages-hero,
   .social-neo-surveys-hero,
   .social-neo-workspace-hero,
-  .social-neo-portfolio-hero
+  .social-neo-portfolio-hero,
+  .social-neo-research-hero,
+  .social-neo-feed-hero
 ) {
   display: grid;
   gap: 8px;
+  overflow: visible;
 }
 
 body.lux-route-social :is(
@@ -20948,11 +21719,17 @@ body.lux-route-social :is(
   .social-neo-groups-hero-stats,
   .social-neo-surveys-hero-stats,
   .social-neo-workspace-hero-stats,
-  .social-neo-portfolio-hero-stats
+  .social-neo-portfolio-hero-stats,
+  .social-neo-research-hero-stats,
+  .social-neo-feed-hero-stats,
+  .social-neo-pages-hero-stats
 ) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
+  overflow: visible;
+  padding-block: 4px;
+  margin-block: -4px;
 }
 
 body.lux-route-social .social-neo-lost-found-hero-stats--dual {
@@ -20961,6 +21738,228 @@ body.lux-route-social .social-neo-lost-found-hero-stats--dual {
 
 body.lux-route-social .social-neo-surveys-hero-stats--triple {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Research publications panel — layout only */
+body.lux-route-social .social-neo-research-shell {
+  display: grid;
+  gap: 16px;
+}
+body.lux-route-social .social-neo-research-hero,
+body.lux-route-social .social-neo-research-catalog,
+body.lux-route-social .social-neo-research-reader {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+}
+body.lux-route-social .social-neo-research-hero-head,
+body.lux-route-social .social-neo-research-reader-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+body.lux-route-social .social-neo-research-hero-copy,
+body.lux-route-social .social-neo-research-reader-titleblock {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+body.lux-route-social .social-neo-research-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  overflow: visible;
+}
+body.lux-route-social .social-neo-research-hero,
+body.lux-route-social .social-neo-research-shell {
+  overflow: visible;
+}
+body.lux-route-social .social-neo-research-stat {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+}
+body.lux-route-social .social-neo-research-stat strong {
+  font-size: 1.2rem;
+}
+body.lux-route-social .social-neo-research-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+body.lux-route-social .social-neo-research-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  width: 100%;
+}
+body.lux-route-social .social-neo-research-tab-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+body.lux-route-social .social-neo-research-tab-copy small {
+  color: var(--lux-text-muted);
+  font-size: 12px;
+}
+body.lux-route-social .social-neo-research-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+body.lux-route-social .social-neo-research-filter {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+body.lux-route-social .social-neo-research-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+body.lux-route-social .social-neo-research-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  width: 100%;
+}
+body.lux-route-social .social-neo-research-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body.lux-route-social .social-neo-research-card-abstract {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+body.lux-route-social .social-neo-research-reader-actions,
+body.lux-route-social .social-neo-research-pdf-toolbar,
+body.lux-route-social .social-neo-research-meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+body.lux-route-social .social-neo-research-article-body {
+  display: grid;
+  gap: 14px;
+  max-width: 72ch;
+}
+body.lux-route-social .social-neo-research-pdf-shell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  min-height: 420px;
+}
+body.lux-route-social .social-neo-research-pdf-thumbs {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  max-height: 70vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+body.lux-route-social .social-neo-research-pdf-thumb {
+  min-width: 40px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--lux-border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+body.lux-route-social .social-neo-research-pdf-thumb.is-active {
+  border-color: rgba(var(--lux-accent-rgb), 0.4);
+}
+body.lux-route-social .social-neo-research-pdf-viewport {
+  overflow: auto;
+  max-height: 70vh;
+  border: 1px solid var(--lux-border);
+  border-radius: 14px;
+  padding: 12px;
+}
+body.lux-route-social .social-neo-research-pdf-pages {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+body.lux-route-social .social-neo-research-pdf-canvas {
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+}
+body.lux-route-social .social-neo-research-create-body {
+  display: grid;
+  gap: 14px;
+}
+body.lux-route-social .social-neo-research-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-social .social-neo-research-choice,
+body.lux-route-social .social-neo-research-format-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+body.lux-route-social .social-neo-research-choice:not(.home-hover-chip),
+body.lux-route-social .social-neo-research-format-card:not(.home-hover-chip) {
+  border: 1px solid var(--lux-border);
+}
+body.lux-route-social .social-neo-research-choice.is-active:not(.home-hover-chip),
+body.lux-route-social .social-neo-research-format-card.is-active:not(.home-hover-chip) {
+  border-color: rgba(var(--lux-accent-rgb), 0.35);
+}
+body.lux-route-social .social-neo-research-dropzone.home-hover-chip {
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+body.lux-route-social .social-neo-research-choice span,
+body.lux-route-social .social-neo-research-format-card {
+  display: grid;
+  gap: 2px;
+}
+body.lux-route-social .social-neo-research-format-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+body.lux-route-social .social-neo-research-field,
+body.lux-route-social .social-neo-research-dropzone {
+  display: grid;
+  gap: 6px;
+}
+body.lux-route-social .social-neo-research-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 900px) {
+  body.lux-route-social .social-neo-research-hero-stats,
+  body.lux-route-social .social-neo-research-tabs,
+  body.lux-route-social .social-neo-research-toolbar,
+  body.lux-route-social .social-neo-research-format-grid,
+  body.lux-route-social .social-neo-research-field-grid {
+    grid-template-columns: 1fr;
+  }
+  body.lux-route-social .social-neo-research-pdf-shell {
+    grid-template-columns: 1fr;
+  }
 }
 
 body.lux-route-social .social-neo-events-hero-stats {
@@ -21599,11 +22598,17 @@ body.lux-route-social .social-portfolio-feed {
   display: grid;
   gap: 12px;
   min-width: 0;
+  overflow: visible;
 }
 
 body.lux-route-social .social-portfolio-card {
   padding: 14px 16px;
   border-radius: 16px;
+}
+
+body.lux-route-social .social-portfolio-card.home-hover-chip {
+  overflow: visible;
+  contain: none;
 }
 
 body.lux-route-social .social-portfolio-card-head {
@@ -21640,6 +22645,16 @@ body.lux-route-social .social-portfolio-actions {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+body.lux-route-social .social-project-scroll-list--portfolio {
+  --project-scroll-max: 720px;
+  padding: 10px 8px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body.lux-route-social .social-neo-muted {
@@ -21657,6 +22672,13 @@ body.lux-route-social .social-neo-muted {
 /* Social: workspace hub discover + project filters (layout only). */
 body.lux-route-social .social-neo-workspace-hero-stats {
   grid-template-columns: repeat(6, minmax(0, 1fr));
+  overflow: visible;
+}
+
+body.lux-route-social .social-neo-workspace-hero,
+body.lux-route-social .social-neo-workspace-hero.social-neo-community-panel,
+body.lux-route-social .social-neo-card.social-neo-workspace-hero {
+  overflow: visible;
 }
 
 body.lux-route-social .social-neo-workspace-hub-section,
@@ -21665,11 +22687,7 @@ body.lux-route-social .social-project-hub-discover {
   gap: 12px;
   min-width: 0;
   padding: 12px 14px;
-  border-radius: 16px;
-  background-color: var(--social-chip-fill);
-  background-image: var(--social-chip-surface);
-  border: 1px solid var(--social-chip-border);
-  box-shadow: var(--lux-elev-1, none);
+  overflow: visible;
 }
 
 body.lux-route-social .social-project-hub-search-row {
@@ -21701,9 +22719,6 @@ body.lux-route-social .social-project-hub-attention {
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--lux-accent, #7c6cff) 24%, var(--social-chip-border));
-  background: color-mix(in srgb, var(--lux-accent, #7c6cff) 8%, var(--social-chip-fill));
 }
 
 body.lux-route-social .social-project-hub-attention-copy {
@@ -21727,14 +22742,23 @@ body.lux-route-social :is(.social-project-hub-scope, .social-project-hub-filter-
 }
 
 body.lux-route-social .social-project-hub-filterbar {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 10px 14px;
+  overflow: visible;
 }
 
 body.lux-route-social .social-project-hub-filter-group {
-  display: grid;
+  display: flex;
+  align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+body.lux-route-social .social-project-hub-filter-group--skills {
+  flex: 1 1 240px;
 }
 
 body.lux-route-social .social-project-hub-filter-label {
@@ -21743,6 +22767,7 @@ body.lux-route-social .social-project-hub-filter-label {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--lux-text-muted, var(--lux-text-secondary));
+  white-space: nowrap;
 }
 
 body.lux-route-social .social-project-hub-layout {
@@ -23137,25 +24162,39 @@ body.lux-route-social .social-neo-comment-actions {
   gap: 6px;
 }
 
-/* Social comments dialog: thread trunks + reply form (layout only; paint → lux-fouc-ht). */
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment-list {
+/* Comment thread shell (shared: social dialog + SS QA modal) — layout only; paint → lux-fouc-ht. */
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment-list {
   --sn-thread: color-mix(in srgb, var(--lux-text) 34%, transparent);
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment {
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment {
   position: relative;
   overflow: visible;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment-children {
-  margin: 0 0 0 16px;
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment-children {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0 16px;
   padding-left: 24px;
   border-left: 0;
   position: relative;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment:has(> .social-neo-comment-children)::after,
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment[style*="--trunk-top"]::after {
+#social-neo-overlay-portal .lux-glass-dialog-comment-thread .social-neo-comment:has(> .social-neo-comment-children)::after,
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment[style*="--trunk-top"]::after {
   content: '';
   position: absolute;
   left: 15px;
@@ -23165,7 +24204,10 @@ body.lux-route-social .social-neo-comment-actions {
   pointer-events: none;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment-children > .social-neo-comment::before {
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment-children > .social-neo-comment::before {
   content: '';
   position: absolute;
   left: -25px;
@@ -23178,29 +24220,57 @@ body.lux-route-social .social-neo-comment-actions {
   pointer-events: none;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment:hover > .social-neo-comment-children {
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment:hover > .social-neo-comment-children {
   --sn-thread: rgba(var(--lux-accent-rgb), 0.7);
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment.is-reply {
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment.is-reply {
   margin-left: 0;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment.is-reply > .social-neo-comment-row > .social-neo-avatar {
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment.is-reply > .social-neo-comment-row > .social-neo-avatar {
   width: 28px;
   height: 28px;
   font-size: 11px;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .social-neo-comment-bubble,
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .sns-comment-dialog-bubble {
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .social-neo-comment-bubble {
   display: grid;
   gap: 6px;
   padding: 10px 12px;
   border-radius: 14px;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread .sns-comment-dialog-bubble p {
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .sns-comment-dialog-bubble {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .sns-comment-dialog-bubble p,
+:is(
+  #social-neo-overlay-portal .lux-glass-dialog-card--comments .lux-glass-dialog-comment-thread,
+  #student-service-modal-root .lux-glass-dialog-comment-thread
+) .sns-comment-dialog-bubble .student-service-qa-answer-copy {
   margin: 0;
   font-size: 14px;
   line-height: 1.55;
@@ -23208,7 +24278,8 @@ body.lux-route-social .social-neo-comment-actions {
   overflow-wrap: anywhere;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form {
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form,
+#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form {
   display: grid;
   gap: 8px;
   margin: 6px 0 4px;
@@ -23216,18 +24287,33 @@ body.lux-route-social .social-neo-comment-actions {
   border-radius: 12px;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form .social-neo-input {
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form .social-neo-input,
+#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form .social-neo-input,
+#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form .student-service-qa-reply-input {
   width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  resize: vertical;
+  border-radius: 12px;
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form-actions {
+#student-service-modal-root .lux-glass-dialog-comment-thread .student-service-qa-reply-context {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form-actions,
+#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
 }
 
 #social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form-actions .lux-secondary-btn,
-#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form-actions .lux-primary-btn {
+#social-neo-overlay-portal .lux-glass-dialog-card--comments .social-neo-comment-reply-form-actions .lux-primary-btn,
+#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form-actions .lux-secondary-btn,
+#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form-actions .lux-primary-btn {
   border-radius: 999px;
 }
 
@@ -30629,9 +31715,6 @@ body.lux-route-social .social-project-hub-attention {
     gap: 12px;
     flex-wrap: wrap;
     padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(var(--lux-red-rgb, 244, 63, 94), 0.28);
-    background: rgba(var(--lux-red-rgb, 244, 63, 94), 0.08);
 }
 body.lux-route-social .social-project-hub-attention-copy {
     font-size: 13px;
@@ -30654,9 +31737,7 @@ body.lux-route-social .social-project-hub-filterbar {
     align-items: center;
     gap: 8px 18px;
     padding: 10px 14px;
-    border-radius: 12px;
-    border: 1px solid var(--lux-border);
-    background: transparent;
+    overflow: visible;
 }
 body.lux-route-social .social-project-hub-filter-group {
     display: flex;
@@ -38194,7 +39275,6 @@ body.lux-route-study-card .study-card-assessment-overlay {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(15, 23, 42, 0.72);
 }
 
 body.lux-route-study-card .study-card-assessment-window {
@@ -38204,24 +39284,6 @@ body.lux-route-study-card .study-card-assessment-window {
     height: min(88vh, 920px);
     border-radius: 28px;
     overflow: hidden;
-    min-width: 0;
-}
-
-body.lux-route-study-card .study-card-assessment-window.lux-soft-chrome {
-    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
-    background-image: var(--lux-soft-chrome-surface);
-    background-color: var(--lux-soft-chrome-control, transparent);
-}
-
-body.lux-route-study-card .study-card-assessment-window :is(
-    .lux-soft-chrome,
-    .lms-route-panel
-) {
-    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
-    background-image: var(--lux-soft-chrome-surface);
-    background-color: var(--lux-soft-chrome-control, transparent);
     min-width: 0;
 }
 
@@ -38265,6 +39327,11 @@ body.lux-route-study-card .study-card-assessment-layout {
     display: grid;
     gap: 20px;
     min-width: 0;
+}
+
+body.lux-route-study-card .study-card-assessment-layout:has(.study-card-assessment-panel--activity) {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: start;
 }
 
 body.lux-route-study-card .study-card-assessment-panel {
@@ -38358,17 +39425,34 @@ body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend {
     display: flex;
     flex-wrap: wrap;
     gap: 10px 14px;
+    margin-top: 2px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    margin: 0;
     font-size: 12px;
-    color: var(--lux-text-muted);
+    font-weight: 700;
+    line-height: 1.45;
+    white-space: normal;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend-stat.lux-panel-copy {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
 }
 
 body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend i {
     display: inline-block;
+    flex-shrink: 0;
     width: 10px;
     height: 10px;
     margin-right: 6px;
     border-radius: 999px;
-    vertical-align: -1px;
+    vertical-align: middle;
 }
 
 body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend .is-earned {
@@ -38476,8 +39560,6 @@ body.lux-route-study-card .study-card-activity-item {
     width: 100%;
     padding: 14px 16px;
     border-radius: 16px;
-    border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
-    background: transparent;
     color: inherit;
     text-align: left;
     cursor: pointer;
@@ -38518,7 +39600,18 @@ body.lux-route-study-card #student-evaluation-history-modal.gb-modal-overlay {
 }
 
 /* Study card route: shared typography (layout above; surfaces → lux-fouc-ht). */
-body.lux-route-study-card #page-study-card .study-card-title-row :is(.lux-section-kicker, .lux-page-title) {
+body.lux-route-study-card #page-study-card .study-card-title-row :is(.lux-section-kicker, .lux-page-title),
+body.lux-route-study-card #study-card-assessment-window .study-card-assessment-window__title {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-study-card #study-card-assessment-window :is(
+    .study-card-assessment-window__meta,
+    .study-card-assessment-panel-copy,
+    .study-card-assessment-hint
+) {
     overflow: visible;
     text-overflow: clip;
     overflow-wrap: anywhere;
@@ -38665,5 +39758,322 @@ html.lux-light-mode body.lux-route-study-card #page-study-card :is(
     body.lux-route-study-card .study-card-assessment-window__header {
         flex-direction: column;
     }
+
+    body.lux-route-study-card .study-card-assessment-layout:has(.study-card-assessment-panel--activity) {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
+/* LMS personal workspace overlay (layout only — paint → lux-fouc-ht). */
+body.lms-personal-dashboard-open {
+    overflow: hidden;
+}
+
+#lms-personal-dashboard-overlay[hidden] {
+    display: none !important;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-card {
+    width: min(1360px, calc(100vw - 32px));
+    max-width: none;
+    height: min(90vh, 920px);
+    max-height: none;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 16px 18px;
+    flex-shrink: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-head-main {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-autosave-status {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0 18px 18px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-callout {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout {
+    display: grid;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-student-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-staff-layout {
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr) minmax(260px, 320px);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board-host {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board-host .lms-whiteboard-shell {
+    height: 100%;
+    min-height: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board-host .lms-whiteboard-layout--personal {
+    height: 100%;
+    min-height: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-shortcuts {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-shared-with-me {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-shared-with-me-list,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-list {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-shared-with-me-row,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-item {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 16px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-shared-with-me-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-item.is-autosave {
+    /* autosave row — opacity paint in fouc-ht */
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-shortcut-list {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-body {
+    position: relative;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel {
+    display: grid;
+    gap: 14px;
+    width: min(520px, calc(100% - 32px));
+    max-height: min(78vh, 720px);
+    overflow: auto;
+    padding: 18px;
+    border-radius: 18px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-title {
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-section {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-section-row,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-share-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-share-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-avatar {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg {
+    display: inline-flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg-btn {
+    min-width: 52px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-search-input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-share-list {
+    display: grid;
+    gap: 8px;
+    max-height: 220px;
+    overflow: auto;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-empty.lux-empty-state {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+    padding: 20px 12px;
+    text-align: center;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-field {
+    display: grid;
+    gap: 4px;
+}
+
+@media (max-width: 960px) {
+    body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-student-layout,
+    body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-staff-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history {
+        max-height: 280px;
+    }
+}

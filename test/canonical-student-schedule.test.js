@@ -10,6 +10,7 @@ describe('canonical student schedule shape', () => {
     it('normalizes object-shaped schedules before building enrollments', () => {
         const state = readSource('assets/js/app/state.js');
         expect(state).toContain('normalizeStudentScheduleValue(schedule).map(item => ({');
+        expect(state).toContain('hasEntryShape');
     });
 
     it('repairs non-array studentSchedulesByStudent during ensureCanonicalState', () => {

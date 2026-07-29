@@ -1233,7 +1233,7 @@ function renderStudyCardAssessmentActivityFeed(record, options = {}) {
                     ? `<p class="study-card-activity-item-note"><i class="fas fa-comment-dots"></i> ${escapeHtml(note)}</p>`
                     : '';
                 return `
-                    <button type="button" class="study-card-activity-item lux-soft-chrome is-${escapeHtml(item.status.key)}" data-gradebook-click="open-category-history" data-gradebook-criterion="${escapeHtml(String(item.meta.key))}" data-gradebook-category-label="${escapeHtml(item.meta.label)}">
+                    <button type="button" class="study-card-activity-item lux-soft-chrome home-hover-chip is-${escapeHtml(item.status.key)}" data-gradebook-click="open-category-history" data-gradebook-criterion="${escapeHtml(String(item.meta.key))}" data-gradebook-category-label="${escapeHtml(item.meta.label)}">
                         <div class="study-card-activity-item-main">
                             <span class="study-card-activity-item-badge lms-route-field-label">${escapeHtml(item.meta.label)}</span>
                             <strong class="study-card-activity-item-title lms-route-card-title">${escapeHtml(item.displayMeta.title || `${item.meta.label} ${item.entryNumber}`)}</strong>

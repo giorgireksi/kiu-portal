@@ -51,6 +51,8 @@
         const hasSocialPagesModule = __dep('hasSocialPagesModule');
         const hasSocialPhotographyModule = __dep('hasSocialPhotographyModule');
         const hasSocialSurveysModule = __dep('hasSocialSurveysModule');
+        const hasSocialResearchModule = __dep('hasSocialResearchModule');
+        const ensureSocialResearchModule = __dep('ensureSocialResearchModule');
         const hasSocialWorkspaceModule = __dep('hasSocialWorkspaceModule');
         const markup = __dep('markup');
         const normalizeComposerEntityLinks = __dep('normalizeComposerEntityLinks');
@@ -352,8 +354,8 @@
                     const icon = text(stat?.icon) ? `<i class="fas ${escape(stat.icon)}" aria-hidden="true"></i>` : '';
                     const isEvents = family === 'social-neo-events-hero';
                     const statClass = isEvents
-                        ? `${escape(family)}-stat social-neo-events-hero-stat lux-strip-card surface-card`
-                        : `${escape(family)}-stat`;
+                        ? `${escape(family)}-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip`
+                        : `${escape(family)}-stat lux-soft-chrome home-hover-chip`;
                     return `<article class="${statClass}">
                         ${icon && isEvents ? `<span class="${escape(family)}-stat-icon">${icon}</span>` : ''}
                         <strong>${escape(stat?.value ?? '')}</strong>
@@ -449,6 +451,11 @@
             ensureSocialSurveysModule().then(() => queueDeferredModuleRender('surveys-module')).catch(() => null);
             return '<div class="social-neo-stack social-neo-module-loading" aria-busy="true"></div>';
         }
+        function renderResearchPanel() {
+            if (hasSocialResearchModule()) return window.renderResearchPanel();
+            ensureSocialResearchModule().then(() => queueDeferredModuleRender('research-module')).catch(() => null);
+            return '<div class="social-neo-stack social-neo-module-loading" aria-busy="true"></div>';
+        }
         function renderPhotographyPanel() {
             if (hasSocialPhotographyModule()) return window.renderPhotographyPanel();
             ensureSocialPhotographyModule().then(() => queueDeferredModuleRender('photography-module')).catch(() => null);
@@ -503,7 +510,7 @@
                     </div>
                     <div class="social-neo-community-hero-stats">
                         ${stats.map((stat) => `
-                            <article class="social-neo-community-hero-stat social-neo-events-hero-stat lux-strip-card surface-card">
+                            <article class="social-neo-community-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                                 <strong>${escape(String(stat.value))}</strong>
                                 <span>${escape(stat.label)}</span>
                             </article>
@@ -936,6 +943,7 @@
             renderProjectsWorkspacePanelClassic,
             renderLostFoundPanel,
             renderSurveysPanel,
+            renderResearchPanel,
             renderPhotographyPanel,
             renderMessagesPanel,
             renderCommunityHero,

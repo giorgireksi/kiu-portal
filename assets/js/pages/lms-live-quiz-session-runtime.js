@@ -764,7 +764,7 @@ function renderLmsLiveSyncNotice(workspace = null) {
     if (error) {
         const denied = workspace?.ui?.accessDenied === true;
         return `
-            <div class="lms-live-card lms-live-sync-card is-error">
+            <div class="lms-live-card home-hover-chip lms-live-sync-card is-error">
                 <div class="lms-live-label is-danger"><i class="fas fa-triangle-exclamation"></i> ${denied ? 'Live quiz access denied' : 'Live sync needs attention'}</div>
                 <div class="lms-live-copy lms-route-copy-mt-6 is-danger">${escapeHtml(error)}</div>
             </div>
@@ -772,14 +772,14 @@ function renderLmsLiveSyncNotice(workspace = null) {
     }
     if (workspace?.ui?.syncing) {
         return `
-            <div class="lms-live-card lms-live-sync-card is-syncing">
+            <div class="lms-live-card home-hover-chip lms-live-sync-card is-syncing">
                 <div class="lms-live-label"><i class="fas fa-rotate fa-spin"></i> Syncing live quiz</div>
             </div>
         `;
     }
     if (workspace?.ui?.dirty) {
         return `
-            <div class="lms-live-card lms-live-sync-card is-pending">
+            <div class="lms-live-card home-hover-chip lms-live-sync-card is-pending">
                 <div class="lms-live-label"><i class="fas fa-cloud-arrow-up"></i> Unsaved changes</div>
                 <div class="lms-live-copy lms-route-copy-mt-6">Your latest edits will sync shortly.</div>
             </div>
@@ -787,7 +787,7 @@ function renderLmsLiveSyncNotice(workspace = null) {
     }
     if (workspace?.ui?.loadedFromBackend && !workspace?.ui?.accessDenied) {
         return `
-            <div class="lms-live-card lms-live-sync-card is-ok">
+            <div class="lms-live-card home-hover-chip lms-live-sync-card is-ok">
                 <div class="lms-live-label"><i class="fas fa-circle-check"></i> Synced with server</div>
             </div>
         `;

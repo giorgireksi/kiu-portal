@@ -243,6 +243,7 @@ describe('LMS personal dashboard staff share', () => {
         expect(routes).toContain('studentId');
         expect(readSource('backend/platform/routes/lms-whiteboard-routes.js')).toContain('resolveSessionActorAccount');
         expect(readSource('backend/platform/server.js')).toContain('function resolveSessionActorAccount');
+        const css = readSource('assets/css/lux-page-bare-lite.css');
         expect(css).toContain('.lms-personal-dashboard-share-panel');
         expect(css).toContain('.lms-personal-dashboard-share-seg-btn');
         expect(css).toContain('.lms-whiteboard-members-section--dashboards');

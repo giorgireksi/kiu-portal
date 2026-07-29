@@ -434,10 +434,10 @@ function renderStudentServiceGuidanceModalShell(ctx) {
                 <div class="student-service-guidance-modal-accent" aria-hidden="true"></div>
                 <header class="student-service-guidance-modal-head">
                     <div class="student-service-guidance-modal-heading">
-                        <span class="student-service-guidance-modal-icon-chip"><i class="fas fa-book-open" aria-hidden="true"></i></span>
+                        <span class="student-service-guidance-modal-icon-chip lux-soft-chrome"><i class="fas fa-book-open" aria-hidden="true"></i></span>
                         <div class="student-service-guidance-modal-title">
-                            <strong id="student-service-guidance-modal-title">Rules & guidance</strong>
-                            <span>Browse official guidance before opening a private case.</span>
+                            <strong id="student-service-guidance-modal-title" class="lux-page-title">Rules & guidance</strong>
+                            <span class="lux-panel-copy">Browse official guidance before opening a private case.</span>
                         </div>
                     </div>
                     <button type="button" class="lux-secondary-btn student-service-guidance-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-guidance-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>

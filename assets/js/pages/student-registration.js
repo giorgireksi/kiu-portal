@@ -3,6 +3,16 @@
 
 // --- STUDENT REGISTRATION LOGIC ---
 
+function syncRegistrationTabHoverChip(tab) {
+    if (!tab?.classList) return;
+    tab.classList.toggle('home-hover-chip', !tab.classList.contains('active'));
+}
+
+function syncAllRegistrationTabHoverChips(root = document.querySelector('#page-registration .reg-tabs')) {
+    if (!root) return;
+    root.querySelectorAll('.reg-tab').forEach(syncRegistrationTabHoverChip);
+}
+
 function switchRegTab(tabId, triggerElement = null) {
     invalidateStudentRegistrationViewCache();
     document.querySelectorAll('.reg-tab').forEach(t => t.classList.remove('active'));
@@ -25,8 +35,9 @@ function switchRegTab(tabId, triggerElement = null) {
     }
     document.querySelectorAll('#page-registration .reg-tabs .reg-tab').forEach((tab) => {
         if (tab !== clickedTab) tab.setAttribute('aria-selected', 'false');
+        syncRegistrationTabHoverChip(tab);
     });
-    
+
     // Hide all legacy hardcoded tabs if they exist
     document.querySelectorAll('[id^=reg-tab-]').forEach(t => {
         if (t) t.hidden = true;
@@ -125,14 +136,21 @@ function normalizeStudentRegistrationCourseIds(registrationValue) {
 }
 
 function normalizeStudentScheduleEntries(scheduleValue) {
-    if (Array.isArray(scheduleValue)) return scheduleValue.filter(Boolean);
-    if (scheduleValue && typeof scheduleValue === 'object') {
-        if (Array.isArray(scheduleValue.entries)) return scheduleValue.entries.filter(Boolean);
-        return Object.entries(scheduleValue)
-            .filter(([, groupId]) => groupId != null && groupId !== '')
-            .map(([courseId, groupId]) => ({ courseId, groupId }));
+    if (typeof normalizeStudentScheduleValue === 'function') {
+        return normalizeStudentScheduleValue(scheduleValue).filter(Boolean);
     }
+    if (Array.isArray(scheduleValue)) return scheduleValue.filter(Boolean);
     return [];
+}
+
+function formatStudentScheduleSectionLabel(item) {
+    const groupRef = item?.groupName ?? item?.groupId ?? 'Section';
+    const groupName = typeof groupRef === 'object'
+        ? (groupRef?.name || groupRef?.id || 'Section')
+        : String(groupRef || 'Section');
+    const day = item?.day ? ` / ${item.day}` : '';
+    const time = item?.time ? ` ${item.time}` : '';
+    return `${groupName}${day}${time}`;
 }
 
 function buildStudentRegistrationCourseContext() {
@@ -193,6 +211,25 @@ function formatStudentSelectedSectionSummary(selectedSections) {
     return labels.join(', ');
 }
 
+function buildStudentRegistrationEnrollmentSignature(userId, faculty) {
+    if (!userId) return '';
+    const normalizedFaculty = normalizeFacultyCode(faculty || '', 'ECON');
+    const registrations = normalizeStudentRegistrationCourseIds(KIU_STATE.studentRegistrations?.[userId]);
+    const schedule = normalizeStudentScheduleEntries(KIU_STATE.studentSchedulesByStudent?.[userId])
+        .filter((item) => {
+            const derivedFaculty = typeof deriveFacultyFromSubjectId === 'function'
+                ? deriveFacultyFromSubjectId(item?.courseId)
+                : '';
+            const entryFaculty = normalizeFacultyCode(item?.faculty || derivedFaculty || normalizedFaculty, normalizedFaculty);
+            return entryFaculty === normalizedFaculty;
+        });
+    const registrationSig = registrations.map((courseId) => String(courseId)).join(',');
+    const scheduleSig = schedule
+        .map((item) => `${item.courseId || ''}:${item.groupId || ''}:${item.sessionType || 'lecture'}`)
+        .join('|');
+    return `reg:${registrationSig}|sched:${scheduleSig}`;
+}
+
 function buildStudentRegistrationViewSignature(tabId, faculty, safeData, selectedId) {
     const itemIds = (Array.isArray(safeData) ? safeData : []).map((item) => String(item?.id || '')).join('|');
     const cmsRevision = Number(KIU_STATE.meta?.registrationCmsRevision || 0);
@@ -205,7 +242,7 @@ function buildStudentRegistrationViewSignature(tabId, faculty, safeData, selecte
         const passed = Array.isArray(KIU_STATE.studentPassedCourses?.[user?.id]) ? KIU_STATE.studentPassedCourses[user.id] : [];
         return `${tabId}|${faculty}|${cmsRevision}|${passed.map((entry) => typeof entry === 'string' ? entry : (entry?.courseId || entry?.id || '')).join('|')}`;
     }
-    return `${tabId}|${faculty}|${cmsRevision}|${selectedId || ''}|${itemIds}`;
+    return `${tabId}|${faculty}|${cmsRevision}|${selectedId || ''}|${itemIds}|${buildStudentRegistrationEnrollmentSignature(user?.id, faculty)}`;
 }
 
 function createStudentRegistrationRenderErrorNode() {
@@ -316,7 +353,7 @@ function buildStudentRegistrationSelectedViewNode() {
     });
     Array.from(grouped.entries()).forEach(([courseId, items]) => {
         const first = items[0] || {};
-        const sectionSummary = items.map((item) => `${item.groupName || item.groupId || 'Section'}${item.day ? ` / ${item.day}` : ''}${item.time ? ` ${item.time}` : ''}`).join(', ');
+        const sectionSummary = items.map((item) => formatStudentScheduleSectionLabel(item)).join(', ');
         const card = document.createElement('div');
         card.className = 'registration-state-card home-hover-chip';
         const title = document.createElement('div');
@@ -326,7 +363,7 @@ function buildStudentRegistrationSelectedViewNode() {
         code.className = 'registration-state-meta lux-card-meta';
         code.textContent = courseId;
         const summary = document.createElement('div');
-        summary.className = 'registration-state-summary';
+        summary.className = 'registration-state-summary lux-card-copy';
         summary.textContent = sectionSummary;
         card.append(title, code, summary);
         container.appendChild(card);
@@ -802,6 +839,7 @@ function sanitizeRegistrationTabStripVisuals(tabsHost) {
             replacement.replaceChildren(...tab.childNodes);
             tab.replaceWith(replacement);
         }
+        syncRegistrationTabHoverChip(tab);
     });
 }
 
@@ -877,6 +915,7 @@ function normalizeStudentAcademicRegistrationTabs(activeTabId = 'program') {
         const isActive = desired.id === activeTabId;
         tab.classList.toggle('active', isActive);
         tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        syncRegistrationTabHoverChip(tab);
     });
 }
 
@@ -1580,6 +1619,7 @@ async function clearStudentCourseSection(courseId, groupId) {
     if (!verified) return false;
     unselectCourseGroup(courseId, groupId);
     renderStudentCourseSectionPicker();
+    invalidateStudentRegistrationViewCache();
     const activeTabId = window.__studentRegActiveTab || 'prog';
     if (document.getElementById('student-reg-content-container')) {
         renderStudentRegStructures(activeTabId);
@@ -1655,6 +1695,7 @@ async function chooseStudentCourseSection(courseId, groupId) {
     const result = selectCourseGroup(courseId, courseDef.name || courseId, groupId);
     if (result !== false) {
         renderStudentCourseSectionPicker();
+        invalidateStudentRegistrationViewCache();
         const activeTabId = window.__studentRegActiveTab || 'prog';
         if (document.getElementById('student-reg-content-container')) {
             renderStudentRegStructures(activeTabId);

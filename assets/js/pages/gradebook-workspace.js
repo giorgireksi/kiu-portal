@@ -361,10 +361,10 @@ function renderStudentCategoryHistoryCards(record, criterionKeys = [], categoryL
     });
     if (!attempts.length) {
         return `
-            <div class="gb-category-history-empty">
+            <div class="lux-empty-state gb-category-history-empty">
                 <i class="fas fa-inbox"></i>
-                <strong>No scores recorded yet</strong>
-                <span>${escapeHtml(categoryLabel || 'This category')} will show attempts, scores, and instructor comments once they are posted.</span>
+                <strong class="lux-empty-state__title">No scores recorded yet</strong>
+                <span class="lux-empty-state__copy">${escapeHtml(categoryLabel || 'This category')} will show attempts, scores, and instructor comments once they are posted.</span>
             </div>
         `;
     }
@@ -374,21 +374,21 @@ function renderStudentCategoryHistoryCards(record, criterionKeys = [], categoryL
             : (entry.score === null || entry.score === undefined || entry.score === '' ? '—' : Number(entry.score));
         const note = String(entry.note || '').trim();
         const noteMarkup = note && shouldDisplayGradebookHistoryNote(note)
-            ? `<div class="gb-category-history-comment"><i class="fas fa-comment-dots"></i><div><strong>Instructor feedback</strong><p>${escapeHtml(note)}</p></div></div>`
+            ? `<div class="gb-category-history-comment lux-soft-chrome home-hover-chip"><i class="fas fa-comment-dots"></i><div><strong class="lux-section-kicker gb-category-history-comment-kicker">Instructor feedback</strong><p class="lux-panel-copy">${escapeHtml(note)}</p></div></div>`
             : '';
         return `
-            <article class="gb-category-history-card is-${escapeHtml(status.key)}">
+            <article class="gb-category-history-card lux-soft-chrome home-hover-chip is-${escapeHtml(status.key)}">
                 <div class="gb-category-history-card-head">
                     <div>
-                        <strong>${escapeHtml(displayMeta.title || `${meta.label} ${entryNumber}`)}</strong>
-                        <span>${escapeHtml(meta.label)} ${escapeHtml(String(entryNumber))}</span>
+                        <strong class="lux-card-copy gb-category-history-title">${escapeHtml(displayMeta.title || `${meta.label} ${entryNumber}`)}</strong>
+                        <span class="lux-panel-copy gb-category-history-kind">${escapeHtml(meta.label)} ${escapeHtml(String(entryNumber))}</span>
                     </div>
                     <div class="gb-category-history-score">
-                        <strong>${escapeHtml(String(scoreLabel))}</strong>
-                        <span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
+                        <strong class="lux-page-title gb-category-history-score-value">${escapeHtml(String(scoreLabel))}</strong>
+                        <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
                     </div>
                 </div>
-                <div class="gb-category-history-meta">
+                <div class="gb-category-history-meta lux-panel-copy">
                     ${escapeHtml(formatAssessmentHistoryTimestamp(entry.updatedAt))}${entry.updatedBy ? ` · ${escapeHtml(entry.updatedBy)}` : ''}
                 </div>
                 ${noteMarkup}
@@ -1173,7 +1173,7 @@ function renderGradebookRosterSelection() {
     }
 
     const cards = groups.map(group => `
-        <div class="course-card lms-route-card lms-route-panel-compact gb-roster-card" data-gradebook-click="open-section" data-gradebook-course-id="${escapeHtml(String(group.courseId))}" data-gradebook-group-id="${escapeHtml(String(group.groupId))}" data-gradebook-title="${escapeHtml(`${group.subjectName} | ${group.groupName} | ${String(group.day || '').trim()} ${String(group.time || '').trim()}`)}">
+        <div class="course-card lms-route-card lms-route-panel-compact home-hover-chip gb-roster-card" data-gradebook-click="open-section" data-gradebook-course-id="${escapeHtml(String(group.courseId))}" data-gradebook-group-id="${escapeHtml(String(group.groupId))}" data-gradebook-title="${escapeHtml(`${group.subjectName} | ${group.groupName} | ${String(group.day || '').trim()} ${String(group.time || '').trim()}`)}">
             <div class="gb-roster-card-hero">
                 <div class="gb-roster-card-head">
                     <div>

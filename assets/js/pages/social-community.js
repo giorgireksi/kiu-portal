@@ -160,7 +160,7 @@
             const completeness = personProfileCompleteness(account);
             const showInvite = inviteEligibleGroups().length > 0 && connectionStatusFor(account?.id).state !== 'incoming';
             return `
-                <article class="social-neo-directory-item social-neo-community-card" data-user-id="${escape(text(account.id))}">
+                <article class="social-neo-directory-item social-neo-community-card home-hover-chip" data-user-id="${escape(text(account.id))}">
                     <div class="social-neo-person social-neo-person-start-gap-12 social-neo-community-person">
                         ${avatar(account)}
                         <div class="social-neo-field-flex-1-260 social-neo-community-copy">

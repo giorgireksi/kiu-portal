@@ -125,7 +125,7 @@
             },
         ];
         return `
-            <section class="social-neo-card social-neo-pages-hero">
+            <section class="social-neo-card social-neo-pages-hero home-hover-chip">
                 <div class="social-neo-pages-hero-header">
                     <div class="social-neo-pages-hero-head">
                         <div class="social-neo-pages-hero-actions">
@@ -134,7 +134,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="social-neo-pages-hero-grid" role="tablist" aria-label="Pages view">
+                    <div class="social-neo-pages-hero-grid home-hover-chip" role="tablist" aria-label="Pages view">
                             ${tabs.map((tab) => `
                                 <button class="lux-secondary-btn social-neo-pages-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" role="tab" data-action="panel-pages" data-pages-tab="${escape(tab.tab)}" aria-selected="${activeTab === tab.tab ? 'true' : 'false'}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
                                     <span class="social-neo-pages-hero-tab-icon"><i class="fas ${escape(tab.icon)}" aria-hidden="true"></i></span>
@@ -147,7 +147,7 @@
                             `).join('')}
                     </div>
                 </div>
-                <form class="social-neo-pages-hero-toolbar" data-form="pages-search" autocomplete="off">
+                <form class="social-neo-pages-hero-toolbar home-hover-chip" data-form="pages-search" autocomplete="off">
                     <label class="social-neo-field-flex-1-260">
                         <span class="social-neo-label">Search pages</span>
                         <input class="social-neo-input lux-control" id="${escape(pagesSearchId)}" name="pagesSearch" type="search" placeholder="Search pages by name, category, or bio..." data-bind="pages-search" value="${escape(pageSearchValue)}" autocomplete="off">
@@ -315,7 +315,7 @@
             const pinnedCount = Array.isArray(page?.pinnedPostIds) ? page.pinnedPostIds.length : 0;
             const aboutText = pageAboutText(page);
             return `
-                <article class="social-neo-card social-neo-page-card social-neo-page-card-rich">
+                <article class="social-neo-card social-neo-page-card social-neo-page-card-rich home-hover-chip">
                     <div class="social-neo-page-card-cover">
                         ${coverSrc ? `<img src="${escape(coverSrc)}" alt="${escape(text(page?.name || 'Page'))} cover">` : `<div class="social-neo-page-card-cover-fallback"></div>`}
                     </div>
@@ -814,9 +814,9 @@
                     </div>
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--panel">
                         <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
-                            <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(adminCount))}</strong><span>Admins</span></article>
-                            <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(followerCount))}</strong><span>Followers</span></article>
-                            <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card"><strong>${escape(String(members.length))}</strong><span>Showing</span></article>
+                            <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(adminCount))}</strong><span>Admins</span></article>
+                            <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(followerCount))}</strong><span>Followers</span></article>
+                            <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(members.length))}</strong><span>Showing</span></article>
                         </div>
                         <section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
                             <div class="lux-glass-dialog-group-section-head">

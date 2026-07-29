@@ -37,6 +37,8 @@
         const ensureSocialEventsModule = deps.ensureSocialEventsModule || (() => Promise.resolve());
         const hasSocialSurveysModule = deps.hasSocialSurveysModule || (() => false);
         const ensureSocialSurveysModule = deps.ensureSocialSurveysModule || (() => Promise.resolve());
+        const hasSocialResearchModule = deps.hasSocialResearchModule || (() => false);
+        const ensureSocialResearchModule = deps.ensureSocialResearchModule || (() => Promise.resolve());
         const hasSocialPhotographyModule = deps.hasSocialPhotographyModule || (() => false);
         const ensureSocialPhotographyModule = deps.ensureSocialPhotographyModule || (() => Promise.resolve());
         const hasSocialLostFoundModule = deps.hasSocialLostFoundModule || (() => false);
@@ -193,6 +195,13 @@
                     handle: 'handleSocialSurveysSubmit'
                 },
                 {
+                    is: 'isSocialResearchSubmitForm',
+                    fallback: (t) => t === 'research-create',
+                    has: hasSocialResearchModule,
+                    ensure: ensureSocialResearchModule,
+                    handle: 'handleSocialResearchSubmit'
+                },
+                {
                     is: 'isSocialPhotographySubmitForm',
                     fallback: (t) => t === 'photography-upload' || t === 'dialog-photography-delete',
                     has: hasSocialPhotographyModule,
@@ -305,6 +314,15 @@
                     handle: 'handleSocialSurveysInput'
                 },
                 {
+                    is: 'isSocialResearchInputTarget',
+                    fallback: (el) => Boolean(el?.closest?.('[data-form="research-create"]')
+                        || el?.getAttribute?.('data-bind') === 'research-search'
+                        || String(el?.name || '').startsWith('research')),
+                    has: hasSocialResearchModule,
+                    ensure: ensureSocialResearchModule,
+                    handle: 'handleSocialResearchInput'
+                },
+                {
                     is: 'isSocialProfileInputTarget',
                     fallback: () => false,
                     has: hasSocialProfileModule,
@@ -403,6 +421,14 @@
                     has: hasSocialSurveysModule,
                     ensure: ensureSocialSurveysModule,
                     handle: 'handleSocialSurveysChange'
+                },
+                {
+                    is: 'isSocialResearchChangeTarget',
+                    fallback: (el) => Boolean(el?.getAttribute?.('data-bind')?.startsWith?.('research-')
+                        || String(el?.name || '').startsWith('research')),
+                    has: hasSocialResearchModule,
+                    ensure: ensureSocialResearchModule,
+                    handle: 'handleSocialResearchChange'
                 },
                 {
                     is: 'isSocialProfileChangeTarget',

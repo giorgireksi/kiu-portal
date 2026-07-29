@@ -342,6 +342,15 @@
   line-height: 1.55;
 }
 
+.registration-state-summary,
+.registration-history-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--lux-text-muted);
+}
+
 .registration-footer-bar-label,
 .registration-progress-label {
   font-size: 11px;
@@ -449,6 +458,31 @@
 }
 
 /* Chancellery route typography (layout in lux-page-bare-lite; matte in lux-fouc-ht). */
+.lux-chancellery-card-title.lux-page-title,
+.lux-chancellery-section-title.lux-section-kicker {
+  color: var(--lux-text);
+}
+
+.lux-chancellery-card-copy .lux-chancellery-inline-meta.lux-panel-copy,
+.lux-chancellery-inline-meta .lux-panel-copy,
+.lux-chancellery-subcard-copy.lux-panel-copy,
+.lux-chancellery-card-copy.lux-panel-copy,
+.lux-thread-meta.lux-panel-copy,
+.lux-thread-time.lux-panel-copy,
+.lux-thread-message.lux-panel-copy,
+.lux-chancellery-thread-status.lux-panel-copy {
+  color: var(--lux-text-muted);
+}
+
+.lux-thread-author.lux-card-copy {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+.lux-chancellery-subcard-kicker.lux-section-kicker {
+  color: var(--lux-text-muted);
+}
+
 .lux-chancellery-card-title,
 .lux-chancellery-section-title {
   color: var(--lux-text);
@@ -488,6 +522,99 @@
   font-size: 13px;
   line-height: 1.5;
   color: var(--lux-text-muted);
+}
+
+/* Admin library modal typography (layout → lux-modals.css; matte → lux-fouc-ht). */
+.admin-library-modal-title.lux-glass-dialog-title,
+.admin-library-modal-title.lux-page-title {
+  color: var(--lux-text);
+}
+
+.admin-library-modal-copy.lux-panel-copy,
+.admin-library-sections-panel-kicker.lux-section-kicker,
+.admin-library-section-row-count.lux-panel-copy,
+.admin-library-section-remove-confirm-copy.lux-panel-copy {
+  color: var(--lux-text-muted);
+}
+
+.admin-library-section-row-title.lux-card-copy {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+.admin-library-sections-empty.lux-empty-state {
+  color: var(--lux-text-muted);
+}
+
+/* Admin orders workspace typography (layout in lux-page-bare-lite; matte in lux-fouc-ht). */
+.orders-admin-section-title.lux-card-title {
+  color: var(--lux-text);
+}
+
+.orders-admin-section-copy.lux-panel-copy,
+.orders-admin-command-draft.lux-panel-copy,
+.orders-admin-sent-item__meta.lux-panel-copy,
+.orders-admin-sent-empty.lux-empty-state {
+  color: var(--lux-text-muted);
+}
+
+.orders-admin-sent-item__title.lux-card-copy {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+/* Social Research panel typography */
+.social-neo-research-title.lux-card-title,
+.social-neo-research-reader-title.lux-page-title,
+.social-neo-research-card-title.lux-card-copy {
+  color: var(--lux-text);
+}
+
+.social-neo-research-copy.lux-panel-copy,
+.social-neo-research-card-meta.lux-panel-copy,
+.social-neo-research-card-abstract.lux-panel-copy,
+.social-neo-research-card-foot.lux-panel-copy,
+.social-neo-research-article-p.lux-panel-copy {
+  color: var(--lux-text-muted);
+}
+
+/* Hub form builder typography (staff + students; layout in lux-page-bare-lite; matte in lux-fouc-ht). */
+.staff-hub-overline.lux-section-kicker,
+.students-hub-overline.lux-section-kicker,
+.staff-hub-studio-quick-label.lux-section-kicker,
+.students-hub-studio-quick-label.lux-section-kicker {
+  color: rgba(var(--lux-accent-rgb), 0.88);
+}
+
+.staff-hub-section-title.lux-card-title,
+.students-hub-section-title.lux-card-title,
+.staff-hub-workspace-head-context.lux-card-copy,
+.students-hub-workspace-head-context.lux-card-copy,
+.staff-hub-builder-type-label.lux-card-copy,
+.students-hub-builder-type-label.lux-card-copy {
+  color: var(--lux-text);
+}
+
+.staff-hub-section-copy.lux-panel-copy,
+.students-hub-section-copy.lux-panel-copy,
+.staff-hub-builder-type-status.lux-panel-copy,
+.students-hub-builder-type-status.lux-panel-copy,
+.staff-hub-copy-bar-helper.lux-panel-copy,
+.students-hub-copy-bar-helper.lux-panel-copy,
+.staff-hub-studio-step-nav-add-hint.lux-panel-copy,
+.students-hub-studio-step-nav-add-hint.lux-panel-copy,
+.staff-hub-studio-preview-meta.lux-panel-copy,
+.students-hub-studio-preview-meta.lux-panel-copy,
+.staff-hub-studio-save-status.lux-panel-copy,
+.students-hub-studio-save-status.lux-panel-copy,
+.staff-hub-builder-empty.lux-panel-copy,
+.students-hub-builder-empty.lux-panel-copy {
+  color: var(--lux-text-muted);
+}
+
+.staff-hub-workspace-head-context.lux-card-copy,
+.students-hub-workspace-head-context.lux-card-copy {
+  font-weight: 700;
 }
 
 /* Student Service route typography (layout in lux-page-bare-lite; matte in lux-fouc-ht). */
@@ -629,8 +756,25 @@
 }
 
 .student-service-qa-thread-modal-title-wrap strong,
-#student-service-question-thread-modal-title {
+#student-service-question-thread-modal-title,
+#student-service-guidance-modal-title,
+.student-service-guidance-modal-title .lux-page-title {
   color: var(--lux-text);
+}
+
+.student-service-find-guidance-count {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+
+.student-service-article-preview-copy,
+.student-service-article-preview-body,
+.student-service-ticket-detail-copy {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--lux-text-muted);
 }
 
 .student-service-track-compact-inline-counts,
@@ -859,6 +1003,120 @@
   font-size: 12px;
 }
 
+#study-card-assessment-window .study-card-assessment-window__title {
+  color: var(--lux-text);
+}
+
+.study-card-assessment-window__meta,
+.study-card-assessment-panel-copy,
+.study-card-assessment-hint,
+.study-card-activity-item-meta {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--lux-text-muted);
+}
+
+.study-card-assessment-window__chip,
+.study-card-activity-item-meta.lms-route-meta-12 {
+  font-size: 12px;
+}
+
+.lms-quiz-studio-title.lux-page-title,
+.lms-quiz-studio-main-title.lux-page-title {
+  color: var(--lux-text);
+}
+
+.lms-quiz-studio-copy.lux-panel-copy,
+.lms-quiz-studio-main-copy.lux-panel-copy,
+.lms-quiz-studio-stat-copy {
+  margin-top: 6px;
+}
+
+.lms-quiz-studio-stat-value {
+  color: var(--lux-text);
+}
+
+#lms-personal-dashboard-overlay #lms-personal-dashboard-share-title.lux-page-title {
+  color: var(--lux-text);
+}
+
+.lms-personal-dashboard-share-panel-copy.lux-panel-copy,
+.lms-personal-dashboard-share-section-copy.lux-panel-copy,
+.lms-personal-dashboard-share-callout.lux-panel-copy,
+.lms-personal-dashboard-history-copy,
+.lms-personal-dashboard-history-badge,
+.lms-personal-dashboard-autosave-status.lux-panel-copy {
+  color: var(--lux-text-muted);
+}
+
+.lms-personal-dashboard-history-copy strong {
+  color: var(--lux-text);
+}
+
+#dynamic-gb-title.lux-page-title,
+.gb-modern-hero h2.lux-page-title,
+.gb-modern-card-head .lux-page-title.lms-route-card-title {
+  color: var(--lux-text);
+}
+
+.gb-modern-hero .lux-panel-copy,
+.gb-modern-card-head .lux-panel-copy.lms-route-copy,
+.gb-student-context-bar .lux-panel-copy,
+.gb-weight-row-meta,
+.gb-weight-row-meta.lux-panel-copy,
+.gb-weight-stat.lux-panel-copy,
+.gb-student-context-copy-line.lux-panel-copy,
+.gb-composition-legend-stat.lux-panel-copy,
+.gb-modern-study-card-pointer.lux-panel-copy {
+  color: var(--lux-text-muted);
+}
+
+.gb-weight-row-title.lux-card-copy {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+.gb-student-context-title.lux-card-copy {
+  color: var(--lux-text);
+  font-weight: 800;
+}
+
+.gb-weight-row-history-hint.lux-panel-copy {
+  color: rgb(var(--lux-accent-rgb));
+}
+
+.gb-weight-stat.is-earned.lux-panel-copy,
+.gb-composition-legend-stat.is-earned.lux-panel-copy {
+  color: rgb(var(--lux-accent-rgb));
+}
+
+.gb-category-history-title.lux-card-copy,
+.gb-category-history-score-value.lux-page-title {
+  color: var(--lux-text);
+}
+
+.gb-category-history-kind.lux-panel-copy,
+.gb-category-history-meta.lux-panel-copy,
+.gb-category-history-comment .lux-panel-copy,
+.gb-category-history-comment-kicker.lux-section-kicker {
+  color: var(--lux-text-muted);
+}
+
+.gb-weight-stat.is-pending.lux-panel-copy,
+.gb-composition-legend-stat.is-pending.lux-panel-copy {
+  color: color-mix(in srgb, rgb(245, 158, 11) 82%, var(--lux-text));
+}
+
+:is(html.lux-light-mode, body.lux-light-mode) .gb-weight-stat.is-pending.lux-panel-copy,
+:is(html.lux-light-mode, body.lux-light-mode) .gb-composition-legend-stat.is-pending.lux-panel-copy,
+:is(html.lux-light-mode, body.lux-light-mode) .gb-weight-row-history-hint.lux-panel-copy {
+  color: color-mix(in srgb, rgb(180, 83, 9) 88%, var(--lux-text));
+}
+
+.gb-modern-study-card-pointer.lux-panel-copy a {
+  color: rgb(var(--lux-accent-rgb));
+}
+
 .lms-route-field-label,
 .lms-student-semester-label {
   display: block;
@@ -868,6 +1126,16 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--lux-text-muted);
+}
+
+.lms-next-session-date {
+  margin-top: 2px;
+}
+
+.lms-next-session-detail,
+.lms-next-session-instructor,
+.lms-next-session-empty {
+  margin: 0;
 }
 
 .lux-subject-row__title,

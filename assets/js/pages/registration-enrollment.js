@@ -269,6 +269,9 @@ function selectCourseGroup(courseId, courseName, groupId) {
     }
 
     saveState();
+    if (typeof invalidateStudentRegistrationViewCache === 'function') {
+        invalidateStudentRegistrationViewCache();
+    }
     refreshRegistrationEnrollmentUi();
 
     if (typeof renderTimetable === 'function') renderTimetable();
@@ -338,6 +341,9 @@ function removeStudentCourseEnrollment(courseId) {
         syncAvailableGroupEnrollmentCounts();
     }
     saveState();
+    if (typeof invalidateStudentRegistrationViewCache === 'function') {
+        invalidateStudentRegistrationViewCache();
+    }
     refreshRegistrationEnrollmentUi();
     if (typeof renderTimetable === 'function') renderTimetable();
     if (typeof renderProfileCalendar === 'function') renderProfileCalendar();
@@ -386,6 +392,9 @@ function unselectCourseGroup(courseId, groupId) {
         syncAvailableGroupEnrollmentCounts();
     }
     saveState();
+    if (typeof invalidateStudentRegistrationViewCache === 'function') {
+        invalidateStudentRegistrationViewCache();
+    }
     refreshRegistrationEnrollmentUi();
     if (typeof renderTimetable === 'function') renderTimetable();
     if (typeof renderProfileCalendar === 'function') renderProfileCalendar();

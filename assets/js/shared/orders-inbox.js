@@ -304,7 +304,7 @@ function ensureRecipientOrdersShell(container) {
                 <section class="lux-card surface-card orders-inbox-hero lux-summary-surface lux-summary-surface--hero">
                     <div class="lux-card-body lux-hero-stage orders-inbox-hero-stage">
                         <div id="orders-inbox-hero-main" class="lux-hero-main"></div>
-                        <aside id="orders-inbox-hero-stats" class="lux-hero-side orders-inbox-hero-side lux-focus-panel" aria-label="Orders inbox status"></aside>
+                        <aside id="orders-inbox-hero-stats" class="lux-hero-side orders-inbox-hero-side lux-focus-panel home-hover-chip" aria-label="Orders inbox status"></aside>
                     </div>
                 </section>
 
@@ -371,7 +371,7 @@ function createRecipientOrdersListItem(order, currentUser, selectedOrder) {
     }));
     topRow.appendChild(copyWrap);
     topRow.appendChild(createOrdersNode('span', {
-        className: `orders-item__state lux-status-pill ${isRead ? 'is-muted' : 'is-info'} home-hover-chip`.trim(),
+        className: `orders-item__state lux-status-pill home-hover-chip ${isRead ? 'is-muted' : 'is-info'} home-hover-chip`.trim(),
         text: isRead ? 'Read' : 'Unread'
     }));
 
@@ -438,7 +438,7 @@ function mountRecipientOrdersListPanelRegions(container, uiState, allOrders, ord
     headCopy.appendChild(createOrdersNode('div', { className: 'lux-card-copy', text: 'Official decisions delivered to your account.' }));
     head.appendChild(headCopy);
     head.appendChild(createOrdersNode('span', {
-        className: 'lux-status-pill is-info',
+        className: 'lux-status-pill home-hover-chip is-info',
         text: `${allOrders.length} total`
     }));
     fragment.appendChild(head);
@@ -532,9 +532,9 @@ function renderRecipientOrdersHeroStats(ordersCount, unreadCount, ordersToday) {
             <p class="lux-focus-panel__copy">Tracked orders live in the same benchmark widget language used on the home dashboard.</p>
         </div>
         <div class="lux-focus-panel__meta lux-hero-signal-list" aria-label="Order counts">
-            <span class="lux-hero-signal"><span>Sent</span> <strong>${ordersCount}</strong></span>
-            <span class="lux-hero-signal"><span>Unread</span> <strong>${unreadCount}</strong></span>
-            <span class="lux-hero-signal"><span>Today</span> <strong>${ordersToday}</strong></span>
+            <span class="lux-hero-signal home-hover-chip"><span>Sent</span> <strong>${ordersCount}</strong></span>
+            <span class="lux-hero-signal home-hover-chip"><span>Unread</span> <strong>${unreadCount}</strong></span>
+            <span class="lux-hero-signal home-hover-chip"><span>Today</span> <strong>${ordersToday}</strong></span>
         </div>
     `;
 }

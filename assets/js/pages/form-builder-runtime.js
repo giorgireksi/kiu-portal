@@ -480,9 +480,9 @@
 
     function typeStatusLine(type) {
         if (type.isBuiltin) {
-            return ('<span class="' + H.hub + '-builder-type-status is-locked"><i class="fas fa-lock" aria-hidden="true"></i> Built-in schema</span>');
+            return ('<span class="' + H.hub + '-builder-type-status lux-panel-copy is-locked"><i class="fas fa-lock" aria-hidden="true"></i> Built-in schema</span>');
         }
-        return ('<span class="' + H.hub + '-builder-type-status is-editable"><i class="fas fa-pen" aria-hidden="true"></i> Custom · editable</span>');
+        return ('<span class="' + H.hub + '-builder-type-status lux-panel-copy is-editable"><i class="fas fa-pen" aria-hidden="true"></i> Custom · editable</span>');
     }
 
     function typeMeta(fieldType, bucket) {
@@ -498,10 +498,10 @@
                 ? ('<span class="' + H.hub + '-chip lux-status-pill is-muted">Built-in</span>')
                 : ('<span class="' + H.hub + '-chip lux-status-pill">Custom</span>');
             return `
-                <button class="${H.hub}-builder-type${active}" type="button" data-${H.data}-builder-action="select-type" data-${H.data}-type-id="${escapeHtml(type.id)}">
+                <button class="${H.hub}-builder-type home-hover-chip${active}" type="button" data-${H.data}-builder-action="select-type" data-${H.data}-type-id="${escapeHtml(type.id)}">
                     <span class="${H.hub}-builder-type-icon" aria-hidden="true"><i class="${typeIconClass(type)}"></i></span>
                     <span class="${H.hub}-builder-type-copy">
-                        <span class="${H.hub}-builder-type-label">${escapeHtml(type.label)}</span>
+                        <span class="${H.hub}-builder-type-label lux-card-copy">${escapeHtml(type.label)}</span>
                         ${typeStatusLine(type)}
                         <span class="${H.hub}-builder-type-stats" title="Sections · fields">${stats.sections} · ${stats.fields}</span>
                     </span>
@@ -515,16 +515,16 @@
             : '';
 
         return `
-            <aside class="${H.hub}-builder-rail">
+            <aside class="${H.hub}-builder-rail lux-soft-chrome home-hover-chip">
                 <div class="${H.hub}-builder-rail-head">
                     <div class="${H.hub}-builder-rail-title-row">
-                        <span class="${H.hub}-overline">${H.entityTitle} types</span>
+                        <span class="${H.hub}-overline lux-section-kicker">${H.entityTitle} types</span>
                         ${typeCount}
                     </div>
-                    <strong>Form blueprint</strong>
-                    <p>Pick a ${H.typeNoun}, organize form sections, and open the studio to mix fields and dropdowns.</p>
+                    <strong class="${H.hub}-section-title lux-card-title">Form blueprint</strong>
+                    <p class="${H.hub}-section-copy lux-panel-copy">Pick a ${H.typeNoun}, organize form sections, and open the studio to mix fields and dropdowns.</p>
                 </div>
-                <div class="${H.hub}-builder-type-list">${items || ('<div class="' + H.hub + '-builder-empty">No ' + H.typesNoun + ' configured yet.</div>')}</div>
+                <div class="${H.hub}-builder-type-list">${items || ('<div class="' + H.hub + '-builder-empty lux-panel-copy">No ' + H.typesNoun + ' configured yet.</div>')}</div>
                 <button class="lux-primary-btn ${H.hub}-builder-add-type" type="button" data-${H.data}-builder-action="add-type">
                     <i class="fas fa-plus"></i> Add ${H.typeNoun}
                 </button>
@@ -547,11 +547,11 @@
         return `
             <details class="${H.hub}-copy-bar-details">
                 <summary class="${H.hub}-copy-bar-summary">
-                    <span class="${H.hub}-overline">Power tools</span>
-                    <strong>Copy blueprint from another type</strong>
+                    <span class="${H.hub}-overline lux-section-kicker">Power tools</span>
+                    <strong class="${H.hub}-section-title lux-card-title">Copy blueprint from another type</strong>
                 </summary>
-                <div class="${H.hub}-copy-bar">
-                    <p class="${H.hub}-copy-bar-helper">Copies section structure only — review field keys after copying.</p>
+                <div class="${H.hub}-copy-bar home-hover-chip">
+                    <p class="${H.hub}-copy-bar-helper lux-panel-copy">Copies section structure only — review field keys after copying.</p>
                     <div class="${H.hub}-copy-bar-controls">
                         <label class="${H.hub}-builder-inline-field">
                             <span>Source type</span>
@@ -593,7 +593,7 @@
         const selectedAttr = isActive ? ' aria-selected="true"' : ' aria-selected="false"';
 
         return `
-            <div class="${H.hub}-profile-row${isActive ? ' is-active' : ''}${isNew ? ' is-new' : ''}${isIncomplete ? ' is-incomplete' : ''}" role="option"${selectedAttr} data-${H.data}-section-id="${escapeHtml(section.id)}" data-${H.data}-type-id="${escapeHtml(typeId)}">
+            <div class="${H.hub}-profile-row home-hover-chip${isActive ? ' is-active' : ''}${isNew ? ' is-new' : ''}${isIncomplete ? ' is-incomplete' : ''}" role="option"${selectedAttr} data-${H.data}-section-id="${escapeHtml(section.id)}" data-${H.data}-type-id="${escapeHtml(typeId)}">
                 <button class="${H.hub}-profile-drag" type="button" data-${H.data}-profile-drag-handle aria-label="Reorder profile">
                     <i class="fas fa-grip-lines" aria-hidden="true"></i>
                 </button>
@@ -619,7 +619,7 @@
         const rows = sections.map((section, index) => renderProfileNameRow(state, typeId, section, index, activeSectionId)).join('');
         const listMarkup = profileCount
             ? `
-                <div class="${H.hub}-profile-list-shell">
+                <div class="${H.hub}-profile-list-shell home-hover-chip">
                     <div class="${H.hub}-profile-list-columns" aria-hidden="true">
                         <span>#</span>
                         <span></span>
@@ -644,15 +644,15 @@
             `;
 
         return `
-            <section class="${H.hub}-profile-panel lux-data-card" aria-label="Profiles">
+            <section class="${H.hub}-profile-panel lux-data-card home-hover-chip" aria-label="Profiles">
                 <div class="${H.hub}-profile-panel-head">
                     <div class="${H.hub}-profile-panel-copy">
                         <div class="${H.hub}-profile-panel-title-row">
-                            <span class="${H.hub}-overline">Profiles</span>
+                            <span class="${H.hub}-overline lux-section-kicker">Profiles</span>
                             <span class="${H.hub}-profile-count">${escapeHtml(countLabel)}</span>
                             <span class="${H.hub}-profile-type-pill">${escapeHtml(selectedType.label)}</span>
                         </div>
-                        <p>Select a profile, name it, then add fields below.</p>
+                        <p class="${H.hub}-section-copy lux-panel-copy">Select a profile, name it, then add fields below.</p>
                     </div>
                     <button class="lux-secondary-btn ${H.hub}-profile-add" type="button" data-${H.data}-builder-action="add-section" data-${H.data}-type-id="${escapeHtml(typeId)}">
                         <i class="fas fa-plus"></i> Add profile
@@ -667,8 +667,8 @@
         const variant = options.variant || 'footer';
         const variantClass = variant === 'hero' ? ' is-hero' : variant === 'rail' ? ' is-rail' : '';
         const btnClass = variant === 'hero'
-            ? ('lux-secondary-btn ' + H.hub + '-studio-quick-btn is-hero-btn')
-            : (H.hub + '-studio-quick-btn');
+            ? ('lux-secondary-btn ' + H.hub + '-studio-quick-btn home-hover-chip is-hero-btn')
+            : (H.hub + '-studio-quick-btn home-hover-chip');
         const buttons = QUICK_ADD_INPUT.map((fieldType) => {
             const meta = TYPE_CATALOG[fieldType];
             const bucket = fieldBucketForType(fieldType);
@@ -680,7 +680,7 @@
         }).join('');
         return `
             <div class="${H.hub}-studio-quick-add${variantClass}">
-                <span class="${H.hub}-studio-quick-label">Add field</span>
+                <span class="${H.hub}-studio-quick-label lux-section-kicker">Add field</span>
                 ${buttons}
             </div>
         `;
@@ -740,11 +740,11 @@
             : '';
 
         return `
-            <div class="${H.hub}-section-field-workspace lux-data-card" data-${H.data}-section-id="${escapeHtml(section.id)}">
+            <div class="${H.hub}-section-field-workspace lux-data-card home-hover-chip" data-${H.data}-section-id="${escapeHtml(section.id)}">
                 <div class="${H.hub}-section-field-workspace-head">
                     <div class="${H.hub}-workspace-head-copy">
-                        <span class="${H.hub}-overline">Fields</span>
-                        <p class="${H.hub}-workspace-head-context">Editing profile ${profilePosition} of ${profileTotal}</p>
+                        <span class="${H.hub}-overline lux-section-kicker">Fields</span>
+                        <p class="${H.hub}-workspace-head-context lux-card-copy">Editing profile ${profilePosition} of ${profileTotal}</p>
                     </div>
                     <label class="${H.hub}-builder-check ${H.hub}-field-workspace-filter">
                         <input type="checkbox" data-${H.data}-builder-input="section-filter-group" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-section-id="${escapeHtml(section.id)}"${section.filterGroup ? ' checked' : ''}>
@@ -769,11 +769,11 @@
             ? ('<span class="' + H.hub + '-builder-stat-pill is-warning">Some profiles need fields</span>')
             : '';
         return `
-            <div class="${H.hub}-builder-canvas">
+            <div class="${H.hub}-builder-canvas lux-soft-chrome home-hover-chip">
                 <div class="${H.hub}-builder-canvas-head">
                     <div class="${H.hub}-builder-canvas-copy">
-                        <span class="${H.hub}-overline">Form settings</span>
-                        <strong>${escapeHtml(selectedType.label)}</strong>
+                        <span class="${H.hub}-overline lux-section-kicker">Form settings</span>
+                        <strong class="${H.hub}-section-title lux-card-title">${escapeHtml(selectedType.label)}</strong>
                         <div class="${H.hub}-builder-canvas-stats">
                             <span class="${H.hub}-builder-stat-pill">${stats.sections} profile${stats.sections === 1 ? '' : 's'}</span>
                             <span class="${H.hub}-builder-stat-pill is-input">${stats.inputFields} field${stats.inputFields === 1 ? '' : 's'}</span>
@@ -873,7 +873,7 @@
         return `
             <div class="${H.hub}-studio-advanced">
                 <div class="${H.hub}-studio-advanced-head">
-                    <strong>Advanced settings</strong>
+                    <strong class="${H.hub}-section-title lux-card-title">Advanced settings</strong>
                     <button class="lux-secondary-btn" type="button" data-${H.data}-builder-action="close-field-advanced" data-${H.data}-field-id="${escapeHtml(field.id)}">
                         <i class="fas fa-times"></i> Close
                     </button>
@@ -935,7 +935,7 @@
         ` : '';
 
         return `
-            <div class="${H.hub}-studio-field-row${requiredClass}${pendingClass}" data-${H.data}-field-id="${escapeHtml(field.id)}" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-section-id="${escapeHtml(sectionId)}">
+            <div class="${H.hub}-studio-field-row home-hover-chip${requiredClass}${pendingClass}" data-${H.data}-field-id="${escapeHtml(field.id)}" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-section-id="${escapeHtml(sectionId)}">
                 <div class="${H.hub}-studio-field-main">
                     <button class="${H.hub}-studio-drag" type="button" data-${H.data}-field-drag-handle aria-label="Reorder field">
                         <i class="fas fa-grip-lines" aria-hidden="true"></i>
@@ -1064,8 +1064,8 @@
                     <div class="${H.hub}-studio-step-detail-sticky">
                         <div class="${H.hub}-studio-step-detail-head">
                             <div>
-                                <span class="${H.hub}-overline">${stepLabel} ${index + 1} of ${total}</span>
-                                <strong>${escapeHtml(sectionTitleDisplay(section.title))}</strong>
+                                <span class="${H.hub}-overline lux-section-kicker">${stepLabel} ${index + 1} of ${total}</span>
+                                <strong class="${H.hub}-section-title lux-card-title">${escapeHtml(sectionTitleDisplay(section.title))}</strong>
                             </div>
                         </div>
                         <div class="${H.hub}-studio-section-toolbar">
@@ -1104,7 +1104,7 @@
                 <button class="lux-secondary-btn ${H.hub}-studio-step-nav-add" type="button" data-${H.data}-builder-action="add-section" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-section-template="blank">
                     <i class="fas fa-plus"></i> Add section
                 </button>
-                <p class="${H.hub}-studio-step-nav-add-hint">Creates an empty section — add fields in studio.</p>
+                <p class="${H.hub}-studio-step-nav-add-hint lux-panel-copy">Creates an empty section — add fields in studio.</p>
             </nav>
         `;
     }
@@ -1178,14 +1178,14 @@
             : ('<div class="' + H.hub + '-studio-preview-empty">Preview unavailable.</div>');
         const previewMeta = getStudioPreviewMeta(typeId, resolvedId);
         const metaLine = previewMeta.meta
-            ? `<p class="${H.hub}-studio-preview-meta">${escapeHtml(previewMeta.meta)}</p>`
+            ? `<p class="${H.hub}-studio-preview-meta lux-panel-copy">${escapeHtml(previewMeta.meta)}</p>`
             : '';
         const tabsMarkup = renderStudioPreviewProfileTabs(typeId, resolvedId);
         return `
             <div class="${H.hub}-studio-preview${compact ? ' is-compact' : ''}"${resolvedId ? ` data-studio-highlight-section="${escapeHtml(resolvedId)}"` : ''}>
                 <div class="${H.hub}-studio-preview-head">
-                    <span class="${H.hub}-overline">Live preview</span>
-                    <strong>${escapeHtml(previewMeta.title)}</strong>
+                    <span class="${H.hub}-overline lux-section-kicker">Live preview</span>
+                    <strong class="${H.hub}-section-title lux-card-title">${escapeHtml(previewMeta.title)}</strong>
                     ${metaLine}
                 </div>
                 ${tabsMarkup}
@@ -1213,7 +1213,7 @@
 
         return `
             <div class="${H.hub}-studio-save-bar">
-                <span class="${H.hub}-studio-save-status ${statusClass}">${statusText}</span>
+                <span class="${H.hub}-studio-save-status lux-panel-copy ${statusClass}">${statusText}</span>
                 <button class="lux-primary-btn" type="button" data-${H.data}-builder-action="save-blueprint">
                     <i class="fas fa-save"></i> Save blueprint
                 </button>
@@ -1226,13 +1226,13 @@
         const activeSectionId = getActiveSectionId(state, sections);
 
         return `
-            <div class="${H.hub}-builder-canvas ${H.hub}-form-studio is-preview-only">
+            <div class="${H.hub}-builder-canvas ${H.hub}-form-studio is-preview-only lux-soft-chrome home-hover-chip">
                 ${renderStudioBreadcrumb(selectedType)}
                 <div class="${H.hub}-studio-head">
                     <div>
-                        <span class="${H.hub}-overline">${escapeHtml(selectedType.label)}</span>
-                        <strong>Live preview</strong>
-                        <p>See how the registration form looks with your sections and fields. Edit sections on Form settings.</p>
+                        <span class="${H.hub}-overline lux-section-kicker">${escapeHtml(selectedType.label)}</span>
+                        <strong class="${H.hub}-section-title lux-card-title">Live preview</strong>
+                        <p class="${H.hub}-section-copy lux-panel-copy">See how the registration form looks with your sections and fields. Edit sections on Form settings.</p>
                     </div>
                     <div class="${H.hub}-builder-panel-actions">
                         <button class="lux-secondary-btn" type="button" data-${H.data}-builder-action="close-builder">
@@ -1250,11 +1250,11 @@
 
     function renderEmptyCanvas() {
         return `
-            <div class="${H.hub}-builder-canvas">
-                <div class="${H.hub}-builder-empty-state">
+            <div class="${H.hub}-builder-canvas lux-soft-chrome home-hover-chip">
+                <div class="${H.hub}-builder-empty-state lux-empty-state">
                     <span class="${H.hub}-builder-empty-icon" aria-hidden="true"><i class="fas fa-sliders"></i></span>
-                    <strong>Select a ${H.typeNoun}</strong>
-                    <p>Choose a ${H.typeNoun} from the rail or create a new one to configure its form blueprint.</p>
+                    <strong class="lux-empty-state__title ${H.hub}-section-title lux-card-title">Select a ${H.typeNoun}</strong>
+                    <p class="lux-empty-state__copy ${H.hub}-section-copy lux-panel-copy">Choose a ${H.typeNoun} from the rail or create a new one to configure its form blueprint.</p>
                     <button class="lux-primary-btn" type="button" data-${H.data}-builder-action="add-type">
                         <i class="fas fa-plus"></i> Add ${H.typeNoun}
                     </button>
@@ -1273,12 +1273,12 @@
             : (isStudioOpen(state) ? renderFormStudio(state, selectedType) : renderOverviewCanvas(state, selectedType));
 
         return `
-            <section class="${H.hub}-form-settings ${H.entity}-admin-workspace">
+            <section class="${H.hub}-form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1">
                 <div class="${H.hub}-form-settings-head">
                     <div class="${H.hub}-form-settings-copy">
-                        <span class="${H.hub}-overline"><i class="fas fa-sliders"></i> Admin workspace</span>
-                        <strong>${H.entityTitle} form settings</strong>
-                        <p>
+                        <span class="${H.hub}-overline lux-section-kicker"><i class="fas fa-sliders"></i> Admin workspace</span>
+                        <strong class="${H.hub}-section-title lux-card-title">${H.entityTitle} form settings</strong>
+                        <p class="${H.hub}-section-copy lux-panel-copy">
                             <span class="${H.hub}-result-pill">${types.length} ${H.typeNoun}${types.length === 1 ? '' : 's'}</span>
                             Design registration forms per ${H.typeNoun} with a simple studio and live preview.
                         </p>

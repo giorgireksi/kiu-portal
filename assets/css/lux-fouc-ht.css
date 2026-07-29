@@ -405,6 +405,21 @@ body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-r
   background-clip: padding-box;
 }
 
+/* Registration merged shell: inner zones are layout-only — one frosted host paints the stack. */
+body.lux-route-registration .registration-studio-shell[data-lux-glass-root="1"] > :is(
+  .page-hero,
+  .registration-studio-deck,
+  .registration-workspace
+) {
+  background: none;
+  background-image: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 /* Home desk inners: accent chips on glass host — no nested frost blur */
 body.lux-route-home #page-home #lux-home-shell :is(
   .lux-home-grid > .lux-panel,
@@ -442,41 +457,41 @@ body.lux-route-home #page-home #lux-home-shell :is(
   box-shadow: var(--lux-soft-chrome-chip-shadow-halo);
 }
 
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-header-row {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-header-row {
   background: var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
   border-bottom: 2px solid var(--sch-grid-border, var(--lux-border));
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-day-col.is-today {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-day-col.is-today {
   background:
     radial-gradient(circle at top center, color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 16%, transparent), transparent 40%),
     var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
   box-shadow: inset 0 -3px 0 color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 42%, transparent);
 }
-body.lux-route-admin-scheduler #page-admin-scheduler :is(.sch-time-col, .sch-time-labels) {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) :is(.sch-time-col, .sch-time-labels) {
   background: var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
   border-right: 1px solid var(--sch-grid-chrome-border, var(--lux-border));
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-day-col {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-day-col {
   border-right: 1px solid var(--sch-grid-chrome-border, var(--lux-border));
   color: var(--lux-text);
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-time-slot {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-time-slot {
   border-bottom: 0;
   border-top-color: var(--sch-grid-border, var(--lux-border));
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-lane {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-lane {
   border-right: 0;
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-slot-bg {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-slot-bg {
   border-bottom: 0;
   background: var(--sch-grid-lane-bg, var(--lux-panel-surface-soft, transparent));
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-slot-bg:hover {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-slot-bg:hover {
   background:
     linear-gradient(180deg, color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 6%, transparent), transparent),
     var(--sch-grid-lane-bg, var(--lux-panel-surface-soft, transparent));
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event {
   --sch-event-rgb: var(--lux-accent-rgb);
   position: absolute;
   inset: var(--sch-event-top) 12px auto 12px;
@@ -494,20 +509,20 @@ body.lux-route-admin-scheduler #page-admin-scheduler .sch-event {
   backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
   -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event:hover {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event:hover {
   transform: translateY(-2px);
   box-shadow: var(--lux-elev-3);
   border-color: color-mix(in srgb, rgba(var(--sch-event-rgb), 1) 44%, transparent);
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='econ'] { --sch-event-rgb: 194, 178, 128; }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='cs'] { --sch-event-rgb: 96, 165, 250; }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='law'] { --sch-event-rgb: 74, 222, 128; }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='med'] { --sch-event-rgb: 52, 211, 153; }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='arts'] { --sch-event-rgb: 249, 115, 22; }
-body.lux-route-admin-scheduler #page-admin-scheduler .sch-event.is-draft {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event[data-sch-event-tone='econ'] { --sch-event-rgb: 194, 178, 128; }
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event[data-sch-event-tone='cs'] { --sch-event-rgb: 96, 165, 250; }
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event[data-sch-event-tone='law'] { --sch-event-rgb: 74, 222, 128; }
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event[data-sch-event-tone='med'] { --sch-event-rgb: 52, 211, 153; }
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event[data-sch-event-tone='arts'] { --sch-event-rgb: 249, 115, 22; }
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event.is-draft {
   border-style: dashed;
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .ev-title {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-title {
   padding-right: 72px;
   font-size: 15px;
   font-weight: 800;
@@ -516,7 +531,7 @@ body.lux-route-admin-scheduler #page-admin-scheduler .ev-title {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .ev-meta {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-meta {
   font-size: 12px;
   line-height: 1.45;
   color: var(--lux-text-muted);
@@ -525,7 +540,7 @@ body.lux-route-admin-scheduler #page-admin-scheduler .ev-meta {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-body.lux-route-admin-scheduler #page-admin-scheduler .ev-draft {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-draft {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -538,11 +553,11 @@ body.lux-route-admin-scheduler #page-admin-scheduler .ev-draft {
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-body.lux-light-mode.lux-route-admin-scheduler #page-admin-scheduler .ev-draft {
+body.lux-light-mode:is(.lux-route-admin-scheduler, .lux-route-timetable) :is(#page-admin-scheduler, #page-timetable) .ev-draft {
   color: #991b1b;
 }
 
-body.lux-route-admin-scheduler #page-admin-scheduler :is(.sch-rail-note, .sch-empty-state, .sch-info-banner, .sch-empty-week-notice, .sch-grid-empty) {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) :is(.sch-rail-note, .sch-empty-state, .sch-info-banner, .sch-empty-week-notice, .sch-grid-empty, .schedule-grid-empty) {
   border: 1px solid color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, transparent);
   background: linear-gradient(
     180deg,
@@ -550,7 +565,7 @@ body.lux-route-admin-scheduler #page-admin-scheduler :is(.sch-rail-note, .sch-em
     color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 3%, transparent)
   );
 }
-body.lux-light-mode.lux-route-admin-scheduler #page-admin-scheduler :is(.sch-rail-note, .sch-empty-state, .sch-info-banner, .sch-empty-week-notice, .sch-grid-empty) {
+body.lux-light-mode:is(.lux-route-admin-scheduler, .lux-route-timetable) :is(#page-admin-scheduler, #page-timetable) :is(.sch-rail-note, .sch-empty-state, .sch-info-banner, .sch-empty-week-notice, .sch-grid-empty, .schedule-grid-empty) {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 10%, transparent),
@@ -634,19 +649,8 @@ body.lux-route-admin-scheduler .quiz-modal-close:hover,
 body.lux-route-admin-scheduler .sch-modal-close-muted:hover {
   color: var(--lux-text);
 }
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item {
-  border-width: var(--lux-btn-frame-width, 3.5px);
-  border-style: solid;
-  border-color: var(--lux-btn-border-solid, var(--lux-accent));
-  background: var(--lux-btn-well-soft);
-  box-shadow: var(--lux-btn-frame-shadow);
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item.home-hover-chip {
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-}
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item:hover {
-  border-color: var(--lux-btn-border-solid, var(--lux-accent));
-  background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft));
-  box-shadow: var(--lux-btn-frame-shadow-hover);
-  transform: translateY(-2px);
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge--saved {
   background: rgba(var(--lux-accent-rgb), 0.14);
@@ -715,10 +719,17 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .orders-recipient-list-shell,
   .orders-admin-sent-empty,
   .orders-recipient-list-empty,
+  .staff-hub-controls,
+  .students-hub-controls,
   .staff-hub-table-wrap.lux-data-card,
   .students-hub-table-wrap.lux-data-card,
   .staff-hub-info-card.lux-data-card,
   .students-hub-info-card.lux-data-card,
+  .students-hub-form-section.lux-data-card,
+  .students-hub-profile-metric.lux-data-card,
+  .students-hub-academic-section.lux-data-card,
+  .students-hub-profile-field.lux-soft-chrome,
+  .staff-hub-profile-field.lux-soft-chrome,
   .staff-hub-schema-empty.lux-data-card,
   .students-hub-schema-empty.lux-data-card,
   .staff-hub-profile-panel.lux-data-card,
@@ -727,6 +738,10 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .students-hub-section-field-workspace.lux-data-card,
   .staff-hub-builder-type,
   .students-hub-builder-type,
+  .staff-hub-builder-rail.lux-soft-chrome,
+  .students-hub-builder-rail.lux-soft-chrome,
+  .staff-hub-builder-canvas.lux-soft-chrome,
+  .students-hub-builder-canvas.lux-soft-chrome,
   .staff-hub-copy-bar,
   .students-hub-copy-bar,
   .staff-hub-profile-list-shell,
@@ -792,6 +807,9 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
   .social-portfolio-card,
   .social-neo-portfolio-hero-discover,
   .social-neo-workspace-hub-section,
+  .social-project-hub-discover,
+  .social-project-hub-filterbar,
+  .social-project-hub-attention,
   .social-project-hub-rail-card,
   .social-project-card-new,
   .social-project-hub-cta-tile,
@@ -909,6 +927,12 @@ body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] :is(
   .lms-next-session-card,
   .lms-session-marker-board,
   .lms-session-marker-composer,
+  .lms-session-marker-card,
+  .lms-session-marker-slot,
+  .lms-session-marker-type-chip,
+  .lms-route-pill.home-hover-chip,
+  .lms-route-tab.home-hover-chip,
+  .lms-section-option.home-hover-chip,
   .lms-live-student-wait,
   .lms-live-hero,
   .lms-live-panel,
@@ -946,6 +970,7 @@ body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] :is(
   .lms-quiz-question-nav-card,
   .lms-quiz-question-editor-card,
   .lms-quiz-variant-question-card,
+  .lms-quiz-empty-state,
   .lms-live-monitor-panel,
   .lms-student-quiz-card,
   .lms-protected-monitor-page-shell,
@@ -965,7 +990,8 @@ body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] :is(
   .gb-modern-card,
   .gb-modern-stat,
   .gb-weight-row,
-  .gb-student-context-bar
+  .gb-student-context-bar,
+  .gb-score-history-row.lux-soft-chrome
 ),
 body.lux-route-lms #page-lms-groups [data-lux-glass-root="1"] :is(
   .lux-lms-group-card,
@@ -985,167 +1011,32 @@ body.lux-route-lms #page-lms-groups [data-lux-glass-root="1"] :is(
   background-clip: padding-box;
 }
 
-body.lux-route-lms #page-lms-inner :is(.lms-route-panel[data-lux-glass-root="1"]),
-body.lux-route-lms #page-lms-groups :is(.lms-route-panel[data-lux-glass-root="1"]) {
-  transition: none;
-  contain: none;
-  overflow: visible;
+body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] .lms-quiz-empty-state.lux-empty-state {
+  border-style: dashed;
+  text-align: center;
 }
 
-body.lux-route-lms #page-lms-inner :is(.lms-route-panel[data-lux-glass-root="1"])::after,
-body.lux-route-lms #page-lms-groups :is(.lms-route-panel[data-lux-glass-root="1"])::after {
-  display: none;
+body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] .gb-modern-hero.lux-soft-chrome {
+  border-radius: 18px;
 }
 
-body.lux-route-lms #page-lms-inner :is(
-  .home-hover-chip,
-  .lms-route-workspace-chrome,
-  .lms-pro-hero,
-  .lms-pro-surface,
-  .lms-deep-toolkit,
-  .lms-interaction-messenger,
-  .lms-route-panel:not([data-lux-glass-root="1"]),
-  .lms-route-card,
-  .lms-week-accordion-panel,
-  .lms-route-empty,
-  .lms-route-hero,
-  .lms-session-hero,
-  .lms-route-stat,
-  .lms-session-official-card,
-  .lms-next-session-card,
-  .lms-session-marker-board,
-  .lms-session-marker-composer,
-  .lms-live-student-wait,
-  .lms-live-hero,
-  .lms-live-panel,
-  .lms-live-card,
-  .lms-live-student-card,
-  .lms-live-stage,
-  .lms-call-classroom,
-  .lms-call-collab-panel,
-  .lms-call-side-card,
-  .lms-call-post,
-  .lms-call-roster,
-  .lms-call-stage,
-  .lms-assignment-banner,
-  .lms-route-file-shell,
-  .lms-assignment-rubric-shell,
-  .lms-assignment-submission-card,
-  .lms-assignment-review-summary-card,
-  .lms-assignment-submission-detail-card,
-  .lms-assignment-student-detail-card,
-  .lms-assignment-review-empty-shell,
-  .lms-assignment-grade-summary-card,
-  .lms-assignment-grade-response-card,
-  .lms-assignment-grade-editor,
-  .lms-member-overview-panel,
-  .lms-member-section,
-  .lms-member-row,
-  .lms-quiz-studio-hero,
-  .lms-quiz-studio-main-card,
-  .lms-quiz-studio-stat-card,
-  .lms-quiz-studio-alert-summary,
-  .lms-quiz-tool-panel,
-  .lms-quiz-saved-card,
-  .lms-quiz-rules-card,
-  .lms-quiz-card,
-  .lms-quiz-question-nav-card,
-  .lms-quiz-question-editor-card,
-  .lms-quiz-variant-question-card,
-  .lms-live-monitor-panel,
-  .lms-student-quiz-card,
-  .lms-protected-monitor-page-shell,
-  .lms-protected-monitor-shell,
-  .gb-modern-hero,
-  .gb-modern-card,
-  .gb-modern-stat,
-  .gb-weight-row,
-  .gb-student-context-bar
-),
-body.lux-route-lms #page-lms-groups :is(
-  .home-hover-chip,
-  .lux-lms-group-card
+body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] .gb-weight-card.lux-soft-chrome {
+  border-radius: 18px;
+}
+
+body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] .gb-student-context-bar.lux-soft-chrome {
+  border-radius: 16px;
+}
+
+body.lux-route-lms #lms-gradebook-wrapper :is(
+  .gb-student-context-bar.lux-soft-chrome.home-hover-chip,
+  .gb-weight-card.lux-soft-chrome.home-hover-chip
 ) {
-  position: relative;
-  isolation: isolate;
   contain: none;
   overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-body.lux-route-lms #page-lms-inner :is(
-  .home-hover-chip,
-  .lms-route-workspace-chrome,
-  .lms-pro-hero,
-  .lms-pro-surface,
-  .lms-deep-toolkit,
-  .lms-route-panel:not([data-lux-glass-root="1"]),
-  .lms-route-card,
-  .lms-week-accordion-panel,
-  .lms-route-empty,
-  .lms-route-hero,
-  .lms-session-hero,
-  .lms-route-stat,
-  .lms-session-official-card,
-  .lms-next-session-card,
-  .lms-session-marker-board,
-  .lms-session-marker-composer,
-  .lms-live-student-wait,
-  .lms-live-hero,
-  .lms-live-panel,
-  .lms-live-card,
-  .lms-live-student-card,
-  .lms-live-stage,
-  .lms-call-classroom,
-  .lms-call-collab-panel,
-  .lms-call-side-card,
-  .lms-call-post,
-  .lms-call-roster,
-  .lms-call-stage,
-  .lms-assignment-banner,
-  .lms-route-file-shell,
-  .lms-assignment-rubric-shell,
-  .lms-assignment-submission-card,
-  .lms-assignment-review-summary-card,
-  .lms-assignment-submission-detail-card,
-  .lms-assignment-student-detail-card,
-  .lms-assignment-review-empty-shell,
-  .lms-assignment-grade-summary-card,
-  .lms-assignment-grade-response-card,
-  .lms-assignment-grade-editor,
-  .lms-member-overview-panel,
-  .lms-member-section,
-  .lms-member-row,
-  .lms-quiz-studio-hero,
-  .lms-quiz-studio-main-card,
-  .lms-quiz-studio-stat-card,
-  .lms-quiz-studio-alert-summary,
-  .lms-quiz-tool-panel,
-  .lms-quiz-saved-card,
-  .lms-quiz-rules-card,
-  .lms-quiz-card,
-  .lms-quiz-question-nav-card,
-  .lms-quiz-question-editor-card,
-  .lms-quiz-variant-question-card,
-  .lms-live-monitor-panel,
-  .lms-student-quiz-card,
-  .lms-protected-monitor-page-shell,
-  .lms-protected-monitor-shell,
-  .gb-modern-hero,
-  .gb-modern-card,
-  .gb-modern-stat,
-  .gb-weight-row,
-  .gb-student-context-bar
-):hover,
-body.lux-route-lms #page-lms-groups :is(
-  .home-hover-chip,
-  .lux-lms-group-card
-):hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-}
-
+/* LMS workspace: motion → global .home-hover-chip SSOT; messenger stays static. */
 body.lux-route-lms #page-lms-inner .lms-interaction-messenger:hover {
   transform: none;
   border-color: var(--lux-soft-chrome-border-accent);
@@ -1171,15 +1062,6 @@ body.lux-route-lms.kiu-lms-whiteboard-focus-active .lms-whiteboard-shell.is-full
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
-}
-
-body.lux-route-lms .page-hero :is(
-  .lms-hero-focus,
-  .lux-lms-subject-card
-):hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
 }
 
 /* Exams command center: matte chips inside one glass workspace host. */
@@ -1223,16 +1105,6 @@ body.lux-unified-shell.lux-route-exams #admin-exams-root [data-lux-glass-root="1
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
-}
-
-body.lux-unified-shell.lux-route-exams #admin-exams-root :is(
-  .ex2-rq-column,
-  .ex2-quiz-card,
-  .ex2-select-card
-):hover {
-  transform: translateY(var(--home-chip-hover-lift, -3px));
-  border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
 }
 
 /* Social task map: matte chips/cards inside fullscreen map host. */
@@ -1285,23 +1157,11 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) :is(
   .social-project-task-graph-card.lux-soft-chrome.home-hover-chip,
   .social-project-task-graph-group.lux-soft-chrome.home-hover-chip
 ) {
-  position: relative;
-  isolation: isolate;
   contain: none;
   overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-node-g:not(.is-dragging):hover :is(
-  .social-project-task-graph-card.lux-soft-chrome.home-hover-chip,
-  .social-project-task-graph-group.lux-soft-chrome.home-hover-chip
-) {
-  transform: translateY(var(--home-chip-hover-lift, -3px));
-  border-color: color-mix(in srgb, var(--lux-accent) 28%, var(--lux-soft-chrome-border-accent));
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-}
-
-/* Timetable + registration pages: matte inners + home-hover-chip motion; glass hosts static. */
+/* Timetable + registration pages: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-route-timetable .lux-timetable-page :is(
   .lux-timetable-command,
   .lux-timetable-filters,
@@ -1312,12 +1172,14 @@ body.lux-route-timetable .lux-timetable-page :is(
   .schedule-grid-empty,
   .lux-timetable-grid-empty,
   .lux-timetable-hero-focus,
+  .lux-timetable-hero-focus .lux-focus-panel__chip.home-hover-chip,
+  .lux-timetable-hero-focus .lux-hero-signal.home-hover-chip,
   .lux-timetable-day-section,
   .schedule-day-section,
   .lux-timetable-session-card,
   .schedule-session-card,
-  .page-hero-badge,
-  .lux-timetable-hero-badge,
+  .page-hero-badge.home-hover-chip,
+  .lux-timetable-hero-badge.home-hover-chip,
   .schedule-chip,
   .lux-timetable-chip
 ),
@@ -1325,7 +1187,10 @@ body.lux-route-registration #page-registration :is(
   .lux-timetable-command,
   .lux-timetable-filters,
   .lux-timetable-hero-focus,
+  .lux-timetable-hero-focus .lux-focus-panel__chip.home-hover-chip,
+  .lux-timetable-hero-focus .lux-hero-signal.home-hover-chip,
   .registration-insight-card,
+  .registration-command-band,
   .registration-footer-bar,
   .reg-tab:not(.active),
   .registration-state-card,
@@ -1336,7 +1201,7 @@ body.lux-route-registration #page-registration :is(
   .registration-module-list-card,
   .registration-module-pane-card,
   .registration-track-card,
-  .page-hero-badge
+  .page-hero-badge.home-hover-chip
 ),
 body.lux-route-timetable .lux-timetable-page .lux-card:not([data-lux-glass-root="1"]),
 body.lux-route-registration #page-registration .lux-card:not([data-lux-glass-root="1"]) {
@@ -1350,160 +1215,11 @@ body.lux-route-registration #page-registration .lux-card:not([data-lux-glass-roo
   background-clip: padding-box;
 }
 
-/* Glass hosts only — no lift (outer page-hero + stage canvas). */
-body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage),
-body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace),
-body.lux-route-faculty-gradebook .lux-faculty-command-deck[data-lux-glass-root="1"] {
-  transition: none;
-  contain: none;
-  overflow: visible;
+body.lux-route-timetable .lux-timetable-page :is(.page-hero-badge.home-hover-chip, .lux-timetable-hero-badge.home-hover-chip) {
+  border-radius: 999px;
 }
 
-body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage)::after,
-body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace)::after,
-body.lux-route-faculty-gradebook .lux-faculty-command-deck.lux-summary-surface--hero[data-lux-glass-root="1"]::after {
-  display: none;
-}
-
-/* Every matte inner shell: shared home-hover-chip lift + glow. */
-body.lux-route-timetable .lux-timetable-page :is(
-  .home-hover-chip,
-  .lux-timetable-command,
-  .lux-timetable-filters,
-  .lux-timetable-view-switcher,
-  .lux-timetable-week-nav,
-  .lux-timetable-overview-row,
-  .lux-timetable-hero-focus,
-  .schedule-empty-state,
-  .schedule-grid-empty,
-  .lux-timetable-grid-empty,
-  .lux-timetable-day-section,
-  .schedule-day-section,
-  .lux-timetable-session-card,
-  .schedule-session-card
-),
-body.lux-route-registration #page-registration :is(
-  .home-hover-chip,
-  .lux-timetable-command,
-  .lux-timetable-filters,
-  .lux-timetable-hero-focus,
-  .registration-insight-card,
-  .registration-footer-bar,
-  .registration-state-card,
-  .registration-module-choice,
-  .registration-course-row,
-  .registration-empty-state,
-  .registration-render-error,
-  .registration-module-list-card,
-  .registration-module-pane-card,
-  .registration-track-card
-) {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-body.lux-route-timetable .lux-timetable-page :is(
-  .home-hover-chip,
-  .lux-timetable-command,
-  .lux-timetable-filters,
-  .lux-timetable-view-switcher,
-  .lux-timetable-week-nav,
-  .lux-timetable-overview-row,
-  .lux-timetable-hero-focus,
-  .schedule-empty-state,
-  .schedule-grid-empty,
-  .lux-timetable-grid-empty,
-  .lux-timetable-day-section,
-  .schedule-day-section,
-  .lux-timetable-session-card,
-  .schedule-session-card
-)::after,
-body.lux-route-registration #page-registration :is(
-  .home-hover-chip,
-  .lux-timetable-command,
-  .lux-timetable-filters,
-  .lux-timetable-hero-focus,
-  .registration-insight-card,
-  .registration-footer-bar,
-  .registration-state-card,
-  .registration-module-choice,
-  .registration-course-row,
-  .registration-empty-state,
-  .registration-render-error,
-  .registration-module-list-card,
-  .registration-module-pane-card,
-  .registration-track-card
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-route-timetable .lux-timetable-page :is(
-  .home-hover-chip,
-  .lux-timetable-command,
-  .lux-timetable-filters,
-  .lux-timetable-view-switcher,
-  .lux-timetable-week-nav,
-  .lux-timetable-overview-row,
-  .lux-timetable-hero-focus,
-  .schedule-empty-state,
-  .schedule-grid-empty,
-  .lux-timetable-grid-empty,
-  .lux-timetable-day-section,
-  .schedule-day-section,
-  .lux-timetable-session-card,
-  .schedule-session-card
-) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select),
-body.lux-route-registration #page-registration :is(
-  .home-hover-chip,
-  .lux-timetable-command,
-  .lux-timetable-filters,
-  .lux-timetable-hero-focus,
-  .registration-insight-card,
-  .registration-footer-bar,
-  .registration-state-card,
-  .registration-module-choice,
-  .registration-course-row,
-  .registration-empty-state,
-  .registration-render-error,
-  .registration-module-list-card,
-  .registration-module-pane-card,
-  .registration-track-card
-) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
-  position: relative;
-  z-index: 1;
-}
-
-/* Small pills/chips: lighter lift than panel shells. */
-body.lux-route-timetable .lux-timetable-page :is(
-  .lux-timetable-chip,
-  .schedule-chip,
-  .page-hero-badge,
-  .lux-timetable-hero-badge,
-  .lux-timetable-stage-status
-),
-body.lux-route-registration #page-registration :is(
-  .page-hero-badge,
-  .reg-tab:not(.active)
-) {
-  contain: none;
-  overflow: visible;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-body.lux-route-timetable .lux-timetable-page :is(.page-hero-badge, .lux-timetable-hero-badge),
-body.lux-route-registration #page-registration :is(.page-hero-badge, .reg-tab:not(.active)) {
+body.lux-route-registration #page-registration .page-hero-badge.home-hover-chip {
   border-radius: 999px;
 }
 
@@ -1511,186 +1227,18 @@ body.lux-route-registration #page-registration .reg-tab:not(.active) {
   border-radius: 16px;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-timetable .lux-timetable-page :is(.page-hero, .lux-timetable-stage):hover,
-  body.lux-route-registration #page-registration :is(.page-hero, .lux-timetable-stage, .registration-workspace):hover {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-timetable .lux-timetable-page :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-view-switcher,
-    .lux-timetable-week-nav,
-    .lux-timetable-overview-row,
-    .lux-timetable-hero-focus,
-    .schedule-empty-state,
-    .schedule-grid-empty,
-    .lux-timetable-grid-empty,
-    .lux-timetable-day-section,
-    .schedule-day-section,
-    .lux-timetable-session-card,
-    .schedule-session-card
-  ):hover,
-  body.lux-route-registration #page-registration :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-hero-focus,
-    .registration-insight-card,
-    .registration-footer-bar,
-    .registration-state-card,
-    .registration-module-choice,
-    .registration-course-row,
-    .registration-empty-state,
-    .registration-render-error,
-    .registration-module-list-card,
-    .registration-module-pane-card,
-    .registration-track-card
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-timetable .lux-timetable-page :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-view-switcher,
-    .lux-timetable-week-nav,
-    .lux-timetable-overview-row,
-    .lux-timetable-hero-focus,
-    .schedule-empty-state,
-    .schedule-grid-empty,
-    .lux-timetable-grid-empty,
-    .lux-timetable-day-section,
-    .schedule-day-section,
-    .lux-timetable-session-card,
-    .schedule-session-card
-  ):hover::after,
-  body.lux-route-registration #page-registration :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-hero-focus,
-    .registration-insight-card,
-    .registration-footer-bar,
-    .registration-state-card,
-    .registration-module-choice,
-    .registration-course-row,
-    .registration-empty-state,
-    .registration-render-error,
-    .registration-module-list-card,
-    .registration-module-pane-card,
-    .registration-track-card
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-route-timetable .lux-timetable-page :is(
-    .lux-timetable-chip,
-    .schedule-chip,
-    .page-hero-badge,
-    .lux-timetable-hero-badge,
-    .lux-timetable-stage-status
-  ):hover,
-  body.lux-route-registration #page-registration :is(
-    .page-hero-badge,
-    .reg-tab:not(.active)
-  ):hover {
-    transform: translateY(-1px);
-    box-shadow: var(--lux-elev-2);
-  }
+body.lux-route-timetable .lux-timetable-page .lux-timetable-hero-focus {
+  overflow: visible;
 }
 
-@media (hover: none) {
-  body.lux-route-timetable .lux-timetable-page :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-view-switcher,
-    .lux-timetable-week-nav,
-    .lux-timetable-overview-row,
-    .lux-timetable-hero-focus,
-    .schedule-empty-state,
-    .schedule-grid-empty,
-    .lux-timetable-grid-empty,
-    .lux-timetable-day-section,
-    .schedule-day-section,
-    .lux-timetable-session-card,
-    .schedule-session-card
-  ):active,
-  body.lux-route-registration #page-registration :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-hero-focus,
-    .registration-insight-card,
-    .registration-footer-bar,
-    .registration-state-card,
-    .registration-module-choice,
-    .registration-course-row,
-    .registration-empty-state,
-    .registration-render-error,
-    .registration-module-list-card,
-    .registration-module-pane-card,
-    .registration-track-card
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
+body.lux-route-faculty-gradebook .lux-faculty-command-deck[data-lux-glass-root="1"] {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
 
-  body.lux-route-timetable .lux-timetable-page :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-view-switcher,
-    .lux-timetable-week-nav,
-    .lux-timetable-overview-row,
-    .lux-timetable-hero-focus,
-    .schedule-empty-state,
-    .schedule-grid-empty,
-    .lux-timetable-grid-empty,
-    .lux-timetable-day-section,
-    .schedule-day-section,
-    .lux-timetable-session-card,
-    .schedule-session-card
-  ):active::after,
-  body.lux-route-registration #page-registration :is(
-    .home-hover-chip,
-    .lux-timetable-command,
-    .lux-timetable-filters,
-    .lux-timetable-hero-focus,
-    .registration-insight-card,
-    .registration-footer-bar,
-    .registration-state-card,
-    .registration-module-choice,
-    .registration-course-row,
-    .registration-empty-state,
-    .registration-render-error,
-    .registration-module-list-card,
-    .registration-module-pane-card,
-    .registration-track-card
-  ):active::after {
-    opacity: 1;
-  }
-
-  body.lux-route-timetable .lux-timetable-page :is(
-    .lux-timetable-chip,
-    .schedule-chip,
-    .page-hero-badge,
-    .lux-timetable-hero-badge,
-    .lux-timetable-stage-status
-  ):active,
-  body.lux-route-registration #page-registration :is(
-    .page-hero-badge,
-    .reg-tab:not(.active)
-  ):active {
-    transform: translateY(-1px);
-    box-shadow: var(--lux-elev-2);
-  }
+body.lux-route-faculty-gradebook .lux-faculty-command-deck[data-lux-glass-root="1"]::after {
+  display: none;
 }
 
 /* Picker hosts are layout-only — button chrome lives in lux-controls. */
@@ -1817,8 +1365,35 @@ body.lux-route-registration #page-registration .registration-course-empty {
   border-radius: 16px;
   background: var(--lux-panel-modal-section, var(--lux-btn-well-soft));
 }
+body.lux-route-registration #page-registration .registration-state-card.home-hover-chip {
+  gap: 8px;
+  padding: 18px 20px;
+}
+body.lux-route-registration #page-registration .registration-state-title.lux-card-title {
+  font-size: clamp(16px, 1.6vw, 20px);
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+body.lux-route-registration #page-registration .registration-state-meta.lux-card-meta {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+body.lux-route-registration #page-registration .registration-state-summary.lux-card-copy {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--lux-text-muted);
+}
+body.lux-route-registration #page-registration .registration-history-meta {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--lux-accent-2, var(--lux-accent));
+  white-space: nowrap;
+}
 
-/* Personal data page: matte inners + home-hover-chip motion; glass hosts static. */
+/* Personal data page: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-route-personal-data #page-personal-data :is(
   .personal-data-command,
   .personal-data-toolbar,
@@ -1838,133 +1413,13 @@ body.lux-route-personal-data #page-personal-data :is(
   background-clip: padding-box;
 }
 
-body.lux-route-personal-data #page-personal-data :is(.page-hero, .personal-data-workspace) {
-  transition: none;
-  contain: none;
-  overflow: visible;
-}
-
-body.lux-route-personal-data #page-personal-data :is(.page-hero, .personal-data-workspace)::after {
-  display: none;
-}
-
-body.lux-route-personal-data #page-personal-data :is(
-  .home-hover-chip,
-  .personal-data-command,
-  .personal-data-toolbar,
-  .personal-data-identity-card,
-  .personal-data-kpi-card
-) {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-body.lux-route-personal-data #page-personal-data :is(
-  .home-hover-chip,
-  .personal-data-command,
-  .personal-data-toolbar,
-  .personal-data-identity-card,
-  .personal-data-kpi-card
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-route-personal-data #page-personal-data :is(
-  .home-hover-chip,
-  .personal-data-command,
-  .personal-data-toolbar,
-  .personal-data-identity-card,
-  .personal-data-kpi-card
-) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
-  position: relative;
-  z-index: 1;
-}
-
-body.lux-route-personal-data #page-personal-data #personal-data-status.lux-status-pill {
-  contain: none;
-  overflow: visible;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-personal-data #page-personal-data :is(.page-hero, .personal-data-workspace):hover {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-personal-data #page-personal-data :is(
-    .home-hover-chip,
-    .personal-data-command,
-    .personal-data-toolbar,
-    .personal-data-identity-card,
-    .personal-data-kpi-card
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-personal-data #page-personal-data :is(
-    .home-hover-chip,
-    .personal-data-command,
-    .personal-data-toolbar,
-    .personal-data-identity-card,
-    .personal-data-kpi-card
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-route-personal-data #page-personal-data #personal-data-status.lux-status-pill:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--lux-elev-2);
-  }
-}
-
-@media (hover: none) {
-  body.lux-route-personal-data #page-personal-data :is(
-    .home-hover-chip,
-    .personal-data-command,
-    .personal-data-toolbar,
-    .personal-data-identity-card,
-    .personal-data-kpi-card
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-personal-data #page-personal-data :is(
-    .home-hover-chip,
-    .personal-data-command,
-    .personal-data-toolbar,
-    .personal-data-identity-card,
-    .personal-data-kpi-card
-  ):active::after {
-    opacity: 1;
-  }
-
-  body.lux-route-personal-data #page-personal-data #personal-data-status.lux-status-pill:active {
-    transform: translateY(-1px);
-    box-shadow: var(--lux-elev-2);
-  }
-}
-
-/* Study card page: matte inners + home-hover-chip motion; glass host static. */
+/* Study card page: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-route-study-card #page-study-card :is(
   .study-card-control-band,
   .study-card-summary-main,
   .study-card-summary-focus,
   .study-card-summary-focus .lux-hero-signal.home-hover-chip,
+  .study-card-summary-chip-row .lux-status-pill.home-hover-chip,
   .study-card-term-header,
   .study-card-term-row,
   .study-card-assessment-panel,
@@ -1980,143 +1435,37 @@ body.lux-route-study-card #page-study-card :is(
   background-clip: padding-box;
 }
 
-body.lux-route-study-card #page-study-card .study-card-command-deck.lux-panel[data-lux-glass-root="1"] {
-  transition: none;
-  contain: none;
-  overflow: visible;
-}
-
-body.lux-route-study-card #page-study-card .study-card-command-deck.lux-panel[data-lux-glass-root="1"]::after {
-  display: none;
-}
-
-body.lux-route-study-card #page-study-card :is(
-  .home-hover-chip,
-  .study-card-control-band,
-  .study-card-summary-main,
-  .study-card-summary-focus,
-  .study-card-summary-focus .lux-hero-signal.home-hover-chip,
-  .study-card-term-header,
-  .study-card-term-row
-) {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-body.lux-route-study-card #page-study-card :is(
-  .home-hover-chip,
-  .study-card-control-band,
-  .study-card-summary-main,
-  .study-card-summary-focus,
-  .study-card-summary-focus .lux-hero-signal.home-hover-chip,
-  .study-card-term-header,
-  .study-card-term-row
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-route-study-card #page-study-card :is(
-  .home-hover-chip,
-  .study-card-control-band,
-  .study-card-summary-main,
-  .study-card-summary-focus
-) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
-  position: relative;
-  z-index: 1;
-}
-
 body.lux-route-study-card #page-study-card .study-card-summary-focus.lux-focus-panel {
   border-radius: 20px;
   overflow: visible;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-study-card #page-study-card .study-card-summary-focus.home-hover-chip:has(.lux-hero-signal.home-hover-chip:hover) {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-study-card #page-study-card .study-card-summary-focus.home-hover-chip:has(.lux-hero-signal.home-hover-chip:hover)::after {
-    opacity: 0;
-  }
-
-  body.lux-route-study-card #page-study-card .study-card-command-deck.lux-panel[data-lux-glass-root="1"]:hover {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-study-card #page-study-card :is(
-    .home-hover-chip,
-    .study-card-control-band,
-    .study-card-summary-main,
-    .study-card-summary-focus,
-    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
-    .study-card-term-header,
-    .study-card-term-row
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-study-card #page-study-card :is(
-    .home-hover-chip,
-    .study-card-control-band,
-    .study-card-summary-main,
-    .study-card-summary-focus,
-    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
-    .study-card-term-header,
-    .study-card-term-row
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-route-study-card #page-study-card :is(
-    .home-hover-chip,
-    .study-card-control-band,
-    .study-card-summary-main,
-    .study-card-summary-focus,
-    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
-    .study-card-term-header,
-    .study-card-term-row
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-study-card #page-study-card :is(
-    .home-hover-chip,
-    .study-card-control-band,
-    .study-card-summary-main,
-    .study-card-summary-focus,
-    .study-card-summary-focus .lux-hero-signal.home-hover-chip,
-    .study-card-term-header,
-    .study-card-term-row
-  ):active::after {
-    opacity: 1;
-  }
+body.lux-route-study-card #page-study-card .study-card-summary-chip-row .lux-status-pill.home-hover-chip {
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Chancellery page: matte inners + home-hover-chip motion; glass hosts static. */
-body.lux-route-chancellery #page-chancellery :is(
-  .lux-chancellery-command-bar,
-  .lux-chancellery-hero-side,
-  .lux-chancellery-hero-side .lux-hero-signal,
-  .lux-chancellery-list-panel,
-  .lux-chancellery-detail-panel,
-  .lux-chancellery-queue-item,
-  .lux-chancellery-finance-card
+/* Study card assessment portal: frosted host + matte inners (layout → lux-page-bare-lite). */
+body.lux-unified-shell.lux-route-study-card #study-card-assessment-window .study-card-assessment-window {
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
+}
+
+body.lux-route-study-card #study-card-assessment-window .study-card-assessment-window__header {
+  border-bottom-color: var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+}
+
+body.lux-route-study-card #study-card-assessment-window :is(
+  .study-card-assessment-panel.lux-soft-chrome,
+  .study-card-activity-item.lux-soft-chrome,
+  .study-card-gradebook-overlay .gb-weight-card.lux-soft-chrome
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -2128,131 +1477,262 @@ body.lux-route-chancellery #page-chancellery :is(
   background-clip: padding-box;
 }
 
-body.lux-route-chancellery #page-chancellery :is(.page-hero, [data-chancellery-shell="1"]) {
-  transition: none;
-  contain: none;
-  overflow: visible;
+body.lux-route-study-card #study-card-assessment-window .study-card-assessment-panel.lux-soft-chrome {
+  border-radius: 18px;
 }
 
-body.lux-route-chancellery #page-chancellery :is(.page-hero, [data-chancellery-shell="1"])::after {
-  display: none;
+body.lux-route-study-card #study-card-assessment-window .study-card-activity-item.lux-soft-chrome {
+  border-radius: 16px;
 }
 
+body.lux-route-study-card #study-card-assessment-window .study-card-gradebook-overlay .gb-weight-card.lux-soft-chrome {
+  border-radius: 22px;
+}
+
+body.lux-route-study-card #study-card-assessment-window :is(
+  .lux-status-pill.home-hover-chip,
+  .gb-status-badge.lux-status-pill
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+/* LMS personal workspace portal: frosted host + matte inners (layout → lux-page-bare-lite). */
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-card {
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-head {
+  border-bottom: 1px solid var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay :is(
+  .lms-personal-dashboard-share-panel.lux-soft-chrome,
+  .lms-personal-dashboard-history-item.lux-soft-chrome,
+  .lms-personal-dashboard-shared-with-me-row.lux-soft-chrome,
+  .lms-personal-dashboard-share-empty.lux-empty-state,
+  .lms-whiteboard-shell,
+  .lms-whiteboard-tools,
+  .lms-whiteboard-panel,
+  .lms-whiteboard-props-card,
+  .lms-whiteboard-stage
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel.lux-soft-chrome {
+  border-radius: 18px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay {
+  background: color-mix(in srgb, var(--lux-panel-fill) 72%, transparent);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-icon {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-search {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg-btn {
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  background: transparent;
+  color: var(--lux-text-muted);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg-btn.is-active.is-off {
+  background: color-mix(in srgb, var(--lux-text-muted) 18%, transparent);
+  color: var(--lux-text);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg-btn.is-active.is-view {
+  background: color-mix(in srgb, rgb(var(--lux-accent-rgb)) 22%, transparent);
+  border-color: color-mix(in srgb, rgb(var(--lux-accent-rgb)) 42%, transparent);
+  color: var(--lux-text);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-seg-btn.is-active.is-edit {
+  background: color-mix(in srgb, #22c55e 22%, transparent);
+  border-color: color-mix(in srgb, #22c55e 42%, transparent);
+  color: var(--lux-text);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-peer-avatar {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  color: var(--lux-text);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay :is(
+  .lms-personal-dashboard-share-trigger-summary.lux-status-pill,
+  .lms-personal-dashboard-share-badge.lux-status-pill,
+  .lms-personal-dashboard-staff-notice.lux-status-pill
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-badge.is-view,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-staff-notice:not(.is-denied):not(.is-edit) {
+  border-color: color-mix(in srgb, rgb(var(--lux-accent-rgb)) 36%, transparent);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-badge.is-edit,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-staff-notice.is-edit {
+  border-color: color-mix(in srgb, #22c55e 42%, transparent);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-staff-notice.is-denied {
+  border-color: color-mix(in srgb, #ef4444 36%, transparent);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-item.is-autosave {
+  opacity: 0.88;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-autosave-status.is-saving {
+  color: rgb(var(--lux-accent-rgb));
+}
+
+/* Gradebook category history portal: matte inners (layout → lux-page-bare-lite). */
+body.lux-route-lms #gradebook-category-history-modal :is(
+  .gb-category-history-card.lux-soft-chrome,
+  .gb-category-history-comment.lux-soft-chrome,
+  .gb-score-history-row.lux-soft-chrome,
+  .gb-category-history-empty.lux-empty-state
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-lms #gradebook-category-history-modal .gb-score-history-row.lux-soft-chrome {
+  border-radius: 12px;
+}
+
+body.lux-route-lms #gradebook-category-history-modal .gb-category-history-comment.lux-soft-chrome {
+  border-radius: 14px;
+}
+
+body.lux-route-lms #gradebook-category-history-modal .gb-category-history-empty.lux-empty-state {
+  border-style: dashed;
+}
+
+body.lux-route-lms #gradebook-category-history-modal .gb-score-history-row.lux-soft-chrome.is-current,
+body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] .gb-score-history-row.lux-soft-chrome.is-current {
+  border-color: rgba(var(--lux-accent-rgb), 0.34);
+  box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.14);
+}
+
+/* Chancellery page: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-route-chancellery #page-chancellery :is(
-  .home-hover-chip,
   .lux-chancellery-command-bar,
   .lux-chancellery-hero-side,
+  .lux-chancellery-hero-side .lux-hero-signal.home-hover-chip,
+  .lux-chancellery-hero-side .lux-focus-panel__chip.lux-status-pill.home-hover-chip,
   .lux-chancellery-list-panel,
   .lux-chancellery-detail-panel,
   .lux-chancellery-queue-item,
+  .lux-chancellery-subcard.lux-soft-chrome,
+  .lux-chancellery-thread-entry.lux-soft-chrome,
   .lux-chancellery-finance-card
 ) {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-body.lux-route-chancellery #page-chancellery :is(
-  .home-hover-chip,
-  .lux-chancellery-command-bar,
-  .lux-chancellery-hero-side,
-  .lux-chancellery-list-panel,
-  .lux-chancellery-detail-panel,
-  .lux-chancellery-queue-item,
-  .lux-chancellery-finance-card
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-route-chancellery #page-chancellery :is(
-  .home-hover-chip,
-  .lux-chancellery-command-bar,
-  .lux-chancellery-hero-side,
-  .lux-chancellery-list-panel,
-  .lux-chancellery-detail-panel,
-  .lux-chancellery-queue-item,
-  .lux-chancellery-finance-card
-) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
-  position: relative;
-  z-index: 1;
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
 }
 
 body.lux-route-chancellery #page-chancellery .lux-chancellery-queue-item {
   border-radius: 14px;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-chancellery #page-chancellery :is(.page-hero, [data-chancellery-shell="1"]):hover {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-chancellery #page-chancellery :is(
-    .home-hover-chip,
-    .lux-chancellery-command-bar,
-    .lux-chancellery-hero-side,
-    .lux-chancellery-list-panel,
-    .lux-chancellery-detail-panel,
-    .lux-chancellery-queue-item,
-    .lux-chancellery-finance-card
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-chancellery #page-chancellery :is(
-    .home-hover-chip,
-    .lux-chancellery-command-bar,
-    .lux-chancellery-hero-side,
-    .lux-chancellery-list-panel,
-    .lux-chancellery-detail-panel,
-    .lux-chancellery-queue-item,
-    .lux-chancellery-finance-card
-  ):hover::after {
-    opacity: 1;
-  }
+body.lux-route-chancellery #page-chancellery .lux-chancellery-detail-panel.home-hover-chip {
+  contain: none;
+  overflow: visible;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-chancellery #page-chancellery :is(
-    .home-hover-chip,
-    .lux-chancellery-command-bar,
-    .lux-chancellery-hero-side,
-    .lux-chancellery-list-panel,
-    .lux-chancellery-detail-panel,
-    .lux-chancellery-queue-item,
-    .lux-chancellery-finance-card
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-chancellery #page-chancellery :is(
-    .home-hover-chip,
-    .lux-chancellery-command-bar,
-    .lux-chancellery-hero-side,
-    .lux-chancellery-list-panel,
-    .lux-chancellery-detail-panel,
-    .lux-chancellery-queue-item,
-    .lux-chancellery-finance-card
-  ):active::after {
-    opacity: 1;
-  }
-}
-
-/* News page: matte sidebar + home-hover-chip motion; glass hosts static. */
-body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip {
+/* Staff / students-admin hubs: matte directory + builder panels (motion → global .home-hover-chip SSOT). */
+body.lux-route-students-admin #students-content :is(
+  .students-hub-controls.home-hover-chip,
+  .students-hub-directory-panel.home-hover-chip,
+  .students-hub-result-pill.home-hover-chip,
+  .students-hub-chip.lux-status-pill.home-hover-chip,
+  .students-hub-form-section.lux-data-card.home-hover-chip,
+  .students-hub-profile-metric.lux-data-card.home-hover-chip,
+  .students-hub-info-card.lux-data-card.home-hover-chip,
+  .students-hub-academic-section.lux-data-card.home-hover-chip,
+  .students-hub-profile-field.lux-soft-chrome.home-hover-chip,
+  .students-hub-builder-rail.lux-soft-chrome.home-hover-chip,
+  .students-hub-builder-canvas.lux-soft-chrome.home-hover-chip,
+  .students-hub-profile-panel.lux-data-card.home-hover-chip,
+  .students-hub-section-field-workspace.lux-data-card.home-hover-chip,
+  .students-hub-profile-list-shell.home-hover-chip,
+  .students-hub-profile-row.home-hover-chip,
+  .students-hub-studio-field-row.home-hover-chip,
+  .students-hub-builder-type.home-hover-chip,
+  .students-hub-studio-quick-btn.home-hover-chip,
+  .students-hub-copy-bar.home-hover-chip
+),
+body.lux-route-staff #staff-content :is(
+  .staff-hub-controls.home-hover-chip,
+  .staff-hub-directory-panel.home-hover-chip,
+  .staff-hub-result-pill.home-hover-chip,
+  .staff-hub-chip.lux-status-pill.home-hover-chip,
+  .staff-hub-info-card.lux-data-card.home-hover-chip,
+  .staff-hub-profile-field.lux-soft-chrome.home-hover-chip,
+  .staff-hub-builder-rail.lux-soft-chrome.home-hover-chip,
+  .staff-hub-builder-canvas.lux-soft-chrome.home-hover-chip,
+  .staff-hub-profile-panel.lux-data-card.home-hover-chip,
+  .staff-hub-section-field-workspace.lux-data-card.home-hover-chip,
+  .staff-hub-profile-list-shell.home-hover-chip,
+  .staff-hub-profile-row.home-hover-chip,
+  .staff-hub-studio-field-row.home-hover-chip,
+  .staff-hub-builder-type.home-hover-chip,
+  .staff-hub-studio-quick-btn.home-hover-chip,
+  .staff-hub-copy-bar.home-hover-chip
+) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
   border: 1px solid var(--lux-soft-chrome-border-accent);
@@ -2263,66 +1743,82 @@ body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip {
   background-clip: padding-box;
 }
 
-body.lux-route-news #portal-news-root [data-news-shell="1"] {
-  transition: none;
+body.lux-route-students-admin #students-content .students-hub-controls.home-hover-chip,
+body.lux-route-students-admin #students-content .students-hub-directory-panel.home-hover-chip,
+body.lux-route-students-admin #students-content .students-hub-builder-rail.lux-soft-chrome.home-hover-chip,
+body.lux-route-students-admin #students-content .students-hub-builder-canvas.lux-soft-chrome.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-controls.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-directory-panel.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-builder-rail.lux-soft-chrome.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-builder-canvas.lux-soft-chrome.home-hover-chip {
+  border-radius: 20px;
+}
+
+body.lux-route-students-admin #students-content :is(
+  .students-hub-profile-row.home-hover-chip,
+  .students-hub-studio-field-row.home-hover-chip,
+  .students-hub-builder-type.home-hover-chip
+),
+body.lux-route-staff #staff-content :is(
+  .staff-hub-profile-row.home-hover-chip,
+  .staff-hub-studio-field-row.home-hover-chip,
+  .staff-hub-builder-type.home-hover-chip
+) {
   contain: none;
   overflow: visible;
 }
 
-body.lux-route-news #portal-news-root [data-news-shell="1"]::after {
-  display: none;
+body.lux-route-students-admin #students-content .students-hub-studio-quick-btn.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-studio-quick-btn.home-hover-chip {
+  border-radius: 999px;
 }
 
-body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+body.lux-route-students-admin #students-content .students-hub-profile-row.is-active.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-profile-row.is-active.home-hover-chip,
+body.lux-route-students-admin #students-content .students-hub-builder-type.is-active.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-builder-type.is-active.home-hover-chip {
+  border-color: rgba(var(--lux-accent-rgb), 0.34);
+  box-shadow: var(--lux-hub-active-row-shadow, var(--lux-elev-1));
 }
 
-body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
+body.lux-route-students-admin #students-content .students-hub-studio-field-row.is-required.home-hover-chip,
+body.lux-route-staff #staff-content .staff-hub-studio-field-row.is-required.home-hover-chip {
+  border-color: rgba(239, 68, 68, 0.22);
 }
 
-body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip > * {
-  position: relative;
-  z-index: 1;
+body.lux-route-chancellery #page-chancellery .lux-chancellery-subcard.lux-soft-chrome.home-hover-chip,
+body.lux-route-chancellery #page-chancellery .lux-chancellery-thread-entry.lux-soft-chrome.home-hover-chip {
+  border-radius: 14px;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:hover::after {
-    opacity: 1;
-  }
-
-  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip:active::after {
-    opacity: 1;
-  }
+/* News page: matte sidebar + header (motion → global matteHoverShell SSOT). */
+body.lux-route-news #portal-news-root :is(
+  .newsx-sidebar.home-hover-chip,
+  .newsx-header-bar,
+  .newsx-feed-card.lux-soft-chrome,
+  .lux-empty-state.newsx-empty,
+  .lux-empty-state.newsx-error
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
 }
 
-/* Library page: matte inners + home-hover-chip motion; primary shells → frosted override below. */
+/* Library page: matte inners (motion → global .home-hover-chip SSOT); primary shells → frosted override below. */
 #page-library :is(
+  .alib-panel.lux-soft-chrome.home-hover-chip,
+  .library-catalog-filters-panel.lux-soft-chrome.home-hover-chip,
+  .admin-library-metric-card.home-hover-chip,
   .admin-library-metric-card.lux-stat-card,
   .admin-library-catalog-card .admin-library-tabs,
+  .admin-library-tab-btn.home-hover-chip,
+  .admin-library-manage-sections-btn.home-hover-chip,
+  .admin-library-empty-state.home-hover-chip,
   .admin-library-empty-state
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
@@ -2339,6 +1835,13 @@ body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip > * {
   border-radius: 12px;
 }
 
+body.lux-route-admin-library #page-library .alib-panel.home-hover-chip,
+body.lux-entry-admin-library #page-library .alib-panel.home-hover-chip,
+body.lux-route-library #page-library .library-catalog-filters-panel.home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
 #page-library :is(.admin-library-status-pill, .library-status-pill) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -2352,6 +1855,76 @@ body.lux-route-news #portal-news-root .newsx-sidebar.home-hover-chip > * {
 
 #page-library .admin-library-empty-state {
   border-style: dashed;
+}
+
+/* Admin library modals: matte inners on frosted modal shell (motion → global .home-hover-chip SSOT). */
+:is(#page-library, .admin-library-modal) :is(
+  .admin-library-schema-field-row.home-hover-chip,
+  .admin-library-schema-add-form.home-hover-chip,
+  .admin-library-schema-empty.home-hover-chip,
+  .admin-library-schema-droplist-editor-body.home-hover-chip,
+  .admin-library-sections-add-row.lux-soft-chrome,
+  .admin-library-sections-panel.home-hover-chip,
+  .admin-library-section-row.home-hover-chip,
+  .admin-library-chip.home-hover-chip,
+  .admin-library-param-group.home-hover-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+:is(#page-library, .admin-library-modal) :is(
+  .admin-library-schema-field-row.home-hover-chip,
+  .admin-library-section-row.home-hover-chip,
+  .admin-library-chip.home-hover-chip
+) {
+  contain: none;
+  overflow: visible;
+}
+
+:is(#page-library, .admin-library-modal) .admin-library-schema-empty.home-hover-chip,
+:is(#page-library, .admin-library-modal) .admin-library-sections-empty.lux-empty-state {
+  border-style: dashed;
+}
+
+:is(#page-library, .admin-library-modal) .admin-library-chip.home-hover-chip {
+  border-radius: 999px;
+}
+
+/* Admin scheduler modals: matte inners on frosted .sch-modal shell (motion → global .home-hover-chip SSOT). */
+:is(#page-admin-scheduler, #schModalOverlay, #schPresetManagerOverlay) :is(
+  .sch-form-section.home-hover-chip,
+  .sch-conflict-alert.home-hover-chip,
+  .sch-modal-mode-chip.home-hover-chip,
+  .sch-preset-manage-item.home-hover-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+:is(#page-admin-scheduler, #schModalOverlay, #schPresetManagerOverlay) :is(
+  .sch-form-section.home-hover-chip,
+  .sch-preset-manage-item.home-hover-chip
+) {
+  contain: none;
+  overflow: visible;
+}
+
+:is(#schModalOverlay, #schPresetManagerOverlay) .sch-modal-mode-chip.home-hover-chip {
+  color: var(--lux-accent-2);
+  border-radius: 999px;
 }
 
 #page-library .admin-library-catalog-foot {
@@ -2427,107 +2000,29 @@ body.lux-route-library #page-library [data-library-catalog-shell="1"]::after {
   display: none;
 }
 
-body.lux-route-library #page-library :is(
-  .home-hover-chip,
+/* Library catalog primary shells: frosted panel glass (not matte soft-chrome). */
+body.lux-unified-shell #page-library :is(
   .library-catalog-filters-panel,
-  .admin-library-catalog-card,
-  .admin-library-metric-card.lux-stat-card
+  .admin-library-catalog-card
 ) {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
 }
 
-body.lux-route-library #page-library :is(
-  .home-hover-chip,
-  .library-catalog-filters-panel,
-  .admin-library-catalog-card,
-  .admin-library-metric-card.lux-stat-card
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
+body.lux-unified-shell #page-library .library-catalog-filters-panel {
+  border-radius: 28px;
 }
 
-body.lux-route-library #page-library :is(
-  .home-hover-chip,
-  .library-catalog-filters-panel,
-  .admin-library-catalog-card,
-  .admin-library-metric-card.lux-stat-card
-) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
-  position: relative;
-  z-index: 1;
+body.lux-unified-shell #page-library .admin-library-catalog-card {
+  border-radius: 22px;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-library #page-library :is(
-    .page-hero,
-    [data-library-catalog-shell="1"]
-  ):hover {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-library #page-library :is(
-    .home-hover-chip,
-    .library-catalog-filters-panel,
-    .admin-library-catalog-card,
-    .admin-library-metric-card.lux-stat-card
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-library #page-library :is(
-    .home-hover-chip,
-    .library-catalog-filters-panel,
-    .admin-library-catalog-card,
-    .admin-library-metric-card.lux-stat-card
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-route-library #page-library :is(
-    .home-hover-chip,
-    .library-catalog-filters-panel,
-    .admin-library-catalog-card,
-    .admin-library-metric-card.lux-stat-card
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-library #page-library :is(
-    .home-hover-chip,
-    .library-catalog-filters-panel,
-    .admin-library-catalog-card,
-    .admin-library-metric-card.lux-stat-card
-  ):active::after {
-    opacity: 1;
-  }
-
-  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:hover,
-  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:active {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:hover::after,
-  body.lux-route-library #page-library .library-catalog-filters-panel .admin-library-metric-card.lux-stat-card:active::after {
-    opacity: 0;
-  }
-}
-
-/* Student Service page: matte inners + home-hover-chip motion; primary shells → frosted override below. */
+/* Student Service page: matte inners (motion → global .home-hover-chip SSOT); primary shells → frosted override below. */
 body.lux-route-student-service #page-student-service :is(
   .student-service-lane-choice-stats .lux-pill,
   .student-service-student-hub-track-compact,
@@ -2676,163 +2171,8 @@ body.lux-route-student-service #page-student-service :is(
   display: none;
 }
 
-body.lux-route-student-service #page-student-service :is(
-  .home-hover-chip,
-  .student-service-command-bar-shell,
-  .student-service-zone,
-  .student-service-lane-choice-card,
-  .student-service-lane-choice-stats .lux-pill,
-  .student-service-student-hub-track-compact,
-  .student-service-qa-card,
-  .student-service-ticket-inbox-row,
-  .student-service-ticket-card
-) {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-body.lux-route-student-service #page-student-service :is(
-  .home-hover-chip,
-  .student-service-command-bar-shell,
-  .student-service-zone,
-  .student-service-lane-choice-card,
-  .student-service-lane-choice-stats .lux-pill,
-  .student-service-student-hub-track-compact,
-  .student-service-qa-card,
-  .student-service-ticket-inbox-row,
-  .student-service-ticket-card
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-route-student-service #page-student-service :is(
-  .home-hover-chip,
-  .student-service-command-bar-shell,
-  .student-service-zone,
-  .student-service-lane-choice-card,
-  .student-service-lane-choice-stats .lux-pill,
-  .student-service-student-hub-track-compact,
-  .student-service-qa-card,
-  .student-service-ticket-inbox-row,
-  .student-service-ticket-card
-) > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-student-service #page-student-service :is(
-    .student-service-shell[data-lux-glass-root="1"],
-    .student-service-canvas
-  ):hover {
-    transform: none;
-    box-shadow: inherit;
-  }
-
-  body.lux-route-student-service #page-student-service :is(
-    .home-hover-chip,
-    .student-service-command-bar-shell,
-    .student-service-zone,
-    .student-service-lane-choice-card,
-    .student-service-lane-choice-stats .lux-pill,
-    .student-service-student-hub-track-compact,
-    .student-service-qa-card,
-    .student-service-ticket-inbox-row,
-  .student-service-ticket-card
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-student-service #page-student-service :is(
-    .home-hover-chip,
-    .student-service-command-bar-shell,
-    .student-service-zone,
-    .student-service-lane-choice-card,
-    .student-service-lane-choice-stats .lux-pill,
-    .student-service-student-hub-track-compact,
-    .student-service-qa-card,
-    .student-service-ticket-inbox-row,
-  .student-service-ticket-card
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-route-student-service #page-student-service :is(
-    .home-hover-chip,
-    .student-service-command-bar-shell,
-    .student-service-zone,
-    .student-service-lane-choice-card,
-    .student-service-lane-choice-stats .lux-pill,
-    .student-service-student-hub-track-compact,
-    .student-service-qa-card,
-    .student-service-ticket-inbox-row,
-    .student-service-ticket-card
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-student-service #page-student-service :is(
-    .home-hover-chip,
-    .student-service-command-bar-shell,
-    .student-service-zone,
-    .student-service-lane-choice-card,
-    .student-service-lane-choice-stats .lux-pill,
-    .student-service-student-hub-track-compact,
-    .student-service-qa-card,
-    .student-service-ticket-inbox-row,
-    .student-service-ticket-card
-  ):active::after {
-    opacity: 1;
-  }
-
-  body.lux-route-student-service #page-student-service .student-service-zone :is(
-    .student-service-find-search,
-    .student-service-ticket-inbox-row,
-    .student-service-ticket-card
-  ):hover,
-  body.lux-route-student-service #page-student-service .student-service-zone :is(
-    .student-service-find-search,
-    .student-service-ticket-inbox-row,
-    .student-service-ticket-card
-  ):active {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-student-service #page-student-service .student-service-zone :is(
-    .student-service-find-search,
-    .student-service-ticket-inbox-row,
-    .student-service-ticket-card
-  ):hover::after,
-  body.lux-route-student-service #page-student-service .student-service-zone :is(
-    .student-service-find-search,
-    .student-service-ticket-inbox-row,
-    .student-service-ticket-card
-  ):active::after {
-    opacity: 0;
-  }
-}
-
-body.lux-route-student-service #page-student-service .student-service-lane-choice-card:focus-visible {
-  outline: 2px solid rgba(var(--lux-accent-rgb), 0.36);
-  outline-offset: 3px;
-}
-
-/* Student Service modal portal: backdrop dim + matte dialog surfaces. */
+/* Student Service modal portal: warmglass backdrop + frosted panel dialog hosts;
+ * inner chips use .lux-soft-chrome (markup) / pill selectors below. */
 body.lux-route-student-service #student-service-modal-root :is(
   .student-service-qa-composer-modal-backdrop,
   .student-service-qa-delete-modal-backdrop,
@@ -2841,9 +2181,9 @@ body.lux-route-student-service #student-service-modal-root :is(
   .student-service-ticket-thread-modal-backdrop,
   .student-service-inbox-filter-editor-backdrop
 ) {
-  background: rgba(4, 7, 13, 0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--lux-warmglass-overlay-dark);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 body.lux-light-mode.lux-route-student-service #student-service-modal-root :is(
@@ -2862,10 +2202,10 @@ html.lux-light-mode body.lux-route-student-service #student-service-modal-root :
   .student-service-ticket-thread-modal-backdrop,
   .student-service-inbox-filter-editor-backdrop
 ) {
-  background: rgba(244, 241, 234, 0.62);
+  background: var(--lux-warmglass-overlay-light);
 }
 
-body.lux-route-student-service #student-service-modal-root :is(
+body.lux-unified-shell.lux-route-student-service #student-service-modal-root :is(
   .student-service-qa-composer-modal,
   .student-service-qa-delete-confirm,
   .student-service-guidance-modal,
@@ -2873,12 +2213,12 @@ body.lux-route-student-service #student-service-modal-root :is(
   .student-service-ticket-thread-modal,
   .student-service-inbox-filter-editor-modal
 ) {
-  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
-  background-image: var(--lux-soft-chrome-surface);
-  border: 1px solid var(--lux-soft-chrome-border-accent);
-  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
   background-clip: padding-box;
 }
 
@@ -2900,10 +2240,6 @@ body.lux-route-student-service #student-service-modal-root :is(
   .student-service-qa-thread-modal-icon-chip,
   .student-service-inbox-filter-editor-icon-chip
 ) {
-  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
-  background-image: var(--lux-soft-chrome-surface);
-  border: 1px solid var(--lux-soft-chrome-border-accent);
-  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
   color: rgba(var(--lux-accent-rgb), 0.96);
 }
 
@@ -2912,26 +2248,27 @@ body.lux-route-student-service #student-service-modal-root :is(
   .student-service-qa-delete-confirm-actions,
   .student-service-inbox-filter-editor-actions
 ) {
-  border-top: 1px solid var(--lux-soft-chrome-border-accent);
+  border-top: 1px solid var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
 }
 
-body.lux-route-student-service #student-service-modal-root .student-service-inbox-filter-editor-row {
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-pill,
+  .student-service-mini-action
+) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
   border: 1px solid var(--lux-soft-chrome-border-accent);
   box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+  border-radius: 999px;
 }
 
 body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-find-search,
   .student-service-empty-state,
-  .student-service-pill,
-  .student-service-mini-action,
-  .student-service-attachment-chip,
-  .student-service-qa-answer-card,
-  .student-service-qa-inline-reply-banner,
-  .student-service-qa-thread-reply,
-  .student-service-qa-empty-note,
-  .student-service-qa-reply-locked
+  .student-service-ticket-card
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -2942,11 +2279,29 @@ body.lux-route-student-service #student-service-modal-root :is(
   background-clip: padding-box;
 }
 
-body.lux-route-student-service #student-service-modal-root :is(
-  .student-service-pill,
-  .student-service-mini-action,
-  .student-service-attachment-chip
-) {
+body.lux-route-student-service #student-service-modal-root .student-service-find-search {
+  border-radius: 18px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-empty-state {
+  border-radius: 18px;
+  border-style: dashed;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-ticket-card {
+  border-radius: 22px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-ticket-card.is-selected {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-service-accent-rgb), 0.5));
+  box-shadow: 0 0 0 1px rgba(var(--lux-service-accent-rgb), 0.12), var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-guidance-pane.lux-soft-chrome {
+  border-radius: 18px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-attachment-chip {
   border-radius: 999px;
 }
 
@@ -2960,8 +2315,12 @@ body.lux-route-student-service #student-service-modal-root :is(
   border-radius: 16px;
 }
 
-body.lux-route-student-service #student-service-modal-root .student-service-qa-answer-card {
-  border-radius: 18px;
+body.lux-route-student-service #student-service-modal-root .social-neo-comment-bubble.lux-soft-chrome {
+  border-radius: 16px;
+}
+
+body.lux-route-student-service #student-service-modal-root .social-neo-comment-reply-form.lux-soft-chrome.home-hover-chip {
+  border-radius: 12px;
 }
 
 body.lux-route-student-service #student-service-modal-root .student-service-qa-answer-card .student-service-pill {
@@ -2969,7 +2328,42 @@ body.lux-route-student-service #student-service-modal-root .student-service-qa-a
   box-shadow: none;
 }
 
-/* Orders inbox page: matte inners + home-hover-chip motion; primary shells → frosted override below. */
+body.lux-route-student-service #student-service-modal-root .social-neo-comment-children {
+  border-left-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 70%, transparent);
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-qa-delete-confirm-preview {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 40%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+}
+
+/* Student Service primary shells: frosted panel glass (not matte soft-chrome). */
+body.lux-unified-shell #page-student-service :is(
+  .student-service-command-bar-shell,
+  .student-service-zone,
+  .student-service-lane-choice-card
+) {
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  border: 1px solid var(--lux-panel-host-border);
+  box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: var(--lux-panel-blur-filter);
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  background-clip: padding-box;
+}
+
+body.lux-unified-shell #page-student-service .student-service-command-bar-shell {
+  border-radius: 18px;
+}
+
+body.lux-unified-shell #page-student-service .student-service-zone,
+body.lux-unified-shell #page-student-service .student-service-lane-choice-card {
+  border-radius: 28px;
+}
+
+/* Orders inbox page: matte inners (motion → global .home-hover-chip SSOT); primary shells → frosted override below. */
 body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-summary-surface:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card) {
   background: transparent !important;
   border: 0 !important;
@@ -2983,7 +2377,7 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-summary-surface
 }
 
 body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero-side .lux-hero-signal,
+  .orders-inbox-hero-side .lux-hero-signal.home-hover-chip,
   .orders-metric-card,
   .orders-list-wrap,
   .orders-item,
@@ -2993,7 +2387,7 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
   .orders-attachment-card,
   .orders-recipient-card,
   .orders-status-filter,
-  .lux-status-pill,
+  .lux-status-pill.home-hover-chip,
   .lux-pill.lux-soft-chrome
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
@@ -3072,769 +2466,7 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[
   display: none;
 }
 
-/* Orders inbox primary shells: frosted panel glass (beats lux-summary-surface neutralize). */
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card
-) {
-  background-color: var(--lux-panel-fill) !important;
-  background-image: var(--lux-panel-surface) !important;
-  border: 1px solid var(--lux-panel-host-border) !important;
-  box-shadow: var(--lux-panel-host-shadow) !important;
-  backdrop-filter: var(--lux-panel-blur-filter) !important;
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter) !important;
-  background-clip: padding-box;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero {
-  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55) !important;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card,
-  .orders-inbox-hero-side,
-  .lux-hero-signal,
-  .lux-status-pill,
-  .lux-pill.lux-soft-chrome,
-  .home-hover-chip,
-  .orders-status-filter,
-  .orders-item,
-  .orders-list-empty,
-  .orders-metric-card,
-  .orders-detail-panel.lux-detail-panel,
-  .orders-detail-empty,
-  .orders-attachment-card,
-  .orders-recipient-card
-),
-body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card,
-  .orders-inbox-hero-side,
-  .lux-hero-signal,
-  .lux-status-pill,
-  .lux-pill.lux-soft-chrome,
-  .home-hover-chip,
-  .orders-status-filter,
-  .orders-item,
-  .orders-list-empty,
-  .orders-metric-card,
-  .orders-detail-panel.lux-detail-panel,
-  .orders-detail-empty,
-  .orders-attachment-card,
-  .orders-recipient-card
-) {
-  position: relative;
-  isolation: isolate;
-  contain: none;
-  overflow: visible;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card,
-  .orders-inbox-hero-side,
-  .lux-hero-signal,
-  .lux-status-pill,
-  .lux-pill.lux-soft-chrome,
-  .home-hover-chip,
-  .orders-status-filter,
-  .orders-item,
-  .orders-list-empty,
-  .orders-metric-card,
-  .orders-detail-panel.lux-detail-panel,
-  .orders-detail-empty,
-  .orders-attachment-card,
-  .orders-recipient-card
-)::after,
-body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card,
-  .orders-inbox-hero-side,
-  .lux-hero-signal,
-  .lux-status-pill,
-  .lux-pill.lux-soft-chrome,
-  .home-hover-chip,
-  .orders-status-filter,
-  .orders-item,
-  .orders-list-empty,
-  .orders-metric-card,
-  .orders-detail-panel.lux-detail-panel,
-  .orders-detail-empty,
-  .orders-attachment-card,
-  .orders-recipient-card
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card,
-  .orders-inbox-hero-side,
-  .lux-hero-signal,
-  .lux-status-pill,
-  .lux-pill.lux-soft-chrome,
-  .home-hover-chip,
-  .orders-status-filter,
-  .orders-item,
-  .orders-list-empty,
-  .orders-metric-card,
-  .orders-detail-panel.lux-detail-panel,
-  .orders-detail-empty,
-  .orders-attachment-card,
-  .orders-recipient-card
-) > *,
-body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card,
-  .orders-inbox-hero-side,
-  .lux-hero-signal,
-  .lux-status-pill,
-  .lux-pill.lux-soft-chrome,
-  .home-hover-chip,
-  .orders-status-filter,
-  .orders-item,
-  .orders-list-empty,
-  .orders-metric-card,
-  .orders-detail-panel.lux-detail-panel,
-  .orders-detail-empty,
-  .orders-attachment-card,
-  .orders-recipient-card
-) > * {
-  position: relative;
-  z-index: 1;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-  .lux-status-pill,
-  .lux-pill.lux-soft-chrome,
-  .orders-status-filter,
-  .orders-item__state
-) {
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"]:hover,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"]:hover {
-    transform: none;
-    box-shadow: inherit;
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover::after,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):active,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):active::after,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card,
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel.lux-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):active::after {
-    opacity: 1;
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card
-  ):has(:is(
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover),
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card
-  ):has(:is(
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover) {
-    transform: none;
-    border-color: var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card
-  ):has(:is(
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover)::after,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-    .orders-inbox-hero,
-    .orders-list-card,
-    .orders-detail-card
-  ):has(:is(
-    .orders-inbox-hero-side,
-    .lux-hero-signal,
-    .lux-status-pill,
-    .lux-pill.lux-soft-chrome,
-    .home-hover-chip,
-    .orders-status-filter,
-    .orders-item,
-    .orders-list-empty,
-    .orders-metric-card,
-    .orders-detail-panel,
-    .orders-detail-empty,
-    .orders-attachment-card,
-    .orders-recipient-card
-  ):hover)::after {
-    opacity: 0;
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover),
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover) {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover)::after,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side:has(.lux-hero-signal:hover)::after {
-    opacity: 0;
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover),
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover) {
-    transform: none;
-    border-color: var(--lux-soft-chrome-border-accent);
-  }
-
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover)::after,
-  body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-list-wrap:has(.orders-item:hover)::after {
-    opacity: 0;
-  }
-}
-
-/* Social soft-chrome shells: same hover lift + ambient glow as home-hover-chip. */
-body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-  .lux-strip-card.surface-card,
-  [class*="-hero-stat"],
-  .social-neo-directory-item,
-  .social-neo-event-feature,
-  .social-portfolio-card,
-  .social-neo-portfolio-hero-discover,
-  .social-neo-workspace-hub-section,
-  .social-project-hub-rail-card,
-  .social-project-card-new,
-  .social-project-hub-cta-tile,
-  .social-project-row,
-  .social-project-ring-card,
-  .social-project-metric-card,
-  .social-project-status-item,
-  .social-project-workload-item,
-  .social-project-activity-item,
-  .social-project-my-task-item,
-  .social-project-workspace-chat,
-  .social-project-workspace-chat .social-neo-messages__thread-shell,
-  .spt-desk-package,
-  .spt-desk-card,
-  .spt-desk-focus-chip,
-  .spt-desk-hygiene-pill,
-  .spt-desk-plan-health-card,
-  .social-neo-card.social-project-task-shell--desk
-) {
-  position: relative;
-  isolation: isolate;
-  contain: paint;
-  overflow: hidden;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
-}
-
-body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-  .lux-strip-card.surface-card,
-  [class*="-hero-stat"],
-  .social-neo-directory-item,
-  .social-neo-event-feature,
-  .social-portfolio-card,
-  .social-neo-portfolio-hero-discover,
-  .social-neo-workspace-hub-section,
-  .social-project-hub-rail-card,
-  .social-project-card-new,
-  .social-project-hub-cta-tile,
-  .social-project-row,
-  .social-project-ring-card,
-  .social-project-metric-card,
-  .social-project-status-item,
-  .social-project-workload-item,
-  .social-project-activity-item,
-  .social-project-my-task-item,
-  .social-project-workspace-chat,
-  .social-project-workspace-chat .social-neo-messages__thread-shell,
-  .spt-desk-package,
-  .spt-desk-card,
-  .spt-desk-focus-chip,
-  .spt-desk-hygiene-pill,
-  .spt-desk-plan-health-card,
-  .social-neo-card.social-project-task-shell--desk
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-  .lux-strip-card.surface-card,
-  [class*="-hero-stat"],
-  .social-neo-directory-item,
-  .social-neo-event-feature,
-  .social-portfolio-card,
-  .social-neo-portfolio-hero-discover,
-  .social-neo-workspace-hub-section,
-  .social-project-hub-rail-card,
-  .social-project-card-new,
-  .social-project-hub-cta-tile,
-  .social-project-row,
-  .social-project-ring-card,
-  .social-project-metric-card,
-  .social-project-status-item,
-  .social-project-workload-item,
-  .social-project-activity-item,
-  .social-project-my-task-item,
-  .social-project-workspace-chat,
-  .social-project-workspace-chat .social-neo-messages__thread-shell,
-  .spt-desk-package,
-  .spt-desk-card,
-  .spt-desk-focus-chip,
-  .spt-desk-hygiene-pill,
-  .spt-desk-plan-health-card,
-  .social-neo-card.social-project-task-shell--desk
-) > * {
-  position: relative;
-  z-index: 1;
-}
-
-body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field)) {
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card,
-    [class*="-hub-section"],
-    .social-neo-workspace-hub-section
-  ):has(:is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-    [class*="-hub-section"],
-    .social-neo-empty,
-    .social-neo-empty-hero,
-    .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk
-  ):hover) {
-    transform: none;
-    border-color: var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
-    box-shadow: none;
-  }
-
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card,
-    [class*="-hub-section"],
-    .social-neo-workspace-hub-section
-  ):has(:is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-    [class*="-hub-section"],
-    .social-neo-empty,
-    .social-neo-empty-hero,
-    .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk
-  ):hover)::after {
-    opacity: 0;
-  }
-}
-
-@media (hover: none) {
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-    [class*="-hub-section"],
-    .social-neo-empty,
-    .social-neo-empty-hero,
-    .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-    [class*="-hub-section"],
-    .social-neo-empty,
-    .social-neo-empty-hero,
-    .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk
-  ):active::after {
-    opacity: 1;
-  }
-}
-
-/* Social comments dialog: matte inners inside overlay portal (no data-lux-glass-root). */
+/* Social comments dialog: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
   .lux-strip-card.surface-card,
   .lux-soft-chrome.home-hover-chip
@@ -3847,11 +2479,6 @@ body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-di
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
-  position: relative;
-  isolation: isolate;
-  contain: paint;
-  overflow: hidden;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments .sns-comment-dialog-bubble.lux-soft-chrome.home-hover-chip {
@@ -3873,227 +2500,10 @@ body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-di
   box-shadow: none;
 }
 
-body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
+/* Social survey-results dialog: matte inners (motion → global .home-hover-chip SSOT). */
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--survey-results :is(
   .lux-strip-card.surface-card,
   .lux-soft-chrome.home-hover-chip
-)::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
-  .lux-strip-card.surface-card,
-  .lux-soft-chrome.home-hover-chip
-) > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
-    .lux-strip-card.surface-card,
-    .lux-soft-chrome.home-hover-chip
-  ):hover {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
-    .lux-strip-card.surface-card,
-    .lux-soft-chrome.home-hover-chip
-  ):hover::after {
-    opacity: 1;
-  }
-
-  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments:has(.home-hover-chip:hover) {
-    transform: none;
-    border-color: var(--lux-popup-shell-border, var(--lux-panel-border-soft));
-  }
-
-  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments:has(.home-hover-chip:hover)::after {
-    opacity: 0;
-  }
-}
-
-@media (hover: none) {
-  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
-    .lux-strip-card.surface-card,
-    .lux-soft-chrome.home-hover-chip
-  ):active {
-    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-  }
-
-  body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--comments :is(
-    .lux-strip-card.surface-card,
-    .lux-soft-chrome.home-hover-chip
-  ):active::after {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk,
-    .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
-  ) {
-    transition: border-color 0.15s ease;
-  }
-
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk
-  )::after {
-    display: none;
-  }
-
-  body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-    .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-    .lux-strip-card.surface-card,
-    [class*="-hero-stat"],
-    .social-neo-directory-item,
-    .social-neo-event-feature,
-    .social-portfolio-card,
-    .social-neo-portfolio-hero-discover,
-    .social-neo-workspace-hub-section,
-    .social-project-hub-rail-card,
-    .social-project-card-new,
-    .social-project-hub-cta-tile,
-    .social-project-row,
-    .social-project-ring-card,
-    .social-project-metric-card,
-    .social-project-status-item,
-    .social-project-workload-item,
-    .social-project-activity-item,
-    .spt-desk-package,
-    .spt-desk-card,
-    .spt-desk-focus-chip,
-    .spt-desk-hygiene-pill,
-    .spt-desk-plan-health-card,
-    .social-neo-card.social-project-task-shell--desk,
-    .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
-  ):hover {
-    transform: none;
-    box-shadow: none;
-  }
-}
-
-html[data-lux-transparency="0"] body.lux-unified-shell.lux-route-social :is(#public-social-root, #social-neo-root, #social-neo-overlay-portal) :is(
-  .social-neo-card:not(.is-merged):not(:has(.lux-universal-picker-field)):not([class*="-hero"]):not(.social-neo-feed-header-card),
-  [class*="-hub-section"],
-  .social-neo-empty,
-  .social-neo-empty-hero,
-  .social-neo-entity-card,
-  .lux-strip-card.surface-card,
-  [class*="-hero-stat"],
-  .social-neo-directory-item,
-  .social-neo-event-feature,
-  .social-portfolio-card,
-  .social-neo-portfolio-hero-discover,
-  .social-neo-workspace-hub-section,
-  .social-project-hub-rail-card,
-  .social-project-card-new,
-  .social-project-hub-cta-tile,
-  .social-project-row,
-  .social-project-ring-card,
-  .social-project-metric-card,
-  .social-project-status-item,
-  .social-project-workload-item,
-  .social-project-activity-item,
-  .social-project-my-task-item,
-  .social-project-workspace-chat,
-  .social-project-workspace-chat .social-neo-messages__thread-shell,
-  .spt-desk-package,
-  .spt-desk-card,
-  .spt-desk-focus-chip,
-  .spt-desk-hygiene-pill,
-  .spt-desk-plan-health-card,
-  .social-neo-card.social-project-task-shell--desk,
-  .social-neo-card:is(.is-merged, :has(.lux-universal-picker-field))
-):hover {
-  transform: none;
-  box-shadow: none;
-}
-
-body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] .lux-status-pill {
-  border-radius: 999px;
-  min-height: 28px;
-  padding: 4px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  text-transform: none;
-}
-
-/* Admin orders create modal: nested soft-chrome without page glass root. */
-body.lux-route-admin-orders .admin-orders-create-column.lux-soft-chrome :is(
-  .orders-recipient-row,
-  .orders-recipient-list-shell,
-  .orders-recipient-list-empty
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -4105,206 +2515,51 @@ body.lux-route-admin-orders .admin-orders-create-column.lux-soft-chrome :is(
   background-clip: padding-box;
 }
 
-body.lux-route-admin-orders :is(
-  #admin-orders-root,
-  .admin-orders-create-modal,
-  .admin-orders-thread-modal
-) .lux-status-pill {
-  border-radius: 999px;
-  min-height: 28px;
-  padding: 4px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  text-transform: none;
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-survey-result-row.home-hover-chip {
+  border-radius: 12px;
 }
 
-/* Staff/students hub profile: flat sections inside one glass host (scheduler-merge pattern). */
-body.lux-unified-shell.lux-page-bare :is(.staff-hub-profile, .students-hub-profile)[data-lux-glass-root="1"] > :is(
-  .staff-hub-profile-head,
-  .staff-hub-tabs,
-  .staff-hub-profile-body,
-  .students-hub-profile-head,
-  .students-hub-tabs,
-  .students-hub-profile-body
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-survey-results-empty.lux-soft-chrome.home-hover-chip {
+  border-radius: 14px;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-survey-results-quote.lux-soft-chrome.home-hover-chip {
+  border-radius: 12px;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-survey-results-question {
+  overflow: visible;
+  contain: none;
+}
+
+/* Social research-create dialog: matte inners (motion → global .home-hover-chip SSOT). */
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-research-create :is(
+  .social-neo-research-choice.lux-soft-chrome.home-hover-chip,
+  .social-neo-research-format-card.lux-soft-chrome.home-hover-chip,
+  .social-neo-research-dropzone.lux-soft-chrome.home-hover-chip
 ) {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-top: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08)) !important;
-}
-body.lux-unified-shell.lux-page-bare :is(.staff-hub-profile, .students-hub-profile)[data-lux-glass-root="1"] > :is(
-  .staff-hub-toolbar,
-  .students-hub-toolbar
-) {
-  background: transparent !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Staff hub: tier-1 frosted panels (asd8 parity — separate controls + directory cards). */
-body.lux-route-staff #staff-content :is(
-  .staff-hub-controls,
-  .staff-hub-directory-panel,
-  .staff-hub-form-settings-head,
-  .staff-hub-builder-rail,
-  .staff-hub-builder-canvas,
-  .staff-hub-builder-panel
-),
-body.lux-route-students-admin #students-content :is(
-  .students-hub-controls,
-  .students-hub-directory-panel,
-  .students-hub-form-settings-head,
-  .students-hub-builder-rail,
-  .students-hub-builder-canvas,
-  .students-hub-builder-panel
-) {
-  position: relative;
-  overflow: hidden;
-  background-color: var(--lux-panel-fill);
-  background-image: var(--lux-panel-surface);
-  border: 1px solid var(--lux-panel-host-border);
-  box-shadow: var(--lux-panel-host-shadow);
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-  color: var(--lux-text);
-  background-clip: padding-box;
-}
-
-/* Directory: tier-2 matte table card inside directory panel. */
-body.lux-route-staff #staff-content .staff-hub-directory-panel .staff-hub-table-wrap.lux-data-card,
-body.lux-route-students-admin #students-content .students-hub-directory-panel .students-hub-table-wrap.lux-data-card {
-  position: relative;
-  overflow: hidden;
-  background-color: var(--lux-panel-fill);
-  background-image: var(--lux-panel-surface-soft, var(--lux-panel-surface));
-  border: 1px solid var(--lux-hub-card-border, var(--lux-panel-host-border));
-  box-shadow: var(--lux-elev-1, var(--lux-panel-host-shadow));
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-  color: var(--lux-text);
-  background-clip: padding-box;
-}
-
-/* Form settings: tier-2 inner cards (subtler than rail/canvas). */
-body.lux-route-staff #staff-content .staff-hub-form-settings :is(
-  .staff-hub-profile-panel.lux-data-card,
-  .staff-hub-section-field-workspace.lux-data-card,
-  .staff-hub-builder-type,
-  .staff-hub-copy-bar,
-  .staff-hub-profile-list-shell,
-  .staff-hub-builder-launch-card
-),
-body.lux-route-students-admin #students-content .students-hub-form-settings :is(
-  .students-hub-profile-panel.lux-data-card,
-  .students-hub-section-field-workspace.lux-data-card,
-  .students-hub-builder-type,
-  .students-hub-copy-bar,
-  .students-hub-profile-list-shell,
-  .students-hub-builder-launch-card
-) {
-  position: relative;
-  overflow: hidden;
-  background-color: var(--lux-panel-fill);
-  background-image: var(--lux-panel-surface-soft, var(--lux-panel-surface));
-  border: 1px solid var(--lux-hub-card-border, var(--lux-panel-host-border));
-  box-shadow: var(--lux-elev-1, var(--lux-panel-host-shadow));
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-  color: var(--lux-text);
-  background-clip: padding-box;
-}
-
-/* Hub row / builder tokens for form studio layout (shared with lux-page-bare-lite). */
-body.lux-route-staff,
-body.lux-route-students-admin {
-  --lux-hub-border-soft: rgba(255, 255, 255, 0.10);
-  --lux-hub-border: rgba(var(--lux-accent-rgb), 0.22);
-  --lux-hub-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
-  --lux-hub-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
-  --lux-hub-card-border: rgba(var(--lux-accent-rgb), 0.14);
-}
-body.lux-light-mode.lux-route-staff,
-body.lux-light-mode.lux-route-students-admin,
-html.lux-light-mode body.lux-route-staff,
-html.lux-light-mode body.lux-route-students-admin {
-  --lux-hub-border-soft: rgba(77, 52, 31, 0.12);
-  --lux-hub-border: rgba(var(--lux-accent-rgb), 0.16);
-  --lux-hub-row: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.48));
-  --lux-hub-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
-  --lux-hub-card-border: rgba(31, 52, 86, 0.13);
-}
-
-/* Global soft-chrome inner surface paint — accent fill, glow border, elevation
- * Applies to inner chips/shells inside panels (not outer glass hosts).
- * Admin-tools: .lux-section-card is layout-only under the outer glass host (no second paint). */
-body.lux-unified-shell .lux-soft-chrome:not(.lux-panel):not(.lux-alert):not(.lux-hero):not(.lux-page-shell):not(.lux-home-merged):not([data-lux-layout-only]),
-body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
-  border: 1px solid color-mix(
-    in srgb,
-    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.75)) 42%,
-    var(--lux-soft-chrome-border)
-  );
-  border-radius: 16px;
-  box-shadow: var(--lux-soft-chrome-surface-shadow);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 14px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+  overflow: visible;
+  contain: none;
 }
 
-/* Library catalog primary shells: frosted panel glass (not matte soft-chrome). */
-body.lux-unified-shell #page-library :is(
-  .library-catalog-filters-panel,
-  .admin-library-catalog-card
-) {
-  background-color: var(--lux-panel-fill);
-  background-image: var(--lux-panel-surface);
-  border: 1px solid var(--lux-panel-host-border);
-  box-shadow: var(--lux-panel-host-shadow);
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-  background-clip: padding-box;
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-research-create :is(
+  .social-neo-research-choice.is-active,
+  .social-neo-research-format-card.is-active
+).home-hover-chip {
+  border-color: rgba(var(--lux-accent-rgb), 0.45);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2)), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.18);
 }
 
-body.lux-unified-shell #page-library .library-catalog-filters-panel {
-  border-radius: 28px;
-}
-
-body.lux-unified-shell #page-library .admin-library-catalog-card {
-  border-radius: 22px;
-}
-
-/* Student Service primary shells: frosted panel glass (not matte soft-chrome). */
-body.lux-unified-shell #page-student-service :is(
-  .student-service-command-bar-shell,
-  .student-service-zone,
-  .student-service-lane-choice-card
-) {
-  background-color: var(--lux-panel-fill);
-  background-image: var(--lux-panel-surface);
-  border: 1px solid var(--lux-panel-host-border);
-  box-shadow: var(--lux-panel-host-shadow);
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-  background-clip: padding-box;
-}
-
-body.lux-unified-shell #page-student-service .student-service-command-bar-shell {
-  border-radius: 18px;
-}
-
-body.lux-unified-shell #page-student-service .student-service-zone,
-body.lux-unified-shell #page-student-service .student-service-lane-choice-card {
-  border-radius: 28px;
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-research-create-body {
+  overflow: visible;
 }
 
 /* Orders inbox primary shells: frosted panel glass (not matte soft-chrome). */
@@ -4334,22 +2589,67 @@ body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
   border-radius: 22px;
 }
 
-/* Global luxury hover motion & ambient radial glow for leaf panels, cards, tiles, and chips.
- * IMPORTANT: Exclude structural containers that hold popups — the hover transform
- * creates a stacking context that traps absolutely-positioned child panels.
- * Excluded: .lux-topbar-shell, .lux-page-shell, .lux-sidebar-nav, .lux-alert,
- *           .lux-admin-curriculum-control-band (holds picker dropdowns),
- *           admin-tools .lux-section-card (nested under glass host). */
-body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)),
+/* Global luxury hover motion — shell-panels contract: frosted glass hosts stay static;
+ * matte .home-hover-chip parents keep lift/glow when pointer is over nested chips (no :has() suppression). */
+body.lux-unified-shell :is(.page-hero, [data-lux-glass-root="1"]):not(.home-hover-chip) {
+  transition: none;
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-unified-shell :is(.page-hero, [data-lux-glass-root="1"]):not(.home-hover-chip)::after {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-unified-shell :is(.page-hero, [data-lux-glass-root="1"]):not(.home-hover-chip):hover {
+    transform: none;
+    border-color: var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+  }
+}
+
+body.lux-unified-shell :is(
+  .home-hover-chip,
+  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+  .lux-module-option.lux-soft-chrome,
+  .lux-subject-row.lux-program-subject-card,
+  .newsx-header-bar,
+  .newsx-feed-card.lux-soft-chrome,
+  .student-service-zone,
+  .student-service-qa-card,
+  .student-service-qa-answer-card,
+  .admin-library-catalog-card.lux-soft-chrome,
+  .lux-empty-state
+),
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   position: relative;
   isolation: isolate;
   contain: paint;
   overflow: hidden;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card))::after,
+body.lux-unified-shell .home-hover-chip:has(.home-hover-chip) {
+  contain: none;
+  overflow: visible;
+}
+body.lux-unified-shell .admin-orders-thread-chat-log.home-hover-chip:has(.home-hover-chip) {
+  overflow: auto;
+}
+
+body.lux-unified-shell :is(
+  .home-hover-chip,
+  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+  .lux-module-option.lux-soft-chrome,
+  .lux-subject-row.lux-program-subject-card,
+  .newsx-header-bar,
+  .newsx-feed-card.lux-soft-chrome,
+  .student-service-zone,
+  .student-service-qa-card,
+  .student-service-qa-answer-card,
+  .admin-library-catalog-card.lux-soft-chrome,
+  .lux-empty-state
+)::after,
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
   content: '';
   position: absolute;
@@ -4363,43 +2663,442 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after 
   transition: opacity 0.2s ease;
 }
 
-body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)) > *,
-body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > * {
+body.lux-unified-shell :is(
+  .home-hover-chip,
+  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+  .lux-module-option.lux-soft-chrome,
+  .lux-subject-row.lux-program-subject-card,
+  .newsx-header-bar,
+  .newsx-feed-card.lux-soft-chrome,
+  .student-service-zone,
+  .student-service-qa-card,
+  .student-service-qa-answer-card,
+  .admin-library-catalog-card.lux-soft-chrome,
+  .lux-empty-state
+) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select),
+body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
   position: relative;
   z-index: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover,
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  ):hover,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
   }
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover::after,
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  ):hover::after,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover::after {
     opacity: 1;
   }
+  body.lux-unified-shell :is(
+    .lux-status-pill.home-hover-chip,
+    .lux-pill.home-hover-chip,
+    .lms-route-pill.home-hover-chip,
+    .social-neo-pill.home-hover-chip,
+    .social-neo-research-copy.home-hover-chip,
+    .lux-hero-signal.home-hover-chip,
+    .student-service-pill,
+    .student-service-panel-chip,
+    .wave2-chip.home-hover-chip,
+    .admin-library-schema-btn-remove.home-hover-chip,
+    .admin-library-schema-btn-options.home-hover-chip,
+    .admin-library-tab-btn.home-hover-chip,
+    .admin-library-manage-sections-btn.home-hover-chip,
+    .sch-modal-close-muted.home-hover-chip,
+    .sch-preset-manage-link.home-hover-chip,
+    .students-hub-profile-field.home-hover-chip,
+    .staff-hub-profile-field.home-hover-chip
+  ):hover {
+    transform: translate3d(0, var(--home-chip-hover-lift-nested, -1px), 0);
+  }
+  body.lux-unified-shell :is(
+    .lux-status-pill.home-hover-chip,
+    .lux-pill.home-hover-chip,
+    .lms-route-pill.home-hover-chip,
+    .social-neo-pill.home-hover-chip,
+    .social-neo-research-copy.home-hover-chip,
+    .lux-hero-signal.home-hover-chip,
+    .student-service-pill,
+    .student-service-panel-chip,
+    .wave2-chip.home-hover-chip,
+    .admin-library-schema-btn-remove.home-hover-chip,
+    .admin-library-schema-btn-options.home-hover-chip,
+    .sch-modal-close-muted.home-hover-chip,
+    .sch-preset-manage-link.home-hover-chip,
+    .students-hub-profile-field.home-hover-chip,
+    .staff-hub-profile-field.home-hover-chip
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift-nested, -1px), 0);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  ):active,
+  body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):active {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+  }
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  ):active::after,
+  body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):active::after {
+    opacity: 1;
+  }
+  body.lux-unified-shell :is(
+    .lux-status-pill.home-hover-chip,
+    .lux-pill.home-hover-chip,
+    .lms-route-pill.home-hover-chip,
+    .social-neo-pill.home-hover-chip,
+    .social-neo-research-copy.home-hover-chip,
+    .lux-hero-signal.home-hover-chip,
+    .student-service-pill,
+    .student-service-panel-chip,
+    .wave2-chip.home-hover-chip,
+    .admin-library-schema-btn-remove.home-hover-chip,
+    .admin-library-schema-btn-options.home-hover-chip,
+    .sch-modal-close-muted.home-hover-chip,
+    .sch-preset-manage-link.home-hover-chip
+  ):active {
+    transform: translate3d(0, var(--home-chip-hover-lift-nested, -1px), 0);
+  }
+}
+
+body.lux-route-social .social-neo-event-feature.home-hover-chip {
+  contain: layout style;
+  overflow: visible;
+}
+
+body.lux-route-social .social-neo-lf-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip,
+body.lux-route-social .social-portfolio-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip,
+body.lux-route-social .social-portfolio-mini-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-social .social-neo-research-copy.home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
+/* Hero KPI chips: keep lift unclipped across every Social section. */
+body.lux-route-social :is(
+  .social-neo-workspace-hero,
+  .social-neo-events-hero,
+  .social-neo-lost-found-hero,
+  .social-neo-community-hero,
+  .social-neo-groups-hero,
+  .social-neo-surveys-hero,
+  .social-neo-portfolio-hero,
+  .social-neo-research-hero,
+  .social-neo-pages-hero,
+  .social-neo-feed-hero,
+  .social-neo-workspace-hero-stats,
+  .social-neo-events-hero-stats,
+  .social-neo-lost-found-hero-stats,
+  .social-neo-community-hero-stats,
+  .social-neo-groups-hero-stats,
+  .social-neo-surveys-hero-stats,
+  .social-neo-portfolio-hero-stats,
+  .social-neo-research-hero-stats,
+  .social-neo-pages-hero-stats,
+  .social-neo-feed-hero-stats
+) {
+  overflow: visible;
+}
+
+body.lux-route-social :is(
+  [class*="-hero-stat"],
+  .social-neo-research-stat,
+  .social-neo-workspace-hero-stat
+).home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-social :is(
+  .social-photo-feed-card,
+  .social-neo-group-card,
+  .social-neo-directory-item,
+  .social-portfolio-card,
+  .social-neo-entity-card,
+  .social-neo-pages-hero,
+  .social-neo-pages-hero-grid,
+  .social-neo-pages-hero-toolbar,
+  .social-neo-page-card,
+  .social-neo-events-hero,
+  .social-neo-events-hero-grid,
+  .social-neo-events-hero-stats,
+  .social-neo-events-empty,
+  .social-neo-groups-hero,
+  .social-neo-groups-hero-grid,
+  .social-neo-workspace-hero,
+  .social-neo-workspace-hero-stats,
+  .social-neo-portfolio-hero,
+  .social-neo-portfolio-hero-stats,
+  .social-neo-research-hero,
+  .social-neo-research-hero-stats,
+  .social-neo-research-catalog,
+  .social-neo-research-toolbar,
+  .social-neo-surveys-hero,
+  .social-neo-surveys-hero-stats,
+  .social-neo-surveys-hero-grid,
+  .social-neo-surveys-hero-toolbar,
+  .social-neo-survey-card,
+  .social-neo-lost-found-hero,
+  .social-neo-lost-found-hero-stats,
+  .social-neo-lost-found-hero-toolbar,
+  .social-neo-lf-card,
+  .social-project-hub-discover,
+  .social-project-hub-filterbar,
+  .social-project-hub-attention,
+  .social-project-hub-rail-card,
+  .social-project-hub-cta-tile,
+  .social-project-card-new
+).home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
+/*
+ * Nested Social KPI / hub shells sit on social-neo-card which already uses chip-surface-fill.
+ * Raise their fill + resting shadow so hover translate is visible (same-fill parent looked “stuck”).
+ */
+body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
+  [class*="-hero-stat"],
+  [class*="-hero-stats"],
+  [class*="-hero-grid"],
+  [class*="-hero-toolbar"],
+  .social-neo-research-stat,
+  .social-neo-research-hero-stats,
+  .social-neo-research-toolbar,
+  .social-neo-workspace-hero-stat,
+  .social-neo-workspace-hero-stats,
+  .social-neo-portfolio-hero-stats,
+  .social-neo-events-hero-stats,
+  .social-neo-surveys-hero-stats,
+  .social-neo-lost-found-hero-stats,
+  .social-project-hub-discover,
+  .social-project-hub-filterbar,
+  .social-project-hub-attention,
+  .social-project-hub-rail-card,
+  .social-project-hub-cta-tile
+).home-hover-chip {
+  background-color: var(--home-chip-fill, color-mix(in srgb, var(--home-chip-surface-fill, transparent) 140%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+/* KPI chips sit on the raised stats rack — denser fill so each shell still reads as moving.
+ * Note: [class*="-hero-stat"] also matches "-hero-stats", so exclude the rack. */
+body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
+  .social-neo-workspace-hero-stat,
+  .social-neo-events-hero-stat,
+  .social-neo-research-stat,
+  .social-neo-feed-hero-stat,
+  .social-neo-community-hero-stat,
+  .social-neo-surveys-hero-stat,
+  .social-neo-portfolio-hero-stat,
+  .social-neo-lost-found-hero-stat,
+  [class*="-hero-stat"]:not([class*="-hero-stats"])
+).home-hover-chip {
+  background-color: color-mix(in srgb, var(--home-chip-fill, rgba(12, 18, 28, 0.55)) 88%, rgba(var(--lux-accent-rgb), 0.16));
+  box-shadow: var(--lux-soft-chrome-chip-shadow-halo, var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2)));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)),
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  ),
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
     transition: border-color 0.15s ease;
   }
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card))::after,
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  )::after,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
     display: none;
   }
-  body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover,
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  ):hover,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: none;
   }
 }
 
-html[data-lux-transparency="0"] body.lux-unified-shell :is(.home-hover-chip, .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card)):hover,
+html[data-lux-transparency="0"] body.lux-unified-shell :is(
+  .home-hover-chip,
+  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+  .lux-module-option.lux-soft-chrome,
+  .lux-subject-row.lux-program-subject-card,
+  .newsx-header-bar,
+  .newsx-feed-card.lux-soft-chrome,
+  .student-service-zone,
+  .student-service-qa-card,
+  .student-service-qa-answer-card,
+  .admin-library-catalog-card.lux-soft-chrome,
+  .lux-empty-state
+):hover,
 html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
   transform: none;
   box-shadow: none;
+}
+
+/* Social nested KPI / hub shells — lift paint + shadow (not transform alone). */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html:not([data-lux-transparency="0"]) body.lux-unified-shell.lux-route-social :is(
+    [class*="-hero-stat"],
+    [class*="-hero-stats"],
+    .social-neo-research-stat,
+    .social-neo-research-hero,
+    .social-neo-research-hero-stats,
+    .social-neo-research-catalog,
+    .social-neo-research-toolbar,
+    .social-neo-workspace-hero-stat,
+    .social-neo-workspace-hero-stats,
+    .social-neo-workspace-hero,
+    .social-neo-portfolio-hero,
+    .social-neo-portfolio-hero-stats,
+    .social-neo-events-hero,
+    .social-neo-events-hero-stats,
+    .social-neo-surveys-hero,
+    .social-neo-surveys-hero-stats,
+    .social-neo-surveys-hero-grid,
+    .social-neo-surveys-hero-toolbar,
+    .social-neo-survey-card,
+    .social-neo-lost-found-hero,
+    .social-neo-lost-found-hero-stats,
+    .social-neo-lost-found-hero-toolbar,
+    .social-neo-lf-card,
+    .social-project-hub-discover,
+    .social-project-hub-filterbar,
+    .social-project-hub-attention,
+    .social-project-hub-rail-card,
+    .social-project-hub-cta-tile
+  ).home-hover-chip:hover {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+    z-index: 2;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  @media (prefers-reduced-motion: no-preference) {
+    html:not([data-lux-transparency="0"]) body.lux-unified-shell.lux-route-social :is(
+      [class*="-hero-stat"],
+      [class*="-hero-stats"],
+      .social-neo-research-stat,
+      .social-neo-research-hero,
+      .social-neo-research-hero-stats,
+      .social-neo-research-catalog,
+      .social-neo-research-toolbar,
+      .social-neo-workspace-hero-stat,
+      .social-neo-workspace-hero-stats,
+      .social-neo-workspace-hero,
+      .social-neo-portfolio-hero,
+      .social-neo-portfolio-hero-stats,
+      .social-neo-events-hero,
+      .social-neo-events-hero-stats,
+      .social-neo-surveys-hero,
+      .social-neo-surveys-hero-stats,
+      .social-neo-surveys-hero-grid,
+      .social-neo-surveys-hero-toolbar,
+      .social-neo-survey-card,
+      .social-neo-lost-found-hero,
+      .social-neo-lost-found-hero-stats,
+      .social-neo-lost-found-hero-toolbar,
+      .social-neo-lf-card,
+      .social-project-hub-discover,
+      .social-project-hub-filterbar,
+      .social-project-hub-attention,
+      .social-project-hub-rail-card,
+      .social-project-hub-cta-tile
+    ).home-hover-chip:active {
+      transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+      box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+      z-index: 2;
+    }
+  }
 }
 
 body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lux-light-mode .lux-control-btn {

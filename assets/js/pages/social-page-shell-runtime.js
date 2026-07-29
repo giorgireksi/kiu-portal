@@ -247,6 +247,7 @@
             'projects',
             'events',
             'surveys',
+            'research',
             'photography',
             'lost-and-found',
             'messages',

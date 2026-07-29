@@ -85,7 +85,6 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
 
 :is(
   #lux-studio-backdrop .lux-studio-panel,
-  .lux-bg-mode-params-dialog,
   .lux-bg-gallery-dialog,
   #social-neo-overlay-portal .lux-glass-dialog-card--project-health-fs,
   #social-neo-overlay-portal .lux-glass-dialog-card--project-risk,
@@ -998,65 +997,9 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   opacity: 1;
 }
 
-.lux-bg-mode-params-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 0 0 12px;
-  flex-shrink: 0;
-}
-.lux-bg-mode-params-head > div:first-of-type {
-  flex: 1;
-  min-width: 0;
-}
-.lux-bg-mode-params-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 22px;
-  color: var(--lux-text);
-}
-.lux-bg-mode-params-sub {
-  margin-top: 6px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--lux-text-muted);
-  max-width: 42ch;
-}
-.lux-bg-mode-params-close {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--lux-text-muted);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.lux-bg-mode-params-close:hover {
-  color: var(--lux-text);
-  border-color: color-mix(in srgb, var(--lux-accent) 40%, transparent);
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.lux-bg-mode-params-body {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 16px 4px 8px;
-  display: grid;
-  gap: 12px;
-}
-
 #lux-bg-mode-params-backdrop .lux-bg-mode-panel {
   display: grid;
   gap: 16px;
-}
-#lux-bg-mode-params-backdrop .lux-bg-mode-panel-copy,
-#lux-bg-mode-params-backdrop .lux-bg-mode-panel-hint {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--lux-text-muted);
 }
 #lux-bg-mode-params-backdrop .lux-fog-profile-item {
   display: grid;
@@ -1119,24 +1062,12 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 }
 #lux-bg-mode-params-backdrop .lux-fog-profile-empty {
   margin: 8px 0 0;
-  font-size: 12px;
-  color: var(--lux-text-muted);
 }
 #lux-bg-mode-params-backdrop .lux-fog-profile-edit-bar {
   margin-top: 10px;
 }
 #lux-bg-mode-params-backdrop .lux-fog-profile-add-row {
   margin-top: 10px;
-}
-#lux-bg-mode-params-backdrop .lux-fog-profile-add-row .lux-modern-field {
-  flex: 1;
-  min-width: 0;
-  min-height: 40px;
-  padding: 0 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--lux-text);
 }
 #lux-bg-mode-params-backdrop .lux-fog-color-grid {
   display: grid;
@@ -1161,10 +1092,6 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   display: grid;
   gap: 2px;
   font-size: 12px;
-}
-#lux-bg-mode-params-backdrop .lux-fog-color-hex {
-  color: var(--lux-text-muted);
-  font-size: 11px;
 }
 #lux-bg-mode-params-backdrop :is(
   .lux-fog-profile-item-label,
@@ -1260,8 +1187,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-:is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-studio-close,
-:is(html.lux-light-mode, body.lux-light-mode) .lux-bg-mode-params-close {
+:is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-studio-close {
   border-color: rgba(77, 52, 31, 0.14);
   background: rgba(255, 255, 255, 0.45);
 }
@@ -1308,12 +1234,8 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   background: transparent;
   box-shadow: none;
 }
-:is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-mix-swatch,
-:is(html.lux-light-mode, body.lux-light-mode) #lux-bg-mode-params-backdrop .lux-fog-profile-add-row .lux-modern-field {
+:is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-mix-swatch {
   border-color: rgba(77, 52, 31, 0.14);
-}
-:is(html.lux-light-mode, body.lux-light-mode) #lux-bg-mode-params-backdrop .lux-fog-profile-add-row .lux-modern-field {
-  background: rgba(255, 255, 255, 0.55);
 }
 
 /* Exterior click burst — particles on backdrop, outside shell border */

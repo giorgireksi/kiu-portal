@@ -1267,12 +1267,30 @@ function getEffectiveTuitionBalance(userId = getCurrentUserId()) {
 }
 
 function normalizeStudentScheduleValue(schedule) {
-    if (Array.isArray(schedule)) return schedule;
+    if (Array.isArray(schedule)) return schedule.filter(Boolean);
     if (schedule && typeof schedule === 'object') {
-        if (Array.isArray(schedule.entries)) return schedule.entries;
+        if (Array.isArray(schedule.entries)) return schedule.entries.filter(Boolean);
         return Object.entries(schedule)
-            .filter(([, groupId]) => groupId != null && groupId !== '')
-            .map(([courseId, groupId]) => ({ courseId, groupId }));
+            .filter(([, value]) => value != null && value !== '')
+            .map(([key, value]) => {
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    const hasEntryShape = Boolean(
+                        value.courseId
+                        || value.sourceCourseId
+                        || value.groupName
+                        || value.day
+                        || value.time
+                    );
+                    if (hasEntryShape) {
+                        return {
+                            ...value,
+                            courseId: value.courseId || value.sourceCourseId || (/^\d+$/.test(String(key)) ? '' : key)
+                        };
+                    }
+                }
+                return { courseId: key, groupId: value };
+            })
+            .filter((entry) => entry.courseId || entry.groupId);
     }
     return [];
 }
@@ -1303,11 +1321,21 @@ function isStudentScheduleEntryInFaculty(entry, faculty = getCurrentFaculty()) {
     return resolveStudentScheduleEntryFaculty(entry, normalizedFaculty) === normalizedFaculty;
 }
 
+function resolveStudentScheduleSessionUser() {
+    const effectiveRole = typeof getEffectiveUserRole === 'function'
+        ? getEffectiveUserRole()
+        : (currentUserRole || getCurrentUser()?.role || USER_ROLES.STUDENT);
+    if (effectiveRole !== USER_ROLES.STUDENT) return null;
+    const sessionUser = getCurrentUser();
+    if (!sessionUser?.id) return null;
+    return sessionUser;
+}
+
 function getCurrentStudentSchedule() {
-    const currentUser = getCurrentUser();
-    if (!currentUser || currentUser.role !== USER_ROLES.STUDENT) return [];
-    const studentFaculty = currentUser.facultyCode || currentUser.faculty || getCurrentFaculty();
-    return normalizeStudentScheduleValue(KIU_STATE.studentSchedulesByStudent?.[currentUser.id])
+    const sessionUser = resolveStudentScheduleSessionUser();
+    if (!sessionUser) return [];
+    const studentFaculty = sessionUser.facultyCode || sessionUser.faculty || getCurrentFaculty();
+    return normalizeStudentScheduleValue(KIU_STATE.studentSchedulesByStudent?.[sessionUser.id])
         .filter(entry => isStudentScheduleEntryInFaculty(entry, studentFaculty));
 }
 
@@ -1337,23 +1365,23 @@ function describeStudentScheduleChange(previousSchedule = [], nextSchedule = [])
 }
 
 function setCurrentStudentSchedule(schedule) {
-    const currentUser = getCurrentUser();
-    if (!currentUser || currentUser.role !== USER_ROLES.STUDENT) return;
+    const sessionUser = resolveStudentScheduleSessionUser();
+    if (!sessionUser) return;
     if (!KIU_STATE.studentSchedulesByStudent) KIU_STATE.studentSchedulesByStudent = {};
     const previousSchedule = getCurrentStudentSchedule();
-    const studentFaculty = currentUser.facultyCode || currentUser.faculty || getCurrentFaculty();
+    const studentFaculty = sessionUser.facultyCode || sessionUser.faculty || getCurrentFaculty();
     const normalizedSchedule = (Array.isArray(schedule) ? schedule : [])
         .filter(entry => isStudentScheduleEntryInFaculty(entry, studentFaculty))
         .map(entry => ({
             ...entry,
             faculty: entry?.faculty || normalizeFacultyCode(studentFaculty, 'ECON')
         }));
-    KIU_STATE.studentSchedulesByStudent[currentUser.id] = JSON.parse(JSON.stringify(normalizedSchedule));
+    KIU_STATE.studentSchedulesByStudent[sessionUser.id] = JSON.parse(JSON.stringify(normalizedSchedule));
     const previousSignature = buildPortalScheduleSignature(previousSchedule);
     const nextSignature = buildPortalScheduleSignature(normalizedSchedule);
     if (previousSignature && previousSignature !== nextSignature) {
         createPortalSystemNotification({
-            userId: currentUser.id,
+            userId: sessionUser.id,
             source: 'school',
             type: 'schedule-change',
             title: 'Schedule updated',

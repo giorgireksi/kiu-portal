@@ -244,9 +244,9 @@ function renderProgress(percent, copy) {
 function infoCard(label, value, full = false) {
     const hub = ccHub();
     if (full) {
-        return `<article class="${hub}-info-card is-full lux-data-card"><span>${escapeHtml(label)}</span><p>${escapeHtml(value || '—')}</p></article>`;
+        return `<article class="${hub}-info-card is-full lux-data-card home-hover-chip"><span>${escapeHtml(label)}</span><p>${escapeHtml(value || '—')}</p></article>`;
     }
-    return `<article class="${hub}-info-card lux-data-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || '—')}</strong></article>`;
+    return `<article class="${hub}-info-card lux-data-card home-hover-chip"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || '—')}</strong></article>`;
 }
 
 function showToast(message) {
@@ -918,7 +918,7 @@ function renderStatusChipHtml(value, toneClass = '') {
     if (!value) return '';
     const hub = ccHub();
     const tone = toneClass || statusTone(value);
-    return `<span class="${hub}-chip lux-status-pill ${tone}">${escapeHtml(value)}</span>`;
+    return `<span class="${hub}-chip lux-status-pill home-hover-chip ${tone}">${escapeHtml(value)}</span>`;
 }
 
 function renderBlueprintProfileHtml(record, activeSectionId, resolveTypeId, renderView) {

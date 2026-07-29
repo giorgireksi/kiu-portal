@@ -50,11 +50,13 @@
                 const matched = matcher ? matcher(value) : route.fallback(value);
                 if (!matched) continue;
                 const handler = resolveSocialRouteFn(route.handle);
-                if (route.has() && handler) {
+                const has = typeof route.has === 'function' ? route.has : (() => false);
+                const ensure = typeof route.ensure === 'function' ? route.ensure : (() => Promise.resolve());
+                if (has() && handler) {
                     const result = invoke(handler);
                     return fireAndForget ? { matched: true } : { matched: true, result };
                 }
-                const pending = route.ensure().then(() => {
+                const pending = ensure().then(() => {
                     const loadedHandler = resolveSocialRouteFn(route.handle);
                     if (loadedHandler) {
                         return invoke(loadedHandler);
@@ -130,6 +132,13 @@
                     has: deps.hasSocialSurveysModule,
                     ensure: deps.ensureSocialSurveysModule,
                     handle: 'handleSocialSurveysClick'
+                },
+                {
+                    is: 'isSocialResearchClickAction',
+                    fallback: (a) => a === 'panel-research' || String(a || '').startsWith('research-'),
+                    has: deps.hasSocialResearchModule || (() => false),
+                    ensure: deps.ensureSocialResearchModule || (() => Promise.resolve()),
+                    handle: 'handleSocialResearchClick'
                 },
                 {
                     is: 'isSocialPhotographyClickAction',
@@ -265,6 +274,41 @@
                 });
                 if (sw.tabChanged) return { handled: true, result: renderSocialPageNow('surveys-tab') };
                 return { handled: true, result: renderSocialPageNow('panel-surveys') };
+            }
+            if (action === 'panel-research') {
+                const tab = text(trigger.getAttribute('data-research-tab'));
+                state().ui.researchReaderId = '';
+                const sw = beginShellPanelTabSwitch({
+                    panel: 'research',
+                    tab,
+                    uiKey: 'researchTab',
+                    defaultTab: 'faculty'
+                });
+                if (sw.tabChanged) return { handled: true, result: renderSocialPageNow('research-tab') };
+                return { handled: true, result: renderSocialPageNow('panel-research') };
+            }
+            // Open compose without depending on research-module openDialog hooks.
+            if (action === 'research-create-open') {
+                const runtime = state();
+                runtime.ui = runtime.ui || {};
+                if (!runtime.ui.researchDraft || typeof runtime.ui.researchDraft !== 'object') {
+                    runtime.ui.researchDraft = {
+                        authorLane: '',
+                        format: 'article',
+                        title: '',
+                        abstract: '',
+                        bodyText: '',
+                        topics: 'Research',
+                        facultyCode: '',
+                        doiOrUrl: '',
+                        courseCode: '',
+                        advisorName: '',
+                        pdfFile: null,
+                        pdfMeta: null
+                    };
+                }
+                setPanel('research');
+                return { handled: true, result: openDialog('research-create', {}) };
             }
             if (action === 'panel-photography') {
                 const tab = text(trigger.getAttribute('data-photography-tab'));

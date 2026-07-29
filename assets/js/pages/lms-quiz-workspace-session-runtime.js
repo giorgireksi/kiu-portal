@@ -294,7 +294,7 @@ function renderEmbeddedLmsQuizSectionCards(resourceKey, quizzes, quizUiState) {
         const stats = getLmsQuizSubmissionStats(resourceKey, quiz);
         const allowCountLabel = `${stats.allowedCount}/${stats.totalEligible}`;
         return `
-            <div data-quiz-id="${escapeHtml(quiz.id)}" class="lms-quiz-card">
+            <div data-quiz-id="${escapeHtml(quiz.id)}" class="lms-quiz-card lux-soft-chrome home-hover-chip">
                 <div class="lms-quiz-card-head">
                     <div>
                         <div class="lms-quiz-card-badges">

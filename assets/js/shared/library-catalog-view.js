@@ -607,10 +607,10 @@
                 ? global.computeLibraryCatalogColSpan(schema, { includeAction: options.includeAction })
                 : 10);
         cell.innerHTML = `
-            <div class="admin-library-empty-state">
+            <div class="admin-library-empty-state lux-soft-chrome home-hover-chip">
                 <i class="fas fa-book-open"></i>
-                <strong class="admin-library-empty-state-title">No books found</strong>
-                <span class="admin-library-empty-state-copy">No catalog entries match the current filters.</span>
+                <strong class="admin-library-empty-state-title lux-card-title">No books found</strong>
+                <span class="admin-library-empty-state-copy lux-card-copy">No catalog entries match the current filters.</span>
             </div>
         `;
         row.appendChild(cell);

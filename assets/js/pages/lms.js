@@ -489,7 +489,7 @@ function syncLmsCourseContext(title = '', courseKey = '') {
     const context = document.getElementById('lms-course-context');
     if (!context) return;
     const titlePill = title
-        ? `<span class="lux-status-pill is-muted"><i class="fas fa-location-dot"></i> ${escapeHtml(title)}</span>`
+        ? `<span class="lux-status-pill home-hover-chip is-muted"><i class="fas fa-location-dot"></i> ${escapeHtml(title)}</span>`
         : '';
     const resolvedKey = courseKey
         || (typeof window !== 'undefined' ? window.currentCourseId : '')

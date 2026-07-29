@@ -42,7 +42,7 @@
             const language = String(subject.language || subject.teachingLanguage || '').trim();
             const hasPrerequisite = prerequisite !== 'None';
             return `
-                <article class="lux-subject-row lux-program-subject-card ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
+                <article class="lux-subject-row lux-program-subject-card home-hover-chip ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
                     <div class="lux-subject-row__code">
                         <div>${escapeHtml(subject.id)}</div>
                         <div class="lux-subject-row__meta">#${index + 1}</div>
@@ -51,11 +51,11 @@
                         <div class="lux-subject-row__title">${escapeHtml(subject.name || 'Untitled Subject')}</div>
                         <div class="lux-subject-row__meta">${escapeHtml(getFacultyLabel(subject.faculty || faculty))}</div>
                         <div class="lux-subject-row__chips">
-                            <span class="lux-status-pill wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(subject.semester || '-'))}</span>
-                            <span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
-                            ${subjectType ? `<span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(subjectType)}</span>` : ''}
-                            ${contactHours ? `<span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(contactHours)}</span>` : ''}
-                            ${language ? `<span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(language)}</span>` : ''}
+                            <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(subject.semester || '-'))}</span>
+                            <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
+                            ${subjectType ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(subjectType)}</span>` : ''}
+                            ${contactHours ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(contactHours)}</span>` : ''}
+                            ${language ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(language)}</span>` : ''}
                         </div>
                         <div class="lux-subject-row__detail" title="${escapeHtml(prerequisite)}"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
                         ${antiReq ? `<div class="lux-subject-row__detail is-soft" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
@@ -191,7 +191,7 @@
             <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--module-rail">
                 <div class="lux-program-section-head">
                     <div class="lux-section-kicker"><i class="fas fa-layer-group"></i> Curriculum modules</div>
-                    <span class="lux-status-pill wave2-chip wave2-chip--pill">${context.modules.length}</span>
+                    <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${context.modules.length}</span>
                 </div>
                 <div class="lux-module-rail lux-program-module-rail" data-preserve-scroll-key="student-curriculum-modules">
                     ${context.modules.length === 0 ? `
@@ -209,7 +209,7 @@
                         const load = limit > 0 ? Math.min(100, Math.round((ectsTotal / limit) * 100)) : 0;
                         const moduleSemesters = getCurriculumSemesterCoverage(moduleSubjectsForFaculty);
                         return `
-                            <label class="lux-module-option lux-program-module-option lux-soft-chrome ${active ? 'is-active' : ''}">
+                            <label class="lux-module-option lux-program-module-option lux-soft-chrome home-hover-chip ${active ? 'is-active' : ''}">
                                 <span class="lux-module-option__main">
                                     <input type="radio" name="student-curriculum-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} data-programs-module-radio="1" data-programs-faculty="${escapeHtml(context.programFaculty)}">
                                     <span class="lux-module-option__text">
@@ -218,7 +218,7 @@
                                     </span>
                                 </span>
                                 <span class="lux-module-option__right">
-                                    <span class="lux-status-pill wave2-chip wave2-chip--pill lux-program-ects-pill">ECTS: ${ectsTotal}${limit ? `/${limit}` : ''}</span>
+                                    <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill lux-program-ects-pill">ECTS: ${ectsTotal}${limit ? `/${limit}` : ''}</span>
                                     <span class="lux-module-option__meter"><span class="lux-module-option__meter-bar" style="--lux-program-module-load:${load}%"></span></span>
                                 </span>
                             </label>
@@ -235,7 +235,7 @@
                 ${context.selectedModule ? `
                     <div class="lux-program-section-head lux-program-detail-head">
                         <div class="lux-section-title lux-program-module-title">${escapeHtml(context.selectedModule.name)}</div>
-                        <span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(context.searchLabel)}</span>
+                        <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(context.searchLabel)}</span>
                     </div>
                     <div class="lux-program-column-head lux-program-detail-columns" aria-hidden="true">
                         <div class="lux-program-column-code">Code</div>
@@ -261,7 +261,7 @@
             <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--subject-panel lux-program-subject-panel">
                 <div class="lux-program-section-head lux-program-detail-head">
                     <div class="lux-section-title lux-program-module-title">${escapeHtml(context.selectedModule?.name || 'Program module')}</div>
-                    <span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(context.semesterLabel)}</span>
+                    <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(context.semesterLabel)}</span>
                 </div>
                 <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--loading">
                     <i class="fas fa-spinner fa-spin"></i>

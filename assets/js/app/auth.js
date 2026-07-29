@@ -454,6 +454,7 @@ function teardownKiuRealtimeEventStream() {
     }
     runtime.bootstrappedFor = '';
     runtime.online = false;
+    runtime.sseConnectInFlight = false;
 }
 
 function ensureKiuRealtimeRuntime() {
@@ -1214,7 +1215,7 @@ function connectKiuRealtimeEventStream() {
     if (isKiuRealtimeSseBlocked()) return;
     if (runtime.sseConnectInFlight) return;
     const normalizedUserId = String(currentUserId);
-    if (runtime.eventSource && runtime.bootstrappedFor === normalizedUserId && !isKiuRealtimeSseBlocked()) {
+    if (runtime.eventSource && runtime.bootstrappedFor === normalizedUserId) {
         return;
     }
     if (runtime.eventSource) {
@@ -1280,7 +1281,8 @@ async function bootstrapKiuRealtimeBridge(force = false) {
     maybePromptBrowserNotificationPermission();
     const runtime = ensureKiuRealtimeRuntime();
     const currentUserId = String(currentUser.id || '');
-    if (runtime.bootstrapPromise && !force) return runtime.bootstrapPromise;
+    // Always coalesce — force must not open parallel /api/events streams.
+    if (runtime.bootstrapPromise) return runtime.bootstrapPromise;
     if (
         !force
         && runtime.online
@@ -1302,7 +1304,7 @@ async function bootstrapKiuRealtimeBridge(force = false) {
             && runtime.bootstrappedFor === currentUserId
             && !isKiuRealtimeSseBlocked()
         );
-        if (!hasActiveStream) {
+        if (!hasActiveStream && !isKiuRealtimeSseBlocked()) {
             connectKiuRealtimeEventStream();
         }
         if (Notification.permission === 'granted') {
@@ -1330,9 +1332,20 @@ function scheduleKiuRealtimeBootstrap(force = false) {
         teardownKiuRealtimeEventStream();
         return;
     }
-    if (isKiuRealtimeSseBlocked() && !force) return;
+    // Respect 429 backoff even for forced schedules — reconnecting hammers /api/events.
+    if (isKiuRealtimeSseBlocked()) return;
+    if (runtime.bootstrapPromise) return;
     const alreadyScheduledForCurrentUser = runtime.bootstrapScheduledHandle && runtime.bootstrapScheduledFor === currentUserId;
-    if (!force && (alreadyScheduledForCurrentUser || runtime.bootstrapPromise)) return;
+    if (!force && alreadyScheduledForCurrentUser) return;
+    if (
+        !force
+        && runtime.online
+        && runtime.eventSource
+        && runtime.bootstrappedFor === currentUserId
+        && runtime.lastBootstrapSucceededAt
+    ) {
+        return;
+    }
     if (runtime.bootstrapScheduledHandle) {
         clearTimeout(runtime.bootstrapScheduledHandle);
     }

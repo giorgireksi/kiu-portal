@@ -153,7 +153,8 @@ describe('LMS personal dashboard regressions', () => {
         expect(runtime).toContain('loadLmsPersonalDashboardHistory');
         expect(runtime).toContain('getLmsPersonalDashboardHistoryScopeOptions');
         expect(runtime).toMatch(/isLmsPersonalDashboardStudentViewer[\s\S]*groupId/);
-        expect(runtime).toContain('formatLmsPersonalDashboardSubtitle');
+        expect(runtime).toContain('resolveLmsPersonalDashboardCourseId');
+        expect(runtime).not.toMatch(/function getLmsPersonalDashboardCourseId\s*\(/);
         expect(runtime).toMatch(/handleLmsPersonalDashboardSectionSwitch[\s\S]*flushLmsPersonalDashboardAutosave/);
         expect(runtime).toContain('scheduleLmsPersonalDashboardAutosave');
         expect(runtime).toContain('flushLmsPersonalDashboardAutosave');
@@ -172,8 +173,34 @@ describe('LMS personal dashboard regressions', () => {
         expect(routes).not.toContain('::g1');
         expect(routes).toContain('groupId');
         expect(routes).toContain('sectionType');
+        const css = readSource('assets/css/lux-page-bare-lite.css');
         expect(css).toContain('.lms-personal-dashboard-history-badge');
         expect(css).toContain('.lms-personal-dashboard-history-item.is-autosave');
         expect(css).toMatch(/lms-personal-dashboard-overlay\[hidden\][\s\S]*display:\s*none\s*!important/);
+    });
+
+    it('overlay uses shared modal shell, portal paint, and typography', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const primitives = readSource('assets/css/lux-layout-primitives.css');
+        const runtime = readSource('assets/js/pages/lms-personal-dashboard-runtime.js');
+        const classroom = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+
+        expect(modals).toContain('.lms-glass-dialog-overlay');
+        expect(fouc).toContain('#lms-personal-dashboard-overlay .lms-personal-dashboard-card');
+        expect(fouc).toContain('var(--lux-panel-fill)');
+        expect(fouc).toContain('#lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel.lux-soft-chrome');
+        expect(bare).toContain('.lms-personal-dashboard-layout.is-student-layout');
+        expect(bare).not.toMatch(/#lms-personal-dashboard-overlay\s*\{[^}]*background:/);
+        expect(bare).not.toMatch(/\.lms-personal-dashboard-card\s*\{[^}]*background:/);
+        expect(primitives).toContain('#lms-personal-dashboard-overlay #lms-personal-dashboard-share-title.lux-page-title');
+        expect(runtime).toContain('lux-section-kicker');
+        expect(runtime).toContain('lux-soft-chrome home-hover-chip');
+        expect(runtime).toContain('lux-empty-state');
+        expect(runtime).toContain('renderLmsGlassDialogCard');
+        expect(runtime).toContain('openLuxGlassDialogOverlay');
+        expect(runtime).toContain('lux-panel-copy lms-personal-dashboard-share-callout');
+        expect(classroom).toContain('assets/js/pages/lms-personal-dashboard-runtime.js?v=20260729-lmspdshare1');
     });
 });

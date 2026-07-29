@@ -393,9 +393,10 @@ function isStudentServiceInlineReplyOpen() {
 }
 
 function syncStudentServiceInlineReplyUiState() {
-    const detail = document.querySelector('.student-service-qa-card.is-open .student-service-qa-detail');
-    if (!detail) return;
-    detail.classList.toggle('is-inline-reply-open', isStudentServiceInlineReplyOpen());
+    const isOpen = isStudentServiceInlineReplyOpen();
+    document.querySelectorAll('.student-service-qa-detail').forEach((detail) => {
+        detail.classList.toggle('is-inline-reply-open', isOpen);
+    });
 }
 
 function ensureStudentServiceModalRoot() {
@@ -606,10 +607,6 @@ function getStudentServiceOpenQuestion(questions) {
 
 function getStudentServiceFilteredQuestions(questions) {
     return ssForwardToLoadedModule(hasStudentServiceQaModule, ensureStudentServiceQaModule, 'getStudentServiceFilteredQuestions', getStudentServiceFilteredQuestions, arguments, []);
-}
-
-function getStudentServiceSimilarQuestions(draft = {}) {
-    return ssForwardToLoadedModule(hasStudentServiceQaModule, ensureStudentServiceQaModule, 'getStudentServiceSimilarQuestions', getStudentServiceSimilarQuestions, arguments, []);
 }
 
 function getStudentServiceSubjectOptions() {
@@ -1233,19 +1230,30 @@ function closeStudentServiceInlineReply() {
 (window.KiuStudentService||(window.KiuStudentService={})).closeStudentServiceInlineReply = closeStudentServiceInlineReply;
 
 function openStudentServiceInlineReply(questionId, answerId) {
-    closeStudentServiceInlineReply();
-    const question = getStudentServiceQuestionById(questionId);
-    const answer = findStudentServiceAnswerRecord(question, answerId);
+    const normalizedQuestionId = String(questionId || '').trim();
+    const normalizedAnswerId = String(answerId || '').trim();
+    const question = getStudentServiceQuestionById(normalizedQuestionId);
+    const answer = findStudentServiceAnswerRecord(question, normalizedAnswerId);
     if (!question || !answer) {
         alert('Could not open reply — refresh the thread and try again.');
         return;
     }
-    const article = studentServiceAnswerArticleEl(answerId);
+    const article = studentServiceAnswerArticleEl(normalizedAnswerId);
     const body = article?.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body');
     if (!article || !body) {
         alert('Could not open inline reply on this comment. Refresh the page and try again.');
         return;
     }
+    const existingShell = body.querySelector(':scope > .student-service-qa-comment-reply-shell, :scope > .social-neo-comment-reply-form');
+    const ui = ensureStudentServiceUiState();
+    const isSameTarget = ui.replyingToQuestionId === normalizedQuestionId
+        && ui.replyingToAnswerId === normalizedAnswerId;
+    if (isSameTarget && existingShell) {
+        closeStudentServiceInlineReply();
+        return;
+    }
+    closeStudentServiceInlineReply();
+    body.querySelector(':scope > .student-service-qa-comment-reply-shell, :scope > .social-neo-comment-reply-form')?.remove();
     const holder = document.createElement('div');
     holder.innerHTML = renderStudentServiceCommentReplyShell(question, answer, 'data-lux-skip-modern-button="true"');
     const form = holder.firstElementChild;
@@ -1253,10 +1261,9 @@ function openStudentServiceInlineReply(questionId, answerId) {
     const replyBtn = article.querySelector('.student-service-qa-answer-reply-btn');
     replyBtn?.classList.add('is-active');
     flashStudentServiceActionButton(replyBtn, 'acting');
-    const ui = ensureStudentServiceUiState();
-    ui.replyingToQuestionId = String(questionId || '').trim();
-    ui.replyingToAnswerId = String(answerId || '').trim();
-    STUDENT_SERVICE_RUNTIME.pendingReplyParentAnswerId = String(answerId || '').trim();
+    ui.replyingToQuestionId = normalizedQuestionId;
+    ui.replyingToAnswerId = normalizedAnswerId;
+    STUDENT_SERVICE_RUNTIME.pendingReplyParentAnswerId = normalizedAnswerId;
     syncStudentServiceInlineReplyUiState();
     const thread = article.closest('.student-service-qa-thread-comments');
     scheduleStudentServiceThreadRelayout(thread);

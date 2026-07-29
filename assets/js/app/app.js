@@ -914,7 +914,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
     ];
     const ADMIN_ORDERS_RUNTIME_SCRIPTS = [
         ORDERS_RUNTIME_CORE_SCRIPT,
-        'assets/js/shared/orders-workspace.js?v=20260705-orders-core1'
+        'assets/js/shared/orders-workspace.js?v=20260729-orders-share1'
     ];
     let ordersRuntimeLoadPromise = null;
     let adminOrdersRuntimeLoadPromise = null;
@@ -986,7 +986,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
     };
 
     const LMS_CLASSROOM_TABS_RUNTIME_SCRIPT = 'assets/js/pages/lms-classroom-tabs-runtime.js?v=20260715-lms-lazy7';
-    const LMS_SECTION_QUIZ_RUNTIME_SCRIPT = 'assets/js/pages/lms-section-quiz-runtime.js?v=20260720-lmssecquiz1';
+    const LMS_SECTION_QUIZ_RUNTIME_SCRIPT = 'assets/js/pages/lms-section-quiz-runtime.js?v=20260729-lmsgbshare5';
     const LMS_RUNTIME_SCRIPT = 'assets/js/pages/lms.js?v=20260714-lmspro2';
     let lmsRuntimeLoadPromise = null;
     window.ensurePortalLmsRuntimeLoaded = function ensurePortalLmsRuntimeLoaded() {

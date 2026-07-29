@@ -121,7 +121,8 @@ describe('library catalog sync', () => {
 
     it('renders manage sections button in admin tab strip', () => {
         const source = readSource('assets/js/shared/library-catalog-sync.js');
-        expect(source).toContain('admin-library-manage-sections-btn');
+        expect(source).toContain('admin-library-manage-sections-btn home-hover-chip');
+        expect(source).toContain("button.classList.add('home-hover-chip')");
         expect(source).toContain('adminLibraryOpenSectionsManager');
         expect(source).toContain('Manage sections');
         expect(source).not.toContain('admin-library-add-section-btn');

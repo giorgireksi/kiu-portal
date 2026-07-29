@@ -64,8 +64,18 @@
         if (!incoming) return existing;
         const existingParent = String(existing.parentAnswerId || '').trim();
         const incomingParent = String(incoming.parentAnswerId || '').trim();
-        if (!existingParent && incomingParent) return incoming;
-        return existing;
+        const incomingTime = ssParseTime(incoming.updatedAt || incoming.createdAt);
+        const existingTime = ssParseTime(existing.updatedAt || existing.createdAt);
+        const winner = incomingTime >= existingTime ? incoming : existing;
+        const loser = incomingTime >= existingTime ? existing : incoming;
+        if (!String(winner.parentAnswerId || '').trim() && String(loser.parentAnswerId || '').trim()) {
+            return {
+                ...winner,
+                parentAnswerId: loser.parentAnswerId,
+                replyToName: loser.replyToName || winner.replyToName
+            };
+        }
+        return winner;
     }
 
     function buildStudentServiceAnswerThread(answers = []) {
@@ -310,10 +320,7 @@
             const record = normalizeStudentServiceAnswer(answer);
             const answerIndex = KIU_STATE.studentServiceAnswers.findIndex(item => String(item.id) === answerId);
             if (answerIndex >= 0) {
-                KIU_STATE.studentServiceAnswers[answerIndex] = preferStudentServiceAnswerRecord(
-                    normalizeStudentServiceAnswer(KIU_STATE.studentServiceAnswers[answerIndex]),
-                    record
-                );
+                KIU_STATE.studentServiceAnswers[answerIndex] = record;
             } else {
                 KIU_STATE.studentServiceAnswers.push(record);
             }
@@ -450,32 +457,12 @@
         });
     }
 
-    function getStudentServiceSimilarQuestions(draft = {}) {
-        const searchTerms = [draft.title, draft.body, draft.category]
-            .map(value => String(value || '').trim().toLowerCase())
-            .filter(Boolean);
-        if (!searchTerms.length) return [];
-        return getStudentServiceVisibleQuestions()
-            .filter(question => question.status === 'published')
-            .map(question => ({
-                question,
-                score: searchTerms.reduce((score, term) => {
-                    const haystack = [question.title, question.body, question.category].join(' ').toLowerCase();
-                    return score + (haystack.includes(term) ? 1 : 0);
-                }, 0)
-            }))
-            .filter(entry => entry.score > 0)
-            .sort((left, right) => right.score - left.score || ssParseTime(right.question.updatedAt) - ssParseTime(left.question.updatedAt))
-            .slice(0, 3)
-            .map(entry => entry.question);
-    }
-
     function relayoutStudentServiceCommentTrunks(scope) {
         const roots = scope
             ? [scope.closest?.('.student-service-qa-thread-comments') || (scope.classList?.contains('student-service-qa-thread-comments') ? scope : null)].filter(Boolean)
             : [...document.querySelectorAll('.student-service-qa-thread-comments')];
         roots.forEach(threadRoot => {
-            threadRoot.querySelectorAll('article.social-neo-comment.student-service-qa-answer-card').forEach(comment => {
+            threadRoot.querySelectorAll('article.social-neo-comment').forEach(comment => {
                 const kids = comment.querySelector(':scope > .social-neo-comment-children');
                 const avatar = comment.querySelector(':scope > .social-neo-comment-row > .social-neo-avatar');
                 if (!kids || !avatar) {
@@ -485,16 +472,16 @@
                 }
                 const lastChild = kids.querySelector(':scope > article.social-neo-comment:last-child');
                 const lastAvatar = lastChild?.querySelector(':scope > .social-neo-comment-row > .social-neo-avatar');
-                if (!lastAvatar) {
+                if (!lastChild || !lastAvatar) {
                     comment.style.removeProperty('--trunk-top');
                     comment.style.removeProperty('--trunk-bottom');
                     return;
                 }
                 const cR = comment.getBoundingClientRect();
                 const aR = avatar.getBoundingClientRect();
-                const lR = lastAvatar.getBoundingClientRect();
+                const lChildR = lastChild.getBoundingClientRect();
                 comment.style.setProperty('--trunk-top', `${Math.round(aR.bottom - cR.top + 2)}px`);
-                comment.style.setProperty('--trunk-bottom', `${Math.round(cR.bottom - (lR.top + lR.height / 2))}px`);
+                comment.style.setProperty('--trunk-bottom', `${Math.round(cR.bottom - lChildR.top)}px`);
             });
         });
     }
@@ -511,10 +498,19 @@
         return (question.answers || []).find(answer => String(answer.id) === normalizedId) || null;
     }
 
-    function studentServiceAnswerArticleEl(answerId) {
+    function studentServiceAnswerArticleEl(answerId, options = {}) {
         const normalizedId = String(answerId || '').trim();
         if (!normalizedId) return null;
-        return document.querySelector(`[data-student-service-answer-id="${normalizedId.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`);
+        const escaped = normalizedId.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        const selector = `article.social-neo-comment[data-student-service-answer-id="${escaped}"]`;
+        const root = options.root || null;
+        if (root) return root.querySelector(selector);
+        const modalBody = getStudentServiceQuestionThreadModalBody();
+        if (modalBody) {
+            const inModal = modalBody.querySelector(selector);
+            if (inModal) return inModal;
+        }
+        return document.querySelector(selector);
     }
 
     function getStudentServiceQuestionCardElement(questionId) {
@@ -596,7 +592,7 @@
                     <div class="student-service-qa-thread-modal-accent" aria-hidden="true"></div>
                     <div class="student-service-qa-thread-modal-head">
                         <div class="student-service-qa-thread-modal-heading">
-                            <span class="student-service-qa-thread-modal-icon-chip"><i class="fas fa-comments" aria-hidden="true"></i></span>
+                            <span class="student-service-qa-thread-modal-icon-chip lux-soft-chrome"><i class="fas fa-comments" aria-hidden="true"></i></span>
                             <div class="student-service-qa-thread-modal-title-wrap">
                                 <div class="student-service-kicker">Q&A thread</div>
                                 <strong id="student-service-question-thread-modal-title" class="lux-page-title">${ssEscape(question.title || 'Question thread')}</strong>
@@ -605,8 +601,11 @@
                         </div>
                         <button type="button" class="lux-secondary-btn student-service-qa-thread-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-thread-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
                     </div>
-                    <div class="student-service-qa-thread-modal-body" data-student-service-question-thread-modal-body="1">
+                    <div class="student-service-qa-thread-modal-scroll lux-glass-dialog-comment-scroll" data-student-service-question-thread-modal-body="1">
                         ${renderStudentServiceQuestionDetail(question, { mode, inThreadModal: true })}
+                    </div>
+                    <div class="student-service-qa-thread-modal-compose" data-student-service-question-thread-modal-compose="1">
+                        ${renderStudentServiceQuestionThreadCompose(question, { mode })}
                     </div>
                 </div>
             </div>
@@ -780,11 +779,20 @@
         const question = getStudentServiceQuestionById(questionId);
         const answer = findStudentServiceAnswerRecord(question, answerId);
         if (!question || !answer) return false;
-        const article = studentServiceAnswerArticleEl(answerId);
-        const btn = article?.querySelector('[data-student-service-answer-helpful]');
-        if (!btn) return false;
-        updateStudentServiceAnswerHelpfulButton(btn, answer);
-        if (options.animate) triggerStudentServiceHelpfulAnimation(btn);
+        const normalizedAnswerId = String(answerId || '').trim();
+        const escaped = normalizedAnswerId.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        const selector = `article.social-neo-comment[data-student-service-answer-id="${escaped}"]`;
+        const buttons = new Set();
+        if (options.triggerButton) buttons.add(options.triggerButton);
+        document.querySelectorAll(selector).forEach((article) => {
+            const btn = article.querySelector('[data-student-service-answer-helpful]');
+            if (btn) buttons.add(btn);
+        });
+        if (!buttons.size) return false;
+        buttons.forEach((btn) => updateStudentServiceAnswerHelpfulButton(btn, answer));
+        if (options.animate && options.triggerButton) {
+            triggerStudentServiceHelpfulAnimation(options.triggerButton);
+        }
         return true;
     }
 
@@ -805,7 +813,7 @@
         const host = getStudentServiceQuestionThreadHost(questionId);
         const list = host?.querySelector('.student-service-qa-thread-comments .social-neo-comment-list');
         if (list && !list.querySelector('[data-student-service-answer-id]')) {
-            list.innerHTML = '<div class="student-service-empty-state student-service-qa-empty-note">No comments yet. Be the first to reply.</div>';
+            list.innerHTML = '<div class="student-service-empty-state student-service-qa-empty-note lux-soft-chrome">No comments yet. Be the first to reply.</div>';
         }
         const thread = host?.querySelector('.student-service-qa-thread-comments');
         scheduleStudentServiceThreadRelayout(thread);
@@ -850,6 +858,10 @@
         const mode = getStudentServiceQuestionThreadMode();
         const range = document.createRange();
         body.replaceChildren(range.createContextualFragment(renderStudentServiceQuestionDetail(question, { mode, inThreadModal: true })));
+        const compose = document.querySelector('[data-student-service-question-thread-modal-compose="1"]');
+        if (compose) {
+            compose.replaceChildren(range.createContextualFragment(renderStudentServiceQuestionThreadCompose(question, { mode })));
+        }
         const thread = body.querySelector('.student-service-qa-thread-comments');
         bindStudentServiceThreadResizeObserver(thread);
         scheduleStudentServiceThreadRelayout(thread);
@@ -940,7 +952,7 @@
     function renderStudentServiceQuestionComposer(currentUser) {
         const authorName = currentUser?.displayName || currentUser?.name || currentUser?.fullName || 'Student';
         return `
-            <section class="student-service-zone student-service-qa-composer-card">
+            <section class="student-service-zone student-service-qa-composer-card home-hover-chip">
                 <div class="student-service-qa-composer-collapsed">
                     <div class="student-service-qa-avatar">${ssEscape(ssInitials(authorName, '?'))}</div>
                     <button type="button" class="student-service-qa-composer-prompt" data-student-service-question-composer-toggle="open">
@@ -956,7 +968,6 @@
     function renderStudentServiceQuestionComposerFormMarkup(currentUser) {
         const ui = ensureStudentServiceUiState();
         const draftQuestion = ui.draftQuestion || buildStudentServiceDefaultDraftQuestion();
-        const similarQuestions = getStudentServiceSimilarQuestions(draftQuestion);
         return `
             <div class="student-service-request-form student-service-qa-compose-form">
                 <div class="student-service-qa-mode-row student-service-qa-mode-switch">
@@ -974,7 +985,7 @@
                         <option value="ALL"${draftQuestion.facultyCode === 'ALL' ? ' selected' : ''}>All faculties</option>
                     </select>
                 </div>
-                <label class="student-service-pill student-service-pill-toggle student-service-qa-anonymous-toggle">
+                <label class="student-service-pill student-service-pill-toggle student-service-qa-anonymous-toggle home-hover-chip">
                     <input id="student-service-question-anonymous" type="checkbox" ${draftQuestion.anonymousMode !== false ? 'checked' : ''} data-student-service-draft-question-field="anonymousMode">
                     Post anonymously to other students
                 </label>
@@ -982,14 +993,6 @@
                     Student Service and authorized responders can still see the real author for moderation and follow-up.
                     ${draftQuestion.askMode === 'private' ? ' Private mode will create a direct Student Service ticket instead of a public post.' : ''}
                 </div>
-                ${similarQuestions.length ? `
-                    <div class="student-service-qa-similar-strip">
-                        <div class="student-service-kicker student-service-qa-similar-title">Similar questions</div>
-                        <div class="student-service-qa-similar-list">
-                            ${similarQuestions.map(question => `<button type="button" class="student-service-mini-action" data-student-service-open-question="${ssEscape(question.id)}">${ssEscape(question.title)}</button>`).join('')}
-                        </div>
-                    </div>
-                ` : ''}
                 ${renderStudentServiceAttachmentPickerMarkup('qa-question')}
             </div>
         `;
@@ -1018,7 +1021,7 @@
                     <div class="student-service-qa-composer-modal-accent" aria-hidden="true"></div>
                     <div class="student-service-qa-composer-modal-head">
                         <div class="student-service-qa-composer-modal-heading">
-                            <span class="student-service-qa-composer-modal-icon-chip"><i class="fas fa-pen" aria-hidden="true"></i></span>
+                            <span class="student-service-qa-composer-modal-icon-chip lux-soft-chrome"><i class="fas fa-pen" aria-hidden="true"></i></span>
                             <div class="student-service-qa-composer-modal-title">
                                 <div class="student-service-kicker">Ask question</div>
                                 <strong id="student-service-question-composer-modal-title" class="lux-page-title">Post in the Q&A feed</strong>
@@ -1056,7 +1059,7 @@
                     const resolution = getStudentServiceQuestionResolutionLabel(question);
                     const ownerPill = renderStudentServiceOwnerResolutionPillMarkup(question);
                     return `
-                        <article class="student-service-qa-card">
+                        <article class="student-service-qa-card home-hover-chip">
                             <div class="student-service-qa-card-head">
                                 <div class="student-service-qa-card-author">
                                     <div class="student-service-qa-avatar student-service-qa-avatar-sm">${ssEscape(ssInitials(authorLabel, '?'))}</div>
@@ -1069,11 +1072,11 @@
                             </div>
                             <button type="button" class="student-service-qa-card-main" data-lux-skip-modern-button="true" data-student-service-open-question="${ssEscape(question.id)}">
                                 <div class="student-service-qa-chip-row">
-                                    <span class="student-service-pill">${ssEscape(question.category)}</span>
-                                    <span class="student-service-pill">${ssEscape(question.facultyCode ? ssFacultyLabel(question.facultyCode) : 'All faculties')}</span>
-                                    ${question.anonymousMode !== false ? '<span class="student-service-pill">Anonymous</span>' : ''}
-                                    ${question.pinned ? '<span class="student-service-pill">Pinned</span>' : ''}
-                                    ${question.featured ? '<span class="student-service-pill">Featured</span>' : ''}
+                                    <span class="student-service-pill home-hover-chip">${ssEscape(question.category)}</span>
+                                    <span class="student-service-pill home-hover-chip">${ssEscape(question.facultyCode ? ssFacultyLabel(question.facultyCode) : 'All faculties')}</span>
+                                    ${question.anonymousMode !== false ? '<span class="student-service-pill home-hover-chip">Anonymous</span>' : ''}
+                                    ${question.pinned ? '<span class="student-service-pill home-hover-chip">Pinned</span>' : ''}
+                                    ${question.featured ? '<span class="student-service-pill home-hover-chip">Featured</span>' : ''}
                                     ${ownerPill}
                                 </div>
                                 <div class="student-service-qa-card-title">${ssEscape(question.title)}</div>
@@ -1097,10 +1100,10 @@
     function renderStudentServiceCommentReplyShell(question, answer, skipLuxButton) {
         const replyName = answer.responderName || answer.authorDisplayName || 'comment';
         return `
-            <div class="social-neo-comment-reply-form student-service-qa-comment-reply-shell" data-student-service-reply-answer-id="${ssEscape(answer.id)}">
+            <div class="social-neo-comment-reply-form student-service-qa-comment-reply-shell lux-soft-chrome home-hover-chip" data-student-service-reply-answer-id="${ssEscape(answer.id)}">
                 <input type="hidden" class="student-service-qa-parent-answer-id" value="${ssEscape(answer.id)}" data-student-service-parent-answer="${ssEscape(answer.id)}">
-                <span class="student-service-qa-reply-context">Replying to @${ssEscape(replyName)}</span>
-                <textarea class="student-service-qa-reply-input student-service-qa-inline-reply-input social-neo-input lux-modern-field" rows="2" data-student-service-reply-input="${ssEscape(question.id)}" data-student-service-parent-answer="${ssEscape(answer.id)}" placeholder="Reply to @${ssEscape(replyName)}..."></textarea>
+                <span class="student-service-qa-reply-context social-neo-muted">Replying to @${ssEscape(replyName)}</span>
+                <textarea class="student-service-qa-reply-input student-service-qa-inline-reply-input social-neo-input lux-control" rows="2" data-student-service-reply-input="${ssEscape(question.id)}" data-student-service-parent-answer="${ssEscape(answer.id)}" placeholder="Reply to @${ssEscape(replyName)}..."></textarea>
                 ${renderStudentServiceAttachmentPickerMarkup(getStudentServiceAnswerComposerId(question.id, answer.id))}
                 <div class="social-neo-comment-reply-form-actions student-service-qa-comment-reply-actions">
                     <button type="button" class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn student-service-qa-reply-cancel-btn" ${skipLuxButton} data-student-service-cancel-reply="true">Cancel</button>
@@ -1190,21 +1193,25 @@
             isReply = false,
             replyCount = 0,
             threadChildrenHtml = '',
+            dialogBubble = false,
             skipLuxButton = 'data-lux-skip-modern-button="true"'
         } = options;
         const depthClass = isReply ? ' is-reply social-neo-comment-depth-1' : '';
         const hasChildrenClass = threadChildrenHtml ? ' has-children' : '';
+        const dialogBubbleClass = dialogBubble ? ' sns-comment-dialog-bubble' : '';
+        const shellClass = dialogBubble ? '' : ' student-service-qa-answer-card home-hover-chip';
+        const rowClass = dialogBubble ? 'social-neo-comment-row' : 'social-neo-comment-row student-service-qa-answer-head';
         const responderName = answer.responderName || 'Responder';
         return `
-            <article class="social-neo-comment student-service-qa-answer-card${depthClass}${hasChildrenClass}" data-student-service-answer-id="${ssEscape(answer.id)}">
-                <div class="social-neo-comment-row student-service-qa-answer-head">
+            <article class="social-neo-comment${shellClass}${depthClass}${hasChildrenClass}" data-student-service-answer-id="${ssEscape(answer.id)}">
+                <div class="${rowClass}">
                     <span class="social-neo-avatar social-neo-avatar-sm is-fallback student-service-qa-avatar student-service-qa-avatar-sm">${ssEscape(ssInitials(responderName, 'R'))}</span>
                     <div class="social-neo-comment-body">
-                        <div class="social-neo-comment-bubble">
+                        <div class="social-neo-comment-bubble lux-soft-chrome home-hover-chip${dialogBubbleClass}" data-lux-transparency-exempt="1">
                             <div class="social-neo-comment-head student-service-qa-answer-author">
                                 <strong class="student-service-qa-answer-author-name">${ssEscape(responderName)}</strong>
                                 <span class="student-service-qa-answer-author-role">${ssEscape(ssRoleLabel(answer.responderRole))}</span>
-                                ${isReply && answer.replyToName ? `<span class="student-service-pill">@${ssEscape(answer.replyToName)}</span>` : ''}
+                                ${isReply && answer.replyToName ? `<span class="student-service-pill home-hover-chip">@${ssEscape(answer.replyToName)}</span>` : ''}
                                 <span class="student-service-qa-answer-time">${ssEscape(ssFormatDateTime(answer.updatedAt || answer.createdAt))}</span>
                             </div>
                             <p class="student-service-qa-answer-copy">${ssTextBlock(answer.body)}</p>
@@ -1245,8 +1252,9 @@
         const canModerate = canCurrentUserModerateStudentService();
         const canDeleteQuestion = canCurrentUserDeleteStudentServiceQuestion(question);
         const helpful = Number(question.helpfulCount || 0);
+        const btnSize = inThreadModal ? 'lux-secondary-btn lux-secondary-btn-sm' : 'lux-secondary-btn';
         const deleteBtn = canDeleteQuestion
-            ? `<button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--danger" ${skipLuxButton} data-student-service-delete-question="true" data-student-service-question-id="${ssEscape(question.id)}"><i class="fas fa-trash" aria-hidden="true"></i> Delete question</button>`
+            ? `<button type="button" class="${btnSize} student-service-qa-detail-action-btn student-service-qa-detail-action-btn--danger" ${skipLuxButton} data-student-service-delete-question="true" data-student-service-question-id="${ssEscape(question.id)}"><i class="fas fa-trash" aria-hidden="true"></i> Delete question</button>`
             : '';
         const pinBtn = canModerate
             ? `<button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--flag" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-flag-field="pinned" data-student-service-question-flag-value="${question.pinned ? 'false' : 'true'}"><i class="fas fa-thumbtack"></i> ${question.pinned ? 'Unpin' : 'Pin'}</button>`
@@ -1291,10 +1299,63 @@
         }
 
         return `
-            <div class="student-service-action-row student-service-qa-detail-actions">
+            <div class="student-service-action-row student-service-qa-detail-actions student-service-qa-detail-actions--modal">
                 ${helpfulAndOwner}
                 ${!canModerate && canDeleteQuestion ? deleteBtn : ''}
             </div>
+        `;
+    }
+
+    function renderStudentServiceQuestionThreadPreviewMarkup(question) {
+        if (!question) return '';
+        const authorLabel = getStudentServiceQuestionAuthorLabel(question);
+        const answerCount = getStudentServiceQuestionAnswerCount(question);
+        const helpful = Number(question.helpfulCount || 0);
+        return `
+            <div class="lux-glass-dialog-comment-preview lux-soft-chrome home-hover-chip">
+                <div class="lux-glass-dialog-comment-post-head">
+                    <div class="social-neo-person social-neo-person-start-gap-10">
+                        <span class="social-neo-avatar social-neo-avatar-sm is-fallback student-service-qa-avatar student-service-qa-avatar-sm">${ssEscape(ssInitials(authorLabel, 'A'))}</span>
+                        <div>
+                            <strong>${ssEscape(authorLabel)}</strong>
+                            <span class="social-neo-muted">${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
+                        </div>
+                    </div>
+                    <span class="social-neo-pill social-neo-post-scope-badge">Q&amp;A</span>
+                </div>
+                <div class="lux-glass-dialog-comment-post-body">${ssTextBlock(question.body)}</div>
+                ${renderStudentServiceAttachmentGalleryMarkup(question.attachments)}
+                ${question.relatedQuestionIds?.length ? `<div class="student-service-ticket-detail-copy student-service-qa-related-copy">Related questions: ${ssEscape(question.relatedQuestionIds.join(', '))}</div>` : ''}
+                <div class="lux-glass-dialog-comment-post-metrics">
+                    <span class="social-neo-post-metric">Helpful (${helpful})</span>
+                    <span class="social-neo-post-metric">${answerCount} comment${answerCount === 1 ? '' : 's'}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderStudentServiceQuestionThreadCompose(question, options = {}) {
+        if (!question) return '';
+        const currentUser = getStudentServiceCurrentUser();
+        const canRespond = canCurrentUserRespondToStudentService(question);
+        const skipLuxButton = 'data-lux-skip-modern-button="true"';
+        return `
+            <section class="student-service-qa-thread-compose">
+                ${canRespond ? `
+                    <div class="lux-glass-dialog-comment-compose sns-comment-compose social-neo-comment-compose student-service-qa-thread-reply student-service-qa-reply-shell lux-soft-chrome home-hover-chip">
+                        <span class="social-neo-avatar social-neo-avatar-sm is-fallback student-service-qa-avatar student-service-qa-avatar-sm">${ssEscape(ssInitials(currentUser?.displayName || currentUser?.name || 'User', 'U'))}</span>
+                        <div class="lux-glass-dialog-comment-compose-main social-neo-comment-compose-main">
+                            <div class="social-neo-inline social-neo-comment-compose-row">
+                                <textarea class="student-service-qa-reply-input social-neo-input lux-control" rows="1" data-student-service-reply-input="${ssEscape(question.id)}" placeholder="Write a comment..."></textarea>
+                                <button class="lux-primary-btn student-service-qa-reply-submit-btn" type="button" ${skipLuxButton} data-student-service-submit-answer="${ssEscape(question.id)}"><i class="fas fa-comment"></i> Comment</button>
+                            </div>
+                            ${renderStudentServiceAttachmentPickerMarkup(getStudentServiceAnswerComposerId(question.id))}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="student-service-empty-state student-service-qa-reply-locked lux-soft-chrome">Sign in to join this thread.</div>
+                `}
+            </section>
         `;
     }
 
@@ -1316,56 +1377,57 @@
         const cardOptions = {
             canRespond,
             canDelete: false,
-            skipLuxButton: 'data-lux-skip-modern-button="true"'
+            skipLuxButton: 'data-lux-skip-modern-button="true"',
+            dialogBubble: inThreadModal
         };
         const answerCardOptions = (answer) => ({
             ...cardOptions,
             canDelete: canCurrentUserDeleteStudentServiceAnswer(question, answer)
         });
         const skipLuxButton = cardOptions.skipLuxButton;
+        if (inThreadModal) {
+            return `
+            <div class="student-service-qa-detail student-service-qa-detail--modal${isStudentServiceInlineReplyOpen() ? ' is-inline-reply-open' : ''}">
+                <div class="student-service-qa-inline-reply-banner lux-soft-chrome" aria-live="polite">
+                    <i class="fas fa-reply"></i>
+                    <span>Replying to a comment — use <strong>Post reply</strong> under that comment. Bottom Comment is hidden while replying.</span>
+                </div>
+                ${renderStudentServiceQuestionThreadPreviewMarkup(question)}
+                ${renderStudentServiceQuestionDetailActionsMarkup(question, { inThreadModal, skipLuxButton })}
+                <div class="lux-glass-dialog-comment-thread student-service-qa-thread-comments" data-student-service-thread-observed="1">
+                    <div class="social-neo-comment-list student-service-qa-answer-list">
+                        ${answerThread.length ? answerThread.map(entry => renderStudentServiceAnswerThreadNode(question, entry, answerCardOptions(entry.answer))).join('') : '<div class="student-service-empty-state student-service-qa-empty-note lux-soft-chrome">No comments yet. Be the first to reply.</div>'}
+                    </div>
+                </div>
+            </div>
+        `;
+        }
         return `
-            <div class="student-service-qa-detail${inThreadModal ? ' student-service-qa-detail--modal' : ''}${isStudentServiceInlineReplyOpen() ? ' is-inline-reply-open' : ''}">
-                <div class="student-service-qa-inline-reply-banner" aria-live="polite">
+            <div class="student-service-qa-detail${isStudentServiceInlineReplyOpen() ? ' is-inline-reply-open' : ''}">
+                <div class="student-service-qa-inline-reply-banner lux-soft-chrome" aria-live="polite">
                     <i class="fas fa-reply"></i>
                     <span>Replying to a comment — use <strong>Post reply</strong> under that comment. Bottom Comment is hidden while replying.</span>
                 </div>
                 <section class="student-service-qa-thread-question">
-                    ${inThreadModal ? '' : `
                     <div class="student-service-ticket-detail-meta student-service-qa-detail-meta">
-                        <span class="student-service-pill">Asked by ${ssEscape(authorLabel)}</span>
-                        <span class="student-service-pill">Updated ${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
-                        ${question.lastReviewedAt ? `<span class="student-service-pill">Reviewed ${ssEscape(ssFormatDate(question.lastReviewedAt))}</span>` : ''}
-                        ${question.staleReviewRequested ? '<span class="student-service-pill">Stale review requested</span>' : ''}
+                        <span class="student-service-pill home-hover-chip">Asked by ${ssEscape(authorLabel)}</span>
+                        <span class="student-service-pill home-hover-chip">Updated ${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
+                        ${question.lastReviewedAt ? `<span class="student-service-pill home-hover-chip">Reviewed ${ssEscape(ssFormatDate(question.lastReviewedAt))}</span>` : ''}
+                        ${question.staleReviewRequested ? '<span class="student-service-pill home-hover-chip">Stale review requested</span>' : ''}
                         ${renderStudentServiceOwnerResolutionPillMarkup(question)}
                     </div>
-                    `}
                     <div class="student-service-qa-detail-body">${ssTextBlock(question.body)}</div>
                     ${renderStudentServiceAttachmentGalleryMarkup(question.attachments)}
                     ${question.relatedQuestionIds?.length ? `<div class="student-service-ticket-detail-copy student-service-qa-related-copy">Related questions: ${ssEscape(question.relatedQuestionIds.join(', '))}</div>` : ''}
-                    ${renderStudentServiceQuestionDetailActionsMarkup(question, { inThreadModal, skipLuxButton })}
+                    ${renderStudentServiceQuestionDetailActionsMarkup(question, { inThreadModal: false, skipLuxButton })}
                 </section>
                 <section class="student-service-qa-thread-comments">
                     <div class="student-service-kicker student-service-qa-thread-kicker">Thread</div>
                     <div class="social-neo-comment-list student-service-qa-answer-list">
-                        ${answerThread.length ? answerThread.map(entry => renderStudentServiceAnswerThreadNode(question, entry, answerCardOptions(entry.answer))).join('') : '<div class="student-service-empty-state student-service-qa-empty-note">No comments yet. Be the first to reply.</div>'}
+                        ${answerThread.length ? answerThread.map(entry => renderStudentServiceAnswerThreadNode(question, entry, answerCardOptions(entry.answer))).join('') : '<div class="student-service-empty-state student-service-qa-empty-note lux-soft-chrome">No comments yet. Be the first to reply.</div>'}
                     </div>
                 </section>
-                <section class="student-service-qa-thread-compose">
-                    ${canRespond ? `
-                        <div class="social-neo-comment-compose student-service-qa-thread-reply student-service-qa-reply-shell">
-                            <span class="social-neo-avatar social-neo-avatar-sm is-fallback student-service-qa-avatar student-service-qa-avatar-sm">${ssEscape(ssInitials(currentUser?.displayName || currentUser?.name || 'User', 'U'))}</span>
-                            <div class="social-neo-comment-compose-main">
-                                <div class="social-neo-inline social-neo-comment-compose-row">
-                                    <textarea class="student-service-qa-reply-input social-neo-input lux-modern-field" rows="1" data-student-service-reply-input="${ssEscape(question.id)}" placeholder="Write a comment..."></textarea>
-                                    <button class="lux-primary-btn student-service-qa-reply-submit-btn" type="button" ${skipLuxButton} data-student-service-submit-answer="${ssEscape(question.id)}"><i class="fas fa-comment"></i> Comment</button>
-                                </div>
-                                ${renderStudentServiceAttachmentPickerMarkup(getStudentServiceAnswerComposerId(question.id))}
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="student-service-empty-state student-service-qa-reply-locked">Sign in to join this thread.</div>
-                    `}
-                </section>
+                ${renderStudentServiceQuestionThreadCompose(question, options)}
             </div>
         `;
     }
@@ -1507,7 +1569,67 @@
     }
 
     /* Wave 18: student-service-qa-staff-runtime.js */
-    const __w18Deps = { getStudentServiceQuestionThreadHost, updateStudentServiceQuestionCardToggleUi, clearLegacyStudentServiceOpenQuestionCards, updateStudentServiceQuestionThreadActiveCards, closeStudentServiceQuestionThreadModal, renderStudentServiceQuestionThreadModalShell, mountStudentServiceQuestionThreadModal, remountStudentServiceQuestionThreadModal, setStudentServiceOpenQuestionId, restoreStudentServiceOpenQuestionFromUi, patchStudentServiceQuestionCardStats, isStudentServiceQuestionHelpfulVoted, renderStudentServiceQuestionHelpfulButtonMarkup, updateStudentServiceQuestionHelpfulButton, triggerStudentServiceHelpfulAnimation, patchStudentServiceQuestionHelpfulUi, isStudentServiceAnswerHelpfulVoted, renderStudentServiceAnswerHelpfulButtonMarkup, updateStudentServiceAnswerHelpfulButton, patchStudentServiceAnswerHelpfulBtn, removeStudentServiceAnswerBranch, applyStudentServiceQuestionMutation, patchStudentServiceOpenQuestionThread, setStudentServiceQuestionFilter, setStudentServiceQuestionComposerExpanded, setStudentServiceDraftQuestionField, openStudentServiceQuestion, getStudentServiceQuestionStatusLabel, getStudentServiceQuestionStatusClass, getStudentServiceQuestionAnswerCount, renderStudentServiceQuestionList, renderStudentServiceQuestionComposer, renderStudentServiceQuestionComposerFormMarkup, renderStudentServiceQuestionComposerModalActionsMarkup, renderStudentServiceQuestionComposerModalShell, renderStudentServiceQuestionCardPreviewMarkup, renderStudentServiceQuestionFeed, renderStudentServiceCommentReplyShell, openStudentServiceDeleteQuestionConfirm, isStudentServiceQuestionComposerModalOpen, mountStudentServiceQuestionComposerModal, openStudentServiceQuestionComposerModal, closeStudentServiceQuestionComposerModal, remountStudentServiceQuestionComposerModal, renderStudentServiceAnswerCardMarkup, renderStudentServiceAnswerThreadNode, renderStudentServiceQuestionDetailActionsMarkup, renderStudentServiceQuestionDetail, submitStudentServiceQuestion, submitStudentServiceQuestionAnswer };
+    const __w18Deps = {
+        getStudentServiceQuestionThreadHost,
+        updateStudentServiceQuestionCardToggleUi,
+        clearLegacyStudentServiceOpenQuestionCards,
+        updateStudentServiceQuestionThreadActiveCards,
+        closeStudentServiceQuestionThreadModal,
+        renderStudentServiceQuestionThreadModalShell,
+        mountStudentServiceQuestionThreadModal,
+        remountStudentServiceQuestionThreadModal,
+        setStudentServiceOpenQuestionId,
+        restoreStudentServiceOpenQuestionFromUi,
+        patchStudentServiceQuestionCardStats,
+        isStudentServiceQuestionHelpfulVoted,
+        renderStudentServiceQuestionHelpfulButtonMarkup,
+        updateStudentServiceQuestionHelpfulButton,
+        triggerStudentServiceHelpfulAnimation,
+        patchStudentServiceQuestionHelpfulUi,
+        isStudentServiceAnswerHelpfulVoted,
+        renderStudentServiceAnswerHelpfulButtonMarkup,
+        updateStudentServiceAnswerHelpfulButton,
+        patchStudentServiceAnswerHelpfulBtn,
+        removeStudentServiceAnswerBranch,
+        applyStudentServiceQuestionMutation,
+        patchStudentServiceOpenQuestionThread,
+        setStudentServiceQuestionFilter,
+        setStudentServiceQuestionComposerExpanded,
+        setStudentServiceDraftQuestionField,
+        openStudentServiceQuestion,
+        getStudentServiceQuestionStatusLabel,
+        getStudentServiceQuestionStatusClass,
+        getStudentServiceQuestionAnswerCount,
+        renderStudentServiceQuestionList,
+        renderStudentServiceQuestionComposer,
+        renderStudentServiceQuestionComposerFormMarkup,
+        renderStudentServiceQuestionComposerModalActionsMarkup,
+        renderStudentServiceQuestionComposerModalShell,
+        renderStudentServiceQuestionCardPreviewMarkup,
+        renderStudentServiceQuestionFeed,
+        renderStudentServiceCommentReplyShell,
+        openStudentServiceDeleteQuestionConfirm,
+        isStudentServiceQuestionComposerModalOpen,
+        mountStudentServiceQuestionComposerModal,
+        openStudentServiceQuestionComposerModal,
+        closeStudentServiceQuestionComposerModal,
+        remountStudentServiceQuestionComposerModal,
+        renderStudentServiceAnswerCardMarkup,
+        renderStudentServiceAnswerThreadNode,
+        renderStudentServiceQuestionDetailActionsMarkup,
+        renderStudentServiceQuestionDetail,
+        submitStudentServiceQuestion,
+        submitStudentServiceQuestionAnswer,
+        mergeStudentServiceQuestionSnapshot,
+        getStudentServiceQuestionById,
+        findStudentServiceAnswerRecord,
+        removeStudentServiceQuestionFromSnapshot,
+        removeStudentServiceQuestionCard,
+        collectStudentServiceAnswerBranchIds,
+        removeStudentServiceAnswersFromSnapshot,
+        canCurrentUserDeleteStudentServiceQuestion,
+        canCurrentUserDeleteStudentServiceAnswer
+    };
     const __w18PeelApi = typeof window.__kiuCreateStudentServiceQaStaffApi === 'function'
         ? window.__kiuCreateStudentServiceQaStaffApi(__w18Deps) : null;
     if (!__w18PeelApi) {
@@ -1567,9 +1689,9 @@
     __kiuSsApi.appendStudentServiceTopLevelAnswerNode = appendStudentServiceTopLevelAnswerNode;
     __kiuSsApi.collectStudentServiceAnswerBranchIds = collectStudentServiceAnswerBranchIds;
     __kiuSsApi.removeStudentServiceAnswersFromSnapshot = removeStudentServiceAnswersFromSnapshot;
-    __kiuSsApi.mergeStudentServiceQuestionSnapshot = mergeStudentServiceQuestionSnapshot;
-    __kiuSsApi.removeStudentServiceQuestionFromSnapshot = removeStudentServiceQuestionFromSnapshot;
-    __kiuSsApi.removeStudentServiceQuestionCard = removeStudentServiceQuestionCard;
+    __kiuSsApi.mergeStudentServiceQuestionSnapshot = window.mergeStudentServiceQuestionSnapshot = mergeStudentServiceQuestionSnapshot;
+    __kiuSsApi.removeStudentServiceQuestionFromSnapshot = window.removeStudentServiceQuestionFromSnapshot = removeStudentServiceQuestionFromSnapshot;
+    __kiuSsApi.removeStudentServiceQuestionCard = window.removeStudentServiceQuestionCard = removeStudentServiceQuestionCard;
     __kiuSsApi.buildStudentServiceQaContentFingerprint = buildStudentServiceQaContentFingerprint;
     __kiuSsApi.buildStudentServiceQaFeedCacheKey = buildStudentServiceQaFeedCacheKey;
     __kiuSsApi.getStudentServiceVisibleQuestions = getStudentServiceVisibleQuestions;
@@ -1577,10 +1699,9 @@
     __kiuSsApi.getStudentServiceSelectedQuestion = getStudentServiceSelectedQuestion;
     __kiuSsApi.getStudentServiceOpenQuestion = getStudentServiceOpenQuestion;
     __kiuSsApi.getStudentServiceFilteredQuestions = getStudentServiceFilteredQuestions;
-    __kiuSsApi.getStudentServiceSimilarQuestions = getStudentServiceSimilarQuestions;
     __kiuSsApi.relayoutStudentServiceCommentTrunks = relayoutStudentServiceCommentTrunks;
-    __kiuSsApi.getStudentServiceQuestionById = getStudentServiceQuestionById;
-    __kiuSsApi.findStudentServiceAnswerRecord = findStudentServiceAnswerRecord;
+    __kiuSsApi.getStudentServiceQuestionById = window.getStudentServiceQuestionById = getStudentServiceQuestionById;
+    __kiuSsApi.findStudentServiceAnswerRecord = window.findStudentServiceAnswerRecord = findStudentServiceAnswerRecord;
     __kiuSsApi.studentServiceAnswerArticleEl = studentServiceAnswerArticleEl;
     __kiuSsApi.getStudentServiceQuestionCardElement = getStudentServiceQuestionCardElement;
     __kiuSsApi.getStudentServiceQuestionThreadMode = getStudentServiceQuestionThreadMode;
@@ -1637,8 +1758,8 @@
     __kiuSsApi.submitStudentServiceQuestion = window.submitStudentServiceQuestion = submitStudentServiceQuestion;
     __kiuSsApi.submitStudentServiceQuestionAnswer = window.submitStudentServiceQuestionAnswer = submitStudentServiceQuestionAnswer;
     __kiuSsApi.setStudentServiceQuestionOwnerResolution = setStudentServiceQuestionOwnerResolution;
-    __kiuSsApi.setStudentServiceQuestionFeedback = setStudentServiceQuestionFeedback;
-    __kiuSsApi.setStudentServiceAnswerFeedback = setStudentServiceAnswerFeedback;
+    __kiuSsApi.setStudentServiceQuestionFeedback = window.setStudentServiceQuestionFeedback = setStudentServiceQuestionFeedback;
+    __kiuSsApi.setStudentServiceAnswerFeedback = window.setStudentServiceAnswerFeedback = setStudentServiceAnswerFeedback;
     __kiuSsApi.deleteStudentServiceQuestion = deleteStudentServiceQuestion;
     __kiuSsApi.deleteStudentServiceQuestionAnswer = deleteStudentServiceQuestionAnswer;
     __kiuSsApi.publishStudentServiceQuestion = publishStudentServiceQuestion;

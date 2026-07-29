@@ -743,7 +743,7 @@
                             totalActivity,
                             facultyCount: facultyOptions.length,
                             sectionsHtml: `
-                                <div class="social-neo-workspace-hub-section social-project-hub-discover">
+                                <div class="social-neo-workspace-hub-section social-project-hub-discover lux-soft-chrome home-hover-chip">
                                     <div class="social-project-hub-search-row">
                                         <label class="social-project-hub-search">
                                             <i class="fas fa-search"></i>
@@ -751,7 +751,7 @@
                                         </label>
                                     </div>
                                     ${attentionTotal ? `
-                                        <div class="social-project-hub-attention">
+                                        <div class="social-project-hub-attention lux-soft-chrome home-hover-chip">
                                             <span class="social-project-hub-attention-copy">
                                                 <strong>Needs your work</strong>
                                                 ${escape(String(overdueAssignedCount))} overdue · ${escape(String(dueTodayCount))} due today · ${escape(String(blockedAssignedCount))} blocked
@@ -764,7 +764,7 @@
                                             <button class="${hubScope === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-scope" data-scope="${escape(value)}" aria-pressed="${hubScope === value ? 'true' : 'false'}">${escape(label)}</button>
                                         `).join('')}
                                     </div>
-                                    <div class="social-project-hub-filterbar">
+                                    <div class="social-project-hub-filterbar lux-soft-chrome home-hover-chip">
                                         <div class="social-project-hub-filter-group">
                                             <span class="social-project-hub-filter-label">Status</span>
                                             <div class="social-project-hub-filter-pills">
@@ -775,7 +775,7 @@
                                         </div>
                                         <div class="social-project-hub-filter-group">
                                             <span class="social-project-hub-filter-label">Faculty</span>
-                                            <select class="social-neo-select social-neo-select-sm lux-control lux-universal-native-select" name="projectDiscoverFaculty" data-lux-picker>
+                                            <select class="social-neo-select social-neo-select-sm lux-control lux-universal-native-select" name="projectDiscoverFaculty" data-lux-picker data-lux-picker-label="Faculty">
                                                 ${hubFacultyOptions.map((code) => `<option value="${escape(code)}" ${discoverFaculty === code ? 'selected' : ''}>${escape(code === 'all' ? 'All faculties' : code)}</option>`).join('')}
                                             </select>
                                         </div>

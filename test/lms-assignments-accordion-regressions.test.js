@@ -11,9 +11,9 @@ describe('LMS assignments week accordion regressions', () => {
     it('replaces legacy accordion markup with week panels that respect LMS transparency', () => {
         const lmsSource = readSource('assets/js/pages/lms.js');
         const sectionQuizSource = readSource('assets/js/pages/lms-section-quiz-runtime.js');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
         const assignmentsSource = readSource('assets/js/pages/lms-assignments-runtime.js');
-        const utilitiesSource = readSource('assets/js/shared/utilities.js');
+        const bareLite = readSource('assets/css/lux-page-bare-lite.css');
 
         expect(sectionQuizSource).toContain('lms-week-accordion-panel');
         expect(sectionQuizSource).toContain('lms-week-accordion-head');
@@ -21,9 +21,13 @@ describe('LMS assignments week accordion regressions', () => {
         expect(assignmentsSource).not.toContain('class="accordion-item"');
         expect(assignmentsSource).not.toContain('class="accordion-header"');
 
+        expect(sectionQuizSource).toContain('lms-week-accordion-panel home-hover-chip');
+        expect(sectionQuizSource).toContain('lms-route-stat home-hover-chip');
+
         expect(classroomSource).toContain("empty.closest('.lms-week-accordion-body, .lms-week-accordion-empty')");
         expect(classroomSource).toContain("card.classList.contains('lms-week-accordion-panel')");
-        expect(classroomSource).toContain('element.closest(\'.lms-week-accordion-panel\')');
+        expect(classroomSource).toContain("'.lms-route-card:not(.lms-week-accordion-panel), .lms-call-classroom'");
+        expect(classroomSource).toContain("el.classList.add('home-hover-chip')");
 
         expect(sectionQuizSource).toContain('function renderLmsWeekPanelEmptyState(title, copy, icon');
         expect(sectionQuizSource).toContain('lms-route-empty--week-panel');
@@ -31,8 +35,8 @@ describe('LMS assignments week accordion regressions', () => {
         expect(assignmentsSource).toContain('renderLmsWeekPanelEmptyState(');
         expect(assignmentsSource).toContain('lms-assignment-banner');
 
-        expect(utilitiesSource).toContain('#lms-content-area .lms-week-accordion-panel');
-        expect(utilitiesSource).toContain("'lms-week-accordion-panel'");
+        expect(bareLite).toContain('body.lux-route-lms .lms-week-accordion-panel');
+        expect(classroomSource).toContain("'lms-week-accordion-panel'");
     });
 
     it('uses shared bare-lite layout for assignment workspace surfaces', () => {

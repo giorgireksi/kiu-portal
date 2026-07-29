@@ -27,7 +27,7 @@ describe('programs route regressions.test', () => {
         expect(bare).toContain('.lux-prog-ops-grid');
         expect(bare).toContain('.lux-program-grid');
         expect(bare).not.toContain('--prog-fade-');
-        const programsBlock = bare.split('/* ── Programs route')[1]?.split('/* ── Staff / students hub')[0] || '';
+        const programsBlock = bare.split('/* ── Programs route')[1]?.split('/* ── LMS route')[0] || '';
         expect(programsBlock).not.toMatch(/backdrop-filter/);
         expect(readSource('programs.html')).toMatch(/lux-program-command-deck[\s\S]*data-lux-glass-root="1"/);
         const shell = readSource('assets/css/lux-shell.css');
@@ -43,16 +43,19 @@ describe('programs route regressions.test', () => {
         expect(html).toContain('lux-prog-control-band lux-soft-chrome');
         expect(html).toContain('lux-panel lux-program-command-deck');
         expect(html).toContain('progshare4');
+        expect(html).toContain('nestedhover3');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('lux-page-title');
         expect(html).toContain('lux-section-kicker');
     });
 
-    it('dynamic workspace uses lux-section-card panels', () => {
+    it('dynamic workspace uses lux-section-card panels and home-hover-chip on matte rows', () => {
         const js = readSource('assets/js/pages/programs-page.js');
         expect(js).toContain('lux-section-card lux-program-shell-section');
         expect(js).not.toMatch(/surface-card lux-program-shell-section/);
         expect(js).toContain('lux-soft-chrome');
+        expect(js).toContain('lux-module-option lux-program-module-option lux-soft-chrome home-hover-chip');
+        expect(js).toContain('lux-subject-row lux-program-subject-card home-hover-chip');
     });
 
     it('shared layout primitives define curriculum text roles', () => {

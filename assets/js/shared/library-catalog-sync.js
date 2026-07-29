@@ -313,6 +313,7 @@
                 button.classList.add('active');
                 button.setAttribute('aria-pressed', 'true');
             } else {
+                button.classList.add('home-hover-chip');
                 button.setAttribute('aria-pressed', 'false');
             }
             button.dataset.libraryCatalogSection = section.id;
@@ -330,7 +331,7 @@
         if (mode === 'admin') {
             const manageButton = document.createElement('button');
             manageButton.type = 'button';
-            manageButton.className = 'lux-secondary-btn admin-library-manage-sections-btn';
+            manageButton.className = 'lux-secondary-btn admin-library-manage-sections-btn home-hover-chip';
             manageButton.dataset.adminLibraryOpenSectionsManager = 'true';
             manageButton.innerHTML = '<i class="fas fa-layer-group"></i> Manage sections';
             fragment.appendChild(manageButton);

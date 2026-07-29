@@ -22,6 +22,10 @@ function defaultHooks(extra = {}) {
             social: {
                 groups: [{ id: 'g1', membershipState: 'member', memberCount: 3 }],
                 projects: [{ id: 'pr1', role: 'owner', status: 'active' }],
+                researchPublications: [
+                    { id: 'r1', status: 'published', authorLane: 'faculty' },
+                    { id: 'r2', status: 'draft', authorLane: 'student' }
+                ],
                 pages: [{ id: 'pg1', isFollowing: true }],
                 events: [{ id: 'e1' }],
                 reports: []
@@ -90,10 +94,16 @@ describe('social-panel-model', () => {
         const byId = Object.fromEntries(panels.map((p) => [p.id, p]));
         expect(byId.feed.count).toBe(3);
         expect(byId.groups.count).toBe(1);
+        expect(byId.research.label).toBe('Research');
+        expect(byId.research.helper).toBe('Papers, articles & PDFs');
+        expect(byId.research.count).toBe(1);
         expect(byId.surveys.count).toBe(2);
         expect(byId.photography.count).toBe(1);
         expect(byId.messages.count).toBe(3);
         expect(byId.alerts.count).toBe(5);
+        const ids = panels.map((p) => p.id);
+        expect(ids.indexOf('projects')).toBeLessThan(ids.indexOf('research'));
+        expect(ids.indexOf('research')).toBeLessThan(ids.indexOf('pages'));
     });
 
     it('builds panel config pills', () => {

@@ -655,7 +655,7 @@
             <div class="student-service-ticket-detail student-service-article-preview" data-student-service-hub-preview="1">
                 <div class="lux-panel-head student-service-find-preview-head">
                     <div>
-                        <div class="student-service-kicker">Selected guidance</div>
+                        <div class="student-service-kicker lux-section-kicker">Selected guidance</div>
                         <div class="lux-panel-title student-service-find-preview-title">${ssEscape(previewTitle)}</div>
                     </div>
                 </div>
@@ -663,8 +663,8 @@
                     <span class="student-service-pill">${ssEscape(selectedArea.label)}</span>
                     ${selectedArticle?.category ? `<span class="student-service-pill">${ssEscape(selectedArticle.category)}</span>` : ''}
                 </div>
-                <div class="student-service-ticket-detail-copy student-service-ticket-detail-copy--summary student-service-article-preview-copy">${ssEscape(previewSummary)}</div>
-                <div class="student-service-article-preview-body">${ssTextBlock(previewBody)}</div>
+                <div class="student-service-ticket-detail-copy student-service-ticket-detail-copy--summary student-service-article-preview-copy lux-panel-copy">${ssEscape(previewSummary)}</div>
+                <div class="lux-page-copy student-service-article-preview-body">${ssTextBlock(previewBody)}</div>
             </div>
         `;
     }
@@ -684,10 +684,10 @@
                     <button type="button" class="student-service-mini-action student-service-find-toolbar-clear" data-student-service-article-search-clear="true"><i class="fas fa-eraser"></i> Clear</button>
                 </div>
                 <div class="student-service-guidance-workspace">
-                    <div class="student-service-find-guidance student-service-guidance-pane student-service-guidance-pane--list" data-student-service-find-guidance="1">
+                    <div class="student-service-find-guidance student-service-guidance-pane student-service-guidance-pane--list home-hover-chip lux-soft-chrome" data-student-service-find-guidance="1">
                         <header class="student-service-find-guidance-head student-service-guidance-pane-head">
                             <div>
-                                <div class="student-service-kicker">Guidance articles</div>
+                                <div class="student-service-kicker lux-section-kicker">Guidance articles</div>
                             </div>
                             ${articleCountMarkup}
                         </header>
@@ -695,9 +695,9 @@
                             ${renderStudentServiceHubArticleListMarkup(filteredArticles, selectedArticle)}
                         </div>
                     </div>
-                    <div class="student-service-find-preview student-service-guidance-pane student-service-guidance-pane--preview" data-student-service-find-preview="1">
+                    <div class="student-service-find-preview student-service-guidance-pane student-service-guidance-pane--preview home-hover-chip lux-soft-chrome" data-student-service-find-preview="1">
                         <header class="student-service-guidance-pane-head student-service-guidance-pane-head--preview">
-                            <div class="student-service-kicker">Selected guidance</div>
+                            <div class="student-service-kicker lux-section-kicker">Selected guidance</div>
                         </header>
                         <div class="student-service-guidance-pane-body">
                             ${renderStudentServiceHubArticlePreviewMarkup(selectedArea, selectedArticle)}

@@ -200,7 +200,7 @@ function renderAdminLibraryFormSelects() {
 
 function createSchemaFieldRow(field, index) {
     const row = document.createElement('div');
-    row.className = 'admin-library-schema-field-row';
+    row.className = 'admin-library-schema-field-row home-hover-chip';
     row.dataset.fieldId = field.id;
 
     const typeBadge = document.createElement('span');
@@ -233,7 +233,7 @@ function createSchemaFieldRow(field, index) {
             openDroplistOptionsEditor(field.id);
         });
         const optionsBtn = document.createElement('button');
-        optionsBtn.className = 'admin-library-schema-btn-options';
+        optionsBtn.className = 'lux-secondary-btn admin-library-schema-btn-options home-hover-chip';
         optionsBtn.type = 'button';
         optionsBtn.dataset.adminLibraryEditDroplistOptions = field.id;
         optionsBtn.dataset.luxSkipModernButton = 'true';
@@ -248,7 +248,7 @@ function createSchemaFieldRow(field, index) {
     }
 
     const removeBtn = document.createElement('button');
-    removeBtn.className = 'admin-library-schema-btn-remove';
+    removeBtn.className = 'lux-secondary-btn admin-library-schema-btn-remove home-hover-chip';
     removeBtn.type = 'button';
     removeBtn.dataset.adminLibraryRemoveSchemaField = field.id;
     removeBtn.dataset.luxSkipModernButton = 'true';
@@ -275,7 +275,7 @@ function renderSchemaFieldsList() {
     if (count) count.textContent = `${schema.length} field${schema.length === 1 ? '' : 's'}`;
 
     if (!schema.length) {
-        list.innerHTML = '<div class="admin-library-schema-empty">No fields defined</div>';
+        list.innerHTML = '<div class="admin-library-schema-empty home-hover-chip">No fields defined</div>';
         return;
     }
 
@@ -534,14 +534,14 @@ function renderDroplistOptionsEditorList() {
     if (!host) return;
 
     if (!__adminLibraryDroplistEditorOptions.length) {
-        host.innerHTML = '<div class="admin-library-schema-empty">No options defined</div>';
+        host.innerHTML = '<div class="admin-library-schema-empty home-hover-chip">No options defined</div>';
         return;
     }
 
     const fragment = document.createDocumentFragment();
     __adminLibraryDroplistEditorOptions.forEach((opt, index) => {
         const chip = document.createElement('span');
-        chip.className = 'lux-pill admin-library-chip';
+        chip.className = 'lux-pill admin-library-chip home-hover-chip';
 
         const label = document.createElement('span');
         label.textContent = String(opt);
@@ -900,7 +900,7 @@ function renderAdminLibrarySectionsList() {
 
     if (!sections.length) {
         const empty = document.createElement('div');
-        empty.className = 'admin-library-sections-empty';
+        empty.className = 'lux-empty-state admin-library-sections-empty';
         empty.textContent = 'No sections yet.';
         fragment.appendChild(empty);
         host.replaceChildren(fragment);
@@ -909,7 +909,7 @@ function renderAdminLibrarySectionsList() {
 
     sections.forEach((section) => {
         const row = document.createElement('div');
-        row.className = 'admin-library-section-row';
+        row.className = 'admin-library-section-row lux-soft-chrome home-hover-chip';
         if (adminLibraryPendingRemoveSectionId === section.id) {
             row.classList.add('is-remove-pending');
         }
@@ -918,13 +918,13 @@ function renderAdminLibrarySectionsList() {
         meta.className = 'admin-library-section-row-meta';
 
         const title = document.createElement('strong');
-        title.className = 'admin-library-section-row-title';
+        title.className = 'lux-card-copy admin-library-section-row-title';
         title.textContent = section.label;
         meta.appendChild(title);
 
         const bookCount = getAdminLibrarySectionBookCount(section.id);
         const count = document.createElement('span');
-        count.className = 'admin-library-section-row-count';
+        count.className = 'lux-panel-copy admin-library-section-row-count';
         count.textContent = `${bookCount} book${bookCount === 1 ? '' : 's'}`;
         meta.appendChild(count);
 
@@ -935,6 +935,7 @@ function renderAdminLibrarySectionsList() {
             confirm.className = 'admin-library-section-remove-confirm';
 
             const message = document.createElement('span');
+            message.className = 'lux-panel-copy admin-library-section-remove-confirm-copy';
             message.textContent = `Delete "${section.label}" and ${bookCount} book${bookCount === 1 ? '' : 's'}? This cannot be undone.`;
             confirm.appendChild(message);
 
@@ -943,14 +944,14 @@ function renderAdminLibrarySectionsList() {
 
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
-            cancelBtn.className = 'lux-secondary-btn';
+            cancelBtn.className = 'lux-secondary-btn home-hover-chip';
             cancelBtn.dataset.adminLibraryCancelRemoveSection = 'true';
             cancelBtn.textContent = 'Cancel';
             actionRow.appendChild(cancelBtn);
 
             const confirmBtn = document.createElement('button');
             confirmBtn.type = 'button';
-            confirmBtn.className = 'lux-secondary-btn lux-danger-btn';
+            confirmBtn.className = 'lux-destructive-btn home-hover-chip';
             confirmBtn.dataset.adminLibraryConfirmRemoveSection = 'true';
             confirmBtn.dataset.adminLibrarySectionId = section.id;
             confirmBtn.textContent = 'Confirm remove';
@@ -963,7 +964,7 @@ function renderAdminLibrarySectionsList() {
             actions.className = 'admin-library-section-row-actions';
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
-            removeBtn.className = 'lux-secondary-btn admin-library-section-remove-btn';
+            removeBtn.className = 'lux-secondary-btn lux-destructive-btn home-hover-chip admin-library-section-remove-btn';
             removeBtn.dataset.adminLibraryRequestRemoveSection = 'true';
             removeBtn.dataset.adminLibrarySectionId = section.id;
             removeBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Remove';
@@ -984,7 +985,7 @@ function openLibrarySectionsModal() {
 }
 
 function closeLibrarySectionsModal(event) {
-    if (event && event.target.id !== 'library-sections-overlay' && !event.target.closest('.close-btn')) return;
+    if (event && event.target.id !== 'library-sections-overlay' && !event.target.closest('[data-admin-library-close-sections-modal], .close-btn, .lux-glass-dialog-close-btn')) return;
     adminLibraryPendingRemoveSectionId = null;
     setAdminLibrarySectionsModalOpen(false);
 }

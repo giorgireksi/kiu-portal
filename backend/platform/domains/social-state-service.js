@@ -224,6 +224,9 @@ function getSocialBootstrap(viewerUserId = '') {
     const surveys = typeof this.listSocialSurveys === 'function'
         ? this.listSocialSurveys({}, normalizedViewerId)
         : [];
+    const researchPublications = typeof this.listSocialResearchPublications === 'function'
+        ? this.listSocialResearchPublications({ status: 'all' }, normalizedViewerId)
+        : asArray(this.state.social.researchPublications);
     const relationships = normalizedViewerId ? listSocialRelationshipsForUser.call(this, normalizedViewerId) : [];
     const reports = asArray(this.state.social.reports)
         .filter(() => this.isSocialAdmin(normalizedViewerId))
@@ -237,6 +240,7 @@ function getSocialBootstrap(viewerUserId = '') {
         relationships,
         events,
         surveys,
+        researchPublications,
         lostFoundItems: normalizeLostFoundItems(this.state.social.lostFoundItems),
         surveyResponses: normalizedViewerId
             ? asArray(this.state.social.surveyResponses).filter(item => socialText(item?.userId) === normalizedViewerId).map(item => clone(item))

@@ -1499,7 +1499,7 @@ function renderCurriculumModuleRailRegion(context) {
                                 </span>
                             </span>
                             <span class="lux-module-option__right">
-                                <span class="lux-status-pill wave2-chip wave2-chip--pill lux-admin-curriculum-ects-pill">ECTS: ${ectsTotal}${limit ? `/${limit}` : ''}</span>
+                                <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill lux-admin-curriculum-ects-pill">ECTS: ${ectsTotal}${limit ? `/${limit}` : ''}</span>
                                 <span class="lux-module-option__meter"><span class="lux-module-option__meter-bar" style="--lux-program-module-load:${load}%"></span></span>
                             </span>
                         </label>
@@ -1572,8 +1572,8 @@ function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFi
             ? getFacultyLabel(subject.faculty || faculty)
             : String(subject.faculty || faculty || '');
         const semesterChips = semesters.length
-            ? semesters.map((semester) => `<span class="lux-status-pill wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(semester))}</span>`).join('')
-            : '<span class="lux-status-pill wave2-chip wave2-chip--pill is-muted">No semester</span>';
+            ? semesters.map((semester) => `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(semester))}</span>`).join('')
+            : '<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill is-muted">No semester</span>';
         const subtitle = formatCurriculumSubjectSubtitle(subject);
         return `
             <article class="lux-subject-row lux-program-subject-card ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
@@ -1588,7 +1588,7 @@ function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFi
                         <div class="lux-subject-row__meta">${escapeHtml(facultyLabel)}</div>
                         <div class="lux-subject-row__chips">
                             ${semesterChips}
-                            <span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
+                            <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
                         </div>
                         <div class="lux-subject-row__detail" title="${escapeHtml(prerequisite)}"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
                         ${antiReq ? `<div class="lux-subject-row__detail is-soft" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}

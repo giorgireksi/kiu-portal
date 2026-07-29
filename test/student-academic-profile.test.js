@@ -35,7 +35,7 @@ describe('student academic profile runtime', () => {
 
         expect(html).toContain('assets/js/shared/student-academic-helpers.js?v=20260705-student-academic13');
         expect(html).toContain('assets/js/pages/student-academic-runtime.js?v=20260705-student-academic13');
-        expect(html).toContain('assets/js/pages/students-command-center.js?v=20260720-sccmob1');
+        expect(html).toContain('assets/js/pages/students-command-center.js?v=20260726-frostedpopup1');
         expect(runtime).toContain('renderPersonalDataSubjectsSection');
         expect(runtime).toContain('hydrateStudentAcademicRecord');
         expect(runtime).toContain('toggleMobilityTransferPanel');
@@ -46,10 +46,15 @@ describe('student academic profile runtime', () => {
         const utilities = readSource('assets/js/shared/utilities.js');
 
         expect(runtime).toContain('students-hub-profile-metrics');
+        expect(runtime).toContain('students-hub-profile-metric lux-data-card home-hover-chip');
         expect(runtime).toContain('students-hub-academic-table');
         expect(runtime).toContain('students-hub-academic-overview');
+        expect(runtime).toContain('lux-data-card home-hover-chip students-hub-academic-overview');
         expect(runtime).toContain('students-hub-academic-stack');
         expect(runtime).toContain('students-hub-academic-schedule-canvas');
+        expect(runtime).toContain('home-hover-chip students-hub-academic-section');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('--students-hub-progress, var(--staff-hub-progress, 0%)');
         const routeRuntime = readSource('assets/js/shared/lux-transparency.js');
         expect(routeRuntime).toContain('isCssOwnedSurface');
         expect(existsSync(join(process.cwd(), 'assets/css/students-admin-lms.css'))).toBe(false);

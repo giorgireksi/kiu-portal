@@ -235,7 +235,8 @@ function registerStudentServiceRoutes(app, deps = {}) {
         const result = store.setStudentServiceAnswerFeedback(
             request.params.questionId,
             request.params.answerId,
-            getActorUserId(sessionAccount)
+            getActorUserId(sessionAccount),
+            request.body || {}
         );
         if (!result || result?.error) {
             sendError(response, result?.status || 400, result?.error || 'Student Service answer feedback could not be saved.');

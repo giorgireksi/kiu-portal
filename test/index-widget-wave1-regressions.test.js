@@ -70,10 +70,12 @@ describe('index widget wave 1 regressions', () => {
 
     expect(source).toContain('registration-hero-shell');
     expect(source).toContain('class="lux-timetable-hero-main lux-hero-main registration-hero-copy"');
-    expect(source).toMatch(/class="lux-timetable-hero-focus lux-hero-side registration-hero-aside(?: lux-focus-panel)?"/);
+    expect(source).toMatch(/registration-hero-aside[\s\S]*home-hover-chip/);
     expect(source).toContain('registration-command-band');
     expect(source).toContain('registration-metrics-band lux-strip-grid lux-strip-grid--adaptive');
-    expect(source).toContain('registration-insight-card registration-summary-card registration-summary-card--hold');
+    expect(source).toContain('registration-studio-shell');
+    expect(source).toContain('registration-studio-deck');
+    expect(source).toContain('registration-insight-card home-hover-chip');
     expect(source).not.toContain('lux-soft-chrome');
     expect(source).not.toContain('registration-hero-focus-grid');
     expect(source).not.toContain('registration-mini-metric');

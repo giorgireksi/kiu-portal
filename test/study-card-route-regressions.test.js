@@ -39,6 +39,7 @@ describe('study card route regressions.test', () => {
         expect(studyCardJs).toContain('study-card-summary-main lux-soft-chrome home-hover-chip');
         expect(studyCardJs).toContain('lux-focus-panel study-card-summary-focus lux-soft-chrome home-hover-chip');
         expect(studyCardJs).toContain('lux-hero-signal home-hover-chip');
+        expect(studyCardJs).toContain('lux-status-pill lux-soft-chrome home-hover-chip');
         expect(studyCardJs).not.toContain('study-card-summary-signals');
         expect(bare).toContain('.study-card-summary-focus.home-hover-chip');
         expect(bare).toContain('.study-card-summary-focus .lux-focus-panel__meta > span.lux-hero-signal');
@@ -53,11 +54,43 @@ describe('study card route regressions.test', () => {
         expect(studyCardJs).toContain('studyCardDomToken');
         expect(bare).toContain('body.lux-route-study-card #page-study-card .lms-route-card-title');
         expect(bare).toContain('body.lux-route-study-card #page-study-card .lms-route-meta-12');
-        expect(html).toContain('scardshare7');
+        expect(html).toContain('scardassess1');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toContain('body.lux-route-study-card #page-study-card');
-        expect(fouc).toMatch(/body\.lux-route-study-card #page-study-card[\s\S]*\.study-card-summary-focus[\s\S]*:hover[\s\S]*--home-chip-hover-lift/);
-        expect(fouc).toContain('.study-card-summary-focus .lux-hero-signal.home-hover-chip');
+        expect(fouc).toMatch(/body\.lux-route-study-card #page-study-card[\s\S]*\.study-card-summary-chip-row \.lux-status-pill\.home-hover-chip/);
+        expect(fouc).toMatch(/\[data-lux-glass-root="1"\]:not\(\.home-hover-chip\)[\s\S]*transition:\s*none/);
+        expect(fouc).not.toContain('.study-card-summary-main.home-hover-chip:has(.study-card-summary-chip-row .home-hover-chip:hover)');
+        expect(fouc).not.toContain('.study-card-summary-focus.home-hover-chip:has(.lux-hero-signal.home-hover-chip:hover)');
         expect(fouc).toMatch(/\.study-card-summary-focus\.lux-focus-panel[\s\S]*overflow:\s*visible/);
+    });
+
+    it('assessment overlay uses shared modal shell, portal paint, and typography', () => {
+        const modals = readSource('assets/css/lux-modals.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const primitives = readSource('assets/css/lux-layout-primitives.css');
+        const studyCardJs = readSource('assets/js/pages/study-card-page.js');
+        const gradebookModel = readSource('assets/js/pages/gradebook-model.js');
+
+        expect(modals).toContain('.study-card-assessment-overlay');
+        expect(fouc).toContain('#study-card-assessment-window .study-card-assessment-window');
+        expect(fouc).toContain('var(--lux-panel-fill)');
+        expect(fouc).toContain('#study-card-assessment-window .study-card-assessment-panel.lux-soft-chrome');
+        expect(bare).not.toMatch(/study-card-assessment-window\.lux-soft-chrome\s*\{[^}]*background/);
+        expect(bare).not.toMatch(/study-card-assessment-overlay\s*\{[^}]*background:/);
+        expect(bare).toContain('.study-card-assessment-layout:has(.study-card-assessment-panel--activity)');
+        expect(primitives).toContain('#study-card-assessment-window .study-card-assessment-window__title');
+        expect(studyCardJs).toContain('data-lux-transparency-exempt');
+        expect(studyCardJs).toContain('openLuxGlassDialogOverlay');
+        expect(studyCardJs).toContain('closeLuxGlassDialogOverlay');
+        const html = readSource('study-card.html');
+        const glassIdx = html.indexOf('lux-glass-dialog.js');
+        const workspaceIdx = html.indexOf('gradebook-workspace.js');
+        expect(glassIdx).toBeGreaterThan(-1);
+        expect(workspaceIdx).toBeGreaterThan(glassIdx);
+        expect(studyCardJs).toContain('lux-section-kicker study-card-assessment-panel-kicker');
+        expect(studyCardJs).toContain('lux-panel-copy study-card-assessment-panel-copy');
+        expect(studyCardJs).not.toContain('study-card-assessment-window lux-soft-chrome');
+        expect(gradebookModel).toContain('study-card-activity-item lux-soft-chrome home-hover-chip');
     });
 });

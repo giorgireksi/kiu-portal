@@ -178,7 +178,7 @@ function syncRegistrationWorkspaceSummary() {
 
     const metaEl = document.getElementById('timetable-hero-focus-meta');
     if (metaEl) {
-        metaEl.innerHTML = `<span><i class="fas ${holdActive ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${holdActive ? 'Hold Active' : 'Ready to Register'}</span>`;
+        metaEl.innerHTML = `<span class="lux-hero-signal home-hover-chip"><i class="fas ${holdActive ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${holdActive ? 'Hold Active' : 'Ready to Register'}</span>`;
     }
 
     const termSelect = document.getElementById('registration-term-select');
