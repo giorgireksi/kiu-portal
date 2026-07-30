@@ -28,6 +28,22 @@ describe('LMS hero + subjects shared CSS parity', () => {
         expect(bare).not.toContain('EXPERIMENT soft-panel v2');
     });
 
+    it('cache-busts LMS shared stack and hero focus markup', () => {
+        const html = readSource('lms.html');
+        expectLmsRouteCssLinks(html);
+        expect(html).toContain('lmsscss11');
+        expect(html).toMatch(/class="lms-hero-focus lux-hero-side home-hover-chip/);
+        expect(html).toContain('lux-pill lux-soft-chrome home-hover-chip lms-hero-focus-chip');
+        expect(html).toMatch(/lms-hero-focus-meta[\s\S]*lux-pill lux-soft-chrome home-hover-chip/);
+        expect(html).toContain('lms-clean-subjects lms-clean-subjects--merged home-hover-chip');
+        expect(html).toContain('lux-section-kicker lms-clean-kicker');
+        expect(html).toContain('lux-page-title');
+        expect(html).toContain('lux-page-copy');
+        expect(html).toContain('lux-card-title');
+        expect(html).toContain('lux-card-copy');
+        expect(html).toMatch(/lux-focus-panel\.css/);
+    });
+
     it('matte paints subjects stage inside page-hero and glass hosts', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toMatch(
@@ -35,25 +51,14 @@ describe('LMS hero + subjects shared CSS parity', () => {
         );
         expect(fouc).toContain('.lms-clean-subjects--merged');
         expect(fouc).toContain('.lux-lms-subject-card');
+        expect(fouc).toContain('.lms-hero-focus-chip.home-hover-chip');
+        expect(fouc).toContain('.lms-hero-focus-meta .lux-pill.home-hover-chip');
+        expect(fouc).toContain('.lux-lms-subject-card .lux-status-pill.home-hover-chip');
         expect(fouc).toContain('.lms-student-semester-bar');
         expect(fouc).toContain('.lms-student-semester-option');
         expect(fouc).toContain('#lms-lane-chip');
         expect(fouc).toMatch(
             /\.lms-route-empty[\s\S]{0,600}backdrop-filter:\s*none/
         );
-    });
-
-    it('cache-busts LMS shared stack and hero focus markup', () => {
-        const html = readSource('lms.html');
-        expectLmsRouteCssLinks(html);
-        expect(html).toContain('lmsscss11');
-        expect(html).toContain('lmsscss3');
-        expect(html).toMatch(/class="lms-hero-focus lux-hero-side home-hover-chip/);
-        expect(html).toContain('lux-section-kicker lms-clean-kicker');
-        expect(html).toContain('lux-page-title');
-        expect(html).toContain('lux-page-copy');
-        expect(html).toContain('lux-card-title');
-        expect(html).toContain('lux-card-copy');
-        expect(html).toMatch(/lux-focus-panel\.css/);
     });
 });

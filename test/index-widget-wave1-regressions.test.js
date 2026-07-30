@@ -10,13 +10,16 @@ describe('index widget wave 1 regressions', () => {
   it('keeps orders aligned to the index hero-side widget structure', () => {
     const source = readSource('assets/js/shared/orders-inbox.js');
 
-    expect(source).toContain('class="lux-card-body lux-hero-stage orders-inbox-hero-stage"');
+    expect(source).toContain('class="lux-hero-stage orders-inbox-hero-stage"');
     expect(source).toContain('class="lux-hero-main"');
-    expect(source).toMatch(/class="lux-hero-side orders-inbox-hero-side(?: lux-focus-panel)?"/);
+    expect(source).toMatch(/class="lux-hero-side orders-inbox-hero-side lux-focus-panel home-hover-chip"/);
+    expect(source).toContain('data-orders-inbox-hero="1"');
+    expect(source).toContain('orders-inbox-workspace lux-summary-surface');
+    expect(source).not.toContain('orders-inbox-hero lux-summary-surface');
     expect(source).toContain('lux-focus-panel');
     expect(source).toContain('lux-focus-panel__head');
     expect(source).toContain('lux-focus-panel__meta');
-    expect(source).toContain('class="lux-hero-signal"');
+    expect(source).toContain('class="lux-hero-signal home-hover-chip"');
   });
 
   it('keeps library aligned to readonly catalog shell without deleted hero markup', () => {

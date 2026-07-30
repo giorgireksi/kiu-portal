@@ -55,6 +55,10 @@ function scheduleLmsWhiteboardSessionWaitPoll(resourceKey = '') {
             return;
         }
         const latest = ensureLmsWhiteboardWorkspace(canonicalKey);
+        if (latest?.ui?.accessDenied || latest?.ui?.routeUnavailable) {
+            stopLmsWhiteboardSessionWaitPoll(canonicalKey);
+            return;
+        }
         if (latest?.sessionActive || (typeof canManageLmsWhiteboard === 'function' && canManageLmsWhiteboard(canonicalKey))) {
             stopLmsWhiteboardSessionWaitPoll(canonicalKey);
             return;

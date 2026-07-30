@@ -260,6 +260,7 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(js).toContain('lux-subject-row__title lms-clean-card-title lms-route-card-title');
         expect(js).toContain('<div class="lux-card-body" data-lux-layout-only="1">');
         expect(js).toContain('lux-lms-subject-card home-hover-chip');
+        expect(js).toContain('lux-status-pill lux-soft-chrome is-muted home-hover-chip');
         expect(js).toContain('lmsScheduleLabel');
         expect(js).toContain('lux-empty-state__title lms-route-empty-title');
         expect(js).toContain('lux-empty-state__copy lms-route-empty-copy');

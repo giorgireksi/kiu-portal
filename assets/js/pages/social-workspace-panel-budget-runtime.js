@@ -44,7 +44,7 @@
                     <div class="social-project-budget-spend-bar">
                         <div class="social-neo-section-head">
                             <div><strong>Spend against plan</strong><span>${escape(String(budgetUtilization))}% of ${escape(budgetCapValue > 0 ? 'cap' : 'planned')} used.</span></div>
-                            <span class="social-neo-pill ${budgetOverCap ? 'is-tone-rose' : ''}">${escape(formatBudgetMoney(budgetSpent, budgetCurrency))} / ${escape(formatBudgetMoney(budgetBase, budgetCurrency))}</span>
+                            <span class="social-neo-pill home-hover-chip ${budgetOverCap ? 'is-tone-rose' : ''}">${escape(formatBudgetMoney(budgetSpent, budgetCurrency))} / ${escape(formatBudgetMoney(budgetBase, budgetCurrency))}</span>
                         </div>
                         <div class="social-project-deadline-bar"><div class="social-project-deadline-fill ${budgetOverCap ? 'is-overdue' : ''}" style="width:${Math.min(100, budgetUtilization)}%"></div></div>
                     </div>
@@ -68,7 +68,7 @@
                     <section class="social-neo-card social-project-rich-panel">
                         <div class="social-neo-section-head">
                             <div><strong>Budget categories</strong><span>Plan allocation across materials, travel, software, and more.</span></div>
-                            <span class="social-neo-pill">${escape(String(budgetCategories.length))} categories</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(budgetCategories.length))} categories</span>
                         </div>
                         ${activeProject.viewerCanContribute ? `
                             <form data-form="project-budget-category-add" data-project-id="${escape(text(activeProject.id))}" class="social-neo-grid-3 social-project-budget-add-row">
@@ -88,9 +88,9 @@
                                                 <span>${escape(text(category.description || ''))}</span>
                                             </div>
                                             <div class="social-neo-badge-row">
-                                                <span class="social-neo-pill">Planned ${escape(formatBudgetMoney(category.plannedAmount, budgetCurrency))}</span>
-                                                <span class="social-neo-pill is-tone-${rollup.spent > category.plannedAmount ? 'rose' : 'emerald'}">Spent ${escape(formatBudgetMoney(rollup.spent, budgetCurrency))}</span>
-                                                <span class="social-neo-pill">${escape(String(rollup.count || 0))} expenses</span>
+                                                <span class="social-neo-pill home-hover-chip">Planned ${escape(formatBudgetMoney(category.plannedAmount, budgetCurrency))}</span>
+                                                <span class="social-neo-pill home-hover-chip is-tone-${rollup.spent > category.plannedAmount ? 'rose' : 'emerald'}">Spent ${escape(formatBudgetMoney(rollup.spent, budgetCurrency))}</span>
+                                                <span class="social-neo-pill home-hover-chip">${escape(String(rollup.count || 0))} expenses</span>
                                             </div>
                                         </div>
                                         ${activeProject.viewerCanContribute ? `
@@ -107,7 +107,7 @@
                     <section class="social-neo-card social-project-rich-panel">
                         <div class="social-neo-section-head">
                             <div><strong>Expense log</strong><span>Track real spend and submit it for approval.</span></div>
-                            <span class="social-neo-pill">${escape(String(budgetExpenses.length))} entries</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(budgetExpenses.length))} entries</span>
                         </div>
                         ${activeProject.viewerCanContribute ? `
                             <form data-form="project-budget-expense-add" data-project-id="${escape(text(activeProject.id))}" class="social-neo-stack social-project-budget-expense-add">
@@ -144,8 +144,8 @@
                                                 <span>${escape(text(category?.title || 'Uncategorized'))} · ${escape(when(expense?.incurredAt || expense?.createdAt || ''))}</span>
                                             </div>
                                             <div class="social-neo-badge-row">
-                                                <span class="social-neo-pill">${escape(formatBudgetMoney(expense?.amount, text(expense?.currency || budgetCurrency)))}</span>
-                                                <span class="social-neo-pill is-tone-${escape(statusMeta.tone)}">${escape(statusMeta.label)}</span>
+                                                <span class="social-neo-pill home-hover-chip">${escape(formatBudgetMoney(expense?.amount, text(expense?.currency || budgetCurrency)))}</span>
+                                                <span class="social-neo-pill home-hover-chip is-tone-${escape(statusMeta.tone)}">${escape(statusMeta.label)}</span>
                                             </div>
                                         </div>
                                         ${text(expense?.description) ? `<p class="social-project-budget-expense-note">${escape(text(expense.description))}</p>` : ''}

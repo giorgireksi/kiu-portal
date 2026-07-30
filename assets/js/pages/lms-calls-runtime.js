@@ -740,7 +740,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     <span>${participants.length} participant${participants.length === 1 ? '' : 's'}</span>
                 </div>
                 <div class="lms-call-chip-row">
-                    ${participants.length ? participants.map(id => `<span class="lms-call-chip">${escapeHtml(getLmsParticipantName(id, parsed))}</span>`).join('') : '<span class="lms-call-chip">Open</span>'}
+                    ${participants.length ? participants.map(id => `<span class="lms-call-chip home-hover-chip">${escapeHtml(getLmsParticipantName(id, parsed))}</span>`).join('') : '<span class="lms-call-chip home-hover-chip">Open</span>'}
                 </div>
                 ${!canManage && session.status === 'active' ? `<button type="button" class="lms-call-mini-action" data-lms-click="joinLmsBreakoutRoom(${lmsInlineArg(session.id)}, '${roomId}')">Join room</button>` : ''}
             </div>
@@ -753,7 +753,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     <strong>${escapeHtml(item.name || 'Student')}</strong>
                     <span>${escapeHtml(item.text || '')}</span>
                 </div>
-                ${canManage && !item.answered ? `<button type="button" class="lms-call-mini-action" data-lms-click="markLmsClassQuestionAnswered(${lmsInlineArg(session.id)}, ${lmsInlineArg(item.id)})">Answered</button>` : '<span class="lms-call-chip">Done</span>'}
+                ${canManage && !item.answered ? `<button type="button" class="lms-call-mini-action" data-lms-click="markLmsClassQuestionAnswered(${lmsInlineArg(session.id)}, ${lmsInlineArg(item.id)})">Answered</button>` : '<span class="lms-call-chip home-hover-chip">Done</span>'}
             </div>
         `).join('')
         : '<div class="lms-route-copy">No questions asked yet.</div>';
@@ -819,8 +819,8 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                         <span>${escapeHtml(session.topic || `${sectionMeta.label} session`)}</span>
                     </div>
                     <div class="lms-call-chip-row">
-                        <span class="lms-call-chip">${escapeHtml(session.lessonMode)}</span>
-                        <span class="lms-call-chip">${escapeHtml(session.weekLabel || 'No week')}</span>
+                        <span class="lms-call-chip home-hover-chip">${escapeHtml(session.lessonMode)}</span>
+                        <span class="lms-call-chip home-hover-chip">${escapeHtml(session.weekLabel || 'No week')}</span>
                     </div>
                 </div>
                 <div class="lms-call-video-stage is-${escapeHtml(session.roomSettings.layout)}">
@@ -857,10 +857,10 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                 <div class="lms-route-card lms-route-panel-compact lms-call-side-card">
                     <strong>Lesson tools</strong>
                     <div class="lms-call-chip-row">
-                        <span class="lms-call-chip">${session.roomSettings.recording ? 'Recording on' : 'Recording off'}</span>
-                        <span class="lms-call-chip">${session.roomSettings.captions ? 'Captions ready' : 'Captions off'}</span>
-                        <span class="lms-call-chip">${session.roomSettings.transcript ? 'Transcript ready' : 'Transcript off'}</span>
-                        <span class="lms-call-chip">${session.roomSettings.classStabilityMode ? 'Stability mode' : 'Standard mode'}</span>
+                        <span class="lms-call-chip home-hover-chip">${session.roomSettings.recording ? 'Recording on' : 'Recording off'}</span>
+                        <span class="lms-call-chip home-hover-chip">${session.roomSettings.captions ? 'Captions ready' : 'Captions off'}</span>
+                        <span class="lms-call-chip home-hover-chip">${session.roomSettings.transcript ? 'Transcript ready' : 'Transcript off'}</span>
+                        <span class="lms-call-chip home-hover-chip">${session.roomSettings.classStabilityMode ? 'Stability mode' : 'Standard mode'}</span>
                     </div>
                     <div class="lms-call-controls">${canManage ? teacherControls : userControls}</div>
                 </div>
@@ -875,7 +875,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                 </div>
                 <div class="lms-route-card lms-route-panel-compact lms-call-side-card">
                     <strong>Reactions</strong>
-                    <div class="lms-call-chip-row">${(session.reactions || []).slice(-8).map(item => `<span class="lms-call-chip">${escapeHtml(item.reaction || '👍')}</span>`).join('') || '<span class="lms-call-chip">No reactions yet</span>'}</div>
+                    <div class="lms-call-chip-row">${(session.reactions || []).slice(-8).map(item => `<span class="lms-call-chip home-hover-chip">${escapeHtml(item.reaction || '👍')}</span>`).join('') || '<span class="lms-call-chip home-hover-chip">No reactions yet</span>'}</div>
                     <div class="lms-call-feed">${reactionFeed}</div>
                 </div>
                 <div class="lms-route-card lms-route-panel-compact lms-call-side-card">
@@ -933,7 +933,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                         Host: ${escapeHtml(session.hostRole || sectionMeta.ownerLabel || 'Instructor')} - Capacity ${session.maxParticipants} - Mode ${escapeHtml(session.lessonMode)}
                     </div>
                 </div>
-                <span class="lms-route-pill">${session.participantIds.length}/${session.maxParticipants} joined</span>
+                <span class="lms-route-pill home-hover-chip">${session.participantIds.length}/${session.maxParticipants} joined</span>
             </div>
             <div class="lms-call-meta-grid">
                 ${renderLmsRouteKv('Scheduled', scheduledLabel)}
@@ -1100,9 +1100,9 @@ function renderLmsCallsSection(courseId) {
                         </div>
                     </div>
                     <div class="lms-route-inline lms-route-inline-gap-8">
-                        <span class="lms-route-pill"><i class="fas fa-circle"></i> ${activeCount} live</span>
-                        <span class="lms-route-pill"><i class="fas fa-calendar"></i> ${scheduledCount} scheduled</span>
-                        <span class="lms-route-pill"><i class="fas fa-users"></i> ${studentCount} roster</span>
+                        <span class="lms-route-pill home-hover-chip"><i class="fas fa-circle"></i> ${activeCount} live</span>
+                        <span class="lms-route-pill home-hover-chip"><i class="fas fa-calendar"></i> ${scheduledCount} scheduled</span>
+                        <span class="lms-route-pill home-hover-chip"><i class="fas fa-users"></i> ${studentCount} roster</span>
                     </div>
                 </div>
             </div>
@@ -1113,7 +1113,7 @@ function renderLmsCallsSection(courseId) {
                         <div class="lms-route-card-title"><i class="fas fa-list-check"></i> Lesson Sessions</div>
                         <div class="lms-route-copy lms-route-copy-mt-6">Live, scheduled, and ended lessons for ${escapeHtml(sectionMeta.label.toLowerCase())}.</div>
                     </div>
-                    <span class="lms-route-pill">${endedCount} ended</span>
+                    <span class="lms-route-pill home-hover-chip">${endedCount} ended</span>
                 </div>
                 <div class="lms-route-stack lms-route-stack-gap-16">${sessionsMarkup}</div>
             </div>

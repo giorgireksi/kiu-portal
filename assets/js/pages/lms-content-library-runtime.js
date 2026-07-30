@@ -111,7 +111,7 @@ function renderLmsConceptsLibrary(courseId) {
                         <div class="lms-route-card-title"><i class="fas fa-lightbulb"></i> Share a Concept</div>
                         <div class="lms-route-copy lms-route-copy-mt-6">Upload a simplified explanation, staff note, weekly summary, or helpful concept file for this group.</div>
                     </div>
-                    <div id="${fileLabelId}" class="lms-route-pill">No concept file selected</div>
+                    <div id="${fileLabelId}" class="lms-route-pill home-hover-chip">No concept file selected</div>
                 </div>
                 <div class="lms-route-field-grid">
                     <div class="lms-route-field">
@@ -163,9 +163,9 @@ function renderLmsConceptsLibrary(courseId) {
                                     <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${joinLmsMeta([`Shared by ${showAuthor}`, formatLmsDateTime(concept.createdAt)])}</div>
                                 </div>
                                 <div class="lms-concept-status-row">
-                                    ${concept.pinned ? '<span class="lms-route-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
-                                    <span class="lms-route-pill lms-concept-review-pill ${getLmsConceptReviewPillClass(concept.reviewStatus)}">${escapeHtml(reviewLabel)}</span>
-                                    <span class="lms-route-pill is-positive">${score.count ? `${score.average.toFixed(1)} / 10` : 'Not rated yet'}</span>
+                                    ${concept.pinned ? '<span class="lms-route-pill home-hover-chip"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
+                                    <span class="lms-route-pill home-hover-chip lms-concept-review-pill ${getLmsConceptReviewPillClass(concept.reviewStatus)}">${escapeHtml(reviewLabel)}</span>
+                                    <span class="lms-route-pill home-hover-chip is-positive">${score.count ? `${score.average.toFixed(1)} / 10` : 'Not rated yet'}</span>
                                     <span class="lms-route-meta lms-route-meta-12">${score.count} vote${score.count === 1 ? '' : 's'}</span>
                                     ${canDelete ? `<button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger" data-lms-click="deleteLmsConcept('${resourceKey}', '${concept.id}')"><i class="fas fa-trash"></i></button>` : ''}
                                 </div>

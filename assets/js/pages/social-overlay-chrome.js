@@ -192,6 +192,7 @@
                 dialogType === 'page-create'
                 || dialogType === 'survey-create'
                 || dialogType === 'portfolio-editor'
+                || dialogType === 'research-create'
                 || dialogType === 'event-create'
                 || dialogType === 'project-create'
                 || dialogType === 'group-create'

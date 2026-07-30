@@ -91,6 +91,18 @@ describe('social projects store domain split', () => {
         expect(task?.title).toBe('Student task');
     });
 
+    it('lets student service view unpublished projects without granting student access', () => {
+        const store = new PlatformStore({});
+        store.state.accounts['owner-1'] = { id: 'owner-1', displayName: 'Owner One', email: 'owner@example.com', role: 'student', facultyCode: 'ECON' };
+        store.state.accounts['svc-1'] = { id: 'svc-1', displayName: 'Service One', email: 'svc@example.com', role: 'student_service', facultyCode: 'ECON' };
+        store.state.accounts['student-2'] = { id: 'student-2', displayName: 'Student Two', email: 'student2@example.com', role: 'student', facultyCode: 'ECON' };
+
+        const project = store.createSocialProject({ title: 'Capstone', summary: 'Build showcase' }, 'owner-1');
+        expect(project?.status).toBe('draft');
+        expect(store.canViewSocialProject(store.getSocialProjectRecord(project.id), 'svc-1')).toBe(true);
+        expect(store.canViewSocialProject(store.getSocialProjectRecord(project.id), 'student-2')).toBe(false);
+    });
+
     it('normalizes portfolio external links without throwing', () => {
         const store = new PlatformStore({});
         store.state.accounts['owner-1'] = { id: 'owner-1', displayName: 'Owner One', email: 'owner@example.com', role: 'student', facultyCode: 'ECON' };

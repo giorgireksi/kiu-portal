@@ -69,7 +69,7 @@
                             </div>
                         </div>
                     </div>
-                    <span class="lux-pill library-status-pill"><i class="fas fa-lock"></i> Read-only catalog</span>
+                    <span class="lux-pill library-status-pill home-hover-chip"><i class="fas fa-lock"></i> Read-only catalog</span>
                 </div>
                 <div class="admin-library-scroll-wrap">
                     <table class="kiu-table admin-library-catalog-table">

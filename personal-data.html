@@ -10,11 +10,11 @@
     <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
     <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-wave2host1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260729-nestedhover2">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260728-pdshare2">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260728-pdshare2">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260729-pdshells1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260729-pdchecklist1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260729-nocontact1">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
-    <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
+    <script src="assets/js/theme-primer.js?v=20260730-navpreload1"></script>
 </head>
 <body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-personal-data lux-page-bare lux-full-paint">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
@@ -25,124 +25,111 @@
     <!-- MAIN CONTENT -->
     <main id="app-content">
         <div id="page-personal-data" class="page-section active-page lux-page-shell" data-lux-layout-only="1">
-            <section class="page-hero personal-data-hero lux-hero" aria-label="Personal data hero">
-                <div class="personal-data-hero-copy lux-hero-main">
-                    <div class="lux-section-kicker lux-page-kicker"><i class="far fa-id-card"></i> Personal Data</div>
-                    <div class="page-hero-title personal-data-hero-title lux-page-title">Official Student Record</div>
+            <div class="personal-data-shell" data-personal-data-shell="1" data-lux-glass-root="1" aria-label="Personal data">
+                <section class="personal-data-hero" aria-label="Personal data hero">
+                    <div class="personal-data-hero-copy lux-hero-main">
+                        <div class="lux-section-kicker lux-page-kicker"><i class="far fa-id-card"></i> Personal Data</div>
+                        <div id="personal-data-hero-title" class="page-hero-title personal-data-hero-title lux-page-title">Official Account Record</div>
+                    </div>
+                </section>
+
+                <div class="filter-shell personal-data-command personal-data-toolbar">
+                    <div class="personal-data-command-context personal-data-toolbar-copy">
+                        <div class="lux-section-kicker filter-shell-title">Program Context</div>
+                        <p>Current academic program used for this record.</p>
+                        <select id="program-context-select" class="lux-control" aria-label="Program context"><option>Program</option></select>
+                    </div>
+                    <div class="personal-data-command-actions personal-data-toolbar-actions">
+                        <button type="button" class="lux-secondary-btn" data-personal-data-nav-target="study-card"><i class="far fa-address-card"></i> Study Card</button>
+                        <button type="button" class="lux-secondary-btn" data-personal-data-nav-target="registration"><i class="fas fa-check-square"></i> Registration</button>
+                        <button type="button" class="lux-primary-btn" data-personal-data-nav-target="timetable"><i class="fas fa-chalkboard"></i> Timetable</button>
+                    </div>
                 </div>
-            </section>
 
-            <div class="filter-shell personal-data-command personal-data-toolbar home-hover-chip">
-                <div class="personal-data-command-context personal-data-toolbar-copy">
-                    <div class="lux-section-kicker filter-shell-title">Program Context</div>
-                    <p>Current academic program used for this record.</p>
-                    <select id="program-context-select" class="lux-control" aria-label="Program context"><option>Program</option></select>
-                </div>
-                <div class="personal-data-command-actions personal-data-toolbar-actions">
-                    <button type="button" class="lux-secondary-btn" data-personal-data-nav-target="study-card"><i class="far fa-address-card"></i> Study Card</button>
-                    <button type="button" class="lux-secondary-btn" data-personal-data-nav-target="registration"><i class="fas fa-check-square"></i> Registration</button>
-                    <button type="button" class="lux-primary-btn" data-personal-data-nav-target="timetable"><i class="fas fa-chalkboard"></i> Timetable</button>
-                </div>
-            </div>
-
-            <div class="personal-data-workspace personal-data-layout" data-lux-glass-root="1">
-                <aside class="personal-data-rail" aria-label="Student profile">
-                    <section class="profile-card personal-data-identity-card home-hover-chip" aria-label="Student identity">
-                        <div class="lux-section-kicker personal-data-card-kicker"><i class="far fa-id-badge"></i> Identity</div>
-                        <div class="personal-data-profile-row">
-                            <div class="personal-data-avatar-shell">
-                                <img loading="lazy" id="personal-data-avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Profile">
-                            </div>
-                            <div>
-                                <div id="personal-data-name" class="personal-data-name">Portal User</div>
-                                <div class="lux-status-pill lux-status-pill--dot is-success home-hover-chip" id="personal-data-status">Active</div>
-                            </div>
-                        </div>
-                        <div id="personal-data-program" class="lux-card-copy personal-data-card-copy">Loading...</div>
-
-                        <div class="pd-divider"></div>
-
-                        <div class="pd-block">
-                            <div class="lux-section-kicker personal-data-card-kicker"><i class="far fa-address-card"></i> Contact &amp; IDs</div>
-                            <div class="pd-contact-grid">
-                                <div class="pd-contact-row"><span>Student ID</span><strong id="personal-data-id">-</strong></div>
-                                <div class="pd-contact-row"><span>ID number</span><strong id="personal-data-national-id">—</strong></div>
-                                <div class="pd-contact-row"><span>Phone</span><strong id="personal-data-phone">—</strong></div>
-                                <div class="pd-contact-row"><span>Email</span><strong id="personal-data-email">—</strong></div>
-                                <div class="pd-contact-row"><span>Record state</span><strong id="personal-data-record-state">-</strong></div>
-                            </div>
-                        </div>
-
-                        <div class="pd-divider"></div>
-
-                        <div class="pd-block pd-security">
-                            <div class="lux-section-kicker personal-data-card-kicker"><i class="fas fa-lock"></i> Security</div>
-                            <form id="personal-data-password-form" class="pd-password-form" autocomplete="off">
-                                <label class="pd-field"><span>Current password</span>
-                                    <input type="password" name="currentPassword" autocomplete="current-password" required></label>
-                                <label class="pd-field"><span>New password</span>
-                                    <input type="password" name="newPassword" autocomplete="new-password" minlength="8" required></label>
-                                <label class="pd-field"><span>Confirm new password</span>
-                                    <input type="password" name="confirmPassword" autocomplete="new-password" minlength="8" required></label>
-                                <div class="pd-password-msg" id="personal-data-password-msg" role="status" aria-live="polite"></div>
-                                <button type="submit" class="lux-btn lux-btn--primary pd-password-submit"><i class="fas fa-key"></i> Change password</button>
-                            </form>
-                        </div>
-                    </section>
-                </aside>
-
-                <div class="personal-data-main">
-                    <section class="personal-data-merged home-hover-chip" aria-labelledby="personal-data-overview-heading">
-                        <div class="personal-data-section-head">
-                            <div class="lux-section-kicker personal-data-card-kicker" id="personal-data-overview-heading"><i class="fas fa-chart-line"></i> Academic Snapshot</div>
-                            <div id="personal-data-level-heading" class="lux-card-title personal-data-level-heading">Loading...</div>
-                            <p class="lux-card-copy personal-data-card-copy">Current academic progress and standing at a glance.</p>
-                        </div>
-                        <div class="kpi-row lux-strip-grid lux-strip-grid--adaptive personal-data-kpi-row">
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
-                                <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="personal-data-layout personal-data-workspace-body">
+                    <aside id="personal-data-rail" class="personal-data-rail" aria-label="Account profile">
+                        <section id="personal-data-identity-card" class="profile-card personal-data-identity-card home-hover-chip" aria-label="Account identity">
+                            <div class="lux-section-kicker personal-data-card-kicker"><i class="far fa-id-badge"></i> Identity</div>
+                            <div class="personal-data-profile-row">
+                                <div class="personal-data-avatar-shell">
+                                    <img loading="lazy" id="personal-data-avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Profile">
+                                </div>
                                 <div>
-                                    <div class="lux-card-meta personal-data-kpi-label">Semester</div>
-                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-semester">-</div>
+                                    <div id="personal-data-name" class="personal-data-name">Portal User</div>
+                                    <div class="lux-status-pill lux-status-pill--dot is-success home-hover-chip" id="personal-data-status">Active</div>
                                 </div>
                             </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
-                                <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-chart-simple"></i></div>
-                                <div>
-                                    <div class="lux-card-meta personal-data-kpi-label">GPA</div>
-                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-gpa">-</div>
-                                </div>
-                            </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
-                                <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-award"></i></div>
-                                <div>
-                                    <div class="lux-card-meta personal-data-kpi-label">ECTS</div>
-                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-ects">-</div>
-                                </div>
-                            </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
-                                <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-shield-alt"></i></div>
-                                <div>
-                                    <div class="lux-card-meta personal-data-kpi-label">Standing</div>
-                                    <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-average">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pd-progress">
-                            <div class="pd-progress-head"><span>Programme progress</span><strong id="personal-data-progress-label">0 / 0 ECTS</strong></div>
-                            <div class="pd-progress-track"><div class="pd-progress-fill" id="personal-data-progress-fill" style="width:0%"></div></div>
-                        </div>
+                            <div id="personal-data-program" class="lux-card-copy personal-data-card-copy">Loading...</div>
 
-                        <div class="pd-divider"></div>
+                            <div class="pd-divider"></div>
 
-                        <div class="personal-data-section-head">
-                            <div class="lux-section-kicker personal-data-card-kicker" id="personal-data-subjects-heading"><i class="fas fa-book-open"></i> Subjects &amp; Enrollments</div>
-                            <p class="lux-card-copy personal-data-card-copy">Subjects you are studying now, the staff running them, and any subjects awaiting a retake.</p>
-                        </div>
-                        <div id="personal-data-subjects-root" class="personal-data-subjects-root" aria-live="polite">
-                            <div class="personal-data-subjects-loading">Loading subjects...</div>
-                        </div>
-                    </section>
+                            <div class="pd-block pd-security">
+                                <div class="lux-section-kicker personal-data-card-kicker"><i class="fas fa-lock"></i> Security</div>
+                                <form id="personal-data-password-form" class="pd-password-form" autocomplete="off">
+                                    <label class="pd-field"><span>Current password</span>
+                                        <input type="password" name="currentPassword" autocomplete="current-password" required></label>
+                                    <label class="pd-field"><span>New password</span>
+                                        <input type="password" name="newPassword" autocomplete="new-password" minlength="8" required></label>
+                                    <label class="pd-field"><span>Confirm new password</span>
+                                        <input type="password" name="confirmPassword" autocomplete="new-password" minlength="8" required></label>
+                                    <div class="pd-password-msg" id="personal-data-password-msg" role="status" aria-live="polite"></div>
+                                    <button type="submit" class="lux-btn lux-btn--primary pd-password-submit"><i class="fas fa-key"></i> Change password</button>
+                                </form>
+                            </div>
+                        </section>
+                    </aside>
+
+                    <div class="personal-data-main">
+                        <section class="personal-data-merged home-hover-chip" aria-labelledby="personal-data-overview-heading">
+                            <div class="personal-data-section-head">
+                                <div class="lux-section-kicker personal-data-card-kicker" id="personal-data-overview-heading"><i class="fas fa-chart-line"></i> Work Snapshot</div>
+                                <div id="personal-data-level-heading" class="lux-card-title personal-data-level-heading">Loading...</div>
+                                <p id="personal-data-overview-copy" class="lux-card-copy personal-data-card-copy">Current workload, profile coverage, and account standing at a glance.</p>
+                            </div>
+                            <div class="kpi-row lux-strip-grid lux-strip-grid--adaptive personal-data-kpi-row">
+                                <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
+                                    <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-layer-group"></i></div>
+                                    <div>
+                                        <div id="personal-data-kpi-label-primary" class="lux-card-meta personal-data-kpi-label">Assignments</div>
+                                        <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-semester">-</div>
+                                    </div>
+                                </div>
+                                <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
+                                    <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-chart-simple"></i></div>
+                                    <div>
+                                        <div id="personal-data-kpi-label-secondary" class="lux-card-meta personal-data-kpi-label">Hours</div>
+                                        <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-gpa">-</div>
+                                    </div>
+                                </div>
+                                <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
+                                    <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-award"></i></div>
+                                    <div>
+                                        <div id="personal-data-kpi-label-tertiary" class="lux-card-meta personal-data-kpi-label">Subjects</div>
+                                        <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-ects">-</div>
+                                    </div>
+                                </div>
+                                <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card home-hover-chip">
+                                    <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-shield-alt"></i></div>
+                                    <div>
+                                        <div id="personal-data-kpi-label-quaternary" class="lux-card-meta personal-data-kpi-label">Status</div>
+                                        <div class="lux-card-title personal-data-kpi-value" id="personal-data-kpi-average">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="personal-data-progress-block" class="pd-progress">
+                                <div class="pd-progress-head"><span id="personal-data-progress-title">Programme progress</span><strong id="personal-data-progress-label">0 / 0 ECTS</strong></div>
+                                <div class="pd-progress-track"><div class="pd-progress-fill" id="personal-data-progress-fill" style="width:0%"></div></div>
+                            </div>
+                        </section>
+
+                        <section class="personal-data-blueprint-details home-hover-chip" aria-labelledby="personal-data-details-heading">
+                            <div class="personal-data-section-head">
+                                <div class="lux-section-kicker personal-data-card-kicker" id="personal-data-details-heading"><i class="fas fa-list-ul"></i> Profile details</div>
+                                <p id="personal-data-details-copy" class="lux-card-copy personal-data-card-copy">Fields your school chose to show from the active form blueprint.</p>
+                            </div>
+                            <div id="personal-data-blueprint-details-root" class="personal-data-blueprint-details-root" aria-live="polite"></div>
+                        </section>
+                    </div>
                 </div>
             </div>
         </div>
@@ -156,7 +143,7 @@
 <script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
 <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260720-w18"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
-<script defer src="assets/js/app/auth.js?v=20260729-sse4292"></script>
+<script defer src="assets/js/app/auth.js?v=20260730-sse4293"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604822068"></script>
 <script defer src="assets/js/app/state-admin-exam-runtime.js?v=20260720-e4exam1"></script>
 <script defer src="assets/js/app/state-deleted-staff-runtime.js?v=20260720-w18"></script>
@@ -168,8 +155,10 @@
 <script defer src="assets/js/shared/faculty-schedule-runtime.js?v=20260720-facsched1"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
 <script defer src="assets/js/shared/student-academic-helpers.js?v=20260705-student-academic2"></script>
-<script defer src="assets/js/pages/student-academic-runtime.js?v=20260728-pdshare2"></script>
-<script defer src="assets/js/pages/personal-data-page.js?v=20260728-pdshare2"></script>
+<script defer src="assets/js/pages/student-form-blueprint.js?v=20260729-pdchecklist1"></script>
+<script defer src="assets/js/pages/form-blueprint-runtime.js?v=20260729-pdchecklist1"></script>
+<script defer src="assets/js/pages/student-academic-runtime.js?v=20260729-pdchecklist1"></script>
+<script defer src="assets/js/pages/personal-data-page.js?v=20260729-nocontact1"></script>
 <script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
 <script defer src="assets/js/features/ui.js?v=20260725-ssot1"></script>
 <script defer src="assets/js/features/luxury-index-runtime.js?v=20260723-gpuperf2b"></script>
@@ -178,12 +167,12 @@
 <script defer src="assets/js/features/luxury-transparency-model-runtime.js?v=20260723-perftier1"></script>
 <script defer src="assets/js/features/luxury-index-sync-runtime.js?v=20260720-w18b"></script>
 <script defer src="assets/js/features/luxury-shell-motion-runtime.js?v=20260725-glassblur1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260724-homeshellfix1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260730-echancellery1"></script>
 <script type="module" src="assets/js/features/luxury-background.js?v=20260723-gpuperf4q"></script>
 <script defer src="assets/js/features/luxury-shell-studio-runtime.js?v=20260719-luxstudio1"></script>
 <script defer src="assets/js/features/luxury-shell-picker-runtime.js?v=20260726-pickeroverlap1"></script>
 <script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260723-gpuperf4l"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260726-teleportfix1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260730-echancellery1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
 <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
@@ -227,7 +216,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Support',
-                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
             }
         ],
         professor: [
@@ -237,7 +226,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Campus',
-                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'E-Chancellery', 'fas fa-inbox']]
             }
         ],
         ta: [
@@ -247,7 +236,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Support',
-                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'E-Chancellery', 'fas fa-inbox']]
             }
         ],
         admin: [
@@ -257,7 +246,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Systems',
-                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['chancellery', 'E-Chancellery', 'fas fa-inbox'], ['social', 'Social', 'fas fa-comments']]
             }
         ],
         student_service: [

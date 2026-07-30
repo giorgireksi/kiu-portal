@@ -305,7 +305,7 @@ function renderEmbeddedLmsQuizSectionCards(resourceKey, quizzes, quizUiState) {
                         <div class="lms-quiz-card-meta">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}</div>
                         <div class="lms-quiz-card-meta">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
                     </div>
-                    <div class="lms-quiz-card-score-pill">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
+                    <div class="lms-quiz-card-score-pill home-hover-chip">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
                 </div>
                 <div class="lms-quiz-card-stats">
                     <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Questions</div><div class="lms-quiz-card-stat-value">${escapeHtml(String((quiz.questions || []).length))}</div></div>

@@ -52,10 +52,12 @@ describe('student service route split', () => {
 
         expect(connectBlock).toContain('sseConnectInFlight');
         expect(connectBlock).toContain('if (runtime.sseConnectInFlight) return');
+        expect(connectBlock).toContain('writeSharedKiuSseBlockedUntil(runtime.sseBlockedUntil)');
         expect(bootstrapBlock).toContain('if (runtime.bootstrapPromise) return runtime.bootstrapPromise');
         expect(bootstrapBlock).toContain('if (!hasActiveStream && !isKiuRealtimeSseBlocked())');
         expect(scheduleBlock).toContain('if (isKiuRealtimeSseBlocked()) return');
         expect(scheduleBlock).toContain('if (runtime.bootstrapPromise) return');
+        expect(auth).toContain("KIU_SSE_BLOCKED_UNTIL_KEY = 'KIU_SSE_BLOCKED_UNTIL'");
     });
 
     it('forwards snapshot merge stubs through KiuStudentService bag not only window', () => {

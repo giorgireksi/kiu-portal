@@ -170,6 +170,39 @@ describe('news route api split', () => {
         expect(renamed.catalog.some(section => section.key === 'sports' && section.label === 'Sports')).toBe(true);
         expect(store.ensureNewsState().posts.find(post => post.id === created.id)?.sectionLabel).toBe('Admissions Office');
 
+        const withIcon = store.saveNewsSectionCatalog([
+            { key: 'admissions', label: 'Admissions Office', icon: 'fa-door-open' },
+            { key: 'academic-updates', label: 'Academic Updates', icon: 'fa-graduation-cap' },
+            { key: 'campus-life', label: 'Campus Life', icon: 'fa-university' },
+            { key: 'events', label: 'Events', icon: 'fa-calendar-star' },
+            { key: 'announcements', label: 'Announcements', icon: 'fa-bullhorn' },
+            { key: 'research', label: 'Research', icon: 'fa-flask' },
+            { label: 'Sports', icon: 'fa-trophy' }
+        ], 'news-admin');
+        expect(withIcon.catalog.find(section => section.key === 'sports')?.icon).toBe('fa-trophy');
+        expect(withIcon.catalog.find(section => section.key === 'admissions')?.icon).toBe('fa-door-open');
+        const rejectedIcon = store.saveNewsSectionCatalog([
+            { key: 'admissions', label: 'Admissions Office', icon: 'fa-not-a-real-icon' },
+            { key: 'academic-updates', label: 'Academic Updates' },
+            { key: 'campus-life', label: 'Campus Life' },
+            { key: 'events', label: 'Events' },
+            { key: 'announcements', label: 'Announcements' },
+            { key: 'research', label: 'Research' },
+            { label: 'Sports', icon: 'fa-trophy' }
+        ], 'news-admin');
+        expect(rejectedIcon.catalog.find(section => section.key === 'admissions')?.icon).toBe('fa-door-open');
+        expect(rejectedIcon.catalog.find(section => section.key === 'sports')?.icon).toBe('fa-trophy');
+
+        // Icon-less persisted rows regain default catalog icons on ensure.
+        store.state.news.sectionCatalog = [
+            { key: 'events', label: 'Events' },
+            { key: 'research', label: 'Research' }
+        ];
+        const backfilled = store.ensureNewsState().sectionCatalog;
+        expect(backfilled.find(section => section.key === 'events')?.icon).toBe('fa-calendar-star');
+        expect(backfilled.find(section => section.key === 'research')?.icon).toBe('fa-flask');
+        expect(store.listNewsFeed({ userId: 'news-admin' }).sections.find(section => section.key === 'events')?.icon).toBe('fa-calendar-star');
+
         const existingAnnouncement = store.createNewsPost({
             title: 'Existing announcement',
             body: 'Already in announcements',

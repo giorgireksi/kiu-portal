@@ -12,7 +12,7 @@ function registerAdminIntegrationsRoutes(app, deps = {}) {
     } = deps;
 
     app.get('/api/admin/accounts', (request, response) => {
-        const sessionAccount = requireActualSessionRole(request, response, new Set(['admin']));
+        const sessionAccount = requireActualSessionRole(request, response, new Set(['admin', 'student_service']));
         if (!sessionAccount) return;
         const store = getStore();
         response.json({ ok: true, ...store.listAccounts(request.query) });

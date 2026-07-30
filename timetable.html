@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260727-ttshare8">
     <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260729-ttgrid1">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
-    <script src="assets/js/theme-primer.js?v=20260724-fullpaint-reveal1"></script>
+    <script src="assets/js/theme-primer.js?v=20260730-navpreload1"></script>
 </head>
 <body class="kiu-shell-loading lux-nonhome-page lux-route-timetable lux-unified-shell lux-page-bare lux-full-paint" data-faculty="ECON">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
@@ -131,7 +131,7 @@
                             <div class="lux-card-title lux-timetable-stage-title">Weekly Timetable</div>
                             <p id="timetable-stage-copy" class="lux-card-copy"></p>
                         </div>
-                        <div class="lux-timetable-stage-status lux-status-pill is-muted" id="timetable-stage-status"><i class="fas fa-circle timetable-stage-status-dot"></i> Live</div>
+                        <div class="lux-timetable-stage-status lux-status-pill home-hover-chip is-muted" id="timetable-stage-status"><i class="fas fa-circle timetable-stage-status-dot"></i> Live</div>
                     </div>
                     <div id="timetable-master-container" class="sch-grid-wrap lux-timetable-canvas">
                         <!-- Javascript will inject the Grid here via renderTimetable() -->
@@ -149,7 +149,7 @@
 <script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
 <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260720-w18"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
-<script defer src="assets/js/app/auth.js?v=20260729-sse4292"></script>
+<script defer src="assets/js/app/auth.js?v=20260730-sse4293"></script>
 <script defer src="assets/js/data/initial-state.js?v=20260430-lmssessions1"></script>
 <script defer src="assets/js/app/state-admin-exam-runtime.js?v=20260720-e4exam1"></script>
 <script defer src="assets/js/app/state-deleted-staff-runtime.js?v=20260720-w18"></script>
@@ -168,12 +168,12 @@
 <script defer src="assets/js/features/luxury-transparency-model-runtime.js?v=20260723-perftier1"></script>
 <script defer src="assets/js/features/luxury-index-sync-runtime.js?v=20260720-w18b"></script>
 <script defer src="assets/js/features/luxury-shell-motion-runtime.js?v=20260725-glassblur1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260724-homeshellfix1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260730-echancellery1"></script>
 <script type="module" src="assets/js/features/luxury-background.js?v=20260723-gpuperf4q"></script>
 <script defer src="assets/js/features/luxury-shell-studio-runtime.js?v=20260719-luxstudio1"></script>
 <script defer src="assets/js/features/luxury-shell-picker-runtime.js?v=20260726-pickeroverlap1"></script>
 <script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260723-gpuperf4l"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260726-teleportfix1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260730-echancellery1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <script defer src="assets/js/pages/timetable-runtime.js?v=20260729-ttgrid1"></script>
 
@@ -280,7 +280,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Support',
-                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
             }
         ],
         professor: [
@@ -290,7 +290,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Campus',
-                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'E-Chancellery', 'fas fa-inbox']]
             }
         ],
         ta: [
@@ -300,7 +300,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Support',
-                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'E-Chancellery', 'fas fa-inbox']]
             }
         ],
         admin: [
@@ -310,7 +310,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
             },
             {
                 group: 'Systems',
-                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['chancellery', 'E-Chancellery', 'fas fa-inbox'], ['social', 'Social', 'fas fa-comments']]
             }
         ],
         student_service: [

@@ -126,8 +126,8 @@
                     <div>
                         <div class="social-neo-profile-name">${escape(displayName(account))}</div>
                         <div class="social-neo-profile-role">
-                            <span class="social-neo-pill">${escape(roleLabel(account?.role))}</span>
-                            <span class="social-neo-pill">${escape(facultyLabel(account?.facultyCode || account?.faculty))}</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(roleLabel(account?.role))}</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(facultyLabel(account?.facultyCode || account?.faculty))}</span>
                         </div>
                     </div>
                     <div class="social-neo-profile-actions">
@@ -172,7 +172,7 @@
             return `
                 <div class="social-neo-profile-friends">
                     ${friends.slice(0, 12).map((friend) => `
-                        <button class="social-neo-friend-chip" type="button" data-action="profile-view" data-user-id="${escape(text(friend.id))}">
+                        <button class="social-neo-friend-chip home-hover-chip" type="button" data-action="profile-view" data-user-id="${escape(text(friend.id))}">
                             ${avatar(friend, 'social-neo-avatar')}
                             <strong>${escape(displayName(friend).split(' ')[0])}</strong>
                             <span>${escape(roleLabel(friend?.role))}</span>
@@ -195,7 +195,7 @@
                                 <strong>${escape(item.name)}</strong>
                                 <span>${escape(item.subtitle)}</span>
                                 <div class="social-neo-badge-row">
-                                    <span class="social-neo-pill">${escape(item.type === 'page' ? 'Page' : 'Group')}</span>
+                                    <span class="social-neo-pill home-hover-chip">${escape(item.type === 'page' ? 'Page' : 'Group')}</span>
                                 </div>
                             </div>
                             <button class="lux-secondary-btn" type="button" data-action="focus-feed" data-scope-type="${escape(item.type)}" data-scope-id="${escape(item.id)}">Open</button>
@@ -290,7 +290,7 @@
                     ${bio ? `<div class="social-neo-profile-bio">${escape(bio)}</div>` : ''}
                     ${Array.isArray(account?.interests) && account.interests.length ? `
                         <div class="social-neo-badge-row">
-                            ${account.interests.slice(0, 6).map((interest) => `<span class="social-neo-pill">${escape(interest)}</span>`).join('')}
+                            ${account.interests.slice(0, 6).map((interest) => `<span class="social-neo-pill home-hover-chip">${escape(interest)}</span>`).join('')}
                         </div>
                     ` : ''}
                     <div class="social-neo-profile-about-card">
@@ -417,14 +417,12 @@
             state().ui.activeProjectId = '';
             state().ui.projectTab = 'overview';
             state().ui.portfolioPanelTab = 'mine';
+            state().ui.portfolioCustomBuilderOpen = false;
             setPanel('projects');
-            if (state().ui.portfolioPanelTab === 'mine') {
-                return withBusy(async () => {
-                    await hydrateMyPortfolioDocument(true);
-                    renderSocialPageNow('profile-portfolio-open');
-                });
-            }
-            return renderSocialPageNow('profile-portfolio-open');
+            return withBusy(async () => {
+                await hydrateMyPortfolioDocument(true);
+                openDialog('portfolio-editor');
+            });
         }
 
 if (action === 'profile-tab-posts') { state().ui.profileTab = 'posts'; return renderSocialPageNow('profile-tab'); }

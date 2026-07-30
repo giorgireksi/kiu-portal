@@ -262,7 +262,7 @@ describe('global interaction performance guardrails', () => {
     const indexHtml = readSource('index.html');
     const mobileShell = readSource('assets/js/pages/index-mobile-shell.js');
 
-    expect(indexHtml).toContain('assets/js/pages/index-mobile-shell.js?v=20260514-home-mobile-shell1');
+    expect(indexHtml).toContain('assets/js/pages/index-mobile-shell.js?v=20260730-echancellery1');
     expect(indexHtml).not.toContain('(function initMobileExperience(){');
     expect(mobileShell).toContain("(function initMobileExperience() {");
   });

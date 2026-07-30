@@ -142,6 +142,22 @@
         const renderStudentServiceInboxFilterEditorRowMarkup = __ssModuleForward('Filters', 'renderStudentServiceInboxFilterEditorRowMarkup', '');
         const renderStudentServiceInboxFilterEditorModalShell = __ssModuleForward('Filters', 'renderStudentServiceInboxFilterEditorModalShell', '');
         const isStudentServiceInboxFilterEditorOpen = __ssModuleForward('Filters', 'isStudentServiceInboxFilterEditorOpen', false);
+        const readStudentServicePersonalInboxFilterLayout = __ssModuleForward('Filters', 'readStudentServicePersonalInboxFilterLayout', null);
+        const writeStudentServicePersonalInboxFilterLayout = __ssModuleForward('Filters', 'writeStudentServicePersonalInboxFilterLayout', null);
+        const clearStudentServicePersonalInboxFilterLayout = __ssModuleForward('Filters', 'clearStudentServicePersonalInboxFilterLayout', null);
+        const pruneStudentServiceCustomTicketFilters = __ssModuleForward('Filters', 'pruneStudentServiceCustomTicketFilters', null);
+        const setStudentServiceInboxFilterValue = __ssModuleForward('Filters', 'setStudentServiceInboxFilterValue', null);
+        const syncStudentServiceInboxFilterEditorPickers = __ssModuleForward('Filters', 'syncStudentServiceInboxFilterEditorPickers', null);
+        const mountStudentServiceInboxFilterEditorModal = __ssModuleForward('Filters', 'mountStudentServiceInboxFilterEditorModal', null);
+        const openStudentServiceInboxFilterEditorModal = __ssModuleForward('Filters', 'openStudentServiceInboxFilterEditorModal', null);
+        const closeStudentServiceInboxFilterEditorModal = __ssModuleForward('Filters', 'closeStudentServiceInboxFilterEditorModal', null);
+        const remountStudentServiceInboxFilterEditorModal = __ssModuleForward('Filters', 'remountStudentServiceInboxFilterEditorModal', null);
+        const syncStudentServiceInboxFilterEditorDraftFromDom = __ssModuleForward('Filters', 'syncStudentServiceInboxFilterEditorDraftFromDom', null);
+        const moveStudentServiceInboxFilterEditorRow = __ssModuleForward('Filters', 'moveStudentServiceInboxFilterEditorRow', null);
+        const addStudentServiceInboxFilterEditorCustomFilter = __ssModuleForward('Filters', 'addStudentServiceInboxFilterEditorCustomFilter', null);
+        const addStudentServiceInboxFilterEditorOption = __ssModuleForward('Filters', 'addStudentServiceInboxFilterEditorOption', null);
+        const removeStudentServiceInboxFilterEditorOption = __ssModuleForward('Filters', 'removeStudentServiceInboxFilterEditorOption', null);
+        const removeStudentServiceInboxFilterEditorFilter = __ssModuleForward('Filters', 'removeStudentServiceInboxFilterEditorFilter', null);
         const saveStudentServicePersonalInboxFilterLayoutFromEditor = __ssModuleForward('Filters', 'saveStudentServicePersonalInboxFilterLayoutFromEditor', null);
         const saveStudentServiceSharedInboxFilterLayoutFromEditor = __ssModuleForward('Filters', 'saveStudentServiceSharedInboxFilterLayoutFromEditor', null);
         const resetStudentServicePersonalInboxFilterLayoutFromEditor = __ssModuleForward('Filters', 'resetStudentServicePersonalInboxFilterLayoutFromEditor', null);
@@ -229,46 +245,6 @@
             }
         }
 
-        function readStudentServicePersonalInboxFilterLayout(key = getStudentServiceUiKey()) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.readStudentServicePersonalInboxFilterLayout === 'function'
-                && window.readStudentServicePersonalInboxFilterLayout !== readStudentServicePersonalInboxFilterLayout) {
-                return window.readStudentServicePersonalInboxFilterLayout.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return null;
-        }
-
-        function writeStudentServicePersonalInboxFilterLayout(layout, key = getStudentServiceUiKey()) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.writeStudentServicePersonalInboxFilterLayout === 'function'
-                && window.writeStudentServicePersonalInboxFilterLayout !== writeStudentServicePersonalInboxFilterLayout) {
-                return window.writeStudentServicePersonalInboxFilterLayout.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return null;
-        }
-
-        function clearStudentServicePersonalInboxFilterLayout(key = getStudentServiceUiKey()) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.clearStudentServicePersonalInboxFilterLayout === 'function'
-                && window.clearStudentServicePersonalInboxFilterLayout !== clearStudentServicePersonalInboxFilterLayout) {
-                return window.clearStudentServicePersonalInboxFilterLayout.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return null;
-        }
-
-        function pruneStudentServiceCustomTicketFilters(layout) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.pruneStudentServiceCustomTicketFilters === 'function'
-                && window.pruneStudentServiceCustomTicketFilters !== pruneStudentServiceCustomTicketFilters) {
-                return window.pruneStudentServiceCustomTicketFilters.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
         function invalidateStudentServiceRenderSignature() {
             const container = document.getElementById('page-student-service');
             if (!container) return;
@@ -318,126 +294,6 @@
                         console.warn('Student Service realtime refresh failed.', error);
                     });
             });
-        }
-
-        function setStudentServiceInboxFilterValue(filterId, value) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.setStudentServiceInboxFilterValue === 'function'
-                && window.setStudentServiceInboxFilterValue !== setStudentServiceInboxFilterValue) {
-                return window.setStudentServiceInboxFilterValue.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function syncStudentServiceInboxFilterEditorPickers(modalRoot) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.syncStudentServiceInboxFilterEditorPickers === 'function'
-                && window.syncStudentServiceInboxFilterEditorPickers !== syncStudentServiceInboxFilterEditorPickers) {
-                return window.syncStudentServiceInboxFilterEditorPickers.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function mountStudentServiceInboxFilterEditorModal() {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.mountStudentServiceInboxFilterEditorModal === 'function'
-                && window.mountStudentServiceInboxFilterEditorModal !== mountStudentServiceInboxFilterEditorModal) {
-                return window.mountStudentServiceInboxFilterEditorModal.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function openStudentServiceInboxFilterEditorModal() {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.openStudentServiceInboxFilterEditorModal === 'function'
-                && window.openStudentServiceInboxFilterEditorModal !== openStudentServiceInboxFilterEditorModal) {
-                return window.openStudentServiceInboxFilterEditorModal.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function closeStudentServiceInboxFilterEditorModal() {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.closeStudentServiceInboxFilterEditorModal === 'function'
-                && window.closeStudentServiceInboxFilterEditorModal !== closeStudentServiceInboxFilterEditorModal) {
-                return window.closeStudentServiceInboxFilterEditorModal.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function remountStudentServiceInboxFilterEditorModal() {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.remountStudentServiceInboxFilterEditorModal === 'function'
-                && window.remountStudentServiceInboxFilterEditorModal !== remountStudentServiceInboxFilterEditorModal) {
-                return window.remountStudentServiceInboxFilterEditorModal.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function syncStudentServiceInboxFilterEditorDraftFromDom() {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.syncStudentServiceInboxFilterEditorDraftFromDom === 'function'
-                && window.syncStudentServiceInboxFilterEditorDraftFromDom !== syncStudentServiceInboxFilterEditorDraftFromDom) {
-                return window.syncStudentServiceInboxFilterEditorDraftFromDom.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function moveStudentServiceInboxFilterEditorRow(index, direction) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.moveStudentServiceInboxFilterEditorRow === 'function'
-                && window.moveStudentServiceInboxFilterEditorRow !== moveStudentServiceInboxFilterEditorRow) {
-                return window.moveStudentServiceInboxFilterEditorRow.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function addStudentServiceInboxFilterEditorCustomFilter() {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.addStudentServiceInboxFilterEditorCustomFilter === 'function'
-                && window.addStudentServiceInboxFilterEditorCustomFilter !== addStudentServiceInboxFilterEditorCustomFilter) {
-                return window.addStudentServiceInboxFilterEditorCustomFilter.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function addStudentServiceInboxFilterEditorOption(filterIndex) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.addStudentServiceInboxFilterEditorOption === 'function'
-                && window.addStudentServiceInboxFilterEditorOption !== addStudentServiceInboxFilterEditorOption) {
-                return window.addStudentServiceInboxFilterEditorOption.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function removeStudentServiceInboxFilterEditorOption(filterIndex, optionIndex) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.removeStudentServiceInboxFilterEditorOption === 'function'
-                && window.removeStudentServiceInboxFilterEditorOption !== removeStudentServiceInboxFilterEditorOption) {
-                return window.removeStudentServiceInboxFilterEditorOption.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
-        }
-
-        function removeStudentServiceInboxFilterEditorFilter(filterIndex) {
-            if (hasStudentServiceFiltersModule()
-                && typeof window.removeStudentServiceInboxFilterEditorFilter === 'function'
-                && window.removeStudentServiceInboxFilterEditorFilter !== removeStudentServiceInboxFilterEditorFilter) {
-                return window.removeStudentServiceInboxFilterEditorFilter.apply(null, arguments);
-            }
-            ensureStudentServiceFiltersModule().catch(() => null);
-            return;
         }
 
         function getStudentServiceSupportArea(areaId) {

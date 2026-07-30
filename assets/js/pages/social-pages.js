@@ -142,7 +142,7 @@
                                         <strong>${escape(tab.label)}</strong>
                                         <small>${escape(tab.helper)}</small>
                                     </span>
-                                    ${tab.badge > 0 ? `<span class="lux-tab-badge social-neo-tab-badge">${escape(String(tab.badge))}</span>` : ''}
+                                    ${tab.badge > 0 ? `<span class="lux-tab-badge home-hover-chip social-neo-tab-badge">${escape(String(tab.badge))}</span>` : ''}
                                 </button>
                             `).join('')}
                     </div>
@@ -201,13 +201,13 @@
         const canPost = Boolean(page?.isManager || page?.isFollowing);
         if (!canPost) {
             return `
-                <article class="social-neo-card social-neo-page-compose-block">
+                <article class="social-neo-card social-neo-page-compose-block lux-soft-chrome home-hover-chip">
                     <div class="social-neo-section-head">
                         <div>
-                            <strong>Join the conversation</strong>
-                            <span>Follow this page first if you want to publish a community post.</span>
+                            <strong class="lux-card-title">Join the conversation</strong>
+                            <span class="lux-card-copy">Follow this page first if you want to publish a community post.</span>
                         </div>
-                        <button class="lux-primary-btn" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
+                        <button class="lux-primary-btn home-hover-chip" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
                             <i class="fas fa-plus"></i> Follow Page
                         </button>
                     </div>
@@ -219,13 +219,13 @@
             ? 'Post as the page officially or open a community thread.'
             : 'Followers can publish community posts to this page feed.';
         return `
-            <article class="social-neo-card social-neo-page-compose-block social-neo-page-compose-cta">
+            <article class="social-neo-card social-neo-page-compose-block social-neo-page-compose-cta lux-soft-chrome home-hover-chip">
                 <div class="social-neo-section-head">
                     <div>
-                        <strong>${escape(title)}</strong>
-                        <span>${escape(subtitle)}</span>
+                        <strong class="lux-card-title">${escape(title)}</strong>
+                        <span class="lux-card-copy">${escape(subtitle)}</span>
                     </div>
-                    <button class="lux-primary-btn social-neo-page-compose-open-btn" type="button" data-action="page-post-compose-open" data-page-id="${escape(text(page?.id))}">
+                    <button class="lux-primary-btn social-neo-page-compose-open-btn home-hover-chip" type="button" data-action="page-post-compose-open" data-page-id="${escape(text(page?.id))}">
                         <i class="fas fa-pen"></i> Write post
                     </button>
                 </div>
@@ -325,18 +325,18 @@
                             <div>
                                 <strong>${escape(text(page?.name || 'Page'))}</strong>
                                 <span class="social-neo-page-card-meta">
-                                    <span class="social-neo-pill">${escape(pageTypeLabel(page))}</span>
-                                    <span class="social-neo-pill">${escape(text(page?.category || 'General'))}</span>
-                                    ${page?.official ? '<span class="social-neo-pill">Official</span>' : ''}
+                                    <span class="social-neo-pill home-hover-chip">${escape(pageTypeLabel(page))}</span>
+                                    <span class="social-neo-pill home-hover-chip">${escape(text(page?.category || 'General'))}</span>
+                                    ${page?.official ? '<span class="social-neo-pill home-hover-chip">Official</span>' : ''}
                                 </span>
                             </div>
                         </div>
                         <p class="social-neo-page-card-desc">${escape(text(page?.tagline || page?.description || 'No tagline yet.'))}</p>
                         <div class="social-neo-badge-row">
-                            <span class="social-neo-pill">${escape(page?.followerCount || followerIds.length || 0)} followers</span>
-                            ${page?.location ? `<span class="social-neo-pill">${escape(page.location)}</span>` : ''}
-                            ${pinnedCount ? `<span class="social-neo-pill">${escape(pinnedCount)} pinned</span>` : ''}
-                            ${isManagedPage(page) ? '<span class="social-neo-pill">Managed by you</span>' : ''}
+                            <span class="social-neo-pill home-hover-chip">${escape(page?.followerCount || followerIds.length || 0)} followers</span>
+                            ${page?.location ? `<span class="social-neo-pill home-hover-chip">${escape(page.location)}</span>` : ''}
+                            ${pinnedCount ? `<span class="social-neo-pill home-hover-chip">${escape(pinnedCount)} pinned</span>` : ''}
+                            ${isManagedPage(page) ? '<span class="social-neo-pill home-hover-chip">Managed by you</span>' : ''}
                         </div>
                         <div class="social-neo-page-card-actions">
                             <button class="lux-secondary-btn" type="button" data-action="page-open-profile" data-page-id="${escape(text(page?.id))}">
@@ -373,13 +373,13 @@
             const editMode = Boolean(runtime.ui?.pageProfileEditMode && page?.isManager);
             if (editMode) {
                 return `
-                    <form class="social-neo-card social-neo-page-about-card social-neo-stack" data-form="update-page-profile" data-page-id="${escape(text(page?.id))}">
+                    <form class="social-neo-card social-neo-page-about-card social-neo-stack home-hover-chip" data-form="update-page-profile" data-page-id="${escape(text(page?.id))}">
                         <div class="social-neo-section-head">
                             <div>
-                                <strong>Edit page profile</strong>
-                                <span>Update branding, contact details, and the public page summary.</span>
+                                <strong class="lux-card-title">Edit page profile</strong>
+                                <span class="lux-card-copy">Update branding, contact details, and the public page summary.</span>
                             </div>
-                            <button class="lux-secondary-btn" type="button" data-action="page-profile-edit-cancel">
+                            <button class="lux-secondary-btn home-hover-chip" type="button" data-action="page-profile-edit-cancel">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
                         </div>
@@ -402,7 +402,7 @@
                             <label class="social-neo-grid-col-span-all"><span class="social-neo-label">Primary action URL</span><input class="social-neo-input lux-control" type="url" name="pageActionUrl" value="${escape(text(runtime.ui?.pageActionUrl || page?.actionUrl || ''))}"></label>
                         </div>
                         <div class="lux-glass-dialog-form-actions">
-                            <button class="lux-primary-btn" type="submit"><i class="fas fa-save"></i> Save Page</button>
+                            <button class="lux-primary-btn home-hover-chip" type="submit"><i class="fas fa-save"></i> Save Page</button>
                         </div>
                     </form>
                 `;
@@ -410,37 +410,37 @@
             const aboutText = pageAboutText(page);
             return `
                 <div class="social-neo-page-profile-layout">
-                    <article class="social-neo-card social-neo-page-about-card">
+                    <article class="social-neo-card social-neo-page-about-card home-hover-chip">
                         <div class="social-neo-section-head">
                             <div>
-                                <strong>About ${escape(text(page?.name || 'this page'))}</strong>
-                                <span>${escape(text(page?.tagline || 'Public profile information and contact details.'))}</span>
+                                <strong class="lux-card-title">About ${escape(text(page?.name || 'this page'))}</strong>
+                                <span class="lux-card-copy">${escape(text(page?.tagline || 'Public profile information and contact details.'))}</span>
                             </div>
                             ${page?.isManager ? `
-                                <button class="lux-secondary-btn" type="button" data-action="page-profile-edit-toggle" data-page-id="${escape(text(page?.id))}">
+                                <button class="lux-secondary-btn home-hover-chip" type="button" data-action="page-profile-edit-toggle" data-page-id="${escape(text(page?.id))}">
                                     <i class="fas fa-pen"></i> Edit page
                                 </button>
                             ` : ''}
                         </div>
                         <div class="social-neo-list">
-                            <article class="social-neo-entity-card social-neo-page-card-about"><div><strong>About</strong><span class="social-neo-page-card-about-text">${escape(aboutText)}</span>${pageAboutNeedsMore(page) ? `<button class="lux-ghost-btn social-neo-page-card-about-more" type="button" data-action="page-about-more" data-page-id="${escape(text(page?.id))}">More</button>` : ''}</div></article>
-                            <article class="social-neo-entity-card"><div><strong>Contact</strong><span>${escape(text(page?.contactEmail || 'No contact email listed.'))}</span></div></article>
-                            <article class="social-neo-entity-card"><div><strong>Website</strong><span>${actionHref ? `<a href="${escape(actionHref)}" target="_blank" rel="noopener">${escape(text(page?.website || page?.actionUrl || 'Visit page'))}</a>` : 'No website linked yet.'}</span></div></article>
-                            <article class="social-neo-entity-card"><div><strong>Location</strong><span>${escape(text(page?.location || 'No location listed.'))}</span></div></article>
+                            <article class="social-neo-entity-card social-neo-page-card-about home-hover-chip"><div><strong class="lux-card-title">About</strong><span class="social-neo-page-card-about-text lux-card-copy">${escape(aboutText)}</span>${pageAboutNeedsMore(page) ? `<button class="lux-ghost-btn social-neo-page-card-about-more home-hover-chip" type="button" data-action="page-about-more" data-page-id="${escape(text(page?.id))}">More</button>` : ''}</div></article>
+                            <article class="social-neo-entity-card home-hover-chip"><div><strong class="lux-card-title">Contact</strong><span class="lux-card-copy">${escape(text(page?.contactEmail || 'No contact email listed.'))}</span></div></article>
+                            <article class="social-neo-entity-card home-hover-chip"><div><strong class="lux-card-title">Website</strong><span class="lux-card-copy">${actionHref ? `<a href="${escape(actionHref)}" target="_blank" rel="noopener">${escape(text(page?.website || page?.actionUrl || 'Visit page'))}</a>` : 'No website linked yet.'}</span></div></article>
+                            <article class="social-neo-entity-card home-hover-chip"><div><strong class="lux-card-title">Location</strong><span class="lux-card-copy">${escape(text(page?.location || 'No location listed.'))}</span></div></article>
                         </div>
                     </article>
-                    <article class="social-neo-card social-neo-page-about-card social-neo-page-people-card">
+                    <article class="social-neo-card social-neo-page-about-card social-neo-page-people-card home-hover-chip">
                         <div class="social-neo-section-head">
                             <div>
-                                <strong>People on this page</strong>
-                                <span>Admins and followers connected to this page.</span>
+                                <strong class="lux-card-title">People on this page</strong>
+                                <span class="lux-card-copy">Admins and followers connected to this page.</span>
                             </div>
                         </div>
                         <div class="social-neo-stat-grid social-neo-page-people-stats">
                             <div><strong>${escape(adminIds.length)}</strong><span>Admins</span></div>
                             <div><strong>${escape(page?.followerCount || followerIds.length || 0)}</strong><span>Followers</span></div>
                         </div>
-                        <button class="lux-secondary-btn social-neo-page-people-open" type="button" data-action="page-members-open" data-page-id="${escape(text(page?.id))}">
+                        <button class="lux-secondary-btn social-neo-page-people-open home-hover-chip" type="button" data-action="page-members-open" data-page-id="${escape(text(page?.id))}">
                             <i class="fas fa-users"></i> View page members
                         </button>
                     </article>
@@ -455,10 +455,10 @@
             const actionHref = normalizeLink(page?.actionUrl || page?.website || '');
             return `
                 <section class="social-neo-pages-shell">
-                    <article class="social-neo-card social-neo-page-profile">
+                    <article class="social-neo-card social-neo-page-profile home-hover-chip">
                         <div class="social-neo-page-cover">
                             ${coverSrc ? `<img src="${escape(coverSrc)}" alt="${escape(text(page?.name || 'Page'))} cover">` : '<div class="social-neo-page-card-cover-fallback"></div>'}
-                            <button class="lux-secondary-btn social-neo-page-profile-back" type="button" data-action="page-profile-back">
+                            <button class="lux-secondary-btn social-neo-page-profile-back home-hover-chip" type="button" data-action="page-profile-back">
                                 <i class="fas fa-arrow-left"></i> Back to pages
                             </button>
                         </div>
@@ -466,23 +466,23 @@
                             <div class="social-neo-page-profile-brand">
                                 ${pageAvatar(page, 'social-neo-page-profile-avatar')}
                                 <div class="social-neo-page-profile-meta">
-                                    <h3>${escape(text(page?.name || 'Page'))}</h3>
+                                    <h3 class="lux-card-title">${escape(text(page?.name || 'Page'))}</h3>
                                     <div class="social-neo-badge-row">
-                                        <span class="social-neo-pill">${escape(pageTypeLabel(page))}</span>
-                                        <span class="social-neo-pill">${escape(text(page?.category || 'General'))}</span>
-                                        ${page?.official ? '<span class="social-neo-pill">Official</span>' : ''}
-                                        ${page?.verified ? '<span class="social-neo-pill">Verified</span>' : ''}
-                                        <span class="social-neo-pill">${escape(page?.followerCount || followerIds.length || 0)} followers</span>
+                                        <span class="social-neo-pill lux-status-pill home-hover-chip">${escape(pageTypeLabel(page))}</span>
+                                        <span class="social-neo-pill lux-status-pill home-hover-chip">${escape(text(page?.category || 'General'))}</span>
+                                        ${page?.official ? '<span class="social-neo-pill lux-status-pill home-hover-chip">Official</span>' : ''}
+                                        ${page?.verified ? '<span class="social-neo-pill lux-status-pill home-hover-chip">Verified</span>' : ''}
+                                        <span class="social-neo-pill lux-status-pill home-hover-chip">${escape(page?.followerCount || followerIds.length || 0)} followers</span>
                                     </div>
-                                    <p>${escape(text(page?.tagline || page?.description || 'No page tagline yet.'))}</p>
+                                    <p class="lux-card-copy">${escape(text(page?.tagline || page?.description || 'No page tagline yet.'))}</p>
                                 </div>
                             </div>
                             <div class="social-neo-page-profile-actions">
-                                <button class="${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
+                                <button class="${page?.isFollowing ? 'lux-primary-btn' : 'lux-secondary-btn'} home-hover-chip" type="button" data-action="page-follow" data-page-id="${escape(text(page?.id))}">
                                     <i class="fas ${page?.isFollowing ? 'fa-check' : 'fa-plus'}"></i> ${page?.isFollowing ? 'Following' : 'Follow'}
                                 </button>
-                                ${actionHref ? `<a class="lux-secondary-btn" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
-                                <button class="lux-secondary-btn" type="button" data-action="page-report" data-page-id="${escape(text(page?.id))}">
+                                ${actionHref ? `<a class="lux-secondary-btn home-hover-chip" href="${escape(actionHref)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> ${escape(text(page?.actionLabel || 'Visit'))}</a>` : ''}
+                                <button class="lux-secondary-btn home-hover-chip" type="button" data-action="page-report" data-page-id="${escape(text(page?.id))}">
                                     <i class="fas fa-flag"></i> Report
                                 </button>
                             </div>
@@ -494,7 +494,7 @@
                                 ['community', 'Community', 'fa-users'],
                                 ['about', 'About', 'fa-circle-info']
                             ].map(([value, label, icon]) => `
-                                <button class="social-neo-page-profile-tab ${pageProfileTab === value ? 'is-active' : ''}" type="button" role="tab" aria-selected="${pageProfileTab === value ? 'true' : 'false'}" data-action="page-profile-tab" data-page-profile-tab="${escape(value)}">
+                                <button class="social-neo-page-profile-tab home-hover-chip ${pageProfileTab === value ? 'is-active' : ''}" type="button" role="tab" aria-selected="${pageProfileTab === value ? 'true' : 'false'}" data-action="page-profile-tab" data-page-profile-tab="${escape(value)}">
                                     <i class="fas ${escape(icon)}" aria-hidden="true"></i><span>${escape(label)}</span>
                                 </button>
                             `).join('')}
@@ -504,10 +504,10 @@
                         ${(pageProfileTab !== 'official' || page?.isManager) ? renderProfileComposer(page) : ''}
                         <section class="social-neo-stack social-neo-page-feed">
                             ${posts.length ? posts.map((post) => renderPost(post)).join('') : `
-                                <div class="social-neo-empty-hero">
+                                <div class="social-neo-empty-hero home-hover-chip">
                                     <i class="fas fa-comments"></i>
-                                    <strong>${pageProfileTab === 'official' ? 'No official posts yet' : pageProfileTab === 'community' ? 'No community posts yet' : 'This page has not posted yet'}</strong>
-                                    <span>${pageProfileTab === 'community' ? 'Followers can publish community posts here once they follow the page.' : 'Publish the first post to start the page conversation.'}</span>
+                                    <strong class="lux-card-title">${pageProfileTab === 'official' ? 'No official posts yet' : pageProfileTab === 'community' ? 'No community posts yet' : 'This page has not posted yet'}</strong>
+                                    <span class="lux-card-copy">${pageProfileTab === 'community' ? 'Followers can publish community posts here once they follow the page.' : 'Publish the first post to start the page conversation.'}</span>
                                 </div>
                             `}
                         </section>
@@ -669,9 +669,9 @@
                                 <div>
                                     <strong>${escape(text(runtime.ui?.pageName || 'Untitled page'))}</strong>
                                     <span class="social-neo-page-card-meta">
-                                        <span class="social-neo-pill">${escape(text(runtime.ui?.pageCategory || categories[0]))}</span>
-                                        <span class="social-neo-pill">${escape(pageType === 'campus' ? 'Official page' : pageType === 'community' ? 'Community page' : 'Brand page')}</span>
-                                        <span class="social-neo-pill">${escape(pageVisibility)}</span>
+                                        <span class="social-neo-pill home-hover-chip">${escape(text(runtime.ui?.pageCategory || categories[0]))}</span>
+                                        <span class="social-neo-pill home-hover-chip">${escape(pageType === 'campus' ? 'Official page' : pageType === 'community' ? 'Community page' : 'Brand page')}</span>
+                                        <span class="social-neo-pill home-hover-chip">${escape(pageVisibility)}</span>
                                     </span>
                                 </div>
                             </div>
@@ -801,7 +801,7 @@
             });
             const adminCount = pageAdminIdsFor(page).length;
             const followerCount = page?.followerCount || pageFollowerIdsFor(page).length || 0;
-            const filterChip = (value, label) => `<button class="social-neo-pill social-neo-page-members-filter ${membersFilter === value ? 'is-active' : ''}" type="button" data-action="page-members-filter" data-filter="${escape(value)}">${escape(label)}</button>`;
+            const filterChip = (value, label) => `<button class="social-neo-pill home-hover-chip social-neo-page-members-filter ${membersFilter === value ? 'is-active' : ''}" type="button" data-action="page-members-filter" data-filter="${escape(value)}">${escape(label)}</button>`;
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-glass-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
@@ -841,7 +841,7 @@
                                         <div class="social-neo-person">
                                             ${avatar(account, 'social-neo-avatar-sm')}
                                             <div class="lux-glass-dialog-member-info">
-                                                <strong>${escape(displayName(account))} <span class="social-neo-pill ${member.role === 'admin' ? 'social-neo-pill-accent' : ''}">${escape(roleLabelText)}</span></strong>
+                                                <strong>${escape(displayName(account))} <span class="social-neo-pill home-hover-chip ${member.role === 'admin' ? 'social-neo-pill-accent' : ''}">${escape(roleLabelText)}</span></strong>
                                                 <span>${escape(accountSubtitle(account))}</span>
                                             </div>
                                         </div>

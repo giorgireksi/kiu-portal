@@ -146,8 +146,8 @@
             <article class="ex2-session-card lux-soft-chrome">
                 <div class="ex2-session-head">
                     <div class="ex2-session-head-main">
-                        <div class="ex2-status ex2-session-status-chip is-${escapeHtml(status)}">${escapeHtml(status)}</div>
-                        ${isPublished ? `<span class="ex2-status ex2-session-published-pill is-approved ex2-status--ml-6">Published</span>` : ''}
+                        <div class="ex2-status ex2-session-status-chip home-hover-chip is-${escapeHtml(status)}">${escapeHtml(status)}</div>
+                        ${isPublished ? `<span class="ex2-status ex2-session-published-pill home-hover-chip is-approved ex2-status--ml-6">Published</span>` : ''}
                         <h3 class="ex2-session-card-title">${escapeHtml(session.title || template?.title || session.subjectName || 'Scheduled exam')}</h3>
                         <div class="ex2-meta ex2-session-card-meta">${escapeHtml(session.subjectName || session.subjectId || 'Subject')} Â· ${escapeHtml(session.variantLabel || template?.variantLabel || 'Variant')}</div>
                     </div>

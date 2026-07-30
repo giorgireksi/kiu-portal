@@ -125,7 +125,7 @@
             return;
         }
         trayNode.innerHTML = semesters.map((semester) => `
-            <button type="button" class="lux-semester-chip" data-semester-chip-remove="${semester}">
+            <button type="button" class="lux-semester-chip home-hover-chip" data-semester-chip-remove="${semester}">
                 <span>S${escapeHtml(String(semester))}</span>
                 <i class="fas fa-times" aria-hidden="true"></i>
             </button>

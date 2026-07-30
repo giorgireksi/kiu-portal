@@ -12,7 +12,7 @@ describe('registration legacy delegation regressions', () => {
 
         expect(source).toContain('function bindRegistrationLegacyDelegates()');
         expect(source).toContain('data-reg-chanc-select-case');
-        expect(source).toContain('data-reg-chanc-filter');
+        expect(source).not.toContain('data-reg-chanc-filter');
         expect(source).toContain('data-reg-chanc-status-target');
         expect(source).toContain('data-reg-chanc-tab');
         expect(source).toContain('data-subject-condition-select="1"');

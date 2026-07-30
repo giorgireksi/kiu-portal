@@ -791,7 +791,7 @@ function renderLmsInteractionDirectoryMarkup(resourceKey, search = '') {
                     <div class="lms-interaction-direct__person-name">${escapeHtml(person.displayName)}</div>
                     <div class="lms-interaction-direct__person-role">${escapeHtml(person.roleLabel)}</div>
                 </div>
-                <span class="lms-route-pill">${escapeHtml(person.roleLabel)}</span>
+                <span class="lms-route-pill home-hover-chip">${escapeHtml(person.roleLabel)}</span>
             </button>
         `;
     }).join('');

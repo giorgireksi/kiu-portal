@@ -13,9 +13,10 @@ describe('canonical student schedule shape', () => {
         expect(state).toContain('hasEntryShape');
     });
 
-    it('repairs non-array studentSchedulesByStudent during ensureCanonicalState', () => {
+    it('coerces object groupId like the portal server normalize', () => {
         const state = readSource('assets/js/app/state.js');
-        expect(state).toContain('if (!Array.isArray(schedule)) {');
-        expect(state).toContain('KIU_STATE.studentSchedulesByStudent[studentId] = normalizeStudentScheduleValue(schedule);');
+        expect(state).toContain("typeof value.groupId === 'string' || typeof value.groupId === 'number'");
+        expect(state).toContain('(value.groupName || \'\')');
+        expect(state).toContain('if (!groupId && /^\\d+$/.test(courseId)) return false');
     });
 });

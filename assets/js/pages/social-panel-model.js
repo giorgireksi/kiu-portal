@@ -39,6 +39,13 @@ function currentUser() {
     return pick('currentUser', () => null)();
 }
 
+function isProjectWorkspaceViewer(project) {
+    const role = text(project?.role || '').toLowerCase();
+    if (['owner', 'member', 'advisor', 'instructor-viewer'].includes(role)) return true;
+    const viewerRole = text(currentUser()?.role || '').toLowerCase();
+    return ['admin', 'professor', 'ta', 'student_service'].includes(viewerRole);
+}
+
 function currentUserId() {
     return pick('currentUserId', () => '')();
 }
@@ -180,7 +187,7 @@ function activeNavPanels() {
         label: 'Projects',
         helper: 'Course group projects',
         icon: 'fa-diagram-project',
-        count: (Array.isArray(social.projects) ? social.projects : []).filter((project) => ['owner', 'member', 'advisor', 'instructor-viewer'].includes(text(project?.role || '').toLowerCase())).length
+        count: (Array.isArray(social.projects) ? social.projects : []).filter(isProjectWorkspaceViewer).length
     }, {
         id: 'projects',
         label: 'Portfolio',

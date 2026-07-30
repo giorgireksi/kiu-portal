@@ -889,7 +889,7 @@
     function renderAcademicSubjectRowsForList(record, listKey, items, helpers = {}) {
         const renderStatusChip = typeof helpers.renderStatusChip === 'function'
             ? helpers.renderStatusChip
-            : (value, tone) => `<span class="students-hub-chip lux-status-pill ${tone || ''}">${escapeHtml(value)}</span>`;
+            : (value, tone) => `<span class="students-hub-chip lux-status-pill home-hover-chip ${tone || ''}">${escapeHtml(value)}</span>`;
         const snapshot = loadStudentAcademicSnapshot(record);
         const semesterLabel = normalizeText(record?.semester || snapshot.performance?.primary || '—', '—');
         if (listKey === 'enrolled') return items.map((item) => renderEnrolledSubjectRow(record, item)).join('');
@@ -958,17 +958,17 @@
                 <section class="students-hub-form-section lux-data-card home-hover-chip students-hub-academic-overview">
                     <div class="students-hub-academic-overview-grid">
                         <div class="students-hub-academic-overview-meta">
-                            <div><span>Program</span><strong>${escapeHtml(programLabel)}</strong></div>
-                            <div><span>Faculty</span><strong>${escapeHtml(facultyLabelCopy)}</strong></div>
-                            <div><span>Semester</span><strong>${escapeHtml(semesterLabel)}</strong></div>
-                            <div><span>Cohort</span><strong>${escapeHtml(cohortLabel)}</strong></div>
+                            <div class="students-hub-academic-overview-cell lux-soft-chrome home-hover-chip"><span>Program</span><strong>${escapeHtml(programLabel)}</strong></div>
+                            <div class="students-hub-academic-overview-cell lux-soft-chrome home-hover-chip"><span>Faculty</span><strong>${escapeHtml(facultyLabelCopy)}</strong></div>
+                            <div class="students-hub-academic-overview-cell lux-soft-chrome home-hover-chip"><span>Semester</span><strong>${escapeHtml(semesterLabel)}</strong></div>
+                            <div class="students-hub-academic-overview-cell lux-soft-chrome home-hover-chip"><span>Cohort</span><strong>${escapeHtml(cohortLabel)}</strong></div>
                         </div>
                         <div class="students-hub-academic-overview-scores">
-                            <div><span>Official GPA</span><strong>${escapeHtml(snapshot.performance.secondary)}</strong></div>
-                            <div><span>Average grade</span><strong>${escapeHtml(snapshot.averageGradeLabel)}</strong></div>
+                            <div class="students-hub-academic-overview-cell lux-soft-chrome home-hover-chip"><span>Official GPA</span><strong>${escapeHtml(snapshot.performance.secondary)}</strong></div>
+                            <div class="students-hub-academic-overview-cell lux-soft-chrome home-hover-chip"><span>Average grade</span><strong>${escapeHtml(snapshot.averageGradeLabel)}</strong></div>
                         </div>
                     </div>
-                    <div class="students-hub-academic-progress">
+                    <div class="students-hub-academic-progress lux-soft-chrome home-hover-chip">
                         <div class="students-hub-academic-progress-head">
                             <strong>Credit progress</strong>
                             <span>${escapeHtml(String(snapshot.completedEcts))} / ${escapeHtml(String(snapshot.programRequiredEcts))} ECTS · ${escapeHtml(String(snapshot.remainingEcts))} left</span>
@@ -1035,7 +1035,7 @@
     function renderStudentProfileMetrics(record, helpers = {}) {
         const renderStatusChip = typeof helpers.renderStatusChip === 'function'
             ? helpers.renderStatusChip
-            : (value, tone) => `<span class="students-hub-chip lux-status-pill ${tone || ''}">${escapeHtml(value)}</span>`;
+            : (value, tone) => `<span class="students-hub-chip lux-status-pill home-hover-chip ${tone || ''}">${escapeHtml(value)}</span>`;
         const snapshot = loadStudentAcademicSnapshot(record);
         const mobilityLabel = normalizeText(record?.mobilityLabel || 'Standard enrollment', 'Standard enrollment');
         const holdTone = snapshot.signals?.holdTone === 'danger'
@@ -1069,121 +1069,6 @@
         `;
     }
 
-    function renderPersonalDataSubjectsSection(user, record = {}) {
-        const root = document.getElementById('personal-data-subjects-root');
-        if (!root) return;
-        const snapshot = loadStudentAcademicSnapshot({
-            ...record,
-            id: record?.id || user?.id,
-            facultyCode: record?.facultyCode || user?.facultyCode || user?.faculty || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON'),
-            gpa: record?.gpa ?? user?.gpa,
-            semester: record?.semester ?? user?.semester
-        });
-        // ponytail: semester/year + TA aren't in the data model yet — render em-dash until backend supplies them.
-        const cleanValue = (value) => {
-            const text = normalizeText(value, '').trim();
-            return text && text.toUpperCase() !== 'TBD' ? text : '';
-        };
-        const yearSemCopy = (item) => {
-            const year = cleanValue(item.year || item.academicYear);
-            const sem = cleanValue(item.semester || item.term);
-            const parts = [year && `Y${year}`, sem && `S${sem}`].filter(Boolean);
-            return parts.length ? parts.join(' · ') : '—';
-        };
-        const staffCopy = (item) => {
-            const prof = cleanValue(item.schedule && item.schedule.prof) || cleanValue(item.professor);
-            const ta = cleanValue(item.schedule && item.schedule.ta) || cleanValue(item.ta);
-            return `<div>Prof: ${escapeHtml(prof || '—')}</div><div class="personal-data-subjects-meta">TA: ${escapeHtml(ta || '—')}</div>`;
-        };
-        const scheduleCopy = (item) => {
-            if (!item.schedule) return '—';
-            const dayTime = `${normalizeText(item.schedule.day, 'TBD')} ${normalizeText(item.schedule.time, '')}`.trim();
-            const room = cleanValue(item.schedule.room);
-            return room ? `${escapeHtml(dayTime)}<div class="personal-data-subjects-meta">${escapeHtml(room)}</div>` : escapeHtml(dayTime);
-        };
-        const gradeCopy = (item) => (item.gradeScore != null && item.gradeScore > 0 ? `${Math.round(item.gradeScore)}%` : '—');
-        const subjectCourseIdLabel = (item) => {
-            if (typeof window.formatStudyCardCourseIdLabel === 'function') {
-                return window.formatStudyCardCourseIdLabel(item.courseId, item);
-            }
-            const label = normalizeText(item.courseId, '');
-            return label && label !== '0' ? label : normalizeText(item.name, '-');
-        };
-        const subjectTitleCell = (item, metaExtra = '') => `
-            <div class="lux-card-title">${escapeHtml(item.name)}</div>
-            <div class="personal-data-subjects-meta">${escapeHtml(subjectCourseIdLabel(item))}${metaExtra}</div>
-        `;
-
-        const currentSubjects = snapshot.subjects.filter((item) => item.status === 'enrolled' || item.status === 'planned');
-        const failedSubjects = snapshot.subjectsByStatus ? snapshot.subjectsByStatus.failed : snapshot.subjects.filter((item) => item.status === 'failed');
-
-        const currentRows = currentSubjects.length ? currentSubjects.map((item) => {
-            const tone = subjectStatusTone(item.status);
-            return `
-                <tr>
-                    <td>${subjectTitleCell(item, ` · ${escapeHtml(String(item.ects || 0))} ECTS`)}</td>
-                    <td>${yearSemCopy(item)}</td>
-                    <td>${staffCopy(item)}</td>
-                    <td>${scheduleCopy(item)}</td>
-                    <td><span class="lux-status-pill${tone ? ` ${tone}` : ''}">${escapeHtml(subjectStatusLabel(item.status))}</span></td>
-                </tr>
-            `;
-        }).join('') : `
-            <tr><td colspan="5" class="personal-data-subjects-empty">No subjects you are currently studying.</td></tr>
-        `;
-
-        const retakeBlock = failedSubjects.length ? `
-            <div class="personal-data-subjects-summary personal-data-retake-head">
-                <span class="is-danger">⚠ Needs retake</span>
-                <span>${escapeHtml(String(failedSubjects.length))} to repeat</span>
-            </div>
-            <div class="personal-data-subjects-table-wrap home-hover-chip">
-                <table class="personal-data-subjects-table">
-                    <thead>
-                        <tr>
-                            <th class="lms-route-field-label">Subject</th>
-                            <th class="lms-route-field-label">Grade</th>
-                            <th class="lms-route-field-label">Failed on</th>
-                            <th class="lms-route-field-label">Retake in</th>
-                        </tr>
-                    </thead>
-                    <tbody>${failedSubjects.map((item) => `
-                        <tr>
-                            <td>${subjectTitleCell(item)}</td>
-                            <td>${escapeHtml(gradeCopy(item))}</td>
-                            <td>${yearSemCopy(item)}</td>
-                            <td>Awaiting re-registration</td>
-                        </tr>
-                    `).join('')}</tbody>
-                </table>
-            </div>
-            <p class="lux-card-copy personal-data-card-copy">Passed retakes drop off this list automatically once a passing grade is recorded.</p>
-        ` : '';
-
-        root.innerHTML = `
-            <div class="personal-data-subjects-summary">
-                <span>${escapeHtml(String(snapshot.completedCount))} completed</span>
-                <span>${escapeHtml(String(snapshot.enrolledCount))} enrolled</span>
-                <span>${escapeHtml(String(snapshot.completedEcts))} ECTS done</span>
-            </div>
-            <div class="personal-data-subjects-table-wrap home-hover-chip">
-                <table class="personal-data-subjects-table">
-                    <thead>
-                        <tr>
-                            <th class="lms-route-field-label">Subject</th>
-                            <th class="lms-route-field-label">Year / Sem</th>
-                            <th class="lms-route-field-label">Staff</th>
-                            <th class="lms-route-field-label">Schedule</th>
-                            <th class="lms-route-field-label">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>${currentRows}</tbody>
-                </table>
-            </div>
-            ${retakeBlock}
-        `;
-    }
-
     function toggleMobilityTransferPanel(category) {
         const isInternal = category === 'internal_transfer';
         document.querySelectorAll('[data-student-transfer-panel="internal"]').forEach((element) => {
@@ -1198,7 +1083,6 @@
     window.hydrateStudentAcademicRecord = hydrateStudentAcademicRecord;
     window.touchStudentAcademicSync = touchStudentAcademicSync;
     window.applyApiEnrollmentsToStudentState = applyApiEnrollmentsToStudentState;
-    window.renderPersonalDataSubjectsSection = renderPersonalDataSubjectsSection;
     window.toggleMobilityTransferPanel = toggleMobilityTransferPanel;
     window.renderStudentAcademicProfile = renderStudentAcademicProfile;
     window.renderAcademicSubjectsModalContent = renderAcademicSubjectsModalContent;

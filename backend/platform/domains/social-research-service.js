@@ -25,10 +25,6 @@ function researchLaneForRole(role) {
     return 'student';
 }
 
-function normalizeResearchFormat(value) {
-    return socialText(value).toLowerCase() === 'pdf' ? 'pdf' : 'article';
-}
-
 function normalizeResearchStatus(value) {
     const normalized = socialText(value).toLowerCase();
     if (['draft', 'published'].includes(normalized)) return normalized;
@@ -59,6 +55,66 @@ function normalizeResearchPdf(pdf = null) {
         sizeBytes: Math.max(0, Number(pdf.sizeBytes || pdf.size) || 0),
         dataUrl
     };
+}
+
+function inferResearchFileKind(fileName = '', mimeType = '') {
+    const name = socialText(fileName).toLowerCase();
+    const mime = socialText(mimeType).toLowerCase();
+    if (mime.includes('pdf') || name.endsWith('.pdf')) return 'pdf';
+    if (
+        mime.includes('presentation')
+        || mime.includes('powerpoint')
+        || /\.(ppt|pptx|odp|key)$/.test(name)
+    ) return 'slides';
+    if (
+        mime.includes('word')
+        || mime.includes('msword')
+        || mime.includes('document')
+        || /\.(doc|docx|odt|rtf|txt)$/.test(name)
+    ) return 'document';
+    return 'other';
+}
+
+function normalizeResearchFile(file = null) {
+    if (!file || typeof file !== 'object') return null;
+    const storageKey = socialText(file.storageKey || file.id || '');
+    const dataUrl = socialText(file.dataUrl || '');
+    if (!storageKey && !dataUrl) return null;
+    const fileName = socialText(file.fileName || file.name || 'file') || 'file';
+    const mimeType = socialText(file.mimeType || file.type || 'application/octet-stream') || 'application/octet-stream';
+    return {
+        storageKey: storageKey || `inline-${makeId('file')}`,
+        fileName,
+        mimeType,
+        sizeBytes: Math.max(0, Number(file.sizeBytes || file.size) || 0),
+        pageCount: Math.max(0, Number(file.pageCount) || 0),
+        dataUrl,
+        fileKind: inferResearchFileKind(fileName, mimeType)
+    };
+}
+
+function normalizeResearchFiles(payload = {}) {
+    const collected = [];
+    asArray(payload.files).forEach((item) => {
+        const normalized = normalizeResearchFile(item);
+        if (normalized) collected.push(normalized);
+    });
+    const legacyPdf = normalizeResearchPdf(payload.pdf);
+    if (legacyPdf && !collected.some((item) => item.storageKey === legacyPdf.storageKey && item.fileName === legacyPdf.fileName)) {
+        collected.unshift({
+            ...legacyPdf,
+            fileKind: 'pdf'
+        });
+    }
+    return collected.slice(0, 6);
+}
+
+function primaryFileKind(files = [], fallbackFormat = '') {
+    const primary = asArray(files)[0];
+    if (primary?.fileKind) return primary.fileKind;
+    if (socialText(fallbackFormat).toLowerCase() === 'pdf') return 'pdf';
+    if (socialText(fallbackFormat).toLowerCase() === 'article') return 'other';
+    return 'other';
 }
 
 function ensureResearchCollections(state) {
@@ -93,8 +149,17 @@ function decorateSocialResearch(publication, viewerUserId = '') {
     if (!publication) return null;
     const viewer = socialText(viewerUserId);
     const savedBy = asArray(publication.savedByUserIds).map(socialText).filter(Boolean);
+    const files = asArray(publication.files).length
+        ? asArray(publication.files)
+        : (publication.pdf ? [{ ...publication.pdf, fileKind: 'pdf' }] : []);
+    const fileKind = socialText(publication.fileKind)
+        || primaryFileKind(files, publication.format);
     return {
         ...clone(publication),
+        files,
+        fileKind,
+        pdf: fileKind === 'pdf' ? (files[0] || publication.pdf || null) : (publication.pdf || null),
+        format: fileKind === 'pdf' ? 'pdf' : (socialText(publication.format) || 'file'),
         isSaved: viewer ? savedBy.includes(viewer) : false,
         savedCount: savedBy.length,
         canManage: canManageSocialResearch.call(this, publication, viewer)
@@ -104,7 +169,7 @@ function decorateSocialResearch(publication, viewerUserId = '') {
 function listSocialResearchPublications(filters = {}, viewerUserId = '') {
     ensureResearchCollections(this.state);
     const lane = socialText(filters.lane || filters.authorLane || '').toLowerCase();
-    const format = socialText(filters.format || '').toLowerCase();
+    const format = socialText(filters.format || filters.fileKind || '').toLowerCase();
     const status = socialText(filters.status || '').toLowerCase();
     const facultyCode = normalizeCode(filters.facultyCode || '');
     const search = socialText(filters.search || filters.q || '').toLowerCase();
@@ -130,8 +195,13 @@ function listSocialResearchPublications(filters = {}, viewerUserId = '') {
                 || socialText(item.authorUserId) === viewer;
         })
         .filter((item) => {
-            if (format === 'article' || format === 'pdf') {
-                return normalizeResearchFormat(item.format) === format;
+            const decorated = decorateSocialResearch.call(this, item, viewer);
+            const kind = socialText(decorated?.fileKind || '').toLowerCase();
+            if (format === 'pdf' || format === 'slides' || format === 'document' || format === 'other') {
+                return kind === format;
+            }
+            if (format === 'article') {
+                return kind === 'other' && !asArray(decorated?.files).length;
             }
             return true;
         })
@@ -141,11 +211,13 @@ function listSocialResearchPublications(filters = {}, viewerUserId = '') {
         })
         .filter((item) => {
             if (!search) return true;
+            const fileNames = asArray(item.files).map((file) => file?.fileName).concat(item.pdf?.fileName);
             const haystack = [
                 item.title,
                 item.abstract,
                 item.bodyText,
                 item.authorName,
+                ...fileNames,
                 ...(asArray(item.topics))
             ].map((part) => socialText(part).toLowerCase()).join(' ');
             return haystack.includes(search);
@@ -169,12 +241,13 @@ function createSocialResearchPublication(payload = {}, actorId = '') {
     if (!creatorId) return null;
     const title = socialText(payload.title || '');
     if (!title) return null;
-    const format = normalizeResearchFormat(payload.format);
-    const pdf = format === 'pdf' ? normalizeResearchPdf(payload.pdf) : null;
-    if (format === 'pdf' && !pdf) return null;
-    const bodyText = format === 'article' ? socialText(payload.bodyText || payload.body || '') : '';
+
+    const files = normalizeResearchFiles(payload);
     const publishNow = payload.publish !== false && payload.status !== 'draft';
-    if (publishNow && format === 'article' && !bodyText && !socialText(payload.abstract || '')) return null;
+    if (publishNow && !files.length) return null;
+
+    const fileKind = primaryFileKind(files, payload.format);
+    const pdf = fileKind === 'pdf' ? (files[0] || null) : null;
 
     const account = this.getSocialAccount?.(creatorId) || {};
     const forcedLane = socialText(payload.authorLane || '').toLowerCase();
@@ -191,8 +264,11 @@ function createSocialResearchPublication(payload = {}, actorId = '') {
         id: socialText(payload.id || makeId('research')),
         title,
         abstract: socialText(payload.abstract || ''),
-        bodyText,
-        format,
+        bodyText: socialText(payload.bodyText || ''),
+        bodyHtml: '',
+        files,
+        fileKind,
+        format: fileKind === 'pdf' ? 'pdf' : 'file',
         pdf,
         authorUserId: creatorId,
         authorName: socialText(payload.authorName || this.getSocialActorDisplayName?.(creatorId) || account.name || 'Author'),
@@ -230,8 +306,14 @@ function updateSocialResearchPublication(publicationId, payload = {}, actorId = 
     if (Object.prototype.hasOwnProperty.call(payload, 'abstract')) {
         publication.abstract = socialText(payload.abstract);
     }
-    if (Object.prototype.hasOwnProperty.call(payload, 'bodyText') || Object.prototype.hasOwnProperty.call(payload, 'body')) {
-        publication.bodyText = socialText(payload.bodyText || payload.body || '');
+    if (Object.prototype.hasOwnProperty.call(payload, 'files') || Object.prototype.hasOwnProperty.call(payload, 'pdf')) {
+        const files = normalizeResearchFiles(payload);
+        if (files.length) {
+            publication.files = files;
+            publication.fileKind = primaryFileKind(files, publication.format);
+            publication.format = publication.fileKind === 'pdf' ? 'pdf' : 'file';
+            publication.pdf = publication.fileKind === 'pdf' ? files[0] : null;
+        }
     }
     if (Object.prototype.hasOwnProperty.call(payload, 'topics')) {
         publication.topics = normalizeResearchTopics(payload.topics);
@@ -248,11 +330,11 @@ function updateSocialResearchPublication(publicationId, payload = {}, actorId = 
     if (Object.prototype.hasOwnProperty.call(payload, 'advisorName')) {
         publication.advisorName = socialText(payload.advisorName);
     }
-    if (Object.prototype.hasOwnProperty.call(payload, 'pdf') && publication.format === 'pdf') {
-        const pdf = normalizeResearchPdf(payload.pdf);
-        if (pdf) publication.pdf = pdf;
-    }
     if (payload.publish === true || socialText(payload.status).toLowerCase() === 'published') {
+        const files = asArray(publication.files).length
+            ? asArray(publication.files)
+            : (publication.pdf ? [publication.pdf] : []);
+        if (!files.length) return null;
         publication.status = 'published';
         if (!publication.publishedAt) publication.publishedAt = nowIso();
     } else if (socialText(payload.status).toLowerCase() === 'draft') {
@@ -299,6 +381,7 @@ module.exports = {
     deleteSocialResearchPublication,
     ensureResearchCollections,
     getSocialResearchPublication,
+    inferResearchFileKind,
     isSocialStaffActor,
     listSocialResearchPublications,
     researchLaneForRole,

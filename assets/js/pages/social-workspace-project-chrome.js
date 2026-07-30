@@ -283,7 +283,7 @@
             const ctx = buildProjectCreateInviteContext(runtime);
             const inviteCount = ctx.selectedMemberIds.length;
             const inviteBadge = inviteCount > 0
-                ? `<span class="lux-glass-dialog-submit-badge">${escape(String(inviteCount))}</span>`
+                ? `<span class="lux-glass-dialog-submit-badge home-hover-chip">${escape(String(inviteCount))}</span>`
                 : '';
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="create-project" data-action="noop" data-lux-transparency-exempt="1">

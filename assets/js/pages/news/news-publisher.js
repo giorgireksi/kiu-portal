@@ -14,13 +14,13 @@ function patchNewsPublisherAttachmentRegion() {
     const attachments = Array.isArray(compose.attachments) ? compose.attachments : [];
     const markup = `
         <div class="newsx-attachment-toolbar">
-            <label class="newsx-btn lux-secondary-btn newsx-attach-btn">
+            <label class="newsx-btn lux-secondary-btn newsx-attach-btn lux-soft-chrome home-hover-chip">
                 <i class="fas fa-paperclip"></i> Add files (${attachments.length}/${NEWS_MAX_ATTACHMENTS})
                 <input type="file" class="newsx-attach-input" multiple data-news-attach hidden>
             </label>
             <div class="newsx-attachment-chip-row">
                 ${attachments.map((file, index) => `
-                    <span class="newsx-attachment-chip home-hover-chip">
+                    <span class="newsx-attachment-chip lux-soft-chrome home-hover-chip">
                         <i class="fas fa-${isNewsImageAttachment(file) ? 'image' : 'file'}"></i>
                         ${escapeHtml(String(file.name || `File ${index + 1}`))}
                         <button type="button" class="newsx-attachment-remove" data-news-remove-attachment="${escapeHtml(String(file.id || index))}" aria-label="Remove attachment"><i class="fas fa-times"></i></button>
@@ -127,7 +127,7 @@ function renderNewsPublisherSectionNavInner() {
     return PUBLISHER_SECTIONS.map(section => {
         const isActive = activeSection === section.id;
         return `
-            <button type="button" role="tab" class="newsx-publisher-section-tab home-hover-chip ${isActive ? 'is-active' : ''}" data-news-publisher-section-nav="${section.id}" data-lux-skip-modern-button="true" aria-selected="${isActive ? 'true' : 'false'}">
+            <button type="button" role="tab" class="newsx-publisher-section-tab lux-soft-chrome home-hover-chip ${isActive ? 'is-active' : ''}" data-news-publisher-section-nav="${section.id}" data-lux-skip-modern-button="true" aria-selected="${isActive ? 'true' : 'false'}">
                 <span class="newsx-publisher-section-tab-icon" aria-hidden="true"><i class="fas ${section.icon}"></i></span>
                 <span class="newsx-publisher-section-tab-text">
                     <strong>${escapeHtml(section.label)}</strong>
@@ -385,7 +385,7 @@ function scheduleNewsEditorToolbarSync() {
 
 function renderNewsEditorRibbon() {
     return `
-        <div class="newsx-editor-ribbon home-hover-chip" data-news-editor-toolbar="1" aria-label="Formatting ribbon">
+        <div class="newsx-editor-ribbon lux-soft-chrome home-hover-chip" data-news-editor-toolbar="1" aria-label="Formatting ribbon">
             <div class="newsx-editor-ribbon-group">
                 <button type="button" class="newsx-md-snippet-btn lux-modern-button" data-news-editor-cmd="undo" data-lux-button-tone="secondary" aria-label="Undo"><i class="fas fa-rotate-left"></i></button>
                 <button type="button" class="newsx-md-snippet-btn lux-modern-button" data-news-editor-cmd="redo" data-lux-button-tone="secondary" aria-label="Redo"><i class="fas fa-rotate-right"></i></button>
@@ -393,7 +393,7 @@ function renderNewsEditorRibbon() {
             <div class="newsx-editor-ribbon-divider" aria-hidden="true"></div>
             <div class="newsx-editor-ribbon-group" data-news-editor-block-only="1">
                 <label class="newsx-editor-ribbon-label">
-                    <span class="newsx-meta">Style</span>
+                    <span class="newsx-meta lux-card-meta">Style</span>
                     <select class="newsx-editor-style-select lux-control" data-news-editor-style data-news-editor-block-only="1" aria-label="Paragraph style">
                         <option value="normal">Normal</option>
                         <option value="h1">Heading 1</option>
@@ -408,11 +408,11 @@ function renderNewsEditorRibbon() {
                 <button type="button" class="newsx-md-snippet-btn lux-modern-button" data-news-editor-cmd="italic" data-lux-button-tone="primary" aria-label="Italic"><i class="fas fa-italic"></i></button>
                 <button type="button" class="newsx-md-snippet-btn lux-modern-button" data-news-editor-cmd="underline" data-lux-button-tone="primary" aria-label="Underline"><i class="fas fa-underline"></i></button>
                 <label class="newsx-editor-color-btn" title="Font color">
-                    <span class="newsx-meta">A</span>
+                    <span class="newsx-meta lux-card-meta">A</span>
                     <input type="color" class="newsx-editor-color-input" data-news-editor-color="fore" value="#1f2937" aria-label="Font color">
                 </label>
                 <label class="newsx-editor-color-btn" title="Highlight color">
-                    <span class="newsx-meta"><i class="fas fa-highlighter"></i></span>
+                    <span class="newsx-meta lux-card-meta"><i class="fas fa-highlighter"></i></span>
                     <input type="color" class="newsx-editor-color-input" data-news-editor-color="highlight" value="#fff59d" aria-label="Highlight color">
                 </label>
             </div>
@@ -607,10 +607,10 @@ function syncNewsComposeTypographyUi() {
 
 function renderNewsPublisherPaneShell(sectionId, title, copy, bodyMarkup, activeSection) {
     return `
-        <section class="newsx-publisher-pane home-hover-chip ${activeSection === sectionId ? 'is-active' : ''}" data-news-publisher-pane="${sectionId}" data-news-publisher-section="${sectionId}" ${activeSection === sectionId ? '' : 'hidden'}>
+        <section class="newsx-publisher-pane lux-soft-chrome home-hover-chip ${activeSection === sectionId ? 'is-active' : ''}" data-news-publisher-pane="${sectionId}" data-news-publisher-section="${sectionId}" ${activeSection === sectionId ? '' : 'hidden'}>
             <header class="newsx-publisher-pane-header">
-                <h3 class="newsx-publisher-pane-title">${escapeHtml(title)}</h3>
-                ${copy ? `<p class="newsx-publisher-pane-copy">${escapeHtml(copy)}</p>` : ''}
+                <h3 class="newsx-publisher-pane-title lux-card-title">${escapeHtml(title)}</h3>
+                ${copy ? `<p class="newsx-publisher-pane-copy lux-card-copy">${escapeHtml(copy)}</p>` : ''}
             </header>
             <div class="newsx-publisher-pane-body">${bodyMarkup}</div>
         </section>
@@ -642,7 +642,7 @@ function renderNewsPublisherMessagePane(activeSection) {
             <div class="newsx-publisher-field">
                 ${renderNewsPublisherFieldLabelRow('Body', 'news-compose-body', 'bodyFontSize', compose.bodyFontSize)}
                 <div id="news-compose-body" class="newsx-rich-editor newsx-card-body newsx-card-body--rich lux-control" contenteditable="true" role="textbox" aria-multiline="true" data-news-compose-editor="body" data-placeholder="Write the announcement body..." style="${bodyStyle}"></div>
-                <div class="newsx-meta newsx-compose-hint">Use the ribbon for styles, lists, alignment, links, and colors. Shortcuts: Ctrl/Cmd+B, I, U, Z, Y.</div>
+                <div class="newsx-meta lux-card-meta newsx-compose-hint">Use the ribbon for styles, lists, alignment, links, and colors. Shortcuts: Ctrl/Cmd+B, I, U, Z, Y.</div>
             </div>
             <div class="newsx-publisher-field">
                 ${renderNewsPublisherFieldLabelRow('Card excerpt (optional)', 'news-compose-excerpt', 'excerptFontSize', compose.excerptFontSize)}
@@ -652,13 +652,13 @@ function renderNewsPublisherMessagePane(activeSection) {
                 <label class="newsx-field-label">Attachments</label>
                 <div data-news-publisher-attachments-host="1">
                     <div class="newsx-attachment-toolbar">
-                        <label class="newsx-btn lux-secondary-btn newsx-attach-btn">
+                        <label class="newsx-btn lux-secondary-btn newsx-attach-btn lux-soft-chrome home-hover-chip">
                             <i class="fas fa-paperclip"></i> Add files (${attachments.length}/${NEWS_MAX_ATTACHMENTS})
                             <input type="file" class="newsx-attach-input" multiple data-news-attach hidden>
                         </label>
                         <div class="newsx-attachment-chip-row">
                             ${attachments.map((file, index) => `
-                                <span class="newsx-attachment-chip home-hover-chip">
+                                <span class="newsx-attachment-chip lux-soft-chrome home-hover-chip">
                                     <i class="fas fa-${isNewsImageAttachment(file) ? 'image' : 'file'}"></i>
                                     ${escapeHtml(String(file.name || `File ${index + 1}`))}
                                     <button type="button" class="newsx-attachment-remove" data-news-remove-attachment="${escapeHtml(String(file.id || index))}" aria-label="Remove attachment"><i class="fas fa-times"></i></button>
@@ -678,21 +678,21 @@ function renderNewsPublisherAudiencePane(activeSection) {
     const audienceMode = ui.audienceMode === 'restricted' || isPublisherAudienceRestricted(compose) ? 'restricted' : 'everyone';
     return renderNewsPublisherPaneShell('audience', 'Audience', 'Who should see this announcement?', `
         <div class="newsx-publisher-audience-mode">
-            <label class="newsx-publisher-radio-card home-hover-chip">
+            <label class="newsx-publisher-radio-card lux-soft-chrome home-hover-chip">
                 <input type="radio" name="news_audience_mode" value="everyone" ${audienceMode === 'everyone' ? 'checked' : ''} data-news-audience-mode="everyone">
-                <span><strong>Everyone on campus</strong><span class="newsx-meta">No role or faculty filters</span></span>
+                <span><strong>Everyone on campus</strong><span class="newsx-meta lux-card-meta">No role or faculty filters</span></span>
             </label>
-            <label class="newsx-publisher-radio-card home-hover-chip">
+            <label class="newsx-publisher-radio-card lux-soft-chrome home-hover-chip">
                 <input type="radio" name="news_audience_mode" value="restricted" ${audienceMode === 'restricted' ? 'checked' : ''} data-news-audience-mode="restricted">
-                <span><strong>Restrict to specific groups</strong><span class="newsx-meta">Roles, faculties, or course scope</span></span>
+                <span><strong>Restrict to specific groups</strong><span class="newsx-meta lux-card-meta">Roles, faculties, or course scope</span></span>
             </label>
         </div>
         <div class="newsx-publisher-audience-restricted ${audienceMode === 'restricted' ? 'is-visible' : ''}">
             <div class="newsx-publisher-audience-block">
-                <div class="newsx-meta newsx-meta-label">Roles</div>
+                <div class="newsx-meta lux-card-meta newsx-meta-label">Roles</div>
                 <div class="newsx-publisher-audience-grid">
                     ${ROLE_OPTIONS.map(([roleId, label]) => `
-                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card home-hover-chip">
+                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card lux-soft-chrome home-hover-chip">
                             <input id="news-role-${escapeHtml(toFieldToken(roleId))}" name="news_role_${escapeHtml(toFieldToken(roleId))}" type="checkbox" ${compose.audienceRoles.includes(roleId) ? 'checked' : ''} data-news-audience-role="${escapeHtml(roleId)}">
                             <div><strong>${escapeHtml(label)}</strong></div>
                         </label>
@@ -700,19 +700,19 @@ function renderNewsPublisherAudiencePane(activeSection) {
                 </div>
             </div>
             <div class="newsx-publisher-audience-block">
-                <div class="newsx-meta newsx-meta-label">Faculties</div>
+                <div class="newsx-meta lux-card-meta newsx-meta-label">Faculties</div>
                 <div class="newsx-publisher-audience-grid">
                     ${getFacultyOptions().map(option => `
-                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card home-hover-chip">
+                        <label class="newsx-check lux-check-card newsx-publisher-toggle-card lux-soft-chrome home-hover-chip">
                             <input id="news-faculty-${escapeHtml(toFieldToken(option.code))}" name="news_faculty_${escapeHtml(toFieldToken(option.code))}" type="checkbox" ${compose.audienceFacultyCodes.includes(option.code) ? 'checked' : ''} data-news-audience-faculty="${escapeHtml(option.code)}">
-                            <div><strong>${escapeHtml(option.label)}</strong><div class="newsx-meta">${escapeHtml(option.code)}</div></div>
+                            <div><strong>${escapeHtml(option.label)}</strong><div class="newsx-meta lux-card-meta">${escapeHtml(option.code)}</div></div>
                         </label>
                     `).join('')}
                 </div>
             </div>
         </div>
         <div class="newsx-publisher-audience-block">
-            <div class="newsx-meta newsx-meta-label">Advanced scope (optional)</div>
+            <div class="newsx-meta lux-card-meta newsx-meta-label">Advanced scope (optional)</div>
             <div class="newsx-publisher-field-stack">
                 <div class="newsx-publisher-field">
                     <label class="newsx-field-label" for="news-compose-course-ids">Course IDs</label>
@@ -723,7 +723,7 @@ function renderNewsPublisherAudiencePane(activeSection) {
                     <input id="news-compose-program-code" class="newsx-input lux-control" type="text" value="${escapeHtml(compose.programCode || '')}" placeholder="Optional program filter" data-news-compose-field="programCode">
                 </div>
             </div>
-            <div class="newsx-meta">Leave blank to include all enrolled students in the selected groups.</div>
+            <div class="newsx-meta lux-card-meta">Leave blank to include all enrolled students in the selected groups.</div>
         </div>
     `, activeSection);
 }
@@ -747,12 +747,12 @@ function renderNewsPublisherPresentationPane(activeSection) {
                 <option value="public" ${compose.replyMode === 'public' ? 'selected' : ''}>Public only</option>
                 <option value="both" ${compose.replyMode === 'both' ? 'selected' : ''}>Public + private</option>
             </select>
-            <div class="newsx-meta">Choose whether readers can comment publicly, reply privately, both, or not at all.</div>
+            <div class="newsx-meta lux-card-meta">Choose whether readers can comment publicly, reply privately, both, or not at all.</div>
         </div>
         <div class="newsx-publisher-delivery-toggles">
-            <label class="newsx-check lux-check-card newsx-publisher-toggle-card home-hover-chip">
+            <label class="newsx-check lux-check-card newsx-publisher-toggle-card lux-soft-chrome home-hover-chip">
                 <input id="news-compose-pinned" name="news_compose_pinned" type="checkbox" ${compose.pinned ? 'checked' : ''} data-news-compose-boolean="pinned">
-                <div><strong>Pin to top</strong><span class="newsx-meta">Keep above other feed items</span></div>
+                <div><strong>Pin to top</strong><span class="newsx-meta lux-card-meta">Keep above other feed items</span></div>
             </label>
         </div>
     `, activeSection);
@@ -764,13 +764,13 @@ function renderNewsPublisherSchedulePane(activeSection) {
     const scheduleMode = ui.scheduleMode === 'scheduled' ? 'scheduled' : 'immediate';
     return renderNewsPublisherPaneShell('schedule', 'Schedule', 'When the announcement goes live on the feed.', `
         <div class="newsx-publisher-schedule-mode">
-            <label class="newsx-publisher-radio-card home-hover-chip">
+            <label class="newsx-publisher-radio-card lux-soft-chrome home-hover-chip">
                 <input type="radio" name="news_schedule_mode" value="immediate" ${scheduleMode === 'immediate' ? 'checked' : ''} data-news-schedule-mode="immediate">
-                <span><strong>Publish immediately</strong><span class="newsx-meta">Goes live as soon as you publish</span></span>
+                <span><strong>Publish immediately</strong><span class="newsx-meta lux-card-meta">Goes live as soon as you publish</span></span>
             </label>
-            <label class="newsx-publisher-radio-card home-hover-chip">
+            <label class="newsx-publisher-radio-card lux-soft-chrome home-hover-chip">
                 <input type="radio" name="news_schedule_mode" value="scheduled" ${scheduleMode === 'scheduled' ? 'checked' : ''} data-news-schedule-mode="scheduled">
-                <span><strong>Schedule for later</strong><span class="newsx-meta">Choose a future publish time</span></span>
+                <span><strong>Schedule for later</strong><span class="newsx-meta lux-card-meta">Choose a future publish time</span></span>
             </label>
         </div>
         <div class="newsx-publisher-field-stack">
@@ -781,7 +781,7 @@ function renderNewsPublisherSchedulePane(activeSection) {
             <div class="newsx-publisher-field">
                 <label class="newsx-field-label" for="news-compose-expires-at">Expires (optional)</label>
                 <input id="news-compose-expires-at" class="newsx-input lux-control" type="datetime-local" value="${escapeHtml(toDatetimeLocalValue(compose.expiresAt))}" data-news-compose-field="expiresAt">
-                <div class="newsx-meta">Hidden from the feed after this time.</div>
+                <div class="newsx-meta lux-card-meta">Hidden from the feed after this time.</div>
             </div>
         </div>
     `, activeSection);
@@ -882,12 +882,12 @@ function renderNewsPublisherFooter() {
         <div data-news-publisher-error-host="1">${renderNewsPublisherErrorBanner()}</div>
         <footer class="newsx-publisher-footer">
             <div class="newsx-publisher-footer-actions newsx-publisher-footer-actions--start">
-                <button type="button" class="newsx-btn lux-secondary-btn" data-news-close-publisher>Cancel</button>
+                <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip" data-news-close-publisher>Cancel</button>
             </div>
             <div class="newsx-publisher-footer-actions">
-                ${isEdit ? `<button type="button" class="newsx-btn lux-secondary-btn newsx-publisher-footer-danger" data-lux-button-tone="danger" data-news-delete-post="${escapeHtml(String(compose.editingPostId))}"><i class="fas fa-trash"></i> Delete</button>` : ''}
-                <button type="button" class="newsx-btn lux-secondary-btn newsx-publisher-footer-draft-mobile" data-news-save-draft><i class="fas fa-floppy-disk"></i> Save draft</button>
-                <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-publisher-primary="1" data-news-publisher-primary-action="${primary.action}"><i class="fas ${primary.icon}"></i> ${escapeHtml(primary.label)}</button>
+                ${isEdit ? `<button type="button" class="newsx-btn lux-secondary-btn newsx-publisher-footer-danger home-hover-chip" data-lux-button-tone="danger" data-news-delete-post="${escapeHtml(String(compose.editingPostId))}"><i class="fas fa-trash"></i> Delete</button>` : ''}
+                <button type="button" class="newsx-btn lux-secondary-btn newsx-publisher-footer-draft-mobile home-hover-chip" data-news-save-draft><i class="fas fa-floppy-disk"></i> Save draft</button>
+                <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn home-hover-chip" data-news-publisher-primary="1" data-news-publisher-primary-action="${primary.action}"><i class="fas ${primary.icon}"></i> ${escapeHtml(primary.label)}</button>
             </div>
         </footer>
     `;
@@ -908,22 +908,28 @@ function renderNewsSectionsModal() {
     const rows = drafts.map((entry, index) => {
         const key = entry.key || normalizeNewsSectionKey(entry.label);
         const count = entry.key ? getNewsSectionCountByKey(entry.key) : 0;
+        const icon = normalizeNewsSectionIcon(entry.icon) || getSectionIcon({ key, icon: entry.icon });
         const pendingTargetKey = runtime.sectionsReassignments?.[key] || '';
         const pendingTarget = pendingTargetKey
             ? drafts.find(item => (item.key || normalizeNewsSectionKey(item.label)) === pendingTargetKey)
             : null;
         return `
-            <div class="newsx-sections-row" data-news-sections-row="${index}">
+            <div class="newsx-sections-row lux-soft-chrome home-hover-chip" data-news-sections-row="${index}">
+                <div class="newsx-sections-icon-field">
+                    <button type="button" class="newsx-sections-icon-btn lux-secondary-btn home-hover-chip" data-news-sections-icon-open="${index}" aria-label="Choose section icon" title="Choose icon">
+                        <i class="fas ${icon}" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <label class="newsx-sections-row-label">
-                    <span class="newsx-meta">Name</span>
+                    <span class="newsx-meta lux-card-meta">Name</span>
                     <input class="newsx-input lux-control" type="text" value="${escapeHtml(entry.label || '')}" data-news-sections-label="${index}" aria-label="Section name">
                 </label>
                 <div class="newsx-sections-row-meta">
-                    <span class="newsx-meta newsx-sections-key" title="Section key">${escapeHtml(key)}</span>
-                    <span class="newsx-sections-count" title="Announcements in this section">${escapeHtml(String(count))}</span>
+                    <span class="newsx-meta lux-card-meta newsx-sections-key" title="Section key">${escapeHtml(key)}</span>
+                    <span class="newsx-sections-count lux-status-pill home-hover-chip is-muted" title="Announcements in this section">${escapeHtml(String(count))}</span>
                     ${pendingTarget ? `<span class="newsx-sections-pending" title="Announcements will move on save">→ ${escapeHtml(pendingTarget.label || pendingTargetKey)}</span>` : ''}
                 </div>
-                <button type="button" class="newsx-btn lux-secondary-btn newsx-sections-remove-btn" data-news-sections-remove="${index}" title="Remove section" aria-label="Remove section"><i class="fas fa-trash"></i></button>
+                <button type="button" class="newsx-btn lux-secondary-btn newsx-sections-remove-btn home-hover-chip" data-news-sections-remove="${index}" title="Remove section" aria-label="Remove section"><i class="fas fa-trash"></i></button>
             </div>
         `;
     }).join('');
@@ -931,21 +937,21 @@ function renderNewsSectionsModal() {
     return `
         <div class="newsx-sections-head">
             <div>
-                <div class="newsx-kicker">News</div>
-                <h2 id="newsx-sections-title" class="newsx-headline newsx-headline-tight">Manage sections</h2>
+                <div class="newsx-kicker lux-section-kicker">News</div>
+                <h2 id="newsx-sections-title" class="newsx-headline newsx-headline-tight lux-card-title">Manage sections</h2>
             </div>
-            <button type="button" class="newsx-btn lux-secondary-btn" data-news-close-sections-manager aria-label="Close"><i class="fas fa-times"></i></button>
+            <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip" data-news-close-sections-manager aria-label="Close"><i class="fas fa-times"></i></button>
         </div>
-        <p class="newsx-subtle">Add, rename, or remove feed categories. Sections with announcements must be reassigned before removal.</p>
+        <p class="newsx-subtle lux-card-copy">Add, rename, or remove feed categories. Sections with announcements must be reassigned before removal.</p>
         ${runtime.sectionsError ? `<div class="newsx-publisher-error">${escapeHtml(runtime.sectionsError)}</div>` : ''}
-        <div class="newsx-sections-list">${rows || '<p class="newsx-subtle">No sections yet.</p>'}</div>
+        <div class="newsx-sections-list">${rows || '<p class="newsx-subtle lux-card-copy">No sections yet.</p>'}</div>
         <div class="newsx-sections-add-row">
             <input id="news-sections-add-label" name="news_sections_add_label" class="newsx-input lux-control" type="text" placeholder="New section name" data-news-sections-add-input autocomplete="off">
-            <button type="button" class="newsx-btn lux-secondary-btn" data-news-sections-add><i class="fas fa-plus"></i> Add section</button>
+            <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip" data-news-sections-add><i class="fas fa-plus"></i> Add section</button>
         </div>
         <div class="newsx-sections-actions">
-            <button type="button" class="newsx-btn lux-secondary-btn" data-news-close-sections-manager>Cancel</button>
-            <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-sections-save>Save changes</button>
+            <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip" data-news-close-sections-manager>Cancel</button>
+            <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn home-hover-chip" data-news-sections-save>Save changes</button>
         </div>
     `;
 }
@@ -962,13 +968,13 @@ function renderNewsPublisherHeader() {
     return `
         <div class="newsx-publisher-header">
             <div>
-                <div class="newsx-kicker">Publisher Studio</div>
-                <h2 id="newsx-publisher-title" class="newsx-headline">${isEdit ? 'Edit announcement' : 'Create announcement'}</h2>
-                <p class="newsx-publisher-subtitle newsx-subtle">Official campus news</p>
+                <div class="newsx-kicker lux-section-kicker">Publisher Studio</div>
+                <h2 id="newsx-publisher-title" class="newsx-headline lux-card-title">${isEdit ? 'Edit announcement' : 'Create announcement'}</h2>
+                <p class="newsx-publisher-subtitle newsx-subtle lux-card-copy">Official campus news</p>
             </div>
             <div class="newsx-publisher-header-actions">
-                <button type="button" class="newsx-btn lux-secondary-btn" data-news-save-draft><i class="fas fa-floppy-disk"></i> Save draft</button>
-                <button type="button" class="newsx-btn lux-secondary-btn" data-news-close-publisher aria-label="Close publisher"><i class="fas fa-times"></i></button>
+                <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip" data-news-save-draft><i class="fas fa-floppy-disk"></i> Save draft</button>
+                <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip" data-news-close-publisher aria-label="Close publisher"><i class="fas fa-times"></i></button>
             </div>
         </div>
     `;

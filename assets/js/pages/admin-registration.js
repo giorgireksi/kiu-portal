@@ -1264,7 +1264,7 @@ function renderFreeTab(container, modules, tabType) {
                                     <input type="radio" name="free-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} class="admin-reg-program-option-input" data-admin-reg-select-module="${escapeHtml(module.id)}" data-admin-reg-module-tab="free">
                                     <span class="admin-reg-program-option-title">${escapeHtml(module.name)}</span>
                                 </span>
-                                <span class="admin-reg-program-option-progress admin-reg-program-option-progress--pill">ECTS: ${escapeHtml(progress)}</span>
+                                <span class="admin-reg-program-option-progress admin-reg-program-option-progress--pill home-hover-chip">ECTS: ${escapeHtml(progress)}</span>
                             </label>
                         `;
                     }).join('')}

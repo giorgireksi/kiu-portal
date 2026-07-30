@@ -30,6 +30,24 @@
   line-height: 1.2;
 }
 
+.lux-check-row-wrap {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lux-check-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.lux-check-row input {
+  flex: 0 0 auto;
+}
+
 .lux-stat-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -444,7 +462,6 @@
   line-height: 1.1;
 }
 
-.personal-data-subjects-meta,
 .pd-contact-row span {
   font-size: 11px;
   font-weight: 600;
@@ -1036,13 +1053,16 @@
   color: var(--lux-text);
 }
 
-#lms-personal-dashboard-overlay #lms-personal-dashboard-share-title.lux-page-title {
+#lms-personal-dashboard-overlay #lms-personal-dashboard-share-title.lux-page-title,
+#lms-personal-dashboard-overlay #lms-personal-dashboard-history-title.lux-page-title,
+#lms-personal-dashboard-overlay #lms-personal-dashboard-save-name-title.lux-page-title {
   color: var(--lux-text);
 }
 
 .lms-personal-dashboard-share-panel-copy.lux-panel-copy,
 .lms-personal-dashboard-share-section-copy.lux-panel-copy,
 .lms-personal-dashboard-share-callout.lux-panel-copy,
+.lms-personal-dashboard-history-panel-copy.lux-panel-copy,
 .lms-personal-dashboard-history-copy,
 .lms-personal-dashboard-history-badge,
 .lms-personal-dashboard-autosave-status.lux-panel-copy {

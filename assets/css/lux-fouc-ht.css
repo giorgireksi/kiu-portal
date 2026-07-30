@@ -394,7 +394,7 @@ html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-p
 }
 .lux-hero { min-height: 240px; padding: 26px; }
 /* Outer glass host SSOT — denser desk panel tokens (redesign via lux-tokens). */
-body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]:not(.lux-glass-dialog-card)) {
+body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]:not(.lux-glass-dialog-card)):not(.modal-content[data-lux-transparency-exempt="1"]) {
   background-color: var(--lux-panel-fill);
   background-image: var(--lux-panel-surface);
   border: 1px solid var(--lux-panel-host-border);
@@ -895,6 +895,9 @@ body.lux-route-lms .page-hero :is(
   .lux-lms-subject-card,
   .lms-route-empty,
   .lms-hero-focus,
+  .lms-hero-focus-chip.home-hover-chip,
+  .lms-hero-focus-meta .lux-pill.home-hover-chip,
+  .lux-lms-subject-card .lux-status-pill.home-hover-chip,
   .lms-student-semester-bar,
   .lms-student-semester-option,
   #lms-lane-chip
@@ -1393,13 +1396,46 @@ body.lux-route-registration #page-registration .registration-history-meta {
   white-space: nowrap;
 }
 
+/* Personal data merged shell: inner zones are layout-only — one frosted host paints the stack. */
+body.lux-route-personal-data .personal-data-shell[data-lux-glass-root="1"] {
+  overflow: visible;
+  contain: none;
+  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
+}
+
+body.lux-route-personal-data .personal-data-shell[data-lux-glass-root="1"] > :is(
+  .personal-data-hero,
+  .personal-data-toolbar,
+  .personal-data-workspace-body
+) {
+  background: none;
+  background-image: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body.lux-route-personal-data .personal-data-shell[data-lux-glass-root="1"] > .personal-data-hero {
+  border: 0;
+}
+
+body.lux-route-personal-data .personal-data-shell[data-lux-glass-root="1"] > :is(
+  .personal-data-toolbar,
+  .personal-data-workspace-body
+) {
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
 /* Personal data page: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-route-personal-data #page-personal-data :is(
-  .personal-data-command,
-  .personal-data-toolbar,
   .personal-data-identity-card,
   .personal-data-kpi-card,
   .personal-data-merged,
+  .personal-data-blueprint-details,
   .personal-data-subjects-table-wrap,
   #personal-data-status.lux-status-pill
 ) {
@@ -1411,6 +1447,16 @@ body.lux-route-personal-data #page-personal-data :is(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+}
+
+body.lux-route-personal-data #page-personal-data :is(
+  .personal-data-identity-card.home-hover-chip,
+  .personal-data-merged.home-hover-chip,
+  .personal-data-blueprint-details.home-hover-chip,
+  .personal-data-kpi-card.home-hover-chip
+) {
+  contain: none;
+  overflow: visible;
 }
 
 /* Study card page: matte inners (motion → global .home-hover-chip SSOT). */
@@ -1503,31 +1549,29 @@ body.lux-route-study-card #study-card-assessment-window :is(
   border-radius: 999px;
 }
 
-/* LMS personal workspace portal: frosted host + matte inners (layout → lux-page-bare-lite). */
+/* LMS personal workspace portal: popup-shell host frost + matte inners (layout → lux-page-bare-lite). */
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-card {
-  background-color: var(--lux-panel-fill);
-  background-image: var(--lux-panel-surface);
-  border: 1px solid var(--lux-panel-host-border);
-  box-shadow: var(--lux-panel-host-shadow);
-  backdrop-filter: var(--lux-panel-blur-filter);
-  -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+  border: 1px solid var(--lux-popup-shell-border);
+  background-color: var(--lux-popup-shell-surface);
+  background-image: var(--lux-warmglass-surface);
+  box-shadow: var(--lux-popup-shell-shadow);
+  backdrop-filter: var(--lux-popup-shell-blur);
+  -webkit-backdrop-filter: var(--lux-popup-shell-blur);
   background-clip: padding-box;
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-head {
-  border-bottom: 1px solid var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+  border-bottom: 1px solid var(--lux-popup-shell-border, var(--lux-soft-chrome-border-accent));
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay :is(
   .lms-personal-dashboard-share-panel.lux-soft-chrome,
+  .lms-personal-dashboard-history-panel.lux-soft-chrome,
+  .lms-personal-dashboard-save-name-panel.lux-soft-chrome,
   .lms-personal-dashboard-history-item.lux-soft-chrome,
   .lms-personal-dashboard-shared-with-me-row.lux-soft-chrome,
   .lms-personal-dashboard-share-empty.lux-empty-state,
-  .lms-whiteboard-shell,
-  .lms-whiteboard-tools,
-  .lms-whiteboard-panel,
-  .lms-whiteboard-props-card,
-  .lms-whiteboard-stage
+  .lms-personal-dashboard-history-empty.lux-empty-state
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
@@ -1539,15 +1583,48 @@ body.lux-route-lms #lms-personal-dashboard-overlay :is(
   background-clip: padding-box;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel.lux-soft-chrome {
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board-host {
+  --wb-hud-border: var(--lux-soft-chrome-border-accent, var(--lux-border));
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board-host :is(
+  .lms-whiteboard-tools,
+  .lms-whiteboard-zoom,
+  .lms-whiteboard-minimap,
+  .lms-whiteboard-props-card,
+  .lms-whiteboard-panel
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel.lux-soft-chrome,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel.lux-soft-chrome,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel.lux-soft-chrome {
   border-radius: 18px;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay {
-  background: color-mix(in srgb, var(--lux-panel-fill) 72%, transparent);
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-overlay,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-overlay {
+  background: var(--lux-warmglass-overlay-dark);
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-icon {
+:is(html.lux-light-mode, body.lux-light-mode) #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay,
+:is(html.lux-light-mode, body.lux-light-mode) #lms-personal-dashboard-overlay .lms-personal-dashboard-history-overlay,
+:is(html.lux-light-mode, body.lux-light-mode) #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-overlay {
+  background: var(--lux-warmglass-overlay-light);
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-icon,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel-icon,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-icon {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
   border: 1px solid var(--lux-soft-chrome-border-accent);
@@ -1666,7 +1743,6 @@ body.lux-route-chancellery #page-chancellery :is(
   .lux-chancellery-command-bar,
   .lux-chancellery-hero-side,
   .lux-chancellery-hero-side .lux-hero-signal.home-hover-chip,
-  .lux-chancellery-hero-side .lux-focus-panel__chip.lux-status-pill.home-hover-chip,
   .lux-chancellery-list-panel,
   .lux-chancellery-detail-panel,
   .lux-chancellery-queue-item,
@@ -1688,7 +1764,14 @@ body.lux-route-chancellery #page-chancellery .lux-chancellery-queue-item {
   border-radius: 14px;
 }
 
-body.lux-route-chancellery #page-chancellery .lux-chancellery-detail-panel.home-hover-chip {
+body.lux-route-chancellery #page-chancellery :is(
+  .lux-chancellery-hero-side.home-hover-chip,
+  .lux-chancellery-list-panel.home-hover-chip,
+  .lux-chancellery-command-bar.home-hover-chip,
+  .lux-chancellery-queue-item.home-hover-chip,
+  .lux-chancellery-detail-panel.home-hover-chip,
+  .lux-chancellery-finance-card.home-hover-chip
+) {
   contain: none;
   overflow: visible;
 }
@@ -1807,6 +1890,24 @@ body.lux-route-news #portal-news-root :is(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+}
+
+/* News modals: overflow allowlist for matte shells on frosted modal hosts (paint → lux-modals exempt SSOT). */
+.newsx-sections-modal .newsx-sections-row.home-hover-chip,
+.newsx-publisher-modal :is(
+  .newsx-publisher-pane.home-hover-chip,
+  .newsx-editor-ribbon.home-hover-chip,
+  .newsx-publisher-section-tab.home-hover-chip,
+  :is(.newsx-publisher-radio-card, .newsx-publisher-toggle-card, .lux-check-card).home-hover-chip,
+  .newsx-attachment-chip.home-hover-chip,
+  .newsx-attach-btn.home-hover-chip
+) {
+  contain: none;
+  overflow: visible;
+}
+
+.newsx-sections-modal .newsx-sections-row.home-hover-chip {
+  border-radius: 14px;
 }
 
 /* Library page: matte inners (motion → global .home-hover-chip SSOT); primary shells → frosted override below. */
@@ -2251,6 +2352,43 @@ body.lux-route-student-service #student-service-modal-root :is(
   border-top: 1px solid var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
 }
 
+/* Inbox filter editor: matte inners (motion → global .home-hover-chip SSOT). */
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-inbox-filter-editor-row.lux-soft-chrome.home-hover-chip,
+  .student-service-inbox-filter-editor-option.lux-soft-chrome.home-hover-chip,
+  .student-service-inbox-filter-editor-icon-chip.lux-soft-chrome.home-hover-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-inbox-filter-editor-row.lux-soft-chrome.home-hover-chip {
+  border-radius: 16px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-inbox-filter-editor-option.lux-soft-chrome.home-hover-chip {
+  border-radius: 12px;
+}
+
+body.lux-route-student-service #student-service-modal-root .student-service-inbox-filter-editor-icon-chip.lux-soft-chrome.home-hover-chip {
+  border-radius: 14px;
+}
+
+body.lux-route-student-service #student-service-modal-root :is(
+  .student-service-inbox-filter-editor-list,
+  .student-service-inbox-filter-editor-row.home-hover-chip,
+  .student-service-inbox-filter-editor-option.home-hover-chip,
+  .student-service-inbox-filter-editor-options
+) {
+  overflow: visible;
+  contain: none;
+}
+
 body.lux-route-student-service #student-service-modal-root :is(
   .student-service-pill,
   .student-service-mini-action
@@ -2364,7 +2502,10 @@ body.lux-unified-shell #page-student-service .student-service-lane-choice-card {
 }
 
 /* Orders inbox page: matte inners (motion → global .home-hover-chip SSOT); primary shells → frosted override below. */
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-summary-surface:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card) {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .lux-summary-surface:not(.orders-inbox-workspace) {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -2372,11 +2513,18 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-summary-surface
   -webkit-backdrop-filter: none !important;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-summary-surface::after {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .lux-summary-surface::after {
   display: none !important;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell,
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-shell,
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-thread-overlay
+) :is(
   .orders-inbox-hero-side .lux-hero-signal.home-hover-chip,
   .orders-metric-card,
   .orders-list-wrap,
@@ -2386,7 +2534,6 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
   .orders-detail-empty,
   .orders-attachment-card,
   .orders-recipient-card,
-  .orders-status-filter,
   .lux-status-pill.home-hover-chip,
   .lux-pill.lux-soft-chrome
 ) {
@@ -2400,50 +2547,80 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
   background-clip: padding-box;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-wrap {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .orders-list-wrap {
   border-radius: 18px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .orders-item {
   border-radius: 0;
   border-left: 0;
   border-right: 0;
   box-shadow: none;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item:last-child {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .orders-item:last-child {
   border-bottom: 0;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-status-filter {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .lux-status-pill,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .lux-pill.lux-soft-chrome {
   border-radius: 999px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-status-pill,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-pill.lux-soft-chrome {
-  border-radius: 999px;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-status-filter.is-active {
-  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-accent-rgb), 0.5));
-  color: var(--lux-text);
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item.is-active {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .orders-item.is-active {
   border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-accent-rgb), 0.5));
   box-shadow: inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.75);
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item.is-active::before {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .orders-item.is-active::before {
   background: rgba(var(--lux-accent-rgb), 0.9);
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-empty {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell .orders-detail-empty {
   border-radius: 18px;
   border-style: dashed;
 }
 
-body.lux-route-orders #page-orders.lux-page-shell {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell :is(
+  .orders-inbox-hero-side.home-hover-chip,
+  .orders-list-wrap,
+  .orders-list-empty.home-hover-chip,
+  .orders-detail-empty.home-hover-chip,
+  .orders-item.home-hover-chip
+) {
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-orders #page-orders.lux-page-shell,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root.lux-page-shell {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -2451,7 +2628,10 @@ body.lux-route-orders #page-orders.lux-page-shell {
   -webkit-backdrop-filter: none !important;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"] {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell[data-lux-glass-root="1"] {
   transition: none;
   contain: none;
   overflow: visible;
@@ -2462,7 +2642,10 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[
   -webkit-backdrop-filter: none !important;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell[data-lux-glass-root="1"]::after {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root
+) .orders-inbox-shell[data-lux-glass-root="1"]::after {
   display: none;
 }
 
@@ -2532,10 +2715,32 @@ body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-di
   contain: none;
 }
 
+/* Social group-detail dialog: matte inners (motion → global .home-hover-chip SSOT). */
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--group-detail :is(
+  .lux-soft-chrome.home-hover-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--group-detail .social-neo-item-line.lux-soft-chrome.home-hover-chip {
+  border-radius: 12px;
+}
+
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--group-detail .social-neo-group-detail-section {
+  overflow: visible;
+  contain: none;
+}
+
 /* Social research-create dialog: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-research-create :is(
   .social-neo-research-choice.lux-soft-chrome.home-hover-chip,
-  .social-neo-research-format-card.lux-soft-chrome.home-hover-chip,
   .social-neo-research-dropzone.lux-soft-chrome.home-hover-chip
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
@@ -2550,10 +2755,7 @@ body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-r
   contain: none;
 }
 
-body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-research-create :is(
-  .social-neo-research-choice.is-active,
-  .social-neo-research-format-card.is-active
-).home-hover-chip {
+body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-research-create .social-neo-research-choice.is-active.home-hover-chip {
   border-color: rgba(var(--lux-accent-rgb), 0.45);
   box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2)), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.18);
 }
@@ -2563,11 +2765,7 @@ body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-r
 }
 
 /* Orders inbox primary shells: frosted panel glass (not matte soft-chrome). */
-body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-  .orders-inbox-hero,
-  .orders-list-card,
-  .orders-detail-card
-) {
+body.lux-unified-shell .orders-inbox-shell[data-lux-glass-root="1"] .orders-inbox-workspace {
   background-color: var(--lux-panel-fill) !important;
   background-image: var(--lux-panel-surface) !important;
   border: 1px solid var(--lux-panel-host-border) !important;
@@ -2575,18 +2773,10 @@ body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
   backdrop-filter: var(--lux-panel-blur-filter) !important;
   -webkit-backdrop-filter: var(--lux-panel-blur-filter) !important;
   background-clip: padding-box;
-}
-
-body.lux-unified-shell :is(#page-orders, #orders-inbox-root) .orders-inbox-hero {
   border-radius: 24px;
   border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55) !important;
-}
-
-body.lux-unified-shell :is(#page-orders, #orders-inbox-root) :is(
-  .orders-list-card,
-  .orders-detail-card
-) {
-  border-radius: 22px;
+  overflow: visible;
+  contain: none;
 }
 
 /* Global luxury hover motion — shell-panels contract: frosted glass hosts stay static;
@@ -2609,8 +2799,7 @@ body.lux-unified-shell :is(.page-hero, [data-lux-glass-root="1"]):not(.home-hove
 }
 
 body.lux-unified-shell :is(
-  .home-hover-chip,
-  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+  .home-hover-chip:not(.lux-primary-btn):not(.lux-secondary-btn):not(.lux-destructive-btn):not(.lux-ghost-btn),
   .lux-module-option.lux-soft-chrome,
   .lux-subject-row.lux-program-subject-card,
   .newsx-header-bar,
@@ -2621,6 +2810,7 @@ body.lux-unified-shell :is(
   .admin-library-catalog-card.lux-soft-chrome,
   .lux-empty-state
 ),
+body.lux-unified-shell .lux-card:not(.orders-inbox-workspace),
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   position: relative;
   isolation: isolate;
@@ -2633,13 +2823,66 @@ body.lux-unified-shell .home-hover-chip:has(.home-hover-chip) {
   contain: none;
   overflow: visible;
 }
-body.lux-unified-shell .admin-orders-thread-chat-log.home-hover-chip:has(.home-hover-chip) {
-  overflow: auto;
+
+/* Pill/chip badges: keep glow ::after unclipped (share-panel parity). */
+body.lux-unified-shell :is(
+  .lux-status-pill.home-hover-chip,
+  .lux-pill.home-hover-chip,
+  .lux-focus-panel__chip.home-hover-chip,
+  .lms-route-pill.home-hover-chip,
+  .lms-live-pill.home-hover-chip,
+  .lms-call-chip.home-hover-chip,
+  .social-neo-pill.home-hover-chip,
+  .social-neo-research-copy.home-hover-chip,
+  .lux-hero-signal.home-hover-chip,
+  .student-service-pill.home-hover-chip,
+  .student-service-panel-chip.home-hover-chip,
+  .student-service-attachment-chip.home-hover-chip,
+  .wave2-chip.home-hover-chip,
+  .page-hero-badge.home-hover-chip,
+  .schedule-session-pill.home-hover-chip,
+  .gb-status-badge.home-hover-chip,
+  .newsx-attachment-chip.home-hover-chip,
+  .sch-modal-mode-chip.home-hover-chip,
+  .spr-chip.home-hover-chip,
+  .spr-summary-chip.home-hover-chip,
+  .spt-detail-chip.home-hover-chip,
+  .spt-detail-dep-chip.home-hover-chip,
+  .spt-desk-chip.home-hover-chip,
+  .spt-desk-meta-chip.home-hover-chip,
+  .spt-desk-status-chip.home-hover-chip,
+  .spt-desk-focus-chip.home-hover-chip,
+  .spt-desk-hygiene-pill.home-hover-chip,
+  .sph-chip.home-hover-chip,
+  .sph-hygiene-chip.home-hover-chip,
+  .sph-health-badge.home-hover-chip,
+  .ex2-summary-chip.home-hover-chip,
+  .ex2-session-status-chip.home-hover-chip,
+  .ex2-session-published-pill.home-hover-chip,
+  .ex2-stat-chip.home-hover-chip,
+  .exam-chip.home-hover-chip,
+  .portal-msg-chip.home-hover-chip,
+  .portal-msg-pill.home-hover-chip,
+  .registration-antireq-chip.home-hover-chip,
+  .admin-library-schema-btn-remove.home-hover-chip,
+  .admin-library-schema-btn-options.home-hover-chip,
+  .admin-library-tab-btn.home-hover-chip,
+  .admin-library-manage-sections-btn.home-hover-chip,
+  .sch-modal-close-muted.home-hover-chip,
+  .sch-preset-manage-link.home-hover-chip,
+  .students-hub-profile-field.home-hover-chip,
+  .staff-hub-profile-field.home-hover-chip,
+  .lux-primary-btn.home-hover-chip,
+  .lux-secondary-btn.home-hover-chip,
+  .lux-destructive-btn.home-hover-chip,
+  .lux-ghost-btn.home-hover-chip
+) {
+  contain: none;
+  overflow: visible;
 }
 
 body.lux-unified-shell :is(
-  .home-hover-chip,
-  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+  .home-hover-chip:not(.lux-primary-btn):not(.lux-secondary-btn):not(.lux-destructive-btn):not(.lux-ghost-btn),
   .lux-module-option.lux-soft-chrome,
   .lux-subject-row.lux-program-subject-card,
   .newsx-header-bar,
@@ -2650,6 +2893,7 @@ body.lux-unified-shell :is(
   .admin-library-catalog-card.lux-soft-chrome,
   .lux-empty-state
 )::after,
+body.lux-unified-shell .lux-card:not(.orders-inbox-workspace)::after,
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
   content: '';
   position: absolute;
@@ -2664,8 +2908,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after 
 }
 
 body.lux-unified-shell :is(
-  .home-hover-chip,
-  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
+  .home-hover-chip:not(.lux-primary-btn):not(.lux-secondary-btn):not(.lux-destructive-btn):not(.lux-ghost-btn),
   .lux-module-option.lux-soft-chrome,
   .lux-subject-row.lux-program-subject-card,
   .newsx-header-bar,
@@ -2676,6 +2919,7 @@ body.lux-unified-shell :is(
   .admin-library-catalog-card.lux-soft-chrome,
   .lux-empty-state
 ) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select),
+body.lux-unified-shell .lux-card:not(.orders-inbox-workspace) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select),
 body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not(.lux-picker-panel):not(.lux-universal-picker-panel):not(.lux-droplist-panel):not(.lux-universal-native-select) {
   position: relative;
   z-index: 1;
@@ -2683,9 +2927,8 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
 
 @media (hover: hover) and (pointer: fine) {
   body.lux-unified-shell :is(
-    .home-hover-chip,
-    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
-    .lux-module-option.lux-soft-chrome,
+    .home-hover-chip:not(.lux-primary-btn):not(.lux-secondary-btn):not(.lux-destructive-btn):not(.lux-ghost-btn),
+      .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -2695,14 +2938,14 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
     .admin-library-catalog-card.lux-soft-chrome,
     .lux-empty-state
   ):hover,
+  body.lux-unified-shell .lux-card:not(.orders-inbox-workspace):hover,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
   }
   body.lux-unified-shell :is(
-    .home-hover-chip,
-    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
-    .lux-module-option.lux-soft-chrome,
+    .home-hover-chip:not(.lux-primary-btn):not(.lux-secondary-btn):not(.lux-destructive-btn):not(.lux-ghost-btn),
+      .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -2712,19 +2955,13 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
     .admin-library-catalog-card.lux-soft-chrome,
     .lux-empty-state
   ):hover::after,
+  body.lux-unified-shell .lux-card:not(.orders-inbox-workspace):hover::after,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover::after {
     opacity: 1;
   }
-  body.lux-unified-shell :is(
-    .lux-status-pill.home-hover-chip,
-    .lux-pill.home-hover-chip,
-    .lms-route-pill.home-hover-chip,
-    .social-neo-pill.home-hover-chip,
+  /* Nested demotion: small controls only — badge/status pills keep full share-panel lift. */
+  body.lux-unified-shell .home-hover-chip :is(
     .social-neo-research-copy.home-hover-chip,
-    .lux-hero-signal.home-hover-chip,
-    .student-service-pill,
-    .student-service-panel-chip,
-    .wave2-chip.home-hover-chip,
     .admin-library-schema-btn-remove.home-hover-chip,
     .admin-library-schema-btn-options.home-hover-chip,
     .admin-library-tab-btn.home-hover-chip,
@@ -2736,16 +2973,8 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
   ):hover {
     transform: translate3d(0, var(--home-chip-hover-lift-nested, -1px), 0);
   }
-  body.lux-unified-shell :is(
-    .lux-status-pill.home-hover-chip,
-    .lux-pill.home-hover-chip,
-    .lms-route-pill.home-hover-chip,
-    .social-neo-pill.home-hover-chip,
+  body.lux-unified-shell .home-hover-chip :is(
     .social-neo-research-copy.home-hover-chip,
-    .lux-hero-signal.home-hover-chip,
-    .student-service-pill,
-    .student-service-panel-chip,
-    .wave2-chip.home-hover-chip,
     .admin-library-schema-btn-remove.home-hover-chip,
     .admin-library-schema-btn-options.home-hover-chip,
     .sch-modal-close-muted.home-hover-chip,
@@ -2760,8 +2989,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
 @media (hover: none), (pointer: coarse) {
   body.lux-unified-shell :is(
     .home-hover-chip,
-    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
-    .lux-module-option.lux-soft-chrome,
+      .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -2771,14 +2999,14 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
     .admin-library-catalog-card.lux-soft-chrome,
     .lux-empty-state
   ):active,
+  body.lux-unified-shell .lux-card:not(.orders-inbox-workspace):active,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):active {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
   }
   body.lux-unified-shell :is(
     .home-hover-chip,
-    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
-    .lux-module-option.lux-soft-chrome,
+      .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -2788,19 +3016,12 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
     .admin-library-catalog-card.lux-soft-chrome,
     .lux-empty-state
   ):active::after,
+  body.lux-unified-shell .lux-card:not(.orders-inbox-workspace):active::after,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):active::after {
     opacity: 1;
   }
-  body.lux-unified-shell :is(
-    .lux-status-pill.home-hover-chip,
-    .lux-pill.home-hover-chip,
-    .lms-route-pill.home-hover-chip,
-    .social-neo-pill.home-hover-chip,
+  body.lux-unified-shell .home-hover-chip :is(
     .social-neo-research-copy.home-hover-chip,
-    .lux-hero-signal.home-hover-chip,
-    .student-service-pill,
-    .student-service-panel-chip,
-    .wave2-chip.home-hover-chip,
     .admin-library-schema-btn-remove.home-hover-chip,
     .admin-library-schema-btn-options.home-hover-chip,
     .sch-modal-close-muted.home-hover-chip,
@@ -2872,6 +3093,10 @@ body.lux-route-social :is(
   .social-neo-pages-hero-grid,
   .social-neo-pages-hero-toolbar,
   .social-neo-page-card,
+  .social-neo-page-profile,
+  .social-neo-page-compose-block,
+  .social-neo-page-about-card,
+  .social-neo-empty-hero,
   .social-neo-events-hero,
   .social-neo-events-hero-grid,
   .social-neo-events-hero-stats,
@@ -2904,6 +3129,19 @@ body.lux-route-social :is(
 ).home-hover-chip {
   contain: none;
   overflow: visible;
+}
+
+body.lux-route-social :is(
+  .social-neo-page-profile-tabs,
+  .social-neo-page-profile-tab-strip
+) {
+  overflow: visible;
+}
+
+body.lux-route-social .social-neo-page-profile-tab.home-hover-chip {
+  contain: none;
+  overflow: visible;
+  border-radius: 14px;
 }
 
 /*
@@ -2958,8 +3196,7 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
 @media (prefers-reduced-motion: reduce) {
   body.lux-unified-shell :is(
     .home-hover-chip,
-    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
-    .lux-module-option.lux-soft-chrome,
+      .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -2969,13 +3206,13 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
     .admin-library-catalog-card.lux-soft-chrome,
     .lux-empty-state
   ),
+  body.lux-unified-shell .lux-card:not(.orders-inbox-workspace),
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
     transition: border-color 0.15s ease;
   }
   body.lux-unified-shell :is(
     .home-hover-chip,
-    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
-    .lux-module-option.lux-soft-chrome,
+      .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -2985,13 +3222,13 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
     .admin-library-catalog-card.lux-soft-chrome,
     .lux-empty-state
   )::after,
+  body.lux-unified-shell .lux-card:not(.orders-inbox-workspace)::after,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after {
     display: none;
   }
   body.lux-unified-shell :is(
     .home-hover-chip,
-    .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
-    .lux-module-option.lux-soft-chrome,
+      .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -3001,6 +3238,7 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
     .admin-library-catalog-card.lux-soft-chrome,
     .lux-empty-state
   ):hover,
+  body.lux-unified-shell .lux-card:not(.orders-inbox-workspace):hover,
   body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
     transform: none;
   }
@@ -3008,7 +3246,6 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
 
 html[data-lux-transparency="0"] body.lux-unified-shell :is(
   .home-hover-chip,
-  .lux-card:not(.orders-inbox-hero):not(.orders-list-card):not(.orders-detail-card),
   .lux-module-option.lux-soft-chrome,
   .lux-subject-row.lux-program-subject-card,
   .newsx-header-bar,
@@ -3019,6 +3256,7 @@ html[data-lux-transparency="0"] body.lux-unified-shell :is(
   .admin-library-catalog-card.lux-soft-chrome,
   .lux-empty-state
 ):hover,
+html[data-lux-transparency="0"] body.lux-unified-shell .lux-card:not(.orders-inbox-workspace):hover,
 html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]):hover {
   transform: none;
   box-shadow: none;

@@ -135,7 +135,7 @@
     }
 
     function presencePill(account) {
-        return `<span class="social-neo-pill social-neo-presence-pill ${isAccountOnline(account) ? 'is-online' : 'is-offline'}">${escape(accountPresenceLabel(account))}</span>`;
+        return `<span class="social-neo-pill home-hover-chip social-neo-presence-pill ${isAccountOnline(account) ? 'is-online' : 'is-offline'}">${escape(accountPresenceLabel(account))}</span>`;
     }
 
     function groupMemberPreviewNames(memberIds, limit = 4) {

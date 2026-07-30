@@ -156,7 +156,7 @@
             <article class="portfolio-section-card sns-portfolio-editor-panel ${isOpen ? 'is-open' : ''}" data-section-key="${escapeHtml(sectionKey)}">
                 <button class="portfolio-section-toggle" type="button" data-action="portfolio-section-toggle" data-section-key="${escapeHtml(sectionKey)}" aria-expanded="${isOpen ? 'true' : 'false'}">
                     <strong>${escapeHtml(label)}</strong>
-                    <span class="social-neo-pill">${escapeHtml(String(entries.length))}</span>
+                    <span class="social-neo-pill home-hover-chip">${escapeHtml(String(entries.length))}</span>
                     <i class="fas fa-chevron-down" aria-hidden="true"></i>
                 </button>
                 <div class="portfolio-section-body" ${isOpen ? '' : 'hidden'}>
@@ -182,7 +182,7 @@
                         <strong>Publish portfolio</strong>
                         <span>Choose who can discover your showcase once you publish.</span>
                     </div>
-                    <span class="social-neo-pill">${escapeHtml(isPublished ? 'Published' : 'Draft')}</span>
+                    <span class="social-neo-pill home-hover-chip">${escapeHtml(isPublished ? 'Published' : 'Draft')}</span>
                 </div>
                 <div class="portfolio-audience-cards">
                     ${audiences.map(([mode, title, copy]) => `

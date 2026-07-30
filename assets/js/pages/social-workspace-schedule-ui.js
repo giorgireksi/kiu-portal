@@ -60,11 +60,11 @@
                 <section class="social-neo-card social-project-baseline-card" data-lux-transparency-exempt="1">
                     <div class="social-neo-section-head">
                         <div><strong>Plan vs baseline</strong><span>Snapshotted ${escape(when(baselineAt))}</span></div>
-                        <span class="social-neo-pill is-tone-${escape(slipTone)}">${escape(slipLabel)}</span>
+                        <span class="social-neo-pill home-hover-chip is-tone-${escape(slipTone)}">${escape(slipLabel)}</span>
                     </div>
                     <div class="social-project-baseline-facts">
-                        <span class="social-neo-pill"><i class="fas fa-route"></i>${escape(finishCompare)}</span>
-                        ${driftCount ? `<span class="social-neo-pill is-tone-rose">${escape(String(driftCount))} task${driftCount === 1 ? '' : 's'} changed since baseline</span>` : '<span class="social-neo-pill is-tone-emerald">Estimates match baseline</span>'}
+                        <span class="social-neo-pill home-hover-chip"><i class="fas fa-route"></i>${escape(finishCompare)}</span>
+                        ${driftCount ? `<span class="social-neo-pill home-hover-chip is-tone-rose">${escape(String(driftCount))} task${driftCount === 1 ? '' : 's'} changed since baseline</span>` : '<span class="social-neo-pill home-hover-chip is-tone-emerald">Estimates match baseline</span>'}
                     </div>
                     ${canManage ? `<div class="social-project-card-new-cta"><span data-action="project-baseline-set" data-project-id="${escape(text(project.id))}">Update baseline →</span></div>` : ''}
                 </section>`;
@@ -92,9 +92,9 @@
                         <div><strong>Work hours</strong><span>Open estimate vs time logged on done tasks.</span></div>
                     </div>
                     <div class="social-project-progress-hours-facts">
-                        <span class="social-neo-pill"><i class="fas fa-hourglass-half"></i>${escape(formatProjectScheduleHours(remaining))} remaining</span>
-                        <span class="social-neo-pill"><i class="fas fa-stopwatch"></i>${escape(formatProjectScheduleHours(logged))} logged</span>
-                        ${slipLabel ? `<span class="social-neo-pill is-tone-${escape(slipTone)}">${escape(slipLabel)}</span>` : ''}
+                        <span class="social-neo-pill home-hover-chip"><i class="fas fa-hourglass-half"></i>${escape(formatProjectScheduleHours(remaining))} remaining</span>
+                        <span class="social-neo-pill home-hover-chip"><i class="fas fa-stopwatch"></i>${escape(formatProjectScheduleHours(logged))} logged</span>
+                        ${slipLabel ? `<span class="social-neo-pill home-hover-chip is-tone-${escape(slipTone)}">${escape(slipLabel)}</span>` : ''}
                     </div>
                 </section>`;
         }

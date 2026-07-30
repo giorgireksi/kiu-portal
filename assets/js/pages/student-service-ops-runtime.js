@@ -160,9 +160,9 @@ function renderStudentServiceOperationsStatsMarkup(openTickets, assignedToMe, wa
             <div class="student-service-ops-value">${openTickets.length}</div>
             <div class="student-service-ops-copy">Open cases across the visible support lane.</div>
             <div class="student-service-ops-pill-row">
-                <span class="student-service-pill">Assigned ${assignedToMe}</span>
-                <span class="student-service-pill">Waiting ${waitingForService + waitingForStudent}</span>
-                <span class="student-service-pill">Handoffs ${handoffNeeded}</span>
+                <span class="student-service-pill home-hover-chip">Assigned ${assignedToMe}</span>
+                <span class="student-service-pill home-hover-chip">Waiting ${waitingForService + waitingForStudent}</span>
+                <span class="student-service-pill home-hover-chip">Handoffs ${handoffNeeded}</span>
             </div>
         </article>
     `;
@@ -434,7 +434,7 @@ function renderStudentServiceGuidanceModalShell(ctx) {
                 <div class="student-service-guidance-modal-accent" aria-hidden="true"></div>
                 <header class="student-service-guidance-modal-head">
                     <div class="student-service-guidance-modal-heading">
-                        <span class="student-service-guidance-modal-icon-chip lux-soft-chrome"><i class="fas fa-book-open" aria-hidden="true"></i></span>
+                        <span class="student-service-guidance-modal-icon-chip home-hover-chip lux-soft-chrome"><i class="fas fa-book-open" aria-hidden="true"></i></span>
                         <div class="student-service-guidance-modal-title">
                             <strong id="student-service-guidance-modal-title" class="lux-page-title">Rules & guidance</strong>
                             <span class="lux-panel-copy">Browse official guidance before opening a private case.</span>

@@ -229,7 +229,7 @@ function renderStudentServiceDeleteConfirmShell(options = {}) {
                 <div class="student-service-qa-delete-confirm-accent" aria-hidden="true"></div>
                 <div class="student-service-qa-delete-confirm-head">
                     <div class="student-service-qa-delete-confirm-heading">
-                        <span class="student-service-qa-delete-confirm-icon-chip lux-soft-chrome"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                        <span class="student-service-qa-delete-confirm-icon-chip home-hover-chip lux-soft-chrome"><i class="fas fa-trash" aria-hidden="true"></i></span>
                         <div class="student-service-qa-delete-confirm-title">
                             <strong class="student-service-qa-delete-confirm-dialog-title" id="student-service-delete-modal-title">${ssEscape(dialogTitle)}</strong>
                             <span class="student-service-qa-delete-confirm-dialog-subtitle">${ssEscape(dialogSubtitle)}</span>

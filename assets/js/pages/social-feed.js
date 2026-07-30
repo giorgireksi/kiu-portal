@@ -193,9 +193,9 @@ function __kiuFeedExpose(map) {
                         </div>
                     </button>
                     <div class="social-neo-inline social-neo-inline-gap-4 social-neo-inline-post-actions-head social-neo-post-head-actions">
-                        <span class="social-neo-pill social-neo-post-scope-badge">${escape(scopeBadge)}</span>
-                        ${pagePostLabel ? `<span class="social-neo-pill social-neo-post-page-label">${escape(pagePostLabel)}</span>` : ''}
-                        ${post.isPinned ? `<span class="social-neo-pill social-neo-pill-pinned social-neo-post-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
+                        <span class="social-neo-pill home-hover-chip social-neo-post-scope-badge">${escape(scopeBadge)}</span>
+                        ${pagePostLabel ? `<span class="social-neo-pill home-hover-chip social-neo-post-page-label">${escape(pagePostLabel)}</span>` : ''}
+                        ${post.isPinned ? `<span class="social-neo-pill home-hover-chip social-neo-pill-pinned social-neo-post-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
                         ${post.viewerCanManageScope ? `<button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-post-head-action-btn" type="button" data-action="post-pin" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-thumbtack"></i> ${post.isPinned ? 'Unpin' : 'Pin'}</button>` : ''}
                         ${post.viewerCanEdit ? `<button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-post-head-action-btn" type="button" data-action="post-edit" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-pen"></i></button>` : ''}
                         ${post.viewerCanEdit ? `<button class="lux-secondary-btn lux-secondary-btn-sm lux-secondary-btn social-neo-post-head-action-btn" type="button" data-action="post-delete" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-trash-alt"></i></button>` : ''}
@@ -207,7 +207,7 @@ function __kiuFeedExpose(map) {
                 ${(Array.isArray(post.media) ? post.media : []).map((media) => filePreview(media)).join('')}
                 ${sharedPost ? `
                     <div class="social-neo-shared">
-                        <span class="social-neo-pill">Shared post</span>
+                        <span class="social-neo-pill home-hover-chip">Shared post</span>
                         <strong>${escape(displayName(sharedPost.authorUserId))}</strong>
                         <p>${escape(sharedPost.body || sharedPost.text || 'Original post')}</p>
                     </div>
@@ -678,7 +678,7 @@ function __kiuFeedExpose(map) {
         const attached = normalizeComposerEntityLinks(runtime.ui?.composerEntityLinks);
         const rows = listAttachableEntities(sectionId, filter, search);
         const countBadge = attached.length
-            ? `<span class="lux-glass-dialog-submit-badge">${escape(String(attached.length))}</span>`
+            ? `<span class="lux-glass-dialog-submit-badge home-hover-chip">${escape(String(attached.length))}</span>`
             : '';
         return `<div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child lux-glass-dialog-backdrop--post-compose-attach" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Attach ${escape(sectionMeta.label)}">
             <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--post-compose-attach lux-glass-dialog-card lux-glass-dialog-card--social-glass sn-mat-modal" data-form="post-compose-attach" data-action="noop" data-lux-transparency-exempt="1" data-section="${escape(sectionMeta.id)}">
@@ -726,7 +726,7 @@ function __kiuFeedExpose(map) {
         const firstName = displayName(currentUser()).split(' ')[0] || 'there';
         const entityLinks = normalizeComposerEntityLinks(runtime.ui?.composerEntityLinks);
         const attachBadge = entityLinks.length
-            ? `<span class="lux-glass-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
+            ? `<span class="lux-glass-dialog-submit-badge home-hover-chip">${escape(String(entityLinks.length))}</span>`
             : '';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
             <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--post-compose lux-glass-dialog-card--project-create lux-glass-dialog-card lux-glass-dialog-card--social-glass sn-mat-modal" data-form="post-compose" data-action="noop" data-lux-transparency-exempt="1">
@@ -855,13 +855,13 @@ function __kiuFeedExpose(map) {
                                 <span class="social-neo-muted">${escape(accountSubtitle(dialogPostAuthor))} &middot; ${escape(when(post.createdAt))}</span>
                             </div>
                         </div>
-                        <span class="social-neo-pill social-neo-post-scope-badge">${escape(dialogScopeBadge)}</span>
+                        <span class="social-neo-pill home-hover-chip social-neo-post-scope-badge">${escape(dialogScopeBadge)}</span>
                     </div>
                     ${text(post.body || post.text || '') ? `<div class="lux-glass-dialog-comment-post-body">${escape(text(post.body || post.text || ''))}</div>` : ''}
                     ${dialogPostMedia.map((media) => filePreview(media)).join('')}
                     ${dialogSharedPost ? `
                         <div class="social-neo-shared">
-                            <span class="social-neo-pill">Shared post</span>
+                            <span class="social-neo-pill home-hover-chip">Shared post</span>
                             <strong>${escape(displayName(dialogSharedPost.authorUserId))}</strong>
                             <p>${escape(dialogSharedPost.body || dialogSharedPost.text || 'Original post')}</p>
                         </div>
@@ -904,7 +904,7 @@ function __kiuFeedExpose(map) {
                 <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--comment-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass social-neo-delete-confirm" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                         <div class="lux-glass-dialog-heading">
-                            <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                            <span class="social-neo-delete-confirm-icon-chip home-hover-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                             <div class="social-neo-delete-confirm-title">
                                 <strong class="lux-glass-dialog-title">Delete comment</strong>
                                 <span class="lux-glass-dialog-subtitle">Post unavailable.</span>
@@ -949,7 +949,7 @@ function __kiuFeedExpose(map) {
                 <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
-                        <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                        <span class="social-neo-delete-confirm-icon-chip home-hover-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                         <div class="social-neo-delete-confirm-title">
                             <strong class="lux-glass-dialog-title">Delete comment</strong>
                             <span class="lux-glass-dialog-subtitle">This cannot be undone.</span>

@@ -191,6 +191,9 @@
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
 }
+.portal-msg-chip.home-hover-chip:hover {
+  transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+}
 .portal-msg-chip.is-active {
   background: linear-gradient(135deg, rgb(var(--lux-accent-rgb)), rgb(var(--lux-accent-rgb)));
   border-color: rgba(10, 95, 196, 0.22);

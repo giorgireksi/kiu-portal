@@ -19,6 +19,9 @@ describe('theme primer localhost reset regressions', () => {
     expect(source).toContain("var resetMarker = 'KIU_PORTAL_LOCAL_SW_RESET_' + PORTAL_CACHE_RESET_VERSION;");
     expect(source).toContain("String(key || '').indexOf('kiu-portal-shell-') === 0");
     expect(source).toContain('window.location.reload();');
+    // Do not preload a hardcoded navigation.js bust — page script tags use different ?v= values.
+    expect(source).not.toContain('preloadSharedShellRuntime');
+    expect(source).not.toContain('assets/js/features/navigation.js?v=20260609-bootguard1');
   });
 
   it('marks the new cache reset version in the app bootstrap and service worker', () => {

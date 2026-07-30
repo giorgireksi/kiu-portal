@@ -542,16 +542,16 @@
     function renderStudentServiceInboxFilterEditorRowMarkup(filter, index, total) {
         const editableOptions = getStudentServiceEditableCustomFilterOptions(filter.options);
         return `
-            <article class="student-service-inbox-filter-editor-row lux-soft-chrome" role="listitem" data-student-service-inbox-filter-editor-row="${index}">
+            <article class="student-service-inbox-filter-editor-row lux-soft-chrome home-hover-chip" role="listitem" data-student-service-inbox-filter-editor-row="${index}">
                 <div class="student-service-inbox-filter-editor-row-head">
                     <label class="student-service-inbox-filter-editor-toggle">
                         <input type="checkbox" data-student-service-inbox-filter-editor-field="enabled" data-student-service-inbox-filter-editor-filter-index="${index}"${filter.enabled ? ' checked' : ''}>
                         <span>Enabled</span>
                     </label>
                     <div class="student-service-inbox-filter-editor-row-actions">
-                        <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn" data-student-service-inbox-filter-editor-move="up" data-student-service-inbox-filter-editor-filter-index="${index}"${index === 0 ? ' disabled' : ''} aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
-                        <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn" data-student-service-inbox-filter-editor-move="down" data-student-service-inbox-filter-editor-filter-index="${index}"${index >= total - 1 ? ' disabled' : ''} aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
-                        <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn student-service-inbox-filter-editor-remove" data-student-service-inbox-filter-editor-remove-filter="${index}" aria-label="Remove filter"><i class="fas fa-trash"></i></button>
+                        <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn home-hover-chip" data-student-service-inbox-filter-editor-move="up" data-student-service-inbox-filter-editor-filter-index="${index}"${index === 0 ? ' disabled' : ''} aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
+                        <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn home-hover-chip" data-student-service-inbox-filter-editor-move="down" data-student-service-inbox-filter-editor-filter-index="${index}"${index >= total - 1 ? ' disabled' : ''} aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
+                        <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn student-service-inbox-filter-editor-remove home-hover-chip" data-student-service-inbox-filter-editor-remove-filter="${index}" aria-label="Remove filter"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
                 <div class="student-service-inbox-filter-editor-grid">
@@ -562,15 +562,15 @@
                 </div>
                 <div class="student-service-inbox-filter-editor-options">
                     ${editableOptions.map((option, optionIndex) => `
-                        <div class="student-service-inbox-filter-editor-option">
+                        <div class="student-service-inbox-filter-editor-option lux-soft-chrome home-hover-chip">
                             <label class="lux-picker-field student-service-inbox-filter-editor-option-field">
                                 <span class="lux-picker-label">Option</span>
                                 <input type="text" class="lux-control" value="${ssEscape(option.label || option.value || '')}" data-student-service-inbox-filter-editor-option-label="true" data-student-service-inbox-filter-editor-filter-index="${index}" data-student-service-inbox-filter-editor-option-index="${optionIndex}" placeholder="Option label">
                             </label>
-                            <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn" data-student-service-inbox-filter-editor-remove-option="${index}" data-student-service-inbox-filter-editor-option-index="${optionIndex}" aria-label="Remove option"><i class="fas fa-minus"></i></button>
+                            <button type="button" class="student-service-mini-action student-service-inbox-filter-editor-icon-btn home-hover-chip" data-student-service-inbox-filter-editor-remove-option="${index}" data-student-service-inbox-filter-editor-option-index="${optionIndex}" aria-label="Remove option"><i class="fas fa-minus"></i></button>
                         </div>
                     `).join('')}
-                    <button type="button" class="lux-secondary-btn student-service-inbox-filter-editor-inline-btn" data-student-service-inbox-filter-editor-add-option="${index}"><i class="fas fa-plus"></i> Add option</button>
+                    <button type="button" class="lux-secondary-btn student-service-inbox-filter-editor-inline-btn home-hover-chip" data-student-service-inbox-filter-editor-add-option="${index}"><i class="fas fa-plus"></i> Add option</button>
                 </div>
             </article>
         `;
@@ -585,28 +585,28 @@
                     <div class="student-service-inbox-filter-editor-accent" aria-hidden="true"></div>
                     <header class="student-service-inbox-filter-editor-head">
                         <div class="student-service-inbox-filter-editor-heading">
-                            <span class="student-service-inbox-filter-editor-icon-chip lux-soft-chrome" aria-hidden="true"><i class="fas fa-sliders-h"></i></span>
+                            <span class="student-service-inbox-filter-editor-icon-chip lux-soft-chrome home-hover-chip" aria-hidden="true"><i class="fas fa-sliders-h"></i></span>
                             <div class="student-service-inbox-filter-editor-title-wrap">
-                                <div class="student-service-kicker">Inbox workspace</div>
-                                <strong id="student-service-inbox-filter-editor-title">Edit inbox filters</strong>
-                                <span class="student-service-zone-copy">Configure which filters staff see in the inbox zone.</span>
+                                <div class="student-service-kicker lux-section-kicker">Inbox workspace</div>
+                                <strong id="student-service-inbox-filter-editor-title" class="lux-page-title">Edit inbox filters</strong>
+                                <span class="student-service-zone-copy lux-panel-copy">Configure which filters staff see in the inbox zone.</span>
                             </div>
                         </div>
-                        <button type="button" class="lux-secondary-btn student-service-inbox-filter-editor-close" data-lux-skip-modern-button="true" data-student-service-inbox-filter-editor-close="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                        <button type="button" class="lux-secondary-btn student-service-inbox-filter-editor-close home-hover-chip" data-lux-skip-modern-button="true" data-student-service-inbox-filter-editor-close="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
                     </header>
                     <div class="student-service-inbox-filter-editor-body">
-                        <p class="student-service-inbox-filter-editor-copy">Search is always shown in the inbox. Add dropdown filters below, or save with none. Saving updates the team layout students and other accounts see.</p>
+                        <p class="student-service-inbox-filter-editor-copy lux-card-copy">Search is always shown in the inbox. Add dropdown filters below, or save with none. Saving updates the team layout students and other accounts see.</p>
                         <div class="student-service-inbox-filter-editor-list" role="list">
                             ${filters.map((filter, index) => renderStudentServiceInboxFilterEditorRowMarkup(filter, index, filters.length)).join('')}
                         </div>
-                        <button type="button" class="lux-secondary-btn student-service-inbox-filter-editor-add" data-student-service-inbox-filter-editor-add-filter="true"><i class="fas fa-plus"></i> Add dropdown</button>
+                        <button type="button" class="lux-secondary-btn student-service-inbox-filter-editor-add home-hover-chip" data-student-service-inbox-filter-editor-add-filter="true"><i class="fas fa-plus"></i> Add dropdown</button>
                     </div>
                     <footer class="student-service-inbox-filter-editor-actions">
-                        <span class="student-service-inbox-filter-editor-actions-copy">Save for me also updates the team layout for students and other accounts.</span>
+                        <span class="student-service-inbox-filter-editor-actions-copy lux-card-meta">Save for me also updates the team layout for students and other accounts.</span>
                         <div class="student-service-inbox-filter-editor-actions-buttons">
-                            <button type="button" class="lux-secondary-btn" data-student-service-inbox-filter-editor-reset-personal="true">Use team default</button>
-                            <button type="button" class="lux-secondary-btn" data-student-service-inbox-filter-editor-save-personal="true">Save for me</button>
-                            <button type="button" class="lux-primary-btn" data-student-service-inbox-filter-editor-save-shared="true"><i class="fas fa-check"></i> Save team default</button>
+                            <button type="button" class="lux-secondary-btn home-hover-chip" data-student-service-inbox-filter-editor-reset-personal="true">Use team default</button>
+                            <button type="button" class="lux-secondary-btn home-hover-chip" data-student-service-inbox-filter-editor-save-personal="true">Save for me</button>
+                            <button type="button" class="lux-primary-btn home-hover-chip" data-student-service-inbox-filter-editor-save-shared="true"><i class="fas fa-check"></i> Save team default</button>
                         </div>
                     </footer>
                 </div>

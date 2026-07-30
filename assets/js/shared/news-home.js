@@ -423,8 +423,8 @@
             const href = buildNewsDeepLink(postId);
             const priority = String(post?.priority || 'standard');
             const badge = post?.pinned
-                ? '<span class="lux-status-pill is-pinned">Pinned</span>'
-                : (priority !== 'standard' ? `<span class="lux-status-pill">${escapeHtml(priority)}</span>` : '');
+                ? '<span class="lux-status-pill home-hover-chip is-pinned">Pinned</span>'
+                : (priority !== 'standard' ? `<span class="lux-status-pill home-hover-chip">${escapeHtml(priority)}</span>` : '');
             return `
                 <a class="news-home-strip-item" href="${escapeHtml(href)}">
                     <div class="news-home-strip-item-title">${escapeHtml(post?.title || 'University update')}</div>

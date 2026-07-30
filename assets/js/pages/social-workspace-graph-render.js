@@ -251,7 +251,7 @@
                                     <i class="fas fa-layer-group" aria-hidden="true"></i>
                                     <span class="social-project-task-graph-group-name" title="${escape(text(group?.name || 'Group'))}">${escape(text(group?.name || 'Group'))}</span>
                                     <span class="social-project-task-graph-group-count" title="Absorbed subtree: members, order-linked tasks, and their dependents">${escape(countLabel)}</span>
-                                    ${groupRiskCount ? `<button type="button" class="social-project-task-graph-group-risk-badge" data-action="project-risk-open" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}" title="${groupRiskCount} risk${groupRiskCount === 1 ? '' : 's'}" aria-label="${groupRiskCount} risks"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> ${groupRiskCount}</button>` : ''}
+                                    ${groupRiskCount ? `<button type="button" class="social-project-task-graph-group-risk-badge home-hover-chip" data-action="project-risk-open" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}" title="${groupRiskCount} risk${groupRiskCount === 1 ? '' : 's'}" aria-label="${groupRiskCount} risks"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> ${groupRiskCount}</button>` : ''}
                                     <button type="button" class="social-project-task-graph-group-btn" data-action="project-task-graph-group-rename" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}" title="Edit package" aria-label="Edit package"><i class="fas fa-pen" aria-hidden="true"></i></button>
                                     <button type="button" class="social-project-task-graph-group-btn is-danger" data-action="project-task-graph-group-delete" data-project-id="${escape(projectId)}" data-group-id="${escape(groupId)}" title="Delete group" aria-label="Delete group"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                 </div>
@@ -352,7 +352,7 @@
                 || formatProjectTaskBudgetEstimate(0, currency)
                 || `0 ${currency}`;
             const priorityPillTitle = priorityDisplay.tooltip ? ` title="${escape(priorityDisplay.tooltip)}"` : '';
-            const matrixPillMarkup = `<span class="social-neo-pill social-project-task-graph-card-priority social-project-task-graph-card-priority--matrix" data-priority="${escape(priorityDisplay.bucket)}"${priorityPillTitle}><i class="fas ${escape(priorityDisplay.icon)}" aria-hidden="true"></i>${escape(priorityDisplay.label)}<small class="social-project-task-graph-card-score">I${escape(String(priorityDisplay.impact))}·E${escape(String(priorityDisplay.effort))}</small></span>`;
+            const matrixPillMarkup = `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-priority social-project-task-graph-card-priority--matrix" data-priority="${escape(priorityDisplay.bucket)}"${priorityPillTitle}><i class="fas ${escape(priorityDisplay.icon)}" aria-hidden="true"></i>${escape(priorityDisplay.label)}<small class="social-project-task-graph-card-score">I${escape(String(priorityDisplay.impact))}·E${escape(String(priorityDisplay.effort))}</small></span>`;
             // Critical-path + slack + ES/EF (schedule). Passed from parent when computed (dashboard or preview).
             const showCriticalPaint = options.showCritical !== false;
             const schedDisp = sched
@@ -366,11 +366,11 @@
             // Card stays task-local: duration + critical only. Total float vs project end lives in detail/inspector.
             const slackPill = (schedDisp?.isCritical && showCriticalPaint && !isDone)
                 ? (isBlocked
-                    ? `<span class="social-project-task-graph-card-schedule-pill is-critical is-blocked" title="Blocked on the critical path — this holds the project finish"><i class="fas fa-ban" aria-hidden="true"></i>critical · blocked</span>`
-                    : `<span class="social-project-task-graph-card-schedule-pill is-critical" title="On the critical path — delay here delays the project finish"><i class="fas fa-route" aria-hidden="true"></i>critical</span>`)
+                    ? `<span class="social-project-task-graph-card-schedule-pill home-hover-chip is-critical is-blocked" title="Blocked on the critical path — this holds the project finish"><i class="fas fa-ban" aria-hidden="true"></i>critical · blocked</span>`
+                    : `<span class="social-project-task-graph-card-schedule-pill home-hover-chip is-critical" title="On the critical path — delay here delays the project finish"><i class="fas fa-route" aria-hidden="true"></i>critical</span>`)
                 : '';
             const noEstPill = !compact && schedDisp?.noEstimate
-                ? `<span class="social-project-task-graph-card-schedule-pill is-empty" title="Add time estimate (or PERT) so schedule math can place this task">no est</span>`
+                ? `<span class="social-project-task-graph-card-schedule-pill home-hover-chip is-empty" title="Add time estimate (or PERT) so schedule math can place this task">no est</span>`
                 : '';
             const estimateTitle = isMilestone
                 ? 'Milestone'
@@ -378,26 +378,26 @@
                     ? 'PERT expected duration for this task (O+4M+P)/6. Clear optimistic / most likely / pessimistic to use a single estimate instead.'
                     : 'This task’s time estimate (used for schedule placement)');
             const estimatePill = estimateLabel
-                ? `<span class="social-neo-pill social-project-task-graph-card-estimate" title="${escape(estimateTitle)}"><i class="fas fa-hourglass-half" aria-hidden="true"></i>${escape(estimateLabel)}</span>`
+                ? `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-estimate" title="${escape(estimateTitle)}"><i class="fas fa-hourglass-half" aria-hidden="true"></i>${escape(estimateLabel)}</span>`
                 : '';
             const actualTimePill = !isMilestone
-                ? `<span class="social-neo-pill social-project-task-graph-card-actual-time" title="Actual time logged on this task"><i class="fas fa-stopwatch" aria-hidden="true"></i>${escape(actualTimeLabel)} act</span>`
+                ? `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-actual-time" title="Actual time logged on this task"><i class="fas fa-stopwatch" aria-hidden="true"></i>${escape(actualTimeLabel)} act</span>`
                 : '';
-            const actualCostPill = `<span class="social-neo-pill social-project-task-graph-card-actual-cost" title="Actual money spent on this task"><i class="fas fa-wallet" aria-hidden="true"></i>${escape(actualCostLabel)} act</span>`;
+            const actualCostPill = `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-actual-cost" title="Actual money spent on this task"><i class="fas fa-wallet" aria-hidden="true"></i>${escape(actualCostLabel)} act</span>`;
             const hasAssignee = Boolean(text(task?.assigneeUserId || ''));
             const ownerFull = hasAssignee ? displayName(assignee) : 'Unassigned';
             const ownerShort = hasAssignee
                 ? (text(ownerFull).split(/\s+/).filter(Boolean).slice(0, 2).join(' ') || ownerFull)
                 : 'Unassigned';
             const ownerPill = hasAssignee
-                ? `<span class="social-neo-pill social-project-task-graph-card-assignee" title="Owner: ${escape(ownerFull)}">${avatar(assignee, 'social-neo-avatar-xs')}<em>${escape(ownerShort)}</em></span>`
-                : `<span class="social-neo-pill social-project-task-graph-card-assignee is-unassigned" title="No owner"><i class="fas fa-user" aria-hidden="true"></i><em>Unassigned</em></span>`;
+                ? `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-assignee" title="Owner: ${escape(ownerFull)}">${avatar(assignee, 'social-neo-avatar-xs')}<em>${escape(ownerShort)}</em></span>`
+                : `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-assignee is-unassigned" title="No owner"><i class="fas fa-user" aria-hidden="true"></i><em>Unassigned</em></span>`;
             const startPill = startLabel
-                ? `<span class="social-neo-pill social-project-task-graph-card-start${!startAt && derivedStartLabel ? ' is-derived' : ''}" title="${startAt ? 'Planned start' : 'Derived from project start + schedule'}"><i class="fas fa-play" aria-hidden="true"></i>${escape(startLabel)}</span>`
-                : `<span class="social-neo-pill social-project-task-graph-card-start is-empty" title="No start date"><i class="fas fa-play" aria-hidden="true"></i>—</span>`;
+                ? `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-start${!startAt && derivedStartLabel ? ' is-derived' : ''}" title="${startAt ? 'Planned start' : 'Derived from project start + schedule'}"><i class="fas fa-play" aria-hidden="true"></i>${escape(startLabel)}</span>`
+                : `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-start is-empty" title="No start date"><i class="fas fa-play" aria-hidden="true"></i>—</span>`;
             const duePill = dueLabel
-                ? `<span class="social-neo-pill social-project-task-graph-card-due${isOverdue ? ' is-overdue' : ''}${!dueAt && derivedFinishLabel ? ' is-derived' : ''}" title="${dueAt ? (isOverdue ? 'Overdue' : 'Due date') : 'Derived from project start + schedule'}"><i class="fas fa-flag-checkered" aria-hidden="true"></i>${escape(dueLabel)}</span>`
-                : `<span class="social-neo-pill social-project-task-graph-card-due is-empty" title="No due date"><i class="fas fa-flag-checkered" aria-hidden="true"></i>—</span>`;
+                ? `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-due${isOverdue ? ' is-overdue' : ''}${!dueAt && derivedFinishLabel ? ' is-derived' : ''}" title="${dueAt ? (isOverdue ? 'Overdue' : 'Due date') : 'Derived from project start + schedule'}"><i class="fas fa-flag-checkered" aria-hidden="true"></i>${escape(dueLabel)}</span>`
+                : `<span class="social-neo-pill home-hover-chip social-project-task-graph-card-due is-empty" title="No due date"><i class="fas fa-flag-checkered" aria-hidden="true"></i>—</span>`;
             const linkHandles = showPorts ? `
                             <button type="button" class="social-project-task-graph-link-handle is-side-w is-in" data-action="noop" data-graph-link-port="w" title="Wire port (west · in)" aria-label="West in port"></button>
                             <button type="button" class="social-project-task-graph-link-handle is-side-e is-out" data-action="noop" data-graph-link-port="e" title="Wire port (east · out)" aria-label="East out port"></button>
@@ -432,11 +432,11 @@
                                         ${slackPill || noEstPill}
                                     </div>
                                     <div class="social-project-task-graph-card-mid">
-                                        ${isMilestone ? '<span class="social-neo-pill social-project-task-graph-card-milestone-pill"><i class="fas fa-flag" aria-hidden="true"></i>milestone</span>' : matrixPillMarkup}
+                                        ${isMilestone ? '<span class="social-neo-pill home-hover-chip social-project-task-graph-card-milestone-pill"><i class="fas fa-flag" aria-hidden="true"></i>milestone</span>' : matrixPillMarkup}
                                         ${ownerPill}
                                     </div>
                                     <div class="social-project-task-graph-card-meta">
-                                        <span class="social-neo-pill social-project-task-graph-card-budget${budgetLabel ? '' : ' is-empty'}"><i class="fas fa-coins" aria-hidden="true"></i>${budgetLabel ? escape(budgetLabel) : '—'}</span>
+                                        <span class="social-neo-pill home-hover-chip social-project-task-graph-card-budget${budgetLabel ? '' : ' is-empty'}"><i class="fas fa-coins" aria-hidden="true"></i>${budgetLabel ? escape(budgetLabel) : '—'}</span>
                                         ${actualCostPill}
                                     </div>
                                     <div class="social-project-task-graph-card-dates">
@@ -1177,15 +1177,15 @@
                 ? memberIds.map((tid) => {
                     const task = taskById.get(tid);
                     const title = text(task?.title || tid);
-                    return `<span class="social-project-task-graph-group-member-chip" title="${escape(title)}">${escape(title)}</span>`;
+                    return `<span class="social-project-task-graph-group-member-chip home-hover-chip" title="${escape(title)}">${escape(title)}</span>`;
                 }).join('')
                 : '<span class="social-neo-muted">No members yet. Drag task cards onto the package on the map (order port wires do not add members).</span>';
             const linkSummary = getProjectTaskGraphGroupLinkSummary(group, project);
             const orderInChips = linkSummary.predTitles.length
-                ? linkSummary.predTitles.map((title) => `<span class="social-project-task-graph-group-member-chip is-order" title="Order predecessor">${escape(title)}</span>`).join('')
+                ? linkSummary.predTitles.map((title) => `<span class="social-project-task-graph-group-member-chip home-hover-chip is-order" title="Order predecessor">${escape(title)}</span>`).join('')
                 : '<span class="social-neo-muted">None</span>';
             const orderOutChips = linkSummary.succTitles.length
-                ? linkSummary.succTitles.map((title) => `<span class="social-project-task-graph-group-member-chip is-order" title="Order successor">${escape(title)}</span>`).join('')
+                ? linkSummary.succTitles.map((title) => `<span class="social-project-task-graph-group-member-chip home-hover-chip is-order" title="Order successor">${escape(title)}</span>`).join('')
                 : '<span class="social-neo-muted">None</span>';
             const description = text(group?.description || '');
             const formBody = canContribute ? `
@@ -1448,7 +1448,7 @@
                             <strong>Task map</strong>
                             <span>Read-only preview — auto-fits so every task is visible. Open to edit.</span>
                         </div>
-                        <span class="social-neo-pill">${escape(String(explicitCount))} links</span>
+                        <span class="social-neo-pill home-hover-chip">${escape(String(explicitCount))} links</span>
                     </div>
                     <div class="social-project-overview-slot__scroll social-project-graph-preview-scroll">
                         ${previewSvg}
@@ -1580,7 +1580,7 @@
             const checkpointBtns = canContribute ? `
                                     <div class="social-project-tab-row social-project-task-graph-checkpoint-controls" data-lux-transparency-exempt="1">
                                         <button class="lux-primary-btn social-project-task-graph-save-btn" type="button" data-action="project-task-graph-save" data-project-id="${escape(text(project.id))}" title="${escape(saveTitle)}"><i class="fas fa-floppy-disk" aria-hidden="true"></i> Save</button>
-                                        <button class="lux-secondary-btn social-project-task-graph-history-btn" type="button" data-action="project-task-graph-history-open" data-project-id="${escape(text(project.id))}" title="${escape(historyTitle)}"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> History${graphCheckpoints.length ? ` <span class="social-neo-pill">${escape(String(graphCheckpoints.length))}</span>` : ''}</button>
+                                        <button class="lux-secondary-btn social-project-task-graph-history-btn" type="button" data-action="project-task-graph-history-open" data-project-id="${escape(text(project.id))}" title="${escape(historyTitle)}"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> History${graphCheckpoints.length ? ` <span class="social-neo-pill home-hover-chip">${escape(String(graphCheckpoints.length))}</span>` : ''}</button>
                                     </div>
             ` : '';
             const criticalToggleBtn = `

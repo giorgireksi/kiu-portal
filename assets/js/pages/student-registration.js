@@ -563,7 +563,7 @@ function renderStudentModulePaneHtml(module, tabId, fac, courseContext, subtitle
     copy.textContent = subtitle;
     heading.append(title, copy);
     const chip = document.createElement('div');
-    chip.className = 'registration-module-pane-chip';
+    chip.className='registration-module-pane-chip home-hover-chip';
     chip.textContent = `ECTS: ${progressLabel}`;
     head.append(heading, chip);
     const courseList = document.createElement('div');
@@ -597,7 +597,7 @@ function buildStudentTrackGroupNode(program, group, tabId, fac, courseContext) {
     subtitle.textContent = program.name;
     copy.append(title, subtitle);
     const chip = document.createElement('div');
-    chip.className = 'registration-track-group-chip';
+    chip.className='registration-track-group-chip home-hover-chip';
     chip.textContent = `ECTS: ${progress}`;
     button.append(icon, copy, chip);
 
@@ -632,7 +632,7 @@ function renderStudentTrackPaneHtml(program, tabId, fac, courseContext) {
     copy.textContent = tabId === 'conc' ? 'Concentration Program Subjects' : 'Minor Program Subjects';
     heading.append(title, copy);
     const chip = document.createElement('div');
-    chip.className = 'registration-module-pane-chip';
+    chip.className='registration-module-pane-chip home-hover-chip';
     chip.textContent = `${groups.length} group${groups.length === 1 ? '' : 's'}`;
     head.append(heading, chip);
 

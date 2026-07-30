@@ -132,7 +132,7 @@ function renderGradebookModernWeightsInner(scheme = {}, summary = null, options 
                                 ? '<span class="gb-weight-row-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>'
                                 : '';
                             const scoreBadgeMarkup = studyCardOverlay
-                                ? `<span class="gb-weight-score-badge${rowPending ? ' is-pending' : ''}">${escapeHtml(scoreBadgeLabel)}</span>`
+                                ? `<span class="gb-weight-score-badge home-hover-chip${rowPending ? ' is-pending' : ''}">${escapeHtml(scoreBadgeLabel)}</span>`
                                 : '';
                             const detailMarkup = studyCardOverlay
                                 ? ''

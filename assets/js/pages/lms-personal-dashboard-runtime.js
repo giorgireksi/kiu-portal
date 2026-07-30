@@ -274,6 +274,8 @@ function handleLmsPersonalDashboardShareEscape(event) {
 function openLmsPersonalDashboardSharePanel() {
     const overlay = document.querySelector('[data-lms-personal-dashboard-share-overlay]');
     if (!overlay) return;
+    closeLmsPersonalDashboardHistoryPanel();
+    closeLmsPersonalDashboardSaveNamePanel();
     overlay.hidden = false;
     overlay.classList.add('is-open');
     document.getElementById('lms-personal-dashboard-overlay')?.classList.add('lms-personal-dashboard-share-open');
@@ -296,6 +298,170 @@ function closeLmsPersonalDashboardSharePanel() {
         window.removeEventListener('keydown', window.__lmsPersonalDashboardShareEscHandler, true);
         window.__lmsPersonalDashboardShareEscHandler = null;
     }
+}
+
+function renderLmsPersonalDashboardHistoryButton() {
+    return `
+        <button type="button" class="lux-secondary-btn lms-personal-dashboard-history-trigger" data-lms-personal-dashboard-action="open-history-panel" title="View shared boards and saved progress">
+            <i class="fas fa-clock-rotate-left"></i> History
+        </button>`;
+}
+
+function renderLmsPersonalDashboardHistoryPanel() {
+    const sharedWithMePanel = renderLmsPersonalDashboardSharedWithMePanel();
+    return `
+        <div class="lms-personal-dashboard-history-overlay" data-lms-personal-dashboard-history-overlay="" hidden>
+            <div class="lms-personal-dashboard-history-panel lux-soft-chrome home-hover-chip" data-lms-personal-dashboard-history-panel="" role="dialog" aria-modal="true" aria-labelledby="lms-personal-dashboard-history-title">
+                <div class="lms-personal-dashboard-history-panel-head">
+                    <div class="lms-personal-dashboard-history-panel-title">
+                        <span class="lms-personal-dashboard-history-panel-icon"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i></span>
+                        <div>
+                            <strong id="lms-personal-dashboard-history-title" class="lux-page-title">Saved progress</strong>
+                            <p class="lux-panel-copy lms-personal-dashboard-history-panel-copy">Shared boards from classmates and named checkpoints for this workspace.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn lms-personal-dashboard-history-close" data-lms-personal-dashboard-action="close-history-panel" aria-label="Close history panel"><i class="fas fa-times"></i></button>
+                </div>
+                ${sharedWithMePanel}
+                <div class="lux-section-kicker lms-route-inline lms-route-inline-gap-8"><i class="fas fa-clock-rotate-left"></i> History</div>
+                <div class="lms-personal-dashboard-history-list" data-lms-personal-dashboard-history-list="">
+                    <div class="lux-panel-copy lms-personal-dashboard-history-empty">Loading saved progress…</div>
+                </div>
+                <div class="lms-personal-dashboard-history-panel-foot">
+                    <button type="button" class="lux-primary-btn lms-personal-dashboard-history-done" data-lms-personal-dashboard-action="close-history-panel">Done</button>
+                </div>
+            </div>
+        </div>`;
+}
+
+function handleLmsPersonalDashboardHistoryEscape(event) {
+    if (event.key !== 'Escape') return;
+    const overlay = document.querySelector('[data-lms-personal-dashboard-history-overlay]');
+    if (!overlay || overlay.hidden) return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeLmsPersonalDashboardHistoryPanel();
+}
+
+function openLmsPersonalDashboardHistoryPanel() {
+    const overlay = document.querySelector('[data-lms-personal-dashboard-history-overlay]');
+    if (!overlay) return;
+    closeLmsPersonalDashboardSharePanel();
+    closeLmsPersonalDashboardSaveNamePanel();
+    overlay.hidden = false;
+    overlay.classList.add('is-open');
+    document.getElementById('lms-personal-dashboard-overlay')?.classList.add('lms-personal-dashboard-history-open');
+    if (typeof window !== 'undefined') {
+        if (window.__lmsPersonalDashboardHistoryEscHandler) {
+            window.removeEventListener('keydown', window.__lmsPersonalDashboardHistoryEscHandler, true);
+        }
+        window.__lmsPersonalDashboardHistoryEscHandler = handleLmsPersonalDashboardHistoryEscape;
+        window.addEventListener('keydown', window.__lmsPersonalDashboardHistoryEscHandler, true);
+    }
+}
+
+function closeLmsPersonalDashboardHistoryPanel() {
+    const overlay = document.querySelector('[data-lms-personal-dashboard-history-overlay]');
+    if (!overlay) return;
+    overlay.hidden = true;
+    overlay.classList.remove('is-open');
+    document.getElementById('lms-personal-dashboard-overlay')?.classList.remove('lms-personal-dashboard-history-open');
+    if (typeof window !== 'undefined' && window.__lmsPersonalDashboardHistoryEscHandler) {
+        window.removeEventListener('keydown', window.__lmsPersonalDashboardHistoryEscHandler, true);
+        window.__lmsPersonalDashboardHistoryEscHandler = null;
+    }
+}
+
+function defaultLmsPersonalDashboardSaveNameLabel() {
+    return `Progress ${new Date().toLocaleString()}`;
+}
+
+function renderLmsPersonalDashboardSaveNamePanel() {
+    return `
+        <div class="lms-personal-dashboard-save-name-overlay" data-lms-personal-dashboard-save-name-overlay="" hidden>
+            <div class="lms-personal-dashboard-save-name-panel lux-soft-chrome home-hover-chip" data-lms-personal-dashboard-save-name-panel="" role="dialog" aria-modal="true" aria-labelledby="lms-personal-dashboard-save-name-title">
+                <div class="lms-personal-dashboard-save-name-panel-head">
+                    <div class="lms-personal-dashboard-save-name-panel-title">
+                        <span class="lms-personal-dashboard-save-name-panel-icon"><i class="fas fa-bookmark" aria-hidden="true"></i></span>
+                        <div>
+                            <strong id="lms-personal-dashboard-save-name-title" class="lux-page-title">Save named copy</strong>
+                            <p class="lux-panel-copy lms-personal-dashboard-save-name-panel-copy">Give this checkpoint a name so you can restore it later from History.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn lms-personal-dashboard-save-name-close" data-lms-personal-dashboard-action="close-save-name-panel" aria-label="Close save name panel"><i class="fas fa-times"></i></button>
+                </div>
+                <label class="lms-personal-dashboard-save-name-field">
+                    <span class="lux-section-kicker">Name</span>
+                    <input type="text" class="lux-control" data-lms-personal-dashboard-save-name-input="" placeholder="Progress name" autocomplete="off">
+                </label>
+                <div class="lms-personal-dashboard-save-name-panel-foot">
+                    <button type="button" class="lux-secondary-btn" data-lms-personal-dashboard-action="close-save-name-panel">Cancel</button>
+                    <button type="button" class="lux-primary-btn" data-lms-personal-dashboard-action="confirm-save-name"><i class="fas fa-bookmark"></i> Save</button>
+                </div>
+            </div>
+        </div>`;
+}
+
+function handleLmsPersonalDashboardSaveNameEscape(event) {
+    if (event.key !== 'Escape') return;
+    const overlay = document.querySelector('[data-lms-personal-dashboard-save-name-overlay]');
+    if (!overlay || overlay.hidden) return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeLmsPersonalDashboardSaveNamePanel();
+}
+
+function openLmsPersonalDashboardSaveNamePanel() {
+    const overlay = document.querySelector('[data-lms-personal-dashboard-save-name-overlay]');
+    if (!overlay) return;
+    closeLmsPersonalDashboardSharePanel();
+    closeLmsPersonalDashboardHistoryPanel();
+    const input = overlay.querySelector('[data-lms-personal-dashboard-save-name-input]');
+    if (input) {
+        input.value = defaultLmsPersonalDashboardSaveNameLabel();
+    }
+    overlay.hidden = false;
+    overlay.classList.add('is-open');
+    document.getElementById('lms-personal-dashboard-overlay')?.classList.add('lms-personal-dashboard-save-name-open');
+    if (typeof window !== 'undefined') {
+        if (window.__lmsPersonalDashboardSaveNameEscHandler) {
+            window.removeEventListener('keydown', window.__lmsPersonalDashboardSaveNameEscHandler, true);
+        }
+        window.__lmsPersonalDashboardSaveNameEscHandler = handleLmsPersonalDashboardSaveNameEscape;
+        window.addEventListener('keydown', window.__lmsPersonalDashboardSaveNameEscHandler, true);
+    }
+    queueMicrotask(() => {
+        input?.focus();
+        input?.select();
+    });
+}
+
+function closeLmsPersonalDashboardSaveNamePanel() {
+    const overlay = document.querySelector('[data-lms-personal-dashboard-save-name-overlay]');
+    if (!overlay) return;
+    overlay.hidden = true;
+    overlay.classList.remove('is-open');
+    document.getElementById('lms-personal-dashboard-overlay')?.classList.remove('lms-personal-dashboard-save-name-open');
+    if (typeof window !== 'undefined' && window.__lmsPersonalDashboardSaveNameEscHandler) {
+        window.removeEventListener('keydown', window.__lmsPersonalDashboardSaveNameEscHandler, true);
+        window.__lmsPersonalDashboardSaveNameEscHandler = null;
+    }
+}
+
+async function confirmLmsPersonalDashboardSaveName(resourceKey = '') {
+    const input = document.querySelector('[data-lms-personal-dashboard-save-name-input]');
+    const label = String(input?.value || '').trim();
+    if (!label) {
+        input?.focus();
+        return false;
+    }
+    const saved = await saveLmsPersonalDashboardSnapshotAction(resourceKey, label);
+    if (saved) {
+        closeLmsPersonalDashboardSaveNamePanel();
+        const trigger = document.querySelector('[data-lms-personal-dashboard-action="save-snapshot"]');
+        if (trigger) pulseLmsPersonalDashboardActionButton(trigger);
+    }
+    return Boolean(saved);
 }
 
 function syncLmsPersonalDashboardShareTrigger(resourceKey = '') {
@@ -461,7 +627,7 @@ function formatLmsPersonalDashboardHistoryBadge(snapshot = {}) {
     const sectionLabel = formatLmsPersonalDashboardSectionLabel(snapshot.sectionType);
     const parts = [groupId, sectionLabel].filter(Boolean);
     if (!parts.length) return '';
-    return `<span class="lms-personal-dashboard-history-badge">${escapeHtml(parts.join(' · '))}</span>`;
+    return `<span class="lms-personal-dashboard-history-badge home-hover-chip">${escapeHtml(parts.join(' · '))}</span>`;
 }
 
 function isLmsPersonalDashboardOpen() {
@@ -521,6 +687,8 @@ function isLmsPersonalDashboardStudentViewer() {
 }
 
 function destroyLmsPersonalDashboardOverlay(options = {}) {
+    closeLmsPersonalDashboardSharePanel();
+    closeLmsPersonalDashboardHistoryPanel();
     if (typeof window !== 'undefined' && window.__lmsPersonalDashboardPageHideHandler) {
         window.removeEventListener('pagehide', window.__lmsPersonalDashboardPageHideHandler);
         window.__lmsPersonalDashboardPageHideHandler = null;
@@ -581,15 +749,15 @@ function renderLmsPersonalDashboardMarkup(resourceKey = '') {
     const staffNotice = staffMonitor
         ? (() => {
             if (workspace?.ui?.accessDenied) {
-                return `<span class="lux-status-pill lms-personal-dashboard-staff-notice is-denied">${escapeHtml(workspace.ui.syncError || 'This student has not shared their workspace yet.')}</span>`;
+                return `<span class="lux-status-pill home-hover-chip lms-personal-dashboard-staff-notice is-denied">${escapeHtml(workspace.ui.syncError || 'This student has not shared their workspace yet.')}</span>`;
             }
             if (staffShareLevel === 'edit') {
-                return '<span class="lux-status-pill lms-personal-dashboard-staff-notice is-edit">Editing enabled by student</span>';
+                return '<span class="lux-status-pill home-hover-chip lms-personal-dashboard-staff-notice is-edit">Editing enabled by student</span>';
             }
             if (staffShareLevel === 'view') {
-                return '<span class="lux-status-pill lms-personal-dashboard-staff-notice">Viewing student workspace (view only)</span>';
+                return '<span class="lux-status-pill home-hover-chip lms-personal-dashboard-staff-notice">Viewing student workspace (view only)</span>';
             }
-            return '<span class="lux-status-pill lms-personal-dashboard-staff-notice is-denied">This student has not shared their workspace yet.</span>';
+            return '<span class="lux-status-pill home-hover-chip lms-personal-dashboard-staff-notice is-denied">This student has not shared their workspace yet.</span>';
         })()
         : '';
     const guestCanEdit = staffMonitor && canEditLmsPersonalDashboardAsGuest(resourceKey);
@@ -597,7 +765,10 @@ function renderLmsPersonalDashboardMarkup(resourceKey = '') {
         <p class="lux-panel-copy lms-personal-dashboard-share-callout">Progress autosaves automatically. Use <strong>Share</strong> to give instructors, your whole group, or specific classmates access. Named History rows are optional checkpoints.</p>`;
     const shareButton = staffMonitor ? '' : renderLmsPersonalDashboardShareButton(resourceKey);
     const sharePanel = staffMonitor ? '' : renderLmsPersonalDashboardSharePanel(resourceKey);
+    const historyButton = renderLmsPersonalDashboardHistoryButton();
+    const historyPanel = renderLmsPersonalDashboardHistoryPanel();
     const showOwnerChrome = !staffMonitor;
+    const saveNamePanel = showOwnerChrome ? renderLmsPersonalDashboardSaveNamePanel() : '';
     const showGuestEditChrome = guestCanEdit;
     const autosaveStatus = (showOwnerChrome || showGuestEditChrome)
         ? '<span class="lms-personal-dashboard-autosave-status lux-panel-copy" data-lms-personal-dashboard-autosave-status="">Autosave on</span>'
@@ -606,30 +777,24 @@ function renderLmsPersonalDashboardMarkup(resourceKey = '') {
                 <button type="button" class="lux-secondary-btn lms-personal-dashboard-save-named" data-lms-personal-dashboard-action="save-snapshot">
                     <i class="fas fa-bookmark"></i> Save named copy
                 </button>` : '';
-    const sharedWithMePanel = staffMonitor ? '' : renderLmsPersonalDashboardSharedWithMePanel();
     const bodyHtml = `
         ${shareCallout}
         ${sharePanel}
+        ${historyPanel}
+        ${saveNamePanel}
         <div class="lms-personal-dashboard-layout ${layoutClass}">
             ${shortcutsHtml}
             <section class="lms-personal-dashboard-board" aria-label="Personal scratch board">
                 <div class="lms-personal-dashboard-board-host" data-lms-personal-dashboard-board-host="${escapeHtml(resourceKey)}"></div>
             </section>
-            <aside class="lms-personal-dashboard-history" aria-label="Saved progress">
-                ${sharedWithMePanel}
-                <div class="lux-section-kicker lms-route-inline lms-route-inline-gap-8"><i class="fas fa-clock-rotate-left"></i> History</div>
-                <div class="lms-personal-dashboard-history-list" data-lms-personal-dashboard-history-list="">
-                    <div class="lux-panel-copy lms-personal-dashboard-history-empty">Loading saved progress…</div>
-                </div>
-            </aside>
         </div>`;
     const headHtml = `
-        <div class="lms-personal-dashboard-head">
+        <div class="lms-personal-dashboard-head lux-glass-dialog-head">
             <div class="lms-personal-dashboard-head-main">
                 <strong class="lux-glass-dialog-title"><i class="fas ${titleIcon}" aria-hidden="true"></i> ${escapeHtml(title)}</strong>
                 <span class="lux-glass-dialog-subtitle">${escapeHtml(formatLmsPersonalDashboardSubtitle())}</span>${staffNotice}
             </div>
-            <div class="lms-personal-dashboard-head-actions">${shareButton}${autosaveStatus}${saveButton}
+            <div class="lms-personal-dashboard-head-actions">${shareButton}${historyButton}${autosaveStatus}${saveButton}
                 <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn" aria-label="Close personal workspace" data-lms-personal-dashboard-action="close"><i class="fas fa-times"></i></button>
             </div>
         </div>`;
@@ -915,6 +1080,26 @@ function bindLmsPersonalDashboardOverlay(overlay, resourceKey = '') {
             closeLmsPersonalDashboardSharePanel();
             return;
         }
+        if (action === 'open-history-panel') {
+            event.preventDefault();
+            openLmsPersonalDashboardHistoryPanel();
+            return;
+        }
+        if (action === 'close-history-panel') {
+            event.preventDefault();
+            closeLmsPersonalDashboardHistoryPanel();
+            return;
+        }
+        if (action === 'close-save-name-panel') {
+            event.preventDefault();
+            closeLmsPersonalDashboardSaveNamePanel();
+            return;
+        }
+        if (action === 'confirm-save-name') {
+            event.preventDefault();
+            await confirmLmsPersonalDashboardSaveName(resourceKey);
+            return;
+        }
         if (action === 'open-shared-workspace') {
             event.preventDefault();
             const studentId = String(actionNode.dataset.studentId || '').trim();
@@ -929,10 +1114,7 @@ function bindLmsPersonalDashboardOverlay(overlay, resourceKey = '') {
         }
         if (action === 'save-snapshot') {
             event.preventDefault();
-            const label = window.prompt('Name this saved progress', `Progress ${new Date().toLocaleString()}`);
-            if (label == null) return;
-            const saved = await saveLmsPersonalDashboardSnapshotAction(resourceKey, label);
-            if (saved) pulseLmsPersonalDashboardActionButton(actionNode);
+            openLmsPersonalDashboardSaveNamePanel();
             return;
         }
         if (action === 'restore-snapshot') {
@@ -964,7 +1146,26 @@ function bindLmsPersonalDashboardOverlay(overlay, resourceKey = '') {
             closeLmsPersonalDashboardSharePanel();
             return;
         }
+        const historyOverlay = event.target.closest?.('[data-lms-personal-dashboard-history-overlay]');
+        if (historyOverlay && event.target === historyOverlay) {
+            event.preventDefault();
+            closeLmsPersonalDashboardHistoryPanel();
+            return;
+        }
+        const saveNameOverlay = event.target.closest?.('[data-lms-personal-dashboard-save-name-overlay]');
+        if (saveNameOverlay && event.target === saveNameOverlay) {
+            event.preventDefault();
+            closeLmsPersonalDashboardSaveNamePanel();
+            return;
+        }
         if (event.target === overlay) closeLmsPersonalDashboard();
+    });
+    overlay.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        const input = event.target.closest?.('[data-lms-personal-dashboard-save-name-input]');
+        if (!input) return;
+        event.preventDefault();
+        confirmLmsPersonalDashboardSaveName(resourceKey);
     });
     if (typeof window !== 'undefined') {
         if (window.__lmsPersonalDashboardPageHideHandler) {
@@ -1085,6 +1286,7 @@ function mountLmsPersonalDashboardOverlay(resourceKey = '') {
         overlay.setAttribute('aria-label', 'Personal workspace');
         document.body.appendChild(overlay);
     }
+    overlay.setAttribute('data-lux-transparency-exempt', '1');
     overlay.innerHTML = renderLmsPersonalDashboardMarkup(key);
     overlay.hidden = false;
     document.body.classList.add('lms-personal-dashboard-open');

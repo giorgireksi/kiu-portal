@@ -26,6 +26,7 @@
             computeProjectTaskGraphGroupRollup,
             countNum,
             currentFacultyCode,
+            currentUser,
             currentUserId,
             displayName,
             ensureProjectWorkspaceChat,
@@ -70,6 +71,12 @@
             uniqueStrings,
             when
         } = deps;
+
+        function canViewProjectWorkspaceCard(project) {
+            const role = text(project?.role || '').toLowerCase();
+            if (['owner', 'member', 'advisor', 'instructor-viewer'].includes(role)) return true;
+            return Boolean(isStaffAccount?.(currentUser?.()));
+        }
 
         function renderProjectsWorkspacePanelClassic() {
             const runtime = state();
@@ -121,13 +128,13 @@
                     return blob.includes(inviteSearch);
                 })
                 .slice(0, 18);
-            const myProjects = projects.filter((project) => ['owner', 'member', 'advisor', 'instructor-viewer'].includes(text(project?.role || '').toLowerCase()));
-            const featuredProjects = [...projects]
+            const myProjects = projects.filter(canViewProjectWorkspaceCard);
+            const featuredProjects = [...myProjects]
                 .sort((left, right) => Number(right?.activityCount || 0) - Number(left?.activityCount || 0))
                 .slice(0, 6);
-            const projectRolePill = (role) => `<span class="social-neo-pill">${escape(roleLabels[text(role).toLowerCase()] || roleLabel(role || 'member'))}</span>`;
-            const facultyPills = (codes = []) => (Array.isArray(codes) ? codes : []).map((code) => `<span class="social-neo-pill">${escape(code)}</span>`).join('');
-            const skillPills = (skills = []) => (Array.isArray(skills) ? skills : []).map((skill) => `<span class="social-neo-pill">${escape(skill)}</span>`).join('');
+            const projectRolePill = (role) => `<span class="social-neo-pill home-hover-chip">${escape(roleLabels[text(role).toLowerCase()] || roleLabel(role || 'member'))}</span>`;
+            const facultyPills = (codes = []) => (Array.isArray(codes) ? codes : []).map((code) => `<span class="social-neo-pill home-hover-chip">${escape(code)}</span>`).join('');
+            const skillPills = (skills = []) => (Array.isArray(skills) ? skills : []).map((skill) => `<span class="social-neo-pill home-hover-chip">${escape(skill)}</span>`).join('');
             const scrollList = (modifier, content) => `<div class="social-project-scroll-list${modifier ? ` ${modifier}` : ''}">${content}</div>`;
             const projectToneFromAccent = (accent = '') => {
                 const normalized = text(accent).toLowerCase();
@@ -264,7 +271,7 @@
                     <section class="social-neo-card social-project-health-card" data-health="${escape(level)}">
                         <div class="social-neo-section-head">
                             <div><strong>Project health</strong><span>Overall workspace status.</span></div>
-                            <span class="social-project-health-badge" data-health="${escape(level)}"><i class="fas ${escape(icon)}"></i> ${escape(label)}</span>
+                            <span class="social-project-health-badge home-hover-chip" data-health="${escape(level)}"><i class="fas ${escape(icon)}"></i> ${escape(label)}</span>
                         </div>
                         <div class="social-project-overview-slot__scroll social-project-health-body">
                             ${alerts.length ? `<div class="social-project-health-list">${alerts.map((a) => `<div class="social-project-health-alert"><i class="fas fa-circle-xmark"></i> ${escape(a)}</div>`).join('')}</div>` : ''}
@@ -291,7 +298,7 @@
                     <section class="social-neo-card social-project-my-tasks-card">
                         <div class="social-neo-section-head">
                             <div><strong>My tasks</strong><span>Your assigned work.</span></div>
-                            <span class="social-neo-pill">${escape(String(myTasks.length))} open</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(myTasks.length))} open</span>
                         </div>
                         ${myTasks.length ? `<div class="social-project-overview-slot__scroll social-project-my-tasks-list">${myTasks.map((task) => {
                             const now = Date.now();
@@ -302,7 +309,7 @@
                                     <span class="social-project-status-dot is-${escape(tone)}"></span>
                                     <span class="social-project-my-task-title">${escape(text(task.title || ''))}</span>
                                     <span class="social-project-status-label">${escape(labelMap[task.status] || task.status)}</span>
-                                    ${task.priority && task.priority !== 'medium' ? `<span class="social-project-priority-pill" data-priority="${escape(task.priority)}"><i class="fas ${escape(priorityIcon[task.priority] || 'fa-minus')}"></i> ${escape(task.priority)}</span>` : ''}
+                                    ${task.priority && task.priority !== 'medium' ? `<span class="social-project-priority-pill home-hover-chip" data-priority="${escape(task.priority)}"><i class="fas ${escape(priorityIcon[task.priority] || 'fa-minus')}"></i> ${escape(task.priority)}</span>` : ''}
                                     ${task.dueAt ? `<span class="social-project-my-task-due ${isOverdue ? 'is-overdue' : ''}">${escape(when(task.dueAt))}</span>` : ''}
                                 </div>
                             `;
@@ -318,7 +325,7 @@
                     <section class="social-neo-card social-project-roster-card">
                         <div class="social-neo-section-head">
                             <div><strong>Team</strong><span>Members and roles.</span></div>
-                            <span class="social-neo-pill">${escape(String(project?.memberCount || 0))} members</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(project?.memberCount || 0))} members</span>
                         </div>
                         ${list.length ? `<div class="social-project-overview-slot__scroll social-project-team-roster">${list.map((member) => {
                             const account = accountById(member.userId) || { id: member.userId };
@@ -384,7 +391,7 @@
                     <section class="social-neo-card social-project-feed-card">
                         <div class="social-neo-section-head">
                             <div><strong>Recent activity</strong><span>Latest workspace changes.</span></div>
-                            <span class="social-neo-pill">${escape(String(project?.activityCount || 0))} events</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(project?.activityCount || 0))} events</span>
                         </div>
                         ${items.length ? `<div class="social-project-overview-slot__scroll social-project-activity-feed">${items.map(renderActivityItem).join('')}</div>` : '<div class="social-neo-empty">No activity recorded yet.</div>'}
                         <div class="social-project-card-new-cta"><span data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="activity">View all activity →</span></div>
@@ -443,7 +450,7 @@
                     <section class="social-neo-card social-project-chart-card">
                         <div class="social-neo-section-head">
                             <div><strong>Task status distribution</strong><span>See where work is collecting across the board.</span></div>
-                            <span class="social-neo-pill">${escape(String(project?.taskCount || 0))} tasks</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(project?.taskCount || 0))} tasks</span>
                         </div>
                         <div class="social-project-overview-slot__scroll social-project-status-chart">
                             <div class="social-project-status-bar">
@@ -490,7 +497,7 @@
                     <section class="social-neo-card social-project-chart-card">
                         <div class="social-neo-section-head">
                             <div><strong>Status distribution</strong><span>Share of tasks in each column.</span></div>
-                            <span class="social-neo-pill">${escape(String(project?.taskCount || 0))} tasks</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(project?.taskCount || 0))} tasks</span>
                         </div>
                         <div class="social-project-donut-wrap">
                             <svg class="social-project-donut" viewBox="0 0 160 160" role="img" aria-label="Task status distribution">
@@ -518,7 +525,7 @@
                     <section class="social-neo-card social-project-chart-card">
                         <div class="social-neo-section-head">
                             <div><strong>Workload by member</strong><span>Open assigned work per teammate.</span></div>
-                            <span class="social-neo-pill">${escape(String(list.length))} shown</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(list.length))} shown</span>
                         </div>
                         <div class="social-project-overview-slot__scroll social-project-workload-list">
                             ${list.length ? list.map((entry) => {
@@ -566,7 +573,7 @@
                         <div class="social-project-card-new-status">
                             <span class="social-project-status-dot ${escape(statusDotClass)}"></span>
                             <span class="social-project-status-label">${escape(statusLabel)}</span>
-                            ${roleLabelText ? `<span class="social-neo-pill social-project-card-role">${escape(roleLabelText)}</span>` : ''}
+                            ${roleLabelText ? `<span class="social-neo-pill home-hover-chip social-project-card-role">${escape(roleLabelText)}</span>` : ''}
                         </div>
                         <h3 class="social-project-card-new-title">${escape(text(project?.name || 'Project workspace'))}</h3>
                         <p class="social-project-card-new-summary">${escape(text(project?.summary || project?.description || ''))}</p>
@@ -579,7 +586,7 @@
                                 <span class="social-project-card-new-progress-value">${taskPercent}% (${completedTasks}/${taskCount})</span>
                             </div>
                         </div>
-                        ${skillTags.length ? `<div class="social-project-card-new-skills">${skillTags.map((skill) => `<span class="social-neo-pill">${escape(skill)}</span>`).join('')}</div>` : ''}
+                        ${skillTags.length ? `<div class="social-project-card-new-skills">${skillTags.map((skill) => `<span class="social-neo-pill home-hover-chip">${escape(skill)}</span>`).join('')}</div>` : ''}
                         <div class="social-project-card-new-meta">
                             <span>${escape(displayName(owner))} · ${escape(facultyCode)} · ${escape(capacityLabel)}</span>
                         </div>
@@ -663,30 +670,29 @@
                     .some((code) => text(code) === facultyCode);
                 let hubProjects = [...projects];
                 if (hubScope === 'mine' || hubScope === 'attention') {
-                    hubProjects = hubProjects.filter((project) => ['owner', 'member', 'advisor', 'instructor-viewer'].includes(text(project?.role || '').toLowerCase()));
+                    hubProjects = hubProjects.filter(canViewProjectWorkspaceCard);
                     if (hubScope === 'attention') hubProjects = hubProjects.filter(projectNeedsMyAttention);
                 } else if (hubScope === 'faculty') {
                     // Faculty scope defaults to current faculty when select is "All faculties"
                     const facultyCode = (discoverFaculty && discoverFaculty !== 'all') ? discoverFaculty : currentFacultyCode();
                     hubProjects = hubProjects.filter((project) => matchesHubFaculty(project, facultyCode));
                 }
-                // Faculty select filters independently for every scope when not "all"
-                if (discoverFaculty && discoverFaculty !== 'all' && hubScope !== 'faculty') {
-                    hubProjects = hubProjects.filter((project) => matchesHubFaculty(project, discoverFaculty));
-                }
+                const hubScopeBase = hubProjects;
+                const hubStatusCounts = {
+                    all: hubScopeBase.length,
+                    idea: hubScopeBase.filter((p) => text(p?.status) === 'idea').length,
+                    active: hubScopeBase.filter((p) => text(p?.status) === 'active').length,
+                    review: hubScopeBase.filter((p) => text(p?.status) === 'review').length,
+                    completed: hubScopeBase.filter((p) => text(p?.status) === 'completed').length
+                };
+                // Keep faculty filter scoped to the faculty lane only.
+                // Cross-scope carry-over can hide valid projects after account switches.
                 if (hubStatus !== 'all') hubProjects = hubProjects.filter((project) => text(project?.status || 'idea') === hubStatus);
                 if (discoverTag) {
                     hubProjects = hubProjects.filter((project) => (Array.isArray(project?.skillTags) ? project.skillTags : [])
                         .some((tag) => text(tag).toLowerCase() === discoverTag));
                 }
                 hubProjects = hubProjects.filter(matchesHubSearch);
-                const hubStatusCounts = {
-                    all: projects.length,
-                    idea: projects.filter((p) => text(p?.status) === 'idea').length,
-                    active: projects.filter((p) => text(p?.status) === 'active').length,
-                    review: projects.filter((p) => text(p?.status) === 'review').length,
-                    completed: projects.filter((p) => text(p?.status) === 'completed').length
-                };
                 const myWorkItems = myProjects.flatMap((project) => {
                     const projectId = text(project?.id);
                     return (Array.isArray(project?.tasks) ? project.tasks : [])
@@ -812,7 +818,7 @@
                                             <section class="social-project-hub-rail-card lux-soft-chrome home-hover-chip">
                                                 <div class="social-neo-section-head">
                                                     <div><strong>My Work</strong><span class="lms-route-meta-12">Tasks assigned to you.</span></div>
-                                                    <span class="social-neo-pill">${escape(String(myWorkItems.length))}</span>
+                                                    <span class="social-neo-pill home-hover-chip">${escape(String(myWorkItems.length))}</span>
                                                 </div>
                                                 ${myWorkItems.length ? `<div class="social-project-hub-my-work social-project-hub-my-work--roomy">${myWorkItems.map((entry) => {
                                                     const statusId = text(entry.task?.status || 'todo') === 'backlog' ? 'todo' : text(entry.task?.status || 'todo');
@@ -822,7 +828,7 @@
                                                         <span class="social-project-hub-my-work-title">${escape(text(entry.task?.title || 'Task'))}</span>
                                                         <span class="social-project-hub-my-work-meta">
                                                             <em>${escape(text(entry.project?.name || 'Project'))}</em>
-                                                            ${statusCol ? `<span class="social-neo-pill">${escape(statusCol.label)}</span>` : ''}
+                                                            ${statusCol ? `<span class="social-neo-pill home-hover-chip">${escape(statusCol.label)}</span>` : ''}
                                                             ${entry.task?.dueAt ? `<span class="${entry.overdue ? 'is-overdue' : ''}">${escape(when(entry.task.dueAt))}</span>` : ''}
                                                             ${entry.overdue ? '<span class="social-project-hub-my-work-flag">Overdue</span>' : ''}
                                                         </span>
@@ -886,8 +892,8 @@
                                 <strong>${escape(displayName(account))}</strong>
                                 <div class="social-neo-badge-row">
                                     ${projectRolePill(role)}
-                                    ${facultyCode ? `<span class="social-neo-pill">${escape(facultyCode)}</span>` : ''}
-                                    ${pending ? `<span class="social-neo-pill">Invited</span>` : ''}
+                                    ${facultyCode ? `<span class="social-neo-pill home-hover-chip">${escape(facultyCode)}</span>` : ''}
+                                    ${pending ? `<span class="social-neo-pill home-hover-chip">Invited</span>` : ''}
                                     ${joinedLabel ? `<span class="social-neo-muted">${escape(joinedLabel)}</span>` : ''}
                                 </div>
                             </div>
@@ -936,7 +942,7 @@
                     <section class="social-neo-card social-project-task-stats-card">
                         <div class="social-neo-section-head">
                             <div><strong>Task summary</strong><span>Total, overdue, and status counts.</span></div>
-                            <span class="social-neo-pill">${escape(String(total))} tasks</span>
+                            <span class="social-neo-pill home-hover-chip">${escape(String(total))} tasks</span>
                         </div>
                         ${stats}
                     </section>
@@ -982,7 +988,7 @@
                                 <summary class="social-project-overview-brief-summary">
                                     <div class="social-neo-section-head">
                                         <div><strong>Workspace brief</strong><span>Project scope and advising.</span></div>
-                                        <span class="social-neo-pill">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
+                                        <span class="social-neo-pill home-hover-chip">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
                                     </div>
                                     <i class="fas fa-chevron-down social-project-overview-brief-chevron" aria-hidden="true"></i>
                                 </summary>
@@ -991,7 +997,7 @@
                                     <div class="social-project-brief-advisor">
                                         <span class="social-neo-label">Advisor / viewers</span>
                                         <div class="social-neo-badge-row">
-                                            ${advisorAccounts.length ? advisorAccounts.map((account) => `<span class="social-neo-pill">${escape(displayName(account))}</span>`).join('') : '<span class="social-neo-muted">No advisor assigned yet.</span>'}
+                                            ${advisorAccounts.length ? advisorAccounts.map((account) => `<span class="social-neo-pill home-hover-chip">${escape(displayName(account))}</span>`).join('') : '<span class="social-neo-muted">No advisor assigned yet.</span>'}
                                         </div>
                                     </div>
                                 </div>
@@ -1584,12 +1590,12 @@
                                         return `
                                             <tr class="social-project-task-list-row ${isOverdue ? 'is-overdue' : ''}" data-action="project-task-detail-open" data-project-id="${escape(projectId)}" data-task-id="${escape(text(task.id))}" tabindex="0" role="button" aria-label="Open task ${escape(text(task?.title || 'Task'))}">
                                                 <td class="social-project-task-list-title"><strong>${escape(text(task?.title || 'Task'))}</strong></td>
-                                                <td><span class="social-neo-pill">${escape(column.label)}</span></td>
-                                                <td><span class="social-neo-pill social-project-priority-pill" data-priority="${escape(priority)}">${escape(priority)}</span></td>
+                                                <td><span class="social-neo-pill home-hover-chip">${escape(column.label)}</span></td>
+                                                <td><span class="social-neo-pill home-hover-chip social-project-priority-pill" data-priority="${escape(priority)}">${escape(priority)}</span></td>
                                                 <td>${task?.assigneeUserId ? escape(displayName(assignee)) : '<span class="social-neo-muted">Unassigned</span>'}</td>
                                                 <td class="${isOverdue ? 'is-overdue' : ''}">${dueAt ? escape(when(dueAt)) : '—'}</td>
                                                 <td>${blockedByCount || blocksCount
-                                                    ? `<button class="social-neo-pill social-project-task-deps-chip" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}" data-task-id="${escape(text(task.id))}"><i class="fas fa-link"></i> ${escape(String(blockedByCount))}/${escape(String(blocksCount))}</button>`
+                                                    ? `<button class="social-neo-pill home-hover-chip social-project-task-deps-chip" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}" data-task-id="${escape(text(task.id))}"><i class="fas fa-link"></i> ${escape(String(blockedByCount))}/${escape(String(blocksCount))}</button>`
                                                     : '—'}</td>
                                             </tr>
                                         `;
@@ -1760,15 +1766,15 @@
                                 <div class="social-neo-inline social-neo-inline-gap-10-wrap">
                                     <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="projects-back"><i class="fas fa-arrow-left"></i> Back</button>
                                     ${projectRolePill(activeProject.role || 'member')}
-                                    <span class="social-neo-pill">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
-                                    ${activeProject.isOrphaned ? `<span class="social-neo-pill">Ownerless</span>` : ''}
+                                    <span class="social-neo-pill home-hover-chip">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
+                                    ${activeProject.isOrphaned ? `<span class="social-neo-pill home-hover-chip">Ownerless</span>` : ''}
                                 </div>
                                 <h2>${escape(text(activeProject.name || 'Project workspace'))}</h2>
                                 <p>${escape(text(activeProject.summary || activeProject.description || ''))}</p>
                                 <div class="social-neo-badge-row">
                                     ${facultyPills(activeProject.facultyCodes)}
                                     ${skillPills(activeProject.skillTags)}
-                                    ${text(activeProject.courseTag) ? `<span class="social-neo-pill">${escape(activeProject.courseTag)}</span>` : ''}
+                                    ${text(activeProject.courseTag) ? `<span class="social-neo-pill home-hover-chip">${escape(activeProject.courseTag)}</span>` : ''}
                                 </div>
                             </div>
                             <div class="social-project-detail-actions">

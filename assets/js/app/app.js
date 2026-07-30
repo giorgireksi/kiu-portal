@@ -858,8 +858,16 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         const scriptGroups = hasRebuiltSocialShell
             ? [SOCIAL_RUNTIME_SCRIPT_GROUPS[0]]
             : SOCIAL_RUNTIME_SCRIPT_GROUPS;
+        // Within a group, preserve array order (module leaf before classic bridge).
+        // Promise.all raced bridges ahead of ESM evaluation and left window exports unset.
         socialRuntimeLoadPromise = scriptGroups
-            .reduce((chain, group) => chain.then(() => Promise.all(group.map(loadRuntimeScriptOnce))), Promise.resolve())
+            .reduce(
+                (chain, group) => chain.then(() => group.reduce(
+                    (inner, entry) => inner.then(() => loadRuntimeScriptOnce(entry)),
+                    Promise.resolve()
+                )),
+                Promise.resolve()
+            )
             .then(() => {
                 window.__KIU_SOCIAL_RUNTIME_LOADED = true;
                 if (typeof window.hydratePortalSocialRuntime === 'function') {
@@ -907,14 +915,14 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         return newsRuntimeLoadPromise;
     };
 
-    const ORDERS_RUNTIME_CORE_SCRIPT = 'assets/js/shared/orders-runtime-core.js?v=20260705-orders-core1';
+    const ORDERS_RUNTIME_CORE_SCRIPT = 'assets/js/shared/orders-runtime-core.js?v=20260730-rolelink1';
     const ORDERS_RUNTIME_SCRIPTS = [
         ORDERS_RUNTIME_CORE_SCRIPT,
-        'assets/js/shared/orders-inbox.js?v=20260705-orders-core1'
+        'assets/js/shared/orders-inbox.js?v=20260730-rolelink1'
     ];
     const ADMIN_ORDERS_RUNTIME_SCRIPTS = [
         ORDERS_RUNTIME_CORE_SCRIPT,
-        'assets/js/shared/orders-workspace.js?v=20260729-orders-share1'
+        'assets/js/shared/orders-workspace.js?v=20260730-rolelink1'
     ];
     let ordersRuntimeLoadPromise = null;
     let adminOrdersRuntimeLoadPromise = null;

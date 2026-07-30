@@ -233,7 +233,7 @@ function renderProfileViewTabContent(tabIndex, ctx) {
                     ${type !== 'student' && (person.subjects || []).length > 0 ? `
                     <div class="pv-assigned-subjects-title">Assigned Subjects</div>
                     <div class="pv-assigned-subjects">
-                        ${(person.subjects || []).map(sid => `<span class="pv-assigned-subject-pill lux-status-pill lux-status-pill--soft lux-status-pill--compact" data-pv-subject-pill-bg="${escapeProfileViewAttr(`${facColor}15`)}" data-pv-subject-pill-color="${escapeProfileViewAttr(facColor)}">${sid}</span>`).join('')}
+                        ${(person.subjects || []).map(sid => `<span class="pv-assigned-subject-pill lux-status-pill lux-status-pill--soft lux-status-pill--compact home-hover-chip" data-pv-subject-pill-bg="${escapeProfileViewAttr(`${facColor}15`)}" data-pv-subject-pill-color="${escapeProfileViewAttr(facColor)}">${sid}</span>`).join('')}
                     </div>` : ''}
                 </div>
             </div>`;
@@ -360,9 +360,9 @@ function renderProfileViewFinancialTab(id, debt) {
         <table class="pv-financial-table kiu-table">
             <thead><tr><th class="pv-table-cell-left">Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
             <tbody>
-                <tr><td class="pv-table-cell-left">2026-03-01</td><td>Tuition Installment 2 (Spring 2026)</td><td class="pv-financial-amount pv-financial-amount--negative">-1,125 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact pv-financial-status--pending">Pending</span></td></tr>
-                <tr><td class="pv-table-cell-left">2026-01-15</td><td>Tuition Installment 1 (Spring 2026)</td><td class="pv-financial-amount pv-financial-amount--positive">+1,125 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact pv-financial-status--paid">Paid</span></td></tr>
-                <tr><td class="pv-table-cell-left">2025-09-10</td><td>Tuition (Fall 2025)</td><td class="pv-financial-amount pv-financial-amount--positive">+2,250 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact pv-financial-status--paid">Paid</span></td></tr>
+                <tr><td class="pv-table-cell-left">2026-03-01</td><td>Tuition Installment 2 (Spring 2026)</td><td class="pv-financial-amount pv-financial-amount--negative">-1,125 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact home-hover-chip pv-financial-status--pending">Pending</span></td></tr>
+                <tr><td class="pv-table-cell-left">2026-01-15</td><td>Tuition Installment 1 (Spring 2026)</td><td class="pv-financial-amount pv-financial-amount--positive">+1,125 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact home-hover-chip pv-financial-status--paid">Paid</span></td></tr>
+                <tr><td class="pv-table-cell-left">2025-09-10</td><td>Tuition (Fall 2025)</td><td class="pv-financial-amount pv-financial-amount--positive">+2,250 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact home-hover-chip pv-financial-status--paid">Paid</span></td></tr>
             </tbody>
         </table>`;
 }
@@ -385,7 +385,7 @@ function pvMountTab(tabId) {
 function profileViewStatusChip(value, tone) {
     const safeValue = escapeProfileViewText(value);
     const toneClass = tone ? ` ${tone}` : '';
-    return `<span class="lux-status-pill lux-status-pill--soft${toneClass}">${safeValue}</span>`;
+    return `<span class="lux-status-pill lux-status-pill--soft home-hover-chip${toneClass}">${safeValue}</span>`;
 }
 
 function buildProfileViewTabList(type) {
@@ -1027,23 +1027,23 @@ function renderProfile(type, id, facCode) {
                                 <div>
                                     <div class="pv-name">${person.name || PROFILE_VIEW_EMPTY_TEXT}</div>
                                     ${person.nameEn ? `<div class="pv-name-en">${person.nameEn}</div>` : ''}
-                                    <div class="pv-role-badge lux-status-pill lux-status-pill--soft" data-pv-role-badge-bg="${escapeProfileViewAttr(badge.bg)}" data-pv-role-badge-color="${escapeProfileViewAttr(badge.color)}">
+                                    <div class="pv-role-badge lux-status-pill lux-status-pill--soft home-hover-chip" data-pv-role-badge-bg="${escapeProfileViewAttr(badge.bg)}" data-pv-role-badge-color="${escapeProfileViewAttr(badge.color)}">
                                         <i class="fas fa-${type === 'student' ? 'user-graduate' : type === 'professor' ? 'chalkboard-teacher' : 'user-tie'}"></i>
                                         ${badge.label}
                                         <span class="pv-role-sep">&middot;</span>
                                         ${personFac.name || facCode}
                                     </div>
                                 </div>
-                                <span class="pv-status-badge lux-status-pill lux-status-pill--soft" data-pv-status-bg="${escapeProfileViewAttr(statusBg)}" data-pv-status-color="${escapeProfileViewAttr(statusFg)}">${person.status || 'Active'}</span>
+                                <span class="pv-status-badge lux-status-pill lux-status-pill--soft home-hover-chip" data-pv-status-bg="${escapeProfileViewAttr(statusBg)}" data-pv-status-color="${escapeProfileViewAttr(statusFg)}">${person.status || 'Active'}</span>
                             </div>
                         </div>
                     </div>
                     <div class="pv-meta-pills" data-pv-faculty-accent="${escapeProfileViewAttr(facColor)}">
-                        <div class="pv-meta-pill"><i class="fas fa-id-badge"></i> ID: <strong>${id}</strong></div>
-                        ${person.program ? `<div class="pv-meta-pill"><i class="fas fa-graduation-cap"></i> ${person.program}</div>` : ''}
-                        ${person.joinYear ? `<div class="pv-meta-pill"><i class="fas fa-calendar-alt"></i> Since ${person.joinYear}</div>` : ''}
-                        ${person.email ? `<div class="pv-meta-pill"><i class="fas fa-envelope"></i> ${person.email}</div>` : ''}
-                        ${type !== 'student' && person.office ? `<div class="pv-meta-pill"><i class="fas fa-door-open"></i> Office: ${person.office}</div>` : ''}
+                        <div class="pv-meta-pill home-hover-chip"><i class="fas fa-id-badge"></i> ID: <strong>${id}</strong></div>
+                        ${person.program ? `<div class="pv-meta-pill home-hover-chip"><i class="fas fa-graduation-cap"></i> ${person.program}</div>` : ''}
+                        ${person.joinYear ? `<div class="pv-meta-pill home-hover-chip"><i class="fas fa-calendar-alt"></i> Since ${person.joinYear}</div>` : ''}
+                        ${person.email ? `<div class="pv-meta-pill home-hover-chip"><i class="fas fa-envelope"></i> ${person.email}</div>` : ''}
+                        ${type !== 'student' && person.office ? `<div class="pv-meta-pill home-hover-chip"><i class="fas fa-door-open"></i> Office: ${person.office}</div>` : ''}
                     </div>
                 </div>
             </div>

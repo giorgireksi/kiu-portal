@@ -32,6 +32,7 @@
                     ['chancellery', 'E-Chancellery', 'fas fa-desktop'],
                     ['student-service', 'Student Service', 'fas fa-headset'],
                     ['library', 'Library', 'fas fa-book'],
+                    ['orders', 'Orders', 'fas fa-book-open'],
                     ['social', 'Social', 'fas fa-comments']
                 ]
             }
@@ -53,7 +54,7 @@
                     ['library', 'Library', 'fas fa-book'],
                     ['orders', 'Orders', 'fas fa-book-open'],
                     ['social', 'Social', 'fas fa-comments'],
-                    ['chancellery', 'Appeals', 'fas fa-inbox']
+                    ['chancellery', 'E-Chancellery', 'fas fa-inbox']
                 ]
             }
         ],
@@ -73,7 +74,7 @@
                     ['library', 'Library', 'fas fa-book'],
                     ['orders', 'Orders', 'fas fa-book-open'],
                     ['social', 'Social', 'fas fa-comments'],
-                    ['chancellery', 'Appeals', 'fas fa-inbox']
+                    ['chancellery', 'E-Chancellery', 'fas fa-inbox']
                 ]
             }
         ],
@@ -94,6 +95,7 @@
                     ['news', 'News', 'fas fa-newspaper'],
                     ['library', 'Library', 'fas fa-book'],
                     ['orders', 'Orders', 'fas fa-book-open'],
+                    ['chancellery', 'E-Chancellery', 'fas fa-inbox'],
                     ['social', 'Social', 'fas fa-comments']
                 ]
             }

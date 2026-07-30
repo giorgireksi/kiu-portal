@@ -62,4 +62,24 @@ describe('social content store domain split', () => {
         expect(store.state.chats['chat-group-1']).toBeUndefined();
         expect(store.deleteSocialGroup('missing', 'user-a')).toBeNull();
     });
+
+    it('lets same-faculty student service view private groups without manage rights', () => {
+        const store = new PlatformStore({});
+        store.state.accounts['owner-1'] = { id: 'owner-1', displayName: 'Owner One', email: 'owner@example.com', role: 'student', facultyCode: 'ECON' };
+        store.state.accounts['svc-1'] = { id: 'svc-1', displayName: 'Service One', email: 'svc@example.com', role: 'student_service', facultyCode: 'ECON' };
+        store.state.accounts['svc-2'] = { id: 'svc-2', displayName: 'Service Two', email: 'svc2@example.com', role: 'student_service', facultyCode: 'CS' };
+        store.state.social.groups = [{
+            id: 'group-1',
+            name: 'Study',
+            ownerUserId: 'owner-1',
+            adminIds: [],
+            memberIds: [],
+            visibility: 'private',
+            facultyCode: 'ECON'
+        }];
+
+        expect(store.canViewSocialGroup(store.state.social.groups[0], 'svc-1')).toBe(true);
+        expect(store.canManageSocialGroup(store.state.social.groups[0], 'svc-1')).toBe(false);
+        expect(store.canViewSocialGroup(store.state.social.groups[0], 'svc-2')).toBe(false);
+    });
 });

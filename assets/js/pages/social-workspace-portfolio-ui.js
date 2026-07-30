@@ -211,7 +211,7 @@
                                         if (url && isImage(item)) {
                                             return `<img src="${escape(url)}" alt="${escape(text(item.name || 'Portfolio media'))}">`;
                                         }
-                                        return `<span class="social-neo-pill">${escape(text(item.name || 'Uploaded media'))}</span>`;
+                                        return `<span class="social-neo-pill home-hover-chip">${escape(text(item.name || 'Uploaded media'))}</span>`;
                                     }).join('')}
                                 </div>
                             ` : ''}
@@ -393,12 +393,12 @@
                                     ` : ''}
                                     <div class="social-portfolio-actions">
                                         ${entry.isPortfolioDocument ? `
-                                            <button class="lux-secondary-btn home-hover-chip" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>
-                                            ${entry.canEdit ? `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-create-open"><i class="fas fa-pen"></i> Edit portfolio</button>` : `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
+                                            <button class="lux-secondary-btn" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>
+                                            ${entry.canEdit ? `<button class="lux-primary-btn" type="button" data-action="portfolio-create-open"><i class="fas fa-pen"></i> Edit portfolio</button>` : `<button class="lux-primary-btn" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
                                         ` : `
-                                            <button class="lux-secondary-btn home-hover-chip" type="button" data-action="${isOpen ? 'projects-back' : 'project-open'}" data-project-id="${escape(entry.id)}">${isOpen ? 'Hide details' : 'Open entry'}</button>
-                                            ${entry.canEdit ? `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-edit" data-project-id="${escape(entry.id)}"><i class="fas fa-pen"></i> Edit</button>` : `<button class="lux-primary-btn home-hover-chip" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
-                                            ${entry.canEdit ? `<button class="lux-secondary-btn home-hover-chip" type="button" data-action="portfolio-delete" data-project-id="${escape(entry.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
+                                            <button class="lux-secondary-btn" type="button" data-action="${isOpen ? 'projects-back' : 'project-open'}" data-project-id="${escape(entry.id)}">${isOpen ? 'Hide details' : 'Open entry'}</button>
+                                            ${entry.canEdit ? `<button class="lux-primary-btn" type="button" data-action="portfolio-edit" data-project-id="${escape(entry.id)}"><i class="fas fa-pen"></i> Edit</button>` : `<button class="lux-primary-btn" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
+                                            ${entry.canEdit ? `<button class="lux-secondary-btn" type="button" data-action="portfolio-delete" data-project-id="${escape(entry.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                                         `}
                                     </div>
                                 </article>

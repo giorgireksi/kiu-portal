@@ -26,6 +26,23 @@ describe('social-photography-regressions (bare-shell era)', () => {
         expect(runtime).toMatch(/if \(activePanel === 'feed'\) \{[\s\S]*feedScopeType/);
     });
 
+    it('runtime guards social/feed/directory responses by requesting user id', () => {
+        const runtime = readSource('assets/js/shared/social-runtime-lite.js');
+        expect(runtime).toContain('const requestUserId = text(user.id);');
+        expect(runtime).toMatch(/loadSocialState[\s\S]*if \(text\(currentUserId\(\)\) !== requestUserId\) return runtime\.social;/);
+        expect(runtime).toMatch(/refreshFeed[\s\S]*if \(text\(currentUserId\(\)\) !== requestUserId\) return runtime\.feed;/);
+        expect(runtime).toMatch(/loadDirectory[\s\S]*if \(text\(currentUserId\(\)\) !== requestUserId\) return runtime\.directory;/);
+    });
+
+    it('resets project discovery filters when account identity changes', () => {
+        const runtime = readSource('assets/js/shared/social-runtime-lite.js');
+        expect(runtime).toContain('function syncRuntimeIdentity(user = currentUser())');
+        expect(runtime).toContain('function resetWorkspaceDiscoveryUiForIdentityChange()');
+        expect(runtime).toContain("runtime.ui.projectHubScope = 'mine';");
+        expect(runtime).toContain("runtime.ui.projectDiscoverFaculty = 'all';");
+        expect(runtime).toContain('const identityChanged = syncRuntimeIdentity(user);');
+    });
+
     it('photography publish refreshes feed stage after submit', () => {
         const photo = readSource('assets/js/pages/social-photography.js');
         expect(photo).toMatch(/resolvePhotographyHook\('refreshPhotographyPanelStage'\)/);

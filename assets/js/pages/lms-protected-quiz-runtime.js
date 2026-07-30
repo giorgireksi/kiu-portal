@@ -868,10 +868,10 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
                                 <div class="lms-protected-monitor-copy lms-protected-monitor-latest-copy">${escapeHtml(latestEvent?.note || latestEvent?.type || 'No violations yet')}</div>
                             </div>
                             <div class="lms-protected-monitor-pills">
-                                <span class="lms-route-pill lms-protected-monitor-pill is-warning-count"><i class="fas fa-triangle-exclamation"></i> Warnings ${Number(attempt.warningCount || 0)}</span>
-                                <span class="lms-route-pill lms-protected-monitor-pill is-violation-count"><i class="fas fa-shield"></i> Violations ${Number(attempt.violationCount || 0)}</span>
-                                <span class="lms-route-pill lms-protected-monitor-pill ${attempt.antiCheatConnected ? 'is-connected' : 'is-disconnected'}"><i class="fas fa-plug"></i> ${attempt.antiCheatConnected ? 'Connected' : 'Disconnected'}</span>
-                                ${overrideStatus ? `<span class="lms-route-pill lms-protected-monitor-pill is-override"><i class="fas fa-sliders"></i> Override ${escapeHtml(overrideStatus)}</span>` : ''}
+                                <span class="lms-route-pill home-hover-chip lms-protected-monitor-pill is-warning-count"><i class="fas fa-triangle-exclamation"></i> Warnings ${Number(attempt.warningCount || 0)}</span>
+                                <span class="lms-route-pill home-hover-chip lms-protected-monitor-pill is-violation-count"><i class="fas fa-shield"></i> Violations ${Number(attempt.violationCount || 0)}</span>
+                                <span class="lms-route-pill home-hover-chip lms-protected-monitor-pill ${attempt.antiCheatConnected ? 'is-connected' : 'is-disconnected'}"><i class="fas fa-plug"></i> ${attempt.antiCheatConnected ? 'Connected' : 'Disconnected'}</span>
+                                ${overrideStatus ? `<span class="lms-route-pill home-hover-chip lms-protected-monitor-pill is-override"><i class="fas fa-sliders"></i> Override ${escapeHtml(overrideStatus)}</span>` : ''}
                             </div>
                         </div>
                     </summary>
@@ -923,10 +923,10 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
                         ${renderProtectedAntiCheatPolicySummary(quiz.antiCheatPolicy)}
                     </div>
                     <div class="lms-route-actions lms-protected-monitor-shell-actions">
-                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-students"><i class="fas fa-users"></i> ${(quiz.attempts || []).length} students</span>
-                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-live"><i class="fas fa-play"></i> ${Number(quiz.monitoringSummary?.inProgress || 0)} live</span>
-                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-submitted"><i class="fas fa-paper-plane"></i> ${Number(quiz.monitoringSummary?.submitted || 0)} submitted</span>
-                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-blocked"><i class="fas fa-ban"></i> ${Number(quiz.monitoringSummary?.blocked || 0)} blocked</span>
+                        <span class="lms-route-pill home-hover-chip lms-protected-monitor-shell-pill is-students"><i class="fas fa-users"></i> ${(quiz.attempts || []).length} students</span>
+                        <span class="lms-route-pill home-hover-chip lms-protected-monitor-shell-pill is-live"><i class="fas fa-play"></i> ${Number(quiz.monitoringSummary?.inProgress || 0)} live</span>
+                        <span class="lms-route-pill home-hover-chip lms-protected-monitor-shell-pill is-submitted"><i class="fas fa-paper-plane"></i> ${Number(quiz.monitoringSummary?.submitted || 0)} submitted</span>
+                        <span class="lms-route-pill home-hover-chip lms-protected-monitor-shell-pill is-blocked"><i class="fas fa-ban"></i> ${Number(quiz.monitoringSummary?.blocked || 0)} blocked</span>
                     </div>
                 </div>
                 <div class="lms-route-stack lms-route-stack-mt-16 lms-protected-monitor-shell-list">${rows || `<div class="lms-route-copy lms-protected-monitor-empty-note">No students are assigned to this protected quiz yet.</div>`}</div>

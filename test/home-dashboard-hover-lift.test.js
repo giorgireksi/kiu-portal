@@ -63,11 +63,40 @@ describe('home dashboard shell hover lift', () => {
         expect(fouc).not.toMatch(/\.home-hover-chip:has\(\.home-hover-chip:hover\)[\s\S]*transform:\s*none/);
         expect(fouc).toMatch(/\.home-hover-chip:has\(\.home-hover-chip\)[\s\S]*contain:\s*none/);
         expect(fouc).toMatch(/\[data-lux-glass-root="1"\]\):not\(\.home-hover-chip\)[\s\S]*transition:\s*none/);
-        expect(fouc).toMatch(/\.lux-status-pill\.home-hover-chip[\s\S]*--home-chip-hover-lift-nested/);
+        expect(fouc).toMatch(/\.lux-status-pill\.home-hover-chip[\s\S]*contain:\s*none/);
+        expect(fouc).toMatch(/\.lux-status-pill\.home-hover-chip[\s\S]*overflow:\s*visible/);
+        expect(fouc).toMatch(/\.lux-focus-panel__chip\.home-hover-chip[\s\S]*overflow:\s*visible/);
         expect(fouc).toMatch(/\.home-hover-chip[\s\S]*contain:\s*paint/);
         expect(fouc).toMatch(/\.home-hover-chip[\s\S]*::after/);
         expect(fouc).not.toMatch(/home-hover-chip[\s\S]*filter:\s*brightness/);
         expect(fouc).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.home-hover-chip[\s\S]*display:\s*none/);
+    });
+
+    it('keeps badge/status pills on full share-panel lift (no nested demotion)', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(fouc).toContain('Nested demotion: small controls only — badge/status pills keep full share-panel lift');
+        expect(fouc).toMatch(/body\.lux-unified-shell \.home-hover-chip :is\([\s\S]*\.admin-library-schema-btn-remove\.home-hover-chip[\s\S]*\):hover/);
+        expect(fouc).not.toMatch(/body\.lux-unified-shell \.home-hover-chip :is\([\s\S]*\.lux-status-pill\.home-hover-chip[\s\S]*\):hover\s*\{[\s\S]*--home-chip-hover-lift-nested/);
+        expect(fouc).not.toMatch(/body\.lux-unified-shell :is\(\s*\n\s*\.lux-status-pill\.home-hover-chip[\s\S]{0,400}\):hover\s*\{[\s\S]*--home-chip-hover-lift-nested/);
+    });
+
+    it('unclips pass-2 chip families and keeps Social helpers tagged', () => {
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const portal = readSource('assets/css/layout-portal.css');
+        const panel = readSource('assets/js/pages/social-workspace-panel.js');
+        const live = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const ss = readSource('assets/js/pages/student-service.js');
+        expect(fouc).toMatch(/\.lms-live-pill\.home-hover-chip/);
+        expect(fouc).toMatch(/\.sch-modal-mode-chip\.home-hover-chip/);
+        expect(fouc).toMatch(/\.spr-chip\.home-hover-chip/);
+        expect(fouc).toMatch(/\.spt-detail-chip\.home-hover-chip/);
+        expect(fouc).toMatch(/\.portal-msg-chip\.home-hover-chip/);
+        expect(bare).toMatch(/\.social-project-task-graph-card-meta \.social-neo-pill\.home-hover-chip[\s\S]*overflow:\s*visible/);
+        expect(portal).toMatch(/\.portal-msg-chip\.home-hover-chip:hover[\s\S]*--home-chip-hover-lift/);
+        expect(panel).toMatch(/class="social-neo-pill home-hover-chip"/);
+        expect(live).toMatch(/lms-live-pill home-hover-chip/);
+        expect(ss).toMatch(/student-service-pill[^"]*home-hover-chip|home-hover-chip[^"]*student-service-pill/);
     });
 
     it('disables hover lift under reduced motion and at 0% transparency', () => {

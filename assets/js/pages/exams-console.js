@@ -1248,7 +1248,7 @@
         return `
             <div class="ex2-workspace-stats">
                 ${getWorkspaceStatChips().map(chip => `
-                    <div class="ex2-stat-chip lux-soft-chrome${chip.tone ? ` ${chip.tone}` : ''}">
+                    <div class="ex2-stat-chip home-hover-chip lux-soft-chrome${chip.tone ? ` ${chip.tone}` : ''}">
                         <strong>${chip.value}</strong>
                         <span>${escapeHtml(chip.label)}</span>
                     </div>

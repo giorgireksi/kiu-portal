@@ -41,6 +41,19 @@ describe('student-service route regressions', () => {
         expect(chrome).toContain('student-service-command-bar-title lux-page-title');
     });
 
+    it('staff workbench merges list+detail into one frosted zone with home-hover-chip', () => {
+        const service = readSource('assets/js/pages/student-service-service.js');
+        expect(service).toContain('student-service-zone student-service-workbench-merged home-hover-chip');
+        expect(service).toContain('data-student-service-staff-workbench-shell="1"');
+        expect(service).toContain('data-student-service-my-tickets-shell="1"');
+        expect(service).toContain('data-student-service-responder-shell="1"');
+        expect(service).toContain('student-service-workbench-column student-service-workbench-column--inbox');
+        expect(service).toContain('student-service-workbench-column student-service-workbench-column--detail');
+        expect(service).not.toMatch(
+            /data-student-service-staff-workbench-primary="1"[\s\S]*?<section class="student-service-zone">/
+        );
+    });
+
     it('shared layout primitives define student-service text roles', () => {
         const primitives = readSource('assets/css/lux-layout-primitives.css');
         expect(primitives).toContain('.student-service-command-bar-title');
@@ -60,6 +73,8 @@ describe('student-service route regressions', () => {
         expect(block).toContain('body.lux-route-student-service .student-service-lane-choice-grid');
         expect(block).toContain('body.lux-route-student-service .student-service-canvas');
         expect(block).toContain('body.lux-route-student-service .student-service-zone');
+        expect(block).toContain('body.lux-route-student-service .student-service-workbench-merged');
+        expect(block).toContain('body.lux-route-student-service .student-service-workbench-column');
         expect(block).toContain('body.lux-route-student-service .student-service-request-form');
         expect(block).toContain('body.lux-route-student-service .student-service-find-search');
         expect(block).toContain('body.lux-route-student-service .student-service-ticket-inbox-row');
@@ -152,7 +167,7 @@ describe('student-service route regressions', () => {
         expect(bareLite).toContain('#student-service-modal-root .lux-glass-dialog-comment-thread .social-neo-comment-reply-form');
         expect(bareLite).toContain('#student-service-modal-root .lux-glass-dialog-comment-thread .student-service-qa-reply-context');
         expect(chrome).not.toContain("'lux-soft-chrome'");
-        expect(chrome).toContain('student-service-qa-delete-confirm-icon-chip lux-soft-chrome');
+        expect(chrome).toContain('student-service-qa-delete-confirm-icon-chip home-hover-chip lux-soft-chrome');
     });
 
     it('qa thread modal uses shared typography on title', () => {

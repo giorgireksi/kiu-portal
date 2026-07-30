@@ -71,7 +71,7 @@
         closeAttr = ''
     } = {}) {
         const typePillHtml = typePill
-            ? `<span class="lux-hub-form-type-pill">${escapeLuxGlassDialogHtml(typePill)}</span>`
+            ? `<span class="lux-hub-form-type-pill home-hover-chip">${escapeLuxGlassDialogHtml(typePill)}</span>`
             : '';
         const subtitleHtml = subtitle
             ? `<span class="lux-glass-dialog-subtitle">${escapeLuxGlassDialogHtml(subtitle)}</span>`

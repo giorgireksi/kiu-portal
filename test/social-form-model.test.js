@@ -154,7 +154,7 @@ describe('social-form-model', () => {
         expect(fromDateTimeLocalValue('2026-07-19T12:30')).toMatch(/Z$/);
         expect(defaultSurveyDraftQuestions()).toHaveLength(1);
         expect(defaultSurveyDraftSettings('official').audience).toBe('campus');
-        expect(defaultSurveyDraftSettings('student').audience).toBe('connections');
+        expect(defaultSurveyDraftSettings('student').audience).toBe('faculty');
         expect(surveyAudienceCreateLabel('faculty')).toBe('My faculty');
         expect(parseSurveyScopeValue('profile:u1').scopeType).toBe('profile');
     });

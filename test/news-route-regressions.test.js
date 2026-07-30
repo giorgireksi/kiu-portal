@@ -27,6 +27,7 @@ describe('news bare shell', () => {
         const html = readSource('news.html');
         expect(html).toContain('lux-tokens.css');
         expect(html).toContain('lux-controls.css');
+        expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('lux-modals.css');
         expect(html).toContain('lux-shell.css');
         expect(html).toContain('frostedpopup1');

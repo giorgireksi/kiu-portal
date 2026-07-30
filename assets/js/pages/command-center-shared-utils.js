@@ -196,8 +196,8 @@ function renderModalMissingChips(missing, touched) {
     if (!touched || !missing.length) return '';
     const visible = missing.slice(0, 3);
     const extra = missing.length - visible.length;
-    const chips = visible.map((item) => `<span class="${hub}-chip is-warning lux-status-pill">Missing ${escapeHtml(item)}</span>`).join('');
-    const more = extra > 0 ? `<span class="${hub}-chip lux-status-pill">+${extra} more</span>` : '';
+    const chips = visible.map((item) => `<span class="${hub}-chip is-warning lux-status-pill home-hover-chip">Missing ${escapeHtml(item)}</span>`).join('');
+    const more = extra > 0 ? `<span class="${hub}-chip lux-status-pill home-hover-chip">+${extra} more</span>` : '';
     return `<div class="${hub}-modal-missing">${chips}${more}</div>`;
 }
 
@@ -288,11 +288,11 @@ function renderOverviewSection(record, completion) {
             </div>
             <section class="${hub}-info-card is-full lux-data-card">
                 <span>Expertise</span>
-                <div class="${hub}-chips ${hub}-chips--spaced">${(record.expertise || []).length ? record.expertise.map((item) => `<span class="${hub}-chip lux-status-pill">${escapeHtml(item)}</span>`).join('') : `<span class="${hub}-chip is-warning lux-status-pill">No expertise listed</span>`}</div>
+                <div class="${hub}-chips ${hub}-chips--spaced">${(record.expertise || []).length ? record.expertise.map((item) => `<span class="${hub}-chip lux-status-pill home-hover-chip">${escapeHtml(item)}</span>`).join('') : `<span class="${hub}-chip is-warning lux-status-pill home-hover-chip">No expertise listed</span>`}</div>
             </section>
             <section class="${hub}-info-card is-full lux-data-card">
                 <span>Languages</span>
-                <div class="${hub}-chips ${hub}-chips--spaced">${(record.languages || []).length ? record.languages.map((item) => `<span class="${hub}-chip lux-status-pill">${escapeHtml(item)}</span>`).join('') : `<span class="${hub}-chip is-warning lux-status-pill">No languages listed</span>`}</div>
+                <div class="${hub}-chips ${hub}-chips--spaced">${(record.languages || []).length ? record.languages.map((item) => `<span class="${hub}-chip lux-status-pill home-hover-chip">${escapeHtml(item)}</span>`).join('') : `<span class="${hub}-chip is-warning lux-status-pill home-hover-chip">No languages listed</span>`}</div>
             </section>
         `;
 }

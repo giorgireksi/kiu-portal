@@ -1051,8 +1051,8 @@ function buildPortalMessengerWorkspaceHtml(summary, context = 'embedded') {
                     <div class="portal-msg-page-copy">Search students, professors, and teaching assistants, then move between quick chats and deeper conversations without leaving the portal.</div>
                 </div>
                 <div class="portal-msg-page-pills">
-                    <span class="portal-msg-pill is-role"><i class="fas fa-user-shield"></i> ${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))}</span>
-                    <span class="portal-msg-pill"><i class="fas fa-building"></i> ${escapeHtml(getFacultyLabel(normalizeFacultyCode(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty(), 'ECON')))}</span>
+                    <span class="portal-msg-pill home-hover-chip is-role"><i class="fas fa-user-shield"></i> ${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))}</span>
+                    <span class="portal-msg-pill home-hover-chip"><i class="fas fa-building"></i> ${escapeHtml(getFacultyLabel(normalizeFacultyCode(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty(), 'ECON')))}</span>
                     ${context === 'embedded' ? `<button class="lux-secondary-btn portal-msg-inline-btn" data-portal-msg-click="open-full"><i class="fas fa-expand"></i> Full Chat</button>` : ''}
                 </div>
             </div>
@@ -1069,7 +1069,7 @@ function buildPortalMessengerWorkspaceHtml(summary, context = 'embedded') {
                             [USER_ROLES.PROFESSOR, 'Professors'],
                             [USER_ROLES.TA, 'TAs']
                         ].map(([value, label]) => `
-                            <button type="button" class="portal-msg-chip ${uiState.roleFilter === value ? 'is-active' : ''}" data-portal-msg-click="set-role-filter" data-portal-msg-value="${value}">${label}</button>
+                            <button type="button" class="portal-msg-chip home-hover-chip ${uiState.roleFilter === value ? 'is-active' : ''}" data-portal-msg-click="set-role-filter" data-portal-msg-value="${value}">${label}</button>
                         `).join('')}
                     </div>
                     <div class="portal-msg-list portal-msg-list--capped">
@@ -1081,8 +1081,8 @@ function buildPortalMessengerWorkspaceHtml(summary, context = 'embedded') {
                         <div class="portal-msg-panel-title-row">
                             <div class="portal-msg-panel-title">Chats</div>
                             <div class="portal-msg-toggle-group">
-                                <button type="button" class="portal-msg-chip ${uiState.chatSection !== 'group' ? 'is-active' : ''}" data-portal-msg-click="set-chat-section" data-portal-msg-value="private">Private Chats</button>
-                                <button type="button" class="portal-msg-chip ${uiState.chatSection === 'group' ? 'is-active' : ''}" data-portal-msg-click="set-chat-section" data-portal-msg-value="group">Group Chats</button>
+                                <button type="button" class="portal-msg-chip home-hover-chip ${uiState.chatSection !== 'group' ? 'is-active' : ''}" data-portal-msg-click="set-chat-section" data-portal-msg-value="private">Private Chats</button>
+                                <button type="button" class="portal-msg-chip home-hover-chip ${uiState.chatSection === 'group' ? 'is-active' : ''}" data-portal-msg-click="set-chat-section" data-portal-msg-value="group">Group Chats</button>
                             </div>
                         </div>
                         <div class="portal-msg-panel-head-actions">
@@ -1109,8 +1109,8 @@ function buildPortalMessengerCompactBody(summary) {
     }
     return `
         <div class="portal-msg-compact-tabs">
-            <button type="button" class="portal-msg-chip ${uiState.compactTab === 'chats' ? 'is-active' : ''}" data-portal-msg-click="set-compact-tab" data-portal-msg-value="chats">Chats</button>
-            <button type="button" class="portal-msg-chip ${uiState.compactTab === 'people' ? 'is-active' : ''}" data-portal-msg-click="set-compact-tab" data-portal-msg-value="people">People</button>
+            <button type="button" class="portal-msg-chip home-hover-chip ${uiState.compactTab === 'chats' ? 'is-active' : ''}" data-portal-msg-click="set-compact-tab" data-portal-msg-value="chats">Chats</button>
+            <button type="button" class="portal-msg-chip home-hover-chip ${uiState.compactTab === 'people' ? 'is-active' : ''}" data-portal-msg-click="set-compact-tab" data-portal-msg-value="people">People</button>
         </div>
         ${uiState.compactTab === 'people'
             ? `

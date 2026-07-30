@@ -57,6 +57,13 @@ describe('sync cross-role audit — native roles', () => {
         expect(stateSource).toContain('USER_ROLES.STUDENT_SERVICE');
         expect(stateSource).toContain('USER_ROLES.ADMIN');
     });
+
+    it('allows personal-data for professor, ta, and student service roles', () => {
+        const stateSource = readSource('assets/js/app/state.js');
+
+        expect(stateSource).toMatch(/USER_ROLES\.PROFESSOR \|\| role === USER_ROLES\.TA[\s\S]*'personal-data'/);
+        expect(stateSource).toMatch(/role === USER_ROLES\.STUDENT_SERVICE[\s\S]*'personal-data'/);
+    });
 });
 
 describe('sync cross-role audit — admin impersonation', () => {

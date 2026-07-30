@@ -10,10 +10,12 @@ describe('admin and integrations route split', () => {
     it('mounts the adjacent admin/integration family from its dedicated route module', () => {
         const server = readSource('backend/platform/server.js');
         const routeModule = readSource('backend/platform/routes/admin-integrations-routes.js');
+        const socialRuntime = readSource('assets/js/shared/social-runtime-lite.js');
 
         expect(server).toContain("require('./routes/admin-integrations-routes')");
         expect(server).toContain('registerAdminIntegrationsRoutes(app, {');
         expect(routeModule).toContain("app.get('/api/admin/accounts'");
+        expect(routeModule).toContain("new Set(['admin', 'student_service'])");
         expect(routeModule).toContain("app.post('/api/admin/accounts'");
         expect(routeModule).toContain("app.post('/api/admin/accounts/:id/privileges'");
         expect(routeModule).toContain("app.post('/api/admin/reset-platform-state'");
@@ -30,5 +32,6 @@ describe('admin and integrations route split', () => {
         expect(routeModule).toContain("eventType: 'system-upserted'");
         expect(routeModule).toContain("eventType: 'sync-run-created'");
         expect(routeModule).toContain("eventType: 'sync-conflict-upserted'");
+        expect(socialRuntime).toContain("if (!runtime.ui.directorySearch && user.role !== 'admin') query.set('facultyCode', currentFacultyCode());");
     });
 });

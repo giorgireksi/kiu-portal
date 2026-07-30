@@ -6,14 +6,14 @@ function ensureAdminOrdersUiState(faculty = getCurrentFaculty()) {
         adminOrdersUiByFaculty[normalizedFaculty] = {
             search: '',
             roleFilter: 'all',
+            audienceRole: USER_ROLES.STUDENT,
+            recipientFilterEditorRole: USER_ROLES.STUDENT,
             selectedRecipientIds: [],
             selectedOrderId: null,
             sentFilters: {
                 search: '',
-                type: 'all',
-                status: 'all',
-                kind: 'all',
-                recipientRole: 'all',
+                readStatus: 'all',
+                layoutFilters: {},
                 dateFrom: '',
                 dateTo: ''
             },
@@ -25,18 +25,28 @@ function ensureAdminOrdersUiState(faculty = getCurrentFaculty()) {
             }
         };
     }
-    if (!adminOrdersUiByFaculty[normalizedFaculty].sentFilters) {
-        adminOrdersUiByFaculty[normalizedFaculty].sentFilters = {
+    const state = adminOrdersUiByFaculty[normalizedFaculty];
+    if (!state.audienceRole) {
+        state.audienceRole = USER_ROLES.STUDENT;
+    }
+    state.audienceRole = normalizeOrdersRecipientFilterRole(state.audienceRole);
+    if (!state.sentFilters || typeof state.sentFilters !== 'object') {
+        state.sentFilters = {
             search: '',
-            type: 'all',
-            status: 'all',
-            kind: 'all',
-            recipientRole: 'all',
+            readStatus: 'all',
+            layoutFilters: {},
             dateFrom: '',
             dateTo: ''
         };
     }
-    return adminOrdersUiByFaculty[normalizedFaculty];
+    if (!state.sentFilters.layoutFilters || typeof state.sentFilters.layoutFilters !== 'object') {
+        state.sentFilters.layoutFilters = {};
+    }
+    if (!state.sentFilters.readStatus) state.sentFilters.readStatus = 'all';
+    if (!state.recipientFilterEditorRole) {
+        state.recipientFilterEditorRole = state.audienceRole;
+    }
+    return state;
 }
 
 function getOrderRoleShortLabel(role) {
@@ -178,8 +188,6 @@ const ADMIN_ORDER_COMPOSE_TYPES = Object.freeze([
     'HR Order'
 ]);
 
-const ADMIN_ORDERS_THREAD_MAX_ATTACHMENTS = 5;
-const ADMIN_ORDERS_THREAD_ATTACHMENT_ACCEPT = 'image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt';
 
 function getAdminSentOrders(faculty = getCurrentFaculty()) {
     const bucket = getOrdersBucketForFaculty(faculty);
@@ -191,33 +199,45 @@ function getAdminSentOrderKind(order) {
     return /announcement|notice/i.test(haystack) ? 'announcement' : 'order';
 }
 
-function matchesAdminSentOrderDateRange(order, dateFrom, dateTo) {
-    const orderDate = String(order?.createdDate || order?.effectiveDate || '').slice(0, 10);
-    if (!orderDate) return true;
-    if (dateFrom && orderDate < dateFrom) return false;
-    if (dateTo && orderDate > dateTo) return false;
-    return true;
+function orderIncludesAudienceRole(order, role) {
+    const normalizedRole = normalizeOrdersRecipientFilterRole(role);
+    return (order?.recipientSnapshots || []).some((item) => String(item?.role || '').toLowerCase() === normalizedRole);
+}
+
+function countAdminAudienceNotifications(faculty = getCurrentFaculty(), role = USER_ROLES.STUDENT) {
+    return 0;
+}
+
+function getAdminAudienceRole(faculty = getCurrentFaculty()) {
+    return normalizeOrdersRecipientFilterRole(ensureAdminOrdersUiState(faculty).audienceRole || USER_ROLES.STUDENT);
+}
+
+function setAdminAudienceRole(role, faculty = getCurrentFaculty()) {
+    const uiState = ensureAdminOrdersUiState(faculty);
+    uiState.audienceRole = normalizeOrdersRecipientFilterRole(role);
+    uiState.recipientFilterEditorRole = uiState.audienceRole;
+    return uiState.audienceRole;
 }
 
 function getFilteredAdminSentOrders(faculty = getCurrentFaculty()) {
     const uiState = ensureAdminOrdersUiState(faculty);
     const filters = uiState.sentFilters || {};
+    const audienceRole = getAdminAudienceRole(faculty);
     const query = String(filters.search || '').trim().toLowerCase();
-    const typeFilter = filters.type || 'all';
-    const statusFilter = filters.status || 'all';
-    const kindFilter = filters.kind || 'all';
-    const recipientRole = filters.recipientRole || 'all';
+    const layoutFilters = filters.layoutFilters || {};
+    const layout = getCachedOrdersRecipientFilterLayout(faculty, audienceRole);
+    const enabledSelects = getEnabledOrdersRecipientLayoutSelects(layout);
 
     return getAdminSentOrders(faculty).filter((order) => {
-        if (typeFilter !== 'all' && order.type !== typeFilter) return false;
-        if (statusFilter !== 'all' && String(order.status || 'Active') !== statusFilter) return false;
-        const kind = getAdminSentOrderKind(order);
-        if (kindFilter !== 'all' && kind !== kindFilter) return false;
-        if (recipientRole !== 'all') {
-            const roles = (order.recipientSnapshots || []).map((item) => item.role);
-            if (!roles.includes(recipientRole)) return false;
+        if (!orderIncludesAudienceRole(order, audienceRole)) return false;
+        for (const filter of enabledSelects) {
+            const selected = layoutFilters[filter.field] || 'all';
+            if (!selected || selected === 'all') continue;
+            if (filter.field === 'type' && String(order.type || '') !== selected) return false;
+            if (filter.field === 'status' && String(order.status || 'Active') !== selected) return false;
+            if (filter.field === 'kind' && getAdminSentOrderKind(order) !== selected) return false;
         }
-        if (!matchesAdminSentOrderDateRange(order, filters.dateFrom, filters.dateTo)) return false;
+        if (!matchesOrdersLayoutDateRange(order, filters.dateFrom, filters.dateTo)) return false;
         if (!query) return true;
         const haystack = [
             order.id,
@@ -236,7 +256,18 @@ function getFilteredAdminSentOrders(faculty = getCurrentFaculty()) {
 function setAdminOrdersSentFilter(field, value) {
     const uiState = ensureAdminOrdersUiState();
     if (!uiState.sentFilters) uiState.sentFilters = {};
-    uiState.sentFilters[field] = value ?? '';
+    if (field === 'layoutFilters' && value && typeof value === 'object') {
+        uiState.sentFilters.layoutFilters = value;
+    } else {
+        uiState.sentFilters[field] = value ?? '';
+    }
+    syncAdminOrdersSentInboxChange();
+}
+
+function setAdminOrdersSentLayoutFilter(field, value) {
+    const uiState = ensureAdminOrdersUiState();
+    if (!uiState.sentFilters.layoutFilters) uiState.sentFilters.layoutFilters = {};
+    uiState.sentFilters.layoutFilters[field] = value || 'all';
     syncAdminOrdersSentInboxChange();
 }
 
@@ -256,168 +287,214 @@ function syncAdminOrdersSentInboxChange() {
     }
 }
 
-function makeAdminOrderThreadEntryId() {
-    return `ORD-MSG-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+let ordersRecipientFilterEditorDraft = null;
+
+function getAdminOrdersRecipientFilterEditorRole(faculty = getCurrentFaculty()) {
+    return normalizeOrdersRecipientFilterRole(
+        ensureAdminOrdersUiState(faculty).recipientFilterEditorRole || USER_ROLES.STUDENT
+    );
 }
 
-function normalizeAdminOrderThreadEntry(entry = {}) {
+function setAdminOrdersRecipientFilterEditorRole(role, faculty = getCurrentFaculty()) {
+    ensureAdminOrdersUiState(faculty).recipientFilterEditorRole = normalizeOrdersRecipientFilterRole(role);
+    return ensureAdminOrdersUiState(faculty).recipientFilterEditorRole;
+}
+
+function getOrdersRecipientFilterEditorRoleLabel(role) {
+    if (role === USER_ROLES.PROFESSOR) return 'Professors';
+    if (role === USER_ROLES.TA) return 'Teaching Assistants';
+    if (role === USER_ROLES.STUDENT_SERVICE) return 'Student Service';
+    return 'Students';
+}
+
+function buildOrdersRecipientFilterEditorDraft(faculty = getCurrentFaculty(), recipientRole = getAdminOrdersRecipientFilterEditorRole(faculty)) {
+    const role = normalizeOrdersRecipientFilterRole(recipientRole);
+    const layout = getCachedOrdersRecipientFilterLayout(faculty, role);
     return {
-        id: String(entry.id || makeAdminOrderThreadEntryId()),
-        authorId: String(entry.authorId || 'admin'),
-        authorName: String(entry.authorName || 'Administrator'),
-        authorRole: entry.authorRole || USER_ROLES.ADMIN,
-        message: String(entry.message || ''),
-        attachments: Array.isArray(entry.attachments) ? entry.attachments : [],
-        createdAt: entry.createdAt || new Date().toISOString(),
-        type: entry.type || 'message'
+        facultyCode: normalizeFacultyCode(faculty || 'ECON', 'ECON'),
+        recipientRole: role,
+        connectedRoles: getCachedOrdersFilterConnectedRoles(faculty, role),
+        filters: (layout.filters || []).map((filter) => ({
+            ...filter,
+            options: (filter.options || []).map((option) => ({ ...option }))
+        }))
     };
 }
 
-function ensureAdminOrderThread(order) {
-    if (!order) return [];
-    if (!Array.isArray(order.thread) || !order.thread.length) {
-        order.thread = [normalizeAdminOrderThreadEntry({
-            authorId: order.createdById,
-            authorName: order.createdByName,
-            authorRole: USER_ROLES.ADMIN,
-            message: order.description,
-            attachments: getOrderAttachmentEntries(order).map((item) => ({
-                name: item.name,
-                url: item.url
-            })),
-            createdAt: order.createdAt || order.createdDate,
-            type: 'order'
-        })];
-    }
-    return order.thread;
+function isOrdersRecipientFilterEditorOpen() {
+    const overlay = document.getElementById('admin-orders-recipient-filter-overlay');
+    return Boolean(overlay?.classList.contains('active'));
 }
 
-function appendAdminOrderThreadReply(orderId, { text = '', attachments = [] } = {}) {
-    const order = getAdminOrderById(orderId);
-    if (!order) return null;
-    const activeUser = getCurrentUser();
-    ensureAdminOrderThread(order);
-    const entry = normalizeAdminOrderThreadEntry({
-        authorId: activeUser?.id || 'admin',
-        authorName: activeUser?.nameEn || activeUser?.name || 'Administrator',
-        authorRole: activeUser?.role || USER_ROLES.ADMIN,
-        message: String(text || '').trim(),
-        attachments,
-        type: 'message'
-    });
-    if (!entry.message && !entry.attachments.length) return null;
-    order.thread.push(entry);
-    saveState();
-    return entry;
+function closeOrdersRecipientFilterEditor() {
+    const overlay = document.getElementById('admin-orders-recipient-filter-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    ordersRecipientFilterEditorDraft = null;
 }
 
-function formatAdminOrderDateTime(value) {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleString();
+function renderOrdersRecipientFilterEditorRowMarkup(filter, index, total) {
+    const fieldOptions = ORDERS_RECIPIENT_FILTER_FIELDS.map((field) => {
+        const selected = filter.field === field ? ' selected' : '';
+        return `<option value="${escapeHtml(field)}"${selected}>${escapeHtml(ORDERS_RECIPIENT_FILTER_FIELD_LABELS[field] || field)}</option>`;
+    }).join('');
+    const options = Array.isArray(filter.options) ? filter.options : [];
+    const optionsMarkup = `
+            <div class="orders-recipient-filter-editor-options">
+                ${options.map((option, optionIndex) => `
+                    <div class="orders-recipient-filter-editor-option lux-soft-chrome home-hover-chip">
+                        <label class="lux-picker-field">
+                            <span class="lux-picker-label">Option</span>
+                            <input type="text" class="lux-control" value="${escapeHtml(option.label || option.value || '')}" data-orders-recipient-filter-option-label="1" data-orders-recipient-filter-index="${index}" data-orders-recipient-filter-option-index="${optionIndex}" placeholder="Option label">
+                        </label>
+                        <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-remove-option="${index}" data-orders-recipient-filter-option-index="${optionIndex}" aria-label="Remove option"><i class="fas fa-minus"></i></button>
+                    </div>
+                `).join('') || '<div class="lux-panel-copy">No options yet. Add at least one before saving.</div>'}
+                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-add-option="${index}"><i class="fas fa-plus"></i> Add option</button>
+            </div>
+        `;
+    return `
+        <article class="orders-recipient-filter-editor-row lux-soft-chrome home-hover-chip" data-orders-recipient-filter-index="${index}">
+            <div class="orders-recipient-filter-editor-row-head">
+                <label class="lux-picker-field">
+                    <span class="lux-picker-label">Maps to</span>
+                    <select class="lux-control" data-lux-picker-label="Maps to" data-orders-recipient-filter-field="field" data-orders-recipient-filter-index="${index}">${fieldOptions}</select>
+                </label>
+                <label class="lux-check-row">
+                    <input type="checkbox" data-orders-recipient-filter-field="enabled" data-orders-recipient-filter-index="${index}"${filter.enabled !== false ? ' checked' : ''}>
+                    <span>Enabled</span>
+                </label>
+                <div class="orders-recipient-filter-editor-row-actions">
+                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-move="up" data-orders-recipient-filter-index="${index}"${index === 0 ? ' disabled' : ''} aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
+                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-move="down" data-orders-recipient-filter-index="${index}"${index >= total - 1 ? ' disabled' : ''} aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
+                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-remove="${index}" aria-label="Remove filter"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <label class="lux-picker-field">
+                <span class="lux-picker-label">Dropdown name</span>
+                <input type="text" class="lux-control" value="${escapeHtml(filter.label || '')}" data-orders-recipient-filter-field="label" data-orders-recipient-filter-index="${index}">
+            </label>
+            ${optionsMarkup}
+        </article>
+    `;
 }
 
-function getAdminOrdersThreadDraftFiles(composerId = 'order-thread-reply') {
-    window.__adminOrdersThreadDraftFiles = window.__adminOrdersThreadDraftFiles || {};
-    if (!Array.isArray(window.__adminOrdersThreadDraftFiles[composerId])) {
-        window.__adminOrdersThreadDraftFiles[composerId] = [];
-    }
-    return window.__adminOrdersThreadDraftFiles[composerId];
+function renderOrdersRecipientFilterEditorModalMarkup(draft) {
+    const filters = Array.isArray(draft?.filters) ? draft.filters : [];
+    const recipientRole = normalizeOrdersRecipientFilterRole(draft?.recipientRole || USER_ROLES.STUDENT);
+    const recipientLabel = getOrdersRecipientFilterEditorRoleLabel(recipientRole);
+    const connected = new Set(normalizeOrdersFilterConnectedRoles(draft?.connectedRoles, recipientRole));
+    const connectionChecklist = `
+        <div class="orders-recipient-filter-editor-connections">
+            <div class="lux-panel-copy">Connected roles (share this layout on save):</div>
+            <div class="lux-check-row-wrap orders-recipient-filter-editor-connection-list">
+                ${ORDERS_RECIPIENT_FILTER_ROLES.map((role) => `
+                    <label class="lux-check-row">
+                        <input type="checkbox" data-orders-recipient-filter-connected-role="${escapeHtml(role)}"${connected.has(role) ? ' checked' : ''}${role === recipientRole ? ' disabled' : ''}>
+                        <span>${escapeHtml(getOrdersRecipientFilterEditorRoleLabel(role))}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    return `
+        <div class="orders-recipient-filter-editor-modal modal-content lux-panel" data-lux-transparency-exempt="1" role="dialog" aria-modal="true" aria-labelledby="orders-recipient-filter-editor-title">
+            <div class="orders-recipient-filter-editor-head modal-header">
+                <div>
+                    <div class="lux-card-title orders-admin-section-title" id="orders-recipient-filter-editor-title">Edit filters · ${escapeHtml(recipientLabel)}</div>
+                    <div class="lux-panel-copy orders-admin-section-copy">Dropdowns for this role. Checklist which other roles share them. Search and From/To are always on.</div>
+                </div>
+                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-editor-close="1" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="orders-recipient-filter-editor-body modal-body">
+                ${connectionChecklist}
+                <div class="orders-recipient-filter-editor-list">
+                    ${filters.map((filter, index) => renderOrdersRecipientFilterEditorRowMarkup(filter, index, filters.length)).join('') || '<div class="lux-panel-copy">No dropdowns yet. This role still sees search and From/To date.</div>'}
+                </div>
+                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-add="1"><i class="fas fa-plus"></i> Add filter</button>
+            </div>
+            <div class="orders-recipient-filter-editor-actions modal-footer">
+                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-reset="1">Clear all</button>
+                <div class="orders-recipient-filter-editor-actions-buttons">
+                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-editor-close="1">Cancel</button>
+                    <button type="button" class="lux-primary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-save="1"><i class="fas fa-check"></i> Save for connected roles</button>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
-function clearAdminOrdersThreadDraftFiles(composerId = 'order-thread-reply') {
-    window.__adminOrdersThreadDraftFiles = window.__adminOrdersThreadDraftFiles || {};
-    window.__adminOrdersThreadDraftFiles[composerId] = [];
+function refreshOrdersRecipientFilterEditorModal() {
+    const overlay = document.getElementById('admin-orders-recipient-filter-overlay');
+    if (!overlay || !ordersRecipientFilterEditorDraft) return;
+    overlay.innerHTML = renderOrdersRecipientFilterEditorModalMarkup(ordersRecipientFilterEditorDraft);
+    window.enhanceUniversalPickers?.(overlay);
 }
 
-function renderAdminOrderAttachmentGallery(attachments = []) {
-    if (!attachments.length) return '';
-    return `<div class="admin-orders-thread-attachments">${attachments.map((file) => {
-        const name = escapeHtml(file.name || 'file');
-        let href = file.dataUrl || file.url || '#';
-        if (file.storageKey && typeof getPortalStoredFileUrl === 'function') {
-            href = getPortalStoredFileUrl(file.storageKey);
-        }
-        return `<a class="admin-orders-thread-attachment home-hover-chip" href="${href}" download="${name}" target="_blank" rel="noopener"><i class="fas fa-paperclip"></i> ${name}</a>`;
-    }).join('')}</div>`;
+async function openOrdersRecipientFilterEditor() {
+    ensureAdminOrdersModals();
+    const faculty = getCurrentFaculty();
+    const recipientRole = getAdminAudienceRole(faculty);
+    setAdminOrdersRecipientFilterEditorRole(recipientRole, faculty);
+    await fetchOrdersRecipientFilterLayout(faculty, recipientRole);
+    ordersRecipientFilterEditorDraft = buildOrdersRecipientFilterEditorDraft(faculty, recipientRole);
+    const overlay = document.getElementById('admin-orders-recipient-filter-overlay');
+    if (!overlay) return;
+    refreshOrdersRecipientFilterEditorModal();
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
 }
 
-function renderAdminOrderThreadDraftChips(composerId = 'order-thread-reply') {
-    const drafts = getAdminOrdersThreadDraftFiles(composerId);
-    if (!drafts.length) return '';
-    return `<div class="admin-orders-thread-draft-chips">${drafts.map((file, index) => `<span class="lux-status-pill home-hover-chip is-muted admin-orders-thread-draft-chip">${escapeHtml(file.name || 'file')}<button type="button" data-admin-order-thread-remove-draft="${index}" aria-label="Remove attachment">&times;</button></span>`).join('')}</div>`;
+function mutateOrdersRecipientFilterEditorDraft(mutator) {
+    if (!ordersRecipientFilterEditorDraft) return;
+    mutator(ordersRecipientFilterEditorDraft);
+    refreshOrdersRecipientFilterEditorModal();
 }
 
-function pickAdminOrderThreadAttachments(composerId = 'order-thread-reply') {
-    const remaining = ADMIN_ORDERS_THREAD_MAX_ATTACHMENTS - getAdminOrdersThreadDraftFiles(composerId).length;
-    if (remaining <= 0) {
-        alert(`You can attach up to ${ADMIN_ORDERS_THREAD_MAX_ATTACHMENTS} files per message.`);
+async function saveOrdersRecipientFilterEditorDraft() {
+    if (!ordersRecipientFilterEditorDraft) return;
+    const faculty = ordersRecipientFilterEditorDraft.facultyCode || getCurrentFaculty();
+    const recipientRole = normalizeOrdersRecipientFilterRole(ordersRecipientFilterEditorDraft.recipientRole || USER_ROLES.STUDENT);
+    const incomplete = (ordersRecipientFilterEditorDraft.filters || []).find((filter) => (
+        filter.enabled !== false
+        && !(filter.options || []).some((option) => String(option?.label || option?.value || '').trim())
+    ));
+    if (incomplete) {
+        alert(`Add at least one option to "${incomplete.label || incomplete.field}" before saving.`);
         return;
     }
-    let input = document.getElementById('admin-orders-thread-attachment-input');
-    if (!input) {
-        input = document.createElement('input');
-        input.type = 'file';
-        input.id = 'admin-orders-thread-attachment-input';
-        input.multiple = true;
-        input.accept = ADMIN_ORDERS_THREAD_ATTACHMENT_ACCEPT;
-        input.hidden = true;
-        document.body.appendChild(input);
-        input.addEventListener('change', () => {
-            const files = Array.from(input.files || []);
-            const drafts = getAdminOrdersThreadDraftFiles(composerId);
-            files.forEach((file) => {
-                if (drafts.length >= ADMIN_ORDERS_THREAD_MAX_ATTACHMENTS) return;
-                const reader = new FileReader();
-                reader.onload = () => {
-                    drafts.push({
-                        name: file.name,
-                        mimeType: file.type,
-                        size: file.size,
-                        blob: file,
-                        dataUrl: String(reader.result || '')
-                    });
-                    renderAdminOrderThreadPanelContent();
-                };
-                reader.readAsDataURL(file);
-            });
-            input.value = '';
-        });
+    const layout = normalizeOrdersRecipientFilterLayout({
+        version: 1,
+        filters: ordersRecipientFilterEditorDraft.filters || []
+    });
+    const connectedRoles = normalizeOrdersFilterConnectedRoles(
+        ordersRecipientFilterEditorDraft.connectedRoles,
+        recipientRole
+    );
+    try {
+        await saveOrdersRecipientFilterLayout(layout, faculty, recipientRole, connectedRoles);
+        closeOrdersRecipientFilterEditor();
+        syncAdminOrdersSentInboxChange();
+    } catch (error) {
+        alert(error?.message || 'Could not save recipient filter layout.');
     }
-    input.click();
 }
 
-async function persistAdminOrderThreadDraftAttachments(composerId = 'order-thread-reply') {
-    const drafts = getAdminOrdersThreadDraftFiles(composerId);
-    if (!drafts.length) return [];
-    const uploaded = [];
-    for (const draft of drafts) {
-        if (typeof uploadPortalStoredFile === 'function') {
-            const stored = await uploadPortalStoredFile(draft, 'orders');
-            if (stored) {
-                uploaded.push({
-                    name: draft.name || stored.name || 'file',
-                    mimeType: draft.mimeType || stored.mimeType || '',
-                    size: draft.size || stored.size || 0,
-                    storageKey: stored.storageKey,
-                    storageBackend: stored.storageBackend || 'bridge',
-                    dataUrl: draft.dataUrl || ''
-                });
-                continue;
-            }
-        }
-        uploaded.push({
-            name: draft.name || 'file',
-            mimeType: draft.mimeType || '',
-            size: draft.size || 0,
-            dataUrl: draft.dataUrl || ''
-        });
-    }
-    clearAdminOrdersThreadDraftFiles(composerId);
-    return uploaded.slice(0, ADMIN_ORDERS_THREAD_MAX_ATTACHMENTS);
+async function switchOrdersRecipientFilterEditorRole(role) {
+    const faculty = getCurrentFaculty();
+    const recipientRole = setAdminOrdersRecipientFilterEditorRole(role, faculty);
+    await fetchOrdersRecipientFilterLayout(faculty, recipientRole);
+    ordersRecipientFilterEditorDraft = buildOrdersRecipientFilterEditorDraft(faculty, recipientRole);
+    refreshOrdersRecipientFilterEditorModal();
 }
 
+function ensureAdminOrderThread(order) {
+    // Orders are document-only; legacy thread arrays stay inert.
+    if (!order) return [];
+    if (!Array.isArray(order.thread)) order.thread = [];
+    return order.thread;
+}
 
 function makeOrderId(faculty = getCurrentFaculty()) {
     const prefix = normalizeFacultyCode(faculty || 'ECON', 'ECON');
@@ -447,15 +524,7 @@ function createAdminOrderRecord({ title, type, description, effectiveDate, recip
         recipientIds: recipients.map(item => item.id),
         recipientSnapshots: recipients,
         recipientCount: recipients.length,
-        thread: [normalizeAdminOrderThreadEntry({
-            authorId: activeUser?.id || 'admin',
-            authorName: activeUser?.nameEn || activeUser?.name || 'Administrator',
-            authorRole: USER_ROLES.ADMIN,
-            message: description.trim(),
-            attachments: [],
-            createdAt: new Date().toISOString(),
-            type: 'order'
-        })]
+        thread: []
     };
 
     const bucket = getOrdersBucketForFaculty(normalizedFaculty);
@@ -519,6 +588,156 @@ function updateAdminOrderDraftField(field, value) {
     uiState.draft[field] = value;
 }
 
+const ADMIN_ORDER_TITLE_PRESETS_KEY = 'kiuAdminOrderTitlePresets';
+const ADMIN_ORDER_TITLE_PRESETS_MAX = 50;
+let adminOrderTitlePresetsDraft = null;
+
+function getAdminOrderTitlePresetsUserId() {
+    if (typeof getCurrentUserId === 'function') {
+        const id = String(getCurrentUserId() || '').trim();
+        if (id) return id;
+    }
+    return String(currentUser?.id || '').trim() || 'anonymous';
+}
+
+function normalizeAdminOrderTitlePreset(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function normalizeAdminOrderTitlePresetsList(list) {
+    const seen = new Set();
+    const out = [];
+    (Array.isArray(list) ? list : []).forEach((entry) => {
+        if (out.length >= ADMIN_ORDER_TITLE_PRESETS_MAX) return;
+        const title = normalizeAdminOrderTitlePreset(entry);
+        if (!title) return;
+        const key = title.toLowerCase();
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push(title);
+    });
+    return out;
+}
+
+function readAdminOrderTitlePresetsStore() {
+    try {
+        const raw = localStorage.getItem(ADMIN_ORDER_TITLE_PRESETS_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+        return parsed;
+    } catch (error) {
+        return {};
+    }
+}
+
+function readAdminOrderTitlePresets(userId = getAdminOrderTitlePresetsUserId()) {
+    const store = readAdminOrderTitlePresetsStore();
+    return normalizeAdminOrderTitlePresetsList(store[userId]);
+}
+
+function writeAdminOrderTitlePresets(titles, userId = getAdminOrderTitlePresetsUserId()) {
+    const store = readAdminOrderTitlePresetsStore();
+    store[userId] = normalizeAdminOrderTitlePresetsList(titles);
+    try {
+        localStorage.setItem(ADMIN_ORDER_TITLE_PRESETS_KEY, JSON.stringify(store));
+    } catch (error) {
+        /* ignore quota errors */
+    }
+}
+
+function isAdminOrdersTitlePresetsOpen() {
+    const overlay = document.getElementById('admin-orders-titles-overlay');
+    return Boolean(overlay?.classList.contains('active'));
+}
+
+function closeAdminOrdersTitlePresets() {
+    const overlay = document.getElementById('admin-orders-titles-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    adminOrderTitlePresetsDraft = null;
+    syncAdminOrdersModalBodyLock();
+}
+
+function renderAdminOrdersTitlePresetRowMarkup(title, index) {
+    return `
+        <article class="admin-orders-titles-row lux-soft-chrome home-hover-chip" data-admin-orders-title-index="${index}">
+            <input type="text" class="lux-control" value="${escapeHtml(title || '')}" data-admin-orders-title-edit="${index}" placeholder="Order title" aria-label="Saved title ${index + 1}">
+            <div class="admin-orders-titles-row-actions">
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-title-apply="${index}" data-lux-skip-modern-button="true"><i class="fas fa-check"></i> Apply</button>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-title-remove="${index}" data-lux-skip-modern-button="true" aria-label="Remove title"><i class="fas fa-trash"></i></button>
+            </div>
+        </article>
+    `;
+}
+
+function renderAdminOrdersTitlePresetsModalMarkup(draft) {
+    const titles = Array.isArray(draft) ? draft : [];
+    return `
+        <div class="admin-orders-titles-modal modal-content lux-panel" data-lux-transparency-exempt="1" role="dialog" aria-modal="true" aria-labelledby="admin-orders-titles-title">
+            <div class="admin-orders-titles-head modal-header">
+                <div>
+                    <div class="lux-card-title orders-admin-section-title" id="admin-orders-titles-title">Saved order titles</div>
+                    <div class="lux-panel-copy orders-admin-section-copy">Reuse frequent titles when composing official orders. Apply fills the compose title field.</div>
+                </div>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-titles-close="1" aria-label="Close" data-lux-skip-modern-button="true"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="admin-orders-titles-body modal-body">
+                <div class="admin-orders-titles-list">
+                    ${titles.map((title, index) => renderAdminOrdersTitlePresetRowMarkup(title, index)).join('') || '<div class="lux-panel-copy">No saved titles yet. Add one below.</div>'}
+                </div>
+                <div class="admin-orders-titles-add-row">
+                    <input type="text" class="lux-control" id="admin-orders-titles-add-input" placeholder="New order title" aria-label="New order title">
+                    <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-titles-add="1" data-lux-skip-modern-button="true"><i class="fas fa-plus"></i> Add</button>
+                </div>
+            </div>
+            <div class="admin-orders-titles-foot modal-footer">
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-titles-close="1" data-lux-skip-modern-button="true">Cancel</button>
+                <button type="button" class="lux-primary-btn home-hover-chip" data-admin-orders-titles-save="1" data-lux-skip-modern-button="true"><i class="fas fa-check"></i> Save</button>
+            </div>
+        </div>
+    `;
+}
+
+function refreshAdminOrdersTitlePresetsModal() {
+    const overlay = document.getElementById('admin-orders-titles-overlay');
+    if (!overlay || !Array.isArray(adminOrderTitlePresetsDraft)) return;
+    overlay.innerHTML = renderAdminOrdersTitlePresetsModalMarkup(adminOrderTitlePresetsDraft);
+}
+
+function openAdminOrdersTitlePresets() {
+    ensureAdminOrdersModals();
+    adminOrderTitlePresetsDraft = readAdminOrderTitlePresets().slice();
+    const overlay = document.getElementById('admin-orders-titles-overlay');
+    if (!overlay) return;
+    refreshAdminOrdersTitlePresetsModal();
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    syncAdminOrdersModalBodyLock();
+}
+
+function applyAdminOrderTitlePreset(title) {
+    const next = normalizeAdminOrderTitlePreset(title);
+    if (!next) return;
+    updateAdminOrderDraftField('title', next);
+    const input = document.querySelector('[data-admin-order-draft-input="title"]');
+    if (input) input.value = next;
+    closeAdminOrdersTitlePresets();
+}
+
+function saveAdminOrdersTitlePresetsDraft() {
+    if (!Array.isArray(adminOrderTitlePresetsDraft)) return;
+    writeAdminOrderTitlePresets(adminOrderTitlePresetsDraft);
+    closeAdminOrdersTitlePresets();
+}
+
+function mutateAdminOrdersTitlePresetsDraft(mutator) {
+    if (!Array.isArray(adminOrderTitlePresetsDraft)) return;
+    mutator(adminOrderTitlePresetsDraft);
+    adminOrderTitlePresetsDraft = normalizeAdminOrderTitlePresetsList(adminOrderTitlePresetsDraft);
+    refreshAdminOrdersTitlePresetsModal();
+}
+
 function selectAdminOrderRecord(orderId, options = {}) {
     const uiState = ensureAdminOrdersUiState();
     uiState.selectedOrderId = orderId || null;
@@ -543,8 +762,9 @@ function isAdminOrdersCreateModalOpen() {
 function syncAdminOrdersModalBodyLock() {
     const createOpen = isAdminOrdersCreateModalOpen();
     const threadOpen = isAdminOrdersThreadModalOpen();
+    const titlesOpen = isAdminOrdersTitlePresetsOpen();
     const studioOpen = Boolean(document.body.classList.contains('lux-studio-open') || document.getElementById('lux-studio-backdrop')?.classList.contains('is-open'));
-    document.body.classList.toggle('admin-orders-modal-open', createOpen || threadOpen || studioOpen);
+    document.body.classList.toggle('admin-orders-modal-open', createOpen || threadOpen || titlesOpen || studioOpen);
 }
 
 function setAdminOrdersCreateModalOpen(isOpen) {
@@ -674,9 +894,19 @@ function buildAdminOrdersRecipientRoleCounts(faculty, selectedRecipientSet) {
 function syncAdminOrdersCommandPills(container, roleCounts, selectedCount) {
     if (!container) return;
     const pills = container.querySelector('[data-admin-orders-command-pills]');
-    if (pills) {
-        syncAdminOrdersRoleCountPills(pills, roleCounts, selectedCount);
+    if (!pills) return;
+    let selected = pills.querySelector('[data-admin-orders-count-pill="selected"]');
+    if (!selected) {
+        pills.replaceChildren();
+        selected = document.createElement('span');
+        selected.className = 'lux-status-pill home-hover-chip is-info';
+        selected.setAttribute('data-admin-orders-count-pill', 'selected');
+        pills.appendChild(selected);
     }
+    pills.querySelectorAll('[data-admin-orders-count-pill]').forEach((pill) => {
+        if (pill.getAttribute('data-admin-orders-count-pill') !== 'selected') pill.remove();
+    });
+    selected.textContent = `${selectedCount} selected`;
 }
 
 function syncAdminOrdersRecipientFilterChange() {
@@ -733,16 +963,14 @@ function renderAdminOrdersCommandCard(container, uiState, selectedRecipients, ro
         : 'No draft started yet';
     container.innerHTML = `
         <div class="orders-admin-command-layout">
-            <div class="orders-admin-command-copy">
-                <div class="lux-card-title orders-admin-section-title">Create Official Order</div>
-                <div class="lux-panel-copy orders-admin-section-copy">Dispatch institutional orders to all account types inside the current faculty.</div>
-                <div class="lux-pill-row orders-admin-command-pills" data-admin-orders-command-pills="1"></div>
-                <div class="lux-panel-copy orders-admin-command-draft" data-admin-orders-command-draft="1">${escapeHtml(draftHint)}</div>
-            </div>
             <div class="orders-admin-command-actions">
                 <button class="lux-primary-btn orders-admin-command-cta" type="button" data-admin-orders-open-create-modal="1">
                     <i class="fas fa-plus-circle"></i> Create Order
                 </button>
+            </div>
+            <div class="orders-admin-command-copy">
+                <div class="lux-pill-row orders-admin-command-pills" data-admin-orders-command-pills="1"></div>
+                <div class="lux-panel-copy orders-admin-command-draft" data-admin-orders-command-draft="1">${escapeHtml(draftHint)}</div>
             </div>
         </div>
     `;
@@ -759,7 +987,14 @@ function mountAdminOrdersComposePanelRegions(container, uiState, today) {
             </div>
         </div>
         <div class="orders-compose-head">
-            <input type="text" class="lux-control" value="${escapeHtml(uiState.draft.title || '')}" data-admin-order-draft-input="title" placeholder="Order title">
+            <div class="orders-compose-title-field">
+                <div class="orders-compose-title-toolbar">
+                    <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-manage-titles="1" data-lux-skip-modern-button="true" aria-label="Manage saved titles">
+                        <i class="fas fa-bookmark"></i><span>Titles</span>
+                    </button>
+                </div>
+                <input type="text" class="lux-control" value="${escapeHtml(uiState.draft.title || '')}" data-admin-order-draft-input="title" placeholder="Order title">
+            </div>
             <select class="lux-control" id="admin-order-draft-type" data-lux-picker-label="Order type" data-admin-order-draft-change="type">
                 ${['General Order', 'Registration Order', 'Academic Order', 'Financial Order', 'Scholarship Order', 'HR Order'].map((type) => '<option value="' + escapeHtml(type) + '" ' + ((uiState.draft.type || 'General Order') === type ? 'selected' : '') + '>' + escapeHtml(type) + '</option>').join('')}
             </select>
@@ -863,7 +1098,6 @@ function deleteAdminOrder(orderId) {
     renderAdminOrders();
 }
 
-
 let ordersWorkspaceDelegatesBound = false;
 
 function bindOrdersWorkspaceDelegates() {
@@ -879,6 +1113,54 @@ function bindOrdersWorkspaceDelegates() {
 
         if (event.target.closest('[data-admin-orders-open-create-modal]')) {
             openAdminOrdersCreateModal();
+            return;
+        }
+
+        if (event.target.closest('[data-admin-orders-manage-titles]')) {
+            openAdminOrdersTitlePresets();
+            return;
+        }
+
+        if (event.target.closest('[data-admin-orders-titles-close]')
+            || event.target.id === 'admin-orders-titles-overlay') {
+            if (event.target.id === 'admin-orders-titles-overlay'
+                || event.target.closest('[data-admin-orders-titles-close]')) {
+                closeAdminOrdersTitlePresets();
+                return;
+            }
+        }
+
+        if (event.target.closest('[data-admin-orders-titles-add]')) {
+            const input = document.getElementById('admin-orders-titles-add-input');
+            const next = normalizeAdminOrderTitlePreset(input?.value || '');
+            if (!next) return;
+            mutateAdminOrdersTitlePresetsDraft((draft) => {
+                draft.push(next);
+            });
+            return;
+        }
+
+        if (event.target.closest('[data-admin-orders-titles-save]')) {
+            saveAdminOrdersTitlePresetsDraft();
+            return;
+        }
+
+        const applyTitle = event.target.closest('[data-admin-orders-title-apply]');
+        if (applyTitle) {
+            const index = Number(applyTitle.dataset.adminOrdersTitleApply);
+            const title = Array.isArray(adminOrderTitlePresetsDraft)
+                ? adminOrderTitlePresetsDraft[index]
+                : '';
+            applyAdminOrderTitlePreset(title);
+            return;
+        }
+
+        const removeTitle = event.target.closest('[data-admin-orders-title-remove]');
+        if (removeTitle) {
+            const index = Number(removeTitle.dataset.adminOrdersTitleRemove);
+            mutateAdminOrdersTitlePresetsDraft((draft) => {
+                draft.splice(index, 1);
+            });
             return;
         }
 
@@ -914,6 +1196,97 @@ function bindOrdersWorkspaceDelegates() {
             return;
         }
 
+        if (event.target.closest('[data-admin-orders-edit-recipient-filters]')) {
+            openOrdersRecipientFilterEditor();
+            return;
+        }
+
+        const audienceTab = event.target.closest('[data-admin-orders-audience-role]');
+        if (audienceTab) {
+            const nextRole = setAdminAudienceRole(audienceTab.dataset.adminOrdersAudienceRole || USER_ROLES.STUDENT);
+            fetchOrdersRecipientFilterLayout(getCurrentFaculty(), nextRole).finally(() => {
+                syncAdminOrdersSentInboxChange();
+            });
+            return;
+        }
+
+        if (event.target.closest('[data-orders-recipient-filter-editor-close]')
+            || event.target.id === 'admin-orders-recipient-filter-overlay') {
+            if (event.target.id === 'admin-orders-recipient-filter-overlay'
+                || event.target.closest('[data-orders-recipient-filter-editor-close]')) {
+                closeOrdersRecipientFilterEditor();
+                return;
+            }
+        }
+
+        if (event.target.closest('[data-orders-recipient-filter-add]')) {
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                const used = new Set((draft.filters || []).map((filter) => filter.field));
+                const nextField = ORDERS_RECIPIENT_FILTER_FIELDS.find((field) => !used.has(field));
+                if (!nextField) return;
+                draft.filters = [...(draft.filters || []), createOrdersRecipientFilterDraftEntry(nextField)];
+            });
+            return;
+        }
+
+        if (event.target.closest('[data-orders-recipient-filter-reset]')) {
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                draft.filters = [];
+            });
+            return;
+        }
+
+        if (event.target.closest('[data-orders-recipient-filter-save]')) {
+            saveOrdersRecipientFilterEditorDraft();
+            return;
+        }
+
+        const removeFilter = event.target.closest('[data-orders-recipient-filter-remove]');
+        if (removeFilter) {
+            const index = Number(removeFilter.dataset.ordersRecipientFilterRemove);
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                draft.filters = (draft.filters || []).filter((_, filterIndex) => filterIndex !== index);
+            });
+            return;
+        }
+
+        const moveFilter = event.target.closest('[data-orders-recipient-filter-move]');
+        if (moveFilter) {
+            const index = Number(moveFilter.dataset.ordersRecipientFilterIndex);
+            const direction = moveFilter.dataset.ordersRecipientFilterMove;
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                const filters = [...(draft.filters || [])];
+                const swapIndex = direction === 'up' ? index - 1 : index + 1;
+                if (swapIndex < 0 || swapIndex >= filters.length) return;
+                [filters[index], filters[swapIndex]] = [filters[swapIndex], filters[index]];
+                draft.filters = filters;
+            });
+            return;
+        }
+
+        const addOption = event.target.closest('[data-orders-recipient-filter-add-option]');
+        if (addOption) {
+            const index = Number(addOption.dataset.ordersRecipientFilterAddOption);
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                const filter = draft.filters?.[index];
+                if (!filter) return;
+                filter.options = [...(filter.options || []), { value: `option_${Date.now().toString(36)}`, label: 'New option' }];
+            });
+            return;
+        }
+
+        const removeOption = event.target.closest('[data-orders-recipient-filter-remove-option]');
+        if (removeOption) {
+            const index = Number(removeOption.dataset.ordersRecipientFilterRemoveOption);
+            const optionIndex = Number(removeOption.dataset.ordersRecipientFilterOptionIndex);
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                const filter = draft.filters?.[index];
+                if (!filter) return;
+                filter.options = (filter.options || []).filter((_, itemIndex) => itemIndex !== optionIndex);
+            });
+            return;
+        }
+
         const adminOrderOpen = event.target.closest('[data-admin-order-open]');
         if (adminOrderOpen) {
             openAdminOrderThreadModal(adminOrderOpen.dataset.adminOrderOpen || '');
@@ -921,34 +1294,8 @@ function bindOrdersWorkspaceDelegates() {
         }
 
         const adminOrderThreadClose = event.target.closest('[data-admin-orders-close-thread-modal]');
-        if (adminOrderThreadClose) {
+        if (adminOrderThreadClose || event.target.id === 'admin-orders-thread-overlay') {
             closeAdminOrderThreadModal(event);
-            return;
-        }
-
-        if (event.target.id === 'admin-orders-thread-overlay') {
-            closeAdminOrderThreadModal(event);
-            return;
-        }
-
-        const adminOrderThreadAttach = event.target.closest('[data-admin-order-thread-attach]');
-        if (adminOrderThreadAttach) {
-            pickAdminOrderThreadAttachments(adminOrderThreadAttach.dataset.adminOrderThreadAttach || 'order-thread-reply');
-            return;
-        }
-
-        const adminOrderThreadSend = event.target.closest('[data-admin-order-thread-send]');
-        if (adminOrderThreadSend) {
-            sendAdminOrderThreadReply(adminOrderThreadSend.dataset.adminOrderThreadSend || '');
-            return;
-        }
-
-        const adminOrderThreadRemoveDraft = event.target.closest('[data-admin-order-thread-remove-draft]');
-        if (adminOrderThreadRemoveDraft) {
-            const index = Number(adminOrderThreadRemoveDraft.dataset.adminOrderThreadRemoveDraft);
-            const drafts = getAdminOrdersThreadDraftFiles();
-            if (!Number.isNaN(index)) drafts.splice(index, 1);
-            renderAdminOrderThreadPanelContent();
             return;
         }
 
@@ -982,6 +1329,32 @@ function bindOrdersWorkspaceDelegates() {
             return;
         }
 
+        if (event.target.matches('[data-admin-orders-title-edit]')) {
+            if (!Array.isArray(adminOrderTitlePresetsDraft)) return;
+            const index = Number(event.target.dataset.adminOrdersTitleEdit);
+            if (!Number.isInteger(index) || index < 0 || index >= adminOrderTitlePresetsDraft.length) return;
+            adminOrderTitlePresetsDraft[index] = event.target.value;
+            return;
+        }
+
+        if (event.target.matches('[data-orders-recipient-filter-field="label"]')) {
+            const index = Number(event.target.dataset.ordersRecipientFilterIndex);
+            if (!ordersRecipientFilterEditorDraft?.filters?.[index]) return;
+            ordersRecipientFilterEditorDraft.filters[index].label = event.target.value;
+            return;
+        }
+
+        if (event.target.matches('[data-orders-recipient-filter-option-label]')) {
+            const index = Number(event.target.dataset.ordersRecipientFilterIndex);
+            const optionIndex = Number(event.target.dataset.ordersRecipientFilterOptionIndex);
+            const option = ordersRecipientFilterEditorDraft?.filters?.[index]?.options?.[optionIndex];
+            if (!option) return;
+            const nextLabel = event.target.value;
+            option.label = nextLabel;
+            option.value = nextLabel.trim() || option.value;
+            return;
+        }
+
     });
 
     document.addEventListener('change', (event) => {
@@ -1001,15 +1374,67 @@ function bindOrdersWorkspaceDelegates() {
 
         if (event.target.matches('[data-admin-orders-sent-filter]')) {
             setAdminOrdersSentFilter(event.target.dataset.adminOrdersSentFilter || '', event.target.value);
+            return;
+        }
+
+        if (event.target.matches('[data-admin-orders-sent-layout-filter]')) {
+            setAdminOrdersSentLayoutFilter(event.target.dataset.adminOrdersSentLayoutFilter || '', event.target.value);
+            return;
+        }
+
+        if (event.target.matches('[data-orders-recipient-filter-connected-role]')) {
+            const role = event.target.getAttribute('data-orders-recipient-filter-connected-role') || '';
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                const editorRole = normalizeOrdersRecipientFilterRole(draft.recipientRole || USER_ROLES.STUDENT);
+                const next = new Set(normalizeOrdersFilterConnectedRoles(draft.connectedRoles, editorRole));
+                const normalizedRole = normalizeOrdersRecipientFilterRole(role);
+                if (event.target.checked) next.add(normalizedRole);
+                else if (normalizedRole !== editorRole) next.delete(normalizedRole);
+                draft.connectedRoles = normalizeOrdersFilterConnectedRoles([...next], editorRole);
+            });
+            return;
+        }
+
+        if (event.target.matches('[data-orders-recipient-filter-field="field"]')) {
+            const index = Number(event.target.dataset.ordersRecipientFilterIndex);
+            mutateOrdersRecipientFilterEditorDraft((draft) => {
+                const filter = draft.filters?.[index];
+                if (!filter) return;
+                const nextField = event.target.value;
+                if ((draft.filters || []).some((item, itemIndex) => itemIndex !== index && item.field === nextField)) {
+                    return;
+                }
+                const next = createOrdersRecipientFilterDraftEntry(nextField);
+                filter.field = next.field;
+                filter.type = next.type;
+                filter.label = next.label;
+                filter.id = next.id;
+                filter.options = next.options || [];
+            });
+            return;
+        }
+
+        if (event.target.matches('[data-orders-recipient-filter-field="enabled"]')) {
+            const index = Number(event.target.dataset.ordersRecipientFilterIndex);
+            if (!ordersRecipientFilterEditorDraft?.filters?.[index]) return;
+            ordersRecipientFilterEditorDraft.filters[index].enabled = Boolean(event.target.checked);
+            return;
         }
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && isAdminOrdersThreadModalOpen()) {
-            closeAdminOrderThreadModal();
+        if (event.key !== 'Escape') return;
+        if (isAdminOrdersTitlePresetsOpen()) {
+            closeAdminOrdersTitlePresets();
             return;
         }
-
+        if (isOrdersRecipientFilterEditorOpen()) {
+            closeOrdersRecipientFilterEditor();
+            return;
+        }
+        if (isAdminOrdersThreadModalOpen()) {
+            closeAdminOrderThreadModal();
+        }
     });
 }
 
@@ -1046,6 +1471,7 @@ function ensureAdminOrdersModals() {
         document.body.appendChild(createOverlay);
     }
     createOverlay.className = 'modal-overlay admin-orders-modal-overlay';
+    if (createOverlay.getAttribute('aria-hidden') === 'false') createOverlay.classList.add('active');
     const createModal = createOverlay.querySelector('.admin-orders-create-modal');
     if (createModal) {
         createModal.className = 'admin-orders-create-modal modal-content';
@@ -1060,19 +1486,51 @@ function ensureAdminOrdersModals() {
         threadOverlay.setAttribute('data-lux-modal-overlay', '');
         threadOverlay.setAttribute('aria-hidden', 'true');
         threadOverlay.innerHTML = `
-            <div class="admin-orders-thread-modal modal-content" data-lux-transparency-exempt="1">
-                <div id="admin-orders-thread-panel" aria-label="Order thread"></div>
+            <div class="admin-orders-thread-modal modal-content lux-panel" data-lux-transparency-exempt="1">
+                <div id="admin-orders-thread-panel" aria-label="Order details"></div>
             </div>
         `;
         document.body.appendChild(threadOverlay);
     }
+    const threadWasOpen = threadOverlay.classList.contains('active')
+        || threadOverlay.getAttribute('aria-hidden') === 'false';
     threadOverlay.className = 'modal-overlay admin-orders-modal-overlay';
+    if (threadWasOpen) threadOverlay.classList.add('active');
     const threadModal = threadOverlay.querySelector('.admin-orders-thread-modal');
     if (threadModal) {
-        threadModal.className = 'admin-orders-thread-modal modal-content';
+        threadModal.className = 'admin-orders-thread-modal modal-content lux-panel';
         threadModal.setAttribute('data-lux-transparency-exempt', '1');
         threadModal.removeAttribute('data-lux-btn-density');
     }
+
+    let recipientFilterOverlay = document.getElementById('admin-orders-recipient-filter-overlay');
+    if (!recipientFilterOverlay) {
+        recipientFilterOverlay = document.createElement('div');
+        recipientFilterOverlay.id = 'admin-orders-recipient-filter-overlay';
+        recipientFilterOverlay.setAttribute('data-lux-modal-overlay', '');
+        recipientFilterOverlay.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(recipientFilterOverlay);
+    }
+    const recipientFilterWasOpen = recipientFilterOverlay.classList.contains('active')
+        || recipientFilterOverlay.getAttribute('aria-hidden') === 'false';
+    recipientFilterOverlay.className = 'modal-overlay orders-recipient-filter-editor-overlay';
+    recipientFilterOverlay.setAttribute('data-lux-transparency-exempt', '1');
+    if (recipientFilterWasOpen) recipientFilterOverlay.classList.add('active');
+    const staleRemoveOverlay = document.getElementById('admin-orders-thread-remove-overlay');
+    if (staleRemoveOverlay) staleRemoveOverlay.remove();
+
+    let titlesOverlay = document.getElementById('admin-orders-titles-overlay');
+    if (!titlesOverlay) {
+        titlesOverlay = document.createElement('div');
+        titlesOverlay.id = 'admin-orders-titles-overlay';
+        titlesOverlay.setAttribute('data-lux-modal-overlay', '');
+        titlesOverlay.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(titlesOverlay);
+    }
+    const titlesWasOpen = titlesOverlay.classList.contains('active')
+        || titlesOverlay.getAttribute('aria-hidden') === 'false';
+    titlesOverlay.className = 'modal-overlay admin-orders-titles-overlay';
+    if (titlesWasOpen) titlesOverlay.classList.add('active');
 }
 
 function renderAdminOrders() {
@@ -1111,6 +1569,15 @@ function renderAdminOrders() {
     const shell = ensureAdminOrdersShell(root);
     if (!shell.commandPanel || !shell.ordersTablePanel || !shell.detailPanel) return;
 
+    const layoutHydrationKey = `${normalizeFacultyCode(faculty || 'ECON', 'ECON')}:audience`;
+    if (root.dataset.ordersAudienceLayoutHydratedKey !== layoutHydrationKey) {
+        root.dataset.ordersAudienceLayoutHydratedKey = layoutHydrationKey;
+        Promise.all(ORDERS_RECIPIENT_FILTER_ROLES.map((role) => fetchOrdersRecipientFilterLayout(faculty, role)))
+            .then(() => {
+                if (document.getElementById('admin-orders-root') === root) renderAdminOrders();
+            });
+    }
+
     renderAdminOrdersCommandCard(shell.commandPanel, uiState, selectedRecipients, roleCounts);
     if (shell.recipientsPanel) {
         renderAdminOrdersRecipientsPanelRegions(shell.recipientsPanel, facultyLabel, uiState, filteredRecipients, selectedRecipientSet, selectedRecipients);
@@ -1132,9 +1599,9 @@ function ensureAdminOrdersShell(root) {
                         <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--workspace">
                             <div class="orders-admin-workspace-section orders-admin-workspace-section--command" id="admin-orders-command-panel" aria-label="Create official order"></div>
                             <div class="orders-admin-workspace-divider" role="presentation"></div>
-                            <div class="orders-admin-workspace-section orders-admin-workspace-section--filter" id="admin-orders-table-panel" aria-label="Filter sent orders"></div>
+                            <div class="orders-admin-workspace-section orders-admin-workspace-section--filter" id="admin-orders-table-panel" aria-label="Audience filters"></div>
                             <div class="orders-admin-workspace-divider" role="presentation"></div>
-                            <div class="orders-admin-workspace-section orders-admin-workspace-section--inbox" id="admin-orders-detail-panel" aria-label="Sent items"></div>
+                            <div class="orders-admin-workspace-section orders-admin-workspace-section--inbox" id="admin-orders-detail-panel" aria-label="Audience items"></div>
                         </div>
                     </section>
                 </div>
@@ -1399,71 +1866,91 @@ function renderAdminOrdersComposePanel(uiState, roleCounts, today) {
 }
 
 function renderAdminOrdersFilterPanel(uiState, facultyLabel, filteredCount, totalCount) {
+    const faculty = getCurrentFaculty();
     const filters = uiState.sentFilters || {};
-    const typeOptions = ['all', ...ADMIN_ORDER_COMPOSE_TYPES].map((type) => {
-        const selected = (filters.type || 'all') === type ? ' selected' : '';
-        const label = type === 'all' ? 'All types' : type;
-        return `<option value="${escapeHtml(type)}"${selected}>${escapeHtml(label)}</option>`;
+    const audienceRole = getAdminAudienceRole(faculty);
+    const audienceLabel = getOrdersRecipientFilterEditorRoleLabel(audienceRole);
+    const layout = getCachedOrdersRecipientFilterLayout(faculty, audienceRole);
+    const enabledSelects = getEnabledOrdersRecipientLayoutSelects(layout);
+    const layoutFilters = filters.layoutFilters || {};
+
+    const audienceTabs = ORDERS_RECIPIENT_FILTER_ROLES.map((role) => {
+        const active = role === audienceRole;
+        const badge = countAdminAudienceNotifications(faculty, role);
+        const label = getOrdersRecipientFilterEditorRoleLabel(role);
+        const badgeMarkup = badge > 0
+            ? ` <span class="lux-tab-badge home-hover-chip">${badge}</span>`
+            : '';
+        return `
+            <button type="button"
+                class="lux-tab-btn orders-admin-audience-tab ${active ? 'is-active' : ''}"
+                data-admin-orders-audience-role="${escapeHtml(role)}"
+                data-lux-skip-modern-button="true"
+                aria-pressed="${active ? 'true' : 'false'}">
+                ${escapeHtml(label)}${badgeMarkup}
+            </button>
+        `;
     }).join('');
-    const statusOptions = ['all', 'Active'].map((status) => {
-        const selected = (filters.status || 'all') === status ? ' selected' : '';
-        const label = status === 'all' ? 'All statuses' : status;
-        return `<option value="${escapeHtml(status)}"${selected}>${escapeHtml(label)}</option>`;
+
+        const layoutSelects = enabledSelects.map((filter) => {
+        const selected = layoutFilters[filter.field] || 'all';
+        const rawLabel = String(filter.label || filter.field || '').trim() || 'items';
+        const allLabel = rawLabel.toLowerCase() === 'type'
+            ? 'All types'
+            : rawLabel.toLowerCase() === 'status'
+                ? 'All statuses'
+                : rawLabel.toLowerCase() === 'kind'
+                    ? 'All kinds'
+                    : `All ${rawLabel.toLowerCase()}`;
+        const options = [
+            { value: 'all', label: allLabel },
+            ...(filter.options || [])
+        ].map((option) => {
+            const isSelected = option.value === selected ? ' selected' : '';
+            return `<option value="${escapeHtml(option.value)}"${isSelected}>${escapeHtml(option.label || option.value)}</option>`;
+        }).join('');
+        return `
+            <label class="lux-picker-field orders-inbox-layout-filter">
+                <span class="lux-picker-label">${escapeHtml(filter.label || filter.field)}</span>
+                <select class="lux-control" data-lux-picker-label="${escapeHtml(filter.label || filter.field)}" data-admin-orders-sent-layout-filter="${escapeHtml(filter.field)}">${options}</select>
+            </label>
+        `;
     }).join('');
-    const kindOptions = [
-        ['all', 'Orders + messages'],
-        ['order', 'Official orders'],
-        ['announcement', 'Announcements']
-    ].map(([value, label]) => {
-        const selected = (filters.kind || 'all') === value ? ' selected' : '';
-        return `<option value="${escapeHtml(value)}"${selected}>${escapeHtml(label)}</option>`;
-    }).join('');
-    const roleOptions = getAdminOrdersRecipientRoleFilters().map((role) => {
-        const selected = (filters.recipientRole || 'all') === role ? ' selected' : '';
-        const label = role === 'all' ? 'All recipient roles' : getOrderRoleShortLabel(role);
-        return `<option value="${escapeHtml(role)}"${selected}>${escapeHtml(label)}</option>`;
-    }).join('');
+
+    const dateFields = `
+        <label class="lux-picker-field orders-inbox-layout-filter">
+            <span class="lux-picker-label">From</span>
+            <input type="date" class="lux-control" value="${escapeHtml(filters.dateFrom || '')}" data-admin-orders-sent-filter="dateFrom">
+        </label>
+        <label class="lux-picker-field orders-inbox-layout-filter">
+            <span class="lux-picker-label">To</span>
+            <input type="date" class="lux-control" value="${escapeHtml(filters.dateTo || '')}" data-admin-orders-sent-filter="dateTo">
+        </label>
+    `;
+
+    const audienceScopedTotal = getAdminSentOrders(faculty).filter((order) => orderIncludesAudienceRole(order, audienceRole)).length;
+    const layoutChrome = `${layoutSelects}${dateFields}`;
 
     return `
         <div class="lux-card-head">
             <div>
-                <div class="lux-card-title orders-admin-section-title">Filter Sent Orders</div>
-                <div class="lux-panel-copy orders-admin-section-copy">Narrow official orders and announcements issued inside ${escapeHtml(facultyLabel)}.</div>
+                <div class="lux-card-title orders-admin-section-title">Audience</div>
             </div>
             <span class="lux-status-pill home-hover-chip is-info">${filteredCount} matching</span>
         </div>
-        <div class="orders-admin-filter-grid">
-            <label class="lux-picker-field orders-admin-filter-field orders-admin-filter-field--wide">
+        <div class="lux-tab-strip lux-tab-strip--segmented orders-admin-audience-tabs" role="tablist" aria-label="Audience roles">${audienceTabs}</div>
+        <div class="orders-admin-filter-strip">
+            <label class="lux-picker-field orders-admin-audience-search">
                 <span class="lux-picker-label">Search</span>
                 <input type="search" class="lux-control" value="${escapeHtml(filters.search || '')}" data-admin-orders-sent-search="1" placeholder="Search title, type, id, or description">
             </label>
-            <label class="lux-picker-field orders-admin-filter-field">
-                <span class="lux-picker-label">Type</span>
-                <select class="lux-control" data-lux-picker-label="Type" data-admin-orders-sent-filter="type">${typeOptions}</select>
-            </label>
-            <label class="lux-picker-field orders-admin-filter-field">
-                <span class="lux-picker-label">Status</span>
-                <select class="lux-control" data-lux-picker-label="Status" data-admin-orders-sent-filter="status">${statusOptions}</select>
-            </label>
-            <label class="lux-picker-field orders-admin-filter-field">
-                <span class="lux-picker-label">Kind</span>
-                <select class="lux-control" data-lux-picker-label="Kind" data-admin-orders-sent-filter="kind">${kindOptions}</select>
-            </label>
-            <label class="lux-picker-field orders-admin-filter-field">
-                <span class="lux-picker-label">Recipients</span>
-                <select class="lux-control" data-lux-picker-label="Recipients" data-admin-orders-sent-filter="recipientRole">${roleOptions}</select>
-            </label>
-            <label class="lux-picker-field orders-admin-filter-field">
-                <span class="lux-picker-label">From</span>
-                <input type="date" class="lux-control" value="${escapeHtml(filters.dateFrom || '')}" data-admin-orders-sent-filter="dateFrom">
-            </label>
-            <label class="lux-picker-field orders-admin-filter-field">
-                <span class="lux-picker-label">To</span>
-                <input type="date" class="lux-control" value="${escapeHtml(filters.dateTo || '')}" data-admin-orders-sent-filter="dateTo">
-            </label>
-        </div>
-        <div class="orders-admin-filter-foot">
-            <span class="lux-status-pill home-hover-chip is-muted">${totalCount} total in faculty</span>
+            <div class="orders-inbox-layout-filters">${layoutChrome}</div>
+            <div class="orders-admin-filter-foot">
+                <span class="lux-status-pill home-hover-chip is-muted">${audienceScopedTotal} sent to ${escapeHtml(audienceLabel)}</span>
+                <button type="button" class="lux-secondary-btn" data-admin-orders-edit-recipient-filters="1">
+                    <i class="fas fa-sliders-h" aria-hidden="true"></i> Edit filters
+                </button>
+            </div>
         </div>
     `;
 }
@@ -1483,11 +1970,10 @@ function renderAdminOrdersSentInboxPanel(container, orders, selectedOrderId) {
                     <button type="button" class="orders-admin-sent-item ${selected ? 'is-selected' : ''}" data-admin-order-open="${escapeHtml(order.id)}">
                         <div class="orders-admin-sent-item__main">
                             <div class="lux-card-copy orders-admin-sent-item__title">${escapeHtml(order.title)}</div>
-                            <div class="lux-panel-copy orders-admin-sent-item__meta">${escapeHtml(order.id)} · ${escapeHtml(order.type)} · ${escapeHtml(order.createdDate || '—')}</div>
+                            <div class="lux-panel-copy orders-admin-sent-item__meta">${escapeHtml(order.id)} · ${escapeHtml(order.type)}</div>
                         </div>
                         <div class="orders-admin-sent-item__side">
-                            <span class="lux-status-pill home-hover-chip is-muted">${recipientCount} recipients</span>
-                            <span class="lux-status-pill home-hover-chip is-info">${escapeHtml(kindLabel)}</span>
+                            <span class="lux-panel-copy orders-admin-sent-item__summary">${recipientCount} · ${escapeHtml(kindLabel)} · ${escapeHtml(order.createdDate || '—')}</span>
                         </div>
                     </button>
                 `;
@@ -1498,8 +1984,7 @@ function renderAdminOrdersSentInboxPanel(container, orders, selectedOrderId) {
     container.innerHTML = `
         <div class="lux-card-head">
             <div>
-                <div class="lux-card-title orders-admin-section-title">Sent Items</div>
-                <div class="lux-panel-copy orders-admin-section-copy">Open an order to review the thread, attachments, and replies.</div>
+                <div class="lux-card-title orders-admin-section-title">Items · ${escapeHtml(getOrdersRecipientFilterEditorRoleLabel(getAdminAudienceRole()))}</div>
             </div>
             <span class="lux-status-pill home-hover-chip is-muted">${orders.length} shown</span>
         </div>
@@ -1507,81 +1992,40 @@ function renderAdminOrdersSentInboxPanel(container, orders, selectedOrderId) {
     `;
 }
 
-function renderAdminOrderThreadBubble(entry, order) {
-    const activeUser = getCurrentUser();
-    const isMine = String(entry.authorId) === String(activeUser?.id) || entry.authorRole === USER_ROLES.ADMIN;
-    const attachmentGallery = renderAdminOrderAttachmentGallery(entry.attachments);
-    if (!entry.message && !attachmentGallery) return '';
-    return `
-        <div class="admin-orders-thread-msg-row ${isMine ? 'is-mine' : ''}">
-            <div class="admin-orders-thread-msg-meta">
-                <span class="admin-orders-thread-msg-author">${escapeHtml(entry.authorName || 'User')}</span>
-                <span class="admin-orders-thread-msg-role">${escapeHtml(getOrderRoleLabel(entry.authorRole))}</span>
-                <span class="admin-orders-thread-msg-time">${escapeHtml(formatAdminOrderDateTime(entry.createdAt))}</span>
-            </div>
-            <div class="admin-orders-thread-msg-bubble home-hover-chip ${isMine ? 'is-mine' : ''}">
-                ${entry.message ? `<div class="admin-orders-thread-msg-text">${escapeHtml(entry.message)}</div>` : ''}
-                ${attachmentGallery}
-            </div>
-        </div>
-    `;
-}
-
-function renderAdminOrderThreadChatLog(order) {
-    ensureAdminOrderThread(order);
-    const bubbles = (order.thread || [])
-        .map((entry) => renderAdminOrderThreadBubble(entry, order))
-        .filter(Boolean)
-        .join('');
-    return `
-        <div class="admin-orders-thread-chat-log lux-scrollbar home-hover-chip" data-admin-order-thread-chat-log="1">
-            ${bubbles || '<div class="lux-empty-state lux-panel-copy orders-admin-sent-empty">No messages yet.</div>'}
-        </div>
-    `;
-}
-
-function renderAdminOrderThreadComposer(orderId) {
-    return `
-        <div class="admin-orders-thread-composer home-hover-chip">
-            <textarea class="lux-control admin-orders-thread-composer-input" rows="3" data-admin-order-thread-input="1" placeholder="Write a reply or add an internal follow-up..."></textarea>
-            ${renderAdminOrderThreadDraftChips()}
-            <div class="admin-orders-thread-composer-actions">
-                <button type="button" class="lux-secondary-btn" data-admin-order-thread-attach="order-thread-reply"><i class="fas fa-paperclip"></i> Attach files</button>
-                <button type="button" class="lux-primary-btn" data-admin-order-thread-send="${escapeHtml(orderId)}"><i class="fas fa-paper-plane"></i> Send reply</button>
-            </div>
-        </div>
-    `;
-}
-
 function renderAdminOrderThreadShell(order) {
     if (!order) return '';
-    ensureAdminOrderThread(order);
     const recipientCount = order.recipientCount || (order.recipientIds ? order.recipientIds.length : 0);
+    const description = typeof renderOrderDetailDescriptionMarkup === 'function'
+        ? renderOrderDetailDescriptionMarkup(order)
+        : `<div class="orders-detail-panel lux-detail-panel">${escapeHtml(order.description || '')}</div>`;
+    const metrics = typeof renderOrderDetailMetricsMarkup === 'function'
+        ? renderOrderDetailMetricsMarkup(order)
+        : '';
+    const attachments = typeof renderOrderDetailAttachmentsMarkup === 'function'
+        ? renderOrderDetailAttachmentsMarkup(order)
+        : '';
+    const recipients = typeof renderOrderDetailRecipientsMarkup === 'function'
+        ? renderOrderDetailRecipientsMarkup(order)
+        : '';
     return `
-        <div class="admin-orders-thread-shell" data-admin-order-thread-shell="1">
-            <div class="admin-orders-thread-header">
-                <div>
-                    <div class="lux-card-title orders-admin-section-title">${escapeHtml(order.title)}</div>
-                    <div class="lux-panel-copy orders-admin-section-copy">${escapeHtml(order.type)} · Effective ${escapeHtml(order.effectiveDate || '—')} · ${recipientCount} recipients</div>
-                </div>
-                <div class="admin-orders-thread-header-actions">
-                    <span class="lux-status-pill home-hover-chip is-muted">${escapeHtml(order.status || 'Active')}</span>
-                    <button type="button" class="lux-secondary-btn" data-admin-order-delete="${escapeHtml(order.id)}"><i class="fas fa-trash"></i> Delete</button>
-                    <button type="button" class="lux-secondary-btn" data-admin-orders-close-thread-modal="true" aria-label="Close thread"><i class="fas fa-times"></i></button>
-                </div>
+        <div class="admin-orders-thread-header modal-header">
+            <div>
+                <div class="lux-card-title orders-admin-section-title">${escapeHtml(order.title)}</div>
+                <div class="lux-panel-copy orders-admin-section-copy">${escapeHtml(order.type)} · Effective ${escapeHtml(order.effectiveDate || '—')} · ${recipientCount} recipients</div>
             </div>
-            <div class="admin-orders-thread-body">
-                ${renderAdminOrderThreadChatLog(order)}
-                ${renderAdminOrderThreadComposer(order.id)}
+            <div class="admin-orders-thread-header-actions">
+                <span class="lux-status-pill home-hover-chip is-muted">${escapeHtml(order.status || 'Active')}</span>
+                <button type="button" class="lux-secondary-btn" data-admin-order-delete="${escapeHtml(order.id)}"><i class="fas fa-trash"></i> Delete</button>
+                <button type="button" class="lux-secondary-btn" data-admin-orders-close-thread-modal="true" aria-label="Close order details"><i class="fas fa-times"></i></button>
             </div>
         </div>
+        <div class="admin-orders-thread-body modal-body lux-scrollbar" data-admin-order-detail-body="1">
+            ${description}
+            ${metrics}
+            ${attachments}
+            ${recipients}
+        </div>
     `;
-}
-
-function scrollAdminOrderThreadChatLog() {
-    const log = document.querySelector('[data-admin-order-thread-chat-log="1"]');
-    if (!log) return;
-    log.scrollTop = log.scrollHeight;
 }
 
 function renderAdminOrderThreadPanelContent() {
@@ -1590,7 +2034,6 @@ function renderAdminOrderThreadPanelContent() {
     const panel = document.getElementById('admin-orders-thread-panel');
     if (!panel || !order) return;
     panel.innerHTML = renderAdminOrderThreadShell(order);
-    scrollAdminOrderThreadChatLog();
 }
 
 function setAdminOrdersThreadModalOpen(isOpen) {
@@ -1619,22 +2062,7 @@ function closeAdminOrderThreadModal(event) {
         const isCloseControl = Boolean(event.target.closest?.('[data-admin-orders-close-thread-modal]'));
         if (!isBackdrop && !isCloseControl) return;
     }
-    clearAdminOrdersThreadDraftFiles();
     setAdminOrdersThreadModalOpen(false);
 }
 
-async function sendAdminOrderThreadReply(orderId) {
-    const order = getAdminOrderById(orderId);
-    if (!order) return;
-    const input = document.querySelector('[data-admin-order-thread-input="1"]');
-    const text = String(input?.value || '').trim();
-    const attachments = await persistAdminOrderThreadDraftAttachments('order-thread-reply');
-    if (!text && !attachments.length) {
-        alert('Write a message or attach at least one file.');
-        return;
-    }
-    appendAdminOrderThreadReply(orderId, { text, attachments });
-    if (input) input.value = '';
-    renderAdminOrderThreadPanelContent();
-}
 

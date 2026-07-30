@@ -34,10 +34,12 @@
             container.replaceChildren(range.createContextualFragment(`
                 <div class="student-service-student-shell" data-student-service-my-tickets-shell="1">
                     <div data-student-service-my-tickets-summary="1"></div>
-                    <div class="student-service-ticket-grid">
-                        <div data-student-service-my-tickets-list="1"></div>
-                        <div data-student-service-my-tickets-detail="1"></div>
-                    </div>
+                    <section class="student-service-zone student-service-workbench-merged home-hover-chip">
+                        <div class="student-service-ticket-grid">
+                            <div data-student-service-my-tickets-list="1"></div>
+                            <div data-student-service-my-tickets-detail="1"></div>
+                        </div>
+                    </section>
                 </div>
             `));
             shell = container.querySelector('[data-student-service-my-tickets-shell="1"]');
@@ -423,7 +425,7 @@
                         ${attachmentIcon}<span class="student-service-ticket-inbox-preview-text">${ssEscape(ssClampText(preview.text, 88))}</span>
                     </div>
                     <div class="student-service-ticket-inbox-meta">
-                        <span class="student-service-pill">${ssEscape(getStudentServiceSupportArea(ticket.serviceArea).label)}</span>
+                        <span class="student-service-pill home-hover-chip">${ssEscape(getStudentServiceSupportArea(ticket.serviceArea).label)}</span>
                         <span class="student-service-ticket-inbox-time">${ssEscape(relativeTime)}</span>
                     </div>
                 </div>
@@ -505,26 +507,26 @@
             })).join('');
         }
         return `
-            <section class="student-service-zone student-service-zone-find student-service-zone-inbox">
+            <div class="student-service-workbench-column student-service-workbench-column--inbox student-service-zone-find student-service-zone-inbox">
                 <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker lux-section-kicker">Inbox</div>
                         <div class="lux-panel-title lux-page-title">Your conversations with Student Service</div>
                     </div>
-                    <span class="student-service-panel-chip">${ticketFeed.length} conversation${ticketFeed.length === 1 ? '' : 's'}</span>
+                    <span class="student-service-panel-chip home-hover-chip">${ticketFeed.length} conversation${ticketFeed.length === 1 ? '' : 's'}</span>
                 </div>
                 ${filterMarkup}
                 <div class="student-service-ticket-inbox-list">
                     ${listBody}
                 </div>
-            </section>
+            </div>
         `;
     }
 
     function renderStudentServiceMyTicketsDetailMarkup(selectedTicket, options = {}) {
         const hasTickets = Boolean(options.hasTickets);
         return `
-            <section class="student-service-zone student-service-zone-act student-service-zone-conversation">
+            <div class="student-service-workbench-column student-service-workbench-column--detail student-service-zone-act student-service-zone-conversation">
                 ${selectedTicket
                     ? `<div class="student-service-ticket-detail">${renderStudentServiceTicketConversationShell(selectedTicket, {
                         mode: 'student',
@@ -532,7 +534,7 @@
                         currentUser: getStudentServiceCurrentUser()
                     })}</div>`
                     : `<div class="student-service-ticket-detail">${renderStudentServiceTicketConversationPlaceholder({ hasTickets })}</div>`}
-            </section>
+            </div>
         `;
     }
 
@@ -660,8 +662,8 @@
                     </div>
                 </div>
                 <div class="student-service-ticket-detail-meta">
-                    <span class="student-service-pill">${ssEscape(selectedArea.label)}</span>
-                    ${selectedArticle?.category ? `<span class="student-service-pill">${ssEscape(selectedArticle.category)}</span>` : ''}
+                    <span class="student-service-pill home-hover-chip">${ssEscape(selectedArea.label)}</span>
+                    ${selectedArticle?.category ? `<span class="student-service-pill home-hover-chip">${ssEscape(selectedArticle.category)}</span>` : ''}
                 </div>
                 <div class="student-service-ticket-detail-copy student-service-ticket-detail-copy--summary student-service-article-preview-copy lux-panel-copy">${ssEscape(previewSummary)}</div>
                 <div class="lux-page-copy student-service-article-preview-body">${ssTextBlock(previewBody)}</div>
@@ -768,10 +770,12 @@
             container.replaceChildren(range.createContextualFragment(`
                 <div class="student-service-staff-shell" data-student-service-responder-shell="1">
                     <div data-student-service-responder-summary="1"></div>
-                    <div class="student-service-staff-grid">
-                        <div data-student-service-responder-list="1"></div>
-                        <div data-student-service-responder-detail="1"></div>
-                    </div>
+                    <section class="student-service-zone student-service-workbench-merged home-hover-chip">
+                        <div class="student-service-staff-grid">
+                            <div data-student-service-responder-list="1"></div>
+                            <div data-student-service-responder-detail="1"></div>
+                        </div>
+                    </section>
                 </div>
             `));
             shell = container.querySelector('[data-student-service-responder-shell="1"]');
@@ -806,7 +810,7 @@
 
     function renderStudentServiceResponderListMarkup(ui, filteredArticles, selectedArticle) {
         return `
-            <section class="student-service-zone">
+            <div class="student-service-workbench-column student-service-workbench-column--inbox">
                 <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker">Rules & guidance</div>
@@ -833,13 +837,13 @@
                         variant: 'article'
                     })).join('') || renderStudentServiceEmptyState('No guidance articles match the current filters.', 'student-service-empty-state--tickets')}
                 </div>
-            </section>
+            </div>
         `;
     }
 
     function renderStudentServiceResponderDetailMarkup(selectedArticle) {
         return `
-            <section class="student-service-zone">
+            <div class="student-service-workbench-column student-service-workbench-column--detail">
                 <div class="student-service-ticket-detail">
                     <div class="lux-panel-head">
                         <div>
@@ -859,7 +863,7 @@
                         <div class="student-service-article-preview-body">${ssTextBlock(selectedArticle.content || '')}</div>
                     ` : renderStudentServiceEmptyState('Select a guidance article to review the official answer and scope.', 'student-service-empty-state-large student-service-empty-state--detail')}
                 </div>
-            </section>
+            </div>
         `;
     }
 
@@ -950,10 +954,12 @@
             container.replaceChildren(range.createContextualFragment(`
                 <div class="student-service-staff-shell" data-student-service-staff-workbench-shell="1">
                     <div data-student-service-staff-workbench-summary="1"></div>
-                    <div class="student-service-staff-grid">
-                        <div data-student-service-staff-workbench-primary="1"></div>
-                        <div data-student-service-staff-workbench-detail="1"></div>
-                    </div>
+                    <section class="student-service-zone student-service-workbench-merged home-hover-chip">
+                        <div class="student-service-staff-grid">
+                            <div data-student-service-staff-workbench-primary="1"></div>
+                            <div data-student-service-staff-workbench-detail="1"></div>
+                        </div>
+                    </section>
                 </div>
             `));
             shell = container.querySelector('[data-student-service-staff-workbench-shell="1"]');
@@ -986,7 +992,7 @@
             </div>`
             : '';
         return `
-            <section class="student-service-zone">
+            <div class="student-service-workbench-column student-service-workbench-column--inbox">
                 <div class="lux-panel-head">
                     <div>
                         <div class="student-service-kicker">${panel === 'articles' ? 'Knowledge base' : panel === 'qa' ? 'Public Q&A' : 'Inbox'}</div>
@@ -1048,13 +1054,13 @@
                         })).join('') || renderStudentServiceEmptyState('No articles match the current filters.', 'student-service-empty-state--tickets')}
                     </div>
                 `}
-            </section>
+            </div>
         `;
     }
 
     function renderStudentServiceStaffWorkbenchDetailMarkup(panel, selectedTicket, selectedQuestion, editorArticle, showArticleActions = false) {
         return `
-            <section class="student-service-zone">
+            <div class="student-service-workbench-column student-service-workbench-column--detail">
                 ${panel === 'tickets' ? `
                     ${selectedTicket ? `
                         <div class="student-service-ticket-detail">
@@ -1097,7 +1103,7 @@
                         </div>
                     </div>
                 `}
-            </section>
+            </div>
         `;
     }
 

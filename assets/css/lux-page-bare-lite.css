@@ -2711,6 +2711,10 @@ body.lux-route-lms #page-lms .lms-clean-subjects--merged {
     border-radius: var(--lms-radius-panel);
 }
 
+body.lux-route-lms #page-lms .lms-clean-subjects--merged.home-hover-chip:has(.home-hover-chip) {
+    overflow: visible;
+}
+
 body.lux-route-lms #page-lms .lms-clean-subjects--merged::before {
     content: '';
     display: block;
@@ -9796,6 +9800,10 @@ body.lux-route-lms .lms-live-pill.is-warn
 }
 body.lux-route-lms .lms-whiteboard-zoom
 {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    z-index: 4;
     pointer-events: auto;
     isolation: isolate;
     display: inline-flex;
@@ -9830,17 +9838,19 @@ body.lux-route-lms .lms-whiteboard-zoom-label
 body.lux-route-lms .lms-whiteboard-minimap-shell
 {
     position: absolute;
-    left: 12px;
+    right: 12px;
+    left: auto;
     bottom: 12px;
     z-index: 3;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 6px;
     pointer-events: auto;
 }
 body.lux-route-lms .lms-whiteboard-minimap-toggle
 {
-    align-self: flex-start;
+    align-self: flex-end;
     pointer-events: auto;
     min-width: 36px;
     min-height: 36px;
@@ -10051,6 +10061,12 @@ body.lux-route-lms .lms-wb-input
     font-size: 12px;
     font-weight: 600;
     outline: none;
+}
+body.lux-route-lms .lms-whiteboard-shell[data-lms-whiteboard-theme="light"] .lms-wb-input
+{
+    background: var(--lux-modal-glass-input, var(--lux-warmglass-input));
+    border-color: var(--lux-modal-glass-border, var(--lux-soft-chrome-border-accent));
+    color: var(--lux-text);
 }
 body.lux-route-lms .lms-wb-input--opacity
 {
@@ -11331,19 +11347,28 @@ body.lux-route-registration .registration-studio-shell {
 }
 
 body.lux-route-timetable .lux-timetable-hero.page-hero,
-body.lux-route-registration .registration-studio-shell > .registration-hero-shell.page-hero,
-body.lux-route-chancellery .lux-chancellery-hero-card.page-hero {
+body.lux-route-registration .registration-studio-shell > .registration-hero-shell.page-hero {
     padding: 20px 22px 16px;
+    min-height: 0;
+    overflow: visible;
+}
+body.lux-route-chancellery .lux-chancellery-hero-card.page-hero {
+    padding: 12px 14px 12px;
     min-height: 0;
     overflow: visible;
 }
 
 body.lux-route-timetable .lux-timetable-hero-top.lux-hero-stage,
-body.lux-route-registration .registration-hero-top.lux-hero-stage,
-body.lux-route-chancellery .lux-chancellery-hero-stage.lux-hero-stage {
+body.lux-route-registration .registration-hero-top.lux-hero-stage {
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(280px, 360px);
     gap: 16px;
+    align-items: stretch;
+}
+body.lux-route-chancellery .lux-chancellery-hero-stage.lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(240px, 320px);
+    gap: 12px;
     align-items: stretch;
 }
 
@@ -11809,12 +11834,19 @@ body.lux-route-registration .registration-section-head {
 
 body.lux-route-personal-data #page-personal-data {
     display: grid;
-    gap: 14px;
+    gap: 0;
     padding: 12px 0 84px;
 }
 
-body.lux-route-personal-data .page-hero.personal-data-hero {
-    padding: 20px 22px 16px;
+body.lux-route-personal-data #page-personal-data .personal-data-shell {
+    display: grid;
+    gap: 0;
+    border-radius: 24px;
+    overflow: visible;
+}
+
+body.lux-route-personal-data .personal-data-hero {
+    padding: 28px 30px 0;
     min-height: 0;
     overflow: visible;
 }
@@ -11838,8 +11870,10 @@ body.lux-route-personal-data .personal-data-command.personal-data-toolbar {
     align-items: flex-end;
     justify-content: space-between;
     gap: 16px;
-    padding: 16px 20px;
-    border-radius: 18px;
+    padding: 22px 24px;
+    margin-top: 18px;
+    border-top: 1px solid var(--lux-soft-chrome-border-accent);
+    border-radius: 0;
 }
 
 body.lux-route-personal-data .personal-data-command-context {
@@ -11863,18 +11897,79 @@ body.lux-route-personal-data .personal-data-command-actions {
     justify-content: flex-end;
 }
 
-body.lux-route-personal-data .personal-data-layout.personal-data-workspace {
+body.lux-route-personal-data .personal-data-layout.personal-data-workspace-body {
     display: grid;
     grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     gap: 18px;
     align-items: start;
-    padding: 22px 24px;
+    padding: 22px 24px 24px;
+    margin-top: 0;
+    border-top: 1px solid var(--lux-soft-chrome-border-accent);
     overflow: visible;
 }
 
 body.lux-route-personal-data .personal-data-rail,
 body.lux-route-personal-data .personal-data-main {
     min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-main {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+    padding: 24px;
+    border-radius: 16px;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details-root {
+    min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details-empty {
+    margin: 0;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+    line-height: 1.3;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field-value {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--lux-text);
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field-value.is-empty {
+    color: var(--lux-text-muted);
+    font-weight: 600;
 }
 
 body.lux-route-personal-data .personal-data-identity-card {
@@ -11947,18 +12042,6 @@ body.lux-route-personal-data .pd-divider {
     background: color-mix(in srgb, var(--lux-text-muted) 18%, transparent);
 }
 
-body.lux-route-personal-data .pd-contact-grid {
-    display: grid;
-    gap: 10px;
-}
-
-body.lux-route-personal-data .pd-contact-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-}
-
 body.lux-route-personal-data .pd-password-form {
     display: grid;
     gap: 12px;
@@ -12010,55 +12093,6 @@ body.lux-route-personal-data .pd-progress-fill {
     transition: width 0.25s ease;
 }
 
-body.lux-route-personal-data .personal-data-subjects-root {
-    display: grid;
-    gap: 14px;
-    min-width: 0;
-}
-
-body.lux-route-personal-data .personal-data-subjects-summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 16px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-personal-data .personal-data-subjects-table-wrap {
-    overflow: auto;
-    border-radius: 14px;
-}
-
-body.lux-route-personal-data .personal-data-subjects-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-
-body.lux-route-personal-data .personal-data-subjects-table th,
-body.lux-route-personal-data .personal-data-subjects-table td {
-    padding: 12px 14px;
-    text-align: left;
-    vertical-align: top;
-    border-bottom: 1px solid color-mix(in srgb, var(--lux-text-muted) 14%, transparent);
-}
-
-body.lux-route-personal-data .personal-data-subjects-table th {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-personal-data .personal-data-subjects-empty,
-body.lux-route-personal-data .personal-data-subjects-loading {
-    padding: 20px;
-    text-align: center;
-    color: var(--lux-text-muted);
-}
-
 /* Personal data route: shared typography (layout above; surfaces → lux-fouc-ht). */
 body.lux-route-personal-data #page-personal-data .personal-data-merged.home-hover-chip {
     padding: 24px;
@@ -12085,50 +12119,17 @@ body.lux-route-personal-data #page-personal-data .personal-data-metric-icon.lux-
     color: rgb(var(--lux-accent-rgb));
 }
 
-body.lux-route-personal-data #page-personal-data .personal-data-subjects-summary {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 16px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-personal-data #page-personal-data .personal-data-subjects-table .lux-card-title {
-    font-size: clamp(1rem, 1.8vw, 1.15rem);
-    font-weight: 700;
-    line-height: 1.25;
-    color: var(--lux-text);
-}
-
-body.lux-route-personal-data #page-personal-data .personal-data-subjects-meta {
-    margin-top: 6px;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-personal-data #page-personal-data .personal-data-subjects-table th.lms-route-field-label {
-    margin-bottom: 0;
-}
-
-body.lux-route-personal-data #page-personal-data .personal-data-subjects-table-wrap.home-hover-chip {
-    padding: 16px;
-    border-radius: 16px;
-    overflow: hidden;
-}
-
 body.lux-light-mode.lux-route-personal-data #page-personal-data :is(
     .lux-page-title,
     .personal-data-name,
     .personal-data-level-heading,
-    .personal-data-kpi-value,
-    .personal-data-subjects-table .lux-card-title
+    .personal-data-kpi-value
 ),
 html.lux-light-mode body.lux-route-personal-data #page-personal-data :is(
     .lux-page-title,
     .personal-data-name,
     .personal-data-level-heading,
-    .personal-data-kpi-value,
-    .personal-data-subjects-table .lux-card-title
+    .personal-data-kpi-value
 ) {
     color: var(--lux-text);
 }
@@ -12136,24 +12137,18 @@ html.lux-light-mode body.lux-route-personal-data #page-personal-data :is(
 body.lux-light-mode.lux-route-personal-data #page-personal-data :is(
     .lux-card-copy,
     .personal-data-kpi-label,
-    .personal-data-subjects-meta,
-    .personal-data-subjects-summary,
-    .pd-contact-row span,
     .pd-progress-head
 ),
 html.lux-light-mode body.lux-route-personal-data #page-personal-data :is(
     .lux-card-copy,
     .personal-data-kpi-label,
-    .personal-data-subjects-meta,
-    .personal-data-subjects-summary,
-    .pd-contact-row span,
     .pd-progress-head
 ) {
     color: var(--lux-text-muted, var(--lux-text-secondary));
 }
 
 @media (max-width: 960px) {
-    body.lux-route-personal-data .personal-data-layout.personal-data-workspace {
+    body.lux-route-personal-data .personal-data-layout.personal-data-workspace-body {
         grid-template-columns: 1fr;
     }
 
@@ -12169,39 +12164,83 @@ html.lux-light-mode body.lux-route-personal-data #page-personal-data :is(
     body.lux-route-personal-data .personal-data-command-actions {
         justify-content: flex-start;
     }
+
+    body.lux-route-personal-data .personal-data-hero {
+        padding: 22px 20px 0;
+    }
+
+    body.lux-route-personal-data .personal-data-command.personal-data-toolbar,
+    body.lux-route-personal-data .personal-data-layout.personal-data-workspace-body {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
 }
 
 /* ── Chancellery route (lux-route-chancellery; layout only — paint → lux-fouc-ht) ── */
 
 body.lux-route-chancellery #page-chancellery {
     display: grid;
-    gap: 14px;
+    gap: 10px;
 }
 
 body.lux-route-chancellery #page-chancellery [data-chancellery-shell="1"] {
     display: grid;
-    gap: 14px;
+    gap: 10px;
     padding: 12px 0 84px;
 }
 
 body.lux-route-chancellery .lux-chancellery-hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 4px;
+    gap: 8px;
+    margin-top: 2px;
 }
 
 body.lux-route-chancellery .lux-chancellery-command-bar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-radius: 18px;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 16px;
 }
 
 body.lux-route-chancellery .lux-chancellery-filter-field {
-    min-width: min(220px, 100%);
+    min-width: min(160px, 100%);
+}
+
+/* Layout pickers: content-sized — global .lux-picker-field is width:100% and blows out the flex bar. */
+body.lux-route-chancellery .lux-chancellery-command-bar > .lux-picker-field.lux-chancellery-filter-field {
+    width: auto;
+    flex: 0 1 auto;
+    max-width: 220px;
+}
+
+body.lux-route-chancellery .lux-chancellery-command-bar > .lux-chancellery-routing-filter {
+    flex: 1 1 16rem;
+    width: auto;
+    max-width: 100%;
+    min-width: min(16rem, 100%);
+}
+
+body.lux-route-chancellery .lux-chancellery-command-bar > .lux-picker-field.lux-chancellery-filter-field .lux-universal-picker-field {
+    width: auto;
+}
+
+body.lux-route-chancellery .lux-chancellery-command-bar > .lux-picker-field.lux-chancellery-filter-field .lux-picker-btn--compact {
+    width: auto;
+    min-width: 140px;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+body.lux-route-chancellery .lux-chancellery-command-bar > .lux-picker-field.lux-chancellery-filter-field .lux-picker-panel {
+    width: max(100%, 180px);
+}
+
+body.lux-route-chancellery .lux-chancellery-command-bar > .lux-picker-field.lux-chancellery-filter-field .lux-control {
+    width: auto;
+    min-width: 140px;
 }
 
 body.lux-route-chancellery .lux-chancellery-search {
@@ -12215,7 +12254,7 @@ body.lux-route-chancellery .lux-chancellery-command-spacer {
 body.lux-route-chancellery .lux-chancellery-workspace,
 body.lux-route-chancellery .lux-chancellery-workspace-split {
     display: grid;
-    gap: 16px;
+    gap: 12px;
     min-width: 0;
 }
 
@@ -12224,34 +12263,38 @@ body.lux-route-chancellery .lux-chancellery-workspace-split {
     align-items: start;
 }
 
+body.lux-route-chancellery .lux-chancellery-workspace-split.is-list-only {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 body.lux-route-chancellery .lux-chancellery-list-panel,
 body.lux-route-chancellery .lux-chancellery-detail-panel {
     display: grid;
-    gap: 14px;
-    padding: 18px 20px;
-    border-radius: 16px;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
     min-width: 0;
 }
 
 body.lux-route-chancellery .lux-chancellery-detail-body,
 body.lux-route-chancellery .lux-chancellery-compose-form {
     display: grid;
-    gap: 16px;
+    gap: 12px;
     min-width: 0;
 }
 
 body.lux-route-chancellery .lux-chancellery-queue-list {
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 body.lux-route-chancellery .lux-chancellery-queue-item {
     display: grid;
-    gap: 10px;
+    gap: 0;
     width: 100%;
     text-align: left;
-    padding: 14px 16px;
-    border-radius: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
     border: 0;
     background: transparent;
     color: inherit;
@@ -12262,7 +12305,23 @@ body.lux-route-chancellery .lux-chancellery-queue-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
+}
+body.lux-route-chancellery .lux-chancellery-queue-side {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex: 0 1 auto;
+}
+body.lux-route-chancellery .lux-chancellery-queue-date {
+    font-size: 12px;
+    color: var(--lux-text-muted);
+    white-space: nowrap;
+}
+body.lux-route-chancellery .lux-chancellery-queue-meta {
+    margin-top: 2px;
 }
 
 body.lux-route-chancellery .lux-chancellery-queue-tag-row {
@@ -12373,8 +12432,8 @@ body.lux-route-chancellery .lux-chancellery-detail-body {
 
 /* Chancellery route: shared hero focus panel typography (surfaces → lux-fouc-ht). */
 body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-side.home-hover-chip {
-    padding: 18px 18px 16px;
-    border-radius: 20px;
+    padding: 12px 12px 10px;
+    border-radius: 16px;
     min-height: auto;
 }
 
@@ -12414,17 +12473,17 @@ body.lux-route-chancellery #page-chancellery .lux-chancellery-case-status-pill {
 body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-signals.lux-hero-signal-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin: 0;
+    gap: 8px;
+    margin: 8px 0 0;
     padding: 0;
 }
 
 body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-signals .lux-hero-signal {
     position: relative;
     display: grid;
-    gap: 6px;
-    padding: 14px 14px 12px;
-    border-radius: 16px;
+    gap: 4px;
+    padding: 10px 10px 8px;
+    border-radius: 12px;
     min-width: 0;
     overflow: hidden;
 }
@@ -12453,7 +12512,7 @@ body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-signals .lux-
 
 body.lux-route-chancellery #page-chancellery .lux-chancellery-hero-signals .lux-hero-signal > strong {
     font-family: 'DM Mono', ui-monospace, monospace;
-    font-size: clamp(18px, 1.6vw, 22px);
+    font-size: clamp(16px, 1.4vw, 20px);
     font-weight: 800;
     line-height: 1.1;
     color: var(--lux-text);
@@ -12501,6 +12560,15 @@ html.lux-light-mode body.lux-route-chancellery #page-chancellery :is(
     body.lux-route-chancellery .lux-chancellery-command-bar {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    body.lux-route-chancellery .lux-chancellery-command-bar > .lux-picker-field.lux-chancellery-filter-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-chancellery .lux-chancellery-command-bar > .lux-picker-field.lux-chancellery-filter-field :is(.lux-picker-btn--compact, .lux-control) {
+        width: 100%;
     }
 
     body.lux-route-chancellery .lux-chancellery-command-spacer {
@@ -12650,6 +12718,32 @@ body.lux-route-student-service .student-service-zone {
     gap: 18px;
     padding: 24px;
     border-radius: 28px;
+}
+
+body.lux-route-student-service .student-service-workbench-merged {
+    padding: 24px;
+    min-width: 0;
+}
+
+body.lux-route-student-service .student-service-workbench-merged > :is(
+    .student-service-staff-grid,
+    .student-service-ticket-grid
+) {
+    gap: 0 18px;
+    min-width: 0;
+}
+
+body.lux-route-student-service .student-service-workbench-column {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+    min-width: 0;
+    overflow: visible;
+}
+
+body.lux-route-student-service .student-service-workbench-column--detail {
+    border-inline-start: 1px solid var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+    padding-inline-start: 18px;
 }
 
 body.lux-route-student-service .lux-panel-head {
@@ -13842,6 +13936,20 @@ body.lux-route-student-service #student-service-modal-root .student-service-inbo
     body.lux-route-student-service .student-service-staff-grid {
         grid-template-columns: 1fr;
     }
+
+    body.lux-route-student-service .student-service-workbench-merged > :is(
+        .student-service-staff-grid,
+        .student-service-ticket-grid
+    ) {
+        gap: 18px;
+    }
+
+    body.lux-route-student-service .student-service-workbench-column--detail {
+        border-inline-start: 0;
+        padding-inline-start: 0;
+        border-block-start: 1px solid var(--lux-panel-host-border, var(--lux-soft-chrome-border-accent));
+        padding-block-start: 18px;
+    }
 }
 
 @media (max-width: 900px) {
@@ -14652,12 +14760,40 @@ body.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-d
     color: #ffd2d2;
 }
 
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-chip.is-success,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-chip.is-success,
+body.lux-light-mode.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-success,
+html.lux-light-mode body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-success,
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-chip.is-success,
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-chip.is-success,
+body.lux-light-mode.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-success,
+html.lux-light-mode body.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-success
+{
+    color: #0f7a4d;
+}
+
 body.lux-light-mode.lux-route-staff #staff-content .staff-hub-chip.is-warning,
 html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-chip.is-warning,
+body.lux-light-mode.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-warning,
+html.lux-light-mode body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-warning,
 body.lux-light-mode.lux-route-students-admin #students-content .students-hub-chip.is-warning,
-html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-chip.is-warning
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-chip.is-warning,
+body.lux-light-mode.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-warning,
+html.lux-light-mode body.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-warning
 {
-    color: #7e4e1a;
+    color: #8a5a12;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-chip.is-danger,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-chip.is-danger,
+body.lux-light-mode.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-danger,
+html.lux-light-mode body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-danger,
+body.lux-light-mode.lux-route-students-admin #students-content .students-hub-chip.is-danger,
+html.lux-light-mode body.lux-route-students-admin #students-content .students-hub-chip.is-danger,
+body.lux-light-mode.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-danger,
+html.lux-light-mode body.lux-route-students-admin #students-admin-modal-root .students-hub-chip.is-danger
+{
+    color: #b42318;
 }
 
 body.lux-route-staff #staff-content .staff-hub-chip.is-muted,
@@ -15456,9 +15592,17 @@ body.lux-route-students-admin #students-content .students-hub-academic-overview-
 }
 
 body.lux-route-students-admin #students-content .students-hub-academic-overview-meta > div,
-body.lux-route-students-admin #students-content .students-hub-academic-overview-scores > div {
+body.lux-route-students-admin #students-content .students-hub-academic-overview-scores > div,
+body.lux-route-students-admin #students-content .students-hub-academic-overview-cell {
     display: grid;
     gap: 4px;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-overview-cell:not(.home-hover-chip) {
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
 body.lux-route-students-admin #students-content .students-hub-academic-overview-meta span,
@@ -15481,6 +15625,13 @@ body.lux-route-students-admin #students-content .students-hub-academic-progress 
     display: grid;
     gap: 10px;
     margin-top: 4px;
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+}
+
+body.lux-route-students-admin #students-content .students-hub-academic-progress:not(.home-hover-chip) {
+    border: 1px solid var(--lux-hub-border-soft, rgba(255, 255, 255, 0.10));
 }
 
 body.lux-route-students-admin #students-content .students-hub-academic-progress-head {
@@ -18516,6 +18667,17 @@ body.lux-route-students-admin #students-content .students-hub-studio-field-main{
     gap: 8px;
 }
 
+body.lux-route-students-admin #students-content .students-hub-studio-personal-data-toggle{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 2px 0 0 34px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--lux-text-muted);
+    user-select: none;
+}
+
 body.lux-route-staff #staff-content .staff-hub-studio-field-remove-btn,
 body.lux-route-students-admin #students-content .students-hub-studio-field-remove-btn{
     min-width: 32px;
@@ -20324,58 +20486,98 @@ body.lux-route-library #page-library .library-catalog-filters-panel .lux-card-me
   }
 }
 
-/* ── Recipient orders inbox (#page-orders, #orders-inbox-root): layout only ── */
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-shell {
+/* ── Recipient orders inbox hosts (#page-orders, #orders-inbox-root, #admin-orders-root, #admin-orders-thread-overlay): layout only ── */
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-shell {
   width: 100%;
   margin: 0 auto 28px;
   display: grid;
-  gap: 24px;
+  gap: 0;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-grid {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero {
+  padding: 28px 30px 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-body {
+  padding: 22px 24px 24px;
+  border-top: 1px solid var(--lux-soft-chrome-border-accent);
+  margin-top: 22px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-grid {
   display: grid;
   grid-template-columns: minmax(330px, 420px) minmax(0, 1fr);
   gap: 22px;
   align-items: start;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-column {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-list,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-detail {
   min-width: 0;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero {
-  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
-  border-radius: 24px;
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-detail {
+  border-left: 1px solid var(--lux-soft-chrome-border-accent);
+  padding-left: 22px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero .lux-card-body {
-  padding: 28px 30px 26px;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-stage {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-stage {
   gap: 24px;
   align-items: stretch;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-hero-pills {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-hero-pills {
   margin-top: 16px;
   gap: 8px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-side {
   border-radius: 20px;
   padding: 18px 18px 16px;
   min-height: auto;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side .lux-hero-side-head {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-side .lux-hero-side-head {
   display: none;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side .lux-hero-signal-list {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-side .lux-hero-signal-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
@@ -20384,8 +20586,14 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-s
   list-style: none;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-hero-signal,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-metric-card {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .lux-hero-signal,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-metric-card {
   position: relative;
   display: grid;
   gap: 6px;
@@ -20394,8 +20602,14 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-metric-card 
   overflow: hidden;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-hero-signal::before,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-metric-card::before {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .lux-hero-signal::before,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-metric-card::before {
   content: '';
   position: absolute;
   inset: 0 auto 0 0;
@@ -20409,53 +20623,164 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-metric-card:
   opacity: 0.85;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-card .lux-card-body,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-card .lux-card-body {
-  padding: 22px 24px 24px;
-}
-
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .lux-card-head {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-shell .lux-card-head {
   margin: 0 0 18px;
   padding: 0 0 16px;
   border-bottom: 1px solid var(--lux-soft-chrome-border-accent);
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-card,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-card {
-  border-radius: 22px;
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace {
+  border-radius: 24px;
+  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-status-row {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-status-row:not(.lux-tab-strip) {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-status-filter {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  padding: 0 14px;
-  border-radius: 999px;
-  cursor: pointer;
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-status-row.lux-tab-strip {
+  margin-top: 14px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-wrap {
+/* Reassert lux-controls segmented strip recipe (host specificity > competing flex helpers). */
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  background: color-mix(in srgb, var(--lux-text) 4%, var(--lux-panel-control, var(--lux-panel-fill)));
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--lux-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  margin: 0;
+  box-shadow: none;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--lux-accent) 8%, var(--lux-panel-control));
+  color: var(--lux-text);
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn:is(.is-active, .active, [aria-pressed="true"], [aria-selected="true"]) {
+  background: color-mix(in srgb, var(--lux-accent) 18%, var(--lux-panel-control));
+  border-color: color-mix(in srgb, var(--lux-accent) 24%, var(--lux-border));
+  color: var(--lux-accent);
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--lux-text) 6%, transparent);
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn:not(.is-active):not(.active):not([aria-pressed="true"]):not([aria-selected="true"]) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-list-wrap {
   margin-top: 16px;
   border-radius: 18px;
-  overflow: hidden;
+  overflow: visible;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-list {
   max-height: 400px;
   overflow: auto;
+  padding-block: 4px;
+  scroll-padding-block: 4px;
   scrollbar-width: thin;
   scrollbar-color: rgba(var(--lux-accent-rgb), 0.28) transparent;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item {
   position: relative;
   display: block;
   width: 100%;
@@ -20466,7 +20791,10 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item {
   cursor: pointer;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item::before {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item::before {
   content: '';
   position: absolute;
   left: 0;
@@ -20478,27 +20806,42 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item::before
   transition: background 180ms ease;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item__top {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item__top {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   align-items: flex-start;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item__copy {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item__copy {
   min-width: 0;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-item__state {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item__state {
   flex-shrink: 0;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-list-empty {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-list-empty {
   padding: 44px 18px;
   text-align: center;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-header {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-header {
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -20506,17 +20849,26 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-heade
   flex-wrap: wrap;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-badges {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-badges {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-submeta {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-submeta {
   margin-top: 8px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-panel.lux-detail-panel {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-panel.lux-detail-panel {
   margin-top: 16px;
   padding: 18px 20px;
   line-height: 1.6;
@@ -20524,31 +20876,52 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-panel
   white-space: pre-wrap;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-metric-grid {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-metric-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   margin-top: 4px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-section-label {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-section-label {
   margin-top: 20px;
   margin-bottom: 10px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-attachments,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-recipient-grid {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-attachments,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-grid {
   margin-top: 10px;
   display: grid;
   gap: 10px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-recipient-grid {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-attachment-card,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-recipient-card {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-attachment-card,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-card {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -20557,16 +20930,28 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-recipient-ca
   border-radius: 14px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-attachment-meta,
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-recipient-meta {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-attachment-meta,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-meta {
   margin-top: 4px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-recipient-submeta {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-submeta {
   margin-top: 4px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-empty {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-empty {
   min-height: 300px;
   display: flex;
   align-items: center;
@@ -20577,58 +20962,104 @@ body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-empty
   border-style: dashed;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-empty__inner {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-empty__inner {
   max-width: 320px;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-detail-empty__icon {
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-empty__icon {
   font-size: 32px;
   margin-bottom: 14px;
   display: block;
 }
 
-body.lux-route-orders :is(#page-orders, #orders-inbox-root) :is(
-  .orders-admin-title,
-  .orders-admin-table__title,
-  .orders-admin-table__meta,
-  .orders-attachment-copy
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-shell :is(
+  .orders-detail-submeta,
+  .orders-attachment-copy,
+  .orders-recipient-submeta
 ) {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 @media (max-width: 1180px) {
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-grid {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-workspace-grid {
     grid-template-columns: 1fr;
   }
 
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-stage {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-workspace-detail {
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid var(--lux-soft-chrome-border-accent);
+    padding-top: 22px;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-stage {
     display: grid;
     grid-template-columns: 1fr;
   }
 
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-side {
     margin-top: 4px;
   }
 }
 
 @media (max-width: 1040px) {
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side .lux-hero-signal-list {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-side .lux-hero-signal-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
   }
 }
 
 @media (max-width: 900px) {
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero .lux-card-body {
-    padding: 22px 20px;
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero {
+    padding: 22px 20px 0;
   }
 
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-inbox-hero-side .lux-hero-signal-list {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-workspace-body {
+    padding: 18px 20px 20px;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-side .lux-hero-signal-list {
     grid-template-columns: 1fr;
   }
 
-  body.lux-route-orders :is(#page-orders, #orders-inbox-root) .orders-metric-grid {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-metric-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -20652,26 +21083,26 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
   width: 100%;
   max-width: 100%;
   display: grid;
-  gap: 24px;
+  gap: 16px;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 22px;
+  gap: 14px;
   align-items: start;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-panel {
-  border-radius: 22px;
+  border-radius: 18px;
   overflow: hidden;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-panel__body--workspace {
   display: grid;
   gap: 0;
-  padding: 22px 24px 24px;
+  padding: 14px 16px 16px;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-divider {
   height: 1px;
-  margin: 20px 0;
+  margin: 10px 0;
   background: var(--lux-border);
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section {
@@ -20679,9 +21110,16 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-pills,
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-pills,
@@ -20689,20 +21127,51 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-filt
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-action-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-pills {
-  margin-top: 14px;
+  margin-top: 0;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-draft {
-  margin-top: 10px;
+  margin-top: 0;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-tabs {
+  margin-top: 8px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-filter-head {
+  margin-top: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: end;
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-search {
+  display: grid;
+  gap: 6px;
+  width: min(240px, 100%);
+  margin-top: 0;
+  min-width: 0;
+  flex: 1 1 180px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-search .lux-control {
+  width: 100%;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-status-row {
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-empty {
+  margin-top: 10px;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-field--wide {
   grid-column: span 2;
@@ -20710,22 +21179,131 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-foot {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+  margin-left: auto;
+  align-items: center;
+  justify-content: flex-end;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-modal.modal-content {
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(86vh, 900px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  overflow: auto;
+}
+body.lux-route-chancellery .chancellery-filter-editor-modal.orders-recipient-filter-editor-modal.modal-content {
+  width: min(820px, calc(100vw - 32px));
+}
+body.lux-route-chancellery .chancellery-filter-editor-body {
+  display: grid;
+  gap: 14px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-panel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+body.lux-route-chancellery .chancellery-filter-editor-primary-tabs,
+body.lux-route-chancellery .chancellery-filter-editor-who-tabs {
+  margin-top: 10px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-who-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 12px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-status-options,
+body.lux-route-chancellery .chancellery-filter-editor-catalog-list {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-connections-table {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-connections-row {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.7fr) minmax(96px, 0.8fr) minmax(0, 1.8fr);
+  gap: 10px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-connections-row.is-head {
+  padding: 0 12px 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft);
+}
+body.lux-route-chancellery .chancellery-filter-editor-mode-pill {
+  justify-self: start;
+}
+@media (max-width: 640px) {
+  body.lux-route-chancellery .chancellery-filter-editor-connections-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-head,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-actions {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-head .lux-tab-strip {
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-row {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-row-head,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-row-actions,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-option,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-actions-buttons {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-top: 14px;
+  align-items: center;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-options {
+  display: grid;
+  gap: 8px;
+}
+body:is(.lux-route-orders, .lux-entry-orders) :is(#page-orders, #orders-inbox-root) .orders-inbox-layout-filters,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0;
+  flex: 2 1 280px;
+  min-width: 0;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-list {
   display: grid;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 10px;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
   border: 1px solid var(--lux-border);
   background: transparent;
   color: inherit;
@@ -20741,13 +21319,16 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
   word-break: break-word;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__meta {
-  margin-top: 6px;
+  margin-top: 2px;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__side {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__summary {
+  white-space: nowrap;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-empty,
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-admin-sent-empty {
@@ -20847,6 +21428,23 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-head {
   gap: 12px;
   margin-top: 16px;
 }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-title-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-title-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-title-toolbar .lux-secondary-btn {
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12px;
+  gap: 8px;
+}
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-body {
   display: grid;
   gap: 12px;
@@ -20871,23 +21469,26 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin: 0 0 18px;
-  padding: 0 0 16px;
+  margin: 0 0 10px;
+  padding: 0 0 10px;
   border-bottom: 1px solid var(--lux-border);
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
-  padding-bottom: 4px;
+  padding-bottom: 0;
 }
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-picker-field .lux-universal-picker-field {
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-picker-field .lux-universal-picker-field,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters .lux-picker-field .lux-universal-picker-field {
   display: grid;
   gap: 0;
   min-width: 0;
 }
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid :is(.lux-control, .lux-picker-btn--compact) {
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid :is(.lux-control, .lux-picker-btn--compact),
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters :is(.lux-control, .lux-picker-btn--compact) {
   width: 100%;
   min-width: 0;
 }
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-universal-picker-field .lux-picker-btn--compact {
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-universal-picker-field .lux-picker-btn--compact,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters .lux-universal-picker-field .lux-picker-btn--compact {
   justify-content: space-between;
   align-items: center;
 }
@@ -20898,7 +21499,8 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(
   width: 100%;
   min-width: 0;
 }
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-picker-field {
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-picker-field,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters .lux-picker-field {
   display: grid;
   gap: 8px;
   min-width: 0;
@@ -20942,6 +21544,17 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row.
 @media (max-width: 980px) {
   body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
     grid-template-columns: 1fr;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-strip {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-search {
+    width: 100%;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-foot {
+    margin-left: 0;
+    justify-content: space-between;
   }
   body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid {
     grid-template-columns: 1fr;
@@ -21851,8 +22464,55 @@ body.lux-route-social .social-neo-research-meta-strip {
 }
 body.lux-route-social .social-neo-research-article-body {
   display: grid;
-  gap: 14px;
-  max-width: 72ch;
+  gap: 0.85em;
+}
+body.lux-route-social .social-neo-research-reader-title {
+  margin: 0;
+}
+body.lux-route-social .social-neo-research-file-list,
+body.lux-route-social .social-neo-research-files {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-social .social-neo-research-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+body.lux-route-social .social-neo-research-file-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+body.lux-route-social .social-neo-research-file-select {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  justify-items: start;
+}
+body.lux-route-social .social-neo-research-file-row.is-active .social-neo-research-file-select {
+  border-color: rgba(var(--lux-accent-rgb), 0.4);
+}
+body.lux-route-social .social-neo-research-deposit-files {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+body.lux-route-social .social-neo-research-deposit-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+body.lux-route-social .social-neo-research-card-file {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 body.lux-route-social .social-neo-research-pdf-shell {
   display: grid;
@@ -21908,6 +22568,13 @@ body.lux-route-social .social-neo-research-fieldset {
   display: grid;
   gap: 8px;
 }
+body.lux-route-social .social-neo-research-fieldset > .social-neo-label,
+#social-neo-overlay-portal [data-lux-transparency-exempt="1"] .social-neo-research-create .social-neo-research-fieldset > .social-neo-label {
+  float: none;
+  width: auto;
+  padding: 0;
+  margin: 0;
+}
 body.lux-route-social .social-neo-research-choice,
 body.lux-route-social .social-neo-research-format-card {
   display: flex;
@@ -21933,6 +22600,17 @@ body.lux-route-social .social-neo-research-choice span,
 body.lux-route-social .social-neo-research-format-card {
   display: grid;
   gap: 2px;
+}
+body.lux-route-social .social-neo-research-choice strong {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--lux-text);
+}
+body.lux-route-social .social-neo-research-choice small {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--lux-text-muted);
 }
 body.lux-route-social .social-neo-research-format-grid {
   display: grid;
@@ -22596,19 +23274,30 @@ body.lux-route-social .social-portfolio-search .lux-control {
 
 body.lux-route-social .social-portfolio-feed {
   display: grid;
-  gap: 12px;
+  gap: 24px;
   min-width: 0;
   overflow: visible;
 }
 
-body.lux-route-social .social-portfolio-card {
-  padding: 14px 16px;
-  border-radius: 16px;
+/* Compound selector beats later .social-project-scroll-list { gap: var(--social-gap-tight) }. */
+body.lux-route-social .social-portfolio-feed.social-project-scroll-list {
+  gap: 24px;
 }
 
-body.lux-route-social .social-portfolio-card.home-hover-chip {
+body.lux-route-social .social-portfolio-card {
+  padding: 16px 16px 32px;
+  border-radius: 16px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+body.lux-route-social .social-portfolio-card.home-hover-chip,
+body.lux-unified-shell.lux-route-social .social-portfolio-card.home-hover-chip,
+body.lux-unified-shell.lux-route-social .social-neo-post-card.social-portfolio-card.home-hover-chip {
   overflow: visible;
   contain: none;
+  min-height: min-content;
 }
 
 body.lux-route-social .social-portfolio-card-head {
@@ -22645,6 +23334,9 @@ body.lux-route-social .social-portfolio-actions {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  padding-top: 2px;
+  padding-bottom: 2px;
   overflow: visible;
   position: relative;
   z-index: 1;
@@ -22652,6 +23344,7 @@ body.lux-route-social .social-portfolio-actions {
 
 body.lux-route-social .social-project-scroll-list--portfolio {
   --project-scroll-max: 720px;
+  gap: 24px;
   padding: 10px 8px 16px;
   overflow-x: hidden;
   overflow-y: auto;
@@ -23239,6 +23932,49 @@ body.lux-route-social .social-project-row-cta {
   font-weight: 700;
   color: var(--lux-accent);
   white-space: nowrap;
+}
+
+/* Rail: compact row so 5-col list mins don't spill past ~300px card. */
+body.lux-route-social .social-project-hub-rail .social-project-hub-trending,
+body.lux-route-social .social-project-hub-rail .social-project-row {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+body.lux-route-social .social-project-hub-rail .social-project-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "status title cta"
+    "status meta meta"
+    "progress progress progress";
+  gap: 6px 10px;
+  padding: 10px 12px;
+}
+body.lux-route-social .social-project-hub-rail .social-project-row-status {
+  grid-area: status;
+  align-self: start;
+  min-width: 0;
+}
+body.lux-route-social .social-project-hub-rail .social-project-row-title {
+  grid-area: title;
+  min-width: 0;
+}
+body.lux-route-social .social-project-hub-rail .social-project-row-meta {
+  grid-area: meta;
+  min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.lux-route-social .social-project-hub-rail .social-project-row-progress {
+  grid-area: progress;
+  min-width: 0;
+  width: 100%;
+}
+body.lux-route-social .social-project-hub-rail .social-project-row-cta {
+  grid-area: cta;
+  margin-left: 0;
 }
 
 @media (max-width: 760px) {
@@ -24448,6 +25184,14 @@ body.lux-route-social .social-neo-community-panel.is-merged {
   display: grid;
   gap: 12px;
   overflow: hidden;
+}
+
+/* Portfolio merged hero embeds the feed — must not clip card action buttons. */
+body.lux-route-social .social-neo-community-panel--portfolio.is-merged,
+body.lux-unified-shell.lux-route-social .social-neo-community-panel--portfolio.is-merged,
+body.lux-unified-shell.lux-route-social .social-portfolio-card.home-hover-chip {
+  overflow: visible;
+  contain: none;
 }
 
 body.lux-route-social .social-neo-community-panel--directory,
@@ -28455,6 +29199,11 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .soci
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-card-meta .social-neo-pill.home-hover-chip,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-card-dates .social-neo-pill.home-hover-chip,
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-card-mid .social-neo-pill.home-hover-chip {
+    overflow: visible;
+}
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-card-risk-badge {
     display: inline-flex;
     align-items: center;
@@ -31845,12 +32594,7 @@ body.lux-route-social .social-project-card-new-skills {
 body.lux-route-social .social-project-card-role {
     margin-left: auto;
 }
-body.lux-route-social .social-project-hub-rail-card {
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid var(--lux-border);
-    background: transparent;
-}
+/* rail-card + contribution paint/layout SSOT lives earlier in this file (~hub cards & list). */
 body.lux-route-social .social-project-hub-my-work {
     display: flex;
     flex-direction: column;
@@ -31883,32 +32627,6 @@ body.lux-route-social .social-project-hub-my-work-title {
 body.lux-route-social .social-project-hub-my-work-meta {
     font-size: 11px;
     color: var(--lux-text-muted);
-}
-body.lux-route-social .social-project-hub-contribution {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-}
-body.lux-route-social .social-project-hub-contribution-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 8px;
-    border-radius: 10px;
-    background: transparent);
-    text-align: center;
-}
-body.lux-route-social .social-project-hub-contribution-stat strong {
-    font-size: 16px;
-}
-body.lux-route-social .social-project-hub-contribution-stat span {
-    font-size: 10px;
-    color: var(--lux-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-body.lux-route-social .social-project-hub-contribution-stat.is-danger strong {
-    color: var(--lux-danger, #f43f5e);
 }
 
 /* Social: project work desk */
@@ -36387,6 +37105,11 @@ body.lux-route-social .social-project-scroll-list {
   gap: var(--social-gap-tight);
 }
 
+body.lux-route-social .social-portfolio-feed.social-project-scroll-list,
+body.lux-route-social .social-portfolio-feed.social-project-scroll-list--portfolio {
+  gap: 24px;
+}
+
 body.lux-route-social .social-project-detail-hero {
   display: grid;
   gap: 16px;
@@ -39773,14 +40496,22 @@ body.lms-personal-dashboard-open {
     display: none !important;
 }
 
+body.lux-route-lms #lms-personal-dashboard-overlay.lms-glass-dialog-overlay {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+}
+
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-card {
-    width: min(1360px, calc(100vw - 32px));
+    width: 100%;
     max-width: none;
-    height: min(90vh, 920px);
+    height: 100%;
     max-height: none;
     min-height: 0;
+    border-radius: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-head {
@@ -39836,11 +40567,11 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layou
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-student-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    grid-template-columns: minmax(0, 1fr);
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-staff-layout {
-    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr) minmax(260px, 320px);
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board {
@@ -39854,19 +40585,106 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board
     flex: 1;
     min-height: 0;
     height: 100%;
+    position: relative;
+    z-index: 0; /* contain whiteboard chrome stacking below the share overlay */
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board-host .lms-whiteboard-shell {
+    display: flex;
+    flex-direction: column;
     height: 100%;
     min-height: 0;
+    overflow: hidden;
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-board-host .lms-whiteboard-layout--personal {
-    height: 100%;
+    display: grid;
+    flex: 1 1 0;
     min-height: 0;
+    height: 100%;
+    grid-template-rows: minmax(0, 1fr);
+    align-self: stretch;
+    overflow: hidden;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-shell--personal .lms-whiteboard-tools,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-shell--personal .lms-whiteboard-main {
+    min-height: 0;
+    height: 100%;
+    align-self: stretch;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-shell--personal .lms-whiteboard-tools {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-shell--personal .lms-whiteboard-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-shell--personal .lms-whiteboard-panel.lms-live-panel {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-shell--personal .lms-whiteboard-panel-head {
+    flex-shrink: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-shell--personal .lms-whiteboard-stage {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-whiteboard-minimap-shell {
+    flex-direction: column-reverse;
+}
+
+@media (min-width: 981px) {
+    body.lux-route-lms #lms-personal-dashboard-overlay
+        .lms-whiteboard-shell--personal .lms-whiteboard-layout--personal {
+        position: relative;
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    body.lux-route-lms #lms-personal-dashboard-overlay
+        .lms-whiteboard-shell--personal .lms-whiteboard-props {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 0;
+        min-width: 0;
+        height: auto;
+        z-index: 24;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+        transition: width 0.18s ease, opacity 0.18s ease;
+    }
+
+    body.lux-route-lms #lms-personal-dashboard-overlay
+        .lms-whiteboard-shell--personal.is-props-open .lms-whiteboard-props {
+        width: min(280px, 32vw);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    body.lux-route-lms #lms-personal-dashboard-overlay
+        .lms-whiteboard-shell--personal.is-props-open .lms-whiteboard-props-card {
+        max-height: 100%;
+        height: 100%;
+    }
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel,
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-shortcuts {
     display: grid;
     gap: 10px;
@@ -39931,11 +40749,42 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-short
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay {
     position: absolute;
     inset: 0;
-    z-index: 4;
+    /* Above board-host whiteboard chrome (props 24 / drop 6) so close + Done receive clicks. */
+    z-index: 60;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-overlay,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-overlay {
+    z-index: 61;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay[hidden],
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay:not(.is-open),
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-overlay[hidden],
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-overlay:not(.is-open),
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-overlay[hidden],
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-overlay:not(.is-open) {
+    display: none !important;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-overlay.is-open,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-overlay.is-open,
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-overlay.is-open {
+    display: flex;
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-body {
@@ -39952,11 +40801,63 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share
     border-radius: 18px;
 }
 
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel {
+    display: grid;
+    gap: 14px;
+    width: min(420px, calc(100% - 32px));
+    max-height: min(78vh, 720px);
+    overflow: auto;
+    padding: 18px;
+    border-radius: 18px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel {
+    display: grid;
+    gap: 14px;
+    width: min(420px, calc(100% - 32px));
+    max-height: min(78vh, 420px);
+    overflow: auto;
+    padding: 18px;
+    border-radius: 18px;
+}
+
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-close {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-close {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-close {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
 }
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-title {
@@ -39965,7 +40866,37 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share
     min-width: 0;
 }
 
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel-title {
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-title {
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+}
+
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-panel-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 12px;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-icon {
     display: grid;
     place-items: center;
     width: 40px;
@@ -40062,6 +40993,27 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share
     flex-wrap: wrap;
 }
 
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-panel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-panel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-save-name-field {
+    display: grid;
+    gap: 8px;
+}
+
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share-field {
     display: grid;
     gap: 4px;
@@ -40071,9 +41023,5 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share
     body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-student-layout,
     body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-layout.is-staff-layout {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history {
-        max-height: 280px;
     }
 }

@@ -281,15 +281,15 @@ function renderLmsQuizLifecycleCard(context, quiz, sectionType) {
                     <div class="lms-quiz-card-badges">
                         <span class="lms-quiz-card-eyebrow lms-route-field-label">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</span>
                         <span class="lms-quiz-card-status is-${escapeHtml(lifecycle)}">${escapeHtml(lifecycle)}</span>
-                        ${quiz.variantEnabled ? `<span class="lms-quiz-card-pill-accent">Variant Set</span>` : ''}
-                        ${hasLiveAlerts ? `<span class="lms-quiz-card-pill-alert"><span class="lms-monitor-pulse-dot"></span> Live Alert</span>` : ''}
+                        ${quiz.variantEnabled ? `<span class="lms-quiz-card-pill-accent home-hover-chip">Variant Set</span>` : ''}
+                        ${hasLiveAlerts ? `<span class="lms-quiz-card-pill-alert home-hover-chip"><span class="lms-monitor-pulse-dot"></span> Live Alert</span>` : ''}
                     </div>
                     <div class="lms-quiz-card-title lms-route-card-title">${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
                     <div class="lms-quiz-card-meta lms-route-copy">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}${variantSummary ? `  -  ${escapeHtml(variantSummary)}` : ''}</div>
                     <div class="lms-quiz-card-meta lms-route-copy">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
                     ${getLmsQuizLifecycleStatus(quiz) !== 'draft' ? `<div class="lms-quiz-card-mode">Mode: ${escapeHtml(String(quiz.publishMode || 'manual') === 'scheduled' ? 'Automatic publish and end by time' : 'Manual publish with manual end')}</div>` : ''}
                 </div>
-                <div class="lms-quiz-card-score-pill">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
+                <div class="lms-quiz-card-score-pill home-hover-chip">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
             </div>
             ${hasLiveAlerts ? `<div class="lms-quiz-card-alert-panel">
                 <div class="lms-quiz-card-alert-head">
@@ -314,7 +314,7 @@ function renderLmsQuizLifecycleCard(context, quiz, sectionType) {
                        <button class="lux-secondary-btn lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-user-check"></i> Manage Access</button>
                        ${lifecycle === 'published' ? `<button class="lux-secondary-btn lms-quiz-card-action lms-quiz-card-action-warning" data-lms-click="closeLmsQuiz(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`}
             </div>
-            ${variantAssignments.length ? `<div class="lms-quiz-card-variant-list">${variantAssignments.map(entry => `<span class="lms-quiz-card-variant-pill">${escapeHtml(entry.label)}  -  ${entry.count} student${entry.count === 1 ? '' : 's'}</span>`).join('')}</div>` : ''}
+            ${variantAssignments.length ? `<div class="lms-quiz-card-variant-list">${variantAssignments.map(entry => `<span class="lms-quiz-card-variant-pill home-hover-chip">${escapeHtml(entry.label)}  -  ${entry.count} student${entry.count === 1 ? '' : 's'}</span>`).join('')}</div>` : ''}
         </div>
     `;
 }
@@ -850,7 +850,7 @@ function renderLmsStaffQuizWorkspace(context) {
                         <div class="lms-live-monitor-copy">${monitorMode === 'all' ? 'This panel shows all flagged students, including closed quizzes with warning history.' : 'This panel only shows students with monitoring warnings in quizzes that are live right now.'}</div>
                     </div>
                     <div class="lms-live-monitor-controls">
-                        <div class="lms-live-monitor-count-pill">
+                        <div class="lms-live-monitor-count-pill home-hover-chip">
                             <span class="lms-monitor-pulse-dot"></span> ${liveMonitorEntries.length} ${monitorMode === 'all' ? 'flagged case' : 'active case'}${liveMonitorEntries.length === 1 ? '' : 's'}
                         </div>
                         <button type="button" class="${monitorMode === 'running' ? 'lux-primary-btn' : 'lux-secondary-btn'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorMode('running')">
@@ -878,7 +878,7 @@ function renderLmsStaffQuizWorkspace(context) {
                                     <div class="lms-live-monitor-student-name">${escapeHtml(entry.studentName)}</div>
                                     <div class="lms-live-monitor-student-meta">${escapeHtml(entry.studentId)}  -  ${escapeHtml(entry.quizLabel)}</div>
                                 </div>
-                                <span class="lms-live-monitor-alert-pill ${entry.isAcknowledged ? 'is-acknowledged' : 'is-open'}">${entry.isAcknowledged ? '<i class="fas fa-check"></i>' : '<span class="lms-monitor-pulse-dot"></span>'}${entry.alertCount}</span>
+                                <span class="lms-live-monitor-alert-pill home-hover-chip ${entry.isAcknowledged ? 'is-acknowledged' : 'is-open'}">${entry.isAcknowledged ? '<i class="fas fa-check"></i>' : '<span class="lms-monitor-pulse-dot"></span>'}${entry.alertCount}</span>
                             </div>
                             <div class="lms-live-monitor-latest">
                                 <strong>Latest:</strong> ${escapeHtml(entry.latestAlert.note || entry.latestAlert.type || 'Monitoring event')}
@@ -906,7 +906,7 @@ function renderLmsStaffQuizWorkspace(context) {
                             <div class="lms-quiz-studio-main-title">${draft?.editingQuizId ? 'Edit Draft Quiz' : 'Create Draft Quiz'}</div>
                             <div class="lms-quiz-studio-main-copy">Save first, then publish from the right-side board only when the class roster is ready.</div>
                         </div>
-                        <div class="lms-quiz-studio-week-pill">
+                        <div class="lms-quiz-studio-week-pill home-hover-chip">
                             <div class="lms-quiz-studio-week-label">Current Week</div>
                             <div class="lms-quiz-studio-week-value">${escapeHtml(draft?.weekLabel || context.weeks?.[0] || 'Week 1')}</div>
                         </div>
@@ -938,7 +938,7 @@ function renderLmsStaffQuizWorkspace(context) {
                                 <span>${escapeHtml(variantSummaryLabel)}. Build multiple student versions only when this quiz needs randomized papers.</span>
                             </div>
                             <div class="lms-quiz-tool-actions">
-                                <span class="lms-quiz-compact-badge"><i class="fas fa-clone"></i> ${draft?.variantEnabled ? 'Variants on' : 'Variants off'}</span>
+                                <span class="lms-quiz-compact-badge home-hover-chip"><i class="fas fa-clone"></i> ${draft?.variantEnabled ? 'Variants on' : 'Variants off'}</span>
                                 <button type="button" class="lux-secondary-btn lms-quiz-variant-action-btn" data-lms-click="toggleLmsQuizVariantSetPanel()"><i class="fas ${variantSetExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${variantSetExpanded ? 'Hide setup' : 'Show setup'}</button>
                             </div>
                         </div>
@@ -1046,7 +1046,7 @@ function renderLmsStaffQuizWorkspace(context) {
                                 <button type="button" class="lux-secondary-btn lms-quiz-saved-open-btn" data-lms-click="openLmsQuizBoardModal(${jsQuote(boardPage)})">
                                     <i class="fas fa-up-right-and-down-left-from-center"></i> Open Full View
                                 </button>
-                                <div class="lms-quiz-saved-count-pill">${ensureLmsQuizzesForKey(context.resourceKey).length} total</div>
+                                <div class="lms-quiz-saved-count-pill home-hover-chip">${ensureLmsQuizzesForKey(context.resourceKey).length} total</div>
                             </div>
                         </div>
                         <div class="lms-quiz-saved-tab-row">
@@ -1200,14 +1200,14 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                             <div>
                                 <div class="lms-student-quiz-card-title-row">
                                     <div class="lms-student-quiz-card-eyebrow">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</div>
-                                    ${sessionGate.required ? `<span class="lms-student-quiz-pill ${sessionGate.status === 'live' ? 'is-live' : 'is-info'}"><i class="fas fa-desktop"></i> Lab session ${escapeHtml(sessionGate.status)}</span>` : ''}
-                                    ${submission.variantLabel ? `<span class="lms-student-quiz-pill is-accent"><i class="fas fa-clone"></i> ${escapeHtml(submission.variantLabel)}</span>` : ''}
+                                    ${sessionGate.required ? `<span class="lms-student-quiz-pill home-hover-chip ${sessionGate.status === 'live' ? 'is-live' : 'is-info'}"><i class="fas fa-desktop"></i> Lab session ${escapeHtml(sessionGate.status)}</span>` : ''}
+                                    ${submission.variantLabel ? `<span class="lms-student-quiz-pill home-hover-chip is-accent"><i class="fas fa-clone"></i> ${escapeHtml(submission.variantLabel)}</span>` : ''}
                                 </div>
                                 <div class="lms-student-quiz-card-title">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
                                 <div data-lms-student-quiz-status="true" class="lms-student-quiz-card-status">${escapeHtml(statusLine)}</div>
                                 <div class="lms-student-quiz-card-schedule">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}</div>
                             </div>
-                            <span class="lms-student-quiz-status-pill ${badgeToneClass}">${escapeHtml(badge.label)}</span>
+                            <span class="lms-student-quiz-status-pill home-hover-chip ${badgeToneClass}">${escapeHtml(badge.label)}</span>
                         </div>
                         <div class="lms-student-quiz-card-action-row">
                             <button data-lms-student-quiz-action="true" type="button" class="lux-primary-btn lms-student-quiz-primary-btn" data-lms-click="openLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})">
@@ -1367,10 +1367,10 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                             <div class="lms-quiz-studio-copy">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}${selectedQuiz.weekLabel ? `  -  ${escapeHtml(selectedQuiz.weekLabel)}` : ''}${refreshedSubmission.variantLabel ? `  -  ${escapeHtml(refreshedSubmission.variantLabel)}` : ''}</div>
                         </div>
                         <div class="lms-quiz-studio-hero-pills">
-                            <span class="lms-student-quiz-status-pill ${badgeToneClass}">${escapeHtml(badge.label)}</span>
-                            ${examSession ? `<span class="lms-student-quiz-session-pill ${sessionGate.status === 'live' ? 'is-live' : 'is-pending'}">${escapeHtml(`Lab session ${sessionGate.status}`)}</span>` : ''}
-                            ${blueGate.required ? `<span class="lms-student-quiz-verification-pill ${blueGate.connected ? 'is-live' : 'is-locked'}">${blueGate.connected ? 'Verification connected' : 'Verification locked'}</span>` : ''}
-                            <span id="lms-student-quiz-countdown" class="lms-student-quiz-count-pill">${effectiveEnd ? 'Calculating timer...' : `Duration: ${selectedQuiz.durationMinutes || 20} min`}</span>
+                            <span class="lms-student-quiz-status-pill home-hover-chip ${badgeToneClass}">${escapeHtml(badge.label)}</span>
+                            ${examSession ? `<span class="lms-student-quiz-session-pill home-hover-chip ${sessionGate.status === 'live' ? 'is-live' : 'is-pending'}">${escapeHtml(`Lab session ${sessionGate.status}`)}</span>` : ''}
+                            ${blueGate.required ? `<span class="lms-student-quiz-verification-pill home-hover-chip ${blueGate.connected ? 'is-live' : 'is-locked'}">${blueGate.connected ? 'Verification connected' : 'Verification locked'}</span>` : ''}
+                            <span id="lms-student-quiz-countdown" class="lms-student-quiz-count-pill home-hover-chip">${effectiveEnd ? 'Calculating timer...' : `Duration: ${selectedQuiz.durationMinutes || 20} min`}</span>
                         </div>
                     </div>
                     ${selectedQuiz.instructions ? `<div class="lms-quiz-studio-copy">${escapeHtml(selectedQuiz.instructions)}</div>` : ''}
@@ -1423,7 +1423,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                                 </div>
                                 <div class="lms-student-quiz-cover-title lms-quiz-lock-shell-title">Lab Exam Session Locked</div>
                                 <div class="lms-student-quiz-cover-copy lms-quiz-lock-shell-copy">${escapeHtml(sessionGate.message || 'This lab exam session is locked for your account right now.')}</div>
-                                ${examSession?.endsAt ? `<div class="lms-student-quiz-cover-pill-row lms-quiz-lock-shell-pill-row"><span class="lms-student-quiz-cover-pill is-info"><i class="fas fa-stopwatch"></i> Session window ends ${escapeHtml(formatLmsDateTime(examSession.endsAt))}</span></div>` : ''}
+                                ${examSession?.endsAt ? `<div class="lms-student-quiz-cover-pill-row lms-quiz-lock-shell-pill-row"><span class="lms-student-quiz-cover-pill home-hover-chip is-info"><i class="fas fa-stopwatch"></i> Session window ends ${escapeHtml(formatLmsDateTime(examSession.endsAt))}</span></div>` : ''}
                             </div>
                         </div>`
                         : blueLockActive
@@ -1435,8 +1435,8 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                                 <div class="lms-student-quiz-cover-title lms-quiz-lock-shell-title">Quiz Locked Until Verification Reconnects</div>
                                 <div class="lms-student-quiz-cover-copy lms-quiz-lock-shell-copy">Your saved answers are preserved, but the quiz body stays blank while this account is disconnected from exam verification. Reconnect and this page will restore automatically.</div>
                                 <div class="lms-student-quiz-cover-pill-row lms-quiz-lock-shell-pill-row">
-                                    <span class="lms-student-quiz-cover-pill is-danger"><i class="fas fa-stopwatch"></i> Disconnected for <span id="lms-blue-disconnect-timer">${escapeHtml(formatLmsDurationLabel(blueGate.disconnectElapsedMs))}</span></span>
-                                    <span class="lms-student-quiz-cover-pill is-warning"><i class="fas fa-triangle-exclamation"></i> Submit stays locked while disconnected</span>
+                                    <span class="lms-student-quiz-cover-pill home-hover-chip is-danger"><i class="fas fa-stopwatch"></i> Disconnected for <span id="lms-blue-disconnect-timer">${escapeHtml(formatLmsDurationLabel(blueGate.disconnectElapsedMs))}</span></span>
+                                    <span class="lms-student-quiz-cover-pill home-hover-chip is-warning"><i class="fas fa-triangle-exclamation"></i> Submit stays locked while disconnected</span>
                                 </div>
                             </div>
                         </div>`

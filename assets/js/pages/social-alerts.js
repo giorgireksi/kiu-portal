@@ -103,7 +103,7 @@
                 ? `${cat.label}, ${count > 9 ? '9 plus' : count} unread`
                 : cat.label;
             const countBadge = count > 0
-                ? `<span class="lux-tab-badge">${escape(badgeLabel)}</span>`
+                ? `<span class="lux-tab-badge home-hover-chip">${escape(badgeLabel)}</span>`
                 : '';
             return `<button class="lux-tab-btn lux-tab-btn--icon${isActive ? ' is-active' : ''}" type="button"
                 data-action="panel-alerts" data-alerts-filter="${escape(cat.id)}"

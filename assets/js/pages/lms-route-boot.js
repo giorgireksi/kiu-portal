@@ -174,11 +174,11 @@
         const badges = [];
         const semesterValue = getLmsSubjectSemesterValue(subject);
         if (semesterValue) {
-            badges.push(`<span class="lux-status-pill is-muted home-hover-chip"><i class="fas fa-calendar-week"></i> Semester ${safeHtml(String(semesterValue))}</span>`);
+            badges.push(`<span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-calendar-week"></i> Semester ${safeHtml(String(semesterValue))}</span>`);
         }
         const courseValue = getLmsSubjectCourseValue(subject);
         if (courseValue) {
-            badges.push(`<span class="lux-status-pill is-muted home-hover-chip"><i class="fas fa-graduation-cap"></i> Course ${safeHtml(String(courseValue))}</span>`);
+            badges.push(`<span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-graduation-cap"></i> Course ${safeHtml(String(courseValue))}</span>`);
         }
         return badges.length ? `<div class="lms-clean-subject-meta">${badges.join('')}</div>` : '';
     }
@@ -281,10 +281,10 @@
                 : '';
             const metaHtml = isStudent
                 ? `<div class="lms-clean-card-meta is-compact">
-                    <span class="lux-status-pill is-muted home-hover-chip"><i class="fas fa-door-open"></i> ${safeHtml(groupName || 'Your section')}</span>
+                    <span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-door-open"></i> ${safeHtml(groupName || 'Your section')}</span>
                    </div>${nextSessionLine}`
                 : `<div class="lms-clean-card-meta is-compact">
-                    <span class="lux-status-pill is-muted home-hover-chip"><i class="fas fa-users"></i> ${groupCount} group${groupCount !== 1 ? 's' : ''}</span>
+                    <span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-users"></i> ${groupCount} group${groupCount !== 1 ? 's' : ''}</span>
                    </div>`;
             return `<button
                 type="button"

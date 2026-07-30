@@ -185,9 +185,9 @@ function buildLmsWhiteboardDashboardShareStatusMap(items = []) {
 
 function renderLmsWhiteboardDashboardShareBadge(level = 'none') {
     const normalized = String(level || 'none').trim() || 'none';
-    if (normalized === 'view') return '<span class="lms-whiteboard-dashboard-share-badge is-view">View</span>';
-    if (normalized === 'edit') return '<span class="lms-whiteboard-dashboard-share-badge is-edit">Edit</span>';
-    return '<span class="lms-whiteboard-dashboard-share-badge is-private">Private</span>';
+    if (normalized === 'view') return '<span class="lms-whiteboard-dashboard-share-badge home-hover-chip is-view">View</span>';
+    if (normalized === 'edit') return '<span class="lms-whiteboard-dashboard-share-badge home-hover-chip is-edit">Edit</span>';
+    return '<span class="lms-whiteboard-dashboard-share-badge home-hover-chip is-private">Private</span>';
 }
 
 function renderLmsWhiteboardDashboardFilter(active = 'all') {
@@ -199,7 +199,7 @@ function renderLmsWhiteboardDashboardFilter(active = 'all') {
     return `
         <div class="lms-whiteboard-dashboard-filter" role="group" aria-label="Filter student workspaces">
             ${chips.map(chip => `
-                <button type="button" class="lms-whiteboard-dashboard-filter-chip${active === chip.id ? ' is-active' : ''}" data-lms-whiteboard-action="filter-dashboard-share" data-dashboard-filter="${escapeHtml(chip.id)}">${escapeHtml(chip.label)}</button>
+                <button type="button" class="lms-whiteboard-dashboard-filter-chip home-hover-chip${active === chip.id ? ' is-active' : ''}" data-lms-whiteboard-action="filter-dashboard-share" data-dashboard-filter="${escapeHtml(chip.id)}">${escapeHtml(chip.label)}</button>
             `).join('')}
         </div>`;
 }
@@ -512,34 +512,34 @@ function renderLmsWhiteboardPropsPanel(canEdit = false, canManage = false, resou
 
 function renderLmsWhiteboardStatusPills(workspace = {}, canManage = false, canEdit = false) {
     const pills = [];
-    if (workspace.sessionActive) pills.push('<span class="lms-live-pill is-live"><i class="fas fa-circle"></i> Live</span>');
+    if (workspace.sessionActive) pills.push('<span class="lms-live-pill home-hover-chip is-live"><i class="fas fa-circle"></i> Live</span>');
     if (workspace.sessionActive) {
         if (canManage) {
             if (workspace.editingEnabled) {
-                pills.push('<span class="lms-live-pill"><i class="fas fa-users"></i> Students editing</span>');
+                pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> Students editing</span>');
             } else {
                 const grantCount = Array.isArray(workspace.editControlUserIds) ? workspace.editControlUserIds.length : 0;
                 if (grantCount > 0) {
-                    pills.push(`<span class="lms-live-pill"><i class="fas fa-user-pen"></i> ${grantCount} student${grantCount === 1 ? '' : 's'} can draw</span>`);
+                    pills.push(`<span class="lms-live-pill home-hover-chip"><i class="fas fa-user-pen"></i> ${grantCount} student${grantCount === 1 ? '' : 's'} can draw</span>`);
                 } else {
-                    pills.push('<span class="lms-live-pill"><i class="fas fa-eye"></i> Students view only</span>');
+                    pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-eye"></i> Students view only</span>');
                 }
             }
         } else if (canEdit) {
-            pills.push('<span class="lms-live-pill"><i class="fas fa-pen"></i> Editing open</span>');
+            pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-pen"></i> Editing open</span>');
         } else {
-            pills.push('<span class="lms-live-pill"><i class="fas fa-eye"></i> View only</span>');
+            pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-eye"></i> View only</span>');
         }
     }
-    if (workspace.ui?.loadingFromBackend) pills.push('<span class="lms-live-pill"><i class="fas fa-spinner fa-spin"></i> Loading</span>');
-    else if (workspace.ui?.syncing) pills.push('<span class="lms-live-pill"><i class="fas fa-sync fa-spin"></i> Syncing</span>');
-    else if (workspace.ui?.dirty) pills.push('<span class="lms-live-pill is-warn"><i class="fas fa-clock"></i> Unsaved changes</span>');
-    else if (workspace.ui?.syncError) pills.push('<span class="lms-live-pill is-danger"><i class="fas fa-triangle-exclamation"></i> Sync issue</span>');
-    else pills.push('<span class="lms-live-pill"><i class="fas fa-check"></i> Synced</span>');
+    if (workspace.ui?.loadingFromBackend) pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-spinner fa-spin"></i> Loading</span>');
+    else if (workspace.ui?.syncing) pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-sync fa-spin"></i> Syncing</span>');
+    else if (workspace.ui?.dirty) pills.push('<span class="lms-live-pill home-hover-chip is-warn"><i class="fas fa-clock"></i> Unsaved changes</span>');
+    else if (workspace.ui?.syncError) pills.push('<span class="lms-live-pill home-hover-chip is-danger"><i class="fas fa-triangle-exclamation"></i> Sync issue</span>');
+    else pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-check"></i> Synced</span>');
     if (workspace.ui?.syncError) {
         pills.push('<button type="button" class="lux-secondary-btn lms-whiteboard-retry-sync" data-lms-whiteboard-action="retry-sync"><i class="fas fa-rotate-right"></i> Retry</button>');
     }
-    if (canManage) pills.push(`<span class="lms-live-pill"><i class="fas fa-shapes"></i> ${workspace.elements?.length || 0} items</span>`);
+    if (canManage) pills.push(`<span class="lms-live-pill home-hover-chip"><i class="fas fa-shapes"></i> ${workspace.elements?.length || 0} items</span>`);
     return pills.join('');
 }
 
@@ -552,7 +552,7 @@ function renderLmsWhiteboardBannerStatusPills(workspace = {}, canManage = false,
 
 function renderLmsWhiteboardStaffSessionBannerPills(workspace = {}) {
     if (!workspace.sessionActive) return '';
-    return '<span class="lms-live-pill is-live"><i class="fas fa-circle"></i> Live</span>';
+    return '<span class="lms-live-pill home-hover-chip is-live"><i class="fas fa-circle"></i> Live</span>';
 }
 
 function renderLmsWhiteboardBanner(workspace = {}, canManage = false, canEdit = false) {

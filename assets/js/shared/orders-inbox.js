@@ -6,16 +6,38 @@ function ensureRecipientOrdersUiState(userId = getCurrentUserId()) {
         recipientOrdersUiByUser[key] = {
             search: '',
             status: 'all',
-            selectedOrderId: null
+            selectedOrderId: null,
+            layoutFilters: {},
+            dateFrom: '',
+            dateTo: ''
         };
     }
+    if (!recipientOrdersUiByUser[key].layoutFilters || typeof recipientOrdersUiByUser[key].layoutFilters !== 'object') {
+        recipientOrdersUiByUser[key].layoutFilters = {};
+    }
+    if (recipientOrdersUiByUser[key].dateFrom == null) recipientOrdersUiByUser[key].dateFrom = '';
+    if (recipientOrdersUiByUser[key].dateTo == null) recipientOrdersUiByUser[key].dateTo = '';
     return recipientOrdersUiByUser[key];
 }
 
+function buildRecipientOrdersLayoutChromeSignature() {
+    const layout = getCachedOrdersRecipientFilterLayout(getCurrentFaculty(), getEffectiveUserRole());
+    const selects = getEnabledOrdersRecipientLayoutSelects(layout)
+        .map((filter) => `${filter.id}:${filter.field}:${filter.label}:${(filter.options || []).map((option) => option.value).join('/')}`)
+        .join('|');
+    const dateRange = getEnabledOrdersRecipientLayoutDateRange();
+    return `${selects}|date:${dateRange.id}`;
+}
+
 function buildRecipientOrdersListContentSignature(uiState, allOrders, orders, currentUser) {
+    const layoutFilters = uiState.layoutFilters || {};
+    const layoutKey = Object.keys(layoutFilters).sort().map((key) => `${key}:${layoutFilters[key]}`).join(',');
     return [
         String(currentUser?.id || ''),
         uiState.status || 'all',
+        layoutKey,
+        `date:${uiState.dateFrom || ''}:${uiState.dateTo || ''}`,
+        buildRecipientOrdersLayoutChromeSignature(),
         allOrders.length,
         orders.map((order) => `${order.id}:${isOrderReadByUser(order.id, currentUser?.id) ? 'read' : 'unread'}`).join('|')
     ].join('|');
@@ -37,10 +59,12 @@ function buildRecipientOrdersHeroSignature(currentUser, allOrders, unreadCount, 
 function getRecipientOrdersEmptyMessage(uiState, allOrders) {
     const hasSearch = String(uiState.search || '').trim().length > 0;
     const hasStatusFilter = uiState.status && uiState.status !== 'all';
+    const hasLayoutFilter = Object.values(uiState.layoutFilters || {}).some((value) => value && value !== 'all');
+    const hasDateFilter = Boolean(uiState.dateFrom || uiState.dateTo);
     if (!allOrders.length) return 'No orders have been delivered to your account yet.';
-    if (hasSearch && hasStatusFilter) return 'No orders matched your search and status filter.';
+    if (hasSearch && (hasStatusFilter || hasLayoutFilter || hasDateFilter)) return 'No orders matched your search and filters.';
     if (hasSearch) return 'No orders matched your search.';
-    if (hasStatusFilter) return `No ${uiState.status} orders right now.`;
+    if (hasStatusFilter || hasLayoutFilter || hasDateFilter) return 'No orders matched your current filters.';
     return 'No orders matched your current filters.';
 }
 
@@ -54,7 +78,7 @@ function getOrderDisplayValue(value) {
 
 function renderOrderDetailEmptyStateMarkup(message) {
     return `
-        <div class="orders-detail-empty">
+        <div class="orders-detail-empty home-hover-chip">
             <div class="orders-detail-empty__inner">
                 <i class="fas fa-inbox orders-detail-empty__icon"></i>
                 ${escapeHtml(message || 'No orders are available for this account yet.')}
@@ -253,12 +277,23 @@ function getVisibleRecipientOrders() {
     const uiState = ensureRecipientOrdersUiState(currentUser?.id);
     const query = String(uiState.search || '').trim().toLowerCase();
     const status = uiState.status || 'all';
+    const layoutFilters = uiState.layoutFilters || {};
+    const layout = getCachedOrdersRecipientFilterLayout(getCurrentFaculty(), currentUser?.role);
+    const enabledSelects = getEnabledOrdersRecipientLayoutSelects(layout);
     return getOrdersForUser(currentUser).filter(order => {
         const read = isOrderReadByUser(order.id, currentUser?.id);
         const matchesStatus = status === 'all'
             || (status === 'read' && read)
             || (status === 'unread' && !read);
         if (!matchesStatus) return false;
+        for (const filter of enabledSelects) {
+            const selected = layoutFilters[filter.field] || 'all';
+            if (!selected || selected === 'all') continue;
+            if (filter.field === 'type' && String(order.type || '') !== selected) return false;
+            if (filter.field === 'status' && String(order.status || 'Active') !== selected) return false;
+            if (filter.field === 'kind' && getRecipientOrderKind(order) !== selected) return false;
+        }
+        if (!matchesOrdersLayoutDateRange(order, uiState.dateFrom, uiState.dateTo)) return false;
         if (!query) return true;
         const haystack = [
             order.id,
@@ -288,6 +323,21 @@ function setRecipientOrdersStatus(status) {
     renderOrdersInboxPage();
 }
 
+function setRecipientOrdersLayoutFilter(field, value) {
+    const currentUser = getCurrentUser();
+    const uiState = ensureRecipientOrdersUiState(currentUser?.id);
+    if (!uiState.layoutFilters) uiState.layoutFilters = {};
+    uiState.layoutFilters[field] = value || 'all';
+    renderOrdersInboxPage();
+}
+
+function setRecipientOrdersDateFilter(field, value) {
+    const currentUser = getCurrentUser();
+    const uiState = ensureRecipientOrdersUiState(currentUser?.id);
+    uiState[field === 'dateTo' ? 'dateTo' : 'dateFrom'] = value || '';
+    renderOrdersInboxPage();
+}
+
 function openRecipientOrder(orderId) {
     const currentUser = getCurrentUser();
     const uiState = ensureRecipientOrdersUiState(currentUser?.id);
@@ -301,24 +351,20 @@ function ensureRecipientOrdersShell(container) {
     if (!container.querySelector('[data-orders-inbox-shell="1"]')) {
         container.innerHTML = `
             <div class="lux-page-shell orders-inbox-shell" data-orders-inbox-shell="1" data-lux-glass-root="1">
-                <section class="lux-card surface-card orders-inbox-hero lux-summary-surface lux-summary-surface--hero">
-                    <div class="lux-card-body lux-hero-stage orders-inbox-hero-stage">
-                        <div id="orders-inbox-hero-main" class="lux-hero-main"></div>
-                        <aside id="orders-inbox-hero-stats" class="lux-hero-side orders-inbox-hero-side lux-focus-panel home-hover-chip" aria-label="Orders inbox status"></aside>
+                <section class="lux-card surface-card orders-inbox-workspace lux-summary-surface lux-summary-surface--panel">
+                    <div class="orders-inbox-hero" data-orders-inbox-hero="1">
+                        <div class="lux-hero-stage orders-inbox-hero-stage">
+                            <div id="orders-inbox-hero-main" class="lux-hero-main"></div>
+                            <aside id="orders-inbox-hero-stats" class="lux-hero-side orders-inbox-hero-side lux-focus-panel home-hover-chip" aria-label="Orders inbox status"></aside>
+                        </div>
+                    </div>
+                    <div class="lux-card-body orders-inbox-workspace-body">
+                        <div class="orders-inbox-workspace-grid">
+                            <div class="orders-inbox-workspace-list" id="orders-inbox-list-panel"></div>
+                            <div class="orders-inbox-workspace-detail" id="orders-inbox-detail-panel"></div>
+                        </div>
                     </div>
                 </section>
-
-                <div class="orders-inbox-grid">
-                    <div class="orders-inbox-column">
-                        <section class="lux-card surface-card orders-list-card lux-summary-surface lux-summary-surface--panel">
-                            <div class="lux-card-body" id="orders-inbox-list-panel"></div>
-                        </section>
-                    </div>
-
-                    <section class="lux-card surface-card orders-detail-card lux-summary-surface lux-summary-surface--panel">
-                        <div class="lux-card-body" id="orders-inbox-detail-panel"></div>
-                    </section>
-                </div>
             </div>
         `;
     }
@@ -334,11 +380,12 @@ function ensureRecipientOrdersShell(container) {
 function createRecipientOrdersStatusButton(status, active) {
     const label = status.charAt(0).toUpperCase() + status.slice(1);
     return createOrdersNode('button', {
-        className: `orders-status-filter lux-filter-pill home-hover-chip ${active ? 'is-active' : ''}`.trim(),
+        className: `lux-tab-btn orders-status-filter ${active ? 'is-active' : ''}`.trim(),
         text: label,
         attrs: {
             type: 'button',
             'data-recipient-order-status': status,
+            'data-lux-skip-modern-button': 'true',
             'aria-pressed': active ? 'true' : 'false'
         }
     });
@@ -348,7 +395,7 @@ function createRecipientOrdersListItem(order, currentUser, selectedOrder) {
     const isRead = isOrderReadByUser(order.id, currentUser.id);
     const isActive = selectedOrder?.id === order.id;
     const button = createOrdersNode('button', {
-        className: `orders-item lux-select-card ${isActive ? 'is-active' : ''}`.trim(),
+        className: `orders-item lux-select-card home-hover-chip ${isActive ? 'is-active' : ''}`.trim(),
         attrs: {
             type: 'button',
             'data-recipient-order-open': order.id
@@ -404,6 +451,69 @@ function syncRecipientOrdersSearchInput(container, value) {
     if (input.value !== nextValue) input.value = nextValue;
 }
 
+function syncRecipientOrdersLayoutSelects(container, uiState) {
+    const layoutFilters = uiState.layoutFilters || {};
+    container.querySelectorAll('[data-recipient-order-layout-filter]').forEach((select) => {
+        if (document.activeElement === select) return;
+        const field = select.dataset.recipientOrderLayoutFilter || '';
+        const nextValue = layoutFilters[field] || 'all';
+        if (select.value !== nextValue) select.value = nextValue;
+    });
+    container.querySelectorAll('[data-recipient-order-date-filter]').forEach((input) => {
+        if (document.activeElement === input) return;
+        const field = input.dataset.recipientOrderDateFilter === 'dateTo' ? 'dateTo' : 'dateFrom';
+        const nextValue = uiState[field] || '';
+        if (input.value !== nextValue) input.value = nextValue;
+    });
+}
+
+function createRecipientOrdersLayoutFilterSelect(filter, uiState) {
+    const selected = (uiState.layoutFilters || {})[filter.field] || 'all';
+    const options = [
+        { value: 'all', label: `All ${String(filter.label || filter.field).toLowerCase()}` },
+        ...(filter.options || [])
+    ];
+    const select = createOrdersNode('select', {
+        className: 'lux-control',
+        attrs: {
+            'data-lux-picker-label': filter.label || filter.field,
+            'data-recipient-order-layout-filter': filter.field
+        }
+    });
+    options.forEach((option) => {
+        const optionNode = document.createElement('option');
+        optionNode.value = option.value;
+        optionNode.textContent = option.label || option.value;
+        if (option.value === selected) optionNode.selected = true;
+        select.appendChild(optionNode);
+    });
+    const label = createOrdersNode('label', { className: 'lux-picker-field orders-inbox-layout-filter' });
+    label.appendChild(createOrdersNode('span', {
+        className: 'lux-picker-label',
+        text: filter.label || filter.field
+    }));
+    label.appendChild(select);
+    return label;
+}
+
+function createRecipientOrdersDateFilterInput(bound, uiState) {
+    const field = bound === 'dateTo' ? 'dateTo' : 'dateFrom';
+    const label = createOrdersNode('label', { className: 'lux-picker-field orders-inbox-layout-filter' });
+    label.appendChild(createOrdersNode('span', {
+        className: 'lux-picker-label',
+        text: field === 'dateTo' ? 'To' : 'From'
+    }));
+    label.appendChild(createOrdersNode('input', {
+        className: 'lux-control',
+        attrs: {
+            type: 'date',
+            value: uiState[field] || '',
+            'data-recipient-order-date-filter': field
+        }
+    }));
+    return label;
+}
+
 function syncRecipientOrdersList(listEl, uiState, allOrders, orders, selectedOrder, currentUser) {
     if (!listEl) return;
     const fragment = document.createDocumentFragment();
@@ -413,7 +523,7 @@ function syncRecipientOrdersList(listEl, uiState, allOrders, orders, selectedOrd
         });
     } else {
         fragment.appendChild(createOrdersNode('div', {
-            className: 'orders-list-empty',
+            className: 'orders-list-empty home-hover-chip',
             text: getRecipientOrdersEmptyMessage(uiState, allOrders),
         }));
     }
@@ -455,12 +565,22 @@ function mountRecipientOrdersListPanelRegions(container, uiState, allOrders, ord
     }));
 
     const statusRow = createOrdersNode('div', {
-        className: 'orders-status-row'
+        className: 'orders-status-row lux-tab-strip lux-tab-strip--segmented'
     });
     ['all', 'unread', 'read'].forEach((status) => {
         statusRow.appendChild(createRecipientOrdersStatusButton(status, (uiState.status || 'all') === status));
     });
     fragment.appendChild(statusRow);
+
+    const layout = getCachedOrdersRecipientFilterLayout(getCurrentFaculty(), currentUser?.role);
+    const layoutSelects = getEnabledOrdersRecipientLayoutSelects(layout);
+    const layoutRow = createOrdersNode('div', { className: 'orders-inbox-layout-filters' });
+    layoutSelects.forEach((filter) => {
+        layoutRow.appendChild(createRecipientOrdersLayoutFilterSelect(filter, uiState));
+    });
+    layoutRow.appendChild(createRecipientOrdersDateFilterInput('dateFrom', uiState));
+    layoutRow.appendChild(createRecipientOrdersDateFilterInput('dateTo', uiState));
+    fragment.appendChild(layoutRow);
 
     const listWrap = createOrdersNode('div', { className: 'orders-list-wrap' });
     const list = createOrdersNode('div', { className: 'orders-list' });
@@ -470,6 +590,7 @@ function mountRecipientOrdersListPanelRegions(container, uiState, allOrders, ord
 
     container.replaceChildren(fragment);
     container.dataset.recipientOrdersListMounted = '1';
+    window.enhanceUniversalPickers?.(container);
 }
 
 function renderRecipientOrdersListPanelRegions(container, uiState, allOrders, orders, selectedOrder, currentUser) {
@@ -482,6 +603,7 @@ function renderRecipientOrdersListPanelRegions(container, uiState, allOrders, or
         mountRecipientOrdersListPanelRegions(container, uiState, allOrders, orders, selectedOrder, currentUser);
         container.dataset.recipientOrdersListContentSignature = contentSignature;
         container.dataset.recipientOrdersListSelectionKey = selectionKey;
+        container.dataset.recipientOrdersLayoutChromeSignature = buildRecipientOrdersLayoutChromeSignature();
         return;
     }
 
@@ -492,10 +614,21 @@ function renderRecipientOrdersListPanelRegions(container, uiState, allOrders, or
 
     const prevContentSignature = container.dataset.recipientOrdersListContentSignature || '';
     const listContentChanged = prevContentSignature !== contentSignature;
+    const layoutChromeSignature = buildRecipientOrdersLayoutChromeSignature();
+    const layoutChromeChanged = container.dataset.recipientOrdersLayoutChromeSignature !== layoutChromeSignature;
+
+    if (layoutChromeChanged) {
+        mountRecipientOrdersListPanelRegions(container, uiState, allOrders, orders, selectedOrder, currentUser);
+        container.dataset.recipientOrdersListContentSignature = contentSignature;
+        container.dataset.recipientOrdersListSelectionKey = selectionKey;
+        container.dataset.recipientOrdersLayoutChromeSignature = layoutChromeSignature;
+        return;
+    }
 
     syncRecipientOrdersCountPill(container, allOrders.length);
     syncRecipientOrdersStatusPills(container, uiState.status);
     syncRecipientOrdersSearchInput(container, uiState.search);
+    syncRecipientOrdersLayoutSelects(container, uiState);
 
     const listEl = container.querySelector('.orders-list');
     if (listContentChanged) {
@@ -506,6 +639,7 @@ function renderRecipientOrdersListPanelRegions(container, uiState, allOrders, or
 
     container.dataset.recipientOrdersListContentSignature = contentSignature;
     container.dataset.recipientOrdersListSelectionKey = selectionKey;
+    container.dataset.recipientOrdersLayoutChromeSignature = layoutChromeSignature;
 }
 
 function renderRecipientOrdersHeroMain(currentUser, unreadCount) {
@@ -525,7 +659,7 @@ function renderRecipientOrdersHeroStats(ordersCount, unreadCount, ordersToday) {
     return `
         <div class="lux-focus-panel__head lux-hero-side-head">
             <div class="lux-focus-panel__kicker">Orders inbox</div>
-            <span class="lux-focus-panel__chip">${unreadCount} unread</span>
+            <span class="lux-focus-panel__chip home-hover-chip">${unreadCount} unread</span>
         </div>
         <div class="lux-focus-panel__body">
             <div class="lux-focus-panel__title">${ordersCount} tracked</div>
@@ -555,14 +689,43 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
     const statusButtons = ['all', 'unread', 'read'].map((status) => {
         const active = (uiState.status || 'all') === status;
         const label = status.charAt(0).toUpperCase() + status.slice(1);
-        return `<button type="button" data-recipient-order-status="${escapeHtml(status)}" class="orders-status-filter lux-filter-pill home-hover-chip ${active ? 'is-active' : ''}" aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
+        return `<button type="button" data-recipient-order-status="${escapeHtml(status)}" data-lux-skip-modern-button="true" class="lux-tab-btn orders-status-filter ${active ? 'is-active' : ''}" aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
     }).join('');
+
+    const layout = getCachedOrdersRecipientFilterLayout(getCurrentFaculty(), currentUser?.role);
+    const layoutSelects = getEnabledOrdersRecipientLayoutSelects(layout).map((filter) => {
+        const selected = (uiState.layoutFilters || {})[filter.field] || 'all';
+        const options = [
+            { value: 'all', label: `All ${String(filter.label || filter.field).toLowerCase()}` },
+            ...(filter.options || [])
+        ].map((option) => {
+            const isSelected = option.value === selected ? ' selected' : '';
+            return `<option value="${escapeHtml(option.value)}"${isSelected}>${escapeHtml(option.label || option.value)}</option>`;
+        }).join('');
+        return `
+            <label class="lux-picker-field orders-inbox-layout-filter">
+                <span class="lux-picker-label">${escapeHtml(filter.label || filter.field)}</span>
+                <select class="lux-control" data-lux-picker-label="${escapeHtml(filter.label || filter.field)}" data-recipient-order-layout-filter="${escapeHtml(filter.field)}">${options}</select>
+            </label>
+        `;
+    }).join('');
+    const dateFields = `
+        <label class="lux-picker-field orders-inbox-layout-filter">
+            <span class="lux-picker-label">From</span>
+            <input type="date" class="lux-control" value="${escapeHtml(uiState.dateFrom || '')}" data-recipient-order-date-filter="dateFrom">
+        </label>
+        <label class="lux-picker-field orders-inbox-layout-filter">
+            <span class="lux-picker-label">To</span>
+            <input type="date" class="lux-control" value="${escapeHtml(uiState.dateTo || '')}" data-recipient-order-date-filter="dateTo">
+        </label>
+    `;
+    const layoutChrome = `${layoutSelects}${dateFields}`;
 
     const orderRows = orders.length ? orders.map((order) => {
         const isRead = isOrderReadByUser(order.id, currentUser.id);
         const isActive = selectedOrder?.id === order.id;
         return `
-            <button type="button" class="orders-item lux-select-card ${isActive ? 'is-active' : ''}" data-recipient-order-open="${escapeHtml(order.id)}">
+            <button type="button" class="orders-item lux-select-card home-hover-chip ${isActive ? 'is-active' : ''}" data-recipient-order-open="${escapeHtml(order.id)}">
                 <div class="orders-item__top">
                     <div class="orders-item__copy">
                         <div class="orders-item__title">${escapeHtml(order.title)}</div>
@@ -573,7 +736,7 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
                 <div class="orders-item__meta">${escapeHtml(order.id)} &middot; Sent ${escapeHtml(getOrderDisplayValue(order.createdDate))} by ${escapeHtml(order.createdByName || 'Administrator')}</div>
             </button>
         `;
-    }).join('') : `<div class="orders-list-empty">No orders matched your current search.</div>`;
+    }).join('') : `<div class="orders-list-empty home-hover-chip">No orders matched your current search.</div>`;
 
     return `
         <div class="lux-card-head">
@@ -584,7 +747,8 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
             <span class="lux-status-pill is-info home-hover-chip">${allOrders.length} total</span>
         </div>
         <input type="text" class="lux-control" value="${escapeHtml(uiState.search || '')}" data-recipient-order-search="1" placeholder="Search by order title, type, or date">
-        <div class="orders-status-row">${statusButtons}</div>
+        <div class="orders-status-row lux-tab-strip lux-tab-strip--segmented">${statusButtons}</div>
+        <div class="orders-inbox-layout-filters">${layoutChrome}</div>
         <div class="orders-list-wrap">
             <div class="orders-list">
                 ${orderRows}
@@ -606,7 +770,7 @@ function renderRecipientOrdersDetailRegions(container, selectedOrder) {
 function renderOrdersInboxAccessState(container, message) {
     if (!container) return;
     container.innerHTML = `
-        <section class="page-hero orders-detail-empty">
+        <section class="page-hero orders-detail-empty home-hover-chip">
             <div class="orders-detail-empty__inner">
                 <i class="fas fa-inbox orders-detail-empty__icon"></i>
                 <h1 class="page-hero-title">Orders workspace unavailable</h1>
@@ -632,6 +796,18 @@ function renderOrdersInboxPage() {
     if (effectiveRole === USER_ROLES.ADMIN) {
         renderOrdersInboxAccessState(container, 'Admin orders are managed from the dedicated admin orders route.');
         return;
+    }
+
+    const layoutHydrationKey = `${normalizeFacultyCode(getCurrentFaculty() || 'ECON', 'ECON')}:${normalizeOrdersRecipientFilterRole(currentUser.role)}`;
+    if (container.dataset.ordersRecipientLayoutHydratedKey !== layoutHydrationKey) {
+        container.dataset.ordersRecipientLayoutHydratedKey = layoutHydrationKey;
+        fetchOrdersRecipientFilterLayout(getCurrentFaculty(), currentUser.role).then(() => {
+            if (document.getElementById('orders-inbox-root') === container
+                || document.getElementById('page-orders') === container
+                || document.getElementById('admin-orders-root') === container) {
+                renderOrdersInboxPage();
+            }
+        });
     }
 
     const uiState = ensureRecipientOrdersUiState(currentUser.id);
@@ -686,10 +862,30 @@ function bindRecipientOrdersDelegates() {
             updateRecipientOrdersSearch(event.target.value);
         }
     });
+
+    document.addEventListener('change', (event) => {
+        if (event.target.matches('[data-recipient-order-layout-filter]')) {
+            setRecipientOrdersLayoutFilter(
+                event.target.dataset.recipientOrderLayoutFilter || '',
+                event.target.value
+            );
+            return;
+        }
+        if (event.target.matches('[data-recipient-order-date-filter]')) {
+            setRecipientOrdersDateFilter(
+                event.target.dataset.recipientOrderDateFilter || 'dateFrom',
+                event.target.value
+            );
+        }
+    });
 }
 
 function shouldAutoBootOrdersInboxOnScriptLoad() {
-    return !document.body?.classList?.contains('lux-route-orders');
+    const body = document.body;
+    if (!body?.classList) return true;
+    if (body.classList.contains('lux-route-orders')) return false;
+    if (body.classList.contains('lux-route-admin-orders')) return false;
+    return true;
 }
 
 if (shouldAutoBootOrdersInboxOnScriptLoad()) {

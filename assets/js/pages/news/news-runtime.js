@@ -553,9 +553,106 @@ function splitNewsRenderSignature(signature = '') {
     };
 }
 
-function getSectionIcon(key) {
-    const map = { 'academic-updates': 'fa-graduation-cap', 'campus-life': 'fa-university', 'events': 'fa-calendar-star', 'announcements': 'fa-bullhorn', 'admissions': 'fa-door-open', 'research': 'fa-flask' };
-    return map[String(key || '').toLowerCase()] || 'fa-folder';
+const NEWS_SECTION_ICON_CHOICES = [
+    'fa-graduation-cap', 'fa-university', 'fa-building-columns', 'fa-landmark',
+    'fa-book', 'fa-book-open', 'fa-bookmark', 'fa-file-lines',
+    'fa-chalkboard', 'fa-chalkboard-user', 'fa-user-graduate', 'fa-users',
+    'fa-flask', 'fa-microscope', 'fa-atom', 'fa-laptop-code',
+    'fa-calendar-star', 'fa-calendar-days', 'fa-clock', 'fa-bullhorn',
+    'fa-newspaper', 'fa-door-open', 'fa-id-card', 'fa-clipboard-list',
+    'fa-briefcase', 'fa-handshake', 'fa-globe', 'fa-earth-americas',
+    'fa-lightbulb', 'fa-award', 'fa-trophy', 'fa-heart-pulse',
+    'fa-stethoscope', 'fa-scale-balanced', 'fa-palette', 'fa-music'
+];
+
+function normalizeNewsSectionIcon(value = '') {
+    const raw = String(value || '').trim().toLowerCase().replace(/^fas\s+/, '');
+    const icon = raw.startsWith('fa-') ? raw : (raw ? `fa-${raw}` : '');
+    return NEWS_SECTION_ICON_CHOICES.includes(icon) ? icon : '';
+}
+
+function getSectionIcon(keyOrSection = '') {
+    const section = keyOrSection && typeof keyOrSection === 'object' ? keyOrSection : null;
+    const key = normalizeNewsSectionKey(section?.key || keyOrSection);
+    const stored = normalizeNewsSectionIcon(section?.icon
+        || (runtime.sectionCatalog || []).find(item => normalizeNewsSectionKey(item?.key) === key)?.icon
+        || (runtime.sections || []).find(item => normalizeNewsSectionKey(item?.key) === key)?.icon);
+    if (stored) return stored;
+    const map = {
+        'academic-updates': 'fa-graduation-cap',
+        'campus-life': 'fa-university',
+        'events': 'fa-calendar-star',
+        'announcements': 'fa-bullhorn',
+        'admissions': 'fa-door-open',
+        'research': 'fa-flask'
+    };
+    return map[key] || 'fa-folder';
+}
+
+function collectNewsSectionIconUsage(excludeIndex = -1) {
+    const usage = new Map();
+    (runtime.sectionsDraft || []).forEach((entry, index) => {
+        if (index === excludeIndex) return;
+        const key = entry?.key || normalizeNewsSectionKey(entry?.label);
+        const icon = normalizeNewsSectionIcon(entry?.icon) || getSectionIcon({ key, icon: entry?.icon });
+        if (!icon) return;
+        const label = String(entry?.label || key || 'Section').trim() || 'Section';
+        const list = usage.get(icon) || [];
+        list.push(label);
+        usage.set(icon, list);
+    });
+    return usage;
+}
+
+function openNewsSectionIconPickerModal({ sectionLabel = '', currentIcon = '', excludeIndex = -1, onPick } = {}) {
+    closeNewsConfirmModal();
+    const panel = q('newsx-confirm-panel');
+    if (!panel) return;
+    const selected = normalizeNewsSectionIcon(currentIcon) || 'fa-newspaper';
+    const label = String(sectionLabel || '').trim() || 'this section';
+    const usedByIcon = collectNewsSectionIconUsage(excludeIndex);
+    const iconGrid = NEWS_SECTION_ICON_CHOICES.map(choice => {
+        const usedLabels = usedByIcon.get(choice) || [];
+        const isUsed = usedLabels.length > 0;
+        const isActive = choice === selected;
+        const usedTitle = isUsed ? `Used by ${usedLabels.join(', ')}` : choice;
+        const ariaLabel = isUsed ? `${choice} (used by ${usedLabels.join(', ')})` : choice;
+        return `
+        <button type="button" class="newsx-sections-icon-option${isActive ? ' is-active' : ''}${isUsed ? ' is-used' : ''}" data-news-sections-icon-pick data-icon="${choice}" aria-label="${escapeHtml(ariaLabel)}" title="${escapeHtml(usedTitle)}"${isActive ? ' aria-pressed="true"' : ''}${isUsed ? ' data-news-sections-icon-used="1"' : ''}>
+            <i class="fas ${choice}" aria-hidden="true"></i>
+        </button>
+    `;
+    }).join('');
+    panel.innerHTML = `
+        <div class="newsx-confirm-head">
+            <h2 class="newsx-confirm-title"><i class="fas fa-icons" aria-hidden="true"></i> ${escapeHtml('Choose icon')}</h2>
+        </div>
+        <p class="newsx-confirm-message">${escapeHtml(`Pick an icon for ${label}. Icons already on the list are marked.`)}</p>
+        <div class="newsx-sections-icon-picker" role="listbox" aria-label="Section icons">
+            <div class="newsx-sections-icon-grid">${iconGrid}</div>
+        </div>
+        <div class="newsx-confirm-actions">
+            <button type="button" class="newsx-btn lux-secondary-btn" data-news-confirm-cancel>Cancel</button>
+        </div>
+    `;
+    setNewsModalOpen(CONFIRM_OVERLAY_ID, true);
+    const onKeyDown = (event) => {
+        if (event.key === 'Escape') closeNewsConfirmModal();
+    };
+    newsConfirmCleanup = () => {
+        window.removeEventListener('keydown', onKeyDown);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    panel.querySelector('[data-news-confirm-cancel]')?.addEventListener('click', closeNewsConfirmModal);
+    panel.querySelectorAll('[data-news-sections-icon-pick]').forEach(button => {
+        button.addEventListener('click', () => {
+            const icon = normalizeNewsSectionIcon(button.getAttribute('data-icon'));
+            if (!icon) return;
+            if (typeof onPick === 'function') onPick(icon);
+            closeNewsConfirmModal();
+        });
+    });
+    panel.querySelector('.newsx-sections-icon-option.is-active, [data-news-sections-icon-pick]')?.focus();
 }
 
 function stripNewsTitlePlainText(value) {

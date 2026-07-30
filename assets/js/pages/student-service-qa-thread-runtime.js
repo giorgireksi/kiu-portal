@@ -332,7 +332,7 @@ function renderStudentServiceStudentQaFeedMarkup(ui, filteredQuestions, selected
 
                 </div>
 
-                <span class="student-service-panel-chip">${filteredQuestions.length} question${filteredQuestions.length === 1 ? '' : 's'}</span>
+                <span class="student-service-panel-chip home-hover-chip">${filteredQuestions.length} question${filteredQuestions.length === 1 ? '' : 's'}</span>
 
             </div>
 

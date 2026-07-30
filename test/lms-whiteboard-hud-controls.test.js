@@ -58,6 +58,16 @@ describe('LMS whiteboard HUD controls ux12', () => {
     });
 
     it('keeps HUD overlays above the canvas in fullscreen', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const minimapBlock = bare.match(/body\.lux-route-lms \.lms-whiteboard-minimap-shell\s*\{[^}]*\}/)?.[0] || '';
+        expect(minimapBlock).toMatch(/right:\s*12px/);
+        expect(minimapBlock).not.toMatch(/^\s*left:\s*12px/m);
+        const zoomBlock = bare.match(/body\.lux-route-lms \.lms-whiteboard-zoom\s*\{[^}]*\}/)?.[0] || '';
+        expect(zoomBlock).toMatch(/position:\s*absolute/);
+        expect(zoomBlock).toMatch(/left:\s*12px/);
+        expect(zoomBlock).toMatch(/bottom:\s*12px/);
+        expect(bare).toContain('body.kiu-lms-whiteboard-focus-active .lms-whiteboard-stage > .lms-whiteboard-zoom');
+        expect(bare).toContain('body.kiu-lms-whiteboard-focus-active .lms-whiteboard-stage > .lms-whiteboard-minimap-shell');
     });
 
     it('bumps whiteboard ux cache bust tokens in lms.html', () => {

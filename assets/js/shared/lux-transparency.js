@@ -231,10 +231,14 @@ function isRouteOwnedSurface(el) {
         if (hasOwnedClassPrefix(el, ['lux-program-', 'lux-prog-', 'lux-module-', 'lux-subject-'])) return true;
     }
 
-    if (document.body.classList.contains('lux-route-chancellery') && el.closest?.('#page-chancellery')) {
-        if (hasOwnedClassPrefix(el, ['lux-chancellery-'])
+    if (document.body.classList.contains('lux-route-chancellery')
+        && el.closest?.('#page-chancellery, #chancellery-document-editor-overlay, #chancellery-appeal-overlay, #chancellery-forward-overlay, #chancellery-case-overlay')) {
+        if (hasOwnedClassPrefix(el, ['lux-chancellery-', 'orders-recipient-filter-editor-', 'chancellery-document-', 'chancellery-appeal-', 'chancellery-forward-', 'chancellery-case-'])
             || el.classList.contains('lux-queue-item')
             || el.classList.contains('lux-thread-entry')) return true;
+        if (el.closest?.('#chancellery-document-editor-overlay, #chancellery-appeal-overlay, #chancellery-forward-overlay, #chancellery-case-overlay') && el.matches?.(
+            '.lux-primary-btn, .lux-secondary-btn, .lux-tab-btn, .lux-control'
+        )) return true;
     }
 
     if (document.body.classList.contains('lux-route-student-service')
@@ -248,7 +252,7 @@ function isRouteOwnedSurface(el) {
     }
 
     if (document.body.classList.contains('lux-route-admin-orders')
-        && el.closest?.('#admin-orders-root, #admin-orders-create-overlay, #admin-orders-thread-overlay, #modal-studio')) {
+        && el.closest?.('#admin-orders-root, #admin-orders-create-overlay, #admin-orders-thread-overlay, #admin-orders-recipient-filter-overlay, #modal-studio')) {
         if (hasOwnedClassPrefix(el, ['orders-', 'admin-orders-'])) return true;
         if (el.matches?.(
             '.lux-card-head, .lux-card-title, .lux-card-copy, .lux-control, ' +

@@ -186,7 +186,7 @@ function renderLmsWeekManager(resourceKey) {
             </div>
             <div class="lms-week-manager-chip-row">
                 ${weeks.map(week => `
-                    <button type="button" class="lux-secondary-btn lms-week-manager-chip-btn" data-lms-click="removeLmsWeek('${resourceKey}', '${String(week).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
+                    <button type="button" class="lux-secondary-btn lms-week-manager-chip-btn home-hover-chip" data-lms-click="removeLmsWeek('${resourceKey}', '${String(week).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
                         <span class="lms-week-manager-chip-label">${escapeHtml(week)}</span>
                         <i class="fas fa-times lms-week-manager-chip-remove"></i>
                     </button>

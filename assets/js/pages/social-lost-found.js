@@ -169,7 +169,7 @@
                 <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
-                        <span class="social-neo-delete-confirm-icon-chip"><i class="fas ${icon}" aria-hidden="true"></i></span>
+                        <span class="social-neo-delete-confirm-icon-chip home-hover-chip"><i class="fas ${icon}" aria-hidden="true"></i></span>
                         <div class="social-neo-delete-confirm-title">
                             <strong class="lux-glass-dialog-title">${escape(title)}</strong>
                             <span class="lux-glass-dialog-subtitle">${escape(subtitle)}</span>

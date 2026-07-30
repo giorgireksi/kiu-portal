@@ -174,7 +174,7 @@
                                         <span>Require a prerequisite course</span>
                                     </label>
                                     <div id="condition-box-container" class="lux-admin-tools-condition-box" hidden>
-                                        <div id="selected-condition-badge" class="lux-pill lux-admin-tools-condition-badge" data-value="None" hidden>
+                                        <div id="selected-condition-badge" class="lux-pill lux-admin-tools-condition-badge home-hover-chip" data-value="None" hidden>
                                             <span id="selected-condition-text"></span>
                                         </div>
                                     </div>

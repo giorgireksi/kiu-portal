@@ -40,9 +40,9 @@ function renderLmsLiveSessionRemoveDialogCard(resourceKey, session = null, step 
         ? `<div class="lms-live-session-remove-preview">
             <div class="lms-live-session-remove-preview-title">${escapeHtml(displayName)}</div>
             <div class="lms-live-session-remove-preview-meta">
-                <span class="lms-live-pill ${isLive ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
-                <span class="lms-live-pill"><i class="fas fa-list-check"></i> ${escapeHtml(String(stats.questionCount || 0))} questions</span>
-                <span class="lms-live-pill"><i class="fas fa-users"></i> ${escapeHtml(String(stats.participants || 0))} students</span>
+                <span class="lms-live-pill home-hover-chip ${isLive ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
+                <span class="lms-live-pill home-hover-chip"><i class="fas fa-list-check"></i> ${escapeHtml(String(stats.questionCount || 0))} questions</span>
+                <span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> ${escapeHtml(String(stats.participants || 0))} students</span>
             </div>
             <div class="lms-live-session-remove-warning ${isLive ? 'is-live' : ''}">${escapeHtml(warningCopy)}</div>
         </div>`

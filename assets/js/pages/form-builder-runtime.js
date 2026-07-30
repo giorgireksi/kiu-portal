@@ -38,6 +38,8 @@
             addType: 'addStaffFormType',
             updateSection: 'updateStaffFormSection',
             moveSection: 'moveStaffFormSection',
+            reorderSection: 'reorderStaffFormSection',
+            reorderField: 'reorderStaffFormField',
             removeSection: 'removeStaffFormSection',
             removeField: 'removeStaffFormField',
         }
@@ -65,6 +67,8 @@
             addType: 'addStudentFormType',
             updateSection: 'updateStudentFormSection',
             moveSection: 'moveStudentFormSection',
+            reorderSection: 'reorderStudentFormSection',
+            reorderField: 'reorderStudentFormField',
             removeSection: 'removeStudentFormSection',
             removeField: 'removeStudentFormField',
         };
@@ -384,15 +388,15 @@
     }
 
     function reorderStaffFormSectionLocal(typeId, sectionId, toIndex) {
-        if (typeof reorderStaffFormSection === 'function') {
-            return reorderStaffFormSection(typeId, sectionId, toIndex);
+        if (typeof window[H.reorderSection] === 'function') {
+            return window[H.reorderSection](typeId, sectionId, toIndex);
         }
         return { error: 'Blueprint API unavailable.' };
     }
 
     function reorderStaffFormFieldLocal(typeId, sectionId, fieldId, toIndex) {
-        if (typeof reorderStaffFormField === 'function') {
-            return reorderStaffFormField(typeId, sectionId, fieldId, toIndex);
+        if (typeof window[H.reorderField] === 'function') {
+            return window[H.reorderField](typeId, sectionId, fieldId, toIndex);
         }
         return { error: 'Blueprint API unavailable.' };
     }
@@ -495,8 +499,8 @@
             const active = type.id === selectedTypeId ? ' is-active' : '';
             const stats = typeCombinedStats(type.id);
             const badge = type.isBuiltin
-                ? ('<span class="' + H.hub + '-chip lux-status-pill is-muted">Built-in</span>')
-                : ('<span class="' + H.hub + '-chip lux-status-pill">Custom</span>');
+                ? ('<span class="' + H.hub + '-chip lux-status-pill home-hover-chip is-muted">Built-in</span>')
+                : ('<span class="' + H.hub + '-chip lux-status-pill home-hover-chip">Custom</span>');
             return `
                 <button class="${H.hub}-builder-type home-hover-chip${active}" type="button" data-${H.data}-builder-action="select-type" data-${H.data}-type-id="${escapeHtml(type.id)}">
                     <span class="${H.hub}-builder-type-icon" aria-hidden="true"><i class="${typeIconClass(type)}"></i></span>
@@ -577,13 +581,13 @@
         const fieldCount = (section.fields || []).length;
         const hasTitle = Boolean(String(section.title || '').trim());
         if (!fieldCount) {
-            return ('<span class="' + H.hub + '-profile-status-chip is-empty">No fields yet</span>');
+            return ('<span class="' + H.hub + '-profile-status-chip home-hover-chip is-empty">No fields yet</span>');
         }
         if (!hasTitle) {
-            return ('<span class="' + H.hub + '-profile-status-chip is-draft">Draft</span>');
+            return ('<span class="' + H.hub + '-profile-status-chip home-hover-chip is-draft">Draft</span>');
         }
         const label = `${fieldCount} field${fieldCount === 1 ? '' : 's'}`;
-        return `<span class="${H.hub}-profile-status-chip is-complete">${escapeHtml(label)}</span>`;
+        return `<span class="${H.hub}-profile-status-chip home-hover-chip is-complete">${escapeHtml(label)}</span>`;
     }
 
     function renderProfileNameRow(state, typeId, section, index, activeSectionId) {
@@ -650,7 +654,7 @@
                         <div class="${H.hub}-profile-panel-title-row">
                             <span class="${H.hub}-overline lux-section-kicker">Profiles</span>
                             <span class="${H.hub}-profile-count">${escapeHtml(countLabel)}</span>
-                            <span class="${H.hub}-profile-type-pill">${escapeHtml(selectedType.label)}</span>
+                            <span class="${H.hub}-profile-type-pill home-hover-chip">${escapeHtml(selectedType.label)}</span>
                         </div>
                         <p class="${H.hub}-section-copy lux-panel-copy">Select a profile, name it, then add fields below.</p>
                     </div>
@@ -766,7 +770,7 @@
         const activeSectionId = getActiveSectionId(state, sections);
         const activeSection = sections.find((section) => section.id === activeSectionId) || null;
         const emptyWarning = sections.some((section) => !(section.fields || []).length)
-            ? ('<span class="' + H.hub + '-builder-stat-pill is-warning">Some profiles need fields</span>')
+            ? ('<span class="' + H.hub + '-builder-stat-pill home-hover-chip is-warning">Some profiles need fields</span>')
             : '';
         return `
             <div class="${H.hub}-builder-canvas lux-soft-chrome home-hover-chip">
@@ -775,10 +779,10 @@
                         <span class="${H.hub}-overline lux-section-kicker">Form settings</span>
                         <strong class="${H.hub}-section-title lux-card-title">${escapeHtml(selectedType.label)}</strong>
                         <div class="${H.hub}-builder-canvas-stats">
-                            <span class="${H.hub}-builder-stat-pill">${stats.sections} profile${stats.sections === 1 ? '' : 's'}</span>
-                            <span class="${H.hub}-builder-stat-pill is-input">${stats.inputFields} field${stats.inputFields === 1 ? '' : 's'}</span>
-                            <span class="${H.hub}-builder-stat-pill is-droplist">${stats.selectFields} dropdown${stats.selectFields === 1 ? '' : 's'}</span>
-                            <span class="${H.hub}-builder-stat-pill">${stats.filterableSections} filterable</span>
+                            <span class="${H.hub}-builder-stat-pill home-hover-chip">${stats.sections} profile${stats.sections === 1 ? '' : 's'}</span>
+                            <span class="${H.hub}-builder-stat-pill home-hover-chip is-input">${stats.inputFields} field${stats.inputFields === 1 ? '' : 's'}</span>
+                            <span class="${H.hub}-builder-stat-pill home-hover-chip is-droplist">${stats.selectFields} dropdown${stats.selectFields === 1 ? '' : 's'}</span>
+                            <span class="${H.hub}-builder-stat-pill home-hover-chip">${stats.filterableSections} filterable</span>
                             ${emptyWarning}
                         </div>
                     </div>
@@ -897,6 +901,12 @@
                             <input class="${H.hub}-control lux-control" type="text" value="${escapeHtml(field.help || '')}" data-${H.data}-builder-input="help" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-bucket="input" data-${H.data}-section-id="${escapeHtml(sectionId)}" data-${H.data}-field-id="${escapeHtml(field.id)}">
                         </label>
                     ` : ''}
+                    ${(NS === 'student' || NS === 'staff') ? `
+                        <label class="${H.hub}-builder-check">
+                            <input type="checkbox" data-${H.data}-builder-input="showOnPersonalData" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-bucket="${escapeHtml(bucket)}" data-${H.data}-section-id="${escapeHtml(sectionId)}" data-${H.data}-field-id="${escapeHtml(field.id)}"${field.showOnPersonalData ? ' checked' : ''}>
+                            <span>Show on Personal Data</span>
+                        </label>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -953,6 +963,12 @@
                         ${renderFieldMenuPanel(typeId, bucket, sectionId, field, upDisabled, downDisabled)}
                     </details>
                 </div>
+                ${(NS === 'student' || NS === 'staff') ? `
+                <label class="${H.hub}-builder-check ${H.hub}-studio-personal-data-toggle">
+                    <input type="checkbox" data-${H.data}-builder-input="showOnPersonalData" data-${H.data}-type-id="${escapeHtml(typeId)}" data-${H.data}-bucket="${escapeHtml(bucket)}" data-${H.data}-section-id="${escapeHtml(sectionId)}" data-${H.data}-field-id="${escapeHtml(field.id)}"${field.showOnPersonalData ? ' checked' : ''}>
+                    <span>Show on Personal Data</span>
+                </label>
+                ` : ''}
                 ${renderFieldRemoveConfirmStrip(state, typeId, bucket, sectionId, field)}
                 ${choicesBlock}
                 ${renderFieldAdvancedDrawer(state, typeId, bucket, sectionId, field)}
@@ -1279,7 +1295,7 @@
                         <span class="${H.hub}-overline lux-section-kicker"><i class="fas fa-sliders"></i> Admin workspace</span>
                         <strong class="${H.hub}-section-title lux-card-title">${H.entityTitle} form settings</strong>
                         <p class="${H.hub}-section-copy lux-panel-copy">
-                            <span class="${H.hub}-result-pill">${types.length} ${H.typeNoun}${types.length === 1 ? '' : 's'}</span>
+                            <span class="${H.hub}-result-pill home-hover-chip">${types.length} ${H.typeNoun}${types.length === 1 ? '' : 's'}</span>
                             Design registration forms per ${H.typeNoun} with a simple studio and live preview.
                         </p>
                     </div>
@@ -1763,6 +1779,7 @@
                     width: field.width,
                     help: field.help,
                     showInDirectoryFilter: field.showInDirectoryFilter,
+                    showOnPersonalData: field.showOnPersonalData,
                     options: Array.isArray(field.options) ? field.options.map((item) => ({ ...item })) : undefined
                 };
                 const result = window[H.addField](typeId, bucket, data.sectionId, copy);

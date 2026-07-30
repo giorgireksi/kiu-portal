@@ -84,6 +84,12 @@ function isSocialAdmin(userId) {
     return socialText(getSocialAccount.call(this, userId)?.role).toLowerCase() === 'admin';
 }
 
+function isSocialStaffViewer(userId) {
+    return ['admin', 'student_service'].includes(
+        socialText(getSocialAccount.call(this, userId)?.role).toLowerCase()
+    );
+}
+
 function getSocialActorDisplayName(userId) {
     const account = getSocialAccount.call(this, userId);
     return socialText(account?.displayName || account?.nameEn || account?.name || account?.email || userId || 'Portal user');
@@ -302,11 +308,16 @@ function canViewSocialGroup(group, userId) {
     if (!group) return false;
     const visibility = normalizeSocialVisibility(group.visibility, 'public');
     if (visibility === 'public') return true;
-    if (!socialText(userId)) return false;
-    if (canManageSocialGroup.call(this, group, userId)) return true;
-    if (isSocialGroupMember.call(this, group, userId)) return true;
+    const normalizedUserId = socialText(userId);
+    if (!normalizedUserId) return false;
+    if (canManageSocialGroup.call(this, group, normalizedUserId)) return true;
+    if (isSocialGroupMember.call(this, group, normalizedUserId)) return true;
+    if (isSocialStaffViewer.call(this, normalizedUserId)) {
+        const facultyCode = normalizeCode(group.facultyCode || group.faculty || '');
+        return !facultyCode || getSocialActorFacultyCode.call(this, normalizedUserId) === facultyCode;
+    }
     if (visibility === 'faculty') {
-        return getSocialActorFacultyCode.call(this, userId) === normalizeCode(group.facultyCode || group.faculty || '');
+        return getSocialActorFacultyCode.call(this, normalizedUserId) === normalizeCode(group.facultyCode || group.faculty || '');
     }
     return false;
 }
@@ -1739,6 +1750,7 @@ module.exports = {
     canManageSocialGroup,
     canManageSocialPage,
     canManageSocialScope,
+    isSocialStaffViewer,
     canViewSocialEvent,
     canViewSocialGroup,
     canViewSocialPage,

@@ -22,6 +22,19 @@ function seedAccounts(store) {
     };
 }
 
+function samplePdf() {
+    return { storageKey: 'file-1', fileName: 'paper.pdf', mimeType: 'application/pdf', sizeBytes: 1200 };
+}
+
+function sampleSlides() {
+    return {
+        storageKey: 'file-2',
+        fileName: 'talk.pptx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        sizeBytes: 2400
+    };
+}
+
 describe('social-research-regressions', () => {
     it('nav wires Research after Portfolio with locked label and action', () => {
         const panel = readSource('assets/js/pages/social-panel-model.js');
@@ -37,7 +50,7 @@ describe('social-research-regressions', () => {
         expect(shell).toContain("openDialog('research-create', {})");
     });
 
-    it('catalog keeps Faculty / Student / Mine tabs and never mixes lanes in filters', () => {
+    it('catalog keeps Faculty / Student / Mine tabs and fileKind filters', () => {
         const research = readSource('assets/js/pages/social-research.js');
         expect(research).toContain("label: 'Faculty & Staff'");
         expect(research).toContain("label: 'Student Research'");
@@ -52,23 +65,39 @@ describe('social-research-regressions', () => {
         expect(research).toContain('social-neo-research-toolbar home-hover-chip');
         expect(research).toContain('social-neo-research-copy home-hover-chip');
         expect(research).toContain('social-neo-research-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip');
-        expect(research).toContain("format: 'article'");
+        expect(research).toContain("value=\"slides\"");
+        expect(research).toContain("value=\"document\"");
         expect(research).toContain("format === 'pdf'");
         expect(research).toContain('data-form="research-create"');
         expect(research).toContain('lux-glass-dialog-backdrop');
+        expect(research).not.toContain('lux-glass-dialog-card--research-editor');
+        expect(research).not.toContain('data-research-body-editor');
+        expect(research).not.toContain('mountSocialResearchEditor');
+        expect(research).not.toContain('KiuResearchEditor');
         expect(research).toContain('social-neo-research-choice lux-soft-chrome home-hover-chip');
-        expect(research).toContain('social-neo-research-format-card lux-soft-chrome home-hover-chip');
         expect(research).toContain('social-neo-research-dropzone lux-soft-chrome home-hover-chip');
+        expect(research).toContain('.ppt');
+        expect(research).toContain('.docx');
+        expect(research).toContain('name="researchFiles"');
+        expect(research).toContain('Download to open');
         expect(research).toContain('lux-primary-btn lux-glass-dialog-submit-btn home-hover-chip');
-        expect(research).toContain("return openDialog('research-create', {})");
+        expect(research).toContain("openDialog('research-create', {})");
         expect(research).toContain('__kiuOpenSocialDialog');
         expect(research).toContain('mountSocialResearchPdfViewer');
     });
 
-    it('dialog router re-renders after research module loads', () => {
+    it('research editor module is removed from page load chain', () => {
+        const page = readSource('assets/js/pages/social-page.js');
+        expect(page).not.toContain('SOCIAL_RESEARCH_EDITOR_URL');
+        expect(page).not.toContain('social-research-editor.js');
+        expect(page).toContain('social-research.js');
+    });
+
+    it('dialog router re-renders after research module loads without editor mount', () => {
         const router = readSource('assets/js/pages/social-dialog-router.js');
         expect(router).toContain("kind === 'research-create'");
         expect(router).toContain("queueDeferredModuleRender('research-module')");
+        expect(router).not.toContain('mountSocialResearchEditor');
     });
 
     it('compose locks student lane; staff non-admin stay on faculty; admin can choose', () => {
@@ -87,19 +116,26 @@ describe('social-research-regressions', () => {
         expect(pdf).toContain('mountSocialResearchPdfViewer');
     });
 
-    it('bare-lite + primitives cover research shell typography', () => {
+    it('bare-lite + primitives cover research deposit shell', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         const primitives = readSource('assets/css/lux-layout-primitives.css');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const modals = readSource('assets/css/lux-modals.css');
         expect(bare).toContain('.social-neo-research-shell');
         expect(bare).toContain('.social-neo-research-grid');
         expect(bare).toContain('.social-neo-research-pdf-shell');
+        expect(bare).toContain('.social-neo-research-file-list');
+        expect(bare).not.toContain('--research-prose-measure');
+        expect(bare).not.toContain('.social-neo-research-prose');
+        expect(bare).not.toContain('.social-neo-research-figure');
+        expect(bare).not.toContain('.social-neo-research-reader-scale');
+        expect(modals).not.toContain('lux-glass-dialog-card--research-editor');
         expect(primitives).toContain('.social-neo-research-title.lux-card-title');
         expect(primitives).toContain('.social-neo-research-copy.lux-panel-copy');
         expect(fouc).toContain('#social-neo-overlay-portal .social-neo-research-create');
         expect(fouc).toContain('.social-neo-research-choice.lux-soft-chrome.home-hover-chip');
-        expect(fouc).toContain('.social-neo-research-format-card.lux-soft-chrome.home-hover-chip');
         expect(fouc).toContain('.social-neo-research-dropzone.lux-soft-chrome.home-hover-chip');
+        expect(fouc).not.toContain('.social-neo-research-cover-field.lux-soft-chrome.home-hover-chip');
         expect(fouc).toContain('.social-neo-research-catalog');
         expect(fouc).toContain('.social-neo-research-toolbar');
         expect(fouc).toContain('.social-neo-research-copy.home-hover-chip');
@@ -123,27 +159,26 @@ describe('social-research-regressions', () => {
         const studentPub = store.createSocialResearchPublication({
             title: 'Student lit review',
             abstract: 'Course work',
-            bodyText: 'Body',
-            format: 'article',
+            files: [samplePdf()],
             authorLane: 'faculty',
             publish: true
         }, 'stu-1');
         expect(studentPub.authorLane).toBe('student');
+        expect(studentPub.fileKind).toBe('pdf');
 
         const facultyPub = store.createSocialResearchPublication({
             title: 'Faculty paper',
             abstract: 'Working paper',
-            bodyText: 'Scholarship body',
-            format: 'article',
+            files: [sampleSlides()],
             publish: true
         }, 'prof-1');
         expect(facultyPub.authorLane).toBe('faculty');
+        expect(facultyPub.fileKind).toBe('slides');
 
         const staffStudentAttempt = store.createSocialResearchPublication({
             title: 'Should stay faculty',
             abstract: 'Nope',
-            bodyText: 'Body',
-            format: 'article',
+            files: [samplePdf()],
             authorLane: 'student',
             publish: true
         }, 'prof-1');
@@ -152,8 +187,7 @@ describe('social-research-regressions', () => {
         const adminStudent = store.createSocialResearchPublication({
             title: 'Admin into student lane',
             abstract: 'Allowed',
-            bodyText: 'Body',
-            format: 'article',
+            files: [samplePdf()],
             authorLane: 'student',
             publish: true
         }, 'admin-1');
@@ -169,28 +203,40 @@ describe('social-research-regressions', () => {
         expect(studentLane.some((item) => item.id === studentPub.id)).toBe(true);
     });
 
-    it('pdf create requires pdf payload; article can draft without body', () => {
+    it('publish requires files; PDF legacy still works; draft without files ok', () => {
         const store = new PlatformStore({});
         seedAccounts(store);
 
         expect(store.createSocialResearchPublication({
-            title: 'Missing PDF',
-            format: 'pdf',
+            title: 'Missing files',
             publish: true
         }, 'prof-1')).toBeNull();
 
         const pdfOk = store.createSocialResearchPublication({
             title: 'With PDF',
-            format: 'pdf',
             pdf: { storageKey: 'file-1', fileName: 'paper.pdf', mimeType: 'application/pdf' },
             publish: true
         }, 'prof-1');
         expect(pdfOk.format).toBe('pdf');
+        expect(pdfOk.fileKind).toBe('pdf');
+        expect(pdfOk.files[0].storageKey).toBe('file-1');
         expect(pdfOk.pdf.storageKey).toBe('file-1');
+
+        const multi = store.createSocialResearchPublication({
+            title: 'Deck + notes',
+            files: [sampleSlides(), {
+                storageKey: 'file-3',
+                fileName: 'notes.docx',
+                mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            }],
+            publish: true
+        }, 'prof-1');
+        expect(multi.fileKind).toBe('slides');
+        expect(multi.files).toHaveLength(2);
+        expect(multi.files[1].fileKind).toBe('document');
 
         const draft = store.createSocialResearchPublication({
             title: 'Draft note',
-            format: 'article',
             status: 'draft',
             publish: false
         }, 'stu-1');
@@ -199,5 +245,32 @@ describe('social-research-regressions', () => {
             .some((item) => item.id === draft.id)).toBe(false);
         expect(store.listSocialResearchPublications({ mine: true }, 'stu-1')
             .some((item) => item.id === draft.id)).toBe(true);
+    });
+
+    it('ignores bodyHtml typography cover on create; publish without files fails', () => {
+        const store = new PlatformStore({});
+        seedAccounts(store);
+
+        expect(store.createSocialResearchPublication({
+            title: 'Empty publish',
+            bodyHtml: '<p>Hello</p>',
+            publish: true
+        }, 'prof-1')).toBeNull();
+
+        const deposit = store.createSocialResearchPublication({
+            title: 'File deposit',
+            bodyHtml: '<p>Hello <strong>campus</strong></p><script>alert(1)</script>',
+            titleFontSize: 56,
+            bodyFontSize: 20,
+            layoutPreset: 'visual',
+            cover: { storageKey: 'cover-1', fileName: 'hero.jpg', mimeType: 'image/jpeg' },
+            files: [samplePdf()],
+            publish: true
+        }, 'prof-1');
+        expect(deposit.bodyHtml).toBe('');
+        expect(deposit.files[0].fileName).toBe('paper.pdf');
+        expect(deposit.fileKind).toBe('pdf');
+        expect(deposit.titleFontSize).toBeUndefined();
+        expect(deposit.cover).toBeUndefined();
     });
 });

@@ -147,4 +147,20 @@ describe('social-workspace-panel', () => {
         expect(panel).toContain('data-action="project-settings-open"');
         expect(panel).toContain('REMOVED_PROJECT_TABS');
     });
+
+    it('keeps student service project visibility in the workspace filter', () => {
+        const panel = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-panel.js'), 'utf8');
+        const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
+        expect(panel).toContain('function canViewProjectWorkspaceCard(project)');
+        expect(panel).toContain('Boolean(isStaffAccount?.(currentUser?.()))');
+        expect(panel).not.toContain("['admin', 'professor', 'ta', 'student_service'].includes(viewerRole)");
+        expect(panel).toContain('const myProjects = projects.filter(canViewProjectWorkspaceCard);');
+        expect(panel).toContain('hubProjects = hubProjects.filter(canViewProjectWorkspaceCard);');
+        expect(panel).toContain('const featuredProjects = [...myProjects]');
+        expect(panel).toContain('const hubScopeBase = hubProjects;');
+        expect(panel).toMatch(/hubStatusCounts\s*=\s*\{[\s\S]*?all:\s*hubScopeBase\.length/);
+        expect(panel).not.toContain("if (discoverFaculty && discoverFaculty !== 'all' && hubScope !== 'faculty')");
+        expect(workspace).toMatch(/createKiuSocialWorkspacePanelApi\)\(\{[\s\S]*?currentUser,/);
+        expect(workspace).toMatch(/createKiuSocialWorkspacePanelApi\)\(\{[\s\S]*?currentUserId,/);
+    });
 });

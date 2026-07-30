@@ -43,6 +43,8 @@ async function saveNewsSections() {
             if (!label) return null;
             const payload = { label };
             if (entry.key) payload.key = entry.key;
+            const icon = normalizeNewsSectionIcon(entry.icon);
+            if (icon) payload.icon = icon;
             return payload;
         })
         .filter(Boolean);

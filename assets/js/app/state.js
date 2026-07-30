@@ -519,18 +519,6 @@ function buildCanonicalDomain(state) {
         enrollmentsByStudent,
         holdsByStudent,
         gradeRecords,
-        documentRequests: (state.chancelleryRequests || []).map(request => ({
-            ...request,
-            workflowStep: request.currentStep || 0
-        })),
-        orders: (state.chancelleryRequests || []).map(request => ({
-            id: request.id,
-            type: request.type,
-            status: request.status,
-            workflowStep: request.currentStep || 0,
-            approvals: request.steps || [],
-            generatedFiles: []
-        })),
         libraryResources: Object.entries(state.syllabus || {}).flatMap(([subjectId, files]) => (files || []).map(file => ({
             subjectId,
             semesterNumber: subjectsById[subjectId]?.semesterNumber || state.activeSemester || 1,
@@ -1193,6 +1181,7 @@ function getAllowedPagesForRole(role = getEffectiveUserRole()) {
     } else if (role === USER_ROLES.PROFESSOR || role === USER_ROLES.TA) {
         _allowedPagesCache = new Set([
             ...common,
+            'personal-data',
             'faculty-schedule',
             'faculty-gradebook',
             'timetable',
@@ -1205,6 +1194,7 @@ function getAllowedPagesForRole(role = getEffectiveUserRole()) {
         _allowedPagesCache = new Set([
             'home',
             'profile',
+            'personal-data',
             'library',
             'news',
             'orders',
@@ -1284,13 +1274,24 @@ function normalizeStudentScheduleValue(schedule) {
                     if (hasEntryShape) {
                         return {
                             ...value,
-                            courseId: value.courseId || value.sourceCourseId || (/^\d+$/.test(String(key)) ? '' : key)
+                            courseId: value.courseId || value.sourceCourseId || (/^\d+$/.test(String(key)) ? '' : key),
+                            groupId: typeof value.groupId === 'string' || typeof value.groupId === 'number'
+                                ? value.groupId
+                                : (value.groupName || '')
                         };
                     }
                 }
                 return { courseId: key, groupId: value };
             })
-            .filter((entry) => entry.courseId || entry.groupId);
+            .filter((entry) => {
+                const courseId = String(entry?.courseId || '').trim();
+                if (!courseId) return false;
+                if (entry?.groupId != null && typeof entry.groupId === 'object') return false;
+                const groupId = String(entry?.groupId ?? '').trim();
+                // Drop object-keyed map shells like { courseId: "0", groupId: {…} } after coerce.
+                if (!groupId && /^\d+$/.test(courseId)) return false;
+                return Boolean(courseId || groupId);
+            });
     }
     return [];
 }

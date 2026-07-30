@@ -34,9 +34,8 @@ describe('student academic profile runtime', () => {
         expect(commandCenter).toContain('curriculumPlan');
 
         expect(html).toContain('assets/js/shared/student-academic-helpers.js?v=20260705-student-academic13');
-        expect(html).toContain('assets/js/pages/student-academic-runtime.js?v=20260705-student-academic13');
+        expect(html).toContain('assets/js/pages/student-academic-runtime.js?v=20260729-acadoverview1');
         expect(html).toContain('assets/js/pages/students-command-center.js?v=20260726-frostedpopup1');
-        expect(runtime).toContain('renderPersonalDataSubjectsSection');
         expect(runtime).toContain('hydrateStudentAcademicRecord');
         expect(runtime).toContain('toggleMobilityTransferPanel');
     });
@@ -50,6 +49,8 @@ describe('student academic profile runtime', () => {
         expect(runtime).toContain('students-hub-academic-table');
         expect(runtime).toContain('students-hub-academic-overview');
         expect(runtime).toContain('lux-data-card home-hover-chip students-hub-academic-overview');
+        expect(runtime).toContain('students-hub-academic-overview-cell lux-soft-chrome home-hover-chip');
+        expect(runtime).toContain('students-hub-academic-progress lux-soft-chrome home-hover-chip');
         expect(runtime).toContain('students-hub-academic-stack');
         expect(runtime).toContain('students-hub-academic-schedule-canvas');
         expect(runtime).toContain('home-hover-chip students-hub-academic-section');

@@ -439,10 +439,10 @@ function canViewSocialProject(project, userId) {
     if (canManageSocialProject.call(this, project, normalizedUserId)) return true;
     if (getSocialProjectMemberIds.call(this, project).includes(normalizedUserId)) return true;
     if (getSocialProjectAdvisorIds.call(this, project).includes(normalizedUserId)) return true;
-    // Faculty oversight: professors, TAs, and admins can always see every project
+    // Faculty oversight: professors, TAs, admins, and student service can always see every project
     // team and its tasks regardless of the team's chosen visibility.
     const oversightRole = socialText(this.getSocialAccount(normalizedUserId)?.role).toLowerCase();
-    if (['professor', 'ta', 'admin'].includes(oversightRole)) return true;
+    if (['professor', 'ta', 'admin', 'student_service'].includes(oversightRole)) return true;
     const hiddenUserIds = socialIdArray(project.hiddenUserIds || []);
     if (hiddenUserIds.includes(normalizedUserId)) return false;
     const status = normalizeProjectStatus(project.status || 'draft');

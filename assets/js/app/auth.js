@@ -480,8 +480,31 @@ function ensureKiuRealtimeRuntime() {
     return window.__kiuRealtimeRuntime;
 }
 
+const KIU_SSE_BLOCKED_UNTIL_KEY = 'KIU_SSE_BLOCKED_UNTIL';
+
+function readSharedKiuSseBlockedUntil() {
+    try {
+        const raw = Number(sessionStorage.getItem(KIU_SSE_BLOCKED_UNTIL_KEY) || 0);
+        return Number.isFinite(raw) && raw > 0 ? raw : 0;
+    } catch (error) {
+        return 0;
+    }
+}
+
+function writeSharedKiuSseBlockedUntil(untilMs) {
+    const until = Number(untilMs) || 0;
+    try {
+        if (until > Date.now()) sessionStorage.setItem(KIU_SSE_BLOCKED_UNTIL_KEY, String(until));
+        else sessionStorage.removeItem(KIU_SSE_BLOCKED_UNTIL_KEY);
+    } catch (error) {}
+}
+
 function isKiuRealtimeSseBlocked() {
     const runtime = ensureKiuRealtimeRuntime();
+    const sharedUntil = readSharedKiuSseBlockedUntil();
+    if (sharedUntil > (runtime.sseBlockedUntil || 0)) {
+        runtime.sseBlockedUntil = sharedUntil;
+    }
     return Boolean(runtime.sseBlockedUntil && Date.now() < runtime.sseBlockedUntil);
 }
 
@@ -1238,6 +1261,7 @@ function connectKiuRealtimeEventStream() {
         runtime.sseConnectInFlight = false;
         if (Number(error?.status) === 429) {
             runtime.sseBlockedUntil = Date.now() + (5 * 60 * 1000);
+            writeSharedKiuSseBlockedUntil(runtime.sseBlockedUntil);
             if (runtime.bootstrapScheduledHandle) {
                 clearTimeout(runtime.bootstrapScheduledHandle);
                 runtime.bootstrapScheduledHandle = null;

@@ -877,49 +877,62 @@ async function createSurvey(input = {}) {
     return payload?.survey || null;
 }
 
-async function createResearchPublication(input = {}) {
-    const actorId = currentUserId();
-    if (!actorId) throw new Error('Session required.');
-    let pdf = null;
-    if (text(input.format).toLowerCase() === 'pdf' && input.file && typeof uploadPortalStoredFile === 'function') {
-        const uploaded = await uploadPortalStoredFile(input.file, 'research');
+async function uploadResearchFileEntry(file) {
+    if (!file) return null;
+    if (typeof uploadPortalStoredFile === 'function') {
+        const uploaded = await uploadPortalStoredFile(file, 'research');
         if (uploaded?.storageKey) {
-            pdf = {
+            return {
                 storageKey: uploaded.storageKey,
-                fileName: text(uploaded.name || input.file.name || 'document.pdf'),
-                mimeType: text(uploaded.type || input.file.type || 'application/pdf'),
-                sizeBytes: Number(uploaded.size || input.file.size || 0) || 0,
-                pageCount: Number(input.pageCount || 0) || 0
+                fileName: text(uploaded.name || file.name || 'file'),
+                mimeType: text(uploaded.type || file.type || 'application/octet-stream'),
+                sizeBytes: Number(uploaded.size || file.size || 0) || 0,
+                pageCount: Number(file.pageCount || 0) || 0
             };
         }
     }
-    if (text(input.format).toLowerCase() === 'pdf' && !pdf && input.file) {
-        const dataUrl = text(input.file.dataUrl) || (typeof readFileAsDataUrl === 'function' ? await readFileAsDataUrl(input.file) : '');
-        if (dataUrl) {
-            pdf = {
-                storageKey: '',
-                fileName: text(input.file.name || 'document.pdf'),
-                mimeType: text(input.file.type || 'application/pdf'),
-                sizeBytes: Number(input.file.size || 0) || 0,
-                pageCount: 0,
-                dataUrl
-            };
-        }
+    const dataUrl = text(file.dataUrl)
+        || (typeof readFileAsDataUrl === 'function' ? await readFileAsDataUrl(file) : '');
+    if (!dataUrl) return null;
+    return {
+        storageKey: '',
+        fileName: text(file.name || 'file'),
+        mimeType: text(file.type || 'application/octet-stream'),
+        sizeBytes: Number(file.size || 0) || 0,
+        pageCount: 0,
+        dataUrl
+    };
+}
+
+async function createResearchPublication(input = {}) {
+    const actorId = currentUserId();
+    if (!actorId) throw new Error('Session required.');
+    const sourceFiles = Array.isArray(input.files) && input.files.length
+        ? input.files
+        : (input.file ? [input.file] : []);
+    const files = [];
+    for (const file of sourceFiles.slice(0, 6)) {
+        const entry = await uploadResearchFileEntry(file);
+        if (entry) files.push(entry);
+    }
+    let pdf = null;
+    if (!files.length && input.pdf && typeof input.pdf === 'object') {
+        pdf = input.pdf;
+        files.push(pdf);
     }
     const payload = await portalRequest('/api/social/research', {
         method: 'POST',
         body: JSON.stringify({
             title: text(input.title),
             abstract: text(input.abstract),
-            bodyText: text(input.bodyText || input.body),
-            format: text(input.format || 'article') || 'article',
             authorLane: text(input.authorLane || ''),
             facultyCode: text(input.facultyCode || ''),
             topics: input.topics,
             doiOrUrl: text(input.doiOrUrl || ''),
             courseCode: text(input.courseCode || ''),
             advisorName: text(input.advisorName || ''),
-            pdf,
+            files,
+            pdf: files[0]?.mimeType?.includes?.('pdf') ? files[0] : pdf,
             publish: input.publish !== false && text(input.status) !== 'draft',
             status: text(input.status || '') || undefined
         })

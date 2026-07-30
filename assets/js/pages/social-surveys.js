@@ -585,15 +585,15 @@
                     <div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-survey-card-title-row">
                             <strong>${escape(text(survey.title))}</strong>
-                            <span class="social-neo-pill">${escape(status)}</span>
-                            ${survey.isOfficial ? '<span class="social-neo-pill"><i class="fas fa-landmark"></i> Official</span>' : ''}
+                            <span class="social-neo-pill home-hover-chip">${escape(status)}</span>
+                            ${survey.isOfficial ? '<span class="social-neo-pill home-hover-chip"><i class="fas fa-landmark"></i> Official</span>' : ''}
                         </div>
                         <div class="social-neo-muted social-neo-survey-card-meta">${escape(text(survey.createdByName || 'Campus member'))}${survey.closesAt ? ` · Ends ${escape(when(survey.closesAt))}` : ''}</div>
                     </div>
                     <div class="social-neo-badge-row social-neo-survey-card-summary">
-                        <span class="social-neo-pill"><i class="fas fa-users"></i> ${escape(surveyAudienceLabel(survey))}</span>
-                        <span class="social-neo-pill"><i class="fas fa-list-ol"></i> ${escape(String(survey.questionCount || 0))} questions</span>
-                        ${survey.allowAnonymous ? '<span class="social-neo-pill"><i class="fas fa-user-secret"></i> Anonymous</span>' : ''}
+                        <span class="social-neo-pill home-hover-chip"><i class="fas fa-users"></i> ${escape(surveyAudienceLabel(survey))}</span>
+                        <span class="social-neo-pill home-hover-chip"><i class="fas fa-list-ol"></i> ${escape(String(survey.questionCount || 0))} questions</span>
+                        ${survey.allowAnonymous ? '<span class="social-neo-pill home-hover-chip"><i class="fas fa-user-secret"></i> Anonymous</span>' : ''}
                     </div>
                 </div>
                 ${text(survey.description) ? `<div class="social-neo-muted social-neo-survey-card-desc">${escape(text(survey.description))}</div>` : ''}
@@ -643,7 +643,7 @@
                     <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                     <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                         <div class="lux-glass-dialog-heading">
-                            <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                            <span class="social-neo-delete-confirm-icon-chip home-hover-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                             <div class="social-neo-delete-confirm-title">
                                 <strong class="lux-glass-dialog-title">Delete question</strong>
                                 <span class="lux-glass-dialog-subtitle">This removes the question from your survey draft.</span>
@@ -674,7 +674,7 @@
                 <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                 <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
                     <div class="lux-glass-dialog-heading">
-                        <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
+                        <span class="social-neo-delete-confirm-icon-chip home-hover-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
                         <div class="social-neo-delete-confirm-title">
                             <strong class="lux-glass-dialog-title">Remove choice</strong>
                             <span class="lux-glass-dialog-subtitle">This removes the answer choice from the question.</span>
@@ -900,8 +900,8 @@
             : draftSettings.promoteFeed;
         const anonymousChecked = Boolean(runtime.ui?.surveyDraftAnonymous);
         const studentAudienceOptions = [
-            { value: 'connections', label: 'My connections' },
             { value: 'faculty', label: 'My faculty' },
+            { value: 'connections', label: 'My connections' },
             { value: 'group', label: 'Group members' },
             { value: 'page', label: 'Page followers' }
         ];
@@ -921,7 +921,7 @@
         const title = isOfficial ? 'Publish official survey' : 'Create student survey';
         const subtitle = isOfficial
             ? 'Collect campus-wide feedback on services, policy, and academic experience.'
-            : 'Run polls for your connections, faculty, group, or page followers.';
+            : 'Run polls for your faculty, connections, group, or page followers.';
         const submitLabel = isOfficial ? 'Publish official survey' : 'Publish survey';
         const submitIcon = isOfficial ? 'fa-landmark' : 'fa-paper-plane';
         const titlePlaceholder = isOfficial ? 'e.g. Library services evaluation' : 'e.g. Study group session feedback';
@@ -1039,9 +1039,24 @@
             managed: managedCount,
             total: allForTab.length
         };
-        const emptyCopy = isOfficialLane
-            ? 'Switch tabs to see open or completed official surveys.'
-            : 'Create a survey or switch tabs to see other student polls.';
+        const emptyCopy = (() => {
+            if (isOfficialLane) {
+                if (activeTab === 'available') {
+                    return 'No open official surveys for you right now. Staff publish campus-wide polls on this lane.';
+                }
+                return 'Switch tabs to see open or completed official surveys.';
+            }
+            if (activeTab === 'available') {
+                return 'Student polls reach your faculty, connections, group, or page — not the whole campus. Create one or check Manage for surveys you published.';
+            }
+            if (activeTab === 'managed') {
+                return 'You have not created a student survey yet.';
+            }
+            if (activeTab === 'my-responses') {
+                return 'You have not answered any student surveys yet.';
+            }
+            return 'Create a survey or switch tabs to see other student polls.';
+        })();
         const listingsBody = `
             ${surveys.length ? surveys.map((survey) => renderSurveyCard(survey)).join('') : `
                 <div class="social-neo-empty-hero social-neo-surveys-empty">
@@ -1268,8 +1283,8 @@
                     }
                 });
                 const scope = parseSurveyScopeValue(form.surveyScope?.value || state().ui?.surveyDraftScope || '');
-                let audience = text(form.surveyAudience?.value || (isOfficial ? 'campus' : 'connections')) || (isOfficial ? 'campus' : 'connections');
-                if (!isOfficial && audience === 'campus') audience = 'connections';
+                let audience = text(form.surveyAudience?.value || (isOfficial ? 'campus' : 'faculty')) || (isOfficial ? 'campus' : 'faculty');
+                if (!isOfficial && audience === 'campus') audience = 'faculty';
                 if (scope.scopeType === 'group' && audience === 'campus') audience = 'group';
                 if (scope.scopeType === 'page' && audience === 'campus') audience = 'page';
                 const visibility = audience === 'faculty' ? 'faculty' : 'public';

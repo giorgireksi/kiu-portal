@@ -17,89 +17,94 @@
     const BLUEPRINT_VERSION = 2;
     const INPUT_FIELD_TYPES = ['text', 'email', 'url', 'tel', 'date', 'number', 'textarea'];
 
-    const H = NS === 'staff'
-        ? {
-            blueprintKey: 'staffFormBlueprint',
-            multiType: true,
-            typesKey: 'staffTypes',
-            singleTypeId: null,
-            slugFallback: 'staff_type',
-            entityLabel: 'Staff',
-            typeNoun: 'staff type',
-            idPrefix: 'staff_',
-            customLabel: 'Custom staff',
-            legacyAliases: {
-                full_name: 'name',
-                institutional_email: 'email',
-                english_name: 'nameEn',
-                staff_id: 'staffId',
-                phone: 'phone',
-                photo_url: 'photo',
-                staff_status: 'status',
-                display_role: 'role',
-                title: 'title',
-                academic_rank: 'rank',
-                department: 'department',
-                faculty_school: 'faculty',
-                employment_type: 'employmentType',
-                campus: 'campus',
-                office: 'office',
-                profile_visibility: 'visibility',
-                biography: 'bio',
-                expertise: 'expertise',
-                languages: 'languages',
-                lms_account_status: 'accountStatus',
-                lms_permission_role: 'lmsRole',
-                last_login: 'lastLogin',
-                internal_admin_notes: 'notes',
-                max_weekly_hours: 'maxHours'
-            },
-            builtinTypes: [
-                { id: 'professor', label: 'Professor', slug: 'professor', isBuiltin: true, platformRole: 'professor', order: 0 },
-                { id: 'ta', label: 'Teaching Assistant', slug: 'ta', isBuiltin: true, platformRole: 'ta', order: 1 }
-            ],
-            mobilityCategories: null,
-        }
-        : {
-            blueprintKey: 'studentFormBlueprint',
-            multiType: false,
-            typesKey: null,
-            singleTypeId: 'student',
-            slugFallback: 'student_field',
-            entityLabel: 'Student',
-            typeNoun: 'student type',
-            idPrefix: 'student_',
-            customLabel: 'Custom student',
-            legacyAliases: {
-                full_name: 'name',
-                institutional_email: 'email',
-                english_name: 'nameEn',
-                student_id: 'studentId',
-                phone: 'phone',
-                photo_url: 'photo',
-                student_status: 'status',
-                program: 'program',
-                cohort: 'cohort',
-                semester: 'semester',
-                department: 'department',
-                faculty_school: 'faculty',
-                campus: 'campus',
-                biography: 'bio',
-                lms_account_status: 'accountStatus',
-                last_login: 'lastLogin',
-                internal_admin_notes: 'notes',
-                mobility_category: 'mobilityCategory'
-            },
-            builtinTypes: [
-                { id: 'student', label: 'Student', slug: 'student', isBuiltin: true, order: 0 }
-            ],
-            mobilityCategories: [
-                { value: 'standard', label: 'Standard enrollment' },
-                { value: 'exchange_incoming', label: 'Exchange incoming' },
-                { value: 'exchange_outgoing', label: 'Exchange outgoing' },
-                { value: 'internal_transfer', label: 'Internal transfer' }
-            ],
-        };
+    const STAFF_CONFIG = {
+        blueprintKey: 'staffFormBlueprint',
+        multiType: true,
+        typesKey: 'staffTypes',
+        singleTypeId: null,
+        slugFallback: 'staff_type',
+        entityLabel: 'Staff',
+        typeNoun: 'staff type',
+        idPrefix: 'staff_',
+        customLabel: 'Custom staff',
+        legacyAliases: {
+            full_name: 'name',
+            institutional_email: 'email',
+            english_name: 'nameEn',
+            staff_id: 'staffId',
+            phone: 'phone',
+            photo_url: 'photo',
+            staff_status: 'status',
+            display_role: 'role',
+            title: 'title',
+            academic_rank: 'rank',
+            department: 'department',
+            faculty_school: 'faculty',
+            employment_type: 'employmentType',
+            campus: 'campus',
+            office: 'office',
+            profile_visibility: 'visibility',
+            biography: 'bio',
+            expertise: 'expertise',
+            languages: 'languages',
+            lms_account_status: 'accountStatus',
+            lms_permission_role: 'lmsRole',
+            last_login: 'lastLogin',
+            internal_admin_notes: 'notes',
+            max_weekly_hours: 'maxHours'
+        },
+        builtinTypes: [
+            { id: 'professor', label: 'Professor', slug: 'professor', isBuiltin: true, platformRole: 'professor', order: 0 },
+            { id: 'ta', label: 'Teaching Assistant', slug: 'ta', isBuiltin: true, platformRole: 'ta', order: 1 },
+            { id: 'student_service', label: 'Student Service', slug: 'student_service', isBuiltin: true, platformRole: 'student_service', order: 2 }
+        ],
+        mobilityCategories: null,
+    };
+    const STUDENT_CONFIG = {
+        blueprintKey: 'studentFormBlueprint',
+        multiType: false,
+        typesKey: null,
+        singleTypeId: 'student',
+        slugFallback: 'student_field',
+        entityLabel: 'Student',
+        typeNoun: 'student type',
+        idPrefix: 'student_',
+        customLabel: 'Custom student',
+        legacyAliases: {
+            full_name: 'name',
+            institutional_email: 'email',
+            english_name: 'nameEn',
+            student_id: 'studentId',
+            phone: 'phone',
+            photo_url: 'photo',
+            student_status: 'status',
+            program: 'program',
+            cohort: 'cohort',
+            semester: 'semester',
+            department: 'department',
+            faculty_school: 'faculty',
+            campus: 'campus',
+            biography: 'bio',
+            lms_account_status: 'accountStatus',
+            last_login: 'lastLogin',
+            internal_admin_notes: 'notes',
+            mobility_category: 'mobilityCategory'
+        },
+        builtinTypes: [
+            { id: 'student', label: 'Student', slug: 'student', isBuiltin: true, order: 0 }
+        ],
+        mobilityCategories: [
+            { value: 'standard', label: 'Standard enrollment' },
+            { value: 'exchange_incoming', label: 'Exchange incoming' },
+            { value: 'exchange_outgoing', label: 'Exchange outgoing' },
+            { value: 'internal_transfer', label: 'Internal transfer' }
+        ],
+    };
+    const DOMAIN_CONFIGS = {
+        staff: STAFF_CONFIG,
+        student: STUDENT_CONFIG
+    };
+    const H = NS === 'staff' ? STAFF_CONFIG : STUDENT_CONFIG;
 
     const BLUEPRINT_KEY = H.blueprintKey;
     const BUILTIN_TYPES = H.builtinTypes;
@@ -182,7 +187,8 @@
             label: sanitizeFieldLabel(field?.label, 'Untitled field'),
             required: Boolean(field?.required),
             help: String(field?.help || '').trim(),
-            order: Number.isFinite(field?.order) ? field.order : index
+            order: Number.isFinite(field?.order) ? field.order : index,
+            showOnPersonalData: Boolean(field?.showOnPersonalData)
         };
         if (type === 'select' || Array.isArray(field?.options)) {
             return {
@@ -296,26 +302,32 @@
         };
     }
 
-    function ensureFormBlueprint() {
+    function emptySchemasForTypes(types = []) {
+        return types.reduce((acc, type) => {
+            acc[type.id] = emptySchema();
+            return acc;
+        }, {});
+    }
+
+    function ensureBlueprintForDomain(domain) {
+        const config = DOMAIN_CONFIGS[domain];
+        if (!config) return emptySchema();
         if (!window.KIU_STATE) window.KIU_STATE = {};
-        if (H.multiType) {
-            if (!KIU_STATE[BLUEPRINT_KEY] || typeof KIU_STATE[BLUEPRINT_KEY] !== 'object') {
-                KIU_STATE[BLUEPRINT_KEY] = {
+        if (config.multiType) {
+            if (!KIU_STATE[config.blueprintKey] || typeof KIU_STATE[config.blueprintKey] !== 'object') {
+                KIU_STATE[config.blueprintKey] = {
                     version: BLUEPRINT_VERSION,
                     updatedAt: todayIso(),
-                    staffTypes: cloneJson(BUILTIN_TYPES),
-                    schemas: {
-                        professor: emptySchema(),
-                        ta: emptySchema()
-                    }
+                    staffTypes: cloneJson(config.builtinTypes),
+                    schemas: emptySchemasForTypes(config.builtinTypes)
                 };
             }
-            const blueprint = KIU_STATE[BLUEPRINT_KEY];
-            if (!Array.isArray(blueprint.staffTypes)) blueprint.staffTypes = cloneJson(BUILTIN_TYPES);
+            const blueprint = KIU_STATE[config.blueprintKey];
+            if (!Array.isArray(blueprint.staffTypes)) blueprint.staffTypes = cloneJson(config.builtinTypes);
             if (!blueprint.schemas || typeof blueprint.schemas !== 'object') {
-                blueprint.schemas = { professor: emptySchema(), ta: emptySchema() };
+                blueprint.schemas = emptySchemasForTypes(config.builtinTypes);
             }
-            BUILTIN_TYPES.forEach((type) => {
+            config.builtinTypes.forEach((type) => {
                 if (!blueprint.staffTypes.some((item) => item.id === type.id)) {
                     blueprint.staffTypes.push(cloneJson(type));
                 }
@@ -326,14 +338,14 @@
             return blueprint;
         }
 
-        if (!KIU_STATE[BLUEPRINT_KEY] || typeof KIU_STATE[BLUEPRINT_KEY] !== 'object') {
-            KIU_STATE[BLUEPRINT_KEY] = {
+        if (!KIU_STATE[config.blueprintKey] || typeof KIU_STATE[config.blueprintKey] !== 'object') {
+            KIU_STATE[config.blueprintKey] = {
                 version: BLUEPRINT_VERSION,
                 updatedAt: todayIso(),
                 schema: defaultStudentSchema()
             };
         }
-        const blueprint = KIU_STATE[BLUEPRINT_KEY];
+        const blueprint = KIU_STATE[config.blueprintKey];
         if (blueprint.schemas?.student) {
             blueprint.schema = migrateSchemaToV2(blueprint.schemas.student);
             delete blueprint.schemas;
@@ -343,6 +355,35 @@
         blueprint.schema = migrateSchemaToV2(blueprint.schema);
         blueprint.version = BLUEPRINT_VERSION;
         return blueprint;
+    }
+
+    function getFormSchemaForDomain(domain, typeId) {
+        const config = DOMAIN_CONFIGS[domain];
+        if (!config) return emptySchema();
+        const blueprint = ensureBlueprintForDomain(domain);
+        if (!config.multiType) {
+            void typeId;
+            return cloneJson(blueprint.schema || defaultStudentSchema());
+        }
+        return blueprint.schemas[typeId] ? cloneJson(blueprint.schemas[typeId]) : emptySchema();
+    }
+
+    function getLegacyFieldAliasForDomain(domain, key) {
+        return DOMAIN_CONFIGS[domain]?.legacyAliases?.[key] || null;
+    }
+
+    function resolveFormTypeIdForDomainRole(domain, platformRole) {
+        const config = DOMAIN_CONFIGS[domain];
+        if (!config) return null;
+        if (!config.multiType) return config.singleTypeId || 'student';
+        const blueprint = ensureBlueprintForDomain(domain);
+        const types = Array.isArray(blueprint.staffTypes) ? blueprint.staffTypes : [];
+        const match = types.find((type) => type.platformRole === platformRole || type.id === platformRole || type.slug === platformRole);
+        return match?.id || platformRole || 'professor';
+    }
+
+    function ensureFormBlueprint() {
+        return ensureBlueprintForDomain(NS);
     }
 
     function getFormBlueprint() {
@@ -564,6 +605,9 @@
         if (patch.showInDirectoryFilter != null && field.type === 'select') {
             field.showInDirectoryFilter = Boolean(patch.showInDirectoryFilter);
         }
+        if (patch.showOnPersonalData != null) {
+            field.showOnPersonalData = Boolean(patch.showOnPersonalData);
+        }
         if (patch.options != null && field.type === 'select') {
             field.options = (patch.options || []).map((option, index) => ({
                 value: String(option?.value ?? option?.label ?? `option_${index + 1}`).trim(),
@@ -729,6 +773,9 @@
     const api = NS === 'staff'
         ? {
             ensureStaffFormBlueprint: ensureFormBlueprint,
+            getFormSchemaForDomain: getFormSchemaForDomain,
+            getLegacyFieldAliasForDomain: getLegacyFieldAliasForDomain,
+            resolveFormTypeIdForDomainRole: resolveFormTypeIdForDomainRole,
             getStaffFormBlueprint: getFormBlueprint,
             getStaffFormTypes: getFormTypes,
             getStaffFormType: getFormType,
@@ -758,6 +805,9 @@
         }
         : {
             ensureStudentFormBlueprint: ensureFormBlueprint,
+            getFormSchemaForDomain: getFormSchemaForDomain,
+            getLegacyFieldAliasForDomain: getLegacyFieldAliasForDomain,
+            resolveFormTypeIdForDomainRole: resolveFormTypeIdForDomainRole,
             getStudentFormBlueprint: getFormBlueprint,
             getStudentFormTypes: getFormTypes,
             getStudentFormType: getFormType,

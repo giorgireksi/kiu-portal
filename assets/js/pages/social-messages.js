@@ -256,7 +256,7 @@
                         </div>
                     </div>
                     <div class="social-neo-badge-row">
-                        ${currentParticipants.map((participant) => `<span class="social-neo-pill">${escape(displayName(participant))}</span>`).join('') || '<span class="social-neo-pill">No participants yet</span>'}
+                        ${currentParticipants.map((participant) => `<span class="social-neo-pill home-hover-chip">${escape(displayName(participant))}</span>`).join('') || '<span class="social-neo-pill home-hover-chip">No participants yet</span>'}
                     </div>
                 </div>
             `;
@@ -378,7 +378,7 @@
                         <div class="social-neo-messages__inbox-tabs-row">
                             <div class="social-neo-messages__inbox-filters" role="tablist" aria-label="Inbox filters">
                                 <button class="social-neo-tab ${messagesFilter === 'all' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${messagesFilter === 'all' ? 'true' : 'false'}" aria-pressed="${messagesFilter === 'all' ? 'true' : 'false'}" data-action="panel-messages" data-messages-filter="all">Chats</button>
-                                <button class="social-neo-tab ${messagesFilter === 'unread' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${messagesFilter === 'unread' ? 'true' : 'false'}" aria-pressed="${messagesFilter === 'unread' ? 'true' : 'false'}" data-action="panel-messages" data-messages-filter="unread">Unread${totalUnreadAll ? `<span class="social-neo-tab-badge">${escape(totalUnreadAll > 9 ? '9+' : totalUnreadAll)}</span>` : ''}</button>
+                                <button class="social-neo-tab ${messagesFilter === 'unread' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${messagesFilter === 'unread' ? 'true' : 'false'}" aria-pressed="${messagesFilter === 'unread' ? 'true' : 'false'}" data-action="panel-messages" data-messages-filter="unread">Unread${totalUnreadAll ? `<span class="social-neo-tab-badge home-hover-chip">${escape(totalUnreadAll > 9 ? '9+' : totalUnreadAll)}</span>` : ''}</button>
                             </div>
                         </div>
                     </header>

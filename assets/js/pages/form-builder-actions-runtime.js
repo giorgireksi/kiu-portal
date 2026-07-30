@@ -107,6 +107,7 @@
         if (inputType === 'type') patch.type = el.value;
         if (inputType === 'required') patch.required = el.checked;
         if (inputType === 'showInDirectoryFilter') patch.showInDirectoryFilter = el.checked;
+        if (inputType === 'showOnPersonalData') patch.showOnPersonalData = el.checked;
         if (inputType === 'placeholder') patch.placeholder = el.value;
         if (inputType === 'help') patch.help = el.value;
         if (inputType === 'width-full') patch.width = el.checked ? 'full' : 'half';

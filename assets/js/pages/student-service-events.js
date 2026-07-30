@@ -339,7 +339,14 @@ function handleStudentServiceRootClick(event) {
     const editInboxFiltersButton = studentServiceEventEl(event, '[data-student-service-edit-inbox-filters]');
     if (editInboxFiltersButton) {
         event.preventDefault();
-        openStudentServiceInboxFilterEditorModal();
+        const openEditor = () => openStudentServiceInboxFilterEditorModal();
+        if (typeof hasStudentServiceFiltersModule === 'function' && hasStudentServiceFiltersModule()) {
+            openEditor();
+        } else if (typeof ensureStudentServiceFiltersModule === 'function') {
+            ensureStudentServiceFiltersModule().then(openEditor).catch(() => null);
+        } else {
+            openEditor();
+        }
         return;
     }
     const openArticleButton = studentServiceEventEl(event, '[data-student-service-open-article]');

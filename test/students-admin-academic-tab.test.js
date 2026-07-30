@@ -109,6 +109,8 @@ describe('students-admin academic tab redesign', () => {
         expect(timetable).toContain('getStudentScheduleItemsForWeek');
         expect(runtime).toContain('students-hub-academic-overview');
         expect(runtime).toContain('lux-data-card home-hover-chip students-hub-academic-overview');
+        expect(runtime).toContain('students-hub-academic-overview-cell lux-soft-chrome home-hover-chip');
+        expect(runtime).toContain('students-hub-academic-progress lux-soft-chrome home-hover-chip');
         expect(runtime).toContain('students-hub-academic-schedule-card is-embed-compact');
         expect(runtime).not.toContain('home-hover-chip students-hub-academic-schedule-card');
         expect(runtime).toContain('home-hover-chip students-hub-academic-section');

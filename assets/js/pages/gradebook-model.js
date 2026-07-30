@@ -1189,9 +1189,9 @@ function formatAssessmentHistoryLabel(criterion, entry) {
 
 function renderAssessmentHistoryChips(record, criterion) {
     const entries = getDisplayAssessmentEntries(record, criterion);
-    if (!entries.length) return '<span class="gb-history-chip-empty">No history yet</span>';
+    if (!entries.length) return '<span class="gb-history-chip-empty home-hover-chip">No history yet</span>';
     return entries.map(entry => `
-        <span class="gb-history-chip">
+        <span class="gb-history-chip home-hover-chip">
             ${escapeHtml(formatAssessmentHistoryLabel(criterion, entry))}
         </span>
     `).join('');
@@ -1243,7 +1243,7 @@ function renderStudyCardAssessmentActivityFeed(record, options = {}) {
                         </div>
                         <div class="study-card-activity-item-side">
                             <strong class="study-card-activity-item-score lms-route-card-title">${escapeHtml(String(scoreLabel))}</strong>
-                            <span class="gb-status-badge lux-status-pill is-${escapeHtml(item.status.key)}"><i class="fas ${escapeHtml(item.status.icon)}"></i> ${escapeHtml(item.status.label)}</span>
+                            <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(item.status.key)}"><i class="fas ${escapeHtml(item.status.icon)}"></i> ${escapeHtml(item.status.label)}</span>
                         </div>
                     </button>
                 `;
@@ -1491,7 +1491,7 @@ function renderStudentEvaluationHistorySectionsV3(record, studentId, studentName
                         <div>
                             <div class="gb-modal-history-title">
                                 <strong class="lms-route-card-title">${escapeHtml(displayMeta.title)}</strong>
-                                <span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
+                                <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
                             </div>
                             <div class="gb-modal-history-kind lms-route-copy lms-route-meta-12">${escapeHtml(status.key === 'pending' ? 'Pending review queue' : status.key === 'graded' ? 'Graded result' : 'Recorded attempt')}</div>
                             ${displayMeta.subtitle ? `<div class="gb-modal-history-subtitle lms-route-copy">${escapeHtml(displayMeta.subtitle)}</div>` : ''}
@@ -1544,7 +1544,7 @@ function renderStudentEvaluationHistorySectionsV3(record, studentId, studentName
                         <p class="lms-route-copy">Current ${Number.isFinite(current) ? current : 0} · ${entries.length} item${entries.length === 1 ? '' : 's'} · ${pendingCount} pending</p>
                     </div>
                     <div class="gb-modal-section-actions">
-                        ${pendingCount ? `<span class="gb-status-badge lux-status-pill is-pending">${pendingCount} pending</span>` : `<span class="gb-status-badge lux-status-pill is-graded">Ready</span>`}
+                        ${pendingCount ? `<span class="gb-status-badge lux-status-pill home-hover-chip is-pending">${pendingCount} pending</span>` : `<span class="gb-status-badge lux-status-pill home-hover-chip is-graded">Ready</span>`}
                         ${!isFocusedView ? `<button type="button" class="lux-secondary-btn gb-modal-action-btn" data-gradebook-click="toggle-history" data-gradebook-history-id="${escapeHtml(String(historyBodyId))}"><i class="fas fa-chevron-down"></i> Toggle</button>` : ''}
                         ${canEdit && meta.custom ? `<button type="button" class="lux-secondary-btn gb-modal-action-btn gb-modal-action-btn-danger" data-gradebook-click="remove-custom-section" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(meta.key))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-trash"></i></button>` : ''}
                         ${canEdit ? `<button type="button" class="lux-primary-btn gb-modal-action-btn gb-modal-action-btn-primary" data-gradebook-click="create-entry" data-gradebook-student-id="${escapeHtml(String(studentId))}" data-gradebook-criterion="${escapeHtml(String(meta.key))}" data-gradebook-student-name="${escapeHtml(String(studentName || ''))}"><i class="fas fa-plus"></i> Add</button>` : ''}

@@ -592,7 +592,7 @@
                     <div class="student-service-qa-thread-modal-accent" aria-hidden="true"></div>
                     <div class="student-service-qa-thread-modal-head">
                         <div class="student-service-qa-thread-modal-heading">
-                            <span class="student-service-qa-thread-modal-icon-chip lux-soft-chrome"><i class="fas fa-comments" aria-hidden="true"></i></span>
+                            <span class="student-service-qa-thread-modal-icon-chip home-hover-chip lux-soft-chrome"><i class="fas fa-comments" aria-hidden="true"></i></span>
                             <div class="student-service-qa-thread-modal-title-wrap">
                                 <div class="student-service-kicker">Q&A thread</div>
                                 <strong id="student-service-question-thread-modal-title" class="lux-page-title">${ssEscape(question.title || 'Question thread')}</strong>
@@ -1021,7 +1021,7 @@
                     <div class="student-service-qa-composer-modal-accent" aria-hidden="true"></div>
                     <div class="student-service-qa-composer-modal-head">
                         <div class="student-service-qa-composer-modal-heading">
-                            <span class="student-service-qa-composer-modal-icon-chip lux-soft-chrome"><i class="fas fa-pen" aria-hidden="true"></i></span>
+                            <span class="student-service-qa-composer-modal-icon-chip home-hover-chip lux-soft-chrome"><i class="fas fa-pen" aria-hidden="true"></i></span>
                             <div class="student-service-qa-composer-modal-title">
                                 <div class="student-service-kicker">Ask question</div>
                                 <strong id="student-service-question-composer-modal-title" class="lux-page-title">Post in the Q&A feed</strong>
@@ -1321,7 +1321,7 @@
                             <span class="social-neo-muted">${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
                         </div>
                     </div>
-                    <span class="social-neo-pill social-neo-post-scope-badge">Q&amp;A</span>
+                    <span class="social-neo-pill home-hover-chip social-neo-post-scope-badge">Q&amp;A</span>
                 </div>
                 <div class="lux-glass-dialog-comment-post-body">${ssTextBlock(question.body)}</div>
                 ${renderStudentServiceAttachmentGalleryMarkup(question.attachments)}

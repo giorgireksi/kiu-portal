@@ -898,9 +898,9 @@ function renderScheduleSessionDaySection(section, entry, dayItems, facultyAction
                             <div>
                                 <div class="schedule-session-code-row lux-timetable-session-code-row">
                                     <span class="schedule-session-code lux-timetable-session-code">${escapeHtml(item.courseCode)}</span>
-                                    ${item.roleBadge ? `<span class="schedule-session-pill lux-timetable-session-pill role">${escapeHtml(item.roleBadge)}</span>` : ''}
-                                    <span class="schedule-session-pill lux-timetable-session-pill type">${escapeHtml(item.sessionTypeLabel)}</span>
-                                    ${marker ? `<span class="schedule-session-pill lux-timetable-session-pill important"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(markerMeta.label)}</span>` : ''}
+                                    ${item.roleBadge ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip role">${escapeHtml(item.roleBadge)}</span>` : ''}
+                                    <span class="schedule-session-pill lux-timetable-session-pill home-hover-chip type">${escapeHtml(item.sessionTypeLabel)}</span>
+                                    ${marker ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip important"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(markerMeta.label)}</span>` : ''}
                                 </div>
                                 <h3 class="schedule-session-title lux-timetable-session-title">${escapeHtml(formatTimetableHeroFocusTitle(item))}</h3>
                                 <div class="schedule-session-subtitle lux-timetable-session-subtitle">Group ${escapeHtml(item.groupLabel)}</div>

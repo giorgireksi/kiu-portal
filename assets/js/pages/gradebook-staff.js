@@ -1443,14 +1443,14 @@ function initGradebook() {
                         ? 'is-in-progress'
                         : 'is-published';
         const quizStatusMarkup = !currentLinkedQuizSource
-            ? '<span class="gb-quiz-status-pill is-empty">No linked quiz</span>'
+            ? '<span class="gb-quiz-status-pill home-hover-chip is-empty">No linked quiz</span>'
             : pendingReview || currentSubmission?.status === 'submitted' || currentSubmission?.status === 'auto-submitted'
-                ? '<span class="gb-quiz-status-pill is-pending"><i class="fas fa-triangle-exclamation"></i> Waiting for evaluation</span>'
+                ? '<span class="gb-quiz-status-pill home-hover-chip is-pending"><i class="fas fa-triangle-exclamation"></i> Waiting for evaluation</span>'
                 : currentSubmission?.status === 'graded'
-                    ? `<span class="gb-quiz-status-pill ${currentSubmission.requiresManualReview ? 'is-reviewed' : 'is-auto-graded'}"><i class="fas ${currentSubmission.requiresManualReview ? 'fa-user-check' : 'fa-bolt'}"></i> ${currentSubmission.requiresManualReview ? 'Reviewed' : 'Auto graded'}</span>`
+                    ? `<span class="gb-quiz-status-pill home-hover-chip ${currentSubmission.requiresManualReview ? 'is-reviewed' : 'is-auto-graded'}"><i class="fas ${currentSubmission.requiresManualReview ? 'fa-user-check' : 'fa-bolt'}"></i> ${currentSubmission.requiresManualReview ? 'Reviewed' : 'Auto graded'}</span>`
                     : currentSubmission?.status === 'in-progress'
-                        ? '<span class="gb-quiz-status-pill is-in-progress"><i class="fas fa-hourglass-start"></i> In progress</span>'
-                        : '<span class="gb-quiz-status-pill is-published"><i class="fas fa-circle-dot"></i> Published</span>';
+                        ? '<span class="gb-quiz-status-pill home-hover-chip is-in-progress"><i class="fas fa-hourglass-start"></i> In progress</span>'
+                        : '<span class="gb-quiz-status-pill home-hover-chip is-published"><i class="fas fa-circle-dot"></i> Published</span>';
         const currentEntryDisplay = currentEntry ? getAssessmentEntryDisplayContext(currentCriterionMeta.key, currentEntry) : null;
         html += `
             <tr data-idx="${i}">

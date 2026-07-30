@@ -179,9 +179,9 @@ function openLMSGroups(subjectId, titleString, iconClass) {
                     <div class="lms-group-tile-subject">${escapeHtml(g.title)}</div>
                 </div>
                 <div class="lms-group-tile-meta">
-                    <span class="page-hero-badge"><i class="far fa-clock"></i> ${escapeHtml(g.timeDay)}</span>
-                    <span class="page-hero-badge"><i class="fas fa-users"></i> ${escapeHtml(String(g.stdCount))} seats</span>
-                    <span class="page-hero-badge"><i class="fas fa-door-open"></i> ${escapeHtml(g.room)}</span>
+                    <span class="page-hero-badge home-hover-chip"><i class="far fa-clock"></i> ${escapeHtml(g.timeDay)}</span>
+                    <span class="page-hero-badge home-hover-chip"><i class="fas fa-users"></i> ${escapeHtml(String(g.stdCount))} seats</span>
+                    <span class="page-hero-badge home-hover-chip"><i class="fas fa-door-open"></i> ${escapeHtml(g.room)}</span>
                 </div>
                 ${nextSessionHtml}
                 <div class="lms-group-live-strip ${liveSummary.isLive ? 'is-live' : ''}">

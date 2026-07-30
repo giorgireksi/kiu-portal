@@ -47,6 +47,76 @@ describe('luxury shell nav recovery', () => {
         );
     });
 
+    it('includes Personal Data in desktop role nav for professor, ta, and student service', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+
+        expect(luxury).toMatch(/professor:[\s\S]*\['personal-data', 'Personal Data', 'far fa-user'\]/);
+        expect(luxury).toMatch(/ta:[\s\S]*\['personal-data', 'Personal Data', 'far fa-user'\]/);
+        expect(luxury).toMatch(/student_service:[\s\S]*\['personal-data', 'Personal Data', 'far fa-user'\]/);
+    });
+
+    it('includes Orders in student Support nav (desktop + fallback + mobile)', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const indexMobile = readSource('assets/js/pages/index-mobile-shell.js');
+        const socialMobile = readSource('assets/js/pages/social-mobile.js');
+        const ordersHtml = readSource('orders.html');
+
+        expect(luxury).toMatch(
+            /student:[\s\S]*Support[\s\S]*\['library', 'Library', 'fas fa-book'\], \['orders', 'Orders', 'fas fa-book-open'\], \['social', 'Social', 'fas fa-comments'\]/
+        );
+        expect(shellChrome).toContain(
+            "['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']"
+        );
+        expect(indexMobile).toMatch(
+            /Support[\s\S]*\['library', 'Library', 'fas fa-book'\], \['orders', 'Orders', 'fas fa-book-open'\], \['social', 'Social', 'fas fa-comments'\]/
+        );
+        expect(socialMobile).toContain("['orders', 'Orders', 'fas fa-book-open']");
+        expect(ordersHtml).toMatch(
+            /student:[\s\S]*\['library', 'Library', 'fas fa-book'\], \['orders', 'Orders', 'fas fa-book-open'\], \['social', 'Social', 'fas fa-comments'\]/
+        );
+    });
+
+    it('keeps student Support Orders and E-Chancellery as distinct entries', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        expect(luxury).toMatch(
+            /student:[\s\S]*Support[\s\S]*\['chancellery', 'E-Chancellery', 'fas fa-desktop'\][\s\S]*\['orders', 'Orders', 'fas fa-book-open'\]/
+        );
+    });
+
+    it('includes E-Chancellery in admin Systems nav (desktop + fallback + mobile)', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const indexMobile = readSource('assets/js/pages/index-mobile-shell.js');
+        const socialMobile = readSource('assets/js/pages/social-mobile.js');
+        const adminOrdersHtml = readSource('admin-orders.html');
+
+        expect(luxury).toMatch(
+            /admin:[\s\S]*Systems[\s\S]*\['orders', 'Orders', 'fas fa-book-open'\], \['chancellery', 'E-Chancellery', 'fas fa-inbox'\], \['social', 'Social', 'fas fa-comments'\]/
+        );
+        expect(shellChrome).toContain(
+            "['orders', 'Orders', 'fas fa-book-open'], ['chancellery', 'E-Chancellery', 'fas fa-inbox'], ['social', 'Social', 'fas fa-comments']"
+        );
+        expect(indexMobile).toMatch(
+            /Systems[\s\S]*\['orders', 'Orders', 'fas fa-book-open'\], \['chancellery', 'E-Chancellery', 'fas fa-inbox'\], \['social', 'Social', 'fas fa-comments'\]/
+        );
+        expect(socialMobile).toContain("['chancellery', 'E-Chancellery', 'fas fa-inbox']");
+        expect(adminOrdersHtml).toMatch(
+            /admin:[\s\S]*\['orders', 'Orders', 'fas fa-book-open'\], \['chancellery', 'E-Chancellery', 'fas fa-inbox'\], \['social', 'Social', 'fas fa-comments'\]/
+        );
+    });
+
+    it('does not project chancelleryRequests into domain.orders / documentRequests', () => {
+        const state = readSource('assets/js/app/state.js');
+        const domainFn = state.slice(
+            state.indexOf('function buildCanonicalDomain'),
+            state.indexOf('function getCurrentUserFromState')
+        );
+        expect(domainFn).not.toMatch(/documentRequests/);
+        expect(domainFn).not.toMatch(/orders\s*:/);
+        expect(domainFn).not.toMatch(/chancelleryRequests/);
+    });
+
     it('keeps view-as banner disabled (cleanup-only, no paint CSS)', () => {
         const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
         const droplist = readSource('assets/css/lux-droplist.css');

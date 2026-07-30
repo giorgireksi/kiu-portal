@@ -96,7 +96,7 @@ describe('LMS whiteboard zoom layout', () => {
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260719-wbchrome1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-personal-dashboard-runtime.js?v=20260729-lmspdshare1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-personal-dashboard-runtime.js?v=20260731-pdsavename1');
         expect(html).not.toContain('assets/js/pages/lms-personal-dashboard-runtime.js');
     });
 });

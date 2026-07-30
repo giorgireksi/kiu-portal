@@ -215,10 +215,10 @@
             const selectedDepChips = selectedDependsOn.map((id) => {
                 if (isProjectTaskGraphGroupId(id)) {
                     const g = packageById.get(id);
-                    return `<span class="social-project-task-dep-chip is-package" title="Package">${escape(text(g?.name || 'Package'))}</span>`;
+                    return `<span class="social-project-task-dep-chip home-hover-chip is-package" title="Package">${escape(text(g?.name || 'Package'))}</span>`;
                 }
                 const t = (Array.isArray(project.tasks) ? project.tasks : []).find((entry) => text(entry?.id) === id);
-                return `<span class="social-project-task-dep-chip" title="Task">${escape(text(t?.title || id))}</span>`;
+                return `<span class="social-project-task-dep-chip home-hover-chip" title="Task">${escape(text(t?.title || id))}</span>`;
             }).join('');
             const dependsHiddenInputs = selectedDependsOn.map((id) => (
                 `<input type="hidden" name="projectTaskDependsOnIds" value="${escape(id)}">`
@@ -321,7 +321,7 @@
                 <section class="lux-studio-section">
                     <div class="social-project-task-dep-current">
                         <span class="social-neo-label">Waiting on</span>
-                        <div class="social-project-task-dep-chips">${selectedDepChips || '<span class="social-project-task-dep-chip is-empty">None</span>'}</div>
+                        <div class="social-project-task-dep-chips">${selectedDepChips || '<span class="social-project-task-dep-chip home-hover-chip is-empty">None</span>'}</div>
                     </div>
                     ${dependsHiddenInputs}
                 </section>
@@ -454,15 +454,15 @@
             const deskLinkIsSource = deskLinkActive && text(deskLink.taskId) === text(task?.id);
             const deskLinkRole = text(deskLink?.role || 'child') || 'child';
             const metaChips = [];
-            if (task?.isMilestone) metaChips.push('<span class="spt-desk-chip spt-desk-chip--mile" title="Milestone"><i class="fas fa-flag" aria-hidden="true"></i>Milestone</span>');
-            if (checklistTotal) metaChips.push(`<span class="spt-desk-chip" title="Checklist"><i class="fas fa-list-check" aria-hidden="true"></i>${escape(String(checklistDone))}/${escape(String(checklistTotal))}</span>`);
-            if (budgetLabel) metaChips.push(`<span class="spt-desk-chip spt-desk-chip--money" title="Budget"><i class="fas fa-coins" aria-hidden="true"></i>${escape(budgetLabel)}</span>`);
-            if (startAt) metaChips.push(`<span class="spt-desk-chip" title="Start"><i class="fas fa-play" aria-hidden="true"></i>${escape(when(startAt))}</span>`);
+            if (task?.isMilestone) metaChips.push('<span class="spt-desk-chip home-hover-chip spt-desk-chip--mile" title="Milestone"><i class="fas fa-flag" aria-hidden="true"></i>Milestone</span>');
+            if (checklistTotal) metaChips.push(`<span class="spt-desk-chip home-hover-chip" title="Checklist"><i class="fas fa-list-check" aria-hidden="true"></i>${escape(String(checklistDone))}/${escape(String(checklistTotal))}</span>`);
+            if (budgetLabel) metaChips.push(`<span class="spt-desk-chip home-hover-chip spt-desk-chip--money" title="Budget"><i class="fas fa-coins" aria-hidden="true"></i>${escape(budgetLabel)}</span>`);
+            if (startAt) metaChips.push(`<span class="spt-desk-chip home-hover-chip" title="Start"><i class="fas fa-play" aria-hidden="true"></i>${escape(when(startAt))}</span>`);
             if (hasActualTime || hasActualCost) {
                 const bits = [];
                 if (hasActualTime) bits.push(`${formatTaskTime(actualTime, scheduleEst.unit || 'h')} actual`);
                 if (hasActualCost) bits.push(formatProjectTaskBudgetEstimate(actualCost, currency) || `${actualCost}`);
-                metaChips.push(`<span class="spt-desk-chip spt-desk-chip--actual" title="Actuals"><i class="fas fa-chart-line" aria-hidden="true"></i>${escape(bits.join(' · '))}</span>`);
+                metaChips.push(`<span class="spt-desk-chip home-hover-chip spt-desk-chip--actual" title="Actuals"><i class="fas fa-chart-line" aria-hidden="true"></i>${escape(bits.join(' · '))}</span>`);
             }
             const rowMods = [
                 isOverdue ? 'is-overdue' : '',
@@ -525,39 +525,39 @@
             const effortScore = Number.isFinite(effort) ? Math.round(effort) : 0;
             const priWord = ({ urgent: 'Urgent', high: 'High', medium: 'Medium', low: 'Low' })[priority] || (priority.charAt(0).toUpperCase() + priority.slice(1));
             const rowMetaParts = [];
-            rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--pri" data-priority="${escape(priority)}" title="${escape(priTitle)}">${escape(priWord)}</span>`);
+            rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--pri" data-priority="${escape(priority)}" title="${escape(priTitle)}">${escape(priWord)}</span>`);
             // Impact/Effort live in task detail — keep desk row calm.
             if (timeLabel) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--est" title="Time estimate"><i class="fas fa-stopwatch" aria-hidden="true"></i>Est ${escape(timeLabel)}</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--est" title="Time estimate"><i class="fas fa-stopwatch" aria-hidden="true"></i>Est ${escape(timeLabel)}</span>`);
             }
             if (hasActualTime) {
                 const actLabel = formatTaskTime(actualTime, scheduleEst.unit || 'h') || '';
                 if (actLabel) {
-                    rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--actual" title="Actual time spent"><i class="fas fa-chart-line" aria-hidden="true"></i>Spent ${escape(actLabel)}</span>`);
+                    rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--actual" title="Actual time spent"><i class="fas fa-chart-line" aria-hidden="true"></i>Spent ${escape(actLabel)}</span>`);
                 }
             }
             if (budgetLabel) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--budget" title="Planned budget"><i class="fas fa-coins" aria-hidden="true"></i>Budget ${escape(budgetLabel)}</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--budget" title="Planned budget"><i class="fas fa-coins" aria-hidden="true"></i>Budget ${escape(budgetLabel)}</span>`);
             }
             if (parentChipCount > 0) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--deps" title="Number of parent tasks this waits on"><i class="fas fa-link" aria-hidden="true"></i>${escape(String(parentChipCount))} parent${parentChipCount === 1 ? '' : 's'}</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--deps" title="Number of parent tasks this waits on"><i class="fas fa-link" aria-hidden="true"></i>${escape(String(parentChipCount))} parent${parentChipCount === 1 ? '' : 's'}</span>`);
             }
             // Title already has children count chip when this is a tree parent
             if (blocksCount > 0 && !hasTreeChildren) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--deps" title="Number of child tasks waiting on this"><i class="fas fa-sitemap" aria-hidden="true"></i>${escape(String(blocksCount))} child${blocksCount === 1 ? '' : 'ren'}</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--deps" title="Number of child tasks waiting on this"><i class="fas fa-sitemap" aria-hidden="true"></i>${escape(String(blocksCount))} child${blocksCount === 1 ? '' : 'ren'}</span>`);
             }
             if (checklistTotal) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--check" title="Checklist progress"><i class="fas fa-list-check" aria-hidden="true"></i>Checklist ${escape(String(checklistDone))}/${escape(String(checklistTotal))}</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--check" title="Checklist progress"><i class="fas fa-list-check" aria-hidden="true"></i>Checklist ${escape(String(checklistDone))}/${escape(String(checklistTotal))}</span>`);
             }
             if (task?.isMilestone) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--mile" title="Milestone checkpoint"><i class="fas fa-flag" aria-hidden="true"></i>Milestone</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--mile" title="Milestone checkpoint"><i class="fas fa-flag" aria-hidden="true"></i>Milestone</span>`);
             }
 
             if (statusId !== 'done' && !task?.isMilestone && !(Number(scheduleRow?.durationHours) > 0)) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--noest" title="Add time estimate or PERT so schedule can place this task">No est</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--noest" title="Add time estimate or PERT so schedule can place this task">No est</span>`);
             }
             if (packageChip) {
-                rowMetaParts.push(`<span class="spt-desk-meta-chip spt-desk-meta-chip--pkg" title="Work package"><i class="fas fa-layer-group" aria-hidden="true"></i>${escape(packageChip)}</span>`);
+                rowMetaParts.push(`<span class="spt-desk-meta-chip home-hover-chip spt-desk-meta-chip--pkg" title="Work package"><i class="fas fa-layer-group" aria-hidden="true"></i>${escape(packageChip)}</span>`);
             }
             const rowMetaHtml = rowMetaParts.length
                 ? `<div class="spt-desk-row-meta">${rowMetaParts.join('')}</div>`
@@ -630,7 +630,7 @@
                                 <div class="spt-desk-task-copy">
                                     <button type="button" class="spt-desk-card-main" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="${escape(text(task?.title || 'Task'))}">
                                         <strong class="spt-desk-card-title">${escape(text(task?.title || 'Task'))}</strong>
-                                        ${childCount > 0 ? `<span class="spt-desk-children-chip" title="${childCount} child${childCount === 1 ? '' : 'ren'}">${childCount}</span>` : ''}
+                                        ${childCount > 0 ? `<span class="spt-desk-children-chip home-hover-chip" title="${childCount} child${childCount === 1 ? '' : 'ren'}">${childCount}</span>` : ''}
                                     </button>
                                     ${inlineMeta || signalCue ? `
                                         <div class="spt-desk-task-sub">
@@ -646,7 +646,7 @@
                         ${fillHtml}
                         <div class="spt-desk-row-actions" data-status="${escape(statusId)}">
                             ${toolsHtml}
-                            <button type="button" class="spt-desk-status-chip" data-status="${escape(statusId)}" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="Open task">
+                            <button type="button" class="spt-desk-status-chip home-hover-chip" data-status="${escape(statusId)}" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="Open task">
                                 <i class="spt-desk-status-dot" aria-hidden="true"></i>
                                 <span class="spt-desk-status-label">${escape(statusShort)}</span>
                             </button>
@@ -680,19 +680,19 @@
                 <article class="social-project-task-card is-clickable ${isOverdue ? 'is-overdue' : ''}" data-priority="${escape(priority)}" data-lux-transparency-exempt="1" role="button" tabindex="0" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" aria-label="Open task ${escape(text(task?.title || 'Task'))}">
                     <div class="social-project-task-card-head">
                         <strong class="social-project-task-card-title">${escape(text(task?.title || 'Task'))}</strong>
-                        <span class="social-neo-pill social-project-priority-pill is-board" data-priority="${escape(priority)}">${escape(priority)}</span>
+                        <span class="social-neo-pill home-hover-chip social-project-priority-pill is-board" data-priority="${escape(priority)}">${escape(priority)}</span>
                     </div>
                     ${checklistTotal ? `
                         <div class="social-project-task-checklist-progress" title="${escape(String(checklistDone))} of ${escape(String(checklistTotal))} steps done">
                             <div class="social-project-task-checklist-bar"><div class="social-project-task-checklist-fill" style="width:${Math.round((checklistDone / checklistTotal) * 100)}%"></div></div>
-                            <span class="social-neo-pill"><i class="fas fa-check-double"></i>${escape(String(checklistDone))}/${escape(String(checklistTotal))}</span>
+                            <span class="social-neo-pill home-hover-chip"><i class="fas fa-check-double"></i>${escape(String(checklistDone))}/${escape(String(checklistTotal))}</span>
                         </div>
                     ` : ''}
                     <div class="social-neo-badge-row social-project-task-meta">
-                        ${tag ? `<span class="social-neo-pill social-project-task-tag"><i class="fas fa-tag"></i>${escape(tag)}</span>` : ''}
-                        ${task?.assigneeUserId ? `<span class="social-neo-pill social-project-task-assignee">${avatar(assignee, 'social-neo-avatar-xs')}${escape(displayName(assignee))}</span>` : '<span class="social-neo-pill social-project-task-assignee is-unassigned"><i class="fas fa-user"></i>Unassigned</span>'}
-                        ${dueAt ? `<span class="social-neo-pill social-project-task-due ${isOverdue ? 'is-overdue' : isToday ? 'is-today' : isSoon ? 'is-soon' : ''}"><i class="fas fa-clock"></i>${escape(when(dueAt))}</span>` : ''}
-                        ${blockedByCount || blocksCount ? `<button class="social-neo-pill social-project-task-deps-chip" type="button" data-action="project-task-graph-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="Open dependency graph"><i class="fas fa-link"></i> blocked by ${escape(String(blockedByCount))} · blocks ${escape(String(blocksCount))}</button>` : ''}
+                        ${tag ? `<span class="social-neo-pill home-hover-chip social-project-task-tag"><i class="fas fa-tag"></i>${escape(tag)}</span>` : ''}
+                        ${task?.assigneeUserId ? `<span class="social-neo-pill home-hover-chip social-project-task-assignee">${avatar(assignee, 'social-neo-avatar-xs')}${escape(displayName(assignee))}</span>` : '<span class="social-neo-pill home-hover-chip social-project-task-assignee is-unassigned"><i class="fas fa-user"></i>Unassigned</span>'}
+                        ${dueAt ? `<span class="social-neo-pill home-hover-chip social-project-task-due ${isOverdue ? 'is-overdue' : isToday ? 'is-today' : isSoon ? 'is-soon' : ''}"><i class="fas fa-clock"></i>${escape(when(dueAt))}</span>` : ''}
+                        ${blockedByCount || blocksCount ? `<button class="social-neo-pill home-hover-chip social-project-task-deps-chip" type="button" data-action="project-task-graph-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}" title="Open dependency graph"><i class="fas fa-link"></i> blocked by ${escape(String(blockedByCount))} · blocks ${escape(String(blocksCount))}</button>` : ''}
                     </div>
                     <div class="social-project-task-actions">
                         ${project.viewerCanContribute ? `<button class="lux-secondary-btn lux-secondary-btn-icon" type="button" title="Edit task" data-action="project-task-edit-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-pen"></i></button>` : ''}

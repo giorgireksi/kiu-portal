@@ -329,7 +329,7 @@
                             <div class="lux-panel-title lux-page-title">Search, open, and answer on the same thread cards.</div>
                             <div class="lux-panel-copy lux-page-copy">No split detail pane here. Open one thread and moderate or reply inline.</div>
                         </div>
-                        <span class="student-service-panel-chip">${filteredQuestions.length} question${filteredQuestions.length === 1 ? '' : 's'}</span>
+                        <span class="student-service-panel-chip home-hover-chip">${filteredQuestions.length} question${filteredQuestions.length === 1 ? '' : 's'}</span>
                     </div>
                     <div class="student-service-find-search student-service-qa-searchbar">
                         <i class="fas fa-search"></i>

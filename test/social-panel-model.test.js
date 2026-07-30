@@ -106,6 +106,29 @@ describe('social-panel-model', () => {
         expect(ids.indexOf('research')).toBeLessThan(ids.indexOf('pages'));
     });
 
+    it('counts visible projects for student service oversight even without member roles', () => {
+        reinstall({
+            state: () => ({
+                feed: [],
+                social: {
+                    groups: [],
+                    projects: [{ id: 'pr1', role: '', status: 'draft' }],
+                    researchPublications: [],
+                    pages: [],
+                    events: [],
+                    reports: []
+                },
+                directory: [],
+                ui: {}
+            }),
+            currentUser: () => ({ id: 'svc-1', role: 'student_service' })
+        });
+
+        const panels = activeNavPanels();
+        const byId = Object.fromEntries(panels.map((p) => [p.id, p]));
+        expect(byId.workspace.count).toBe(1);
+    });
+
     it('builds panel config pills', () => {
         const runtime = window.__kiuSocialPanelHooks.state();
         const config = getSocialPanelConfig('feed', runtime);

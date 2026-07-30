@@ -168,9 +168,9 @@
             // Readiness chip
             let readinessChip = '';
             if (statusId !== 'done') {
-                if (isCritical) readinessChip = '<span class="spt-detail-chip spt-detail-chip--crit">Critical</span>';
-                else if (readiness.kind === 'waiting') readinessChip = '<span class="spt-detail-chip spt-detail-chip--wait">Waiting</span>';
-                else if (readiness.kind === 'ready') readinessChip = '<span class="spt-detail-chip spt-detail-chip--ready">Ready</span>';
+                if (isCritical) readinessChip = '<span class="spt-detail-chip home-hover-chip spt-detail-chip--crit">Critical</span>';
+                else if (readiness.kind === 'waiting') readinessChip = '<span class="spt-detail-chip home-hover-chip spt-detail-chip--wait">Waiting</span>';
+                else if (readiness.kind === 'ready') readinessChip = '<span class="spt-detail-chip home-hover-chip spt-detail-chip--ready">Ready</span>';
             }
 
             const headerMeta = [
@@ -272,14 +272,14 @@
             const renderDepChip = (task) => {
                 const tid = text(task?.id);
                 if (task?.isGroup || isProjectTaskGraphGroupId(tid)) {
-                    return `<span class="spt-detail-dep-chip is-package" title="Package dependency">
+                    return `<span class="spt-detail-dep-chip home-hover-chip is-package" title="Package dependency">
                         <em data-status="todo">Package</em>
                         <span>${escape(text(task?.title || 'Package'))}</span>
                     </span>`;
                 }
                 const st = normalizeProjectTaskStatusId(task?.status);
                 const label = text(task?.title || 'Task');
-                return `<button type="button" class="spt-detail-dep-chip lux-control-btn" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(tid)}">
+                return `<button type="button" class="spt-detail-dep-chip home-hover-chip lux-control-btn" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(tid)}">
                     <em data-status="${escape(st)}">${escape(({ todo: 'To do', 'in-progress': 'Active', blocked: 'Blocked', done: 'Done' })[st] || st)}</em>
                     <span>${escape(label)}</span>
                 </button>`;
@@ -292,7 +292,7 @@
                                 <div class="spt-detail-deps-col lux-studio-section">
                                     <span class="spt-detail-k">Blocked by</span>
                                     ${parentTasks.length || missingParentIds.length
-                                        ? `<div class="spt-detail-dep-list">${parentTasks.map(renderDepChip).join('')}${missingParentIds.map((id) => `<span class="spt-detail-dep-chip is-missing"><em>Missing</em><span>${escape(id)}</span></span>`).join('')}</div>`
+                                        ? `<div class="spt-detail-dep-list">${parentTasks.map(renderDepChip).join('')}${missingParentIds.map((id) => `<span class="spt-detail-dep-chip home-hover-chip is-missing"><em>Missing</em><span>${escape(id)}</span></span>`).join('')}</div>`
                                         : '<span class="spt-detail-muted">No parents — root task</span>'}
                                 </div>
                                 <div class="spt-detail-deps-col lux-studio-section">
@@ -312,9 +312,9 @@
                         <div class="lux-glass-dialog-heading spt-detail-heading">
                             <strong class="lux-glass-dialog-title spt-detail-title">${escape(text(editTask.title || 'Task'))}</strong>
                             <div class="spt-detail-head-chips" aria-label="Status and priority">
-                                <span class="spt-detail-chip spt-detail-chip--status" data-status="${escape(statusId)}">${escape(statusLabel)}</span>
-                                <span class="spt-detail-chip spt-detail-chip--pri" data-priority="${escape(priorityInfo.bucket || priority)}">${escape(priorityShort)}</span>
-                                ${editTask?.isMilestone ? '<span class="spt-detail-chip spt-detail-chip--mile">Milestone</span>' : ''}
+                                <span class="spt-detail-chip home-hover-chip spt-detail-chip--status" data-status="${escape(statusId)}">${escape(statusLabel)}</span>
+                                <span class="spt-detail-chip home-hover-chip spt-detail-chip--pri" data-priority="${escape(priorityInfo.bucket || priority)}">${escape(priorityShort)}</span>
+                                ${editTask?.isMilestone ? '<span class="spt-detail-chip home-hover-chip spt-detail-chip--mile">Milestone</span>' : ''}
                                 ${readinessChip}
                             </div>
                             ${headerMeta ? `<span class="lux-glass-dialog-subtitle spt-detail-subtitle">${escape(headerMeta)}</span>` : ''}
@@ -584,13 +584,13 @@
                     <div class="spr-risk-card-head">
                         <div class="spr-risk-card-main">
                             <div class="spr-risk-title-row">
-                                <span class="spr-chip spr-chip--${escape(tier)} spr-chip--tier spr-chip--score" title="${escape(formatProjectRiskScore(score, tier))}">${score}</span>
+                                <span class="spr-chip home-hover-chip spr-chip--${escape(tier)} spr-chip--tier spr-chip--score" title="${escape(formatProjectRiskScore(score, tier))}">${score}</span>
                                 <strong class="spr-risk-title">${escape(text(risk?.title || 'Risk'))}</strong>
                             </div>
                             <div class="spr-risk-meta">
-                                <span class="spr-chip">L${rankL} × I${rankI} · Score ${score}/25</span>
-                                <span class="spr-chip">${escape(projectRiskOptionLabel(risk?.status || 'open'))}</span>
-                                <span class="spr-chip">${escape(projectRiskOptionLabel(risk?.response || 'mitigate'))}</span>
+                                <span class="spr-chip home-hover-chip">L${rankL} × I${rankI} · Score ${score}/25</span>
+                                <span class="spr-chip home-hover-chip">${escape(projectRiskOptionLabel(risk?.status || 'open'))}</span>
+                                <span class="spr-chip home-hover-chip">${escape(projectRiskOptionLabel(risk?.response || 'mitigate'))}</span>
                             </div>
                         </div>
                         ${canEdit ? `<div class="spr-risk-actions">
@@ -667,9 +667,9 @@
                             <strong class="lux-glass-dialog-title"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Risk register</strong>
                             <span class="lux-glass-dialog-subtitle">${escape(text(project.name || project.title || 'Project'))} · Scope: ${escape(scopeBreadcrumb)}</span>
                             <div class="spr-summary" aria-label="Risk summary">
-                                <span class="spr-summary-chip">${summary.open} open</span>
-                                <span class="spr-summary-chip${summary.high ? ' is-hot' : ''}">${summary.high} high exposure</span>
-                                <span class="spr-summary-chip">${summary.unassigned} unassigned</span>
+                                <span class="spr-summary-chip home-hover-chip">${summary.open} open</span>
+                                <span class="spr-summary-chip home-hover-chip${summary.high ? ' is-hot' : ''}">${summary.high} high exposure</span>
+                                <span class="spr-summary-chip home-hover-chip">${summary.unassigned} unassigned</span>
                             </div>
                         </div>
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
@@ -928,8 +928,8 @@
             const statusRow = (key, label) => `<div class="sph-statrow"><span class="sph-sw" style="background:${PROJECT_TASK_STATUS_EDGE_COLOR[key]}"></span><span class="sph-t">${escape(label)}</span><span class="sph-n">${statusCounts[key]}</span></div>`;
             const hygieneChip = (focus, icon, label, count, tone = '') => (
                 count > 0
-                    ? `<button type="button" class="sph-hygiene-chip lux-control-btn${tone ? ` is-${tone}` : ''}" data-action="project-task-focus" data-focus="${escape(focus)}" title="Open desk filter: ${escape(label)}"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>${count}</strong> ${escape(label)}</button>`
-                    : `<span class="sph-hygiene-chip lux-control-btn is-ok"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>0</strong> ${escape(label)}</span>`
+                    ? `<button type="button" class="sph-hygiene-chip home-hover-chip lux-control-btn${tone ? ` is-${tone}` : ''}" data-action="project-task-focus" data-focus="${escape(focus)}" title="Open desk filter: ${escape(label)}"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>${count}</strong> ${escape(label)}</button>`
+                    : `<span class="sph-hygiene-chip home-hover-chip lux-control-btn is-ok"><i class="fas ${escape(icon)}" aria-hidden="true"></i><strong>0</strong> ${escape(label)}</span>`
             );
             const weekActionBtn = (item) => {
                 const attrs = item.taskId
@@ -955,7 +955,7 @@
                             <span class="lux-glass-dialog-subtitle">${escape(projectName)} · live from tasks, schedule, budget &amp; risks.</span>
                         </div>
                         <div class="sph-fs-topbar-actions">
-                            <span class="sph-health-badge" data-health="${escape(healthLevel)}">${escape(healthLabel)}</span>
+                            <span class="sph-health-badge home-hover-chip" data-health="${escape(healthLevel)}">${escape(healthLabel)}</span>
                             <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-task-graph-open" data-project-id="${escape(projectId)}"><i class="fas fa-diagram-project"></i> Map</button>
                             <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                         </div>
@@ -1055,9 +1055,9 @@
                                             : ''}
                                     </div>
                                     <div class="sph-profile">
-                                        <div class="sph-chip" data-risk-bucket="${riskSummary.high ? 'high' : (riskSummary.open ? 'medium' : 'low')}"><span class="sph-c">${riskSummary.open}</span><span class="sph-l">Open</span></div>
-                                        <div class="sph-chip" data-risk-bucket="${riskSummary.high ? 'high' : 'low'}"><span class="sph-c">${riskSummary.high}</span><span class="sph-l">High</span></div>
-                                        <div class="sph-chip" data-risk-bucket="${riskSummary.unassigned ? 'medium' : 'low'}"><span class="sph-c">${riskSummary.unassigned}</span><span class="sph-l">No owner</span></div>
+                                        <div class="sph-chip home-hover-chip" data-risk-bucket="${riskSummary.high ? 'high' : (riskSummary.open ? 'medium' : 'low')}"><span class="sph-c">${riskSummary.open}</span><span class="sph-l">Open</span></div>
+                                        <div class="sph-chip home-hover-chip" data-risk-bucket="${riskSummary.high ? 'high' : 'low'}"><span class="sph-c">${riskSummary.high}</span><span class="sph-l">High</span></div>
+                                        <div class="sph-chip home-hover-chip" data-risk-bucket="${riskSummary.unassigned ? 'medium' : 'low'}"><span class="sph-c">${riskSummary.unassigned}</span><span class="sph-l">No owner</span></div>
                                     </div>
                                     ${topRisks.length
                                         ? `<div class="sph-risklist">${topRisks.map((risk) => {

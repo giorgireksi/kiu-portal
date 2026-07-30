@@ -19,7 +19,7 @@ const {
     uniqueStrings,
     verifyPassword,
 } = require('./utils');
-const { createEmptyPlatformState, createEmptySocialState, createEmptyNewsState, createDefaultNewsSectionCatalog, createEmptyStudentServiceState } = require('./state-shape');
+const { createEmptyPlatformState, createEmptySocialState, createEmptyNewsState, createDefaultNewsSectionCatalog, normalizeNewsSectionIconValue, createEmptyStudentServiceState, createEmptyOrdersState, createEmptyChancelleryState } = require('./state-shape');
 const { PostgresRecordStore } = require('./postgres-record-store');
 const { LocalRecordStore } = require('./local-record-store');
 const { addAuditEvent } = require('./domains/audit-service');
@@ -54,6 +54,35 @@ const {
     normalizeStudentServiceThreadEntry,
     normalizeStudentServiceTicketRecord
 } = require('./domains/student-service-service');
+const {
+    buildMinimalOrdersRecipientFilterLayout,
+    normalizeOrdersFacultyCode,
+    normalizeOrdersRecipientFilterRole,
+    normalizeOrdersRecipientFilterLayout,
+    ORDERS_RECIPIENT_FILTER_ROLES,
+    normalizeOrdersFilterConnectedRoles,
+    getOrdersFilterConnectedRoles,
+    mergeOrdersFilterConnections
+} = require('./domains/orders-recipient-filter-service');
+const {
+    buildMinimalChancelleryFilterLayout,
+    buildDefaultChancelleryRequestKinds,
+    extractRequestKindsFromRoleBucket,
+    normalizeChancelleryFacultyCode,
+    normalizeChancelleryFilterRole,
+    normalizeChancelleryFilterLayout,
+    normalizeChancelleryRequestKinds,
+    applySharedRequestKindsToLayout,
+    CHANCELLERY_FILTER_ROLES,
+    normalizeChancelleryFilterConnectedRoles,
+    getChancelleryFilterConnectedRoles,
+    mergeChancelleryFilterConnections
+} = require('./domains/chancellery-filter-service');
+const {
+    buildDefaultChancelleryDocumentTemplate,
+    normalizeChancelleryDocumentFacultyCode,
+    normalizeChancelleryDocumentTemplate
+} = require('./domains/chancellery-document-service');
 const {
     ensurePersonFromAccount,
     getAccountByEmail,
@@ -1137,6 +1166,16 @@ class PlatformStore {
         if (!Array.isArray(this.state.news.replies)) this.state.news.replies = [];
         if (!Array.isArray(this.state.news.sectionCatalog)) {
             this.state.news.sectionCatalog = createDefaultNewsSectionCatalog();
+        } else {
+            const defaultIcons = new Map(
+                createDefaultNewsSectionCatalog().map(entry => [entry.key, entry.icon])
+            );
+            this.state.news.sectionCatalog = this.state.news.sectionCatalog.map(entry => {
+                const key = this.normalizeNewsSectionKey(entry?.key || entry?.label || 'general');
+                const label = String(entry?.label || entry?.key || 'General').trim() || 'General';
+                const icon = normalizeNewsSectionIconValue(entry?.icon) || defaultIcons.get(key) || '';
+                return icon ? { key, label, icon } : { key, label };
+            });
         }
         this.state.news.posts.forEach((post) => {
             // replyMode is canonical; allowReplies is derived for older clients.
@@ -1720,6 +1759,280 @@ class PlatformStore {
         serviceState.inboxFilterLayout = layout;
         this.save();
         return { ok: true, inboxFilterLayout: clone(layout) };
+    }
+
+    ensureOrdersPlatformState() {
+        if (!this.state.orders || typeof this.state.orders !== 'object') {
+            this.state.orders = createEmptyOrdersState();
+        }
+        const ordersState = this.state.orders;
+        if (!ordersState.recipientFilterLayoutByFacultyRole || typeof ordersState.recipientFilterLayoutByFacultyRole !== 'object') {
+            ordersState.recipientFilterLayoutByFacultyRole = {};
+        }
+        if (!ordersState.filterConnectionsByFaculty || typeof ordersState.filterConnectionsByFaculty !== 'object') {
+            ordersState.filterConnectionsByFaculty = {};
+        }
+        ordersState.version = Number(ordersState.version) || 1;
+        if (ordersState.recipientFilterLayoutByFaculty && typeof ordersState.recipientFilterLayoutByFaculty === 'object') {
+            Object.keys(ordersState.recipientFilterLayoutByFaculty).forEach((facultyCode) => {
+                const normalizedFaculty = normalizeOrdersFacultyCode(facultyCode);
+                const layout = normalizeOrdersRecipientFilterLayout(ordersState.recipientFilterLayoutByFaculty[facultyCode])
+                    || buildMinimalOrdersRecipientFilterLayout();
+                if (!ordersState.recipientFilterLayoutByFacultyRole[normalizedFaculty]) {
+                    ordersState.recipientFilterLayoutByFacultyRole[normalizedFaculty] = {};
+                }
+                ['student', 'professor', 'ta', 'student_service'].forEach((role) => {
+                    if (!ordersState.recipientFilterLayoutByFacultyRole[normalizedFaculty][role]) {
+                        ordersState.recipientFilterLayoutByFacultyRole[normalizedFaculty][role] = clone(layout);
+                    }
+                });
+            });
+            delete ordersState.recipientFilterLayoutByFaculty;
+        }
+        Object.keys(ordersState.recipientFilterLayoutByFacultyRole).forEach((facultyCode) => {
+            const normalizedFaculty = normalizeOrdersFacultyCode(facultyCode);
+            if (normalizedFaculty !== facultyCode) {
+                delete ordersState.recipientFilterLayoutByFacultyRole[facultyCode];
+            }
+            const roleBucket = ordersState.recipientFilterLayoutByFacultyRole[normalizedFaculty]
+                || ordersState.recipientFilterLayoutByFacultyRole[facultyCode]
+                || {};
+            const normalizedRoleBucket = {};
+            ['student', 'professor', 'ta', 'student_service'].forEach((role) => {
+                const layout = normalizeOrdersRecipientFilterLayout(roleBucket[role]);
+                normalizedRoleBucket[role] = layout || buildMinimalOrdersRecipientFilterLayout();
+            });
+            ordersState.recipientFilterLayoutByFacultyRole[normalizedFaculty] = normalizedRoleBucket;
+        });
+        return ordersState;
+    }
+
+    getOrdersRecipientFilterLayout(facultyCode = '', recipientRole = '') {
+        const ordersState = this.ensureOrdersPlatformState();
+        const faculty = normalizeOrdersFacultyCode(facultyCode);
+        const role = normalizeOrdersRecipientFilterRole(recipientRole);
+        const roleBucket = ordersState.recipientFilterLayoutByFacultyRole[faculty] || {};
+        const layout = normalizeOrdersRecipientFilterLayout(roleBucket[role])
+            || buildMinimalOrdersRecipientFilterLayout();
+        const connectedRoles = getOrdersFilterConnectedRoles(
+            ordersState.filterConnectionsByFaculty,
+            faculty,
+            role
+        );
+        return {
+            ok: true,
+            facultyCode: faculty,
+            recipientRole: role,
+            recipientFilterLayout: clone(layout),
+            connectedRoles: clone(connectedRoles)
+        };
+    }
+
+    saveOrdersRecipientFilterLayout(payload = {}, actorId = '', sessionRole = '') {
+        const role = String(sessionRole || '').trim().toLowerCase();
+        if (role !== 'admin') {
+            return { error: 'Only administrators can save recipient Orders filter layout.', status: 403 };
+        }
+        const faculty = normalizeOrdersFacultyCode(payload.facultyCode || payload.faculty || '');
+        const recipientRole = normalizeOrdersRecipientFilterRole(payload.recipientRole || payload.role || '');
+        const layout = normalizeOrdersRecipientFilterLayout(payload.layout || payload);
+        if (!layout) return { error: 'Recipient Orders filter layout is invalid.', status: 400 };
+        const connectedRoles = normalizeOrdersFilterConnectedRoles(
+            payload.connectedRoles != null ? payload.connectedRoles : [recipientRole],
+            recipientRole
+        );
+        const ordersState = this.ensureOrdersPlatformState();
+        if (!ordersState.recipientFilterLayoutByFacultyRole[faculty]) {
+            ordersState.recipientFilterLayoutByFacultyRole[faculty] = {};
+        }
+        connectedRoles.forEach((syncRole) => {
+            ordersState.recipientFilterLayoutByFacultyRole[faculty][syncRole] = clone(layout);
+        });
+        ordersState.filterConnectionsByFaculty = mergeOrdersFilterConnections(
+            ordersState.filterConnectionsByFaculty,
+            faculty,
+            recipientRole,
+            connectedRoles
+        );
+        this.save();
+        return {
+            ok: true,
+            facultyCode: faculty,
+            recipientRole,
+            recipientFilterLayout: clone(layout),
+            connectedRoles: clone(connectedRoles)
+        };
+    }
+
+    ensureChancelleryPlatformState() {
+        if (!this.state.chancellery || typeof this.state.chancellery !== 'object') {
+            this.state.chancellery = createEmptyChancelleryState();
+        }
+        const chancelleryState = this.state.chancellery;
+        if (!chancelleryState.filterLayoutByFacultyRole || typeof chancelleryState.filterLayoutByFacultyRole !== 'object') {
+            chancelleryState.filterLayoutByFacultyRole = {};
+        }
+        if (!chancelleryState.requestKindsByFaculty || typeof chancelleryState.requestKindsByFaculty !== 'object') {
+            chancelleryState.requestKindsByFaculty = {};
+        }
+        if (!chancelleryState.filterConnectionsByFaculty || typeof chancelleryState.filterConnectionsByFaculty !== 'object') {
+            chancelleryState.filterConnectionsByFaculty = {};
+        }
+        if (!chancelleryState.documentTemplateByFaculty || typeof chancelleryState.documentTemplateByFaculty !== 'object') {
+            chancelleryState.documentTemplateByFaculty = {};
+        }
+        chancelleryState.version = Number(chancelleryState.version) || 1;
+        Object.keys(chancelleryState.documentTemplateByFaculty).forEach((facultyCode) => {
+            const normalizedFaculty = normalizeChancelleryDocumentFacultyCode(facultyCode);
+            const template = normalizeChancelleryDocumentTemplate(
+                chancelleryState.documentTemplateByFaculty[facultyCode]
+            );
+            if (normalizedFaculty !== facultyCode) {
+                delete chancelleryState.documentTemplateByFaculty[facultyCode];
+            }
+            chancelleryState.documentTemplateByFaculty[normalizedFaculty] = template;
+        });
+        Object.keys(chancelleryState.filterLayoutByFacultyRole).forEach((facultyCode) => {
+            const normalizedFaculty = normalizeChancelleryFacultyCode(facultyCode);
+            // Read the role bucket before deleting a non-canonical key (e.g. econ → ECON).
+            const roleBucket = chancelleryState.filterLayoutByFacultyRole[facultyCode]
+                || chancelleryState.filterLayoutByFacultyRole[normalizedFaculty]
+                || {};
+            if (normalizedFaculty !== facultyCode) {
+                delete chancelleryState.filterLayoutByFacultyRole[facultyCode];
+            }
+            if (!Array.isArray(chancelleryState.requestKindsByFaculty[normalizedFaculty])
+                || !chancelleryState.requestKindsByFaculty[normalizedFaculty].length) {
+                chancelleryState.requestKindsByFaculty[normalizedFaculty] = extractRequestKindsFromRoleBucket(roleBucket);
+            } else {
+                chancelleryState.requestKindsByFaculty[normalizedFaculty] = normalizeChancelleryRequestKinds(
+                    chancelleryState.requestKindsByFaculty[normalizedFaculty]
+                );
+            }
+            const requestKinds = chancelleryState.requestKindsByFaculty[normalizedFaculty]
+                || buildDefaultChancelleryRequestKinds();
+            const normalizedRoleBucket = {};
+            CHANCELLERY_FILTER_ROLES.forEach((role) => {
+                const layout = applySharedRequestKindsToLayout(roleBucket[role], requestKinds);
+                normalizedRoleBucket[role] = layout || buildMinimalChancelleryFilterLayout();
+            });
+            chancelleryState.filterLayoutByFacultyRole[normalizedFaculty] = normalizedRoleBucket;
+        });
+        Object.keys(chancelleryState.requestKindsByFaculty).forEach((facultyCode) => {
+            const normalizedFaculty = normalizeChancelleryFacultyCode(facultyCode);
+            if (normalizedFaculty !== facultyCode) {
+                delete chancelleryState.requestKindsByFaculty[facultyCode];
+            }
+            chancelleryState.requestKindsByFaculty[normalizedFaculty] = normalizeChancelleryRequestKinds(
+                chancelleryState.requestKindsByFaculty[normalizedFaculty]
+            );
+        });
+        return chancelleryState;
+    }
+
+    getChancelleryFilterLayout(facultyCode = '', recipientRole = '') {
+        const chancelleryState = this.ensureChancelleryPlatformState();
+        const faculty = normalizeChancelleryFacultyCode(facultyCode);
+        const role = normalizeChancelleryFilterRole(recipientRole);
+        const roleBucket = chancelleryState.filterLayoutByFacultyRole[faculty] || {};
+        const requestKinds = normalizeChancelleryRequestKinds(
+            chancelleryState.requestKindsByFaculty[faculty] || buildDefaultChancelleryRequestKinds()
+        );
+        const layout = applySharedRequestKindsToLayout(roleBucket[role], requestKinds)
+            || buildMinimalChancelleryFilterLayout();
+        const connectedRoles = getChancelleryFilterConnectedRoles(
+            chancelleryState.filterConnectionsByFaculty,
+            faculty,
+            role
+        );
+        return {
+            ok: true,
+            facultyCode: faculty,
+            recipientRole: role,
+            filterLayout: clone(layout),
+            requestKinds: clone(requestKinds),
+            connectedRoles: clone(connectedRoles)
+        };
+    }
+
+    getChancelleryDocumentTemplate(facultyCode = '') {
+        const chancelleryState = this.ensureChancelleryPlatformState();
+        const faculty = normalizeChancelleryDocumentFacultyCode(facultyCode);
+        const template = normalizeChancelleryDocumentTemplate(
+            chancelleryState.documentTemplateByFaculty[faculty]
+                || buildDefaultChancelleryDocumentTemplate()
+        );
+        return {
+            ok: true,
+            facultyCode: faculty,
+            documentTemplate: clone(template)
+        };
+    }
+
+    saveChancelleryDocumentTemplate(payload = {}, actorId = '', sessionRole = '') {
+        const role = String(sessionRole || '').trim().toLowerCase();
+        if (role !== 'admin') {
+            return { error: 'Only administrators can save the E-Chancellery appeal document.', status: 403 };
+        }
+        const faculty = normalizeChancelleryDocumentFacultyCode(payload.facultyCode || payload.faculty || '');
+        const template = normalizeChancelleryDocumentTemplate(payload.documentTemplate || payload.template || payload);
+        if (!template?.sections?.length) {
+            return { error: 'Appeal document must include at least one section.', status: 400 };
+        }
+        const chancelleryState = this.ensureChancelleryPlatformState();
+        chancelleryState.documentTemplateByFaculty[faculty] = clone(template);
+        this.save();
+        return {
+            ok: true,
+            facultyCode: faculty,
+            documentTemplate: clone(template)
+        };
+    }
+
+    saveChancelleryFilterLayout(payload = {}, actorId = '', sessionRole = '') {
+        const role = String(sessionRole || '').trim().toLowerCase();
+        if (role !== 'admin') {
+            return { error: 'Only administrators can save E-Chancellery filter layout.', status: 403 };
+        }
+        const faculty = normalizeChancelleryFacultyCode(payload.facultyCode || payload.faculty || '');
+        const recipientRole = normalizeChancelleryFilterRole(payload.recipientRole || payload.role || '');
+        const chancelleryState = this.ensureChancelleryPlatformState();
+        const requestKinds = payload.requestKinds != null
+            ? normalizeChancelleryRequestKinds(payload.requestKinds)
+            : normalizeChancelleryRequestKinds(
+                chancelleryState.requestKindsByFaculty[faculty] || buildDefaultChancelleryRequestKinds()
+            );
+        if (!requestKinds.length) {
+            return { error: 'Add at least one shared request type before saving.', status: 400 };
+        }
+        const layout = applySharedRequestKindsToLayout(payload.layout || payload, requestKinds);
+        if (!layout) return { error: 'E-Chancellery filter layout is invalid.', status: 400 };
+        const connectedRoles = normalizeChancelleryFilterConnectedRoles(
+            payload.connectedRoles != null ? payload.connectedRoles : [recipientRole],
+            recipientRole
+        );
+        if (!chancelleryState.filterLayoutByFacultyRole[faculty]) {
+            chancelleryState.filterLayoutByFacultyRole[faculty] = {};
+        }
+        chancelleryState.requestKindsByFaculty[faculty] = requestKinds;
+        connectedRoles.forEach((syncRole) => {
+            chancelleryState.filterLayoutByFacultyRole[faculty][syncRole] = clone(layout);
+        });
+        chancelleryState.filterConnectionsByFaculty = mergeChancelleryFilterConnections(
+            chancelleryState.filterConnectionsByFaculty,
+            faculty,
+            recipientRole,
+            connectedRoles
+        );
+        this.save();
+        return {
+            ok: true,
+            facultyCode: faculty,
+            recipientRole,
+            filterLayout: clone(layout),
+            requestKinds: clone(requestKinds),
+            connectedRoles: clone(connectedRoles)
+        };
     }
 
     saveStudentServiceArticle(payload = {}, actorId = '', sessionRole = '') {
@@ -2609,7 +2922,8 @@ class PlatformStore {
         return this.ensureNewsState().sectionCatalog.map(entry => {
             const key = this.normalizeNewsSectionKey(entry?.key || entry?.label || 'general');
             const label = String(entry?.label || entry?.key || 'General').trim() || 'General';
-            return { key, label };
+            const icon = normalizeNewsSectionIconValue(entry?.icon);
+            return icon ? { key, label, icon } : { key, label };
         });
     }
 
@@ -2663,7 +2977,8 @@ class PlatformStore {
             merged.set(entry.key, {
                 key: entry.key,
                 label: entry.label,
-                count: counted?.count || 0
+                count: counted?.count || 0,
+                ...(entry.icon ? { icon: entry.icon } : {})
             });
         });
         postCounts.forEach((entry, key) => {
@@ -2696,7 +3011,8 @@ class PlatformStore {
                 return { error: `Duplicate section key: ${key}`, status: 400 };
             }
             seenKeys.add(key);
-            normalized.push({ key, label });
+            const icon = normalizeNewsSectionIconValue(entry?.icon);
+            normalized.push(icon ? { key, label, icon } : { key, label });
         }
         if (!normalized.length) {
             return { error: 'At least one section is required.', status: 400 };

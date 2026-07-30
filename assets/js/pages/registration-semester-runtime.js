@@ -283,7 +283,7 @@ function renderSelectedConditionEntries(entries) {
         : 'None';
     badge.hidden = normalized.length === 0;
     text.innerHTML = normalized.map((entry) => `
-        <span class="registration-condition-chip">
+        <span class="registration-condition-chip home-hover-chip">
             <span>[${escapeHtml(entry.code)}] ${escapeHtml(entry.name)}</span>
             <button type="button" class="registration-condition-chip-remove" data-condition-action="remove" data-subject-code="${escapeHtml(entry.code)}">&times;</button>
         </span>

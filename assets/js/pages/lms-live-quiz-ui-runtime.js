@@ -84,7 +84,7 @@ function renderLmsLiveParticipantPill(resourceKey, session = null) {
     const joined = Number(stats.joinedCount || 0);
     const roster = Number(stats.rosterCount || 0);
     const label = roster > 0 ? `${joined}/${roster} roster` : `${joined} joined`;
-    return `<span class="lms-live-pill"><i class="fas fa-user-group"></i> ${escapeHtml(label)}</span>`;
+    return `<span class="lms-live-pill home-hover-chip"><i class="fas fa-user-group"></i> ${escapeHtml(label)}</span>`;
 }
 
 const LMS_LIVE_BROADCAST_PATCH_HINTS = {
@@ -403,10 +403,10 @@ function renderLmsLiveSessionSummary(session = null) {
     return `
         <div class="lms-live-stage lms-live-summary-shell">
             <div class="lms-live-pill-row lms-live-pill-row--center">
-                <span class="lms-live-pill"><i class="fas fa-users"></i> ${escapeHtml(String(participants.length))} students</span>
-                <span class="lms-live-pill"><i class="fas fa-list-check"></i> ${escapeHtml(String(totalQuestions))} questions</span>
-                <span class="lms-live-pill"><i class="fas fa-chart-simple"></i> ${escapeHtml(String(participation))}% participation</span>
-                <span class="lms-live-pill"><i class="fas fa-bullseye"></i> ${escapeHtml(String(accuracy))}% accuracy</span>
+                <span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> ${escapeHtml(String(participants.length))} students</span>
+                <span class="lms-live-pill home-hover-chip"><i class="fas fa-list-check"></i> ${escapeHtml(String(totalQuestions))} questions</span>
+                <span class="lms-live-pill home-hover-chip"><i class="fas fa-chart-simple"></i> ${escapeHtml(String(participation))}% participation</span>
+                <span class="lms-live-pill home-hover-chip"><i class="fas fa-bullseye"></i> ${escapeHtml(String(accuracy))}% accuracy</span>
             </div>
             <div class="lms-live-question-text lms-live-summary-title">Session results</div>
             <div class="lms-live-score-list lms-live-score-list--wide lms-live-summary-list">${renderLmsLiveScoreList(session, 10)}</div>
@@ -650,7 +650,7 @@ function renderLmsLiveBroadcastQuestionCardInner(question, session, resourceKey,
     if (!question) return '';
     const resolvedTimeState = timeState || getLmsLiveQuestionTimeState(question);
     const topicChip = question.topic
-        ? `<span class="lms-live-question-topic-chip">${escapeHtml(question.topic)}</span>`
+        ? `<span class="lms-live-question-topic-chip home-hover-chip">${escapeHtml(question.topic)}</span>`
         : '';
     return `
         <div data-lms-live-region="timer">${renderLmsLiveTimerMeterInner(question, resolvedTimeState)}</div>
@@ -724,10 +724,10 @@ function renderLmsLiveStaffStagePillsContent(session, statusLabel = 'Draft') {
                     ? 'Answers closed'
                     : 'Hidden';
     return `
-        <span class="lms-live-pill ${session.status === 'live' ? 'is-live' : ''}"><i class="fas fa-bolt"></i> ${escapeHtml(statusLabel)}</span>
-        <span class="lms-live-pill ${questionState === 'showing' ? 'is-live' : questionState === 'paused' ? 'is-paused' : ['locked','revealed'].includes(questionState) ? 'is-locked' : ''}"><i class="far fa-clock"></i> ${answerStatusLabel}</span>
-        <span class="lms-live-pill"><i class="fas fa-users"></i> ${stats.currentAnswerCount}/${stats.participants} answered</span>
-        <span class="lms-live-pill"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>
+        <span class="lms-live-pill home-hover-chip ${session.status === 'live' ? 'is-live' : ''}"><i class="fas fa-bolt"></i> ${escapeHtml(statusLabel)}</span>
+        <span class="lms-live-pill home-hover-chip ${questionState === 'showing' ? 'is-live' : questionState === 'paused' ? 'is-paused' : ['locked','revealed'].includes(questionState) ? 'is-locked' : ''}"><i class="far fa-clock"></i> ${answerStatusLabel}</span>
+        <span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> ${stats.currentAnswerCount}/${stats.participants} answered</span>
+        <span class="lms-live-pill home-hover-chip"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>
     `;
 }
 
@@ -816,14 +816,14 @@ function renderLmsLiveStaffQueueMarkup(session, resourceKey) {
                         <div class="lms-live-label">Question ${index + 1}${question.topic ? ` - ${escapeHtml(question.topic)}` : ''}</div>
                         <div class="lms-live-question-title">${escapeHtml(question.text)}</div>
                         <div class="lms-live-question-meta">
-                            <span class="lms-live-pill"><i class="far fa-clock"></i> ${escapeHtml(String(question.timeLimit || 45))}s</span>
-                            <span class="lms-live-pill"><span class="lms-live-answer-key">${escapeHtml(LMS_LIVE_OPTION_KEYS[question.correctOption] || 'A')}</span> correct</span>
+                            <span class="lms-live-pill home-hover-chip"><i class="far fa-clock"></i> ${escapeHtml(String(question.timeLimit || 45))}s</span>
+                            <span class="lms-live-pill home-hover-chip"><span class="lms-live-answer-key">${escapeHtml(LMS_LIVE_OPTION_KEYS[question.correctOption] || 'A')}</span> correct</span>
                         </div>
                     </div>
-                    <span class="lms-live-pill">${answers} answers</span>
+                    <span class="lms-live-pill home-hover-chip">${answers} answers</span>
                 </div>
                 <div class="lms-live-actions">
-                    <span class="lms-live-pill ${questionState === 'showing' ? 'is-live' : questionState === 'paused' ? 'is-paused' : ['locked','revealed'].includes(questionState) ? 'is-locked' : ''}">${escapeHtml(questionState)}</span>
+                    <span class="lms-live-pill home-hover-chip ${questionState === 'showing' ? 'is-live' : questionState === 'paused' ? 'is-paused' : ['locked','revealed'].includes(questionState) ? 'is-locked' : ''}">${escapeHtml(questionState)}</span>
                     <button type="button" class="lux-secondary-btn" data-lms-click="moveLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)}, -1)"><i class="fas fa-arrow-up"></i></button>
                     <button type="button" class="lux-secondary-btn" data-lms-click="moveLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)}, 1)"><i class="fas fa-arrow-down"></i></button>
                     <button type="button" class="lux-secondary-btn" data-lms-click="duplicateLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-copy"></i> Duplicate</button>
@@ -906,9 +906,9 @@ function renderLmsLiveStudentStageMarkup(context, session, participant, particip
             </div>
             ${rosterBanner}
             <div class="lms-live-pill-row lms-live-pill-row--center" data-lms-live-region="stage-pills">
-                <span class="lms-live-pill ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}" data-lms-live-region="stage-clock-pill"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
-                <span class="lms-live-pill"><i class="fas fa-user"></i> ${escapeHtml(nickname)}</span>
-                ${answer ? `<span class="lms-live-pill ${answer.correct ? 'is-live' : ''}"><i class="fas ${answer.correct ? 'fa-check' : 'fa-circle'}"></i> ${answer.correct ? `+${escapeHtml(String((answer.score || 0) + (answer.streakBonus || 0)))}` : '0 pts'}</span>` : `<span class="lms-live-pill"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>`}
+                <span class="lms-live-pill home-hover-chip ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}" data-lms-live-region="stage-clock-pill"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
+                <span class="lms-live-pill home-hover-chip"><i class="fas fa-user"></i> ${escapeHtml(nickname)}</span>
+                ${answer ? `<span class="lms-live-pill home-hover-chip ${answer.correct ? 'is-live' : ''}"><i class="fas ${answer.correct ? 'fa-check' : 'fa-circle'}"></i> ${answer.correct ? `+${escapeHtml(String((answer.score || 0) + (answer.streakBonus || 0)))}` : '0 pts'}</span>` : `<span class="lms-live-pill home-hover-chip"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>`}
             </div>
             ${renderLmsLiveTimerMeter(currentQuestion, timeState)}
             <div class="lms-live-question-text">${escapeHtml(currentQuestion.text)}</div>
@@ -1069,11 +1069,11 @@ function updateLmsLiveQuizVolatileUi(resourceKey) {
         const sectionMeta = getLmsSectionMeta(parseLmsCourseKey(canonicalKey).sectionType || getCurrentLmsSectionType());
         const currentQuestion = getLmsLiveCurrentQuestion(session);
         patchLmsLiveQuizRegion(contentArea, 'hero-stats', `
-            <span class="lms-live-pill"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
-            <span class="lms-live-pill ${session?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
-            ${session ? `<span class="lms-live-pill"><i class="fas fa-broadcast-tower"></i> Auto shown to group</span>` : ''}
+            <span class="lms-live-pill home-hover-chip"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
+            <span class="lms-live-pill home-hover-chip ${session?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
+            ${session ? `<span class="lms-live-pill home-hover-chip"><i class="fas fa-broadcast-tower"></i> Auto shown to group</span>` : ''}
             ${renderLmsLiveParticipantPill(canonicalKey, session)}
-            <span class="lms-live-pill"><i class="fas fa-list-check"></i> ${stats.questionCount} questions</span>
+            <span class="lms-live-pill home-hover-chip"><i class="fas fa-list-check"></i> ${stats.questionCount} questions</span>
         `);
         if (currentQuestion) {
             const answeredTile = contentArea.querySelector('[data-lms-live-region="director-answered"] strong');
@@ -1117,9 +1117,9 @@ function updateLmsLiveQuizVolatileUi(resourceKey) {
     const clockPill = contentArea.querySelector('[data-lms-live-region="stage-clock-pill"]');
     if (!clockPill) {
         patchLmsLiveQuizRegion(contentArea, 'stage-pills', `
-            <span class="lms-live-pill ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}" data-lms-live-region="stage-clock-pill"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
-            <span class="lms-live-pill"><i class="fas fa-user"></i> ${escapeHtml(nickname)}</span>
-            ${answer ? `<span class="lms-live-pill ${answer.correct ? 'is-live' : ''}"><i class="fas ${answer.correct ? 'fa-check' : 'fa-circle'}"></i> ${answer.correct ? `+${escapeHtml(String((answer.score || 0) + (answer.streakBonus || 0)))}` : '0 pts'}</span>` : `<span class="lms-live-pill"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>`}
+            <span class="lms-live-pill home-hover-chip ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}" data-lms-live-region="stage-clock-pill"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
+            <span class="lms-live-pill home-hover-chip"><i class="fas fa-user"></i> ${escapeHtml(nickname)}</span>
+            ${answer ? `<span class="lms-live-pill home-hover-chip ${answer.correct ? 'is-live' : ''}"><i class="fas ${answer.correct ? 'fa-check' : 'fa-circle'}"></i> ${answer.correct ? `+${escapeHtml(String((answer.score || 0) + (answer.streakBonus || 0)))}` : '0 pts'}</span>` : `<span class="lms-live-pill home-hover-chip"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>`}
         `);
     }
     patchLmsLiveQuizRegion(contentArea, 'leaderboard', renderLmsLiveScoreList(session, 6));
@@ -1192,11 +1192,11 @@ function updateLmsLiveQuizQueueUi(resourceKey, hints = {}) {
         const stats = getLmsLiveSessionStats(runtimeSession);
         const sectionMeta = getLmsSectionMeta(parseLmsCourseKey(canonicalKey).sectionType || getCurrentLmsSectionType());
         patchLmsLiveQuizRegion(contentArea, 'hero-stats', `
-            <span class="lms-live-pill"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
-            <span class="lms-live-pill ${runtimeSession?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
-            ${runtimeSession ? `<span class="lms-live-pill"><i class="fas fa-broadcast-tower"></i> Auto shown to group</span>` : ''}
+            <span class="lms-live-pill home-hover-chip"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
+            <span class="lms-live-pill home-hover-chip ${runtimeSession?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
+            ${runtimeSession ? `<span class="lms-live-pill home-hover-chip"><i class="fas fa-broadcast-tower"></i> Auto shown to group</span>` : ''}
             ${renderLmsLiveParticipantPill(canonicalKey, runtimeSession)}
-            <span class="lms-live-pill"><i class="fas fa-list-check"></i> ${stats.questionCount} questions</span>
+            <span class="lms-live-pill home-hover-chip"><i class="fas fa-list-check"></i> ${stats.questionCount} questions</span>
         `);
     }
 
@@ -1443,11 +1443,11 @@ function renderLmsLiveStaffWorkspace(context) {
                     <div class="lms-live-copy">Use short questions during the lecture or seminar. Students in this LMS group see the active question automatically; this is class engagement, not grading.</div>
                 </div>
                 <div class="lms-live-pill-row lms-live-pill-row--end" data-lms-live-region="hero-stats">
-                    <span class="lms-live-pill"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
-                    <span class="lms-live-pill ${runtimeSession?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
-                    ${runtimeSession ? `<span class="lms-live-pill"><i class="fas fa-broadcast-tower"></i> Auto shown to group</span>` : ''}
+                    <span class="lms-live-pill home-hover-chip"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
+                    <span class="lms-live-pill home-hover-chip ${runtimeSession?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
+                    ${runtimeSession ? `<span class="lms-live-pill home-hover-chip"><i class="fas fa-broadcast-tower"></i> Auto shown to group</span>` : ''}
                     ${renderLmsLiveParticipantPill(resourceKey, runtimeSession)}
-                    <span class="lms-live-pill"><i class="fas fa-list-check"></i> ${escapeHtml(String((editingSession?.questions || []).length || stats.questionCount))} questions</span>
+                    <span class="lms-live-pill home-hover-chip"><i class="fas fa-list-check"></i> ${escapeHtml(String((editingSession?.questions || []).length || stats.questionCount))} questions</span>
                 </div>
             </section>
             <div data-lms-live-region="sync">${renderLmsLiveSyncNotice(workspace)}</div>
@@ -1565,9 +1565,9 @@ function renderLmsLiveStudentWorkspace(context) {
                         <div class="lms-live-copy lms-live-copy-auto-center lms-live-copy-waiting">${session ? 'Keep this screen open. The question appears automatically when your professor or TA starts the session or clicks Show.' : 'When your professor or TA starts a session, it appears here automatically. No code is required.'}</div>
                     </div>
                     <div class="lms-live-pill-row lms-live-pill-row--center">
-                        <span class="lms-live-pill"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
-                        <span class="lms-live-pill"><i class="fas fa-broadcast-tower"></i> Auto broadcast</span>
-                        <span class="lms-live-pill"><i class="fas fa-users"></i> ${stats.participants} joined</span>
+                        <span class="lms-live-pill home-hover-chip"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
+                        <span class="lms-live-pill home-hover-chip"><i class="fas fa-broadcast-tower"></i> Auto broadcast</span>
+                        <span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> ${stats.participants} joined</span>
                     </div>
                 </section>
                 <div data-lms-live-region="sync">${renderLmsLiveSyncNotice(workspace)}</div>
@@ -1579,10 +1579,10 @@ function renderLmsLiveStudentWorkspace(context) {
         <div class="lms-live-shell lms-live-phone">
             <section class="lms-live-student-card">
                 <div class="lms-live-pill-row">
-                    <span class="lms-live-pill is-live"><i class="fas fa-bolt"></i> Live now</span>
-                    <span class="lms-live-pill"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
-                    <span class="lms-live-pill"><i class="fas fa-broadcast-tower"></i> Group broadcast</span>
-                    <span class="lms-live-pill"><i class="fas fa-users"></i> ${stats.participants} joined</span>
+                    <span class="lms-live-pill home-hover-chip is-live"><i class="fas fa-bolt"></i> Live now</span>
+                    <span class="lms-live-pill home-hover-chip"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
+                    <span class="lms-live-pill home-hover-chip"><i class="fas fa-broadcast-tower"></i> Group broadcast</span>
+                    <span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> ${stats.participants} joined</span>
                 </div>
                 <div class="lms-live-title lms-live-title-responsive">${escapeHtml(session.title || 'Live Quiz')}</div>
                 <div class="lms-live-copy">${escapeHtml(context.subject?.name || context.courseId || 'Subject')} - ${escapeHtml(context.group?.name || context.groupId || 'Group')}</div>

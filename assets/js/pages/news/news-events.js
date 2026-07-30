@@ -38,6 +38,8 @@ function installNewsWorkspaceDelegates() {
         '[data-news-sections-save]',
         '[data-news-sections-add]',
         '[data-news-sections-remove]',
+        '[data-news-sections-icon-open]',
+        '[data-news-sections-icon-pick]',
         '[data-news-edit-post]',
         '[data-news-remove-post]',
         '[data-news-toggle-pin-post]',
@@ -107,10 +109,32 @@ function installNewsWorkspaceDelegates() {
                 renderNewsSectionsModalContent();
                 return;
             }
-            runtime.sectionsDraft.push({ key: '', label });
+            runtime.sectionsDraft.push({ key: '', label, icon: 'fa-newspaper' });
             runtime.sectionsError = '';
             if (input) input.value = '';
             renderNewsSectionsModalContent();
+            return;
+        }
+
+        if (action.hasAttribute('data-news-sections-icon-open')) {
+            event.preventDefault();
+            const index = Number.parseInt(action.getAttribute('data-news-sections-icon-open'), 10);
+            if (!Number.isFinite(index) || !runtime.sectionsDraft[index]) return;
+            syncNewsSectionsDraftFromDom();
+            const entry = runtime.sectionsDraft[index];
+            const key = entry.key || normalizeNewsSectionKey(entry.label);
+            const currentIcon = normalizeNewsSectionIcon(entry.icon) || getSectionIcon({ key, icon: entry.icon });
+            openNewsSectionIconPickerModal({
+                sectionLabel: entry.label || key,
+                currentIcon,
+                excludeIndex: index,
+                onPick: (icon) => {
+                    if (!runtime.sectionsDraft[index]) return;
+                    runtime.sectionsDraft[index].icon = icon;
+                    runtime.sectionsError = '';
+                    renderNewsSectionsModalContent();
+                }
+            });
             return;
         }
 
@@ -533,14 +557,16 @@ window.openNewsSectionsManager = function openNewsSectionsManager() {
     if (!canManageNews()) return;
     runtime.sectionsDraft = (runtime.sectionCatalog || []).map(entry => ({
         key: String(entry?.key || ''),
-        label: String(entry?.label || '')
+        label: String(entry?.label || ''),
+        icon: normalizeNewsSectionIcon(entry?.icon) || getSectionIcon(entry)
     }));
     if (!runtime.sectionsDraft.length) {
         runtime.sectionsDraft = (runtime.sections || [])
             .filter(section => section?.key && section.key !== 'all')
             .map(section => ({
                 key: String(section.key || ''),
-                label: String(section.label || '')
+                label: String(section.label || ''),
+                icon: normalizeNewsSectionIcon(section?.icon) || getSectionIcon(section)
             }));
     }
     runtime.sectionsError = '';
@@ -550,6 +576,7 @@ window.openNewsSectionsManager = function openNewsSectionsManager() {
     renderNewsModals();
 };
 window.closeNewsSectionsManager = function closeNewsSectionsManager() {
+    closeNewsConfirmModal();
     runtime.sectionsModalOpen = false;
     runtime.sectionsDraft = [];
     runtime.sectionsReassignments = {};

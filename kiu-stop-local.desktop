@@ -3,8 +3,8 @@ Type=Application
 Version=1.0
 Name=Stop KIU Local
 Comment=Stop LMS, platform backend, and anti-cheat local stack
-Exec=env KIU_LAUNCHER_IN_TERMINAL=1 bash /home/reksi/2/test/asd/stop-local-lms-anticheat.sh
-Path=/home/reksi/2/test/asd
+Exec=env KIU_LAUNCHER_IN_TERMINAL=1 bash /home/reksi/2/ff/asd26/stop-local-lms-anticheat.sh
+Path=/home/reksi/2/ff/asd26
 Icon=process-stop
 Terminal=true
 Categories=Development;Education;

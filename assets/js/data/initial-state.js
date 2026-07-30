@@ -285,9 +285,11 @@ function sanitizeStateForManualTesting(state, options = {}) {
     state.messages = state.messages && typeof state.messages === 'object' ? state.messages : {};
     state.lmsSessionMarkers = state.lmsSessionMarkers && typeof state.lmsSessionMarkers === 'object' ? state.lmsSessionMarkers : {};
     state.chancelleryRequests = Array.isArray(state.chancelleryRequests) ? state.chancelleryRequests : [];
-    state.chancelleryFilterLayout = state.chancelleryFilterLayout && typeof state.chancelleryFilterLayout === 'object'
-        ? state.chancelleryFilterLayout
-        : null;
+    state.chancelleryFilterLayoutByFacultyRole = state.chancelleryFilterLayoutByFacultyRole
+        && typeof state.chancelleryFilterLayoutByFacultyRole === 'object'
+        ? state.chancelleryFilterLayoutByFacultyRole
+        : {};
+    delete state.chancelleryFilterLayout;
     state.officeHours = state.officeHours && typeof state.officeHours === 'object' ? state.officeHours : {};
     state.calendarEvents = state.calendarEvents && typeof state.calendarEvents === 'object' ? state.calendarEvents : {};
     state.adminProgramStructures = state.adminProgramStructures && typeof state.adminProgramStructures === 'object'

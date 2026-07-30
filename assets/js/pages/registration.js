@@ -305,14 +305,6 @@ function handleRegistrationLegacyChange(event) {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
 
-    const filterTrigger = target.closest('[data-reg-chanc-filter]');
-    if (filterTrigger) {
-        return setChancelleryFilter(
-            String(filterTrigger.getAttribute('data-reg-chanc-filter') || '').trim(),
-            target.value
-        );
-    }
-
     const statusTrigger = target.closest('[data-reg-chanc-status-target]');
     if (statusTrigger) {
         return updateChancelleryRequestStatus(
@@ -1028,7 +1020,7 @@ function setSelectedAntiReqCodes(codes) {
     if (selectedRow) {
         selectedRow.innerHTML = normalized.length > 0
             ? normalized.map((code) => `
-                <span class="registration-antireq-chip">
+                <span class="registration-antireq-chip home-hover-chip">
                     <span>${escapeHtml(code)}</span>
                     <button type="button" class="registration-antireq-chip-remove" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}">&times;</button>
                 </span>
@@ -1069,7 +1061,7 @@ function populateAntiReqDropdown() {
         <div data-role="selected-anti-row" class="registration-antireq-selected-row lux-admin-tools-antireq-selected${selectedValues.length > 0 ? '' : ' is-empty'}">
             ${selectedValues.length > 0
                 ? selectedValues.map((code) => `
-                    <span class="registration-antireq-chip">
+                    <span class="registration-antireq-chip home-hover-chip">
                         <span>${escapeHtml(code)}</span>
                         <button type="button" class="registration-antireq-chip-remove" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}" aria-label="Remove ${escapeHtml(code)}">&times;</button>
                     </span>

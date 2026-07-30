@@ -470,7 +470,7 @@ function renderLmsStaffScoreEditorBlock({
                 <div class="gb-lms-staff-score-stat-value">
                     <strong>${scoreDisplay}</strong>
                     <span class="gb-lms-staff-score-stat-max">/ ${maxScore}</span>
-                    <span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
+                    <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
                 </div>
                 ${notePreview}
             </div>
@@ -1051,7 +1051,7 @@ function openStudentEvaluationHistoryModal(studentId, studentName = '', focusSec
         <button type="button" class="gb-modal-category-card lux-soft-chrome ${isActiveCategory ? 'is-active' : ''}" data-gradebook-click="open-history" data-gradebook-student-id="${escapeHtml(String(record.id))}" data-gradebook-student-name="${escapeHtml(String(displayName))}" data-gradebook-criterion="${escapeHtml(String(section.meta.key))}"${forceViewOnly ? ' data-gradebook-force-view-only="true"' : ''}${resolvedRosterId ? ` data-gradebook-roster-id="${escapeHtml(resolvedRosterId)}"` : ''}>
             <div class="gb-modal-category-top">
                 <span class="lms-route-field-label gb-modal-category-label">${escapeHtml(section.meta.pluralLabel || section.meta.label)}</span>
-                <span class="gb-status-badge lux-status-pill is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
+                <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
             </div>
             <div class="gb-modal-category-body">
                 <strong class="gb-modal-category-score">${escapeHtml(String(scoreText))}</strong>
@@ -1180,7 +1180,7 @@ function renderGradebookRosterSelection() {
                         <div class="gb-roster-eyebrow">${escapeHtml(group.groupName)}</div>
                         <div class="gb-roster-card-title">${escapeHtml(group.subjectName)}</div>
                     </div>
-                    <span class="lux-pill gb-roster-count-pill"><i class="fas fa-users"></i> ${group.enrolledCount} students</span>
+                    <span class="lux-pill gb-roster-count-pill home-hover-chip"><i class="fas fa-users"></i> ${group.enrolledCount} students</span>
                 </div>
             </div>
             <div class="gb-roster-card-body">

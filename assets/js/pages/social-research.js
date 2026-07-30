@@ -1,4 +1,4 @@
-/* Social Research publications panel — catalog, compose, reader. */
+/* Social Research publications panel — file deposit catalog + reader. */
 (function initSocialResearchModule() {
     if (window.__KIU_SOCIAL_RESEARCH_MODULE_LOADED) return;
     window.__KIU_SOCIAL_RESEARCH_MODULE_LOADED = true;
@@ -38,7 +38,7 @@
         if (typeof fn === 'function') return fn(...a);
         console.error('[Social] research openDialog hook missing — cannot open Publish dialog');
         if (typeof window.setPortalSocialFlash === 'function') {
-            window.setPortalSocialFlash('Could not open the research composer.', 'danger');
+            window.setPortalSocialFlash('Could not open the research deposit dialog.', 'danger');
         }
         return undefined;
     }
@@ -90,6 +90,15 @@
         'Case study'
     ];
 
+    const RESEARCH_FILE_ACCEPT = [
+        '.pdf', '.ppt', '.pptx', '.doc', '.docx',
+        'application/pdf',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ].join(',');
+
     function publications() {
         return Array.isArray(state()?.social?.researchPublications)
             ? state().social.researchPublications
@@ -126,6 +135,19 @@
         return publications().find((item) => text(item?.id) === needle) || null;
     }
 
+    function itemFiles(item) {
+        if (Array.isArray(item?.files) && item.files.length) return item.files;
+        if (item?.pdf) return [{ ...item.pdf, fileKind: 'pdf' }];
+        return [];
+    }
+
+    function itemFileKind(item) {
+        const kind = text(item?.fileKind || itemFiles(item)[0]?.fileKind || '').toLowerCase();
+        if (kind === 'pdf' || kind === 'slides' || kind === 'document' || kind === 'other') return kind;
+        if (text(item?.format).toLowerCase() === 'pdf') return 'pdf';
+        return itemFiles(item).length ? 'other' : 'other';
+    }
+
     function filterPublicationsForTab(tab) {
         const ui = state()?.ui || {};
         const search = text(ui.researchSearch || '').toLowerCase();
@@ -144,8 +166,8 @@
             if (tab === 'student') return text(item.authorLane) === 'student';
             return false;
         }).filter((item) => {
-            if (format === 'article' || format === 'pdf') {
-                return text(item.format).toLowerCase() === format;
+            if (format === 'pdf' || format === 'slides' || format === 'document') {
+                return itemFileKind(item) === format;
             }
             return true;
         }).filter((item) => {
@@ -158,6 +180,7 @@
                 item.abstract,
                 item.bodyText,
                 item.authorName,
+                ...itemFiles(item).map((file) => file?.fileName),
                 ...(Array.isArray(item.topics) ? item.topics : [])
             ].map((part) => text(part).toLowerCase()).join(' ');
             return hay.includes(search);
@@ -168,18 +191,36 @@
         return text(lane) === 'student' ? 'Student Research' : 'Faculty & Staff';
     }
 
-    function formatLabel(format) {
-        return text(format).toLowerCase() === 'pdf' ? 'PDF' : 'Article';
+    function fileKindLabel(kind) {
+        const value = text(kind).toLowerCase();
+        if (value === 'pdf') return 'PDF';
+        if (value === 'slides') return 'Slides';
+        if (value === 'document') return 'Document';
+        return 'File';
+    }
+
+    function formatBytes(size) {
+        const bytes = Math.max(0, Number(size) || 0);
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${Math.round(bytes / 102.4) / 10} KB`;
+        return `${Math.round(bytes / (1024 * 102.4)) / 10} MB`;
     }
 
     function readingMeta(item) {
-        if (text(item?.format).toLowerCase() === 'pdf') {
-            const pages = Number(item?.pdf?.pageCount || 0);
-            return pages > 0 ? `${pages}p` : 'PDF';
+        const files = itemFiles(item);
+        if (!files.length) {
+            if (text(item?.bodyText || item?.bodyHtml || '')) return 'Archive text';
+            return 'Deposit';
         }
-        const words = text(item?.bodyText || item?.abstract || '').split(/\s+/).filter(Boolean).length;
-        const minutes = Math.max(1, Math.round(words / 180));
-        return `${minutes} min`;
+        if (files.length === 1) {
+            const primary = files[0];
+            if (itemFileKind(item) === 'pdf') {
+                const pages = Number(primary?.pageCount || 0);
+                return pages > 0 ? `${pages}p` : 'PDF';
+            }
+            return formatBytes(primary?.sizeBytes);
+        }
+        return `${files.length} files`;
     }
 
     function dateLabel(value) {
@@ -206,21 +247,22 @@
         runtime.ui = runtime.ui || {};
         if (!runtime.ui.researchDraft || typeof runtime.ui.researchDraft !== 'object') {
             runtime.ui.researchDraft = {
-                format: 'article',
                 authorLane: defaultLaneForUser(),
                 title: '',
                 abstract: '',
-                bodyText: '',
                 topics: 'Research',
                 facultyCode: text(currentUser()?.facultyCode || currentUser()?.faculty || ''),
                 doiOrUrl: '',
                 courseCode: '',
                 advisorName: '',
-                pdfFile: null,
-                pdfMeta: null
+                files: [],
+                fileMeta: []
             };
         }
-        return runtime.ui.researchDraft;
+        const draft = runtime.ui.researchDraft;
+        if (!Array.isArray(draft.files)) draft.files = [];
+        if (!Array.isArray(draft.fileMeta)) draft.fileMeta = [];
+        return draft;
     }
 
     function renderResearchHero(items) {
@@ -237,20 +279,20 @@
         const kicker = tab === 'student'
             ? 'Student papers and course research — kept separate from faculty.'
             : tab === 'mine'
-                ? 'Your drafts and published research items.'
-                : 'Faculty and staff scholarship for the campus.';
+                ? 'Your drafts and published research deposits.'
+                : 'Faculty and staff scholarship deposits for the campus.';
 
         return `
             <section class="social-neo-card social-neo-research-hero home-hover-chip">
                 <div class="social-neo-research-hero-head">
                     <div class="social-neo-research-hero-copy">
                         <span class="social-neo-overline lux-section-kicker">Research</span>
-                        <strong class="lux-card-title social-neo-research-title">Papers, articles &amp; PDFs</strong>
+                        <strong class="lux-card-title social-neo-research-title">Papers, slides &amp; documents</strong>
                         <p class="lux-panel-copy social-neo-research-copy home-hover-chip">${escape(kicker)}</p>
                     </div>
                     <div class="social-neo-research-hero-actions">
                         <button class="lux-primary-btn" type="button" data-action="research-create-open">
-                            <i class="fas fa-pen"></i> Publish
+                            <i class="fas fa-upload"></i> Deposit
                         </button>
                     </div>
                 </div>
@@ -281,20 +323,22 @@
         const ui = state()?.ui || {};
         const searchId = typeof controlId === 'function' ? controlId('research-search') : 'research-search';
         const faculties = facultyOptions();
+        const format = text(ui.researchFormat || 'all') || 'all';
         return `
             <div class="social-neo-research-toolbar home-hover-chip">
                 <label class="social-neo-research-filter">
                     <span class="lux-section-kicker">Search</span>
                     <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search"
-                        placeholder="Search title, author, topic..."
+                        placeholder="Search title, author, file..."
                         data-bind="research-search" value="${escape(ui.researchSearch || '')}" autocomplete="off">
                 </label>
                 <label class="social-neo-research-filter">
                     <span class="lux-section-kicker">Type</span>
                     <select class="social-neo-select lux-control" data-bind="research-format" data-lux-picker-label="Type">
-                        <option value="all" ${text(ui.researchFormat || 'all') === 'all' ? 'selected' : ''}>All types</option>
-                        <option value="article" ${text(ui.researchFormat) === 'article' ? 'selected' : ''}>Articles</option>
-                        <option value="pdf" ${text(ui.researchFormat) === 'pdf' ? 'selected' : ''}>PDFs</option>
+                        <option value="all" ${format === 'all' ? 'selected' : ''}>All</option>
+                        <option value="pdf" ${format === 'pdf' ? 'selected' : ''}>PDF</option>
+                        <option value="slides" ${format === 'slides' ? 'selected' : ''}>Slides</option>
+                        <option value="document" ${format === 'document' ? 'selected' : ''}>Documents</option>
                     </select>
                 </label>
                 <label class="social-neo-research-filter">
@@ -309,13 +353,15 @@
     }
 
     function renderResearchCard(item) {
-        const isPdf = text(item.format).toLowerCase() === 'pdf';
+        const kind = itemFileKind(item);
+        const files = itemFiles(item);
         const status = text(item.status) === 'draft' ? '<span class="lux-status-pill home-hover-chip is-warning">Draft</span>' : '';
+        const fileHint = files[0]?.fileName || '';
         return `
             <button class="social-neo-card social-neo-research-card home-hover-chip" type="button"
                 data-action="research-reader-open" data-research-id="${escape(item.id)}">
                 <div class="social-neo-research-card-top">
-                    <span class="lux-status-pill home-hover-chip ${isPdf ? 'is-warning' : 'is-info'}">${escape(formatLabel(item.format))}</span>
+                    <span class="lux-status-pill home-hover-chip ${kind === 'pdf' ? 'is-warning' : kind === 'slides' ? 'is-info' : 'is-muted'}">${escape(fileKindLabel(kind))}</span>
                     ${status}
                     <span class="lux-status-pill home-hover-chip is-muted">${escape(laneLabel(item.authorLane))}</span>
                 </div>
@@ -325,6 +371,7 @@
                     ${item.facultyCode ? ` · ${escape(item.facultyCode)}` : ''}
                 </span>
                 ${item.abstract ? `<p class="lux-panel-copy social-neo-research-card-abstract">${escape(item.abstract)}</p>` : ''}
+                ${fileHint ? `<span class="lux-panel-copy social-neo-research-card-file">${escape(fileHint)}${files.length > 1 ? ` · +${files.length - 1}` : ''}</span>` : ''}
                 <span class="lux-panel-copy social-neo-research-card-foot">
                     ${escape(readingMeta(item))}
                     ${item.publishedAt || item.createdAt ? ` · ${escape(dateLabel(item.publishedAt || item.createdAt))}` : ''}
@@ -333,36 +380,79 @@
         `;
     }
 
-    function renderArticleBody(bodyText) {
-        const paragraphs = text(bodyText)
+    function renderLegacyArchiveBody(item) {
+        const html = text(item?.bodyHtml || '');
+        if (html) {
+            const plain = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            if (plain) return `<p class="lux-panel-copy">${escape(plain)}</p>`;
+        }
+        const paragraphs = text(item?.bodyText || '')
             .split(/\n{2,}/)
             .map((block) => text(block))
             .filter(Boolean);
-        if (!paragraphs.length) return '<p class="lux-panel-copy">No article body yet.</p>';
+        if (!paragraphs.length) return '';
         return paragraphs.map((block) => {
             const lines = block.split('\n').map((line) => escape(line)).join('<br>');
             return `<p class="lux-panel-copy social-neo-research-article-p">${lines}</p>`;
         }).join('');
     }
 
+    function renderFileList(item, activeIndex) {
+        const files = itemFiles(item);
+        if (!files.length) return '';
+        return `
+            <div class="social-neo-research-file-list">
+                <span class="lux-section-kicker">Files</span>
+                <ul class="social-neo-research-files">
+                    ${files.map((file, index) => {
+                        const url = typeof fileUrl === 'function' ? fileUrl(file, { forDisplay: true }) : '';
+                        const kind = text(file.fileKind) || itemFileKind({ ...item, files: [file] });
+                        return `
+                            <li class="social-neo-research-file-row ${index === activeIndex ? 'is-active' : ''}">
+                                <button class="lux-secondary-btn social-neo-research-file-select" type="button"
+                                    data-action="research-file-select" data-file-index="${index}">
+                                    <strong>${escape(file.fileName || 'file')}</strong>
+                                    <small>${escape(fileKindLabel(kind))} · ${escape(formatBytes(file.sizeBytes))}</small>
+                                </button>
+                                ${url ? `
+                                    <a class="lux-secondary-btn" href="${escape(url)}" download="${escape(file.fileName || 'file')}">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                ` : ''}
+                            </li>
+                        `;
+                    }).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
     function renderResearchReader(item) {
         if (!item) return '';
-        const isPdf = text(item.format).toLowerCase() === 'pdf';
+        const files = itemFiles(item);
+        const activeIndex = Math.min(
+            Math.max(0, Number(state()?.ui?.researchActiveFileIndex) || 0),
+            Math.max(0, files.length - 1)
+        );
+        const active = files[activeIndex] || null;
+        const activeKind = text(active?.fileKind) || itemFileKind(item);
+        const isPdf = activeKind === 'pdf' && active;
         const viewMode = text(state()?.ui?.researchPdfViewMode || 'scroll') || 'scroll';
         const pdfUrl = isPdf && typeof fileUrl === 'function'
-            ? fileUrl(item.pdf || {}, { forDisplay: true })
+            ? fileUrl(active, { forDisplay: true })
             : '';
+        const legacyBody = !files.length ? renderLegacyArchiveBody(item) : '';
 
         return `
-            <section class="social-neo-card social-neo-research-reader">
+            <section class="social-neo-card social-neo-research-reader" data-research-reader="1">
                 <div class="social-neo-research-reader-head">
                     <button class="lux-secondary-btn" type="button" data-action="research-reader-close">
                         <i class="fas fa-arrow-left"></i> Back to Research
                     </button>
-                    <span class="lux-panel-copy">${escape(laneLabel(item.authorLane))} · ${escape(formatLabel(item.format))} · ${escape(readingMeta(item))}</span>
+                    <span class="lux-panel-copy">${escape(laneLabel(item.authorLane))} · ${escape(fileKindLabel(itemFileKind(item)))} · ${escape(readingMeta(item))}</span>
                 </div>
                 <div class="social-neo-research-reader-titleblock">
-                    <span class="lux-section-kicker">${escape(formatLabel(item.format))}</span>
+                    <span class="lux-section-kicker">${escape(fileKindLabel(itemFileKind(item)))}</span>
                     <h1 class="lux-page-title social-neo-research-reader-title">${escape(item.title || 'Untitled')}</h1>
                     <p class="lux-panel-copy">
                         ${escape(item.authorName || 'Author')}
@@ -371,17 +461,12 @@
                     </p>
                     <div class="social-neo-research-reader-actions">
                         <button class="lux-secondary-btn" type="button" data-action="research-save" data-research-id="${escape(item.id)}">
-                            <i class="fas ${item.isSaved ? 'fa-bookmark' : 'fa-bookmark'}"></i> ${item.isSaved ? 'Saved' : 'Save'}
+                            <i class="fas fa-bookmark"></i> ${item.isSaved ? 'Saved' : 'Save'}
                         </button>
                         ${item.canManage ? `
                             <button class="lux-secondary-btn lux-danger-btn" type="button" data-action="research-delete" data-research-id="${escape(item.id)}">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
-                        ` : ''}
-                        ${isPdf && pdfUrl ? `
-                            <a class="lux-secondary-btn" href="${escape(pdfUrl)}" download="${escape(item.pdf?.fileName || 'paper.pdf')}">
-                                <i class="fas fa-download"></i> Download
-                            </a>
                         ` : ''}
                     </div>
                 </div>
@@ -391,6 +476,7 @@
                         <p class="lux-panel-copy">${escape(item.abstract)}</p>
                     </div>
                 ` : ''}
+                ${renderFileList(item, activeIndex)}
                 ${isPdf ? `
                     <div class="social-neo-research-pdf-toolbar">
                         <button class="lux-secondary-btn ${viewMode === 'scroll' ? 'is-focused' : ''}" type="button" data-action="research-pdf-mode" data-mode="scroll">Scroll</button>
@@ -403,19 +489,33 @@
                         <button class="lux-secondary-btn" type="button" data-action="research-pdf-next"><i class="fas fa-chevron-right"></i></button>
                     </div>
                     <div class="social-neo-research-pdf-shell" data-research-pdf-shell="1" data-view-mode="${escape(viewMode)}"
-                        data-storage-key="${escape(item.pdf?.storageKey || '')}"
-                        data-data-url="${escape(item.pdf?.dataUrl || '')}"
+                        data-storage-key="${escape(active?.storageKey || '')}"
+                        data-data-url="${escape(active?.dataUrl || '')}"
                         data-file-url="${escape(pdfUrl || '')}">
                         <aside class="social-neo-research-pdf-thumbs lux-scrollbar" data-research-pdf-thumbs hidden></aside>
                         <div class="social-neo-research-pdf-viewport lux-scrollbar" data-research-pdf-viewport>
                             <div class="social-neo-research-pdf-pages" data-research-pdf-pages></div>
                         </div>
                     </div>
-                ` : `
+                ` : active ? `
+                    <div class="social-neo-research-download-panel lux-empty-state">
+                        <i class="fas fa-file-arrow-down" aria-hidden="true"></i>
+                        <strong class="lux-empty-state__title">Download to open</strong>
+                        <span class="lux-empty-state__copy">${escape(active.fileName || 'This file')} opens in PowerPoint, Word, or another desktop app.</span>
+                        ${typeof fileUrl === 'function' ? `
+                            <div class="lux-empty-state__action">
+                                <a class="lux-primary-btn" href="${escape(fileUrl(active, { forDisplay: true }))}" download="${escape(active.fileName || 'file')}">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : legacyBody ? `
                     <article class="social-neo-research-article-body">
-                        ${renderArticleBody(item.bodyText)}
+                        <span class="lux-section-kicker">Archive text</span>
+                        ${legacyBody}
                     </article>
-                `}
+                ` : '<p class="lux-panel-copy">No files on this deposit.</p>'}
                 ${item.doiOrUrl || (Array.isArray(item.topics) && item.topics.length) ? `
                     <div class="social-neo-research-meta-strip lux-panel-copy">
                         ${Array.isArray(item.topics) && item.topics.length ? `<span>Topics: ${escape(item.topics.join(', '))}</span>` : ''}
@@ -428,7 +528,27 @@
         `;
     }
 
+    function renderDepositFileList(draft) {
+        const meta = Array.isArray(draft.fileMeta) ? draft.fileMeta : [];
+        if (!meta.length) {
+            return '<span class="lux-panel-copy" data-research-files-label>Drop PDF, PPT, or Word files — or browse</span>';
+        }
+        return `
+            <ul class="social-neo-research-deposit-files" data-research-files-label>
+                ${meta.map((file, index) => `
+                    <li>
+                        <span class="lux-panel-copy">${escape(file.fileName || 'file')} · ${escape(formatBytes(file.sizeBytes))}</span>
+                        <button class="lux-ghost-btn" type="button" data-action="research-file-remove" data-file-index="${index}" aria-label="Remove file">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+    }
+
     function renderResearchCreateDialog(runtime = state()) {
+        void runtime;
         const draft = ensureResearchDraft();
         draft.authorLane = resolveAuthorLane(draft.authorLane);
         const role = currentUser()?.role;
@@ -437,23 +557,7 @@
         const studentLocked = !staff;
         const facultyLocked = staff && !admin;
         const lane = text(draft.authorLane) === 'student' ? 'student' : 'faculty';
-        const format = text(draft.format) === 'pdf' ? 'pdf' : 'article';
-        return `
-            <div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Publish to Research">
-            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--social-glass social-neo-research-create"
-                data-form="research-create" data-action="noop" data-lux-transparency-exempt="1">
-                <div class="lux-glass-dialog-head">
-                    <div>
-                        <span class="lux-section-kicker">Research</span>
-                        <strong class="lux-card-title">Publish to Research</strong>
-                        <p class="lux-panel-copy">Choose article or PDF. Student and faculty streams stay separate.</p>
-                    </div>
-                    <button class="lux-secondary-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="lux-glass-dialog-body social-neo-research-create-body">
-                    <fieldset class="social-neo-research-fieldset">
-                        <legend class="lux-section-kicker">Audience lane</legend>
-                        ${studentLocked ? `
+        const laneBlock = studentLocked ? `
                             <label class="social-neo-research-choice lux-soft-chrome home-hover-chip is-active">
                                 <input type="radio" name="researchLane" value="student" checked disabled>
                                 <span><strong>Student Research</strong><small>Locked for student accounts</small></span>
@@ -474,73 +578,65 @@
                                 <input type="radio" name="researchLane" value="student" ${lane === 'student' ? 'checked' : ''}>
                                 <span><strong>Student Research</strong><small>Separate student lane</small></span>
                             </label>
-                        `}
-                    </fieldset>
+                        `;
+        return `
+            <div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Deposit to Research">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--social-glass social-neo-research-create"
+                data-form="research-create" data-action="noop" data-lux-transparency-exempt="1" autocomplete="off">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title"><i class="fas fa-upload" aria-hidden="true"></i> Deposit to Research</strong>
+                        <span class="lux-glass-dialog-subtitle">Add metadata and drop PDF, PowerPoint, or Word files.</span>
+                    </div>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="lux-glass-dialog-body social-neo-research-create-body">
                     <fieldset class="social-neo-research-fieldset">
-                        <legend class="lux-section-kicker">Format</legend>
-                        <div class="social-neo-research-format-grid">
-                            <label class="social-neo-research-format-card lux-soft-chrome home-hover-chip ${format === 'article' ? 'is-active' : ''}">
-                                <input type="radio" name="researchFormat" value="article" ${format === 'article' ? 'checked' : ''}>
-                                <i class="fas fa-font" aria-hidden="true"></i>
-                                <strong>Article</strong>
-                                <small>Medium-style long-form</small>
-                            </label>
-                            <label class="social-neo-research-format-card lux-soft-chrome home-hover-chip ${format === 'pdf' ? 'is-active' : ''}">
-                                <input type="radio" name="researchFormat" value="pdf" ${format === 'pdf' ? 'checked' : ''}>
-                                <i class="fas fa-file-pdf" aria-hidden="true"></i>
-                                <strong>PDF file</strong>
-                                <small>Drop or browse</small>
-                            </label>
-                        </div>
+                        <legend class="social-neo-label">Audience lane</legend>
+                        ${laneBlock}
                     </fieldset>
-                    <label class="social-neo-research-field">
-                        <span class="lux-section-kicker">Title *</span>
+                    <label class="lux-glass-dialog-field">
+                        <span class="social-neo-label">Title *</span>
                         <input class="social-neo-input lux-control" name="researchTitle" required value="${escape(draft.title || '')}" placeholder="Publication title" autocomplete="off">
                     </label>
-                    <div class="social-neo-research-field-grid">
-                        <label class="social-neo-research-field">
-                            <span class="lux-section-kicker">Faculty</span>
+                    <label class="lux-glass-dialog-field">
+                        <span class="social-neo-label">Abstract</span>
+                        <textarea class="social-neo-textarea lux-control" name="researchAbstract" rows="3" placeholder="Optional short summary" autocomplete="off">${escape(draft.abstract || '')}</textarea>
+                    </label>
+                    <div class="social-neo-form-grid social-neo-form-grid-2">
+                        <label class="lux-glass-dialog-field">
+                            <span class="social-neo-label">Faculty</span>
                             <input class="social-neo-input lux-control" name="researchFaculty" value="${escape(draft.facultyCode || '')}" placeholder="e.g. ECON" autocomplete="off">
                         </label>
-                        <label class="social-neo-research-field">
-                            <span class="lux-section-kicker">Topic</span>
-                            <select class="social-neo-select lux-control" name="researchTopic" data-lux-picker-label="Topic">
+                        <label class="lux-glass-dialog-field">
+                            <span class="social-neo-label">Topic</span>
+                            <select class="social-neo-select lux-control" name="researchTopic" data-lux-picker-label="Topic" autocomplete="off">
                                 ${RESEARCH_TOPICS.map((topic) => `<option value="${escape(topic)}" ${text(draft.topics) === topic ? 'selected' : ''}>${escape(topic)}</option>`).join('')}
                             </select>
                         </label>
                     </div>
-                    <label class="social-neo-research-field">
-                        <span class="lux-section-kicker">Abstract</span>
-                        <textarea class="social-neo-input lux-control" name="researchAbstract" rows="3" placeholder="Short summary">${escape(draft.abstract || '')}</textarea>
-                    </label>
-                    ${format === 'article' ? `
-                        <label class="social-neo-research-field">
-                            <span class="lux-section-kicker">Article body</span>
-                            <textarea class="social-neo-input lux-control social-neo-research-body-input" name="researchBody" rows="10" placeholder="Write the long-form article...">${escape(draft.bodyText || '')}</textarea>
-                        </label>
-                    ` : `
-                        <label class="social-neo-research-dropzone lux-soft-chrome home-hover-chip">
-                            <span class="lux-section-kicker">PDF file *</span>
-                            <input class="social-neo-input lux-control" type="file" name="researchPdfFile" accept="application/pdf,.pdf">
-                            <span class="lux-panel-copy" data-research-pdf-filename>${escape(draft.pdfMeta?.fileName || draft.pdfFile?.name || 'Drop PDF here or browse')}</span>
-                        </label>
-                    `}
-                    <label class="social-neo-research-field">
-                        <span class="lux-section-kicker">DOI / external link</span>
+                    <label class="lux-glass-dialog-field">
+                        <span class="social-neo-label">DOI / external link</span>
                         <input class="social-neo-input lux-control" name="researchDoi" value="${escape(draft.doiOrUrl || '')}" placeholder="https://..." autocomplete="off">
                     </label>
                     ${lane === 'student' ? `
-                        <div class="social-neo-research-field-grid">
-                            <label class="social-neo-research-field">
-                                <span class="lux-section-kicker">Course code</span>
+                        <div class="social-neo-form-grid social-neo-form-grid-2">
+                            <label class="lux-glass-dialog-field">
+                                <span class="social-neo-label">Course code</span>
                                 <input class="social-neo-input lux-control" name="researchCourse" value="${escape(draft.courseCode || '')}" placeholder="e.g. MGT201" autocomplete="off">
                             </label>
-                            <label class="social-neo-research-field">
-                                <span class="lux-section-kicker">Advisor</span>
+                            <label class="lux-glass-dialog-field">
+                                <span class="social-neo-label">Advisor</span>
                                 <input class="social-neo-input lux-control" name="researchAdvisor" value="${escape(draft.advisorName || '')}" placeholder="Optional" autocomplete="off">
                             </label>
                         </div>
                     ` : ''}
+                    <label class="lux-glass-dialog-field social-neo-research-dropzone lux-soft-chrome home-hover-chip">
+                        <span class="social-neo-label">Files *</span>
+                        <input class="social-neo-input lux-control" type="file" name="researchFiles" multiple
+                            accept="${escape(RESEARCH_FILE_ACCEPT)}">
+                        ${renderDepositFileList(draft)}
+                    </label>
                 </div>
                 <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
                     <button class="lux-secondary-btn home-hover-chip" type="submit" name="researchIntent" value="draft">Save draft</button>
@@ -571,10 +667,10 @@
                         ? `<div class="social-neo-research-grid">${items.map(renderResearchCard).join('')}</div>`
                         : `<div class="lux-empty-state social-neo-research-empty">
                                 <i class="fas fa-book-open" aria-hidden="true"></i>
-                                <strong class="lux-empty-state__title">No publications in this lane</strong>
-                                <span class="lux-empty-state__copy">Publish an article or PDF — student and faculty streams stay separate.</span>
+                                <strong class="lux-empty-state__title">No deposits in this lane</strong>
+                                <span class="lux-empty-state__copy">Drop PDF, slides, or documents — student and faculty streams stay separate.</span>
                                 <div class="lux-empty-state__action">
-                                    <button class="lux-primary-btn" type="button" data-action="research-create-open"><i class="fas fa-pen"></i> Publish</button>
+                                    <button class="lux-primary-btn" type="button" data-action="research-create-open"><i class="fas fa-upload"></i> Deposit</button>
                                 </div>
                            </div>`}
                 </section>
@@ -606,8 +702,19 @@
             ensureResearchDraft();
             return openDialog('research-create', {});
         }
+        if (action === 'research-file-remove') {
+            const draft = ensureResearchDraft();
+            const index = Number(trigger?.getAttribute('data-file-index'));
+            if (Number.isInteger(index) && index >= 0) {
+                draft.files = draft.files.filter((_, i) => i !== index);
+                draft.fileMeta = draft.fileMeta.filter((_, i) => i !== index);
+            }
+            openDialog('research-create', {});
+            return renderSocialPageNow('research-create-open');
+        }
         if (action === 'research-reader-open') {
             runtime.ui.researchReaderId = text(trigger?.getAttribute('data-research-id') || '');
+            runtime.ui.researchActiveFileIndex = 0;
             runtime.ui.researchPdfViewMode = 'scroll';
             runtime.ui.researchPdfZoom = 1;
             runtime.ui.researchPdfPage = 1;
@@ -618,6 +725,13 @@
                     window.mountSocialResearchPdfViewer();
                 }
             });
+            return result;
+        }
+        if (action === 'research-file-select') {
+            runtime.ui.researchActiveFileIndex = Math.max(0, Number(trigger?.getAttribute('data-file-index') || 0) || 0);
+            invalidateSocialRenderCache?.({ center: true });
+            const result = renderSocialPageNow('research-reader-open');
+            queueMicrotask(() => window.mountSocialResearchPdfViewer?.());
             return result;
         }
         if (action === 'research-reader-close') {
@@ -670,26 +784,35 @@
         return false;
     }
 
+    function appendDraftFiles(fileList) {
+        const draft = ensureResearchDraft();
+        const incoming = Array.from(fileList || []).slice(0, 6);
+        incoming.forEach((file) => {
+            if (draft.files.length >= 6) return;
+            draft.files.push(file);
+            draft.fileMeta.push({
+                fileName: file.name,
+                sizeBytes: file.size,
+                mimeType: file.type
+            });
+        });
+        return draft;
+    }
+
     function syncDraftFromForm(form) {
         const draft = ensureResearchDraft();
         const laneInput = form.querySelector('input[name="researchLane"]:checked')
             || form.querySelector('input[name="researchLane"][type="hidden"]');
-        const formatInput = form.querySelector('input[name="researchFormat"]:checked');
         draft.authorLane = resolveAuthorLane(laneInput?.value || defaultLaneForUser());
-        draft.format = text(formatInput?.value || 'article') === 'pdf' ? 'pdf' : 'article';
         draft.title = text(form.researchTitle?.value || '');
         draft.abstract = text(form.researchAbstract?.value || '');
-        draft.bodyText = text(form.researchBody?.value || '');
         draft.facultyCode = text(form.researchFaculty?.value || '');
         draft.topics = text(form.researchTopic?.value || 'Research');
         draft.doiOrUrl = text(form.researchDoi?.value || '');
         draft.courseCode = text(form.researchCourse?.value || '');
         draft.advisorName = text(form.researchAdvisor?.value || '');
-        const fileInput = form.querySelector('input[name="researchPdfFile"]');
-        if (fileInput?.files?.[0]) {
-            draft.pdfFile = fileInput.files[0];
-            draft.pdfMeta = { fileName: fileInput.files[0].name, sizeBytes: fileInput.files[0].size };
-        }
+        const fileInput = form.querySelector('input[name="researchFiles"]');
+        if (fileInput?.files?.length) appendDraftFiles(fileInput.files);
         return draft;
     }
 
@@ -704,12 +827,8 @@
             addPortalSocialToast?.({ title: 'Title required', text: 'Add a publication title.', icon: 'fa-circle-exclamation' });
             return true;
         }
-        if (draft.format === 'pdf' && !draft.pdfFile && !draft.pdfMeta?.storageKey) {
-            addPortalSocialToast?.({ title: 'PDF required', text: 'Attach a PDF file.', icon: 'fa-circle-exclamation' });
-            return true;
-        }
-        if (draft.format === 'article' && publish && !draft.bodyText && !draft.abstract) {
-            addPortalSocialToast?.({ title: 'Content required', text: 'Add an abstract or article body.', icon: 'fa-circle-exclamation' });
+        if (publish && !draft.files.length) {
+            addPortalSocialToast?.({ title: 'File required', text: 'Attach at least one PDF, PPT, or Word file to publish.', icon: 'fa-circle-exclamation' });
             return true;
         }
         if (typeof createPortalSocialResearch !== 'function') return true;
@@ -717,15 +836,13 @@
             await createPortalSocialResearch({
                 title: draft.title,
                 abstract: draft.abstract,
-                bodyText: draft.bodyText,
-                format: draft.format,
                 authorLane: draft.authorLane,
                 facultyCode: draft.facultyCode,
                 topics: draft.topics,
                 doiOrUrl: draft.doiOrUrl,
                 courseCode: draft.courseCode,
                 advisorName: draft.advisorName,
-                file: draft.pdfFile,
+                files: draft.files,
                 publish,
                 status: publish ? 'published' : 'draft'
             });
@@ -744,18 +861,16 @@
             renderSocialPageNow('research-input');
             return true;
         }
-        if (target.name === 'researchFormat' || target.name === 'researchLane') {
+        if (target.name === 'researchLane') {
             syncDraftFromForm(target.closest('form'));
             openDialog('research-create', {});
             return renderSocialPageNow('research-create-open');
         }
-        if (target.name === 'researchPdfFile' && target.files?.[0]) {
-            const draft = ensureResearchDraft();
-            draft.pdfFile = target.files[0];
-            draft.pdfMeta = { fileName: target.files[0].name, sizeBytes: target.files[0].size };
-            const label = target.closest('label')?.querySelector('[data-research-pdf-filename]');
-            if (label) label.textContent = target.files[0].name;
-            return true;
+        if (target.name === 'researchFiles' && target.files?.length) {
+            appendDraftFiles(target.files);
+            target.value = '';
+            openDialog('research-create', {});
+            return renderSocialPageNow('research-create-open');
         }
         return false;
     }
@@ -773,7 +888,7 @@
             renderSocialPageNow('research-input');
             return true;
         }
-        if (target.name === 'researchFormat' || target.name === 'researchLane') {
+        if (target.name === 'researchLane' || target.name === 'researchFiles') {
             return handleSocialResearchInput(target);
         }
         return false;

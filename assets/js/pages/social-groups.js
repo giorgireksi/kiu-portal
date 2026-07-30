@@ -184,16 +184,16 @@
                         <div class="social-neo-group-card-title">
                             <strong>${escape(text(group.name || 'Group'))}</strong>
                             <span class="social-neo-group-card-meta">
-                                <span class="social-neo-pill">${escape(text(group.visibility || 'public'))}</span>
+                                <span class="social-neo-pill home-hover-chip">${escape(text(group.visibility || 'public'))}</span>
                                 <span>${escape(group.memberCount || memberIds.length || 0)} members</span>
                             </span>
                         </div>
                     </div>
                     <p class="social-neo-group-card-desc">${escape(description)}</p>
                     <div class="social-neo-badge-row social-neo-group-card-badges">
-                        ${group.isManager ? `<span class="social-neo-pill">Managed by you</span>` : ''}
-                        ${pendingMembers.length ? `<span class="social-neo-pill">${escape(pendingMembers.length)} pending</span>` : ''}
-                        ${pinnedCount ? `<span class="social-neo-pill">${escape(pinnedCount)} pinned</span>` : ''}
+                        ${group.isManager ? `<span class="social-neo-pill home-hover-chip">Managed by you</span>` : ''}
+                        ${pendingMembers.length ? `<span class="social-neo-pill home-hover-chip">${escape(pendingMembers.length)} pending</span>` : ''}
+                        ${pinnedCount ? `<span class="social-neo-pill home-hover-chip">${escape(pinnedCount)} pinned</span>` : ''}
                     </div>
                     <div class="social-neo-group-card-actions">
                         <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="group-detail-open" data-group-id="${escape(text(group.id))}">
@@ -202,7 +202,7 @@
                         ${group.membershipState === 'manager' || group.membershipState === 'member'
                             ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}"><i class="fas fa-comments"></i> Chat</button>`
                             : group.membershipState === 'pending'
-                                ? `<span class="social-neo-pill">Pending</span>`
+                                ? `<span class="social-neo-pill home-hover-chip">Pending</span>`
                                 : `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">
                                     <i class="fas fa-plus"></i> ${text(group.visibility) === 'private' ? 'Request' : 'Join'}
                                   </button>`
@@ -379,7 +379,7 @@
         const ctx = buildGroupCreateInviteContext(runtime);
         const inviteCount = ctx.selectedMemberIds.length;
         const inviteBadge = inviteCount > 0
-            ? `<span class="lux-glass-dialog-submit-badge">${escape(String(inviteCount))}</span>`
+            ? `<span class="lux-glass-dialog-submit-badge home-hover-chip">${escape(String(inviteCount))}</span>`
             : '';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
             <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--group-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="create-group" data-action="noop" data-lux-transparency-exempt="1">
@@ -425,10 +425,10 @@
     function renderGroupDetailMemberLine(group, memberId) {
         const account = accountById(memberId) || { id: memberId };
         return `
-            <div class="social-neo-item-line">
+            <div class="social-neo-item-line lux-soft-chrome home-hover-chip">
                 <span>${escape(displayName(account))}</span>
                 ${group.isManager && text(memberId) !== currentUserId() ? `
-                    <button class="lux-ghost-btn" type="button" data-action="group-member-remove" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Remove</button>
+                    <button class="lux-ghost-btn home-hover-chip" type="button" data-action="group-member-remove" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Remove</button>
                 ` : ''}
             </div>
         `;
@@ -462,11 +462,11 @@
             : (group.membershipState === 'member' ? 'Member' : group.membershipState === 'pending' ? 'Request pending' : 'Not a member');
         const description = text(group.description || '') || 'No description yet.';
         const primaryAction = group.membershipState === 'manager' || group.membershipState === 'member'
-            ? `<button class="lux-primary-btn" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}"><i class="fas fa-comments"></i> Open chat</button>
-               <button class="lux-secondary-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}"><i class="fas fa-sign-out-alt"></i> Leave</button>`
+            ? `<button class="lux-primary-btn home-hover-chip" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}"><i class="fas fa-comments"></i> Open chat</button>
+               <button class="lux-secondary-btn home-hover-chip" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}"><i class="fas fa-sign-out-alt"></i> Leave</button>`
             : group.membershipState === 'pending'
-                ? `<span class="social-neo-pill">Request pending</span>`
-                : `<button class="lux-primary-btn" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">
+                ? `<span class="social-neo-pill lux-status-pill home-hover-chip">Request pending</span>`
+                : `<button class="lux-primary-btn home-hover-chip" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">
                     <i class="fas fa-plus"></i> ${visibility === 'private' ? 'Request to join' : 'Join group'}
                   </button>`;
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(text(group.name || 'Group'))}">
@@ -475,77 +475,77 @@
                     <div class="social-neo-group-detail-identity">
                         <div class="social-neo-group-card-avatar social-neo-group-detail-avatar">${groupAvatar(group)}</div>
                         <div class="lux-glass-dialog-heading">
-                            <strong class="lux-glass-dialog-title">${escape(text(group.name || 'Group'))}</strong>
+                            <strong class="lux-glass-dialog-title lux-card-title">${escape(text(group.name || 'Group'))}</strong>
                             <span class="lux-glass-dialog-subtitle social-neo-group-detail-meta">
-                                <span class="social-neo-pill">${escape(visibility)}</span>
-                                <span>${escape(String(memberCount))} members</span>
-                                <span class="social-neo-pill">${escape(roleLabel)}</span>
+                                <span class="social-neo-pill lux-status-pill home-hover-chip">${escape(visibility)}</span>
+                                <span class="lux-card-meta">${escape(String(memberCount))} members</span>
+                                <span class="social-neo-pill lux-status-pill home-hover-chip">${escape(roleLabel)}</span>
                             </span>
                         </div>
                     </div>
-                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn home-hover-chip" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="lux-glass-dialog-body lux-glass-dialog-body--group-detail">
-                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section lux-soft-chrome home-hover-chip">
                         <div class="lux-glass-dialog-group-section-head">
-                            <strong>About</strong>
-                            <span>Group description and purpose.</span>
+                            <strong class="lux-card-title">About</strong>
+                            <span class="lux-card-copy">Group description and purpose.</span>
                         </div>
-                        <p class="social-neo-group-detail-desc">${escape(description)}</p>
+                        <p class="social-neo-group-detail-desc lux-card-copy">${escape(description)}</p>
                     </section>
-                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section lux-soft-chrome home-hover-chip">
                         <div class="lux-glass-dialog-group-section-head">
-                            <strong>Members</strong>
-                            <span>${escape(String(memberIds.length || memberCount))} active members.</span>
+                            <strong class="lux-card-title">Members</strong>
+                            <span class="lux-card-copy">${escape(String(memberIds.length || memberCount))} active members.</span>
                         </div>
                         <div class="social-neo-list social-neo-group-detail-list">
                             ${memberIds.length
                                 ? memberIds.map((memberId) => renderGroupDetailMemberLine(group, memberId)).join('')
-                                : '<p class="lux-glass-dialog-hint">No members yet.</p>'}
+                                : '<p class="lux-glass-dialog-hint lux-card-meta">No members yet.</p>'}
                         </div>
                     </section>
-                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section lux-soft-chrome home-hover-chip">
                         <div class="lux-glass-dialog-group-section-head">
-                            <strong>Pinned resources</strong>
-                            <span>${escape(String(pinnedCount))} pinned updates in this group feed.</span>
+                            <strong class="lux-card-title">Pinned resources</strong>
+                            <span class="lux-card-copy">${escape(String(pinnedCount))} pinned updates in this group feed.</span>
                         </div>
                     </section>
                     ${group.isManager ? `
-                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                    <section class="lux-glass-dialog-group-section social-neo-group-detail-section lux-soft-chrome home-hover-chip">
                         <div class="lux-glass-dialog-group-section-head">
-                            <strong>Manager tools</strong>
-                            <span>Visibility and join requests.</span>
+                            <strong class="lux-card-title">Manager tools</strong>
+                            <span class="lux-card-copy">Visibility and join requests.</span>
                         </div>
                         <div class="social-neo-badge-row">
-                            <button class="lux-secondary-btn lux-secondary-btn-sm ${visibility === 'public' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="public">Public</button>
-                            <button class="lux-secondary-btn lux-secondary-btn-sm ${visibility === 'private' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="private">Private</button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm home-hover-chip ${visibility === 'public' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="public">Public</button>
+                            <button class="lux-secondary-btn lux-secondary-btn-sm home-hover-chip ${visibility === 'private' ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="group-visibility-set" data-group-id="${escape(text(group.id))}" data-visibility="private">Private</button>
                         </div>
                         ${pendingMembers.length ? `
                         <div class="social-neo-group-detail-pending">
-                            <span class="social-neo-label">${escape(String(pendingMembers.length))} pending requests</span>
+                            <span class="social-neo-label lux-card-meta">${escape(String(pendingMembers.length))} pending requests</span>
                             <div class="social-neo-list social-neo-group-detail-list">
                                 ${pendingMembers.map((memberId) => {
                                     const account = accountById(memberId) || { id: memberId };
                                     return `
-                                        <div class="social-neo-item-line">
+                                        <div class="social-neo-item-line lux-soft-chrome home-hover-chip">
                                             <span>${escape(displayName(account))}</span>
                                             <div class="social-neo-inline">
-                                                <button class="lux-ghost-btn" type="button" data-action="group-approve" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Approve</button>
-                                                <button class="lux-ghost-btn" type="button" data-action="group-decline" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Decline</button>
+                                                <button class="lux-ghost-btn home-hover-chip" type="button" data-action="group-approve" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Approve</button>
+                                                <button class="lux-ghost-btn home-hover-chip" type="button" data-action="group-decline" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Decline</button>
                                             </div>
                                         </div>
                                     `;
                                 }).join('')}
                             </div>
                         </div>
-                        ` : '<p class="lux-glass-dialog-hint">No pending join requests.</p>'}
+                        ` : '<p class="lux-glass-dialog-hint lux-card-meta">No pending join requests.</p>'}
                     </section>
                     ` : ''}
                 </div>
                 <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions social-neo-group-detail-actions">
                     ${primaryAction}
-                    <button class="lux-secondary-btn" type="button" data-action="group-report" data-group-id="${escape(text(group.id))}"><i class="fas fa-flag"></i> Report</button>
-                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
+                    <button class="lux-secondary-btn home-hover-chip" type="button" data-action="group-report" data-group-id="${escape(text(group.id))}"><i class="fas fa-flag"></i> Report</button>
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn home-hover-chip" type="button" data-action="dialog-close">Close</button>
                 </div>
             </div>
         </div>`;
@@ -797,7 +797,7 @@
                                     <div class="social-neo-person">
                                         ${avatar(member, 'social-neo-avatar-sm')}
                                         <div class="lux-glass-dialog-member-info">
-                                            <strong>${escape(displayName(member))}${isSelf ? ' <span class="social-neo-pill">You</span>' : ''}${isAdmin ? ' <span class="social-neo-pill social-neo-pill-accent">Admin</span>' : ''}</strong>
+                                            <strong>${escape(displayName(member))}${isSelf ? ' <span class="social-neo-pill home-hover-chip">You</span>' : ''}${isAdmin ? ' <span class="social-neo-pill home-hover-chip social-neo-pill-accent">Admin</span>' : ''}</strong>
                                             <span>${escape(accountSubtitle(member))}</span>
                                         </div>
                                     </div>
@@ -870,7 +870,7 @@
                                 <span>Filter and open attachments from this chat.</span>
                             </div>
                             <div class="social-neo-inline social-neo-inline-gap-6-wrap social-neo-panel-filter-row">
-                            ${['all', 'documents', 'images', 'other'].map((f) => `<button class="social-neo-chip ${fileFilter === f ? 'is-active' : ''}" type="button" data-action="group-panel-file-filter" data-chat-id="${escape(text(dialog.chatId))}" data-filter="${escape(f)}">${escape(f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1))}</button>`).join('')}
+                            ${['all', 'documents', 'images', 'other'].map((f) => `<button class="social-neo-chip home-hover-chip ${fileFilter === f ? 'is-active' : ''}" type="button" data-action="group-panel-file-filter" data-chat-id="${escape(text(dialog.chatId))}" data-filter="${escape(f)}">${escape(f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1))}</button>`).join('')}
                             </div>
                             ${filteredFiles.length ? `<div class="lux-glass-dialog-file-list">${filteredFiles.map((entry) => {
                             const name = text(entry.file?.name || 'File');

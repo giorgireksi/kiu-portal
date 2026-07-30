@@ -188,7 +188,7 @@ function renderLmsAttendanceSection(courseId = currentCourseId) {
                     </div>
                 </td>
                 <td class="lms-attendance-status-cell">
-                    <span class="lms-attendance-status-badge ${statusTone}">${escapeHtml(statusLabel)}</span>
+                    <span class="lms-attendance-status-badge home-hover-chip ${statusTone}">${escapeHtml(statusLabel)}</span>
                 </td>
                 <td class="lms-attendance-mark-cell">
                     <select class="lms-route-select lux-control lms-attendance-select" ${canManage ? '' : 'disabled'} data-lms-change="markLmsAttendanceStatus(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(today)}, ${lmsInlineArg(student.id)}, this.value)">
@@ -224,7 +224,7 @@ function renderLmsAttendanceSection(courseId = currentCourseId) {
                         <div class="lms-route-card-title">${escapeHtml(today)}</div>
                         <div class="lms-route-copy lms-route-copy-mt-6">${canManage ? 'Staff can update attendance.' : 'Students can view their recorded attendance.'}</div>
                     </div>
-                    <span class="lms-route-pill"><i class="fas fa-users"></i> ${students.length} students</span>
+                    <span class="lms-route-pill home-hover-chip"><i class="fas fa-users"></i> ${students.length} students</span>
                 </div>
                 <div class="lms-route-table-shell lms-attendance-table-shell">
                     <table class="kiu-table lms-attendance-table">

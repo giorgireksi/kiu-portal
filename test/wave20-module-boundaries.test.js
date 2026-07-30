@@ -36,6 +36,22 @@ describe('Wave 20 module boundaries', () => {
         expect(html.indexOf('social-workspace-risk-model.js')).toBeLessThan(html.indexOf('social-workspace-risk-model-bridge.js'));
     });
 
+    it('portal social runtime loads ESM leaf before classic bridge (no Promise.all race)', () => {
+        const app = readAsset('assets/js/app/app.js');
+        const loader = app.slice(
+            app.indexOf('window.ensurePortalSocialRuntimeLoaded'),
+            app.indexOf('window.ensurePortalNewsRuntimeLoaded')
+        );
+        expect(loader).toContain('loadRuntimeScriptOnce(entry)');
+        expect(loader).not.toMatch(/Promise\.all\(\s*group\.map\(\s*loadRuntimeScriptOnce/);
+        expect(app.indexOf("social-workspace-risk-model.js")).toBeLessThan(
+            app.indexOf('social-workspace-risk-model-bridge.js')
+        );
+        expect(app.indexOf('social-alerts-model.js')).toBeLessThan(
+            app.indexOf('social-alerts-model-bridge.js')
+        );
+    });
+
     it('form-blueprint and portal-compat are factory peels', () => {
         const bp = readAsset('assets/js/pages/form-blueprint-runtime.js');
         const compat = readAsset('assets/js/app/portal-compat-runtime.js');

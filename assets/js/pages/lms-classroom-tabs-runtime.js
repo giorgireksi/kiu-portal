@@ -68,7 +68,7 @@ const LMS_CONTENT_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-assignments-runtime.js?v=20260729-lmsassignfix1'
 ]);
 const LMS_PERSONAL_DASHBOARD_MODULE_URLS = Object.freeze([
-    'assets/js/pages/lms-personal-dashboard-runtime.js?v=20260729-lmspdshare1'
+    'assets/js/pages/lms-personal-dashboard-runtime.js?v=20260731-pdsavename1'
 ]);
 
 const lmsRuntimeEnsurePromises = Object.create(null);
@@ -469,7 +469,7 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                                 <div class="lms-bulk-title"><i class="fas fa-folder-open"></i> Material</div>
                                 <div class="lms-bulk-copy lms-route-copy-mt-5">Upload one file to selected groups and weeks.</div>
                             </div>
-                            <span id="${fileLabelId}" class="lms-route-pill">No file selected</span>
+                            <span id="${fileLabelId}" class="lms-route-pill home-hover-chip">No file selected</span>
                         </div>
                         <div class="lms-bulk-upload-grid">
                             <div class="lms-route-field">
@@ -1049,9 +1049,9 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                                         <input id="lms-session-marker-week-input" class="lms-route-input lux-control" type="text" value="1,2,3,4,5" placeholder="1,2,3 or 1-5" data-lms-change="refreshLmsSessionMarkerPreview(${lmsInlineArg(courseId)})">
                                     </label>
                                     <div class="lms-session-marker-week-chips">
-                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip" data-lms-click="setLmsSessionMarkerWeekPreset('this', ${lmsInlineArg(courseId)})">This week</button>
-                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip" data-lms-click="setLmsSessionMarkerWeekPreset('next4', ${lmsInlineArg(courseId)})">Next 4 weeks</button>
-                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip" data-lms-click="clearLmsSessionMarkerWeekInput(${lmsInlineArg(courseId)})">Clear</button>
+                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip home-hover-chip" data-lms-click="setLmsSessionMarkerWeekPreset('this', ${lmsInlineArg(courseId)})">This week</button>
+                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip home-hover-chip" data-lms-click="setLmsSessionMarkerWeekPreset('next4', ${lmsInlineArg(courseId)})">Next 4 weeks</button>
+                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip home-hover-chip" data-lms-click="clearLmsSessionMarkerWeekInput(${lmsInlineArg(courseId)})">Clear</button>
                                     </div>
                                     <label class="lms-route-field lms-session-marker-section-filter-field">
                                         <span class="lms-route-field-label">Class type</span>
@@ -1462,7 +1462,7 @@ function renderLmsInteractionAvatar(name, tone = 'is-student') {
 function renderLmsInteractionRolePill(message) {
     const label = getLmsInteractionStaffRoleLabel(message);
     const tone = label === 'Professor' ? 'is-professor' : 'is-ta';
-    return `<span class="lms-interaction-role-pill lms-route-pill ${tone}">${escapeHtml(label)}</span>`;
+    return `<span class="lms-interaction-role-pill lms-route-pill home-hover-chip ${tone}">${escapeHtml(label)}</span>`;
 }
 
 function renderLmsInteractionReplyComposer(resourceKey, parentId) {
@@ -1538,7 +1538,7 @@ function renderLmsInteractionThread(post, resourceKey, currentName) {
                     <div class="lms-interaction-bubble-head">
                         <strong class="lms-interaction-sender">${escapeHtml(post.sender || 'Staff')}</strong>
                         ${renderLmsInteractionRolePill(post)}
-                        ${post.bulk ? '<span class="lms-interaction-bulk-pill lms-route-pill">Multi-group</span>' : ''}
+                        ${post.bulk ? '<span class="lms-interaction-bulk-pill lms-route-pill home-hover-chip">Multi-group</span>' : ''}
                     </div>
                     <div class="lms-interaction-bubble lms-interaction-bubble--staff">${escapeHtml(post.text || '')}</div>
                     <div class="lms-interaction-bubble-meta">${escapeHtml(post.time || formatLmsDateTime(post.createdAt))}</div>

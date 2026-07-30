@@ -105,7 +105,7 @@ function renderSections() {
         `
     ].concat((runtime.sections || []).map(section => `
         <button type="button" class="newsx-section-btn lux-secondary-btn lux-select-card ${runtime.selectedSection === section.key ? 'is-active' : ''}" data-news-section="${escapeHtml(section.key || 'general')}">
-            <span class="newsx-sec-icon"><i class="fas ${getSectionIcon(section.key)}"></i></span>
+            <span class="newsx-sec-icon"><i class="fas ${getSectionIcon(section)}"></i></span>
             <div class="newsx-grow">
                 <div class="newsx-account-name lux-card-title">${escapeHtml(section.label || 'General')}</div>
                 <div class="newsx-section-key lux-card-meta lms-route-meta-12">${escapeHtml(section.key || 'general')}</div>
@@ -146,7 +146,7 @@ function renderNewsAttachmentGallery(post) {
                 if (isNewsImageAttachment(file) && url) {
                     return `<span class="newsx-attachment-thumb"><img src="${escapeHtml(url)}" alt="${escapeHtml(name)}"></span>`;
                 }
-                return `<a class="newsx-attachment-chip" href="${escapeHtml(url || '#')}" target="_blank" rel="noopener"><i class="fas fa-paperclip"></i> ${escapeHtml(name)}</a>`;
+                return `<a class="newsx-attachment-chip home-hover-chip" href="${escapeHtml(url || '#')}" target="_blank" rel="noopener"><i class="fas fa-paperclip"></i> ${escapeHtml(name)}</a>`;
             }).join('')}
         </div>
     `;

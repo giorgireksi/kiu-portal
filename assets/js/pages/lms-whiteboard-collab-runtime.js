@@ -235,14 +235,14 @@ function renderLmsWhiteboardCollabPill(workspace = {}, canManage = false, resour
     if (canManage) {
         return `
             <div class="lms-whiteboard-collab-pill" aria-label="Collaboration">
-                <button type="button" class="lms-live-pill lms-whiteboard-members-toggle" data-lms-whiteboard-action="open-members-modal" aria-haspopup="dialog">
+                <button type="button" class="lms-live-pill home-hover-chip lms-whiteboard-members-toggle" data-lms-whiteboard-action="open-members-modal" aria-haspopup="dialog">
                     <i class="fas fa-users"></i> ${participantCount} <i class="fas fa-chevron-down"></i>
                 </button>
             </div>`;
     }
     return `
         <div class="lms-whiteboard-collab-pill" aria-label="Collaboration">
-            <span class="lms-live-pill"><i class="fas fa-users"></i> ${participantCount}</span>
+            <span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> ${participantCount}</span>
             <label class="lms-whiteboard-collab-toggle" title="Follow instructor viewport">
                 <input type="checkbox" data-lms-whiteboard-action="toggle-follow-instructor"${followChecked} aria-label="Follow instructor">
                 <i class="fas fa-person-walking-arrow-right"></i>
@@ -256,7 +256,7 @@ function renderLmsWhiteboardCollabControls(workspace = {}, canManage = false) {
     const presentChecked = LMS_WHITEBOARD_COLLAB.presentView ? ' checked' : '';
     const laserChecked = LMS_WHITEBOARD_COLLAB.laserMode ? ' checked' : '';
     const participantCount = Object.keys(LMS_WHITEBOARD_COLLAB.cursors).length + 1;
-    const pills = [`<span class="lms-live-pill"><i class="fas fa-users"></i> ${participantCount} on board</span>`];
+    const pills = [`<span class="lms-live-pill home-hover-chip"><i class="fas fa-users"></i> ${participantCount} on board</span>`];
     if (canManage) {
         pills.push(`
             <label class="lms-whiteboard-collab-toggle" title="Broadcast your zoom and pan">

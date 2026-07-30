@@ -38,6 +38,7 @@
         socialPromise: null,
         feedPromise: null,
         directoryPromise: null,
+        lastIdentitySignature: '',
         renderQueued: false,
         pendingRenderReason: '',
         bootstrapTimer: null,
@@ -309,6 +310,37 @@
     function currentFacultyCode() {
         const user = currentUser();
         return text(user?.facultyCode || user?.faculty || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '') || readStore('currentFaculty', 'ECON')) || 'ECON';
+    }
+
+    function currentIdentitySignature(user = currentUser()) {
+        const userId = text(user?.id || '');
+        if (!userId) return '';
+        const role = text(user?.role || '').toLowerCase();
+        const faculty = text(user?.facultyCode || user?.faculty || '');
+        return `${userId}::${role}::${faculty}`;
+    }
+
+    function resetWorkspaceDiscoveryUiForIdentityChange() {
+        runtime.ui.projectHubScope = 'mine';
+        runtime.ui.projectHubStatus = 'all';
+        runtime.ui.projectHubViewMode = 'grid';
+        runtime.ui.projectDiscoverFaculty = 'all';
+        runtime.ui.projectDiscoverSearch = '';
+        runtime.ui.projectDiscoverTag = '';
+        runtime.ui.activeProjectId = '';
+        runtime.ui.projectTab = 'overview';
+    }
+
+    function syncRuntimeIdentity(user = currentUser()) {
+        const signature = currentIdentitySignature(user);
+        const changed = Boolean(signature && runtime.lastIdentitySignature && signature !== runtime.lastIdentitySignature);
+        if (changed) {
+            resetWorkspaceDiscoveryUiForIdentityChange();
+            runtime.feed = [];
+            runtime.directory = [];
+        }
+        if (signature) runtime.lastIdentitySignature = signature;
+        return changed;
     }
 
     function ensureCallRuntime() {
@@ -786,9 +818,11 @@
             runtime.social = { profiles: {}, pages: [], groups: [], projects: [], portfolios: [], relationships: [], events: [], rsvps: [], reports: [], lostFoundItems: [], surveys: [], surveyResponses: [], researchPublications: [], savedPosts: [] };
             return runtime.social;
         }
+        const requestUserId = text(user.id);
         if (runtime.socialPromise && !force) return runtime.socialPromise;
         runtime.socialPromise = portalRequest(`/api/social/bootstrap?userId=${encodeURIComponent(text(user.id))}`)
             .then(async (payload) => {
+                if (text(currentUserId()) !== requestUserId) return runtime.social;
                 const social = payload?.social && typeof payload.social === 'object' ? payload.social : {};
                 runtime.social = {
                     profiles: social?.profiles && typeof social.profiles === 'object' ? social.profiles : {},
@@ -821,6 +855,7 @@
                 return runtime.social;
             })
             .catch((error) => {
+                if (text(currentUserId()) !== requestUserId) return runtime.social;
                 runtime.error = text(error?.message || 'Social bootstrap could not be loaded.');
                 if (!options.skipRender) queueRender('social-bootstrap-error');
                 return runtime.social;
@@ -870,6 +905,7 @@
             runtime.feed = [];
             return runtime.feed;
         }
+        const requestUserId = text(user.id);
         if (runtime.feedPromise && !force) return runtime.feedPromise;
         const query = new URLSearchParams({
             userId: text(user.id),
@@ -882,6 +918,7 @@
         }
         runtime.feedPromise = portalRequest(`/api/social/feed?${query.toString()}`)
             .then(async (payload) => {
+                if (text(currentUserId()) !== requestUserId) return runtime.feed;
                 runtime.feed = Array.isArray(payload?.items) ? payload.items : [];
                 const relatedIds = unique([
                     ...runtime.feed.map((post) => post?.authorUserId),
@@ -893,6 +930,7 @@
                 return runtime.feed;
             })
             .catch((error) => {
+                if (text(currentUserId()) !== requestUserId) return runtime.feed;
                 runtime.error = text(error?.message || 'Feed could not be loaded.');
                 invalidateSocialFeedRenderCache();
                 queueRender('feed-error');
@@ -952,6 +990,7 @@
     async function loadDirectory(force = false) {
         const user = currentUser();
         if (!user?.id) return [];
+        const requestUserId = text(user.id);
         if (runtime.directoryPromise && !force) return runtime.directoryPromise;
         const query = new URLSearchParams({
             limit: runtime.ui.directorySearch ? '36' : '24',
@@ -961,6 +1000,7 @@
         if (!runtime.ui.directorySearch && user.role !== 'admin') query.set('facultyCode', currentFacultyCode());
         runtime.directoryPromise = portalRequest(`/api/admin/accounts?${query.toString()}`)
             .then((payload) => {
+                if (text(currentUserId()) !== requestUserId) return runtime.directory;
                 const items = Array.isArray(payload?.items) ? payload.items : [];
                 mergeAccounts(items);
                 runtime.directory = items.filter((account) => text(account.id) !== text(user.id));
@@ -968,6 +1008,7 @@
                 return runtime.directory;
             })
             .catch((error) => {
+                if (text(currentUserId()) !== requestUserId) return runtime.directory;
                 runtime.error = text(error?.message || 'Directory could not be loaded.');
                 queueRender('directory-error');
                 return [];
@@ -986,6 +1027,13 @@
             runtime.error = 'Sign in to open the social workspace.';
             queueRender('auth-required');
             return runtime;
+        }
+        const identityChanged = syncRuntimeIdentity(user);
+        if (identityChanged) {
+            force = true;
+            runtime.socialPromise = null;
+            runtime.feedPromise = null;
+            runtime.directoryPromise = null;
         }
         if (runtime.refreshPromise && !force) return runtime.refreshPromise;
         runtime.loading = true;

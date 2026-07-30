@@ -24,6 +24,13 @@ describe('lms whiteboard stability guards', () => {
         expect(workspace).toContain('markLmsWhiteboardRouteUnavailable');
     });
 
+    it('stops session-wait poll after accessDenied or routeUnavailable', () => {
+        const workspace = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
+        const waitPollBlock = workspace.match(/function scheduleLmsWhiteboardSessionWaitPoll[\s\S]*?^}/m)?.[0] || '';
+        expect(waitPollBlock).toContain('latest?.ui?.accessDenied || latest?.ui?.routeUnavailable');
+        expect(waitPollBlock).toContain('stopLmsWhiteboardSessionWaitPoll(canonicalKey)');
+    });
+
     it('routes async updates through refreshLmsWhiteboardUi instead of full render', () => {
         const workspace = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
         const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');

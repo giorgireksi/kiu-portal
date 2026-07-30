@@ -963,6 +963,7 @@
         computeProjectTaskGraphGroupRollup,
         countNum,
         currentFacultyCode,
+        currentUser,
         currentUserId,
         displayName,
         ensureProjectWorkspaceChat,

@@ -29,7 +29,7 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('<style>');
         expect(html).not.toContain('timetable-route.css');
         expect(html).toContain('lux-page-bare');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260724-fullpaint-reveal1');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260730-navpreload1');
         expect(html).toMatch(/lux-shell\.css/);
         expect(html).toMatch(/lux-page-bare-lite\.css/);
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
@@ -129,7 +129,7 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain('class="schedule-session-card lux-timetable-session-card home-hover-chip${markerClass}"');
         expect(timetableRuntime).toContain('class="schedule-session-code-row lux-timetable-session-code-row"');
         expect(timetableRuntime).toContain('class="schedule-session-code lux-timetable-session-code"');
-        expect(timetableRuntime).toContain('class="schedule-session-pill lux-timetable-session-pill type"');
+        expect(timetableRuntime).toContain('class="schedule-session-pill lux-timetable-session-pill home-hover-chip type"');
         expect(timetableRuntime).toContain('class="schedule-session-title lux-timetable-session-title"');
         expect(timetableRuntime).toContain('class="schedule-session-subtitle lux-timetable-session-subtitle"');
         expect(timetableRuntime).toContain('formatTimetableHeroFocusTitle(item)');
@@ -259,7 +259,7 @@ describe('timetable route regressions', () => {
     it('uses page-hero glass host and shared panel chrome markup', () => {
         const html = readSource('timetable.html');
         expect(html).toContain('page-hero lux-hero lux-timetable-hero');
-        expect(html).toMatch(/lux-timetable-stage-status[^"]*lux-status-pill is-muted/);
+        expect(html).toMatch(/lux-timetable-stage-status[^"]*lux-status-pill home-hover-chip is-muted/);
         expect(html).not.toContain('lux-soft-chrome');
     });
 

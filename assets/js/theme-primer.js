@@ -131,15 +131,6 @@
         '}'
     );
 
-    (function preloadSharedShellRuntime() {
-        if (!document.head || document.querySelector('link[rel="preload"][href*="assets/js/features/navigation.js"]')) return;
-        var preload = document.createElement('link');
-        preload.rel = 'preload';
-        preload.as = 'script';
-        preload.href = 'assets/js/features/navigation.js?v=20260609-bootguard1';
-        document.head.appendChild(preload);
-    })();
-
     function hasCurrentLuxuryVisualDefaultsVersion() {
         try {
             return String(localStorage.getItem(LUXURY_VISUAL_DEFAULTS_VERSION_KEY) || '').trim() === LUXURY_VISUAL_DEFAULTS_VERSION;

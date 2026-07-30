@@ -582,7 +582,7 @@ function defaultSurveyDraftQuestions() {
 function defaultSurveyDraftSettings(variant = 'student') {
     const isOfficial = text(variant || 'student') === 'official';
     return {
-        audience: isOfficial ? 'campus' : 'connections',
+        audience: isOfficial ? 'campus' : 'faculty',
         resultsVisibility: isOfficial ? 'public_after_close' : 'respondents_after_close',
         promoteFeed: isOfficial,
         closesAt: toDateTimeLocalValue(defaultSurveyClosesAt(new Date(), isOfficial ? 21 : 7))

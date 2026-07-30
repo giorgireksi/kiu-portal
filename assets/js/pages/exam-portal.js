@@ -279,8 +279,8 @@
                     <h1 class="exam-blocked-title">Open this page in KIU Anti-Cheat Browser</h1>
                     <p class="lms-route-copy exam-panel-copy-centered exam-panel-copy-wide">Exam schedules, launch controls, and protected attempts are only available inside the anti-cheat environment. This prevents students from opening exam pages in a normal browser.</p>
                     <div class="exam-chip-row exam-chip-row-centered">
-                        <span class="exam-chip"><i class="fas fa-lock"></i> Normal browser blocked</span>
-                        <span class="exam-chip"><i class="fas fa-user-shield"></i> Invigilated session only</span>
+                        <span class="exam-chip home-hover-chip"><i class="fas fa-lock"></i> Normal browser blocked</span>
+                        <span class="exam-chip home-hover-chip"><i class="fas fa-user-shield"></i> Invigilated session only</span>
                     </div>
                 </section>
             </main>
@@ -583,9 +583,9 @@
                     <div><strong>Assigned Groups</strong><span>${escapeHtml(getSessionGroupLabel(session))}</span></div>
                 </div>
                 <div class="exam-chip-row">
-                    <span class="exam-chip"><i class="fas fa-clock"></i> ${escapeHtml(String(session.durationMinutes || 0))} minutes</span>
-                    <span class="exam-chip"><i class="fas fa-shield-halved"></i> Secure launch required</span>
-                    <span class="exam-chip"><i class="fas fa-file-signature"></i> ${escapeHtml(session.variantLabel || 'Variant')}</span>
+                    <span class="exam-chip home-hover-chip"><i class="fas fa-clock"></i> ${escapeHtml(String(session.durationMinutes || 0))} minutes</span>
+                    <span class="exam-chip home-hover-chip"><i class="fas fa-shield-halved"></i> Secure launch required</span>
+                    <span class="exam-chip home-hover-chip"><i class="fas fa-file-signature"></i> ${escapeHtml(session.variantLabel || 'Variant')}</span>
                 </div>
                 <div class="exam-action-row">
                     <span class="exam-launch-reason" data-session-launch-reason>${escapeHtml(getLaunchReason(session))}</span>
@@ -1078,9 +1078,9 @@
                 <h2 class="exam-heading-reset">Start only when your invigilator confirms the live session</h2>
                 <div class="lms-route-copy">The question body stays hidden until you explicitly begin in the protected environment. Once started, leaving this secure session may auto-submit your exam.</div>
                 <div class="exam-chip-row">
-                    <span class="exam-chip"><i class="fas fa-eye-slash"></i> Questions hidden</span>
-                    <span class="exam-chip"><i class="fas fa-shield-halved"></i> Anti-cheat active</span>
-                    <span class="exam-chip"><i class="fas fa-file-signature"></i> ${escapeHtml(session.variantLabel || 'Variant')}</span>
+                    <span class="exam-chip home-hover-chip"><i class="fas fa-eye-slash"></i> Questions hidden</span>
+                    <span class="exam-chip home-hover-chip"><i class="fas fa-shield-halved"></i> Anti-cheat active</span>
+                    <span class="exam-chip home-hover-chip"><i class="fas fa-file-signature"></i> ${escapeHtml(session.variantLabel || 'Variant')}</span>
                 </div>
                 <div class="exam-action-row">
                     <button type="button" class="lux-primary-btn" id="protected-start-btn"><i class="fas fa-play"></i> Start Exam</button>

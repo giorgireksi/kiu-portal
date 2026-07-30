@@ -661,6 +661,18 @@ button.lux-status-pill {
   border-color: var(--lux-soft-chrome-border-accent, var(--lux-panel-border));
   color: var(--lux-text-muted);
 }
+:is(body.lux-light-mode, html.lux-light-mode body) .lux-status-pill.is-info {
+  color: color-mix(in srgb, var(--lux-accent) 72%, #1a1a1a 28%);
+}
+:is(body.lux-light-mode, html.lux-light-mode body) .lux-status-pill.is-success {
+  color: #0f7a4d;
+}
+:is(body.lux-light-mode, html.lux-light-mode body) .lux-status-pill.is-warning {
+  color: #8a5a12;
+}
+:is(body.lux-light-mode, html.lux-light-mode body) .lux-status-pill.is-muted {
+  color: var(--lux-text-muted);
+}
 /* Bare portal glass hosts + admin-orders: variant paint must beat nested chip SSOT. */
 body.lux-full-paint.lux-unified-shell.lux-page-bare :is(
   [data-lux-glass-root="1"],
@@ -707,6 +719,30 @@ body.lux-full-paint.lux-unified-shell.lux-page-bare :is(
   border-color: var(--lux-soft-chrome-border-accent, var(--lux-panel-border));
   color: var(--lux-text-muted);
   background: var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
+}
+:is(body.lux-light-mode, html.lux-light-mode body).lux-full-paint.lux-unified-shell.lux-page-bare :is(
+  [data-lux-glass-root="1"],
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill.is-info {
+  color: color-mix(in srgb, var(--lux-accent) 72%, #1a1a1a 28%);
+}
+:is(body.lux-light-mode, html.lux-light-mode body).lux-full-paint.lux-unified-shell.lux-page-bare :is(
+  [data-lux-glass-root="1"],
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill.is-success {
+  color: #0f7a4d;
+}
+:is(body.lux-light-mode, html.lux-light-mode body).lux-full-paint.lux-unified-shell.lux-page-bare :is(
+  [data-lux-glass-root="1"],
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-status-pill.is-warning {
+  color: #8a5a12;
 }
 button.lux-status-pill:is(:hover, :focus-visible) {
   transform: translateY(-1px);

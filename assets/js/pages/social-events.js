@@ -192,15 +192,15 @@
                                 <strong>${escape(dayLabel)}</strong>
                             </div>
                             <div class="social-neo-badge-row social-neo-events-badges">
-                                <span class="social-neo-pill social-neo-event-category-pill is-${escape(tone)}">${escape(categoryLabel)}</span>
-                                ${item.isOfficial ? '<span class="social-neo-pill">Official</span>' : ''}
-                                ${item.isOnline ? '<span class="social-neo-pill">Online</span>' : ''}
-                                ${item.isRecurring ? '<span class="social-neo-pill">Recurring</span>' : ''}
-                                ${item.maxSeats ? `<span class="social-neo-pill">${escape(seatSummary)}</span>` : ''}
+                                <span class="social-neo-pill home-hover-chip social-neo-event-category-pill is-${escape(tone)}">${escape(categoryLabel)}</span>
+                                ${item.isOfficial ? '<span class="social-neo-pill home-hover-chip">Official</span>' : ''}
+                                ${item.isOnline ? '<span class="social-neo-pill home-hover-chip">Online</span>' : ''}
+                                ${item.isRecurring ? '<span class="social-neo-pill home-hover-chip">Recurring</span>' : ''}
+                                ${item.maxSeats ? `<span class="social-neo-pill home-hover-chip">${escape(seatSummary)}</span>` : ''}
                             </div>
                             ${eventCanManage(item) ? `
                                 <div class="social-neo-event-feature-head-actions">
-                                    <span class="social-neo-pill social-neo-events-owner-pill">You manage this</span>
+                                    <span class="social-neo-pill home-hover-chip social-neo-events-owner-pill">You manage this</span>
                                     <button class="lux-secondary-btn social-neo-events-edit-btn social-neo-events-edit-btn--head" type="button" data-action="event-edit-open" data-event-id="${escape(eventId)}"><i class="fas fa-pen"></i> Edit</button>
                                 </div>
                             ` : ''}
@@ -272,7 +272,7 @@
                             <span>1 event</span>
                             <h3 class="social-neo-event-date-group-title">${escape(title)}</h3>
                         </div>
-                        <span class="social-neo-pill">${escape(tone === 'university' ? 'Official lane' : 'Student lane')}</span>
+                        <span class="social-neo-pill home-hover-chip">${escape(tone === 'university' ? 'Official lane' : 'Student lane')}</span>
                     </div>
                     <div class="social-neo-event-date-group-body">
                         ${renderEventFeatureCard(item, tone)}
@@ -299,7 +299,7 @@
                                     <span>${escape(item?.startsAt ? when(item.startsAt) : 'Time to be announced')}</span>
                                 </div>
                                 <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
-                                    <span class="social-neo-pill">${escape(text(item.scopeName || 'Published event'))}</span>
+                                    <span class="social-neo-pill home-hover-chip">${escape(text(item.scopeName || 'Published event'))}</span>
                                     <button class="lux-primary-btn social-neo-events-edit-btn social-neo-events-edit-btn--manage" type="button" data-action="event-edit-open" data-event-id="${escape(text(item.id))}"><i class="fas fa-pen"></i> Edit</button>
                                     <button class="lux-secondary-btn social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(text(item.id))}">
                                         <i class="fas fa-trash"></i> Remove
@@ -327,8 +327,8 @@
                                 <strong>${escape(text(group.name || 'Study Group'))}</strong>
                                 <span>${escape(text(group.description || ''))}</span>
                                 <div class="social-neo-badge-row social-neo-badge-row-mt-4">
-                                    <span class="social-neo-pill"><i class="fas fa-users social-neo-pill-icon"></i> ${escape(group.memberCount || 0)} members</span>
-                                    <span class="social-neo-pill">${escape(text(group.visibility || 'public'))}</span>
+                                    <span class="social-neo-pill home-hover-chip"><i class="fas fa-users social-neo-pill-icon home-hover-chip"></i> ${escape(group.memberCount || 0)} members</span>
+                                    <span class="social-neo-pill home-hover-chip">${escape(text(group.visibility || 'public'))}</span>
                                 </div>
                             </div>
                             <div class="social-neo-inline social-neo-inline-column-end">
@@ -336,7 +336,7 @@
                                     ? `<button class="lux-primary-btn" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}">Open chat</button>
                                        <button class="lux-ghost-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}">Leave</button>`
                                     : group.membershipState === 'pending'
-                                        ? '<span class="social-neo-pill">Pending</span>'
+                                        ? '<span class="social-neo-pill home-hover-chip">Pending</span>'
                                         : `<button class="lux-primary-btn" type="button" data-action="group-join" data-group-id="${escape(text(group.id))}">${text(group.visibility) === 'private' ? 'Request to join' : 'Join'}</button>`
                                 }
                             </div>

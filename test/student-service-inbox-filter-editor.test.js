@@ -279,6 +279,8 @@ describe('student service inbox filter editor', () => {
     it('exposes staff inbox filter editor hooks in runtime sources', () => {
         const studentServiceJs = ssvcSources().both();
         const serviceJs = readSource('assets/js/pages/student-service-service.js');
+        const inboxRuntime = readSource('assets/js/pages/student-service-inbox-runtime.js');
+        const events = readSource('assets/js/pages/student-service-events.js');
 
         expect(studentServiceJs).toContain("const STUDENT_SERVICE_INBOX_FILTER_PREFS_KEY = 'KIU_STUDENT_SERVICE_INBOX_FILTER_PREFS'");
         expect(studentServiceJs).toContain('STUDENT_SERVICE_API_PATHS.inboxFilterLayout()');
@@ -288,6 +290,12 @@ describe('student service inbox filter editor', () => {
         expect(studentServiceJs).toContain('data-student-service-edit-inbox-filters="true"');
         expect(studentServiceJs).not.toContain('data-student-service-toggle-advanced-filters');
         expect(serviceJs).toContain('renderStudentServiceInboxFiltersMarkup(ui, visibleTickets, currentUser)');
+
+        expect(inboxRuntime).toContain("__ssModuleForward('Filters', 'openStudentServiceInboxFilterEditorModal'");
+        expect(inboxRuntime).not.toContain('window.openStudentServiceInboxFilterEditorModal !== openStudentServiceInboxFilterEditorModal');
+        expect(events).toMatch(
+            /data-student-service-edit-inbox-filters[\s\S]*?ensureStudentServiceFiltersModule\(\)\.then\(openEditor\)/
+        );
     });
 
     it('delegates inbox filter editor interactions through document modal listener', () => {
@@ -397,12 +405,34 @@ describe('student service inbox filter editor', () => {
 
     it('matches LMS composer styling for inbox filter editor shell', () => {
         const studentServiceJs = ssvcSources().both();
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const html = readSource('student-service.html');
+        const modules = readSource('assets/js/pages/student-service-modules-runtime.js');
 
         expect(studentServiceJs).toContain('class="lux-control"');
         expect(studentServiceJs).toContain('syncStudentServiceInboxFilterEditorPickers(modalRoot)');
         expect(studentServiceJs).toContain('student-service-inbox-filter-editor-actions-copy');
         expect(studentServiceJs).toContain('student-service-inbox-filter-editor-actions-buttons');
         expect(studentServiceJs).toContain('data-student-service-dismiss-inbox-filter-editor-modal="true"');
+        expect(studentServiceJs).toContain('student-service-kicker lux-section-kicker');
+        expect(studentServiceJs).toContain('id="student-service-inbox-filter-editor-title" class="lux-page-title"');
+        expect(studentServiceJs).toContain('student-service-zone-copy lux-panel-copy');
+        expect(studentServiceJs).toContain('student-service-inbox-filter-editor-copy lux-card-copy');
+        expect(studentServiceJs).toContain('student-service-inbox-filter-editor-actions-copy lux-card-meta');
+        expect(studentServiceJs).toContain('student-service-inbox-filter-editor-icon-chip lux-soft-chrome home-hover-chip');
+        expect(studentServiceJs).toContain('student-service-inbox-filter-editor-row lux-soft-chrome home-hover-chip');
+        expect(studentServiceJs).toContain('student-service-inbox-filter-editor-option lux-soft-chrome home-hover-chip');
+        expect(studentServiceJs).toContain('student-service-inbox-filter-editor-close home-hover-chip');
+        expect(studentServiceJs).toContain('student-service-inbox-filter-editor-add home-hover-chip');
+        expect(studentServiceJs).toContain('lux-primary-btn home-hover-chip" data-student-service-inbox-filter-editor-save-shared');
+        expect(fouc).toContain('.student-service-inbox-filter-editor-row.lux-soft-chrome.home-hover-chip');
+        expect(fouc).toContain('.student-service-inbox-filter-editor-option.lux-soft-chrome.home-hover-chip');
+        expect(fouc).toMatch(
+            /\.student-service-inbox-filter-editor-list[\s\S]*?overflow:\s*visible/
+        );
+        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260730-ssfilter1/);
+        expect(html).toMatch(/student-service-modules-runtime\.js\?v=20260730-ssfilter1/);
+        expect(modules).toContain('student-service-filters.js?v=20260730-ssfilter1');
     });
 });
 

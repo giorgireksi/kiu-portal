@@ -47,10 +47,10 @@
             <section class="social-neo-card social-project-team-shell social-project-team-layout">
                 <header class="social-project-team-toolbar">
                     <div class="social-project-team-toolbar-stats">
-                        <span class="social-neo-pill"><strong>${escape(String(activeProject?.memberCount || 0))}</strong> members</span>
-                        ${facultyMix.map((entry) => `<span class="social-neo-pill">${escape(text(entry.facultyCode || 'Unknown'))} · ${escape(String(entry.count || 0))}</span>`).join('')}
-                        ${roleMix.map((entry) => `<span class="social-neo-pill">${escape(roleLabels[text(entry.role)] || text(entry.role))} · ${escape(String(entry.count || 0))}</span>`).join('')}
-                        ${pendingMembers.length ? `<span class="social-neo-pill">${escape(String(pendingMembers.length))} pending</span>` : ''}
+                        <span class="social-neo-pill home-hover-chip"><strong>${escape(String(activeProject?.memberCount || 0))}</strong> members</span>
+                        ${facultyMix.map((entry) => `<span class="social-neo-pill home-hover-chip">${escape(text(entry.facultyCode || 'Unknown'))} · ${escape(String(entry.count || 0))}</span>`).join('')}
+                        ${roleMix.map((entry) => `<span class="social-neo-pill home-hover-chip">${escape(roleLabels[text(entry.role)] || text(entry.role))} · ${escape(String(entry.count || 0))}</span>`).join('')}
+                        ${pendingMembers.length ? `<span class="social-neo-pill home-hover-chip">${escape(String(pendingMembers.length))} pending</span>` : ''}
                     </div>
                     ${activeProject.isManager ? `
                         <div class="social-project-team-toolbar-actions">
@@ -64,7 +64,7 @@
                             <section class="social-project-team-pending">
                                 <div class="social-project-team-pending-head">
                                     <strong>Pending invites</strong>
-                                    <span class="social-neo-pill">${escape(String(pendingMembers.length))}</span>
+                                    <span class="social-neo-pill home-hover-chip">${escape(String(pendingMembers.length))}</span>
                                 </div>
                                 <div class="social-project-team-rows">${pendingMembers.map((entry) => renderTeamMemberCard(entry, { pending: true })).join('')}</div>
                             </section>
@@ -124,7 +124,7 @@
                 ` : ''}
                 <footer class="social-project-team-footer">
                     <div class="social-project-team-footer-copy">
-                        ${nextOwner ? `<span class="social-neo-pill">Next owner: ${escape(displayName(nextOwner))}</span>` : ''}
+                        ${nextOwner ? `<span class="social-neo-pill home-hover-chip">Next owner: ${escape(displayName(nextOwner))}</span>` : ''}
                         <p class="social-neo-muted">${escape(leaveNote)}</p>
                     </div>
                     <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="project-leave-open" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-sign-out-alt"></i> Leave workspace</button>

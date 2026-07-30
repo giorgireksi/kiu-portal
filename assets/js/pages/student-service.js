@@ -85,7 +85,15 @@ const STUDENT_SERVICE_SUPPORT_AREAS = [
         description: 'Transcripts, certificates, official letters, and document follow-up.',
         category: 'Documents / Certificates',
         nextStep: 'Read the document checklist, then send a ticket with the exact document type, language, and deadline if needed.',
-        links: ['orders', 'chancellery']
+        links: ['orders']
+    },
+    {
+        id: 'appeals',
+        label: 'Appeals and Retakes',
+        description: 'Grade appeals, retake requests, and E-Chancellery case follow-up.',
+        category: 'Appeals / Retakes',
+        nextStep: 'Open E-Chancellery with the subject, assessment, and reason before requesting service help.',
+        links: ['chancellery']
     },
     {
         id: 'finance',
@@ -454,7 +462,7 @@ function renderStudentServiceOwnerResolutionPillMarkup(question = {}) {
     const ownerStatus = String(question.ownerResolutionStatus || '').trim().toLowerCase();
     if (ownerStatus !== 'answered' && ownerStatus !== 'unanswered') return '';
     const resolution = getStudentServiceQuestionResolutionLabel(question);
-    return `<span class="student-service-pill student-service-pill--${ssEscape(resolution.tone)}"><i class="fas ${ssEscape(resolution.icon)}" aria-hidden="true"></i> ${ssEscape(resolution.label)}</span>`;
+    return `<span class="student-service-pill home-hover-chip student-service-pill--${ssEscape(resolution.tone)}"><i class="fas ${ssEscape(resolution.icon)}" aria-hidden="true"></i> ${ssEscape(resolution.label)}</span>`;
 }
 
 function canCurrentUserDeleteStudentServiceQuestion(question) {

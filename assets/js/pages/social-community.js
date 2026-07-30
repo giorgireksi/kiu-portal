@@ -84,7 +84,7 @@
                 <button class="lux-primary-btn" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
                     Message
                 </button>
-                <span class="social-neo-pill">Friends</span>
+                <span class="social-neo-pill home-hover-chip">Friends</span>
             `;
         }
         if (status.state === 'incoming') {
@@ -105,7 +105,7 @@
                 <button class="lux-secondary-btn" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
                     Message
                 </button>
-                <span class="social-neo-pill">Friend request sent</span>
+                <span class="social-neo-pill home-hover-chip">Friend request sent</span>
                 <button class="lux-secondary-btn" type="button" data-action="connection-cancel" data-user-id="${escape(text(account.id))}">
                     Cancel request
                 </button>
@@ -169,26 +169,26 @@
                                     <strong class="social-neo-rail-person-name">${escape(displayName(account))}</strong>
                                     <div class="social-neo-rail-person-meta social-neo-community-subtitle">${escape(accountSubtitle(account))}</div>
                                 </div>
-                                <span class="social-neo-pill social-neo-community-completeness">${escape(`${completeness}% complete`)}</span>
+                                <span class="social-neo-pill home-hover-chip social-neo-community-completeness">${escape(`${completeness}% complete`)}</span>
                             </div>
                             <div class="social-neo-badge-row social-neo-community-badges">
-                                ${badges.map((badge) => `<span class="social-neo-pill">${escape(badge)}</span>`).join('')}
-                                <span class="social-neo-pill">${escape(personActivityLabel(account?.id))}</span>
+                                ${badges.map((badge) => `<span class="social-neo-pill home-hover-chip">${escape(badge)}</span>`).join('')}
+                                <span class="social-neo-pill home-hover-chip">${escape(personActivityLabel(account?.id))}</span>
                             </div>
                             ${text(account?.bio) ? `<p class="social-neo-copy social-neo-event-copy social-neo-community-bio">${escape(text(account.bio))}</p>` : ''}
                             <div class="social-neo-rail-person-meta social-neo-community-context">${escape(renderSharedContext(account))}</div>
                             ${showSuggestion ? `<div class="social-neo-label social-neo-community-suggestion">${escape(personSuggestionReason(account))}</div>` : ''}
                             ${interests.length ? `
                                 <div class="social-neo-badge-row social-neo-community-interests">
-                                    ${interests.map((interest) => `<span class="social-neo-pill">${escape(interest)}</span>`).join('')}
+                                    ${interests.map((interest) => `<span class="social-neo-pill home-hover-chip">${escape(interest)}</span>`).join('')}
                                 </div>
                             ` : ''}
                             ${(showStaffMeta || isStaffAccount(account)) && (text(account?.availability) || text(account?.officeHours) || text(account?.email) || text(account?.location)) ? `
                                 <div class="social-neo-badge-row social-neo-community-staff-meta">
-                                    ${text(account?.availability) ? `<span class="social-neo-pill">Availability: ${escape(text(account.availability))}</span>` : ''}
-                                    ${text(account?.officeHours) ? `<span class="social-neo-pill">Office hours: ${escape(text(account.officeHours))}</span>` : ''}
-                                    ${text(account?.location) ? `<span class="social-neo-pill">${escape(text(account.location))}</span>` : ''}
-                                    ${text(account?.email) ? `<span class="social-neo-pill">${escape(text(account.email))}</span>` : ''}
+                                    ${text(account?.availability) ? `<span class="social-neo-pill home-hover-chip">Availability: ${escape(text(account.availability))}</span>` : ''}
+                                    ${text(account?.officeHours) ? `<span class="social-neo-pill home-hover-chip">Office hours: ${escape(text(account.officeHours))}</span>` : ''}
+                                    ${text(account?.location) ? `<span class="social-neo-pill home-hover-chip">${escape(text(account.location))}</span>` : ''}
+                                    ${text(account?.email) ? `<span class="social-neo-pill home-hover-chip">${escape(text(account.email))}</span>` : ''}
                                 </div>
                             ` : ''}
                         </div>
@@ -214,7 +214,7 @@
         const renderRequestBody = () => `
             <div class="social-neo-section-head">
                 <div><strong>Connection requests</strong><span>Respond quickly so the network stays active.</span></div>
-                <span class="social-neo-pill"><strong>${escape(incoming.length + outgoing.length)}</strong><span>Total</span></span>
+                <span class="social-neo-pill home-hover-chip"><strong>${escape(incoming.length + outgoing.length)}</strong><span>Total</span></span>
             </div>
             <div class="social-neo-grid-2 social-neo-grid-tight">
                 <div>

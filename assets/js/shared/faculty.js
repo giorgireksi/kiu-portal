@@ -614,7 +614,15 @@ function ensurePortalMessengerState() {
     Object.keys(KIU_STATE.portalMessengerChats).forEach(chatId => {
         KIU_STATE.portalMessengerChats[chatId] = normalizePortalMessengerChatRecord(KIU_STATE.portalMessengerChats[chatId]);
     });
-    if (getCurrentUser()?.id) {
+    const currentUserId = String(getCurrentUser()?.id || '');
+    if (!currentUserId || typeof scheduleKiuRealtimeBootstrap !== 'function') return;
+    const runtime = typeof window !== 'undefined' ? window.__kiuRealtimeRuntime : null;
+    const hasActiveStream = Boolean(
+        runtime?.eventSource
+        && String(runtime.bootstrappedFor || '') === currentUserId
+    );
+    const shouldEager = typeof shouldEagerBootstrapKiuRealtime !== 'function' || shouldEagerBootstrapKiuRealtime();
+    if (shouldEager || hasActiveStream) {
         scheduleKiuRealtimeBootstrap();
     }
 }
@@ -980,7 +988,7 @@ function buildPortalNotificationWorkspaceHtml(summary, mode = 'compact') {
                         ['school', 'School'],
                         ['social', 'Social']
                     ].map(([value, label]) => `
-                        <button type="button" class="portal-msg-chip${uiState.filter === value ? ' is-active' : ''}" data-notif-action="set-filter" data-filter-value="${value}">${label}</button>
+                        <button type="button" class="portal-msg-chip home-hover-chip${uiState.filter === value ? ' is-active' : ''}" data-notif-action="set-filter" data-filter-value="${value}">${label}</button>
                     `).join('')}
                 </div>
             </div>

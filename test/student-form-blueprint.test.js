@@ -35,4 +35,29 @@ describe('student form blueprint runtime', () => {
         expect(schema.sections.length).toBeGreaterThan(0);
         expect(api.addStudentFormType('X')).toEqual({ error: 'Student form uses a single unified schema.' });
     });
+
+    it('persists showOnPersonalData on fields', () => {
+        const api = loadBlueprint();
+        api.ensureStudentFormBlueprint();
+        const schema = api.getStudentFormSchema('student');
+        const section = schema.sections[0];
+        const field = section.fields[0];
+        expect(field.showOnPersonalData).toBe(false);
+        const result = api.updateStudentFormField('student', 'input', section.id, field.id, {
+            showOnPersonalData: true
+        });
+        expect(result?.error).toBeFalsy();
+        const updated = api.getStudentFormSchema('student').sections[0].fields.find((item) => item.id === field.id);
+        expect(updated.showOnPersonalData).toBe(true);
+    });
+
+    it('student builder advanced settings expose Show on Personal Data checklist', () => {
+        const builder = readFileSync(join(process.cwd(), 'assets/js/pages/form-builder-runtime.js'), 'utf8');
+        const actions = readFileSync(join(process.cwd(), 'assets/js/pages/form-builder-actions-runtime.js'), 'utf8');
+        expect(builder).toContain('Show on Personal Data');
+        expect(builder).toContain('studio-personal-data-toggle');
+        expect(builder).toContain('builder-input="showOnPersonalData"');
+        expect(builder).toContain("NS === 'student' || NS === 'staff'");
+        expect(actions).toContain("inputType === 'showOnPersonalData'");
+    });
 });

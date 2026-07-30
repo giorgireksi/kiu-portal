@@ -12,7 +12,7 @@ function buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelI
                     <div class="lms-route-card-title"><i class="fas fa-square-plus"></i> Create Homework</div>
                     <div class="lms-route-copy lms-route-copy-mt-6">Publish assignments for this exact LMS group. Students in the same group will see the same work and submit back here.</div>
                 </div>
-                <div id="${assignmentLabelId}" class="lms-route-pill">No attachment selected</div>
+                <div id="${assignmentLabelId}" class="lms-route-pill home-hover-chip">No attachment selected</div>
             </div>
             <div class="lms-route-field-grid">
                 <div class="lms-route-field">
@@ -67,7 +67,7 @@ function buildLmsAssignmentGradeModalBodyHtml({
                         <div class="lms-route-kv-label">Student</div>
                         <div class="lms-route-card-title lms-route-card-title-15 lms-route-copy-mt-6">${escapeHtml(submission.studentName || studentId || 'Student')}</div>
                         <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-8">${joinLmsMeta([submissionStateLabel, formatLmsDateTime(submission.submittedAt)])}</div>
-                        <div class="lms-route-pill lms-assignment-grade-summary-pill">${escapeHtml(statusLabel)}</div>
+                        <div class="lms-route-pill home-hover-chip lms-assignment-grade-summary-pill">${escapeHtml(statusLabel)}</div>
                     </div>
                     <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
                         <div class="lms-route-kv-label">Assignment</div>
@@ -105,7 +105,7 @@ function buildLmsAssignmentGradeModalBodyHtml({
                         </div>
                         <div class="lms-route-field">
                             <label class="lms-route-field-label">Review status</label>
-                            <div class="lms-route-pill lms-assignment-grade-status-pill ${submission.score == null ? 'is-pending' : 'is-graded'}">
+                            <div class="lms-route-pill home-hover-chip lms-assignment-grade-status-pill ${submission.score == null ? 'is-pending' : 'is-graded'}">
                                 <i class="fas ${submission.score == null ? 'fa-hourglass-half' : 'fa-check-circle'}"></i>
                                 ${submission.score == null ? 'Save the first grade for this submission' : `Current grade ${escapeHtml(String(submission.score))}/${escapeHtml(String(maxScore))}`}
                             </div>
@@ -166,7 +166,7 @@ function renderWorkspace(courseId) {
         const gradedSubmissionCount = submissionEntries.filter(entry => Number.isFinite(Number(entry.score))).length;
         const pendingSubmissionCount = Math.max(0, submissionEntries.length - gradedSubmissionCount);
         const submissionStatus = studentSubmission ? `
-            <div class="lms-route-pill is-positive lms-assignment-submission-pill">
+            <div class="lms-route-pill home-hover-chip is-positive lms-assignment-submission-pill">
                 <i class="fas fa-check"></i> Submitted ${escapeHtml(formatLmsDateTime(studentSubmission.submittedAt))}
             </div>
         ` : '';
@@ -174,7 +174,7 @@ function renderWorkspace(courseId) {
             <div class="lms-route-divider-top lms-assignment-student-controls">
                 <textarea id="sub-text-${assignment.id}" class="lms-route-textarea lux-control lms-route-textarea-min-110">${escapeHtml(studentSubmission?.text || '')}</textarea>
                 <div class="lms-route-inline lms-route-inline-between lms-route-inline-gap-10 lms-route-inline-center lms-assignment-student-toolbar">
-                    <div id="${submissionLabelId}" class="lms-route-pill lms-assignment-student-file-pill">
+                    <div id="${submissionLabelId}" class="lms-route-pill home-hover-chip lms-assignment-student-file-pill">
                         ${studentSubmission?.file?.name ? `<i class="fas fa-paperclip"></i> ${escapeHtml(studentSubmission.file.name)}` : 'No homework file selected'}
                     </div>
                     <div class="lms-route-actions lms-assignment-student-actions">
@@ -254,8 +254,8 @@ function renderWorkspace(courseId) {
                                 <div class="lms-assignment-submission-actions lms-route-actions-mt-10">
                                     <button class="lux-secondary-btn" data-lms-click="gradeLmsAssignmentSubmission('${courseId}', '${assignment.id}', '${entry.studentId}')"><i class="fas fa-pen"></i> Grade / feedback</button>
                                     ${Number.isFinite(Number(entry.score))
-                                        ? `<span class="lms-route-pill lms-assignment-submission-status-pill is-graded"><i class="fas fa-star"></i> ${escapeHtml(String(entry.score))}/${escapeHtml(String(assignment.maxScore || 100))}</span>`
-                                        : '<span class="lms-route-pill lms-assignment-submission-status-pill is-pending">Pending review</span>'}
+                                        ? `<span class="lms-route-pill home-hover-chip lms-assignment-submission-status-pill is-graded"><i class="fas fa-star"></i> ${escapeHtml(String(entry.score))}/${escapeHtml(String(assignment.maxScore || 100))}</span>`
+                                        : '<span class="lms-route-pill home-hover-chip lms-assignment-submission-status-pill is-pending">Pending review</span>'}
                                 </div>
                                 ${entry.file ? renderLmsStoredFileAttachmentShell(entry.file, {
                                     label: 'Submission file',

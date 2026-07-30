@@ -140,7 +140,7 @@ function renderLmsNextSessionHtml(model, variant = 'hero') {
     const instructorLine = model.instructor || 'Instructor TBA';
     const badgeClass = model.isHappeningNow ? 'is-live' : (relative === 'Today' ? 'is-today' : '');
     if (variant === 'compact') {
-        return `<div class="lms-group-next-session"><i class="far fa-clock"></i> <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(dayLine)} · ${escapeHtml(model.time || 'TBD')} · ${escapeHtml(model.room || 'Room TBD')}</div>`;
+        return `<div class="lms-group-next-session"><i class="far fa-clock"></i> <span class="lms-next-session-badge home-hover-chip ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(dayLine)} · ${escapeHtml(model.time || 'TBD')} · ${escapeHtml(model.room || 'Room TBD')}</div>`;
     }
     if (variant === 'inline') {
         return `<span class="lms-next-session-inline"><i class="far fa-clock"></i> Next session · <span class="lux-pill home-hover-chip lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(model.day || 'Day TBD')} ${escapeHtml(model.time || 'TBD')}</span>`;
@@ -196,7 +196,7 @@ function renderLmsSessionMarkerPreviewHtml(courseKey = currentCourseId) {
                                 </div>
                             ` : '<div class="lms-session-marker-slot-schedule is-muted">No scheduled session this week</div>'}
                             ${candidate.existingMarker ? `
-                                <div class="lms-session-marker-slot-badge marker-${lmsSessionMarkerClassToken(candidate.existingMarker.type)}">
+                                <div class="lms-session-marker-slot-badge home-hover-chip marker-${lmsSessionMarkerClassToken(candidate.existingMarker.type)}">
                                     <i class="fas ${escapeHtml(typeMeta.icon)}"></i> ${escapeHtml(candidate.existingMarker.title || typeMeta.label)}
                                 </div>
                             ` : ''}

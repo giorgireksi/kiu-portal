@@ -81,10 +81,10 @@ function renderPortalMessengerWorkspace() {
                 <div class="portal-msg-page-copy">Search students, professors, and teaching assistants, open private chats, and share files inside the portal.</div>
             </div>
             <div class="portal-msg-page-pills">
-                <span class="portal-msg-pill is-role">
+                <span class="portal-msg-pill home-hover-chip is-role">
                     <i class="fas fa-user-shield"></i> ${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))}
                 </span>
-                <span class="portal-msg-pill">
+                <span class="portal-msg-pill home-hover-chip">
                     <i class="fas fa-building"></i> ${escapeHtml(getFacultyLabel(messengerFaculty))}
                 </span>
             </div>
@@ -100,7 +100,7 @@ function renderPortalMessengerWorkspace() {
                         [USER_ROLES.PROFESSOR, 'Professors'],
                         [USER_ROLES.TA, 'TAs']
                     ].map(([value, label]) => `
-                        <button type="button" class="portal-msg-chip${roleFilter === value ? ' is-active' : ''}" data-legacy-click="setPortalMessengerRoleFilter('${value}')">
+                        <button type="button" class="portal-msg-chip home-hover-chip${roleFilter === value ? ' is-active' : ''}" data-legacy-click="setPortalMessengerRoleFilter('${value}')">
                             ${label}
                         </button>
                     `).join('')}

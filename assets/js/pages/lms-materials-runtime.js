@@ -43,7 +43,7 @@ function syncLmsMaterialDraftUi(resourceKey, labelId = '') {
 
 function buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId) {
     const draft = typeof getLmsDraftFile === 'function' ? getLmsDraftFile('material', resourceKey) : null;
-    const pillClass = draft ? 'lms-route-pill is-positive' : 'lms-route-pill';
+    const pillClass = draft ? 'lms-route-pill home-hover-chip is-positive' : 'lms-route-pill home-hover-chip';
     const pillHtml = draft
         ? `<i class="fas fa-paperclip"></i> ${escapeHtml(draft.name)}`
         : 'No file selected yet';
@@ -109,7 +109,7 @@ function buildLmsMaterialsCardHtml(resourceKey, item, canManage) {
                                     <div class="lms-route-card-copy lms-route-copy-mt-6">${escapeHtml(item.description || 'Shared course material')}</div>
                                 </div>
                                 <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-8 lms-material-card-actions">
-                                    ${item.pinned ? '<span class="lms-route-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
+                                    ${item.pinned ? '<span class="lms-route-pill home-hover-chip"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
                                     ${canManage ? `
                                         <button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="toggleLmsMaterialPinned('${resourceKey}', '${item.id}')"><i class="fas fa-thumbtack"></i></button>
                                         <button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', -1)"><i class="fas fa-arrow-up"></i></button>

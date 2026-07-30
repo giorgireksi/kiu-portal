@@ -24,6 +24,8 @@ const { registerPortalSupportRoutes } = require('./routes/portal-support-routes'
 const { registerProtectedExamRoutes } = require('./routes/protected-exam-routes');
 const { registerSocialRoutes } = require('./routes/social-routes');
 const { registerStudentServiceRoutes } = require('./routes/student-service-routes');
+const { registerOrdersRoutes } = require('./routes/orders-routes');
+const { registerChancelleryRoutes } = require('./routes/chancellery-routes');
 const { registerSystemRoutes } = require('./routes/system-routes');
 const { PlatformStore } = require('./store');
 const { isPortalImpersonationRole } = require('./domains/auth-session-service');
@@ -749,9 +751,20 @@ function registerSseClient(userId, response) {
     const key = String(userId || '').trim();
     if (!key) return false;
     pruneSseClientsForUser(key);
-    const totalCount = getSseConnectionCount();
-    const currentCount = sseClients.get(key)?.size || 0;
-    if (currentCount >= SSE_MAX_CONNECTIONS_PER_USER || totalCount >= SSE_MAX_CONNECTIONS_TOTAL) return false;
+    let currentSet = sseClients.get(key);
+    let currentCount = currentSet?.size || 0;
+    // At per-user cap, drop the oldest stream so a fresh tab can connect.
+    while (currentCount >= SSE_MAX_CONNECTIONS_PER_USER && currentSet?.size) {
+        const oldest = currentSet.values().next().value;
+        if (!oldest) break;
+        try {
+            if (!oldest.writableEnded && !oldest.destroyed) oldest.end();
+        } catch (error) {}
+        unregisterSseClient(key, oldest);
+        currentSet = sseClients.get(key);
+        currentCount = currentSet?.size || 0;
+    }
+    if (getSseConnectionCount() >= SSE_MAX_CONNECTIONS_TOTAL) return false;
     if (!sseClients.has(key)) sseClients.set(key, new Set());
     sseClients.get(key).add(response);
     return true;
@@ -1581,14 +1594,49 @@ function enrollmentMatchesLmsLiveQuizGroup(enrollment = {}, courseId = '', group
     return keys.has(targetGroup);
 }
 
+/** Mirror client normalizeStudentScheduleValue — object-keyed maps must still grant LMS scope access. */
+function normalizePortalStudentScheduleValue(schedule) {
+    if (Array.isArray(schedule)) return schedule.filter(Boolean);
+    if (schedule && typeof schedule === 'object') {
+        if (Array.isArray(schedule.entries)) return schedule.entries.filter(Boolean);
+        return Object.entries(schedule)
+            .filter(([, value]) => value != null && value !== '')
+            .map(([key, value]) => {
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    const hasEntryShape = Boolean(
+                        value.courseId
+                        || value.sourceCourseId
+                        || value.groupName
+                        || value.day
+                        || value.time
+                    );
+                    if (hasEntryShape) {
+                        return {
+                            ...value,
+                            courseId: value.courseId || value.sourceCourseId || (/^\d+$/.test(String(key)) ? '' : key),
+                            groupId: typeof value.groupId === 'string' || typeof value.groupId === 'number'
+                                ? value.groupId
+                                : (value.groupName || '')
+                        };
+                    }
+                }
+                return { courseId: key, groupId: value };
+            })
+            .filter((entry) => entry.courseId || entry.groupId);
+    }
+    return [];
+}
+
 function isStudentViaLmsLiveQuizPortalSchedule(studentId = '', courseId = '', groupId = '') {
     const normalizedStudentId = String(studentId || '').trim();
     if (!normalizedStudentId || !courseId) return false;
     const portalState = store.state.portal?.state && typeof store.state.portal.state === 'object'
         ? store.state.portal.state
         : {};
-    const schedule = portalState.studentSchedulesByStudent?.[normalizedStudentId];
-    if (!Array.isArray(schedule) || !schedule.length) return false;
+    const schedule = normalizePortalStudentScheduleValue(
+        portalState.studentSchedulesByStudent?.[normalizedStudentId]
+    );
+    if (!schedule.length) return false;
     return schedule.some(entry => enrollmentMatchesLmsLiveQuizGroup(entry, courseId, groupId));
 }
 
@@ -2544,6 +2592,22 @@ registerStudentServiceRoutes(app, {
     broadcastAll,
     getActorUserId,
     getSessionRole,
+    getStore: () => store,
+    requireSessionAccount,
+    sendError
+});
+
+registerOrdersRoutes(app, {
+    getActorUserId,
+    getActualSessionRole,
+    getStore: () => store,
+    requireSessionAccount,
+    sendError
+});
+
+registerChancelleryRoutes(app, {
+    getActorUserId,
+    getActualSessionRole,
     getStore: () => store,
     requireSessionAccount,
     sendError

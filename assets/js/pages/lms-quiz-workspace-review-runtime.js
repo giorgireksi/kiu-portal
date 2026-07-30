@@ -64,10 +64,10 @@ function renderLmsQuizReviewPanel(resourceKey, quiz) {
             <tr>
                 <td class="lms-quiz-review-student-id">${escapeHtml(student.id)}</td>
                 <td class="lms-quiz-review-student-name">${escapeHtml(student.name)}</td>
-                <td>${submission.variantLabel ? `<span class="lms-quiz-review-variant-pill">${escapeHtml(submission.variantLabel)}</span>` : '<span class="lms-quiz-review-variant-empty">Standard</span>'}</td>
-                <td><span class="lms-quiz-review-access-pill ${accessAllowed ? 'is-allowed' : 'is-blocked'}">${accessAllowed ? 'Allowed' : 'Blocked'}</span></td>
+                <td>${submission.variantLabel ? `<span class="lms-quiz-review-variant-pill home-hover-chip">${escapeHtml(submission.variantLabel)}</span>` : '<span class="lms-quiz-review-variant-empty">Standard</span>'}</td>
+                <td><span class="lms-quiz-review-access-pill home-hover-chip ${accessAllowed ? 'is-allowed' : 'is-blocked'}">${accessAllowed ? 'Allowed' : 'Blocked'}</span></td>
                 <td>${examSession
-                    ? `<div class="lms-quiz-review-approval-stack"><span class="lms-quiz-review-approval-pill ${blocked ? 'is-blocked' : 'is-approved'}">${blocked ? 'Blocked by staff' : 'Approved roster'}</span><span class="lms-quiz-review-attendance-meta">Handwritten room check is handled outside the portal.</span></div>`
+                    ? `<div class="lms-quiz-review-approval-stack"><span class="lms-quiz-review-approval-pill home-hover-chip ${blocked ? 'is-blocked' : 'is-approved'}">${blocked ? 'Blocked by staff' : 'Approved roster'}</span><span class="lms-quiz-review-attendance-meta">Handwritten room check is handled outside the portal.</span></div>`
                     : `<select data-lms-change="setLmsQuizAttendanceStatus(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)}, this.value)" class="lms-quiz-review-attendance-select">
                         <option value="" ${!submission.attendanceStatus ? 'selected' : ''}>Not checked</option>
                         <option value="Present" ${submission.attendanceStatus === 'Present' ? 'selected' : ''}>Present</option>
@@ -76,10 +76,10 @@ function renderLmsQuizReviewPanel(resourceKey, quiz) {
                     </select>
                     <div class="lms-quiz-review-attendance-meta">${submission.attendanceVerifiedAt ? `Verified ${escapeHtml(formatLmsDateTime(submission.attendanceVerifiedAt))}` : 'Waiting for attendance check'}</div>`}
                 </td>
-                <td><span class="lms-quiz-review-status-pill ${badgeToneClass}">${escapeHtml(badge.label)}</span></td>
+                <td><span class="lms-quiz-review-status-pill home-hover-chip ${badgeToneClass}">${escapeHtml(badge.label)}</span></td>
                 <td class="lms-quiz-review-student-id">
                     <div class="lms-quiz-review-monitor-stack">
-                        <span class="lms-quiz-review-monitor-pill ${alertCount ? 'is-warning' : 'is-clean'}">${alertCount ? `${alertCount} warning${alertCount === 1 ? '' : 's'}` : 'Clean'}</span>
+                        <span class="lms-quiz-review-monitor-pill home-hover-chip ${alertCount ? 'is-warning' : 'is-clean'}">${alertCount ? `${alertCount} warning${alertCount === 1 ? '' : 's'}` : 'Clean'}</span>
                         <span class="lms-quiz-review-monitor-meta">${latestProctorEvent ? `${latestProctorEvent.note}  -  ${formatLmsDateTime(latestProctorEvent.createdAt)}` : 'No suspicious events logged.'}</span>
                         <span class="lms-quiz-review-monitor-meta">Outside actions: ${Number(submission.outsideActionCount || 0)}</span>
                     </div>
@@ -184,7 +184,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
                                 <span class="lms-quiz-review-option-marker">${String.fromCharCode(65 + optionIndex)}</span>
                                 <div class="lms-quiz-review-option-copy">${escapeHtml(option || `Option ${optionIndex + 1}`)}</div>
                             </div>
-                            ${badgeText ? `<span class="lms-quiz-review-option-badge">${escapeHtml(badgeText)}</span>` : ''}
+                            ${badgeText ? `<span class="lms-quiz-review-option-badge home-hover-chip">${escapeHtml(badgeText)}</span>` : ''}
                         </div>
                     `;
                 }).join('')}
@@ -195,7 +195,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
             <div class="lms-quiz-review-question-card">
                 <div class="lms-quiz-review-question-head">
                     <div class="lms-quiz-review-question-kicker">Question ${index + 1}  -  ${isWritten ? 'Written' : 'Multiple Choice'}  -  ${Number(question.score || 0)} pts</div>
-                    ${!isWritten ? `<span class="lms-quiz-review-question-pill">${Number.isFinite(selectedOption) ? `Selected ${String.fromCharCode(65 + selectedOption)}` : 'No selection'}</span>` : ''}
+                    ${!isWritten ? `<span class="lms-quiz-review-question-pill home-hover-chip">${Number.isFinite(selectedOption) ? `Selected ${String.fromCharCode(65 + selectedOption)}` : 'No selection'}</span>` : ''}
                 </div>
                 <div class="lms-quiz-review-question-title">${escapeHtml(question.text || '')}</div>
                 ${isWritten ? `
@@ -212,7 +212,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
                             <input id="${manualInputId}" data-lms-written-score="true" data-question-id="${escapeHtml(question.id)}" type="number" min="0" max="${questionManualMax}" value="${submission.manualScoresByQuestion?.[question.id] === null || submission.manualScoresByQuestion?.[question.id] === undefined ? '' : Number(submission.manualScoresByQuestion[question.id])}" placeholder="0 - ${questionManualMax}" class="lms-quiz-review-manual-input lux-control">
                         </label>
                     </div>
-                ` : '<div class="lms-quiz-review-auto-pill"><i class="fas fa-bolt"></i> Auto-scored by computer</div>'}
+                ` : '<div class="lms-quiz-review-auto-pill home-hover-chip"><i class="fas fa-bolt"></i> Auto-scored by computer</div>'}
             </div>
         `;
     }).join('');
@@ -226,7 +226,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
                     <div class="lms-quiz-review-paper-title">${escapeHtml(student.name)}  -  ${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
                     <div class="lms-quiz-review-paper-meta">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}${submission.variantLabel ? `  -  ${escapeHtml(submission.variantLabel)}` : ''}</div>
                 </div>
-                ${options.embedded ? '<span class="lms-quiz-review-paper-badge"><i class="fas fa-file-alt"></i> Gradebook review</span>' : ''}
+                ${options.embedded ? '<span class="lms-quiz-review-paper-badge home-hover-chip"><i class="fas fa-file-alt"></i> Gradebook review</span>' : ''}
             </div>
             <div class="lms-quiz-review-paper-stat-row">
                 <div class="lms-quiz-review-paper-metric-card lms-quiz-review-paper-stat-card"><div class="lms-quiz-review-paper-metric-label">Auto Score</div><div class="lms-quiz-review-paper-metric-value">${Number(submission.autoScoreRaw || 0)}</div></div>

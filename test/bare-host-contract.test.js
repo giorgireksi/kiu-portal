@@ -81,7 +81,7 @@ describe('bare host contract', () => {
 
     it('wave 2 routes declare glass-root hosts', () => {
         expect(readSource('library.html')).toMatch(/library-catalog-workspace[\s\S]*data-lux-glass-root="1"/);
-        expect(readSource('personal-data.html')).toMatch(/personal-data-workspace[\s\S]*data-lux-glass-root="1"/);
+        expect(readSource('personal-data.html')).toMatch(/personal-data-shell[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('assets/js/pages/student-service-page-runtime.js')).toMatch(/student-service-shell[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('lms.html')).toMatch(/lms-route-workspace-chrome[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('timetable.html')).toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);

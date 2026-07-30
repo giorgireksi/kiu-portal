@@ -48,6 +48,8 @@ describe('social-project-hub-structure (bare-shell era)', () => {
         expect(bare).toContain('.social-project-card-new-title {');
         expect(bare).toContain('.social-project-card-new-progress-bar {');
         expect(bare).toContain('.social-project-row-title {');
+        expect(bare).toContain('.social-project-hub-rail .social-project-row');
+        expect(bare).toContain('"status title cta"');
 
         const hubBlockStart = bare.indexOf('/* Social: project hub cards & list */');
         expect(hubBlockStart).toBeGreaterThan(-1);
@@ -60,5 +62,17 @@ describe('social-project-hub-structure (bare-shell era)', () => {
         expect(bare).toContain('.social-project-hub-grid .social-project-card-new-cta');
         expect(bare).toContain('.social-project-hub-grid .social-project-hub-cta-tile');
         expect(bare).toContain('minmax(140px, 1fr)');
+
+        const railCardRule = bare.slice(
+            bare.indexOf('body.lux-route-social .social-project-hub-rail-card {'),
+            bare.indexOf('body.lux-route-social .social-project-hub-contribution {')
+        );
+        expect(railCardRule).toContain('min-width: 0');
+        expect(railCardRule).not.toContain('background: transparent');
+        expect(bare).not.toMatch(/\.social-project-hub-rail-card\s*\{[^}]*background:\s*transparent/);
+        expect(fouc).toContain('.social-project-hub-rail-card');
+        expect(fouc).toMatch(
+            /\.social-project-hub-rail-card,\s*\n\s*\.social-project-hub-cta-tile\s*\n\s*\)\.home-hover-chip:hover/
+        );
     });
 });

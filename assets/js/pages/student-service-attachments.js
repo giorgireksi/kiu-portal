@@ -181,7 +181,7 @@
         return `
             <div class="student-service-attachment-chips" data-student-service-attachment-chips="${ssEscape(composerId)}">
                 ${drafts.map((file) => `
-                    <span class="student-service-attachment-chip lux-soft-chrome">
+                    <span class="student-service-attachment-chip home-hover-chip lux-soft-chrome">
                         <i class="fas ${isStudentServiceImageAttachment(file) ? 'fa-image' : isStudentServiceVideoAttachment(file) ? 'fa-video' : 'fa-file'}"></i>
                         <span>${ssEscape(file.name || 'attachment')}</span>
                         <button type="button" class="student-service-attachment-chip-remove" data-student-service-remove-attachment="${ssEscape(composerId)}" data-student-service-attachment-id="${ssEscape(file.id || '')}" aria-label="Remove attachment"><i class="fas fa-times"></i></button>

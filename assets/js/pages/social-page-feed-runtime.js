@@ -162,13 +162,13 @@
             const desc = entityDetailDescription(type, id) || 'No additional details available.';
             const stats = entityDetailStats(type, entity)
                 .filter(([, value]) => value !== undefined && value !== null && text(String(value)) !== '')
-                .map(([k, value]) => `<div class="social-neo-item-line"><span>${escape(k)}</span><strong>${escape(String(value))}</strong></div>`)
+                .map(([k, value]) => `<div class="social-neo-item-line lux-soft-chrome home-hover-chip"><span>${escape(k)}</span><strong>${escape(String(value))}</strong></div>`)
                 .join('');
             const tags = (Array.isArray(entity?.skillTags) && entity.skillTags.length ? entity.skillTags
                 : (Array.isArray(entity?.hashtags) ? entity.hashtags : (Array.isArray(entity?.tags) ? entity.tags : [])))
                 .slice(0, 8);
             const tagsHtml = tags.length
-                ? `<div class="social-neo-badge-row">${tags.map((tag) => `<span class="social-neo-pill">${escape(text(tag))}</span>`).join('')}</div>`
+                ? `<div class="social-neo-badge-row">${tags.map((tag) => `<span class="social-neo-pill lux-status-pill home-hover-chip">${escape(text(tag))}</span>`).join('')}</div>`
                 : '';
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(meta.title)}">
                 <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--group-detail lux-glass-dialog-card--social-glass" data-action="noop" data-lux-transparency-exempt="1">
@@ -176,36 +176,36 @@
                         <div class="social-neo-group-detail-identity">
                             <div class="social-neo-group-card-icon social-neo-group-card-avatar social-neo-group-detail-avatar"><i class="fas ${escape(meta.icon)}"></i></div>
                             <div class="lux-glass-dialog-heading">
-                                <strong class="lux-glass-dialog-title">${escape(meta.title)}</strong>
+                                <strong class="lux-glass-dialog-title lux-card-title">${escape(meta.title)}</strong>
                                 <span class="lux-glass-dialog-subtitle social-neo-group-detail-meta">
-                                    <span class="social-neo-pill">${escape(meta.sectionLabel)}</span>
-                                    <span>${escape(meta.subtitle)}</span>
+                                    <span class="social-neo-pill lux-status-pill home-hover-chip">${escape(meta.sectionLabel)}</span>
+                                    <span class="lux-card-meta">${escape(meta.subtitle)}</span>
                                 </span>
                             </div>
                         </div>
-                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn home-hover-chip" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="lux-glass-dialog-body lux-glass-dialog-body--group-detail">
-                        <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                        <section class="lux-glass-dialog-group-section social-neo-group-detail-section lux-soft-chrome home-hover-chip">
                             <div class="lux-glass-dialog-group-section-head">
-                                <strong>About</strong>
-                                <span>${escape(meta.sectionLabel)} description.</span>
+                                <strong class="lux-card-title">About</strong>
+                                <span class="lux-card-copy">${escape(meta.sectionLabel)} description.</span>
                             </div>
-                            <p class="social-neo-group-detail-desc">${escape(desc)}</p>
+                            <p class="social-neo-group-detail-desc lux-card-copy">${escape(desc)}</p>
                             ${tagsHtml}
                         </section>
                         ${stats ? `
-                        <section class="lux-glass-dialog-group-section social-neo-group-detail-section">
+                        <section class="lux-glass-dialog-group-section social-neo-group-detail-section lux-soft-chrome home-hover-chip">
                             <div class="lux-glass-dialog-group-section-head">
-                                <strong>Details</strong>
-                                <span>Key facts about this ${escape(meta.sectionLabel.toLowerCase())}.</span>
+                                <strong class="lux-card-title">Details</strong>
+                                <span class="lux-card-copy">Key facts about this ${escape(meta.sectionLabel.toLowerCase())}.</span>
                             </div>
                             <div class="social-neo-list social-neo-group-detail-list">${stats}</div>
                         </section>` : ''}
                     </div>
                     <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions social-neo-group-detail-actions">
-                        <button class="lux-primary-btn" type="button" data-action="entity-goto" data-entity-type="${escape(type)}" data-entity-id="${escape(id)}"><i class="fas fa-arrow-right"></i> Open full view</button>
-                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Close</button>
+                        <button class="lux-primary-btn home-hover-chip" type="button" data-action="entity-goto" data-entity-type="${escape(type)}" data-entity-id="${escape(id)}"><i class="fas fa-arrow-right"></i> Open full view</button>
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn home-hover-chip" type="button" data-action="dialog-close">Close</button>
                     </div>
                 </div>
             </div>`;
@@ -220,7 +220,7 @@
                     ${normalized.map((link) => {
                         const meta = resolveEntityLinkMeta(link);
                         return `
-                            <div class="social-neo-post-compose-chip">
+                            <div class="social-neo-post-compose-chip home-hover-chip">
                                 <i class="fas ${escape(meta.icon)}" aria-hidden="true"></i>
                                 <span><strong>${escape(meta.title)}</strong> · ${escape(meta.sectionLabel)}</span>
                                 <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="post-compose-entity-remove" data-entity-type="${escape(meta.type)}" data-entity-id="${escape(meta.id)}" aria-label="Remove attachment">
@@ -245,7 +245,7 @@
                         return `
                             <article class="social-neo-post-entity-card">
                                 <div class="social-neo-post-entity-card-copy">
-                                    <span class="social-neo-pill"><i class="fas ${escape(meta.icon)}"></i> ${escape(meta.sectionLabel)}</span>
+                                    <span class="social-neo-pill home-hover-chip"><i class="fas ${escape(meta.icon)}"></i> ${escape(meta.sectionLabel)}</span>
                                     <strong>${escape(meta.title)}</strong>
                                     <span class="social-neo-muted">${escape(meta.subtitle)}</span>
                                 </div>
@@ -283,7 +283,7 @@
             const done = card.querySelector('.social-neo-post-compose-attach-done');
             if (done) {
                 const badge = count
-                    ? `<span class="lux-glass-dialog-submit-badge">${escape(String(count))}</span>`
+                    ? `<span class="lux-glass-dialog-submit-badge home-hover-chip">${escape(String(count))}</span>`
                     : '';
                 done.innerHTML = `<i class="fas fa-check"></i> Done${badge}`;
             }
@@ -318,7 +318,7 @@
             const submit = form.querySelector('.lux-glass-dialog-submit-btn');
             if (submit) {
                 const badge = entityLinks.length
-                    ? `<span class="lux-glass-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
+                    ? `<span class="lux-glass-dialog-submit-badge home-hover-chip">${escape(String(entityLinks.length))}</span>`
                     : '';
                 submit.innerHTML = `<i class="fas fa-paper-plane"></i> Publish${badge}`;
             }

@@ -35,12 +35,13 @@ function loadBlueprintApi() {
 }
 
 describe('staff form blueprint system', () => {
-    it('starts with empty professor and TA schemas', () => {
+    it('starts with empty professor, TA, and student service schemas', () => {
         const api = loadBlueprintApi();
         const blueprint = api.ensureStaffFormBlueprint();
-        expect(blueprint.staffTypes.map((type) => type.id)).toEqual(['professor', 'ta']);
+        expect(blueprint.staffTypes.map((type) => type.id)).toEqual(['professor', 'ta', 'student_service']);
         expect(blueprint.schemas.professor).toEqual({ sections: [] });
         expect(blueprint.schemas.ta).toEqual({ sections: [] });
+        expect(blueprint.schemas.student_service).toEqual({ sections: [] });
         expect(blueprint.version).toBe(2);
         expect(api.staffFormSchemaIsEmpty('professor')).toBe(true);
     });
@@ -96,6 +97,23 @@ describe('staff form blueprint system', () => {
         expect(api.getStaffFormSchema('professor').sections[0].fields[0].label).toBe('Untitled field');
     });
 
-    
+    it('persists showOnPersonalData on staff fields', () => {
+        const api = loadBlueprintApi();
+        api.addStaffFormSection('student_service', 'input', { title: 'Profile' });
+        const sectionId = api.getStaffFormSchema('student_service').sections[0].id;
+        api.addStaffFormField('student_service', 'input', sectionId, {
+            label: 'Office',
+            key: 'office',
+            type: 'text'
+        });
+        const field = api.getStaffFormSchema('student_service').sections[0].fields[0];
+        expect(field.showOnPersonalData).toBe(false);
+        const result = api.updateStaffFormField('student_service', 'input', sectionId, field.id, {
+            showOnPersonalData: true
+        });
+        expect(result?.error).toBeFalsy();
+        const updated = api.getStaffFormSchema('student_service').sections[0].fields[0];
+        expect(updated.showOnPersonalData).toBe(true);
+    });
 
 });
