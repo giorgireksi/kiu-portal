@@ -283,6 +283,16 @@ const peels = [
             const html = readSource('social.html');
             expect(html.indexOf('social-lite-invite-runtime.js'))
                 .toBeLessThan(html.indexOf('social-runtime-lite.js'));
+            const host = readSource('assets/js/shared/social-runtime-lite.js');
+            const inviteBlock = host.slice(
+                host.indexOf('/* Wave 18: social-lite-invite-runtime.js */'),
+                host.indexOf('__kiuCreateSocialLiteInviteApi(__w18Deps)')
+            );
+            expect(inviteBlock).toMatch(/currentUserId/);
+            expect(inviteBlock).toMatch(/portalRequest/);
+            expect(inviteBlock).toMatch(/loadSocialState/);
+            expect(inviteBlock).toMatch(/upsertChat/);
+            expect(inviteBlock).not.toMatch(/addToast/);
         }
     },
     {

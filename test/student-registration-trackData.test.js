@@ -13,7 +13,7 @@ function createRegistrationTrackVmContext() {
     const vm = require('vm');
     const sharedSource = readSource('assets/js/pages/registration-shared.js');
     const adapterStart = sharedSource.indexOf('/* Registration trackData adapter');
-    const adapterEnd = sharedSource.indexOf('window.getAssignedCourseCurriculumDetails');
+    const adapterEnd = sharedSource.indexOf('__kiuRegSharedExpose({', adapterStart);
     const adapterBlock = sharedSource.slice(adapterStart, adapterEnd);
 
     const context = {

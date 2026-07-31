@@ -99,8 +99,8 @@ function getPublisherPresentationSummary(compose = runtime.compose) {
     const priorityLabel = priority.charAt(0).toUpperCase() + priority.slice(1);
     const hints = [];
     if (compose.pinned) hints.push('Pinned');
-    const replyLabel = getNewsReplyModeLabel(compose.replyMode || (compose.allowReplies === false ? 'none' : 'private'));
-    if (replyLabel !== 'Private replies') hints.push(replyLabel);
+    const replyLabel = getNewsReplyModeLabel(compose.replyMode || (compose.allowReplies === false ? 'none' : 'both'));
+    if (replyLabel !== 'Private comments') hints.push(replyLabel);
     const base = `${priorityLabel} priority`;
     return hints.length ? `${base} · ${hints.join(' · ')}` : base;
 }
@@ -742,12 +742,10 @@ function renderNewsPublisherPresentationPane(activeSection) {
         <div class="newsx-publisher-field">
             <label class="newsx-field-label" for="news-compose-reply-mode">Replies</label>
             <select id="news-compose-reply-mode" name="news_compose_reply_mode" class="newsx-select lux-control" data-news-compose-field="replyMode">
-                <option value="none" ${(compose.replyMode || 'private') === 'none' ? 'selected' : ''}>No replies</option>
-                <option value="private" ${(compose.replyMode || 'private') === 'private' ? 'selected' : ''}>Private only</option>
-                <option value="public" ${compose.replyMode === 'public' ? 'selected' : ''}>Public only</option>
-                <option value="both" ${compose.replyMode === 'both' ? 'selected' : ''}>Public + private</option>
+                <option value="none" ${(compose.replyMode || 'both') === 'none' ? 'selected' : ''}>No replies</option>
+                <option value="both" ${(compose.replyMode || 'both') !== 'none' ? 'selected' : ''}>Public + private comments</option>
             </select>
-            <div class="newsx-meta lux-card-meta">Choose whether readers can comment publicly, reply privately, both, or not at all.</div>
+            <div class="newsx-meta lux-card-meta">Readers can leave public comments and private comments, or you can turn replies off.</div>
         </div>
         <div class="newsx-publisher-delivery-toggles">
             <label class="newsx-check lux-check-card newsx-publisher-toggle-card lux-soft-chrome home-hover-chip">

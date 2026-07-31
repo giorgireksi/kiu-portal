@@ -862,13 +862,13 @@ function buildNewsReplyTree(flatReplies = []) {
     return roots;
 }
 
-const NEWS_REPLY_MODES = new Set(['none', 'private', 'public', 'both']);
-
 function normalizeNewsReplyMode(value, allowRepliesFallback) {
     const mode = String(value || '').trim().toLowerCase();
-    if (NEWS_REPLY_MODES.has(mode)) return mode;
+    if (mode === 'none') return 'none';
+    // Legacy single-channel modes become dual-channel.
+    if (mode === 'private' || mode === 'public' || mode === 'both') return 'both';
     if (allowRepliesFallback === false) return 'none';
-    return 'private';
+    return 'both';
 }
 
 function normalizeNewsReplyVisibility(value) {
@@ -878,8 +878,8 @@ function normalizeNewsReplyVisibility(value) {
 function postAllowsNewsReplyVisibility(post = {}, visibility = 'private') {
     const mode = normalizeNewsReplyMode(post.replyMode, post.allowReplies);
     if (mode === 'none') return false;
-    if (visibility === 'public') return mode === 'public' || mode === 'both';
-    return mode === 'private' || mode === 'both';
+    // When replies are enabled, both public and private channels are always allowed.
+    return visibility === 'public' || visibility === 'private' || !visibility;
 }
 
 class PlatformStore {
@@ -1976,8 +1976,8 @@ class PlatformStore {
         }
         const faculty = normalizeChancelleryDocumentFacultyCode(payload.facultyCode || payload.faculty || '');
         const template = normalizeChancelleryDocumentTemplate(payload.documentTemplate || payload.template || payload);
-        if (!template?.sections?.length) {
-            return { error: 'Appeal document must include at least one section.', status: 400 };
+        if (!Array.isArray(template?.elements) || !template.elements.length) {
+            return { error: 'Appeal document must include at least one canvas element.', status: 400 };
         }
         const chancelleryState = this.ensureChancelleryPlatformState();
         chancelleryState.documentTemplateByFaculty[faculty] = clone(template);
@@ -3336,7 +3336,7 @@ class PlatformStore {
         if (!this.canViewNewsPost(post, normalizedActorId)) return { error: 'This news post is not visible to the replying account.', status: 403 };
         const visibility = normalizeNewsReplyVisibility(payload.visibility);
         if (!postAllowsNewsReplyVisibility(post, visibility)) {
-            return { error: visibility === 'public' ? 'Public replies are disabled for this news post.' : 'Private replies are disabled for this news post.', status: 409 };
+            return { error: visibility === 'public' ? 'Public comments are disabled for this news post.' : 'Private comments are disabled for this news post.', status: 409 };
         }
         const body = String(payload.body || '').trim();
         if (!body) return { error: 'Reply text is required.', status: 400 };
@@ -3376,7 +3376,7 @@ class PlatformStore {
                 recipientUserId,
                 sourceDomain: 'news',
                 type: 'news-reply',
-                title: visibility === 'public' ? `Public comment on ${post.title}` : `Private reply on ${post.title}`,
+                title: visibility === 'public' ? `Public comment on ${post.title}` : `Private comment on ${post.title}`,
                 body: visibility === 'public'
                     ? `${reply.authorName} commented on a university update.`
                     : `${reply.authorName} sent a private response to a university update.`,

@@ -1,6 +1,9 @@
 (function initSocialEventsModule() {
-    if (window.__KIU_SOCIAL_EVENTS_MODULE_LOADED) return;
-    window.__KIU_SOCIAL_EVENTS_MODULE_LOADED = true;
+    if (window.__KIU_SOCIAL_EVENTS_MODULE_LOADED
+        && typeof window.handleSocialEventsClick === 'function'
+        && typeof window.renderEventsPanel === 'function') {
+        return;
+    }
 
     const hooks = window.__kiuSocialEventsHooks || {};
     const {
@@ -21,16 +24,38 @@
         clearEventDraft,
         prefillEventEditDraft,
         patchEventRsvpButtons,
-        respondPortalSocialEventRsvp,
         invalidateSocialRenderCache,
         ensureSocialGroupsModule,
         closeDialog,
-        createPortalSocialEvent,
-        deletePortalSocialEvent,
-        updatePortalSocialEvent,
         fromDateTimeLocalValue,
         readFileAsDataUrl
     } = hooks;
+    // Prefer window.* for portal mutations — bare hook values can be missing if
+    // Object.assign ran before social-runtime-lite exported them (silent RSVP no-op).
+    function respondPortalSocialEventRsvp(...a) {
+        const fn = (typeof hooks.respondPortalSocialEventRsvp === 'function' && hooks.respondPortalSocialEventRsvp)
+            || window.respondPortalSocialEventRsvp;
+        if (typeof fn !== 'function') throw new Error('RSVP is unavailable.');
+        return fn(...a);
+    }
+    function createPortalSocialEvent(...a) {
+        const fn = (typeof hooks.createPortalSocialEvent === 'function' && hooks.createPortalSocialEvent)
+            || window.createPortalSocialEvent;
+        if (typeof fn !== 'function') throw new Error('Event create is unavailable.');
+        return fn(...a);
+    }
+    function deletePortalSocialEvent(...a) {
+        const fn = (typeof hooks.deletePortalSocialEvent === 'function' && hooks.deletePortalSocialEvent)
+            || window.deletePortalSocialEvent;
+        if (typeof fn !== 'function') throw new Error('Event delete is unavailable.');
+        return fn(...a);
+    }
+    function updatePortalSocialEvent(...a) {
+        const fn = (typeof hooks.updatePortalSocialEvent === 'function' && hooks.updatePortalSocialEvent)
+            || window.updatePortalSocialEvent;
+        if (typeof fn !== 'function') throw new Error('Event update is unavailable.');
+        return fn(...a);
+    }
 
     if (
         typeof state !== 'function'
@@ -50,16 +75,17 @@
         || typeof clearEventDraft !== 'function'
         || typeof prefillEventEditDraft !== 'function'
         || typeof patchEventRsvpButtons !== 'function'
-        || typeof respondPortalSocialEventRsvp !== 'function'
         || typeof invalidateSocialRenderCache !== 'function'
         || typeof ensureSocialGroupsModule !== 'function'
         || typeof closeDialog !== 'function'
-        || typeof createPortalSocialEvent !== 'function'
-        || typeof deletePortalSocialEvent !== 'function'
-        || typeof updatePortalSocialEvent !== 'function'
         || typeof fromDateTimeLocalValue !== 'function'
         || typeof readFileAsDataUrl !== 'function'
+        || typeof window.respondPortalSocialEventRsvp !== 'function'
+        || typeof window.createPortalSocialEvent !== 'function'
+        || typeof window.deletePortalSocialEvent !== 'function'
+        || typeof window.updatePortalSocialEvent !== 'function'
     ) {
+        window.__KIU_SOCIAL_EVENTS_MODULE_LOADED = false;
         throw new Error('Social events hooks are unavailable.');
     }
 
@@ -616,9 +642,8 @@
     function handleSocialEventsClick(action, trigger) {
         if (!isSocialEventsClickAction(action)) return false;
         if (action === 'event-time-group-toggle') {
-            event.preventDefault();
-            event.target.closest('.social-neo-time-group')?.classList.toggle('is-open');
-            return;
+            trigger.closest('.social-neo-time-group')?.classList.toggle('is-open');
+            return true;
         }
 
         if (action === 'event-delete-open') {
@@ -819,4 +844,5 @@
     window.handleSocialEventsChange = handleSocialEventsChange;
     window.isSocialEventsChangeTarget = isSocialEventsChangeTarget;
 
+    window.__KIU_SOCIAL_EVENTS_MODULE_LOADED = true;
 })();

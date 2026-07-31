@@ -144,8 +144,12 @@ function submoduleToTrackCourse(subModule = {}) {
 function migrateAdminRegistrationCmsToTrackModel(faculty) {
     const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
     if (typeof migrateRegistrationCmsToTrackModel === 'function') {
+        const alreadyMigrated = typeof hasRegistrationTrackMigration === 'function'
+            ? hasRegistrationTrackMigration(fac)
+            : (typeof hasAdminRegTrackMigration === 'function' && hasAdminRegTrackMigration(fac));
         const bucket = migrateRegistrationCmsToTrackModel(fac);
-        if (typeof queueAdminRegistrationStateSave === 'function') {
+        // Only persist when migration actually ran; reads must not re-queue saves (avoids 503 spam loops).
+        if (!alreadyMigrated && typeof queueAdminRegistrationStateSave === 'function') {
             queueAdminRegistrationStateSave();
         }
         return bucket;

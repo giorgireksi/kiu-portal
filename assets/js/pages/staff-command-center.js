@@ -619,7 +619,7 @@
                         ${renderProgress(completion.percent, `${completion.percent}% · ${completion.missing.length ? `${completion.missing.length} missing` : 'complete'}`)}
                     </td>
                     <td>
-                        <div class="staff-hub-inline-actions lux-btn-row-stack">
+                        <div class="staff-hub-inline-actions" data-lux-btn-density="dense">
                             <button class="lux-primary-btn" type="button" data-staff-action="select" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> View</button>
                             <button class="lux-secondary-btn" type="button" data-staff-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit</button>
                             ${record.status === 'Archived'
@@ -652,12 +652,8 @@
 
                 <section class="staff-hub-directory-panel home-hover-chip">
                     <div class="staff-hub-directory-head">
-                        <div>
-                            <div class="staff-hub-overline lux-section-kicker">Staff directory</div>
-                            <h2 class="staff-hub-section-title lux-card-title">Operational records</h2>
-                            <p class="staff-hub-section-copy lux-card-copy">Open full profile pages, review readiness, and act on account or staffing issues directly from the table.</p>
-                        </div>
-                        <div class="staff-hub-inline-actions lux-btn-row-stack">
+                        <h2 class="staff-hub-section-title lux-card-title">Records</h2>
+                        <div class="staff-hub-inline-actions" data-lux-btn-density="dense">
                             <button class="lux-secondary-btn" type="button" data-staff-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
                         </div>
                     </div>

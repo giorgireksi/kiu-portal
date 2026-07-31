@@ -361,6 +361,17 @@ function canActorAccessStoredFile(fileId, actorUserId = '', actorRole = '') {
     })) {
         return true;
     }
+    // University news attachments: allow anyone who can view the parent announcement.
+    const newsPosts = asArray(this.state.news?.posts);
+    if (newsPosts.some((post) => {
+        if (!objectContainsStoredFileReference(post, normalizedFileId)) return false;
+        if (typeof this.canViewNewsPost === 'function') {
+            return Boolean(this.canViewNewsPost(post, normalizedActorUserId));
+        }
+        return false;
+    })) {
+        return true;
+    }
     // Stories may carry image media the same way.
     const socialStories = asArray(this.state.social?.stories);
     if (socialStories.length && socialStories.some((story) => objectContainsStoredFileReference(story, normalizedFileId))) {

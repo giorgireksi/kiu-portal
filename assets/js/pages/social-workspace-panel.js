@@ -749,7 +749,7 @@
                             totalActivity,
                             facultyCount: facultyOptions.length,
                             sectionsHtml: `
-                                <div class="social-neo-workspace-hub-section social-project-hub-discover lux-soft-chrome home-hover-chip">
+                                <div class="social-neo-workspace-hub-section social-project-hub-discover lux-soft-chrome">
                                     <div class="social-project-hub-search-row">
                                         <label class="social-project-hub-search">
                                             <i class="fas fa-search"></i>
@@ -835,22 +835,22 @@
                                                     </button>`;
                                                 }).join('')}</div>` : `<div class="social-neo-empty">No open tasks assigned to you.</div>`}
                                             </section>
-                                            ${featuredProjects.length > 1 ? `<section class="social-project-hub-rail-card lux-soft-chrome home-hover-chip">
+                                            <section class="social-project-hub-rail-card lux-soft-chrome home-hover-chip">
                                                 <div class="social-neo-section-head">
                                                     <div><strong>Recently active</strong><span class="lms-route-meta-12">Projects with recent team activity.</span></div>
                                                 </div>
-                                                <div class="social-project-rows social-project-hub-trending">
-                                                    ${featuredProjects.slice(0, 5).map(renderProjectRow).join('')}
-                                                </div>
-                                            </section>` : ''}
+                                                ${featuredProjects.length
+                                                    ? `<div class="social-project-rows social-project-hub-trending">${featuredProjects.slice(0, 5).map(renderProjectRow).join('')}</div>`
+                                                    : `<div class="social-neo-empty">No recent project activity yet.</div>`}
+                                            </section>
                                             <section class="social-project-hub-rail-card lux-soft-chrome home-hover-chip">
                                                 <div class="social-neo-section-head">
                                                     <div><strong>Your load</strong><span class="lms-route-meta-12">Roles and assigned work.</span></div>
                                                 </div>
                                                 <div class="social-project-hub-contribution">
-                                                    <div class="social-project-hub-contribution-stat"><strong>${escape(String(myProjects.length))}</strong><span>My projects</span></div>
-                                                    <div class="social-project-hub-contribution-stat"><strong>${escape(String(openAssignedCount))}</strong><span>Open tasks</span></div>
-                                                    <div class="social-project-hub-contribution-stat ${overdueAssignedCount ? 'is-danger' : ''}"><strong>${escape(String(overdueAssignedCount))}</strong><span>Overdue</span></div>
+                                                    <div class="social-project-hub-contribution-stat lux-soft-chrome home-hover-chip"><strong>${escape(String(myProjects.length))}</strong><span>My projects</span></div>
+                                                    <div class="social-project-hub-contribution-stat lux-soft-chrome home-hover-chip"><strong>${escape(String(openAssignedCount))}</strong><span>Open tasks</span></div>
+                                                    <div class="social-project-hub-contribution-stat lux-soft-chrome home-hover-chip ${overdueAssignedCount ? 'is-danger' : ''}"><strong>${escape(String(overdueAssignedCount))}</strong><span>Overdue</span></div>
                                                 </div>
                                             </section>
                                         </aside>

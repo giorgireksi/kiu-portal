@@ -54,9 +54,9 @@ describe('chancellery admin approve → forward', () => {
         expect(page).not.toContain('lux-chancellery-routing-pill');
         expect(page).not.toContain("action === 'forward-to-staff'");
         expect(page).not.toContain('This case was already forwarded to course staff.');
-        expect(html).toContain('chancellery.js?v=20260731-appealword1');
+        expect(html).toContain('chancellery.js?v=20260801-chanroute1');
         expect(html).toContain('lux-page-bare-lite.css?v=20260731-casemodal1');
-        expect(html).toContain('lux-modals.css?v=20260731-appealword1');
+        expect(html).toContain('lux-modals.css?v=20260731-mergelabel1');
         expect(html).toContain('lux-layout-primitives.css?v=20260731-fwdvis1');
     });
 
@@ -77,6 +77,10 @@ describe('chancellery admin approve → forward', () => {
         expect(page).toContain('chancellery-case-scroll');
         expect(page).toContain('chancellery-case-decision-banner');
         expect(page).toContain('chancellery-case-decision-form');
+        expect(page).toContain('chancellery-case-meta');
+        expect(page).toContain('chancellery-case-submission-head');
+        expect(page).toContain('chancellery-case-decision-comment-wrap');
+        expect(page).toContain('rows="2"');
         expect(page).not.toContain('chancellery-case-private-notes');
         expect(page).toContain('function decideChancelleryCase');
         expect(page).toContain('function updateChancelleryDecisionComment');
@@ -103,6 +107,10 @@ describe('chancellery admin approve → forward', () => {
         expect(modals).toContain('.chancellery-case-avatar');
         expect(modals).toContain('.chancellery-case-scroll');
         expect(modals).toContain('.chancellery-case-decision-banner');
+        expect(modals).toContain('.chancellery-case-submission-head');
+        expect(modals).toContain('.chancellery-case-decision-comment-wrap');
+        expect(modals).toContain('max-width: min(36rem, 100%)');
+        expect(modals).toContain('body.lux-route-chancellery .chancellery-case-modal .chancellery-case-meta');
         expect(modals).not.toContain('.chancellery-case-private-notes');
         expect(modals).not.toContain('.chancellery-case-composer');
     });
@@ -135,5 +143,7 @@ describe('chancellery admin approve → forward', () => {
         expect(page).toContain('Needs forward');
         expect(page).toContain('function setChancelleryRoutingFilter');
         expect(page).toContain("routingFilter === 'needs_forward'");
+        expect(page).toContain('[data-chancellery-action="set-routing-filter"]');
+        expect(page).toContain("btn.classList.toggle('is-active', active)");
     });
 });

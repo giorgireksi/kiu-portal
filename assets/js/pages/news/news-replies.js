@@ -19,9 +19,9 @@ function renderNewsInlineReplyForm(post, parentReply, visibility = 'private') {
     const token = toFieldToken(`${postId}-${parentReplyId}-${channel}`);
     return `
         <form class="newsx-reply-form" data-news-reply-form="${escapeHtml(parentReplyId)}" data-news-reply-post="${escapeHtml(postId)}" data-news-reply-visibility="${escapeHtml(channel)}">
-            <textarea id="news-reply-inline-${escapeHtml(token)}" name="news_reply_inline_${escapeHtml(token)}" class="newsx-textarea lux-control" rows="2" placeholder="Reply to ${escapeHtml(parentReply?.authorName || 'reply')}..." data-news-reply-input="${escapeHtml(postId)}" data-news-reply-parent="${escapeHtml(parentReplyId)}" data-news-reply-visibility="${escapeHtml(channel)}">${escapeHtml(draft)}</textarea>
+            <textarea id="news-reply-inline-${escapeHtml(token)}" name="news_reply_inline_${escapeHtml(token)}" class="newsx-textarea lux-control" rows="1" placeholder="Reply to ${escapeHtml(parentReply?.authorName || 'reply')}..." data-news-reply-input="${escapeHtml(postId)}" data-news-reply-parent="${escapeHtml(parentReplyId)}" data-news-reply-visibility="${escapeHtml(channel)}">${escapeHtml(draft)}</textarea>
             <div class="newsx-btn-row">
-                <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-reply-submit="${escapeHtml(postId)}" data-news-reply-parent="${escapeHtml(parentReplyId)}" data-news-reply-visibility="${escapeHtml(channel)}"><i class="fas fa-paper-plane"></i> Send</button>
+                <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn home-hover-chip" data-news-reply-submit="${escapeHtml(postId)}" data-news-reply-parent="${escapeHtml(parentReplyId)}" data-news-reply-visibility="${escapeHtml(channel)}"><i class="fas fa-paper-plane"></i> Send</button>
             </div>
         </form>
     `;
@@ -52,9 +52,9 @@ function renderNewsReplyNode(reply, post, depth = 0, visibility = 'private') {
                     </div>
                     <div class="newsx-reply-actions">
                         <button type="button" class="newsx-reply-like${viewerReaction === 'like' ? ' is-active' : ''}" data-news-reply-like="${escapeHtml(replyId)}" data-post-id="${escapeHtml(postId)}">Like${likeCount ? ` ${likeCount}` : ''}</button>
-                        <button type="button" class="newsx-btn lux-secondary-btn newsx-reply-reply-btn" data-news-reply-reply="${escapeHtml(replyId)}" data-post-id="${escapeHtml(postId)}" data-author-name="${escapeHtml(authorName)}" data-news-reply-visibility="${escapeHtml(channel)}"><i class="fas fa-reply"></i> Reply${Array.isArray(reply.children) && reply.children.length ? ` (${reply.children.length})` : ''}</button>
-                        ${reply.viewerCanDelete ? `<button type="button" class="newsx-btn lux-secondary-btn newsx-reply-delete-btn" data-news-reply-delete="${escapeHtml(replyId)}" data-post-id="${escapeHtml(postId)}" aria-label="Delete reply"><i class="fas fa-trash"></i></button>` : ''}
-                        <button type="button" class="newsx-btn lux-secondary-btn newsx-reply-report-btn" data-news-reply-report="${escapeHtml(replyId)}" data-post-id="${escapeHtml(postId)}" aria-label="Report reply"><i class="fas fa-flag"></i></button>
+                        <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip newsx-reply-reply-btn" data-news-reply-reply="${escapeHtml(replyId)}" data-post-id="${escapeHtml(postId)}" data-author-name="${escapeHtml(authorName)}" data-news-reply-visibility="${escapeHtml(channel)}"><i class="fas fa-reply"></i> Reply${Array.isArray(reply.children) && reply.children.length ? ` (${reply.children.length})` : ''}</button>
+                        ${reply.viewerCanDelete ? `<button type="button" class="newsx-btn lux-secondary-btn home-hover-chip newsx-reply-delete-btn" data-news-reply-delete="${escapeHtml(replyId)}" data-post-id="${escapeHtml(postId)}" aria-label="Delete reply"><i class="fas fa-trash"></i></button>` : ''}
+                        <button type="button" class="newsx-btn lux-secondary-btn home-hover-chip newsx-reply-report-btn" data-news-reply-report="${escapeHtml(replyId)}" data-post-id="${escapeHtml(postId)}" aria-label="Report reply"><i class="fas fa-flag"></i></button>
                     </div>
                     ${isReplyTarget ? renderNewsInlineReplyForm(post, reply, channel) : ''}
                 </div>
@@ -73,85 +73,50 @@ function renderReplyList(replies, post, visibility = 'private') {
     `;
 }
 
-function renderReplyChannelPanel(post, visibility = 'private', open = false) {
+function renderReplyChannelPanel(post, visibility = 'private') {
     const postId = String(post.id || '');
     const channel = String(visibility || 'private').trim().toLowerCase() === 'public' ? 'public' : 'private';
     const isPublic = channel === 'public';
     const replies = isPublic ? post.publicReplies : post.privateReplies;
-    const replyCount = String(isPublic ? (post.publicReplyCount || 0) : (post.privateReplyCount || 0));
     const draftKey = newsReplyDraftKey(postId, '', channel);
     const replyDraft = runtime.replyDrafts[draftKey] || '';
     const fieldToken = toFieldToken(`${postId}-${channel}`);
-    const foldKey = `${postId}|${channel}`;
-    const icon = isPublic ? 'fa-comments' : 'fa-lock';
-    const summaryLabel = isPublic ? 'Public chat' : 'Private reply';
     const placeholder = isPublic
         ? 'Join the public conversation...'
-        : 'Send a private response to this announcement...';
-    const submitLabel = isPublic ? 'Post comment' : 'Send Private Reply';
+        : 'Write a private comment...';
+    const submitLabel = isPublic ? 'Post comment' : 'Post private comment';
     return `
-        <details class="newsx-reply-fold newsx-private-fold"${open ? ' open' : ''} data-news-reply-channel="${escapeHtml(channel)}">
-            <summary class="newsx-private-fold-summary newsx-reply-fold-summary">
-                <i class="fas ${icon}"></i> ${summaryLabel}
-                <span class="newsx-private-count">${escapeHtml(replyCount)}</span>
-            </summary>
-            <div class="newsx-private-fold-body newsx-reply-fold-body">
-                ${renderReplyList(replies, post, channel)}
-                ${!Array.isArray(replies) || !replies.length ? `<p class="newsx-reply-empty">${isPublic ? 'No public comments yet.' : 'Only you and staff can see private replies here.'}</p>` : ''}
-                <textarea id="news-reply-${escapeHtml(fieldToken)}" name="news_reply_${escapeHtml(fieldToken)}" class="newsx-textarea lux-control" rows="2" placeholder="${escapeHtml(placeholder)}" data-news-reply-input="${escapeHtml(postId)}" data-news-reply-visibility="${escapeHtml(channel)}">${escapeHtml(replyDraft)}</textarea>
-                <div class="newsx-btn-row">
-                    <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-submit-reply="${escapeHtml(postId)}" data-news-reply-visibility="${escapeHtml(channel)}"><i class="fas fa-paper-plane"></i> ${submitLabel}</button>
-                </div>
-            </div>
-        </details>
-    `;
-}
-
-function renderPostRepliesBox(post, openState = {}) {
-    const mode = resolveNewsReplyMode(post);
-    const postId = String(post.id || '');
-    if (mode === 'none') {
-        return `<p class="newsx-private-fold-muted"><i class="fas fa-ban"></i> Replies disabled</p>`;
-    }
-    if (mode === 'private') {
-        return renderReplyChannelPanel(post, 'private', openState.private === true);
-    }
-    if (mode === 'public') {
-        return renderReplyChannelPanel(post, 'public', openState.public === true);
-    }
-    const activeTab = runtime.newsReplyActiveTab[postId] === 'private' ? 'private' : 'public';
-    return `
-        <div class="newsx-reply-shell" data-news-reply-shell="${escapeHtml(postId)}">
-            <div class="newsx-reply-tabs" role="tablist" aria-label="Reply channels">
-                <button type="button" class="newsx-reply-tab ${activeTab === 'public' ? 'is-active' : ''}" data-news-reply-tab="${escapeHtml(postId)}" data-news-reply-tab-channel="public" role="tab" aria-selected="${activeTab === 'public' ? 'true' : 'false'}">
-                    <i class="fas fa-comments"></i> Public
-                    <span class="newsx-private-count">${escapeHtml(String(post.publicReplyCount || 0))}</span>
-                </button>
-                <button type="button" class="newsx-reply-tab ${activeTab === 'private' ? 'is-active' : ''}" data-news-reply-tab="${escapeHtml(postId)}" data-news-reply-tab-channel="private" role="tab" aria-selected="${activeTab === 'private' ? 'true' : 'false'}">
-                    <i class="fas fa-lock"></i> Private
-                    <span class="newsx-private-count">${escapeHtml(String(post.privateReplyCount || 0))}</span>
-                </button>
-            </div>
-            <div class="newsx-reply-tab-panel">
-                ${activeTab === 'public'
-                    ? renderReplyChannelPanel(post, 'public', openState.public === true)
-                    : renderReplyChannelPanel(post, 'private', openState.private === true)}
+        <div class="newsx-reply-tab-panel" data-news-reply-channel="${escapeHtml(channel)}" role="tabpanel">
+            ${renderReplyList(replies, post, channel)}
+            ${!Array.isArray(replies) || !replies.length ? `<p class="newsx-reply-empty">${isPublic ? 'No public comments yet.' : 'Only you and staff can see private comments here.'}</p>` : ''}
+            <textarea id="news-reply-${escapeHtml(fieldToken)}" name="news_reply_${escapeHtml(fieldToken)}" class="newsx-textarea lux-control" rows="1" placeholder="${escapeHtml(placeholder)}" data-news-reply-input="${escapeHtml(postId)}" data-news-reply-visibility="${escapeHtml(channel)}">${escapeHtml(replyDraft)}</textarea>
+            <div class="newsx-btn-row">
+                <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn home-hover-chip" data-news-submit-reply="${escapeHtml(postId)}" data-news-reply-visibility="${escapeHtml(channel)}"><i class="fas fa-paper-plane"></i> ${submitLabel}</button>
             </div>
         </div>
     `;
 }
 
-function collectNewsReplyFoldOpenState(postId, repliesBox) {
-    const openState = { public: false, private: false };
-    repliesBox?.querySelectorAll('details.newsx-reply-fold[data-news-reply-channel]').forEach((fold) => {
-        const channel = String(fold.getAttribute('data-news-reply-channel') || '').trim().toLowerCase();
-        if (channel === 'public' || channel === 'private') {
-            openState[channel] = fold.open;
-        }
-    });
-    if (runtime.newsReplyFoldOpen?.[`${postId}|public`] === true) openState.public = true;
-    if (runtime.newsReplyFoldOpen?.[`${postId}|private`] === true) openState.private = true;
-    return openState;
+function renderPostRepliesBox(post) {
+    const mode = resolveNewsReplyMode(post);
+    const postId = String(post.id || '');
+    if (mode === 'none') {
+        return `<p class="newsx-private-fold-muted"><i class="fas fa-ban"></i> Replies disabled</p>`;
+    }
+    const active = String(runtime.newsReplyActiveTab?.[postId] || 'public').trim().toLowerCase() === 'private'
+        ? 'private'
+        : 'public';
+    const publicCount = String(post.publicReplyCount || 0);
+    const privateCount = String(post.privateReplyCount || 0);
+    return `
+        <div class="newsx-reply-shell" data-news-reply-shell="${escapeHtml(postId)}">
+            <div class="newsx-reply-tabs" role="tablist" aria-label="Comment channels">
+                <button type="button" class="newsx-reply-tab home-hover-chip${active === 'public' ? ' is-active' : ''}" role="tab" aria-selected="${active === 'public' ? 'true' : 'false'}" data-news-reply-tab="${escapeHtml(postId)}" data-news-reply-tab-channel="public"><i class="fas fa-comments" aria-hidden="true"></i> Public <span class="newsx-private-count">${escapeHtml(publicCount)}</span></button>
+                <button type="button" class="newsx-reply-tab home-hover-chip${active === 'private' ? ' is-active' : ''}" role="tab" aria-selected="${active === 'private' ? 'true' : 'false'}" data-news-reply-tab="${escapeHtml(postId)}" data-news-reply-tab-channel="private"><i class="fas fa-lock" aria-hidden="true"></i> Private <span class="newsx-private-count">${escapeHtml(privateCount)}</span></button>
+            </div>
+            ${renderReplyChannelPanel(post, active)}
+        </div>
+    `;
 }
 
 function relayoutNewsReplyTrunks(scope) {

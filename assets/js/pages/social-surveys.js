@@ -1017,6 +1017,15 @@
 
     window.renderSurveysPanel = function renderSurveysPanel() {
         const runtime = state();
+        const takingId = text(runtime.ui?.surveyTakingId || '');
+        if (takingId) {
+            const survey = (Array.isArray(runtime.social?.surveys) ? runtime.social.surveys : [])
+                .find((item) => text(item?.id) === takingId);
+            if (survey && survey.viewerCanRespond) {
+                return renderTakeSurvey(survey);
+            }
+            runtime.ui.surveyTakingId = '';
+        }
         const activeTab = text(runtime.ui?.surveysTab || 'available') || 'available';
         const activeLane = text(runtime.ui?.surveysSubTab || 'student') || 'student';
         const searchValue = text(runtime.ui?.surveysSearch || '');

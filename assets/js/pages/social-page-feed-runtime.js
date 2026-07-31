@@ -508,7 +508,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="social-neo-community-hero-stats">
+                    <div class="social-neo-community-hero-stats home-hover-chip">
                         ${stats.map((stat) => `
                             <article class="social-neo-community-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                                 <strong>${escape(String(stat.value))}</strong>
@@ -516,7 +516,7 @@
                             </article>
                         `).join('')}
                     </div>
-                    <div class="social-neo-community-hero-grid">
+                    <div class="social-neo-community-hero-grid home-hover-chip">
                         ${tabs.map((tab) => `
                             <button class="lux-secondary-btn social-neo-community-hero-tab ${activeTab === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-community" data-community-tab="${escape(tab.tab)}" aria-pressed="${activeTab === tab.tab ? 'true' : 'false'}">
                                 <span class="social-neo-community-hero-tab-icon"><i class="fas ${escape(tab.icon)}"></i></span>

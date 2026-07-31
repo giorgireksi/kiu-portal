@@ -161,7 +161,7 @@ function isRouteOwnedSurface(el) {
     }
 
     if (document.body.classList.contains('lux-route-news')
-        && el.closest?.('#page-news, #portal-news-root, .newsx-modal-overlay, #newsx-publisher-modal, #newsx-confirm-modal, #newsx-sections-modal')) {
+        && el.closest?.('#page-news, #portal-news-root, .newsx-modal-overlay, #newsx-publisher-modal, #newsx-confirm-modal, #newsx-sections-modal, #newsx-post-detail-modal')) {
         if (hasOwnedClassPrefix(el, ['newsx-']) || (el.id && el.id.startsWith('newsx-'))) return true;
     }
 

@@ -29,7 +29,7 @@ describe('chancellery route regressions', () => {
 
     it('loads shared layout primitives and fwdvis1 cache', () => {
         const html = readSource('chancellery.html');
-        expect(html).toContain('appealword1');
+        expect(html).toContain('mergelabel1');
         expect(html).toContain('fwdvis1');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('chancellery-document.js');
@@ -76,6 +76,11 @@ describe('chancellery route regressions', () => {
         expect(js).toContain('chancellery-case-scroll');
         expect(js).toContain('chancellery-case-decision-banner');
         expect(js).toContain('chancellery-case-decision-form');
+        expect(js).toContain('chancellery-case-meta');
+        expect(js).toContain('chancellery-case-submission-head');
+        expect(js).toContain('chancellery-case-decision-comment-wrap');
+        expect(js).toContain('rows="2"');
+        expect(js).not.toContain('rows="3"');
         expect(js).not.toContain('chancellery-case-private-notes');
         expect(js).toContain('function decideChancelleryCase');
         expect(js).toContain('function updateChancelleryDecisionComment');

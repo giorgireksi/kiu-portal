@@ -18,7 +18,7 @@
             idKey: 'staffId',
             searchPlaceholder: 'Name, email, staff ID, department...',
             sectionCopy: 'Search the roster and apply directory field filters configured in form settings.',
-            sectionTitle: 'Search, filter, and govern staff profiles',
+            sectionTitle: 'Directory',
             getTypes: 'getStaffFormTypes',
             getAllFields: 'getAllStaffFormFields',
             getSections: 'getStaffFormSections',
@@ -58,7 +58,7 @@
             idKey: 'studentId',
             searchPlaceholder: 'Name, email, student ID, program...',
             sectionCopy: 'Search the roster and apply directory field filters configured in form settings.',
-            sectionTitle: 'Search, filter, and govern student profiles',
+            sectionTitle: 'Directory',
             getTypes: 'getStudentFormTypes',
             getAllFields: 'getAllStudentFormFields',
             getSections: 'getStudentFormSections',
@@ -84,9 +84,9 @@
                 archive: 'active',
                 sort: 'name'
             },
-            fieldFilterPrefix: 'staff-directory-field',
-            searchInputId: 'staff-search',
-            droplistSearchId: 'staff-droplist-search',
+            fieldFilterPrefix: 'student-directory-field',
+            searchInputId: 'student-search',
+            droplistSearchId: 'student-droplist-search',
         };
 
     const DIRECTORY_SYSTEM_FILTERS = H.systemFilters;
@@ -676,54 +676,33 @@
         const chips = buildDirectoryFilterChips(filters, model);
 
         const fieldFilterMarkup = blueprintFilters.map((filterDef) => renderFieldFilterSelect(filterDef, filters, esc)).join('');
-        const filtersBodyMarkup = `<div class="${H.hub}-filter-deck-grid">${fieldFilterMarkup}</div>`;
         const hasActiveFieldFilters = blueprintFilters.some((filterDef) => (filterDef.options || []).length > 0);
-        const customizeLinkMarkup = isAdminSession ? `
-                        <button class="${H.hub}-filter-deck-link" type="button" data-${H.data}-action="open-form-settings">
-                            <i class="fas fa-sliders"></i> Customize in form settings
-                        </button>
-                    ` : '';
 
-        const droplistSearchMarkup = hasActiveFieldFilters ? `
-            <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--droplist-search">
-                <div class="${H.hub}-filter-deck-heading">
-                    <span class="${H.hub}-filter-deck-kicker lux-section-kicker">Droplist search</span>
-                </div>
-                <div class="${H.hub}-droplist-search-row">
-                    <div class="${H.hub}-search-wrap ${H.hub}-field">
-                        <label for="staff-droplist-search">Search field values</label>
+        const droplistInlineMarkup = hasActiveFieldFilters ? `
+                    <div class="${H.hub}-search-wrap ${H.hub}-field ${H.hub}-field--droplist">
+                        <label for="${H.droplistSearchId}">Filter values</label>
                         <div class="${H.hub}-search-field">
                             <i class="fas fa-list-ul" aria-hidden="true"></i>
                             <input
                                 class="${H.hub}-control lux-control"
-                                id="staff-droplist-search"
+                                id="${H.droplistSearchId}"
                                 type="search"
                                 value="${esc(filters.droplistQuery)}"
-                                placeholder="Filter directory fields and values..."
+                                placeholder="Filter field values..."
                             />
                         </div>
                     </div>
-                </div>
-            </div>
-        ` : '';
+                ` : '';
 
-        const blueprintSectionMarkup = blueprintFilters.length ? `
-            <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--fields">
-                <div class="${H.hub}-filter-deck-heading">
-                    <span class="${H.hub}-filter-deck-kicker lux-section-kicker">Directory field filters</span>
-                    ${customizeLinkMarkup}
-                </div>
-                ${filtersBodyMarkup}
-            </div>
-        ` : (isAdminSession ? `
-            <div class="${H.hub}-filter-hint">
-                <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
-                <p><strong>No directory field filters yet.</strong> Add fields to staff form sections in form settings to surface them here once staff records include values.</p>
-                <button class="${H.hub}-filter-hint-btn" type="button" data-${H.data}-action="open-form-settings">
-                    <i class="fas fa-sliders"></i> Open form settings
-                </button>
-            </div>
-        ` : '');
+        const emptyFiltersHint = (!blueprintFilters.length && isAdminSession) ? `
+                    <div class="${H.hub}-filter-hint ${H.hub}-filter-hint--inline">
+                        <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
+                        <p><strong>No directory field filters yet.</strong> Add fields in form settings to surface them here.</p>
+                        <button class="${H.hub}-filter-hint-btn" type="button" data-${H.data}-action="open-form-settings">
+                            <i class="fas fa-sliders"></i> Open form settings
+                        </button>
+                    </div>
+                ` : '';
 
         const chipsMarkup = chips.length
             ? chips.map(([label, value, clearKey, clearKind]) => `
@@ -738,32 +717,27 @@
             `).join('')
             : '';
 
-        const activeFiltersMarkup = chipsMarkup
-            ? chipsMarkup
-            : `<span class="${H.hub}-chip lux-status-pill home-hover-chip is-muted">No active filters</span>`;
+        const activeFiltersRow = chipsMarkup
+            ? `<div class="${H.hub}-active-filters" aria-label="Active filters">${chipsMarkup}</div>`
+            : '';
 
         return `
             <div class="${H.hub}-controls-head">
                 <div class="${H.hub}-controls-copy">
-                    <div class="${H.hub}-overline lux-section-kicker"><i class="fas fa-filter"></i> Directory controls</div>
                     <h2 class="${H.hub}-section-title lux-card-title">${H.sectionTitle}</h2>
-                    <p class="${H.hub}-section-copy lux-card-copy">
-                        <span class="${H.hub}-result-pill home-hover-chip">${visibleCount} result${visibleCount === 1 ? '' : 's'}</span>
-                        ${H.sectionCopy}
-                    </p>
+                    <span class="${H.hub}-result-pill home-hover-chip">${visibleCount} result${visibleCount === 1 ? '' : 's'}</span>
                 </div>
-                ${isAdminSession ? `<div class="${H.hub}-inline-actions ${H.hub}-register-actions">
+                ${isAdminSession ? `<div class="${H.hub}-inline-actions ${H.hub}-register-actions" data-lux-btn-density="dense">
+                    <button class="lux-secondary-btn" type="button" data-${H.data}-action="open-form-settings">
+                        <i class="fas fa-sliders"></i> Customize form
+                    </button>
                     <button class="lux-secondary-btn" type="button" data-${H.data}-action="export-csv"><i class="fas fa-table"></i> Export CSV</button>
                     ${renderStaffTypeCreateButtons(isAdminSession)}
                 </div>` : ''}
             </div>
 
-            <div class="${H.hub}-command-bar">
-                <div class="${H.hub}-active-filters" aria-label="Active filters">${activeFiltersMarkup}</div>
-            </div>
-
             <div class="${H.hub}-filter-deck">
-                <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--primary">
+                <div class="${H.hub}-filter-deck-section ${H.hub}-filter-deck-section--primary is-compact">
                     <div class="${H.hub}-search-wrap ${H.hub}-field">
                         <label for="${H.searchInputId}">Search directory</label>
                         <div class="${H.hub}-search-field">
@@ -787,11 +761,11 @@
                         <input class="${H.hub}-control lux-control" id="student-filter-program" type="search" value="${esc(filters.program === 'all' ? '' : filters.program)}" placeholder="Filter by program" data-${H.data}-system-filter="program" />
                     </div>
                     ` : ''}
+                    ${droplistInlineMarkup}
+                    ${fieldFilterMarkup}
+                    ${emptyFiltersHint}
+                    ${activeFiltersRow}
                 </div>
-
-                ${blueprintSectionMarkup}
-
-                ${droplistSearchMarkup}
             </div>
         `;
     }

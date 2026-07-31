@@ -713,6 +713,7 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .social-neo-card,
   .orders-admin-panel.lux-soft-chrome,
   .admin-orders-create-column.lux-soft-chrome,
+  .orders-admin-workspace-section.lux-soft-chrome,
   .lux-status-pill,
   .orders-admin-sent-item,
   .orders-recipient-row,
@@ -3092,6 +3093,7 @@ body.lux-route-social :is(
   .social-neo-pages-hero,
   .social-neo-pages-hero-grid,
   .social-neo-pages-hero-toolbar,
+  .social-neo-community-hero-toolbar,
   .social-neo-page-card,
   .social-neo-page-profile,
   .social-neo-page-compose-block,
@@ -3101,6 +3103,8 @@ body.lux-route-social :is(
   .social-neo-events-hero-grid,
   .social-neo-events-hero-stats,
   .social-neo-events-empty,
+  .social-neo-community-hero-grid,
+  .social-neo-community-hero-stats,
   .social-neo-groups-hero,
   .social-neo-groups-hero-grid,
   .social-neo-workspace-hero,
@@ -3120,10 +3124,10 @@ body.lux-route-social :is(
   .social-neo-lost-found-hero-stats,
   .social-neo-lost-found-hero-toolbar,
   .social-neo-lf-card,
-  .social-project-hub-discover,
   .social-project-hub-filterbar,
   .social-project-hub-attention,
   .social-project-hub-rail-card,
+  .social-project-hub-contribution-stat,
   .social-project-hub-cta-tile,
   .social-project-card-new
 ).home-hover-chip {
@@ -3162,10 +3166,10 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
   .social-neo-events-hero-stats,
   .social-neo-surveys-hero-stats,
   .social-neo-lost-found-hero-stats,
-  .social-project-hub-discover,
   .social-project-hub-filterbar,
   .social-project-hub-attention,
   .social-project-hub-rail-card,
+  .social-project-hub-contribution-stat,
   .social-project-hub-cta-tile
 ).home-hover-chip {
   background-color: var(--home-chip-fill, color-mix(in srgb, var(--home-chip-surface-fill, transparent) 140%, transparent));
@@ -3187,6 +3191,7 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
   .social-neo-surveys-hero-stat,
   .social-neo-portfolio-hero-stat,
   .social-neo-lost-found-hero-stat,
+  .social-project-hub-contribution-stat,
   [class*="-hero-stat"]:not([class*="-hero-stats"])
 ).home-hover-chip {
   background-color: color-mix(in srgb, var(--home-chip-fill, rgba(12, 18, 28, 0.55)) 88%, rgba(var(--lux-accent-rgb), 0.16));
@@ -3279,6 +3284,9 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
     .social-neo-portfolio-hero-stats,
     .social-neo-events-hero,
     .social-neo-events-hero-stats,
+    .social-neo-community-hero-grid,
+    .social-neo-community-hero-stats,
+    .social-neo-community-hero-toolbar,
     .social-neo-surveys-hero,
     .social-neo-surveys-hero-stats,
     .social-neo-surveys-hero-grid,
@@ -3288,10 +3296,13 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
     .social-neo-lost-found-hero-stats,
     .social-neo-lost-found-hero-toolbar,
     .social-neo-lf-card,
-    .social-project-hub-discover,
+    .social-neo-directory-item,
+    .social-neo-community-card,
+    .social-neo-group-card,
     .social-project-hub-filterbar,
     .social-project-hub-attention,
     .social-project-hub-rail-card,
+    .social-project-hub-contribution-stat,
     .social-project-hub-cta-tile
   ).home-hover-chip:hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
@@ -3317,6 +3328,9 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
       .social-neo-portfolio-hero-stats,
       .social-neo-events-hero,
       .social-neo-events-hero-stats,
+      .social-neo-community-hero-grid,
+      .social-neo-community-hero-stats,
+      .social-neo-community-hero-toolbar,
       .social-neo-surveys-hero,
       .social-neo-surveys-hero-stats,
       .social-neo-surveys-hero-grid,
@@ -3326,10 +3340,13 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
       .social-neo-lost-found-hero-stats,
       .social-neo-lost-found-hero-toolbar,
       .social-neo-lf-card,
-      .social-project-hub-discover,
+      .social-neo-directory-item,
+      .social-neo-community-card,
+      .social-neo-group-card,
       .social-project-hub-filterbar,
       .social-project-hub-attention,
       .social-project-hub-rail-card,
+      .social-project-hub-contribution-stat,
       .social-project-hub-cta-tile
     ).home-hover-chip:active {
       transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);

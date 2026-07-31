@@ -2049,6 +2049,7 @@ __kiuRegSharedExpose({
     parseAllowedSemesterList,
     getAssignedSemesterRestrictionLabel,
     getAssignedSemesterRestrictionReason,
+    hasRegistrationTrackMigration,
     migrateRegistrationCmsToTrackModel,
     syncRegistrationTrackLegacyMirrors,
     convertRegistrationTrackTabForStudent,

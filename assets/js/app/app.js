@@ -1034,7 +1034,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         'assets/js/pages/student-registration-eligibility-runtime.js?v=20260725-portalmodal2',
         'assets/js/pages/student-registration-choice-runtime.js?v=20260727-peelfix2',
         'assets/js/pages/student-registration.js?v=20260727-peelfix2',
-        'assets/js/pages/admin-registration-track.js?v=20260725-legacycta1',
+        'assets/js/pages/admin-registration-track.js?v=20260731-regmig1',
         'assets/js/pages/admin-registration-seats-runtime.js?v=20260719-regseats1',
         'assets/js/pages/admin-registration-cms-runtime.js?v=20260724-peelfix2',
         'assets/js/pages/admin-registration-boot-runtime.js?v=20260724-peelfix1',

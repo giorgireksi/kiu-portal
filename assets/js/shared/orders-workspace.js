@@ -348,10 +348,10 @@ function renderOrdersRecipientFilterEditorRowMarkup(filter, index, total) {
                             <span class="lux-picker-label">Option</span>
                             <input type="text" class="lux-control" value="${escapeHtml(option.label || option.value || '')}" data-orders-recipient-filter-option-label="1" data-orders-recipient-filter-index="${index}" data-orders-recipient-filter-option-index="${optionIndex}" placeholder="Option label">
                         </label>
-                        <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-remove-option="${index}" data-orders-recipient-filter-option-index="${optionIndex}" aria-label="Remove option"><i class="fas fa-minus"></i></button>
+                        <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-remove-option="${index}" data-orders-recipient-filter-option-index="${optionIndex}" aria-label="Remove option"><i class="fas fa-minus"></i></button>
                     </div>
                 `).join('') || '<div class="lux-panel-copy">No options yet. Add at least one before saving.</div>'}
-                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-add-option="${index}"><i class="fas fa-plus"></i> Add option</button>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-add-option="${index}"><i class="fas fa-plus"></i> Add option</button>
             </div>
         `;
     return `
@@ -366,9 +366,9 @@ function renderOrdersRecipientFilterEditorRowMarkup(filter, index, total) {
                     <span>Enabled</span>
                 </label>
                 <div class="orders-recipient-filter-editor-row-actions">
-                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-move="up" data-orders-recipient-filter-index="${index}"${index === 0 ? ' disabled' : ''} aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
-                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-move="down" data-orders-recipient-filter-index="${index}"${index >= total - 1 ? ' disabled' : ''} aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
-                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-remove="${index}" aria-label="Remove filter"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-move="up" data-orders-recipient-filter-index="${index}"${index === 0 ? ' disabled' : ''} aria-label="Move up"><i class="fas fa-arrow-up"></i></button>
+                    <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-move="down" data-orders-recipient-filter-index="${index}"${index >= total - 1 ? ' disabled' : ''} aria-label="Move down"><i class="fas fa-arrow-down"></i></button>
+                    <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-remove="${index}" aria-label="Remove filter"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
             <label class="lux-picker-field">
@@ -405,20 +405,20 @@ function renderOrdersRecipientFilterEditorModalMarkup(draft) {
                     <div class="lux-card-title orders-admin-section-title" id="orders-recipient-filter-editor-title">Edit filters · ${escapeHtml(recipientLabel)}</div>
                     <div class="lux-panel-copy orders-admin-section-copy">Dropdowns for this role. Checklist which other roles share them. Search and From/To are always on.</div>
                 </div>
-                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-editor-close="1" aria-label="Close"><i class="fas fa-times"></i></button>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-editor-close="1" aria-label="Close"><i class="fas fa-times"></i></button>
             </div>
             <div class="orders-recipient-filter-editor-body modal-body">
                 ${connectionChecklist}
                 <div class="orders-recipient-filter-editor-list">
                     ${filters.map((filter, index) => renderOrdersRecipientFilterEditorRowMarkup(filter, index, filters.length)).join('') || '<div class="lux-panel-copy">No dropdowns yet. This role still sees search and From/To date.</div>'}
                 </div>
-                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-add="1"><i class="fas fa-plus"></i> Add filter</button>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-add="1"><i class="fas fa-plus"></i> Add filter</button>
             </div>
             <div class="orders-recipient-filter-editor-actions modal-footer">
-                <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-reset="1">Clear all</button>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-reset="1">Clear all</button>
                 <div class="orders-recipient-filter-editor-actions-buttons">
-                    <button type="button" class="lux-secondary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-editor-close="1">Cancel</button>
-                    <button type="button" class="lux-primary-btn" data-lux-skip-modern-button="true" data-orders-recipient-filter-save="1"><i class="fas fa-check"></i> Save for connected roles</button>
+                    <button type="button" class="lux-secondary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-editor-close="1">Cancel</button>
+                    <button type="button" class="lux-primary-btn home-hover-chip" data-lux-skip-modern-button="true" data-orders-recipient-filter-save="1"><i class="fas fa-check"></i> Save for connected roles</button>
                 </div>
             </div>
         </div>
@@ -964,7 +964,7 @@ function renderAdminOrdersCommandCard(container, uiState, selectedRecipients, ro
     container.innerHTML = `
         <div class="orders-admin-command-layout">
             <div class="orders-admin-command-actions">
-                <button class="lux-primary-btn orders-admin-command-cta" type="button" data-admin-orders-open-create-modal="1">
+                <button class="lux-primary-btn orders-admin-command-cta home-hover-chip" type="button" data-admin-orders-open-create-modal="1">
                     <i class="fas fa-plus-circle"></i> Create Order
                 </button>
             </div>
@@ -1453,7 +1453,7 @@ function ensureAdminOrdersModals() {
                         <div class="lux-card-title orders-admin-section-title">Create Official Order</div>
                         <div class="lux-panel-copy orders-admin-section-copy">Select recipients, compose the order, then publish to their Orders inbox.</div>
                     </div>
-                    <button type="button" class="lux-secondary-btn" data-admin-orders-close-create-modal="true" aria-label="Close create order modal"><i class="fas fa-times"></i></button>
+                    <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-close-create-modal="true" aria-label="Close create order modal"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="admin-orders-create-grid">
                     <section class="admin-orders-create-column admin-orders-create-column--recipients lux-soft-chrome" id="admin-orders-recipients-panel" aria-label="Select recipients"></section>
@@ -1462,8 +1462,8 @@ function ensureAdminOrdersModals() {
                 <div class="admin-orders-create-foot">
                     <div class="lux-pill-row orders-compose-pills" id="admin-orders-create-footer-summary" data-admin-orders-count-pills-host="1"></div>
                     <div class="admin-orders-create-foot-actions">
-                        <button type="button" class="lux-secondary-btn" data-admin-orders-close-create-modal="true">Cancel</button>
-                        <button type="button" class="lux-primary-btn" data-admin-orders-send="1"><i class="fas fa-paper-plane"></i> Publish Order</button>
+                        <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-close-create-modal="true">Cancel</button>
+                        <button type="button" class="lux-primary-btn home-hover-chip" data-admin-orders-send="1"><i class="fas fa-paper-plane"></i> Publish Order</button>
                     </div>
                 </div>
             </div>
@@ -1597,11 +1597,11 @@ function ensureAdminOrdersShell(root) {
                 <div class="orders-admin-grid">
                     <section class="lux-panel orders-admin-panel orders-admin-workspace-card lux-soft-chrome" data-lux-glass-root="1">
                         <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--workspace">
-                            <div class="orders-admin-workspace-section orders-admin-workspace-section--command" id="admin-orders-command-panel" aria-label="Create official order"></div>
+                            <div class="orders-admin-workspace-section orders-admin-workspace-section--command lux-soft-chrome home-hover-chip" id="admin-orders-command-panel" aria-label="Create official order"></div>
                             <div class="orders-admin-workspace-divider" role="presentation"></div>
-                            <div class="orders-admin-workspace-section orders-admin-workspace-section--filter" id="admin-orders-table-panel" aria-label="Audience filters"></div>
+                            <div class="orders-admin-workspace-section orders-admin-workspace-section--filter lux-soft-chrome home-hover-chip" id="admin-orders-table-panel" aria-label="Audience filters"></div>
                             <div class="orders-admin-workspace-divider" role="presentation"></div>
-                            <div class="orders-admin-workspace-section orders-admin-workspace-section--inbox" id="admin-orders-detail-panel" aria-label="Audience items"></div>
+                            <div class="orders-admin-workspace-section orders-admin-workspace-section--inbox lux-soft-chrome home-hover-chip" id="admin-orders-detail-panel" aria-label="Audience items"></div>
                         </div>
                     </section>
                 </div>
@@ -1734,12 +1734,12 @@ function mountAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiState
         className: 'orders-recipient-action-row'
     });
     actionRow.appendChild(createOrdersNode('button', {
-        className: 'lux-primary-btn',
+        className: 'lux-primary-btn home-hover-chip',
         html: '<i class="fas fa-check-double"></i> Select Filtered',
         attrs: { type: 'button', 'data-admin-orders-select-filtered': '1' }
     }));
     actionRow.appendChild(createOrdersNode('button', {
-        className: 'lux-secondary-btn',
+        className: 'lux-secondary-btn home-hover-chip',
         html: '<i class="fas fa-eraser"></i> Clear',
         attrs: { type: 'button', 'data-admin-orders-clear-recipients': '1' }
     }));
@@ -1762,7 +1762,7 @@ function mountAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiState
 function createAdminRecipientRow(user, selectedRecipientSet) {
     const selected = selectedRecipientSet.has(String(user.id));
     const label = createOrdersNode('label', {
-        className: `orders-recipient-row ${selected ? 'is-selected' : ''}`.trim()
+        className: `orders-recipient-row lux-soft-chrome home-hover-chip ${selected ? 'is-selected' : ''}`.trim()
     });
     label.appendChild(createOrdersNode('input', {
         attrs: {
@@ -1947,7 +1947,7 @@ function renderAdminOrdersFilterPanel(uiState, facultyLabel, filteredCount, tota
             <div class="orders-inbox-layout-filters">${layoutChrome}</div>
             <div class="orders-admin-filter-foot">
                 <span class="lux-status-pill home-hover-chip is-muted">${audienceScopedTotal} sent to ${escapeHtml(audienceLabel)}</span>
-                <button type="button" class="lux-secondary-btn" data-admin-orders-edit-recipient-filters="1">
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-edit-recipient-filters="1">
                     <i class="fas fa-sliders-h" aria-hidden="true"></i> Edit filters
                 </button>
             </div>
@@ -1967,7 +1967,7 @@ function renderAdminOrdersSentInboxPanel(container, orders, selectedOrderId) {
                 const recipientCount = order.recipientCount || (order.recipientIds ? order.recipientIds.length : 0);
                 const kindLabel = getAdminSentOrderKind(order) === 'announcement' ? 'Announcement' : 'Order';
                 return `
-                    <button type="button" class="orders-admin-sent-item ${selected ? 'is-selected' : ''}" data-admin-order-open="${escapeHtml(order.id)}">
+                    <button type="button" class="orders-admin-sent-item lux-soft-chrome home-hover-chip ${selected ? 'is-selected' : ''}" data-admin-order-open="${escapeHtml(order.id)}">
                         <div class="orders-admin-sent-item__main">
                             <div class="lux-card-copy orders-admin-sent-item__title">${escapeHtml(order.title)}</div>
                             <div class="lux-panel-copy orders-admin-sent-item__meta">${escapeHtml(order.id)} · ${escapeHtml(order.type)}</div>
@@ -2015,8 +2015,8 @@ function renderAdminOrderThreadShell(order) {
             </div>
             <div class="admin-orders-thread-header-actions">
                 <span class="lux-status-pill home-hover-chip is-muted">${escapeHtml(order.status || 'Active')}</span>
-                <button type="button" class="lux-secondary-btn" data-admin-order-delete="${escapeHtml(order.id)}"><i class="fas fa-trash"></i> Delete</button>
-                <button type="button" class="lux-secondary-btn" data-admin-orders-close-thread-modal="true" aria-label="Close order details"><i class="fas fa-times"></i></button>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-order-delete="${escapeHtml(order.id)}"><i class="fas fa-trash"></i> Delete</button>
+                <button type="button" class="lux-secondary-btn home-hover-chip" data-admin-orders-close-thread-modal="true" aria-label="Close order details"><i class="fas fa-times"></i></button>
             </div>
         </div>
         <div class="admin-orders-thread-body modal-body lux-scrollbar" data-admin-order-detail-body="1">

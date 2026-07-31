@@ -1667,18 +1667,6 @@
         return runtime.accountsById[normalizedId] || null;
     }
 
-    function getProfileFriendCount(userId) {
-        const normalizedId = text(userId);
-        if (!normalizedId) return 0;
-        return runtime.social.relationships.filter((rel) => {
-            const type = text(rel.type).toLowerCase();
-            const status = text(rel.status).toLowerCase();
-            const isConnection = type === 'connection' && status === 'accepted';
-            if (!isConnection) return false;
-            return [text(rel.fromId), text(rel.toId)].includes(normalizedId);
-        }).length;
-    }
-
     async function loadProfileForUser(userId) {
         const normalizedId = text(userId);
         if (!normalizedId) return;
@@ -1686,7 +1674,10 @@
     }
 
     /* Wave 18: social-lite-invite-runtime.js */
-    const __w18Deps = { addToast, dismissToast, clearAllToasts, storyItems, storyViewerOpen, storyViewerIndex, openStoryViewer, closeStoryViewer, nextStory, prevStory, storyComposerOpen, openStoryComposer, closeStoryComposer, createStory, markStoryViewed, markNotificationRead, removeNotification, setPanel, markChatMessagesRead, setActiveChat, elementVisible, socialPageVisible, currentStandalonePageId, routeToSocial, ensureDirectChat, avatarSource, avatarFallback, fileUrl, isImageFile, readFileAsDataUrl, openDirectChat, renderPublicSocialPage, renderPublicSocialPageNow, scheduleRenderBoost, scheduleBootstrap, ensureMessengerUiState, renderMessengerWorkspace, renderNotificationChrome, openMessengerWorkspace, openMessengerChat, openNotifications, beginOutgoingCall, markCallUi, finalizeCall, handleCallSignalMessage, toggleCallMic, toggleCallCamera, getProfileById, getProfileFriendCount, loadProfileForUser };
+    const __w18Deps = {
+        text, currentUserId, portalRequest, runtime, getProfileById,
+        loadSocialState, hydrateRuntime, queueRender, setFlash, upsertChat
+    };
     const __w18PeelApi = typeof window.__kiuCreateSocialLiteInviteApi === 'function'
         ? window.__kiuCreateSocialLiteInviteApi(__w18Deps) : null;
     if (!__w18PeelApi) throw new Error('social-lite-invite-runtime.js missing');

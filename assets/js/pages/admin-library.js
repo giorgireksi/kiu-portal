@@ -885,6 +885,7 @@ function setAdminLibrarySectionsModalOpen(isOpen) {
     const overlay = document.getElementById('library-sections-overlay');
     if (!overlay) return;
     overlay.classList.toggle('active', Boolean(isOpen));
+    overlay.classList.toggle('is-open', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     syncAdminLibraryModalBodyLock();
 }

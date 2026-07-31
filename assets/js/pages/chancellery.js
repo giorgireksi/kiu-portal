@@ -382,6 +382,12 @@ function normalizeChancelleryRequest(request = {}) {
         decidedBy: String(request.decidedBy || ''),
         examOption: String(request.examOption || '').trim(),
         examOptionLabel: String(request.examOptionLabel || '').trim(),
+        documentHtmlSnapshot: String(request.documentHtmlSnapshot || '').trim(),
+        fieldValues: request.fieldValues && typeof request.fieldValues === 'object' ? { ...request.fieldValues } : {},
+        answers: request.answers && typeof request.answers === 'object' ? { ...request.answers } : {},
+        documentElementsSnapshot: Array.isArray(request.documentElementsSnapshot)
+            ? request.documentElementsSnapshot.map((item) => ({ ...item }))
+            : [],
         thread,
         steps,
         currentStep: Math.max(0, Math.min(steps.length - 1, currentStep)),
@@ -676,6 +682,26 @@ function bindChancelleryDelegates(root) {
             if (typeof openChancelleryDocumentEditor === 'function') openChancelleryDocumentEditor();
             return;
         }
+        if (action === 'export-case-pdf' || action === 'export-case-docx') {
+            const requestId = String(actionTrigger.getAttribute('data-request-id') || '').trim();
+            const request = getChancelleryRequestById(requestId);
+            if (!request) {
+                alert('Case not found.');
+                return;
+            }
+            const format = action === 'export-case-pdf' ? 'pdf' : 'docx';
+            if (typeof exportChancelleryLetter !== 'function') {
+                alert('Export is unavailable.');
+                return;
+            }
+            const model = typeof buildChancelleryExportModelFromRequest === 'function'
+                ? buildChancelleryExportModelFromRequest(request)
+                : request;
+            exportChancelleryLetter(format, model).catch((error) => {
+                alert(error?.message || 'Export failed.');
+            });
+            return;
+        }
         if (action === 'open-appeal-document') {
             const subjectKey = String(document.getElementById('chancellery-subject-select')?.value || '').trim();
             if (typeof openChancelleryAppealModal === 'function') openChancelleryAppealModal(subjectKey);
@@ -773,7 +799,7 @@ function submitRequest() {
     const subjects = getStudentGradedSubjectsForChancellery();
     const formValues = typeof readChancelleryAppealFormValues === 'function'
         ? readChancelleryAppealFormValues()
-        : { examOption: '', message: '', subjectKey: '' };
+        : { examOption: '', message: '', subjectKey: '', fieldValues: {}, answers: {}, documentHtmlSnapshot: '', documentElementsSnapshot: [], hasExamOptions: false };
     const subjectValue = String(formValues.subjectKey || document.getElementById('chancellery-subject-select')?.value || '').trim();
     const selectedSubject = subjects.find(item => `${item.subjectId}::${item.groupId}` === subjectValue);
     if (!selectedSubject) {
@@ -786,16 +812,11 @@ function submitRequest() {
         return;
     }
     const examOption = String(formValues.examOption || '').trim();
-    const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
-    const template = typeof getCachedChancelleryDocumentTemplate === 'function'
-        ? getCachedChancelleryDocumentTemplate(faculty)
-        : null;
-    const examSection = (template?.sections || []).find((section) => section.type === 'examOptions');
-    if (examSection?.options?.length && !examOption) {
+    if (formValues.hasExamOptions && !examOption) {
         alert('Choose which exam you are appealing.');
         return;
     }
-    const examOptionLabel = (examSection?.options || []).find((option) => option.id === examOption)?.label || examOption;
+    const examOptionLabel = String(formValues.examOptionLabel || examOption).trim();
     const currentUser = getCurrentUser();
     const recipientContext = resolveChancelleryRecipientContext(selectedSubject.subjectId, selectedSubject.groupId);
     const now = new Date().toISOString();
@@ -816,6 +837,12 @@ function submitRequest() {
         message: submissionMessage,
         examOption,
         examOptionLabel,
+        documentHtmlSnapshot: String(formValues.documentHtmlSnapshot || '').trim(),
+        fieldValues: formValues.fieldValues && typeof formValues.fieldValues === 'object' ? formValues.fieldValues : {},
+        answers: formValues.answers && typeof formValues.answers === 'object' ? formValues.answers : {},
+        documentElementsSnapshot: Array.isArray(formValues.documentElementsSnapshot)
+            ? formValues.documentElementsSnapshot
+            : [],
         status: 'Submitted',
         createdAt: now,
         updatedAt: now,
@@ -1040,10 +1067,24 @@ function updateChancelleryDecisionComment(requestId, comment = '') {
 function renderChancellerySubmissionPanel(request) {
     const submission = (request.thread || []).find((entry) => entry.kind === 'submission');
     const reason = String(submission?.message || request.message || '').trim() || 'No reason provided.';
+    const snapshot = String(request.documentHtmlSnapshot || '').trim();
+    const letterBlock = snapshot ? `
+            <div class="chancellery-case-letter-snapshot chancellery-doc-page chancellery-doc-letter">
+                ${snapshot}
+            </div>
+        ` : `
+            <div class="lux-panel-copy chancellery-case-submission-body">${escapeChancelleryHtml(reason)}</div>
+        `;
     return `
         <section class="chancellery-case-submission lux-soft-chrome">
-            <div class="lux-section-kicker">Student submission</div>
-            <div class="lux-panel-copy chancellery-case-submission-body">${escapeChancelleryHtml(reason)}</div>
+            <div class="chancellery-case-submission-head">
+                <div class="lux-section-kicker">Student submission</div>
+                <div class="lux-card-actions chancellery-case-export-actions">
+                    <button type="button" class="lux-secondary-btn" data-chancellery-action="export-case-pdf" data-request-id="${escapeChancelleryHtml(request.id)}"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button type="button" class="lux-secondary-btn" data-chancellery-action="export-case-docx" data-request-id="${escapeChancelleryHtml(request.id)}"><i class="fas fa-file-word"></i> Word</button>
+                </div>
+            </div>
+            ${letterBlock}
             <div class="lux-inline-meta lux-chancellery-inline-meta">
                 <span class="lux-panel-copy">${escapeChancelleryHtml(formatChancelleryDate(submission?.createdAt || request.createdAt, true))}</span>
             </div>
@@ -1059,18 +1100,20 @@ function renderChancelleryDecisionBanner(request, options = {}) {
     const commentBlock = terminal
         ? (canEditComment
             ? `
-                <div class="lux-field chancellery-case-decision-edit">
-                    <label for="chancellery-decision-comment-edit">Comment for student <span class="lux-meta">(one comment — editable)</span></label>
-                    <textarea id="chancellery-decision-comment-edit" class="lux-control lux-chancellery-control" rows="3">${escapeChancelleryHtml(comment)}</textarea>
-                </div>
-                <div class="lux-card-actions chancellery-case-decision-actions">
-                    <button type="button" class="lux-secondary-btn" data-chancellery-action="save-decision-comment" data-request-id="${escapeChancelleryHtml(request.id)}">
-                        <i class="fas fa-pen"></i> Save comment
-                    </button>
+                <div class="chancellery-case-decision-comment-wrap">
+                    <div class="lux-field chancellery-case-decision-edit">
+                        <label for="chancellery-decision-comment-edit">Comment for student <span class="lux-meta">(one comment — editable)</span></label>
+                        <textarea id="chancellery-decision-comment-edit" class="lux-control lux-chancellery-control" rows="2">${escapeChancelleryHtml(comment)}</textarea>
+                    </div>
+                    <div class="lux-card-actions chancellery-case-decision-actions">
+                        <button type="button" class="lux-secondary-btn" data-chancellery-action="save-decision-comment" data-request-id="${escapeChancelleryHtml(request.id)}">
+                            <i class="fas fa-pen"></i> Save comment
+                        </button>
+                    </div>
                 </div>
             `
             : (comment
-                ? `<div class="lux-panel-copy chancellery-case-decision-comment">${escapeChancelleryHtml(comment)}</div>`
+                ? `<div class="chancellery-case-decision-comment-wrap"><div class="lux-panel-copy chancellery-case-decision-comment">${escapeChancelleryHtml(comment)}</div></div>`
                 : '<div class="lux-panel-copy">No decision comment recorded.</div>'))
         : `<div class="lux-panel-copy">Status: ${escapeChancelleryHtml(pendingLabel)}. Awaiting admin decision.</div>`;
     return `
@@ -1103,9 +1146,11 @@ function renderChancelleryDecisionForm(request) {
                     <span>Reject</span>
                 </label>
             </div>
-            <div class="lux-field">
-                <label for="chancellery-decision-comment">Comment for student</label>
-                <textarea id="chancellery-decision-comment" class="lux-control lux-chancellery-control" rows="3" placeholder="Explain the decision for the student..."></textarea>
+            <div class="chancellery-case-decision-comment-wrap">
+                <div class="lux-field">
+                    <label for="chancellery-decision-comment">Comment for student</label>
+                    <textarea id="chancellery-decision-comment" class="lux-control lux-chancellery-control" rows="2" placeholder="Explain the decision for the student..."></textarea>
+                </div>
             </div>
             <div class="lux-card-actions chancellery-case-decision-actions">
                 <button type="button" class="lux-primary-btn" data-chancellery-action="confirm-case-decision" data-request-id="${escapeChancelleryHtml(request.id)}">
@@ -1231,14 +1276,14 @@ function renderChancelleryCaseMeta(request) {
                 <div class="lux-panel-copy lux-chancellery-subcard-copy">${escapeChancelleryHtml(request.examOptionLabel)}</div>
             </div>` : '';
     return `
-        <div class="lux-subcards lux-chancellery-subcards-spaced">
+        <div class="chancellery-case-meta lux-subcards lux-chancellery-subcards-spaced">
             <div class="lux-subcard lux-chancellery-subcard lux-soft-chrome home-hover-chip">
                 <div class="lux-section-kicker lux-chancellery-subcard-kicker">Recipients</div>
-                <div class="lux-panel-copy lux-chancellery-subcard-copy">${recipientLines.map((line) => escapeChancelleryHtml(line)).join('<br>')}</div>
+                <div class="lux-panel-copy lux-chancellery-subcard-copy">${recipientLines.map((line) => escapeChancelleryHtml(line)).join(' · ')}</div>
             </div>
             <div class="lux-subcard lux-chancellery-subcard lux-soft-chrome home-hover-chip">
                 <div class="lux-section-kicker lux-chancellery-subcard-kicker">Subject staff</div>
-                <div class="lux-panel-copy lux-chancellery-subcard-copy">${staffLines.map((line) => escapeChancelleryHtml(line)).join('<br>')}</div>
+                <div class="lux-panel-copy lux-chancellery-subcard-copy">${staffLines.map((line) => escapeChancelleryHtml(line)).join(' · ')}</div>
             </div>
             <div class="lux-subcard lux-chancellery-subcard lux-soft-chrome home-hover-chip">
                 <div class="lux-section-kicker lux-chancellery-subcard-kicker">Faculty</div>
@@ -1977,6 +2022,13 @@ function patchChancelleryCommandBar(commandEl, context, { mode = 'filters' } = {
             if (filterKey !== 'dateFrom' && filterKey !== 'dateTo') return;
             const nextValue = context.uiState[filterKey] || '';
             if (control.value !== nextValue) control.value = nextValue;
+        });
+        const routingFilter = String(context.uiState.routingFilter || 'all');
+        bar.querySelectorAll('[data-chancellery-action="set-routing-filter"]').forEach((btn) => {
+            const value = String(btn.getAttribute('data-chancellery-routing-filter') || 'all').trim();
+            const active = value === routingFilter;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
         });
         syncChancelleryPickerControls(bar);
     }

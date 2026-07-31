@@ -70,7 +70,7 @@ function registerNewsRoutes(app, deps = {}) {
         const store = getStore();
         const result = store.addNewsReply(request.params.id, request.body || {}, getActorUserId(sessionAccount));
         if (!result || result?.error) {
-            sendError(response, result?.status || 400, result?.error || 'Private reply could not be stored.');
+            sendError(response, result?.status || 400, result?.error || 'Private comment could not be stored.');
             return;
         }
         broadcastAll({ type: 'news:updated', emittedAt: new Date().toISOString() });

@@ -32,6 +32,25 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(events).not.toMatch(/lux-secondary-btn \$\{item\.viewerRsvpStatus/);
     });
 
+    it('event RSVP click path resolves portal API and exports handler after init', () => {
+        const events = readSource('assets/js/pages/social-events.js');
+        const page = readSource('assets/js/pages/social-page.js');
+
+        expect(events).toContain("action === 'event-rsvp'");
+        expect(events).toContain('respondPortalSocialEventRsvp(eventId');
+        expect(events).toContain('window.respondPortalSocialEventRsvp');
+        expect(events).toContain('window.handleSocialEventsClick = handleSocialEventsClick');
+        expect(events).toMatch(/__KIU_SOCIAL_EVENTS_MODULE_LOADED = true;\s*\}\)\(\);/);
+        expect(events).not.toMatch(/if \(window\.__KIU_SOCIAL_EVENTS_MODULE_LOADED\) return;\s*window\.__KIU_SOCIAL_EVENTS_MODULE_LOADED = true;/);
+        expect(events).toContain("trigger.closest('.social-neo-time-group')");
+        expect(events).not.toMatch(/event-time-group-toggle[\s\S]{0,80}event\.preventDefault\(\)/);
+
+        expect(page).toContain('respondPortalSocialEventRsvp: window.respondPortalSocialEventRsvp');
+        expect(page).toContain('createPortalSocialEvent: window.createPortalSocialEvent');
+        expect(page).toContain('typeof window.handleSocialEventsClick === \'function\'');
+        expect(page).toContain('social-events.js?v=20260731-eventrsvp1');
+    });
+
     it('event shells use global home-hover-chip for lift motion', () => {
         const events = readSource('assets/js/pages/social-events.js');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
@@ -92,6 +111,11 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(groups).toContain('social-neo-community-panel--groups home-hover-chip');
         expect(groups).toContain('social-neo-groups-hero-grid home-hover-chip');
         expect(community).toContain('social-neo-community-card home-hover-chip');
+        const feedRuntime = readSource('assets/js/pages/social-page-feed-runtime.js');
+        expect(feedRuntime).toContain('social-neo-community-hero-stats home-hover-chip');
+        expect(feedRuntime).toContain('social-neo-community-hero-grid home-hover-chip');
+        expect(feedRuntime).not.toMatch(/social-neo-community-hero-tab[\s\S]{0,120}home-hover-chip/);
+        expect(community).toContain('social-neo-community-hero-toolbar home-hover-chip');
         expect(pages).toContain('social-neo-pages-hero home-hover-chip');
         expect(pages).toContain('social-neo-pages-hero-grid home-hover-chip');
         expect(pages).toContain('social-neo-pages-hero-toolbar home-hover-chip');
@@ -105,6 +129,14 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(fouc).toMatch(/body\.lux-route-social :is\([\s\S]*?\.social-photo-feed-card[\s\S]*?\)\.home-hover-chip[\s\S]*?overflow:\s*visible/);
         expect(fouc).toContain('.social-neo-group-card');
         expect(fouc).toContain('.social-neo-directory-item');
+        expect(fouc).toContain('.social-neo-community-card');
+        expect(fouc).toContain('.social-neo-community-hero-grid');
+        expect(fouc).toContain('.social-neo-community-hero-stats');
+        expect(fouc).toContain('.social-neo-community-hero-toolbar');
+        expect(fouc).toMatch(/lux-route-social[\s\S]*\.social-neo-directory-item[\s\S]*home-hover-chip:hover[\s\S]*home-chip-hover-lift/);
+        expect(fouc).toMatch(/lux-route-social[\s\S]*\.social-neo-community-hero-grid[\s\S]*home-hover-chip:hover[\s\S]*home-chip-hover-lift/);
+        expect(fouc).toMatch(/lux-route-social[\s\S]*\.social-neo-community-hero-toolbar[\s\S]*home-hover-chip:hover[\s\S]*home-chip-hover-lift/);
+        expect(fouc).toMatch(/\(hover: none\), \(pointer: coarse\)[\s\S]*\.social-neo-directory-item[\s\S]*home-hover-chip:active/);
         expect(fouc).toContain('.social-neo-pages-hero');
         expect(fouc).toContain('.social-neo-pages-hero-grid');
         expect(fouc).toContain('.social-neo-pages-hero-toolbar');
@@ -120,6 +152,12 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(fouc).toContain('.social-portfolio-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip');
         expect(fouc).toContain('[class*="-hero-grid"]');
         expect(fouc).toContain('[class*="-hero-toolbar"]');
+
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.social-neo-community-panel--hero.is-merged');
+        expect(bare).toContain('.social-neo-community-panel--directory.is-merged');
+        expect(bare).toMatch(/\.social-neo-community-panel--directory\.is-merged[\s\S]*?overflow:\s*visible/);
+        expect(bare).toMatch(/\.social-neo-community-panel--hero\.is-merged[\s\S]*?overflow:\s*visible/);
     });
 
     it('portfolio feed keeps card lift and action buttons unclipped', () => {

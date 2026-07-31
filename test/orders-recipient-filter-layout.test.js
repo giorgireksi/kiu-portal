@@ -275,7 +275,7 @@ describe('orders recipient filter layout', () => {
         expect(workspace).toContain('data-admin-orders-audience-role');
         expect(workspace).toContain('countAdminAudienceNotifications');
         expect(workspace).toContain('getCachedOrdersRecipientFilterLayout(faculty, audienceRole)');
-        expect(workspace).toContain('data-admin-orders-sent-read-status');
+        expect(workspace).not.toContain('data-admin-orders-sent-read-status');
         expect(workspace).toContain('data-admin-orders-sent-layout-filter');
         expect(workspace).toContain('data-admin-orders-sent-filter="dateFrom"');
         expect(workspace).toContain('data-admin-orders-sent-filter="dateTo"');
@@ -291,7 +291,7 @@ describe('orders recipient filter layout', () => {
         expect(workspace).toContain('orders-inbox-layout-filters');
         expect(workspace).toContain('lux-picker-field orders-inbox-layout-filter');
         expect(workspace).toContain('lux-tab-btn orders-admin-audience-tab');
-        expect(workspace).toContain('lux-tab-btn orders-status-filter');
+        expect(workspace).not.toContain('lux-tab-btn orders-status-filter');
         expect(workspace).toContain('data-lux-skip-modern-button="true"');
         expect(workspace).not.toContain('orders-admin-filter-grid--layout');
         expect(workspace).not.toContain('orders-admin-audience-tab lux-filter-pill home-hover-chip');
@@ -324,7 +324,7 @@ describe('orders recipient filter layout', () => {
         expect(readSource('assets/css/lux-page-bare-lite.css')).toContain(
             '.orders-recipient-filter-editor-head .lux-tab-strip--segmented'
         );
-        expect(workspace).not.toMatch(/class="lux-(?:primary|secondary)-btn home-hover-chip"[^>]*data-orders-recipient-filter/);
+        expect(workspace).toMatch(/class="lux-(?:primary|secondary)-btn home-hover-chip"[^>]*data-orders-recipient-filter/);
         expect(workspace).toContain('data-lux-skip-modern-button="true" data-orders-recipient-filter-save');
         expect(workspace).toContain('orders-recipient-filter-editor-row lux-soft-chrome home-hover-chip');
         expect(modals).toMatch(/\.modal-overlay\s*\{[\s\S]*?justify-content:\s*center/);

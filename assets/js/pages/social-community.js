@@ -239,7 +239,7 @@
         `;
 
         const renderDirectoryBody = (items, options = {}) => `
-            <div class="social-neo-community-hero-toolbar">
+            <div class="social-neo-community-hero-toolbar home-hover-chip">
                 <div class="social-neo-directory-filters">
                     <input class="social-neo-input lux-control" id="${escape(directorySearchId)}" name="directorySearch" type="search" placeholder="Search people..." data-bind="directory-search" value="${escape(text(runtime.ui?.directorySearch || ''))}">
                     <select class="social-neo-select lux-control" id="${escape(directoryRoleId)}" name="directoryRole" data-bind="directory-role" data-lux-picker>

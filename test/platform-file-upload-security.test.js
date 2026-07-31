@@ -147,6 +147,46 @@ describe('platform file upload security', () => {
         expect(store.canActorAccessStoredFile(lmsFile.id, 'student-10', 'student')).toBe(false);
     });
 
+    it('allows news viewers to reach announcement attachments without reopening global file access', async () => {
+        const uploadsDir = makeTempDir();
+        const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 4096 });
+        store.state.accounts['news-admin'] = {
+            id: 'news-admin', displayName: 'News Admin', role: 'admin', email: 'news-admin@example.com'
+        };
+        store.state.accounts['student-news'] = {
+            id: 'student-news', displayName: 'Student News', role: 'student', email: 'student-news@example.com', facultyCode: 'ECON'
+        };
+        store.state.accounts['outsider'] = {
+            id: 'outsider', displayName: 'Outsider', role: 'student', email: 'outsider@example.com', facultyCode: 'BM'
+        };
+
+        const newsFile = await store.createFileFromUpload({
+            id: 'news-file',
+            name: 'flyer.jpg',
+            type: 'image/jpeg',
+            dataUrl: buildDataUrl('flyer-bytes'),
+            ownerUserId: 'news-admin',
+            uploadedBy: 'news-admin',
+            scope: 'news'
+        });
+
+        store.state.news = store.state.news && typeof store.state.news === 'object' ? store.state.news : { posts: [], replies: [], sectionCatalog: [] };
+        store.state.news.posts = [{
+            id: 'news_post_1',
+            title: 'Flyer post',
+            body: 'See attachment',
+            status: 'published',
+            createdById: 'news-admin',
+            audienceRoles: ['student'],
+            audienceFacultyCodes: ['ECON'],
+            attachments: [{ storageKey: newsFile.id, name: 'flyer.jpg' }]
+        }];
+
+        expect(store.canActorAccessStoredFile(newsFile.id, 'news-admin', 'admin')).toBe(true);
+        expect(store.canActorAccessStoredFile(newsFile.id, 'student-news', 'student')).toBe(true);
+        expect(store.canActorAccessStoredFile(newsFile.id, 'outsider', 'student')).toBe(false);
+    });
+
     it('keeps upload ownership server-derived and flushes pending writes before responding', () => {
         const routeSource = readFileSync(join(process.cwd(), 'backend/platform/routes/files-routes.js'), 'utf8');
 

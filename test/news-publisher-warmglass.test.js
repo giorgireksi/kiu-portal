@@ -42,7 +42,7 @@ describe('news publisher warmglass regressions (bare-shell era)', () => {
         expect(publisher).toContain('newsx-headline newsx-headline-tight lux-card-title');
         expect(publisher).toContain('newsx-subtle lux-card-copy');
         expect(publisher).toContain('newsx-meta lux-card-meta');
-        expect(publisher).toContain('newsx-sections-count lux-status-pill is-muted');
+        expect(publisher).toContain('newsx-sections-count lux-status-pill home-hover-chip is-muted');
         expect(publisher).toContain('lux-secondary-btn newsx-sections-remove-btn home-hover-chip');
         expect(publisher).toContain('lux-primary-btn home-hover-chip');
         expect(publisher).toContain('data-news-sections-icon-open');

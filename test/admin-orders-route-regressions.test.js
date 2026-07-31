@@ -115,7 +115,17 @@ describe('admin orders route regressions.test', () => {
         expect(bare).toMatch(/\.orders-admin-workspace-divider\s*\{[\s\S]*?margin:\s*10px 0/);
         expect(readSource('assets/css/lux-layout-primitives.css')).toContain('.orders-admin-section-title.lux-card-title');
         expect(fouc).toContain('.orders-admin-sent-item');
+        expect(fouc).toContain('.orders-admin-workspace-section.lux-soft-chrome');
         expect(fouc).toContain('.orders-admin-sent-empty');
+        expect(workspace).toContain('orders-admin-workspace-section--command lux-soft-chrome home-hover-chip');
+        expect(workspace).toContain('orders-admin-workspace-section--filter lux-soft-chrome home-hover-chip');
+        expect(workspace).toContain('orders-admin-workspace-section--inbox lux-soft-chrome home-hover-chip');
+        expect(workspace).toContain('lux-primary-btn orders-admin-command-cta home-hover-chip');
+        expect(workspace).toContain('orders-admin-sent-item lux-soft-chrome home-hover-chip');
+        expect(workspace).toContain('lux-secondary-btn home-hover-chip" data-admin-orders-edit-recipient-filters');
+        expect(workspace).toContain('orders-recipient-row lux-soft-chrome home-hover-chip');
+        expect(bare).toContain('.orders-admin-workspace-section.lux-soft-chrome.home-hover-chip');
+        expect(bare).not.toMatch(/\.orders-admin-sent-item:hover[\s\S]{0,120}lux-soft-chrome-chip-shadow/);
         expect(workspace).toContain('orders-inbox-layout-filters');
         expect(workspace).toContain('lux-picker-field orders-inbox-layout-filter');
         expect(workspace).not.toContain('orders-admin-filter-grid--layout');

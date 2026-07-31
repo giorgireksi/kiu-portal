@@ -23,8 +23,11 @@ describe('social-project-hub-structure (bare-shell era)', () => {
         expect(panel).toContain('social-project-hub-rail-card lux-soft-chrome home-hover-chip');
         expect(panel).toContain('social-project-card-new home-hover-chip');
         expect(panel).toContain('social-project-metric-card lux-soft-chrome home-hover-chip');
-        expect(panel).toContain('social-project-hub-discover lux-soft-chrome home-hover-chip');
+        expect(panel).toContain('social-project-hub-discover lux-soft-chrome');
+        expect(panel).not.toMatch(/social-project-hub-discover lux-soft-chrome home-hover-chip/);
         expect(panel).toContain('social-project-hub-filterbar lux-soft-chrome home-hover-chip');
+        expect(panel).toContain('social-project-hub-contribution-stat lux-soft-chrome home-hover-chip');
+        expect(panel).toContain('No recent project activity yet.');
         expect(panel).toContain('lms-route-meta-12');
 
         const chrome = readSource('assets/js/pages/social-workspace-project-chrome.js');
@@ -71,8 +74,12 @@ describe('social-project-hub-structure (bare-shell era)', () => {
         expect(railCardRule).not.toContain('background: transparent');
         expect(bare).not.toMatch(/\.social-project-hub-rail-card\s*\{[^}]*background:\s*transparent/);
         expect(fouc).toContain('.social-project-hub-rail-card');
+        expect(fouc).toContain('.social-project-hub-contribution-stat');
         expect(fouc).toMatch(
-            /\.social-project-hub-rail-card,\s*\n\s*\.social-project-hub-cta-tile\s*\n\s*\)\.home-hover-chip:hover/
+            /\.social-project-hub-rail-card,\s*\n\s*\.social-project-hub-contribution-stat,\s*\n\s*\.social-project-hub-cta-tile\s*\n\s*\)\.home-hover-chip:hover/
+        );
+        expect(fouc).not.toMatch(
+            /Social nested KPI[\s\S]*\.social-project-hub-discover[\s\S]*home-hover-chip:hover/
         );
     });
 });

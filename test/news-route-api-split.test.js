@@ -274,12 +274,15 @@ describe('news route api split', () => {
         expect(studentTwoView.privateReplyCount).toBe(0);
         expect(studentTwoView.publicReplies[0]?.body).toBe('Public hello');
 
-        const blockedPublic = store.addNewsReply(
-            store.createNewsPost({ title: 'Private only', body: 'x', status: 'published', replyMode: 'private' }, 'news-admin').id,
-            { body: 'Should fail', visibility: 'public' },
+        const migratedPrivate = store.createNewsPost({ title: 'Private only', body: 'x', status: 'published', replyMode: 'private' }, 'news-admin');
+        expect(migratedPrivate.replyMode).toBe('both');
+        const allowedPublic = store.addNewsReply(
+            migratedPrivate.id,
+            { body: 'Now public ok', visibility: 'public' },
             'student-1'
         );
-        expect(blockedPublic.error).toMatch(/Public replies are disabled/);
+        expect(allowedPublic.error).toBeUndefined();
+        expect(allowedPublic.publicReplyCount).toBe(1);
 
         const legacyAllowOnly = store.createNewsPost({
             title: 'Legacy allowReplies',

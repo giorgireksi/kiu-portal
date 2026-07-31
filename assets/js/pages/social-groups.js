@@ -172,11 +172,16 @@
         const joinedGroups = groups.filter(isJoinedGroup);
         const discoverGroups = groups;
 
+        const GROUP_DESC_PREVIEW_MAX = 120;
         const renderGroupCard = (group) => {
             const pendingMembers = Array.isArray(group.pendingMemberIds) ? group.pendingMemberIds : [];
             const memberIds = Array.isArray(group.memberIds) ? group.memberIds : (Array.isArray(group.memberUserIds) ? group.memberUserIds : []);
             const pinnedCount = Array.isArray(group.pinnedPostIds) ? group.pinnedPostIds.length : 0;
             const description = text(group.description || '') || 'No description yet.';
+            const descExpandable = description !== 'No description yet.' && description.length > GROUP_DESC_PREVIEW_MAX;
+            const descAttrs = descExpandable
+                ? ` class="social-neo-group-card-desc is-expandable" role="button" tabindex="0" data-action="group-description-open" data-group-id="${escape(text(group.id))}" title="View full description"`
+                : ' class="social-neo-group-card-desc"';
             return `
                 <article class="social-neo-card social-neo-group-card home-hover-chip">
                     <div class="social-neo-group-card-header">
@@ -189,7 +194,7 @@
                             </span>
                         </div>
                     </div>
-                    <p class="social-neo-group-card-desc">${escape(description)}</p>
+                    <p${descAttrs}>${escape(description)}</p>
                     <div class="social-neo-badge-row social-neo-group-card-badges">
                         ${group.isManager ? `<span class="social-neo-pill home-hover-chip">Managed by you</span>` : ''}
                         ${pendingMembers.length ? `<span class="social-neo-pill home-hover-chip">${escape(pendingMembers.length)} pending</span>` : ''}
@@ -632,6 +637,7 @@
     const GROUP_OWNED_DIALOG_KINDS = new Set([
         'group-create',
         'group-detail',
+        'group-description',
         'group-invite',
         'group-leave',
         'group-panel-media',
@@ -642,6 +648,27 @@
         'group-panel-settings'
     ]);
 
+    function renderGroupDescriptionDialog(runtime, dialog = activeDialog()) {
+        const group = findSocialGroupById(dialog?.groupId);
+        if (!group) return '';
+        const description = text(group.description || '') || 'No description yet.';
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="About ${escape(text(group.name || 'Group'))}">
+            <div class="lux-glass-dialog-card lux-glass-dialog-card--compact" data-action="noop">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title"><i class="fas fa-circle-info"></i> About ${escape(text(group.name || 'Group'))}</strong>
+                        <span class="lux-glass-dialog-subtitle">Full group description</span>
+                    </div>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="lux-glass-dialog-preview social-neo-group-description-dialog-body">${escape(description)}</div>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="dialog-close">Close</button>
+                </div>
+            </div>
+        </div>`;
+    }
+
     function renderGroupOwnedDialog(runtime, dialog) {
         if (!dialog) return '';
         const kind = text(dialog.type);
@@ -651,6 +678,9 @@
         }
         if (kind === 'group-detail') {
             return renderGroupDetailDialog(runtime || state(), dialog);
+        }
+        if (kind === 'group-description') {
+            return renderGroupDescriptionDialog(runtime || state(), dialog);
         }
         if (kind === 'group-leave') {
             const groupItem = (Array.isArray(state().social?.groups) ? state().social.groups : [])
@@ -1186,6 +1216,12 @@
             const groupId = text(trigger.getAttribute('data-group-id'));
             if (!groupId || !findSocialGroupById(groupId)) return;
             return openDialog('group-detail', { groupId });
+        }
+
+        if (action === 'group-description-open') {
+            const groupId = text(trigger.getAttribute('data-group-id'));
+            if (!groupId || !findSocialGroupById(groupId)) return;
+            return openDialog('group-description', { groupId });
         }
 
         if (action === 'group-member-search') return renderSocialPageNow('group-member-search');

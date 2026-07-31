@@ -3,6 +3,8 @@ const ROOT_ID = 'portal-news-root';
 const PUBLISHER_OVERLAY_ID = 'newsx-publisher-overlay';
 const CONFIRM_OVERLAY_ID = 'newsx-confirm-overlay';
 const SECTIONS_OVERLAY_ID = 'newsx-sections-overlay';
+const ATTACHMENT_VIEWER_OVERLAY_ID = 'newsx-attachment-viewer-overlay';
+const POST_DETAIL_OVERLAY_ID = 'newsx-post-detail-overlay';
 const NEWS_MAX_ATTACHMENTS = 5;
 const NEWS_FONT_SIZE_PRESETS = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 72];
 const NEWS_FONT_SIZE_MIN = 8;
@@ -49,6 +51,16 @@ const runtime = {
     pendingDeepLinkPostId: '',
     publisherModalOpen: false,
     sectionsModalOpen: false,
+    attachmentViewer: {
+        open: false,
+        postId: '',
+        index: 0
+    },
+    postDetail: {
+        open: false,
+        postId: ''
+    },
+    overlayRefreshMode: '',
     sectionsDraft: [],
     sectionsReassignments: {},
     sectionsError: '',
@@ -66,7 +78,7 @@ const runtime = {
         status: 'draft',
         publishAt: '',
         expiresAt: '',
-        replyMode: 'private',
+        replyMode: 'both',
         allowReplies: true,
         pinned: false,
         audienceRoles: [],
@@ -83,16 +95,19 @@ const runtime = {
 
 function resolveNewsReplyMode(post = {}) {
     const mode = String(post.replyMode || '').trim().toLowerCase();
-    if (['none', 'private', 'public', 'both'].includes(mode)) return mode;
-    return post.allowReplies === false ? 'none' : 'private';
+    if (mode === 'none') return 'none';
+    if (['private', 'public', 'both'].includes(mode)) return 'both';
+    return post.allowReplies === false ? 'none' : 'both';
 }
 
-function getNewsReplyModeLabel(mode = 'private') {
+function getNewsReplyModeLabel(mode = 'both') {
     switch (String(mode || '').trim().toLowerCase()) {
         case 'none': return 'No replies';
-        case 'public': return 'Public comments';
-        case 'both': return 'Public + private';
-        default: return 'Private replies';
+        case 'both':
+        case 'public':
+        case 'private':
+            return 'Public + private comments';
+        default: return 'Public + private comments';
     }
 }
 
@@ -106,7 +121,7 @@ function getDefaultCompose() {
         status: 'draft',
         publishAt: '',
         expiresAt: '',
-        replyMode: 'private',
+        replyMode: 'both',
         allowReplies: true,
         pinned: false,
         audienceRoles: [],
@@ -217,6 +232,30 @@ function ensureNewsModalShells() {
         `;
         document.body.appendChild(sections);
     }
+    if (!q(ATTACHMENT_VIEWER_OVERLAY_ID)) {
+        const viewer = document.createElement('div');
+        viewer.id = ATTACHMENT_VIEWER_OVERLAY_ID;
+        viewer.className = 'modal-overlay newsx-modal-overlay';
+        viewer.setAttribute('aria-hidden', 'true');
+        viewer.innerHTML = `
+            <div id="newsx-attachment-viewer-modal" class="modal-content newsx-attachment-viewer-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-attachment-viewer-title" data-lux-transparency-exempt="1">
+                <div id="newsx-attachment-viewer-panel"></div>
+            </div>
+        `;
+        document.body.appendChild(viewer);
+    }
+    if (!q(POST_DETAIL_OVERLAY_ID)) {
+        const detail = document.createElement('div');
+        detail.id = POST_DETAIL_OVERLAY_ID;
+        detail.className = 'modal-overlay newsx-modal-overlay';
+        detail.setAttribute('aria-hidden', 'true');
+        detail.innerHTML = `
+            <div id="newsx-post-detail-modal" class="modal-content newsx-post-detail-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-post-detail-title" data-lux-transparency-exempt="1">
+                <div id="newsx-post-detail-panel"></div>
+            </div>
+        `;
+        document.body.appendChild(detail);
+    }
 }
 
 function setNewsModalOpen(overlayId, open) {
@@ -226,7 +265,9 @@ function setNewsModalOpen(overlayId, open) {
     overlay.setAttribute('aria-hidden', open ? 'false' : 'true');
     const anyOpen = Boolean(q(PUBLISHER_OVERLAY_ID)?.classList.contains('active'))
         || Boolean(q(CONFIRM_OVERLAY_ID)?.classList.contains('active'))
-        || Boolean(q(SECTIONS_OVERLAY_ID)?.classList.contains('active'));
+        || Boolean(q(SECTIONS_OVERLAY_ID)?.classList.contains('active'))
+        || Boolean(q(ATTACHMENT_VIEWER_OVERLAY_ID)?.classList.contains('active'))
+        || Boolean(q(POST_DETAIL_OVERLAY_ID)?.classList.contains('active'));
     document.body.classList.toggle('news-modal-open', anyOpen);
 }
 
@@ -259,11 +300,15 @@ function installNewsOverlayDismissHandlers() {
         trackNewsOverlayDismissPointer(event, PUBLISHER_OVERLAY_ID);
         trackNewsOverlayDismissPointer(event, CONFIRM_OVERLAY_ID);
         trackNewsOverlayDismissPointer(event, SECTIONS_OVERLAY_ID);
+        trackNewsOverlayDismissPointer(event, ATTACHMENT_VIEWER_OVERLAY_ID);
+        trackNewsOverlayDismissPointer(event, POST_DETAIL_OVERLAY_ID);
     }, true);
     document.addEventListener('pointerup', event => {
         maybeDismissNewsOverlay(event, PUBLISHER_OVERLAY_ID, () => window.closeNewsPublisherModal());
         maybeDismissNewsOverlay(event, CONFIRM_OVERLAY_ID, closeNewsConfirmModal);
         maybeDismissNewsOverlay(event, SECTIONS_OVERLAY_ID, () => window.closeNewsSectionsManager());
+        maybeDismissNewsOverlay(event, ATTACHMENT_VIEWER_OVERLAY_ID, () => window.closeNewsAttachmentViewer?.());
+        maybeDismissNewsOverlay(event, POST_DETAIL_OVERLAY_ID, () => window.closeNewsPostDetail?.());
     }, true);
 }
 
@@ -506,6 +551,9 @@ function focusNewsPostCard(postId) {
     host.classList.add('newsx-post-card--focused');
     host.scrollIntoView({ behavior: 'smooth', block: 'center' });
     window.setTimeout(() => host.classList.remove('newsx-post-card--focused'), 3200);
+    if (typeof window.openNewsPostDetail === 'function') {
+        window.openNewsPostDetail({ postId: normalizedId });
+    }
     return true;
 }
 

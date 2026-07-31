@@ -45,13 +45,88 @@ function installNewsWorkspaceDelegates() {
         '[data-news-toggle-pin-post]',
         '[data-news-delete-post]',
         '[data-news-remove-attachment]',
-        '[data-news-editor-cmd]'
+        '[data-news-editor-cmd]',
+        '[data-news-open-attachment]',
+        '[data-news-close-attachment-viewer]',
+        '[data-news-attachment-prev]',
+        '[data-news-attachment-next]',
+        '[data-news-attachment-select]',
+        '[data-news-open-post]',
+        '[data-news-close-post-detail]',
+        '[data-news-post-detail-scroll-btn]'
     ].join(',');
 
     document.addEventListener('click', event => {
         const action = event.target instanceof Element ? event.target.closest(clickSelector) : null;
         if (!action) return;
-        if (!root.contains(action) && !action.closest(`#${PUBLISHER_OVERLAY_ID}`) && !action.closest(`#${CONFIRM_OVERLAY_ID}`) && !action.closest(`#${SECTIONS_OVERLAY_ID}`)) return;
+        if (!root.contains(action)
+            && !action.closest(`#${PUBLISHER_OVERLAY_ID}`)
+            && !action.closest(`#${CONFIRM_OVERLAY_ID}`)
+            && !action.closest(`#${SECTIONS_OVERLAY_ID}`)
+            && !action.closest(`#${ATTACHMENT_VIEWER_OVERLAY_ID}`)
+            && !action.closest(`#${POST_DETAIL_OVERLAY_ID}`)) return;
+
+        if (action.hasAttribute('data-news-open-post')) {
+            event.preventDefault();
+            window.openNewsPostDetail({ postId: action.getAttribute('data-news-open-post') });
+            return;
+        }
+
+        if (action.hasAttribute('data-news-close-post-detail')) {
+            event.preventDefault();
+            window.closeNewsPostDetail();
+            return;
+        }
+
+        if (action.hasAttribute('data-news-post-detail-scroll-btn')) {
+            event.preventDefault();
+            const scrollEl = action.closest('#newsx-post-detail-panel')?.querySelector('[data-news-post-detail-scroll="1"]');
+            if (!scrollEl) return;
+            const dir = action.getAttribute('data-news-scroll-dir') || 'down';
+            if (dir === 'up') {
+                scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                const step = Math.max(160, Math.floor(scrollEl.clientHeight * 0.85));
+                scrollEl.scrollBy({ top: step, behavior: 'smooth' });
+            }
+            if (typeof window.syncNewsPostDetailScrollBtn === 'function') {
+                window.requestAnimationFrame(() => window.syncNewsPostDetailScrollBtn(scrollEl, action));
+            }
+            return;
+        }
+
+        if (action.hasAttribute('data-news-open-attachment')) {
+            event.preventDefault();
+            window.openNewsAttachmentViewer({
+                postId: action.getAttribute('data-news-open-attachment'),
+                index: Number(action.getAttribute('data-news-attachment-index') || 0)
+            });
+            return;
+        }
+
+        if (action.hasAttribute('data-news-close-attachment-viewer')) {
+            event.preventDefault();
+            window.closeNewsAttachmentViewer();
+            return;
+        }
+
+        if (action.hasAttribute('data-news-attachment-prev')) {
+            event.preventDefault();
+            window.stepNewsAttachmentViewer(-1);
+            return;
+        }
+
+        if (action.hasAttribute('data-news-attachment-next')) {
+            event.preventDefault();
+            window.stepNewsAttachmentViewer(1);
+            return;
+        }
+
+        if (action.hasAttribute('data-news-attachment-select')) {
+            event.preventDefault();
+            window.selectNewsAttachmentViewerIndex(action.getAttribute('data-news-attachment-select'));
+            return;
+        }
 
         if (action.hasAttribute('data-news-section')) {
             event.preventDefault();
@@ -345,6 +420,14 @@ function installNewsWorkspaceDelegates() {
             closeNewsConfirmModal();
             return;
         }
+        if (runtime.attachmentViewer?.open) {
+            window.closeNewsAttachmentViewer();
+            return;
+        }
+        if (runtime.postDetail?.open) {
+            window.closeNewsPostDetail();
+            return;
+        }
         if (runtime.publisherModalOpen) window.closeNewsPublisherModal();
     });
 
@@ -352,7 +435,10 @@ function installNewsWorkspaceDelegates() {
         if (!(target instanceof Element)) return false;
         return Boolean(q(ROOT_ID)?.contains(target))
             || Boolean(target.closest(`#${PUBLISHER_OVERLAY_ID}`))
-            || Boolean(target.closest(`#${CONFIRM_OVERLAY_ID}`));
+            || Boolean(target.closest(`#${CONFIRM_OVERLAY_ID}`))
+            || Boolean(target.closest(`#${SECTIONS_OVERLAY_ID}`))
+            || Boolean(target.closest(`#${ATTACHMENT_VIEWER_OVERLAY_ID}`))
+            || Boolean(target.closest(`#${POST_DETAIL_OVERLAY_ID}`));
     }
 
     document.addEventListener('input', event => {
@@ -488,6 +574,9 @@ window.updateNewsSearch = function updateNewsSearch(value) {
 };
 window.openNewsPublisherModal = function openNewsPublisherModal({ mode = 'create', postId = '' } = {}) {
     if (!canManageNews()) return;
+    // Post-detail / attachment overlays are full-bleed and stack above the publisher at the same z-index.
+    if (runtime.postDetail?.open) window.closeNewsPostDetail();
+    if (runtime.attachmentViewer?.open) window.closeNewsAttachmentViewer();
     if (mode === 'edit' && postId) {
         const post = runtime.posts.find(item => String(item.id || '') === String(postId));
         if (!post) return;
@@ -670,9 +759,8 @@ window.updateNewsComposeField = function updateNewsComposeField(field, value) {
         if (runtime.compose.programCode === next) return;
         runtime.compose.programCode = next;
     } else if (field === 'replyMode') {
-        const next = ['none', 'private', 'public', 'both'].includes(String(value || '').trim().toLowerCase())
-            ? String(value || '').trim().toLowerCase()
-            : 'private';
+        const raw = String(value || '').trim().toLowerCase();
+        const next = raw === 'none' ? 'none' : 'both';
         if (runtime.compose.replyMode === next) return;
         runtime.compose.replyMode = next;
         runtime.compose.allowReplies = next !== 'none';
@@ -817,6 +905,7 @@ window.submitNewsReply = async function submitNewsReply(postId, parentReplyId = 
         });
         runtime.replyDrafts[key] = '';
         if (parentReplyId) runtime.newsReplyTargetByPost[newsReplyTargetKey(postId, channel)] = '';
+        runtime.overlayRefreshMode = 'replies';
         await bootstrapNewsWorkspace(true);
     } catch (error) {
         runtime.error = error?.message || 'The reply could not be sent.';
@@ -831,6 +920,7 @@ window.toggleNewsReplyLike = async function toggleNewsReplyLike(postId, replyId)
             method: 'POST',
             body: JSON.stringify({ actorId: actor.id, reactionType: 'like' })
         });
+        runtime.overlayRefreshMode = 'replies';
         await bootstrapNewsWorkspace(true);
     } catch (error) {
         runtime.error = error?.message || 'The reaction could not be updated.';
@@ -845,6 +935,7 @@ window.deleteNewsReply = async function deleteNewsReply(postId, replyId) {
             method: 'DELETE',
             body: JSON.stringify({ actorId: actor.id })
         });
+        runtime.overlayRefreshMode = 'replies';
         await bootstrapNewsWorkspace(true);
     } catch (error) {
         runtime.error = error?.message || 'The reply could not be deleted.';
@@ -866,6 +957,43 @@ window.reportNewsReply = async function reportNewsReply(postId, replyId) {
         renderNewsWorkspace();
     }
 };
+function refreshNewsReplyShells(postId, { focus } = {}) {
+    const key = String(postId || '');
+    const post = runtime.posts.find(item => String(item.id || '') === key);
+    if (!post || typeof renderPostRepliesBox !== 'function') return;
+    const markup = renderPostRepliesBox(post);
+    const shells = document.querySelectorAll(`[data-news-reply-shell="${CSS.escape(key)}"]`);
+    shells.forEach((shell) => {
+        const scrollEl = shell.closest('[data-news-post-detail-scroll="1"]')
+            || shell.closest('.newsx-attachment-viewer-side')
+            || shell.closest('.lux-scrollbar');
+        const scrollTop = scrollEl ? scrollEl.scrollTop : null;
+        const holder = document.createElement('div');
+        holder.innerHTML = String(markup || '').trim();
+        const nextShell = holder.firstElementChild;
+        if (!nextShell) return;
+        shell.replaceWith(nextShell);
+        if (scrollEl && scrollTop != null) {
+            scrollEl.scrollTop = scrollTop;
+            window.requestAnimationFrame(() => {
+                if (scrollEl.isConnected) scrollEl.scrollTop = scrollTop;
+            });
+        }
+        let focusEl = null;
+        if (focus === 'inline-reply') {
+            focusEl = nextShell.querySelector('textarea[data-news-reply-parent]');
+        } else if (focus === 'active-tab') {
+            focusEl = nextShell.querySelector(`.newsx-reply-tab.is-active[data-news-reply-tab="${CSS.escape(key)}"]`);
+        } else if (focus?.kind === 'reply-btn' && focus.replyId) {
+            focusEl = nextShell.querySelector(`[data-news-reply-reply="${CSS.escape(String(focus.replyId))}"]`);
+        }
+        focusEl?.focus?.({ preventScroll: true });
+        relayoutNewsReplyTrunks(nextShell);
+    });
+    // Full-panel caches would otherwise resurrect the previous reply UI on the next paint.
+    delete runtime.renderCache['post-detail'];
+    delete runtime.renderCache['attachment-viewer'];
+}
 window.toggleNewsReplyTarget = function toggleNewsReplyTarget(postId, replyId = '', visibility = 'private') {
     const channel = String(visibility || 'private').trim().toLowerCase() === 'public' ? 'public' : 'private';
     const targetKey = newsReplyTargetKey(postId, channel);
@@ -874,24 +1002,16 @@ window.toggleNewsReplyTarget = function toggleNewsReplyTarget(postId, replyId = 
     runtime.newsReplyTargetByPost[targetKey] = next;
     const post = runtime.posts.find(item => String(item.id || '') === String(postId || ''));
     if (!post) return;
-    const host = document.querySelector(`[data-news-post-host="1"][data-news-post-id="${CSS.escape(String(postId || ''))}"]`);
-    if (host) {
-        renderNewsPostRegions(host, post);
-        relayoutNewsReplyTrunks(host);
-    }
+    refreshNewsReplyShells(postId, next
+        ? { focus: 'inline-reply' }
+        : { focus: { kind: 'reply-btn', replyId: String(replyId || '') } });
 };
 window.setNewsReplyActiveTab = function setNewsReplyActiveTab(postId, channel = 'public') {
     const key = String(postId || '');
     const next = String(channel || 'public').trim().toLowerCase() === 'private' ? 'private' : 'public';
     if (runtime.newsReplyActiveTab[key] === next) return;
     runtime.newsReplyActiveTab[key] = next;
-    const post = runtime.posts.find(item => String(item.id || '') === key);
-    if (!post) return;
-    const host = document.querySelector(`[data-news-post-host="1"][data-news-post-id="${CSS.escape(key)}"]`);
-    if (host) {
-        renderNewsPostRegions(host, post);
-        relayoutNewsReplyTrunks(host);
-    }
+    refreshNewsReplyShells(key, { focus: 'active-tab' });
 };
 window.addEventListener('kiu:news-updated', () => {
     if (!isNewsWorkspaceVisible()) {
@@ -922,8 +1042,27 @@ function initializeNewsWorkspace() {
                 const postId = host?.getAttribute('data-news-post-id') || '';
                 const channel = String(target.getAttribute('data-news-reply-channel') || 'private').trim().toLowerCase();
                 if (postId) runtime.newsReplyFoldOpen[`${postId}|${channel === 'public' ? 'public' : 'private'}`] = target.open;
-                window.requestAnimationFrame(() => relayoutNewsReplyTrunks(root));
+                window.requestAnimationFrame(() => relayoutNewsReplyTrunks(host || root));
             }
+        }, true);
+    }
+    if (document.documentElement.dataset.newsAttachmentViewerToggleBound !== '1') {
+        document.documentElement.dataset.newsAttachmentViewerToggleBound = '1';
+        document.addEventListener('toggle', (event) => {
+            const target = event.target;
+            if (!(target instanceof Element) || !target.classList.contains('newsx-reply-fold')) return;
+            const inAttachment = target.closest(`#${ATTACHMENT_VIEWER_OVERLAY_ID}`);
+            const inDetail = target.closest(`#${POST_DETAIL_OVERLAY_ID}`);
+            if (!inAttachment && !inDetail) return;
+            const postId = String(
+                (inAttachment ? runtime.attachmentViewer?.postId : runtime.postDetail?.postId) || ''
+            );
+            const channel = String(target.getAttribute('data-news-reply-channel') || 'private').trim().toLowerCase();
+            if (postId) runtime.newsReplyFoldOpen[`${postId}|${channel === 'public' ? 'public' : 'private'}`] = target.open;
+            const panel = inDetail
+                ? target.closest('#newsx-post-detail-panel')
+                : target.closest('#newsx-attachment-viewer-panel');
+            window.requestAnimationFrame(() => relayoutNewsReplyTrunks(panel || target));
         }, true);
     }
     let resizeTimer = null;

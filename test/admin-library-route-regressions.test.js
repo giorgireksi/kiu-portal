@@ -71,6 +71,9 @@ describe('admin library route regressions.test', () => {
         expect(adminLibraryJs).toContain("row.className = 'admin-library-section-row lux-soft-chrome home-hover-chip'");
         expect(adminLibraryJs).toContain('lux-card-copy admin-library-section-row-title');
         expect(adminLibraryJs).toContain('lux-empty-state admin-library-sections-empty');
+        expect(adminLibraryJs).toMatch(/setAdminLibrarySectionsModalOpen[\s\S]*?classList\.toggle\('is-open'/);
+        expect(html).toContain('library-sections-overlay');
+        expect(html).toContain('lux-glass-dialog-overlay');
         const primitives = readSource('assets/css/lux-layout-primitives.css');
         expect(adminLibraryJs).toContain('lux-secondary-btn lux-destructive-btn home-hover-chip admin-library-section-remove-btn');
         expect(adminLibraryJs).toContain('lux-destructive-btn home-hover-chip');
@@ -96,6 +99,7 @@ describe('admin library route regressions.test', () => {
         expect(modals).toContain('.admin-library-sections-modal.lux-glass-dialog-card');
         expect(modals).toContain('.admin-library-sections-list');
         expect(modals).toContain('.admin-library-schema-droplist-editor-body');
+        expect(modals).toMatch(/\.lux-glass-dialog-overlay[\s\S]*?\.is-open\s*>\s*\*[\s\S]*?opacity:\s*1/);
         expect(modals).not.toMatch(/\.admin-library-schema-field-row\s*\{[^}]*background:\s*var\(--lux-panel-modal-section/);
     });
 });

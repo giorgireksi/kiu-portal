@@ -52,19 +52,27 @@ describe('index widget wave 1 regressions', () => {
     expect(source).not.toContain('student-service-summary-card');
   });
 
-  it('keeps news feed post cards in editorial layout', () => {
-    const source = readSource('assets/js/pages/news.js');
+  it('keeps news feed post cards in tile grid with editorial detail modal', () => {
+    const feed = readSource('assets/js/pages/news/news-feed-render.js');
+    const replies = readSource('assets/js/pages/news/news-replies.js');
 
-    expect(source).toContain('newsx-reply-tabs');
-    expect(source).toContain('newsx-private-fold');
-    expect(source).toContain('newsx-post-card--editorial');
-    expect(source).not.toContain('newsx-stat-grid--compact');
-    expect(source).not.toContain('Who can see this announcement right now.');
+    expect(replies).toContain('newsx-reply-shell');
+    expect(replies).toContain('newsx-reply-tabs');
+    expect(replies).toContain('data-news-reply-tab');
+    expect(replies).not.toContain('newsx-reply-fold');
+    expect(replies).toContain('Public');
+    expect(replies).toContain('Private');
+    expect(feed).toContain('newsx-post-card--tile');
+    expect(feed).toContain('newsx-post-card--editorial');
+    expect(feed).toContain('openNewsPostDetail');
+    expect(feed).not.toContain('newsx-stat-grid--compact');
+    expect(feed).not.toContain('Who can see this announcement right now.');
 
-    const shellBlock = source.slice(
-      source.indexOf('function ensureNewsPostShell(host, postId)'),
-      source.indexOf('function renderNewsPostRegions(host, post)')
+    const shellBlock = feed.slice(
+      feed.indexOf('function ensureNewsPostShell(host, postId)'),
+      feed.indexOf('function renderNewsPostRegions(host, post)')
     );
+    expect(shellBlock).toContain('newsx-post-card--tile');
     expect(shellBlock).not.toContain('newsx-divider');
   });
 

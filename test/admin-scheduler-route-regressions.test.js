@@ -66,6 +66,19 @@ describe('admin scheduler route regressions.test', () => {
         expect(bare).toContain('body.lux-route-admin-scheduler #profQuizModalOverlay .quiz-questions-head');
     });
 
+    it('densifies scheduler sidebar rail stats filters and palette', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const html = readSource('admin-scheduler.html');
+        expect(bare).toMatch(/#page-admin-scheduler \.sch-stat-card\s*\{[^}]*min-height:\s*0/);
+        expect(bare).not.toMatch(/#page-admin-scheduler \.sch-stat-card\s*\{[^}]*min-height:\s*144px/);
+        expect(bare).toMatch(/#page-admin-scheduler \.sch-stat-card\s*\{[\s\S]*?padding:\s*8px 10px/);
+        expect(bare).toMatch(/#page-admin-scheduler \.sch-stat-card strong\s*\{[\s\S]*?font-size:\s*20px/);
+        expect(bare).toMatch(/#page-admin-scheduler \.sch-rail-hero\.lux-hero\s*\{[\s\S]*?padding:\s*12px/);
+        expect(bare).toMatch(/#page-admin-scheduler \.sch-rail-section\s*\{[\s\S]*?padding:\s*12px/);
+        expect(bare).toMatch(/#page-admin-scheduler \.palette-card\s*\{[\s\S]*?padding:\s*8px 10px 8px 14px/);
+        expect(html).toContain('lux-page-bare-lite.css?v=20260731-schrail1');
+    });
+
     it('stat and palette chips use shared home-hover-chip lift contract', () => {
         const html = readSource('admin-scheduler.html');
         const js = readSource('assets/js/pages/admin-scheduler.js');

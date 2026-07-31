@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-panelhost1">
     <link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260730-newspubshare1">
     <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260730-newspubshare1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260727-newsshare1">
-    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260730-sectionicon2">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260731-newsreplytab3">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260731-newsedit1">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
     <script src="assets/js/theme-primer.js?v=20260730-navpreload1"></script>
 </head>
@@ -43,6 +43,12 @@
 <div id="newsx-sections-overlay" class="modal-overlay newsx-modal-overlay" data-lux-modal-overlay aria-hidden="true">
     <div id="newsx-sections-modal" class="modal-content newsx-sections-modal" role="dialog" aria-modal="true" aria-label="Manage news sections" data-lux-transparency-exempt="1">
         <div id="newsx-sections-panel"></div>
+    </div>
+</div>
+
+<div id="newsx-attachment-viewer-overlay" class="modal-overlay newsx-modal-overlay" data-lux-modal-overlay aria-hidden="true">
+    <div id="newsx-attachment-viewer-modal" class="modal-content newsx-attachment-viewer-modal" role="dialog" aria-modal="true" aria-label="News attachment viewer" data-lux-transparency-exempt="1">
+        <div id="newsx-attachment-viewer-panel"></div>
     </div>
 </div>
 
@@ -79,12 +85,12 @@
 <script defer src="assets/js/features/luxury-shell-picker-runtime.js?v=20260726-pickeroverlap1"></script>
 <script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260723-gpuperf4l"></script>
 <script defer src="assets/js/features/luxury-shell-chrome.js?v=20260730-echancellery1"></script>
-<script defer src="assets/js/pages/news/news-runtime.js?v=20260730-sectionicon2"></script>
-<script defer src="assets/js/pages/news/news-api.js?v=20260730-sectionicon1"></script>
-<script defer src="assets/js/pages/news/news-replies.js?v=20260714-news-modules1"></script>
-<script defer src="assets/js/pages/news/news-feed-render.js?v=20260730-sectionicon1"></script>
-<script defer src="assets/js/pages/news/news-publisher.js?v=20260730-sectionicon2"></script>
-<script defer src="assets/js/pages/news/news-events.js?v=20260730-sectionicon2"></script>
+<script defer src="assets/js/pages/news/news-runtime.js?v=20260801-newsreplyscroll3"></script>
+<script defer src="assets/js/pages/news/news-api.js?v=20260731-newsreplytab1"></script>
+<script defer src="assets/js/pages/news/news-replies.js?v=20260731-newsreplytab1"></script>
+<script defer src="assets/js/pages/news/news-feed-render.js?v=20260801-newsreplyscroll3"></script>
+<script defer src="assets/js/pages/news/news-publisher.js?v=20260731-newsreplytab1"></script>
+<script defer src="assets/js/pages/news/news-events.js?v=20260801-newsreplyscroll3"></script>
 <script defer src="assets/js/pages/news.js?v=20260714-news-modules1"></script>
 <script>
 function initStandaloneNewsRoute() {

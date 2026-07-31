@@ -627,7 +627,7 @@
                         ${renderProgress(completion.percent, `${completion.percent}% · ${completion.missing.length ? `${completion.missing.length} missing` : 'complete'}`)}
                     </td>
                     <td>
-                        <div class="students-hub-inline-actions">
+                        <div class="students-hub-inline-actions" data-lux-btn-density="dense">
                             <button class="lux-primary-btn" type="button" data-student-action="select" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> View</button>
                             <button class="lux-secondary-btn" type="button" data-student-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit</button>
                             ${record.status === 'Archived'
@@ -659,12 +659,8 @@
 
                 <section class="students-hub-directory-panel home-hover-chip">
                     <div class="students-hub-directory-head">
-                        <div>
-                            <div class="students-hub-overline lux-section-kicker">Student directory</div>
-                            <h2 class="students-hub-section-title lux-card-title">Operational records</h2>
-                            <p class="students-hub-section-copy lux-card-copy">Open full profile pages, review readiness, and act on enrollment or account issues directly from the table.</p>
-                        </div>
-                        <div class="students-hub-inline-actions">
+                        <h2 class="students-hub-section-title lux-card-title">Records</h2>
+                        <div class="students-hub-inline-actions" data-lux-btn-density="dense">
                             <button class="lux-secondary-btn" type="button" data-student-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
                         </div>
                     </div>
@@ -1617,11 +1613,11 @@
         });
 
         document.addEventListener('input', (event) => {
-            if (event.target.id === 'staff-search' || event.target.id === 'staff-global-search') {
+            if (event.target.id === 'student-search' || event.target.id === 'staff-global-search') {
                 setFilter('query', event.target.value);
                 return;
             }
-            if (event.target.id === 'staff-droplist-search') {
+            if (event.target.id === 'student-droplist-search') {
                 setFilter('droplistQuery', event.target.value);
                 if (typeof window.applyStudentDirectoryDroplistFieldVisibility === 'function') {
                     window.applyStudentDirectoryDroplistFieldVisibility(event.target.value);

@@ -142,18 +142,18 @@
         ].filter((ms) => Number.isFinite(ms));
         return candidates.length ? Math.max(...candidates) : 0;
     }
-    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260714-community-click1';
+    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260731-communityhover2';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
     const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260729-lfpills1';
     const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260729-photogrid2';
-    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260730-surveyfaculty1';
+    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260731-surveytake1';
     const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260729-research4';
     const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260730-filedeposit2';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260728-socworkspace2';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
-    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260729-herostats1';
+    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260731-eventrsvp1';
     const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260730-groupdetail1';
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
     const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260728-socshell25';
@@ -173,7 +173,7 @@
     const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260728-socport1';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
-    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260729-workspacestat1';
+    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260731-hubrailhover1';
     const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260726-socstack48';
     const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260726-socstack47';
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260726-socstack50';
@@ -1061,11 +1061,17 @@
     }
     function ensureSocialEventsModule() {
         if (window.__KIU_SOCIAL_EVENTS_MODULE_LOADED
+            && typeof window.handleSocialEventsClick === 'function'
             && typeof window.renderEventsPanel === 'function'
             && window.renderEventsPanel !== renderEventsPanel
             && typeof window.renderEventCreateDialog === 'function'
             && window.renderEventCreateDialog !== renderEventCreateDialog) {
             return Promise.resolve();
+        }
+        // Stale load: flag set / script present but click handler never exported.
+        if (typeof window.handleSocialEventsClick !== 'function') {
+            window.__KIU_SOCIAL_EVENTS_MODULE_LOADED = false;
+            document.querySelectorAll('script[src*="assets/js/pages/social-events.js"]').forEach((node) => node.remove());
         }
         const existing = document.querySelector(`script[src="${SOCIAL_EVENTS_MODULE_URL}"]`);
         if (existing) return waitForDynamicScript(existing);
@@ -1080,6 +1086,7 @@
     }
     function hasSocialEventsModule() {
         return Boolean(window.__KIU_SOCIAL_EVENTS_MODULE_LOADED
+            && typeof window.handleSocialEventsClick === 'function'
             && typeof window.renderEventsPanel === 'function'
             && window.renderEventsPanel !== renderEventsPanel
             && typeof window.renderEventCreateDialog === 'function'
@@ -1943,9 +1950,14 @@
         state, currentUser, currentUserId, text, escape,
         when, eventCanManage, controlId, activeDialog, eventScopeOptions,
         setPanel, openDialog, renderSocialPageNow, withBusy, clearEventDraft,
-        prefillEventEditDraft, patchEventRsvpButtons, respondPortalSocialEventRsvp, invalidateSocialRenderCache, ensureSocialGroupsModule,
-        closeDialog, createPortalSocialEvent, deletePortalSocialEvent, updatePortalSocialEvent, fromDateTimeLocalValue,
-        readFileAsDataUrl
+        prefillEventEditDraft, patchEventRsvpButtons, invalidateSocialRenderCache, ensureSocialGroupsModule,
+        closeDialog, fromDateTimeLocalValue, readFileAsDataUrl,
+        // Use window.* lookups — bare identifiers throw if portal APIs were not exported yet
+        // and would abort this Object.assign (silent RSVP / create-event no-op).
+        respondPortalSocialEventRsvp: window.respondPortalSocialEventRsvp,
+        createPortalSocialEvent: window.createPortalSocialEvent,
+        deletePortalSocialEvent: window.deletePortalSocialEvent,
+        updatePortalSocialEvent: window.updatePortalSocialEvent
     });
 
     window.__kiuSocialGroupsHooks = window.__kiuSocialGroupsHooks || {};
