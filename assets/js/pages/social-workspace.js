@@ -376,6 +376,7 @@
     const saveMyPortfolioDocument = __wsPortRtApi?.saveMyPortfolioDocument;
     const openPortfolioEditor = __wsPortRtApi?.openPortfolioEditor;
     const resetPortfolioEditor = __wsPortRtApi?.resetPortfolioEditor;
+    const readPortfolioResumeFile = __wsPortRtApi?.readPortfolioResumeFile;
     const PORTFOLIO_DISCOVER_ROLE_TARGETS = __wsPortRtApi?.PORTFOLIO_DISCOVER_ROLE_TARGETS;
 
 
@@ -1393,6 +1394,7 @@
         revealDeskExpandTarget,
         root,
         saveMyPortfolioDocument,
+        readPortfolioResumeFile,
         saveProjectTaskGraphCheckpoint,
         saveProjectTaskGraphView,
         scrubDeletedTaskFromProjectTaskGraphGroups,

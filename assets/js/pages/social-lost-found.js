@@ -96,6 +96,7 @@
                         <p>Post missing items, help others recover them, and mark returns when they are found.</p>
                     </div>
                     <div class="social-neo-lost-found-hero-actions">
+                        ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                         <button class="lux-primary-btn social-neo-lost-found-hero-create-btn" type="button" data-action="lost-found-create-open">
                             <i class="fas fa-plus"></i>
                             <span>Post item</span>
@@ -272,6 +273,19 @@
                                 <input class="social-neo-input lux-control" id="${escape(dateId)}" type="date" name="lostFoundDate" value="${escape(draft.eventDate)}">
                             </label>
                         </div>
+                        <label class="lux-glass-dialog-field">
+                            <span class="social-neo-label">Faculty</span>
+                            ${(window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+                                ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                                    name: 'lostFoundFaculty',
+                                    includeAll: false,
+                                    required: true,
+                                    value: text(runtime.ui?.lostFoundFaculty || editItem?.facultyCode || '')
+                                        || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                                    label: 'Faculty'
+                                }))
+                                : `<select class="social-neo-select lux-control" name="lostFoundFaculty" required data-lux-picker><option value="">Select faculty</option></select>`}
+                        </label>
                         <label class="lux-glass-dialog-field" for="${escape(expiresAtId)}">
                             <span class="social-neo-label">Listing ends</span>
                             <input class="social-neo-input lux-control" id="${escape(expiresAtId)}" type="datetime-local" name="lostFoundExpiresAt" min="${escape(expiresAtMin)}" value="${escape(toDateTimeLocalValue(draft.expiresAt))}" required>
@@ -494,6 +508,9 @@
                     || text(existing?.expiresAt || defaultLostFoundExpiresAt());
                 if (!expiresAt) throw new Error('Listing end time is required.');
                 if (new Date(expiresAt).getTime() <= Date.now()) throw new Error('Listing end time must be in the future.');
+                const facultyCode = text(form.lostFoundFaculty?.value || runtime.ui?.lostFoundFaculty || existing?.facultyCode || '')
+                    || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '');
+                if (!facultyCode || facultyCode === 'all') throw new Error('Faculty is required.');
                 const nextItem = normalizeLostFoundItem({
                     ...existing,
                     id: editId || makeId('lf'),
@@ -505,6 +522,7 @@
                     eventDate: text(form.lostFoundDate?.value || runtime.ui?.lostFoundDate || existing?.eventDate || ''),
                     expiresAt,
                     imageUrl,
+                    facultyCode,
                     authorUserId: text(existing?.authorUserId || actorId),
                     authorName: text(existing?.authorName || displayName(currentUser())),
                     createdAt: text(existing?.createdAt || new Date().toISOString()),
@@ -515,6 +533,7 @@
                     notes: text(existing?.notes || '')
                 });
                 if (!nextItem.title) throw new Error('Listing title is required.');
+                if (!nextItem.facultyCode) throw new Error('Faculty is required.');
                 const nextItems = editId
                     ? currentItems.map((entry) => text(entry.id) === editId ? nextItem : entry)
                     : [nextItem, ...currentItems];

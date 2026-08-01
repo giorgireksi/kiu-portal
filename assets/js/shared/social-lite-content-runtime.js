@@ -1051,9 +1051,24 @@ async function respondEventRsvp(eventId, status = 'going') {
                 status: text(status || 'going') || 'going'
             })
         });
-        await loadSocialState(true);
+        const nextEvent = payload?.event && typeof payload.event === 'object' ? payload.event : null;
+        if (nextEvent && Array.isArray(runtime.social?.events)) {
+            const normalizedId = text(eventId);
+            const idx = runtime.social.events.findIndex((entry) => text(entry?.id) === normalizedId);
+            const decorated = {
+                ...nextEvent,
+                viewerCanEdit: Boolean(nextEvent?.viewerCanEdit || nextEvent?.viewerCanDelete)
+            };
+            if (idx >= 0) runtime.social.events[idx] = { ...runtime.social.events[idx], ...decorated };
+            else runtime.social.events.unshift(decorated);
+        } else {
+            await loadSocialState(true, { skipRender: true });
+        }
+        if (typeof window.__kiuSocialPatchEventRsvp === 'function') {
+            window.__kiuSocialPatchEventRsvp(eventId);
+        }
         setFlash('Event response updated.', 'success', { skipRender: true });
-        return payload?.event || null;
+        return nextEvent || payload?.event || null;
     } catch (error) {
         patch.rollback();
         if (typeof window.__kiuSocialPatchEventRsvp === 'function') {

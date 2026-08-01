@@ -142,22 +142,22 @@
         ].filter((ms) => Number.isFinite(ms));
         return candidates.length ? Math.max(...candidates) : 0;
     }
-    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260731-communityhover2';
+    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260801-socialfaculty3';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
-    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260729-lfpills1';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260729-photogrid2';
-    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260731-surveytake1';
-    const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260729-research4';
-    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260730-filedeposit2';
+    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260801-socialfaculty3';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260801-socialfaculty3';
+    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260801-surveytake2';
+    const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260801-researchviewer12';
+    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260801-researchviewer3';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260728-socworkspace2';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
-    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260731-eventrsvp1';
-    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260730-groupdetail1';
+    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260801-socialeventrsvp2';
+    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260801-socialfaculty3';
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
-    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260728-socshell25';
-    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260730-pageprofile1';
+    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260801-socialfaculty3';
+    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260801-socialfaculty3';
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260726-socfix20';
@@ -168,22 +168,22 @@
     const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_SCHEDULE_UI_URL = 'assets/js/pages/social-workspace-schedule-ui.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
-    const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260726-socfix16';
-    const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260726-socfix17';
-    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260728-socport1';
+    const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260801-portfolioresume3';
+    const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260801-socialfaculty3';
+    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260801-portfolioresume3';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
-    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260731-hubrailhover1';
+    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260801-socialfaculty3';
     const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260726-socstack48';
     const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260726-socstack47';
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260726-socstack50';
     const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260728-socworkspace1';
-    const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260728-socport4';
-    const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260728-socport4';
-    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260730-portfoliocontain1';
-    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260729-workspacestat1';
+    const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260801-portfolioresume3';
+    const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260801-portfolioresume3';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260801-portfolioresume3';
+    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260801-socialfaculty3';
     const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260726-socstack47';
-    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260726-socstack50';
+    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260801-portfolioresume3';
     const DIRECTORY_REFRESH_MS = 180;
     const MAX_RENDER_ATTEMPTS = 24;
     const USER_ROLES_FALLBACK = {
@@ -1502,7 +1502,7 @@
     const __socialShellDeps = window.__kiuSocialPageShellDeps = {
         text, state, root, escape, activeNavPanels, activeDialog,
         WORKSPACE_NAV_COLLAPSED_KEY, ROOT_ID, DIRECTORY_REFRESH_MS, GROUP_INVITE_SEARCH_MS,
-        ensureSocialOverlayPortal, socialOverlayLockArtifactsPresent, clearSocialOverlayLockArtifacts,
+        ensureSocialOverlayPortal,
         shellIdentitySignature, currentUser, currentFacultyCode,
         createSocialLazyStub, hasSocialGroupsModule, ensureSocialGroupsModule
     };

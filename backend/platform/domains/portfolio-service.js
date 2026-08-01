@@ -246,6 +246,39 @@ function normalizePortfolioBasics(raw = {}, account = {}) {
     };
 }
 
+const PORTFOLIO_EXTRA_KINDS = ['subject', 'project', 'link', 'note'];
+
+function normalizePortfolioExtra(raw = {}) {
+    const kindRaw = portfolioText(raw.kind || raw.type || 'note').toLowerCase();
+    const kind = PORTFOLIO_EXTRA_KINDS.includes(kindRaw) ? kindRaw : 'note';
+    const title = portfolioText(raw.title || '').slice(0, 160);
+    const detail = portfolioText(raw.detail || raw.description || '').slice(0, 2000);
+    const url = normalizeSafeExternalUrl(raw.url || '');
+    if (!title && !detail && !url) return null;
+    return {
+        id: portfolioText(raw.id || makeId('extra')),
+        kind,
+        title: title || (kind === 'link' ? (url || 'Link') : 'Highlight'),
+        detail,
+        url
+    };
+}
+
+function normalizePortfolioExtras(values) {
+    return asArray(values).map(normalizePortfolioExtra).filter(Boolean).slice(0, 12);
+}
+
+function normalizePortfolioResume(raw) {
+    if (!raw) return null;
+    if (Array.isArray(raw)) return normalizePortfolioMediaItems(raw)[0] || null;
+    return normalizePortfolioMediaItems([raw])[0] || null;
+}
+
+function hasPortfolioResume(resume) {
+    if (!resume || typeof resume !== 'object') return false;
+    return Boolean(portfolioText(resume.storageKey) || portfolioText(resume.dataUrl));
+}
+
 function normalizePortfolioDocument(raw = {}, account = {}) {
     const userId = portfolioText(raw.userId || account.id || '');
     const sectionsInput = raw.sections && typeof raw.sections === 'object' ? raw.sections : {};
@@ -278,6 +311,8 @@ function normalizePortfolioDocument(raw = {}, account = {}) {
         visibilityMode: normalizePortfolioVisibilityMode(raw.visibilityMode),
         consentAcknowledged: Boolean(raw.consentAcknowledged),
         basics: normalizePortfolioBasics(raw.basics || {}, account),
+        resume: normalizePortfolioResume(raw.resume || raw.resumeFile || null),
+        extras: normalizePortfolioExtras(raw.extras || raw.highlights || []),
         sectionOrder,
         sections,
         ownerFacultyCode: normalizeCode(raw.ownerFacultyCode || account.facultyCode || account.faculty || ''),
@@ -451,8 +486,11 @@ function validatePortfolioPublish(portfolio, payload = {}) {
     const errors = [];
     const basics = portfolio?.basics || {};
     if (!portfolioText(basics.name)) errors.push('Add your name before publishing.');
-    if (!portfolioText(basics.summary) && countStartedSections(portfolio) < 2) {
-        errors.push('Add a summary or fill at least two sections before publishing.');
+    if (!hasPortfolioResume(portfolio?.resume)) {
+        errors.push('Upload your resume PDF before publishing.');
+    }
+    if (!portfolioText(basics.summary) && !portfolioText(basics.headline)) {
+        errors.push('Add a short About so Discover cards are scannable.');
     }
     const visibilityMode = normalizePortfolioVisibilityMode(payload.visibilityMode || portfolio.visibilityMode);
     if (visibilityMode === 'students_only' && !Boolean(payload.consentAcknowledged || portfolio.consentAcknowledged)) {
@@ -477,6 +515,8 @@ function savePortfolio(userId, payload = {}, actorId = '') {
         ...payload,
         userId: normalizedUserId,
         basics: { ...existing.basics, ...(payload.basics || {}) },
+        resume: payload.resume !== undefined ? payload.resume : existing.resume,
+        extras: payload.extras !== undefined ? payload.extras : existing.extras,
         sections: payload.sections ? payload.sections : existing.sections,
         sectionOrder: payload.sectionOrder || existing.sectionOrder,
         updatedAt: nowIso()
@@ -535,7 +575,9 @@ function listDiscoverablePortfolios(viewerUserId = '', filters = {}) {
             if (faculty && faculty !== 'all' && normalizeCode(item.ownerFacultyCode) !== faculty) return false;
             if (!search) return true;
             const skills = portfolioText(item.sections?.skills?.entries?.[0]?.fields?.tags?.value || '');
-            const blob = `${item.basics?.name} ${item.basics?.headline} ${item.basics?.summary} ${skills}`.toLowerCase();
+            const extrasBlob = asArray(item.extras).map((extra) => `${extra?.title || ''} ${extra?.detail || ''}`).join(' ');
+            const resumeName = portfolioText(item.resume?.name || '');
+            const blob = `${item.basics?.name} ${item.basics?.headline} ${item.basics?.summary} ${skills} ${extrasBlob} ${resumeName}`.toLowerCase();
             return blob.includes(search);
         })
         .sort((left, right) => String(right.updatedAt || '').localeCompare(String(left.updatedAt || '')));
@@ -563,6 +605,7 @@ module.exports = {
     FIELD_TYPES,
     MAX_CUSTOM_SECTIONS,
     MAX_ENTRIES_PER_SECTION,
+    PORTFOLIO_EXTRA_KINDS,
     addCustomPortfolioSection,
     canViewPortfolio,
     countStartedSections,
@@ -571,9 +614,13 @@ module.exports = {
     defaultBuiltinSections,
     getOrCreatePortfolio,
     getPortfolioRecord,
+    hasPortfolioResume,
     listDiscoverablePortfolios,
     migrateProjectsToPortfolio,
     normalizePortfolioDocument,
+    normalizePortfolioExtra,
+    normalizePortfolioExtras,
+    normalizePortfolioResume,
     publishPortfolio,
     savePortfolio,
     unpublishPortfolio,

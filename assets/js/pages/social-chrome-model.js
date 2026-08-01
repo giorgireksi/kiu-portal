@@ -251,6 +251,99 @@
         return text(code || 'Faculty');
     }
 
+    const SOCIAL_BROWSE_FACULTY_CODES = ['CS', 'ECON', 'LAW', 'MED', 'ARTS'];
+
+    function socialBrowseFacultyCodes() {
+        return SOCIAL_BROWSE_FACULTY_CODES.slice();
+    }
+
+    function normalizeSocialFacultyCode(value, fallback = '') {
+        const raw = text(value);
+        if (!raw) return text(fallback);
+        try {
+            if (typeof window.normalizeFacultyCode === 'function') {
+                return text(window.normalizeFacultyCode(raw, fallback || 'ECON')) || text(fallback);
+            }
+        } catch (error) {}
+        return raw.toUpperCase();
+    }
+
+    function socialBrowseFacultyValue(runtime) {
+        const raw = text(runtime?.ui?.socialBrowseFaculty || 'all') || 'all';
+        if (raw === 'all') return 'all';
+        return normalizeSocialFacultyCode(raw, 'all') || 'all';
+    }
+
+    function socialDefaultCreateFaculty(runtime) {
+        const browse = socialBrowseFacultyValue(runtime);
+        if (browse && browse !== 'all') return browse;
+        return currentFacultyCode();
+    }
+
+    function socialEntityFacultyCodes(entity) {
+        if (!entity || typeof entity !== 'object') return [];
+        const codes = [];
+        const push = (value) => {
+            const code = normalizeSocialFacultyCode(value, '');
+            if (code && code !== 'ALL') codes.push(code);
+        };
+        if (Array.isArray(entity.facultyCodes)) entity.facultyCodes.forEach(push);
+        push(entity.facultyCode);
+        push(entity.faculty);
+        push(entity.audienceFacultyCode);
+        push(entity.ownerFacultyCode);
+        push(entity.authorFacultyCode);
+        if (entity.photoMeta && typeof entity.photoMeta === 'object') {
+            push(entity.photoMeta.facultyCode);
+            push(entity.photoMeta.faculty);
+        }
+        return Array.from(new Set(codes));
+    }
+
+    function socialMatchesBrowseFaculty(entity, filter) {
+        const want = text(filter || 'all') || 'all';
+        if (!want || want === 'all') return true;
+        const normalized = normalizeSocialFacultyCode(want, '');
+        if (!normalized) return true;
+        const codes = socialEntityFacultyCodes(entity);
+        if (!codes.length) return false;
+        return codes.includes(normalized);
+    }
+
+    function renderSocialBrowseFacultySelect(runtime, opts = {}) {
+        const selectedRaw = opts.value != null ? text(opts.value) : socialBrowseFacultyValue(runtime);
+        const selected = selectedRaw === 'all' ? 'all' : (normalizeSocialFacultyCode(selectedRaw, socialDefaultCreateFaculty(runtime)) || socialDefaultCreateFaculty(runtime));
+        const name = text(opts.name || 'socialBrowseFaculty') || 'socialBrowseFaculty';
+        const required = Boolean(opts.required);
+        const includeAll = opts.includeAll !== false;
+        const label = text(opts.label || 'Faculty') || 'Faculty';
+        const options = [];
+        if (includeAll) {
+            options.push(`<option value="all"${selected === 'all' ? ' selected' : ''}>All faculties</option>`);
+        }
+        socialBrowseFacultyCodes().forEach((code) => {
+            options.push(`<option value="${escape(code)}"${selected === code ? ' selected' : ''}>${escape(facultyLabel(code))}</option>`);
+        });
+        const classes = ['social-neo-select', 'lux-control', 'lux-universal-native-select'];
+        if (opts.compact) classes.push('social-neo-select-sm');
+        return `<select class="${classes.join(' ')}" name="${escape(name)}" data-lux-picker data-lux-picker-label="${escape(label)}"${required ? ' required' : ''} autocomplete="off">${options.join('')}</select>`;
+    }
+
+    function renderSocialBrowseFacultyCommand(runtime) {
+        return `<div class="social-neo-command-faculty lux-soft-chrome home-hover-chip">
+            <label class="social-neo-command-faculty-label">
+                <span class="lms-route-meta-12">Faculty</span>
+                ${renderSocialBrowseFacultySelect(runtime, { compact: true, includeAll: true, name: 'socialBrowseFaculty', label: 'Faculty' })}
+            </label>
+        </div>`;
+    }
+
+    function renderSocialBrowseFacultyHeroControl(runtime) {
+        return `<label class="social-neo-hero-faculty">
+            ${renderSocialBrowseFacultySelect(runtime, { compact: true, includeAll: true, name: 'socialBrowseFaculty', label: 'Faculty' })}
+        </label>`;
+    }
+
     function isIncomingCall(call) {
         return Boolean(call) && text(call?.status) === 'ringing' && text(call?.startedBy) !== currentUserId();
     }
@@ -481,6 +574,14 @@
         getSafeSocialExternalUrl,
         roleLabel,
         facultyLabel,
+        socialBrowseFacultyCodes,
+        socialBrowseFacultyValue,
+        socialDefaultCreateFaculty,
+        socialEntityFacultyCodes,
+        socialMatchesBrowseFaculty,
+        renderSocialBrowseFacultySelect,
+        renderSocialBrowseFacultyCommand,
+        renderSocialBrowseFacultyHeroControl,
         isIncomingCall,
         isManagedPage,
         isJoinedGroup,

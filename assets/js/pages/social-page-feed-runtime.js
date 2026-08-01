@@ -503,6 +503,7 @@
                             <p>Browse profiles, manage requests, and find faculty.</p>
                         </div>
                         <div class="social-neo-community-hero-actions">
+                            ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                             <button class="lux-secondary-btn" type="button" data-action="panel-community" data-community-tab="requests" aria-pressed="${activeTab === 'requests' ? 'true' : 'false'}">
                                 <i class="fas fa-user-check"></i> View requests
                             </button>

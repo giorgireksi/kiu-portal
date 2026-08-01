@@ -25,7 +25,9 @@ describe('social portfolio panel render regressions', () => {
         expect(renderHeroBlock).toContain('lux-universal-native-select');
         expect(renderHeroBlock).toContain('class="lux-control" type="search"');
         expect(renderHeroBlock).not.toMatch(/class="social-neo-input lux-control" type="search"/);
-        expect(renderHeroBlock).toContain('social-neo-portfolio-hero-discover');
+        expect(renderHeroBlock).toContain('social-neo-portfolio-hero-discover lux-soft-chrome home-hover-chip');
+        expect(renderHeroBlock).toContain('social-portfolio-search-row lux-soft-chrome home-hover-chip');
+        expect(renderHeroBlock).toContain('social-portfolio-tag-row lux-soft-chrome home-hover-chip');
         expect(renderHeroBlock).toContain('social-neo-portfolio-hero-divider');
         expect(renderHeroBlock).toContain('social-neo-portfolio-hero-body');
 
@@ -40,6 +42,19 @@ describe('social portfolio panel render regressions', () => {
         expect(renderProjectsBlock).toContain('social-neo-portfolio-feed-empty');
         expect(renderProjectsBlock).toContain('social-portfolio-card lux-soft-chrome');
         expect(renderProjectsBlock).toContain('social-neo-muted lms-route-meta-12');
+
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const portfolioCardCss = bare.slice(
+            bare.indexOf('body.lux-route-social .social-portfolio-feed'),
+            bare.indexOf('body.lux-route-social .social-neo-muted {', bare.indexOf('body.lux-route-social .social-portfolio-feed'))
+        );
+        expect(portfolioCardCss).toMatch(/\.social-portfolio-feed\s*\{[^}]*gap:\s*8px/);
+        expect(portfolioCardCss).toMatch(/\.social-portfolio-card\s*\{[^}]*padding:\s*8px 10px/);
+        expect(portfolioCardCss).toMatch(/\.social-portfolio-card\s*\{[^}]*gap:\s*4px/);
+        expect(portfolioCardCss).toMatch(/\.social-portfolio-actions[\s\S]*?min-height:\s*28px/);
+        expect(portfolioCardCss).toContain('.social-portfolio-featured-pill span');
+        expect(portfolioCardCss).toMatch(/\.social-portfolio-featured-pill span\s*\{[^}]*display:\s*none/);
+        expect(portfolioCardCss).toMatch(/\.social-portfolio-card \.social-neo-avatar-sm\s*\{[^}]*width:\s*28px/);
 
         expect(readSource('assets/js/pages/social-render-plan.js')).toContain("['projects', 'groups', 'pages', 'events', 'lost-and-found', 'workspace', 'photography'].includes(activePanel)");
         expect(readSource('assets/js/pages/social-render-plan.js')).toContain('plan.center = true');

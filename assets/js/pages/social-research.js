@@ -152,7 +152,14 @@
         const ui = state()?.ui || {};
         const search = text(ui.researchSearch || '').toLowerCase();
         const format = text(ui.researchFormat || 'all').toLowerCase();
-        const faculty = text(ui.researchFaculty || '').toLowerCase();
+        const faculty = (() => {
+            const chrome = window.KiuSocialChromeModel || {};
+            if (typeof chrome.socialBrowseFacultyValue === 'function') {
+                const browse = chrome.socialBrowseFacultyValue(state());
+                return browse === 'all' ? '' : browse.toLowerCase();
+            }
+            return text(ui.researchFaculty || '').toLowerCase();
+        })();
         const userId = text(currentUserId?.() || '');
 
         return publications().filter((item) => {
@@ -251,7 +258,7 @@
                 title: '',
                 abstract: '',
                 topics: 'Research',
-                facultyCode: text(currentUser()?.facultyCode || currentUser()?.faculty || ''),
+                facultyCode: text(((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || currentUser()?.facultyCode || currentUser()?.faculty || '')),
                 doiOrUrl: '',
                 courseCode: '',
                 advisorName: '',
@@ -291,6 +298,7 @@
                         <p class="lux-panel-copy social-neo-research-copy home-hover-chip">${escape(kicker)}</p>
                     </div>
                     <div class="social-neo-research-hero-actions">
+                        ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(state()) || ''}
                         <button class="lux-primary-btn" type="button" data-action="research-create-open">
                             <i class="fas fa-upload"></i> Deposit
                         </button>
@@ -322,7 +330,6 @@
     function renderResearchFilters() {
         const ui = state()?.ui || {};
         const searchId = typeof controlId === 'function' ? controlId('research-search') : 'research-search';
-        const faculties = facultyOptions();
         const format = text(ui.researchFormat || 'all') || 'all';
         return `
             <div class="social-neo-research-toolbar home-hover-chip">
@@ -339,13 +346,6 @@
                         <option value="pdf" ${format === 'pdf' ? 'selected' : ''}>PDF</option>
                         <option value="slides" ${format === 'slides' ? 'selected' : ''}>Slides</option>
                         <option value="document" ${format === 'document' ? 'selected' : ''}>Documents</option>
-                    </select>
-                </label>
-                <label class="social-neo-research-filter">
-                    <span class="lux-section-kicker">Faculty</span>
-                    <select class="social-neo-select lux-control" data-bind="research-faculty" data-lux-picker-label="Faculty">
-                        <option value="">All faculties</option>
-                        ${faculties.map((code) => `<option value="${escape(code)}" ${text(ui.researchFaculty) === code ? 'selected' : ''}>${escape(code)}</option>`).join('')}
                     </select>
                 </label>
             </div>
@@ -427,6 +427,45 @@
         `;
     }
 
+    function renderResearchViewerBlock(active, activeKind) {
+        if (!active || !['pdf', 'document', 'slides'].includes(activeKind)) return '';
+        const viewMode = text(state()?.ui?.researchPdfViewMode || 'scroll') || 'scroll';
+        const displayUrl = typeof fileUrl === 'function' ? fileUrl(active, { forDisplay: true }) : '';
+        const isPdf = activeKind === 'pdf';
+        const isSlides = activeKind === 'slides';
+        const pageNoun = isSlides ? 'Slide' : 'Page';
+        return `
+                    <div class="social-neo-research-pdf-toolbar" data-research-viewer-toolbar="1">
+                        ${isPdf ? `
+                            <button class="lux-secondary-btn ${viewMode === 'scroll' ? 'is-focused' : ''}" type="button" data-action="research-pdf-mode" data-mode="scroll">Scroll</button>
+                            <button class="lux-secondary-btn ${viewMode === 'pages' ? 'is-focused' : ''}" type="button" data-action="research-pdf-mode" data-mode="pages">Pages</button>
+                        ` : ''}
+                        ${!isSlides && activeKind !== 'document' ? `
+                            <button class="lux-secondary-btn" type="button" data-action="research-pdf-zoom" data-delta="-0.1"><i class="fas fa-minus"></i></button>
+                            <span class="lux-panel-copy" data-research-pdf-zoom-label>100%</span>
+                            <button class="lux-secondary-btn" type="button" data-action="research-pdf-zoom" data-delta="0.1"><i class="fas fa-plus"></i></button>
+                        ` : ''}
+                        ${isPdf || isSlides ? `
+                            <button class="lux-secondary-btn" type="button" data-action="research-pdf-prev"><i class="fas fa-chevron-left"></i></button>
+                            <span class="lux-panel-copy" data-research-pdf-page-label>${pageNoun} 1</span>
+                            <button class="lux-secondary-btn" type="button" data-action="research-pdf-next"><i class="fas fa-chevron-right"></i></button>
+                        ` : ''}
+                    </div>
+                    <div class="social-neo-research-pdf-shell" data-research-viewer-shell="1" data-research-pdf-shell="1"
+                        data-file-kind="${escape(activeKind)}"
+                        data-view-mode="${escape(isPdf ? viewMode : 'pages')}"
+                        data-storage-key="${escape(active?.storageKey || '')}"
+                        data-data-url="${escape(active?.dataUrl || '')}"
+                        data-file-url="${escape(displayUrl || '')}"
+                        data-file-name="${escape(active?.fileName || 'file')}">
+                        <aside class="social-neo-research-pdf-thumbs lux-scrollbar" data-research-pdf-thumbs hidden></aside>
+                        <div class="social-neo-research-pdf-viewport lux-scrollbar" data-research-pdf-viewport>
+                            <div class="social-neo-research-pdf-pages" data-research-viewer-host data-research-pdf-pages></div>
+                        </div>
+                    </div>
+        `;
+    }
+
     function renderResearchReader(item) {
         if (!item) return '';
         const files = itemFiles(item);
@@ -436,11 +475,7 @@
         );
         const active = files[activeIndex] || null;
         const activeKind = text(active?.fileKind) || itemFileKind(item);
-        const isPdf = activeKind === 'pdf' && active;
-        const viewMode = text(state()?.ui?.researchPdfViewMode || 'scroll') || 'scroll';
-        const pdfUrl = isPdf && typeof fileUrl === 'function'
-            ? fileUrl(active, { forDisplay: true })
-            : '';
+        const isViewable = Boolean(active && ['pdf', 'document', 'slides'].includes(activeKind));
         const legacyBody = !files.length ? renderLegacyArchiveBody(item) : '';
 
         return `
@@ -477,40 +512,7 @@
                     </div>
                 ` : ''}
                 ${renderFileList(item, activeIndex)}
-                ${isPdf ? `
-                    <div class="social-neo-research-pdf-toolbar">
-                        <button class="lux-secondary-btn ${viewMode === 'scroll' ? 'is-focused' : ''}" type="button" data-action="research-pdf-mode" data-mode="scroll">Scroll</button>
-                        <button class="lux-secondary-btn ${viewMode === 'pages' ? 'is-focused' : ''}" type="button" data-action="research-pdf-mode" data-mode="pages">Pages</button>
-                        <button class="lux-secondary-btn" type="button" data-action="research-pdf-zoom" data-delta="-0.1"><i class="fas fa-minus"></i></button>
-                        <span class="lux-panel-copy" data-research-pdf-zoom-label>100%</span>
-                        <button class="lux-secondary-btn" type="button" data-action="research-pdf-zoom" data-delta="0.1"><i class="fas fa-plus"></i></button>
-                        <button class="lux-secondary-btn" type="button" data-action="research-pdf-prev"><i class="fas fa-chevron-left"></i></button>
-                        <span class="lux-panel-copy" data-research-pdf-page-label>Page 1</span>
-                        <button class="lux-secondary-btn" type="button" data-action="research-pdf-next"><i class="fas fa-chevron-right"></i></button>
-                    </div>
-                    <div class="social-neo-research-pdf-shell" data-research-pdf-shell="1" data-view-mode="${escape(viewMode)}"
-                        data-storage-key="${escape(active?.storageKey || '')}"
-                        data-data-url="${escape(active?.dataUrl || '')}"
-                        data-file-url="${escape(pdfUrl || '')}">
-                        <aside class="social-neo-research-pdf-thumbs lux-scrollbar" data-research-pdf-thumbs hidden></aside>
-                        <div class="social-neo-research-pdf-viewport lux-scrollbar" data-research-pdf-viewport>
-                            <div class="social-neo-research-pdf-pages" data-research-pdf-pages></div>
-                        </div>
-                    </div>
-                ` : active ? `
-                    <div class="social-neo-research-download-panel lux-empty-state">
-                        <i class="fas fa-file-arrow-down" aria-hidden="true"></i>
-                        <strong class="lux-empty-state__title">Download to open</strong>
-                        <span class="lux-empty-state__copy">${escape(active.fileName || 'This file')} opens in PowerPoint, Word, or another desktop app.</span>
-                        ${typeof fileUrl === 'function' ? `
-                            <div class="lux-empty-state__action">
-                                <a class="lux-primary-btn" href="${escape(fileUrl(active, { forDisplay: true }))}" download="${escape(active.fileName || 'file')}">
-                                    <i class="fas fa-download"></i> Download
-                                </a>
-                            </div>
-                        ` : ''}
-                    </div>
-                ` : legacyBody ? `
+                ${isViewable ? renderResearchViewerBlock(active, activeKind) : legacyBody ? `
                     <article class="social-neo-research-article-body">
                         <span class="lux-section-kicker">Archive text</span>
                         ${legacyBody}
@@ -545,6 +547,33 @@
                 `).join('')}
             </ul>
         `;
+    }
+
+    function patchResearchDepositFileList(draft) {
+        const form = document.querySelector('form[data-form="research-create"]');
+        if (!form) return false;
+        const existing = form.querySelector('[data-research-files-label]');
+        if (!existing) return false;
+        const wrap = document.createElement('div');
+        wrap.innerHTML = renderDepositFileList(draft).trim();
+        const next = wrap.firstElementChild;
+        if (!next) return false;
+        existing.replaceWith(next);
+        return true;
+    }
+
+    function refreshResearchDepositFiles() {
+        const draft = ensureResearchDraft();
+        if (patchResearchDepositFileList(draft)) return true;
+        openDialog('research-create', {});
+        return renderSocialPageNow('research-create-open');
+    }
+
+    function resolvePortalCreateResearchApi() {
+        const hooked = resolveResearchHook('createPortalSocialResearch');
+        if (typeof hooked === 'function') return hooked;
+        if (typeof window.createPortalSocialResearch === 'function') return window.createPortalSocialResearch;
+        return null;
     }
 
     function renderResearchCreateDialog(runtime = state()) {
@@ -605,8 +634,16 @@
                     </label>
                     <div class="social-neo-form-grid social-neo-form-grid-2">
                         <label class="lux-glass-dialog-field">
-                            <span class="social-neo-label">Faculty</span>
-                            <input class="social-neo-input lux-control" name="researchFaculty" value="${escape(draft.facultyCode || '')}" placeholder="e.g. ECON" autocomplete="off">
+                            <span class="social-neo-label">Faculty *</span>
+                            ${(window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+                                ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                                    name: 'researchFaculty',
+                                    includeAll: false,
+                                    required: true,
+                                    value: text(draft.facultyCode || '') || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                                    label: 'Faculty'
+                                }))
+                                : `<select class="social-neo-select lux-control" name="researchFaculty" required data-lux-picker><option value="">Select faculty</option></select>`}
                         </label>
                         <label class="lux-glass-dialog-field">
                             <span class="social-neo-label">Topic</span>
@@ -709,8 +746,7 @@
                 draft.files = draft.files.filter((_, i) => i !== index);
                 draft.fileMeta = draft.fileMeta.filter((_, i) => i !== index);
             }
-            openDialog('research-create', {});
-            return renderSocialPageNow('research-create-open');
+            return refreshResearchDepositFiles();
         }
         if (action === 'research-reader-open') {
             runtime.ui.researchReaderId = text(trigger?.getAttribute('data-research-id') || '');
@@ -719,20 +755,14 @@
             runtime.ui.researchPdfZoom = 1;
             runtime.ui.researchPdfPage = 1;
             invalidateSocialRenderCache?.({ center: true });
-            const result = renderSocialPageNow('research-reader-open');
-            queueMicrotask(() => {
-                if (typeof window.mountSocialResearchPdfViewer === 'function') {
-                    window.mountSocialResearchPdfViewer();
-                }
-            });
-            return result;
+            return renderSocialPageNow('research-reader-open');
         }
         if (action === 'research-file-select') {
             runtime.ui.researchActiveFileIndex = Math.max(0, Number(trigger?.getAttribute('data-file-index') || 0) || 0);
+            runtime.ui.researchPdfPage = 1;
+            window.clearResearchPdfDocCache?.();
             invalidateSocialRenderCache?.({ center: true });
-            const result = renderSocialPageNow('research-reader-open');
-            queueMicrotask(() => window.mountSocialResearchPdfViewer?.());
-            return result;
+            return renderSocialPageNow('research-reader-open');
         }
         if (action === 'research-reader-close') {
             runtime.ui.researchReaderId = '';
@@ -740,11 +770,13 @@
             return renderSocialPageNow('research-reader-close');
         }
         if (action === 'research-pdf-mode') {
-            runtime.ui.researchPdfViewMode = text(trigger?.getAttribute('data-mode') || 'scroll') || 'scroll';
+            const mode = text(trigger?.getAttribute('data-mode') || 'scroll') || 'scroll';
+            runtime.ui.researchPdfViewMode = mode;
+            if (typeof window.setResearchPdfViewMode === 'function') {
+                return window.setResearchPdfViewMode(mode);
+            }
             invalidateSocialRenderCache?.({ center: true });
-            const result = renderSocialPageNow('research-reader-open');
-            queueMicrotask(() => window.mountSocialResearchPdfViewer?.());
-            return result;
+            return renderSocialPageNow('research-reader-open');
         }
         if (action === 'research-pdf-zoom') {
             const delta = Number(trigger?.getAttribute('data-delta') || 0);
@@ -827,13 +859,21 @@
             addPortalSocialToast?.({ title: 'Title required', text: 'Add a publication title.', icon: 'fa-circle-exclamation' });
             return true;
         }
+        if (!draft.facultyCode || draft.facultyCode === 'all') {
+            addPortalSocialToast?.({ title: 'Faculty required', text: 'Choose a faculty for this deposit.', icon: 'fa-circle-exclamation' });
+            return true;
+        }
         if (publish && !draft.files.length) {
             addPortalSocialToast?.({ title: 'File required', text: 'Attach at least one PDF, PPT, or Word file to publish.', icon: 'fa-circle-exclamation' });
             return true;
         }
-        if (typeof createPortalSocialResearch !== 'function') return true;
+        const createApi = resolvePortalCreateResearchApi();
+        if (!createApi) {
+            addPortalSocialToast?.({ title: 'Upload unavailable', text: 'Research deposit is still loading. Refresh and try again.', icon: 'fa-circle-exclamation' });
+            return true;
+        }
         return withBusy(async () => {
-            await createPortalSocialResearch({
+            const created = await createApi({
                 title: draft.title,
                 abstract: draft.abstract,
                 authorLane: draft.authorLane,
@@ -846,6 +886,10 @@
                 publish,
                 status: publish ? 'published' : 'draft'
             });
+            if (!created) {
+                addPortalSocialToast?.({ title: 'Deposit failed', text: 'Could not save publication.', icon: 'fa-circle-exclamation' });
+                return;
+            }
             runtime.ui.researchDraft = null;
             closeDialog?.();
             setPanel?.('research');
@@ -869,8 +913,7 @@
         if (target.name === 'researchFiles' && target.files?.length) {
             appendDraftFiles(target.files);
             target.value = '';
-            openDialog('research-create', {});
-            return renderSocialPageNow('research-create-open');
+            return refreshResearchDepositFiles();
         }
         return false;
     }
@@ -884,7 +927,10 @@
             return true;
         }
         if (bind === 'research-faculty') {
-            state().ui.researchFaculty = text(target.value || '');
+            const next = text(target.value || '');
+            state().ui.researchFaculty = next;
+            state().ui.socialBrowseFaculty = next || 'all';
+            state().ui.projectDiscoverFaculty = next || 'all';
             renderSocialPageNow('research-input');
             return true;
         }

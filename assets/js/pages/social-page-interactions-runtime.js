@@ -57,6 +57,11 @@
         function clearProjectTabPaneCache(...a) { return __lookup('clearProjectTabPaneCache')(...a); }
         function projectTabPaneCacheKey(...a) { return __lookup('projectTabPaneCacheKey')(...a); }
         function isSocialTopbarSkippedPanel(...a) { return __lookup('isSocialTopbarSkippedPanel')(...a); }
+        function isSocialCommandSkippedPanel(...a) {
+            const fn = __lookup('isSocialCommandSkippedPanel');
+            if (typeof fn === 'function') return fn(...a);
+            return isSocialTopbarSkippedPanel(...a);
+        }
         function syncSocialOverlayLock(...a) { return __lookup('syncSocialOverlayLock')(...a); }
         function resolveSocialRenderPlan(...a) { return __lookup('resolveSocialRenderPlan')(...a); }
         function messageAnchorId(...a) { return __lookup('messageAnchorId')(...a); }
@@ -405,12 +410,16 @@ function patchEventRsvpButtons(eventId) {
     const events = Array.isArray(state()?.social?.events) ? state().social.events : [];
     const eventItem = events.find((entry) => text(entry?.id) === normalizedId);
     if (!eventItem) return false;
-    const activeStatus = text(eventItem.viewerRsvpStatus || '');
+    const isInterested = text(eventItem.viewerRsvpStatus || '') === 'interested';
+    const interestedCount = Number(eventItem?.attendeeSummary?.interested || 0);
     buttons.forEach((btn) => {
-        const status = text(btn.getAttribute('data-status'));
-        const isActive = status === activeStatus;
-        btn.classList.toggle('lux-primary-btn', isActive);
-        btn.classList.toggle('lux-secondary-btn', !isActive);
+        btn.setAttribute('data-status', isInterested ? 'declined' : 'interested');
+        btn.classList.toggle('lux-primary-btn', isInterested);
+        btn.classList.toggle('lux-secondary-btn', !isInterested);
+        btn.textContent = `Interested · ${interestedCount}`;
+        const card = btn.closest('.social-neo-event-feature');
+        const countEl = card?.querySelector(`[data-event-interested-count="${CSS.escape(normalizedId)}"]`);
+        if (countEl) countEl.textContent = `${interestedCount} interested`;
     });
     return true;
 }
@@ -742,8 +751,10 @@ const entityLinkIcon = window.entityLinkIcon || (window.KiuSocialEntityModel || 
 const resolveEntityLinkMeta = window.resolveEntityLinkMeta || (window.KiuSocialEntityModel || {}).resolveEntityLinkMeta;
 
 function renderSectionCommandCenter(activePanel, activeConfig, runtime) {
-    // Command chrome permanently disabled; heroes own panel chrome.
-    if (isSocialTopbarSkippedPanel(activePanel)) return '';
+    // Faculty browse lives in each section hero; command region stays empty.
+    void activePanel;
+    void activeConfig;
+    void runtime;
     return '';
 }
 function renderSocialFlashStatus(runtime) {
@@ -908,6 +919,8 @@ function renderSocialPageNow(reason = 'manual') {
         const renderPlan = resolveSocialRenderPlan(reason, activePanel, runtime);
         if (isSocialTopbarSkippedPanel(activePanel)) {
             renderPlan.topbar = false;
+        }
+        if (isSocialCommandSkippedPanel(activePanel)) {
             renderPlan.command = false;
         }
         if (forceRender && renderPlan.center && shell.center) {
@@ -938,7 +951,7 @@ function renderSocialPageNow(reason = 'manual') {
         }
         if (renderPlan.command) {
             setSocialRegionMarkup(shell.command, renderSectionCommandCenter(activePanel, activeConfig, runtime));
-        } else if (isSocialTopbarSkippedPanel(activePanel)) {
+        } else if (isSocialCommandSkippedPanel(activePanel)) {
             setSocialRegionMarkup(shell.command, '');
         }
         if (!forceCenterOnly) {
@@ -962,6 +975,9 @@ function renderSocialPageNow(reason = 'manual') {
             }
             if (activePanel === 'photography' && typeof window.bindPhotographyGridImages === 'function') {
                 try { window.bindPhotographyGridImages(shell.center); } catch (e) {}
+            }
+            if (text(runtime.ui?.researchReaderId || '') && typeof window.scheduleResearchFileViewerMount === 'function') {
+                try { window.scheduleResearchFileViewerMount(); } catch (e) {}
             }
         }
         if (renderPlan.drawer) setSocialRegionMarkup(shell.drawer, renderShellDrawer(activePanel));

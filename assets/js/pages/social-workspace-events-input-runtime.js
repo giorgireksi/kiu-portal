@@ -107,6 +107,7 @@
             renderDialogOnlyNow,
             renderSocialPageNow,
             resetPortfolioEditor,
+            readPortfolioResumeFile,
             resolveActiveSocialProject,
             resolveTaskPackageId,
             restorePreviousDialog,
@@ -184,7 +185,7 @@
                 }
                 queueProjectInviteSearchRefresh();
             }
-            if (target.matches('[name="portfolioBasicsName"], [name="portfolioBasicsHeadline"], [name="portfolioBasicsSummary"], [name="portfolioBasicsEmail"], [name="portfolioBasicsLink"]')) {
+            if (target.matches('[name="portfolioBasicsName"], [name="portfolioBasicsHeadline"], [name="portfolioBasicsSummary"], [name="portfolioBasicsEmail"], [name="portfolioBasicsLink"], [name="portfolioExtraTitle"], [name="portfolioExtraDetail"], [name="portfolioExtraUrl"]')) {
                 if (syncPortfolioEditorInput()) return;
                 portfolioCollectDocumentFromUi();
                 runtime.ui.portfolioSaveStatus = 'Unsaved changes';
@@ -328,7 +329,10 @@
                 return;
             }
             if (target.matches('select[name="projectDiscoverFaculty"]')) {
-                runtime.ui.projectDiscoverFaculty = text(target.value || 'all') || 'all';
+                const next = text(target.value || 'all') || 'all';
+                runtime.ui.projectDiscoverFaculty = next;
+                runtime.ui.socialBrowseFaculty = next;
+                runtime.ui.researchFaculty = next === 'all' ? '' : next;
                 renderSocialPageNow('portfolio-discover-faculty');
                 return;
             }
@@ -340,6 +344,38 @@
             if (target.name === 'projectMediaFile') {
                 runtime.ui.projectMediaFile = target.files?.[0] || null;
                 renderSocialPageNow('portfolio-media-file');
+                return;
+            }
+            if (target.name === 'portfolioResumeFile') {
+                const file = target.files?.[0] || null;
+                if (!file) {
+                    runtime.ui.portfolioResumePending = null;
+                    return;
+                }
+                if (typeof readPortfolioResumeFile !== 'function') {
+                    runtime.ui.portfolioResumePending = null;
+                    if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Resume upload is not ready yet.', 'danger');
+                    return;
+                }
+                return withBusy(async () => {
+                    try {
+                        const resume = await readPortfolioResumeFile(file);
+                        runtime.ui.portfolioResumePending = resume;
+                        const portfolio = portfolioCollectDocumentFromUi();
+                        portfolio.resume = resume;
+                        runtime.ui.myPortfolio = portfolio;
+                        runtime.ui.portfolioSaveStatus = 'Unsaved changes';
+                        renderSocialPageNow('portfolio-resume-file');
+                    } catch (error) {
+                        if (typeof setPortalSocialFlash === 'function') {
+                            setPortalSocialFlash(error?.message || 'Could not read resume PDF.', 'danger');
+                        }
+                    }
+                });
+            }
+            if (target.matches('select[name="portfolioExtraKind"]')) {
+                portfolioCollectDocumentFromUi();
+                runtime.ui.portfolioSaveStatus = 'Unsaved changes';
                 return;
             }
 

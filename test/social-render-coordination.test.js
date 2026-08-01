@@ -71,7 +71,10 @@ describe('social render coordination regressions', () => {
 
     it('does not keep duplicate RSVP patch helpers', () => {
         const page = readSource('assets/js/pages/social-page.js');
-        const matches = page.match(/function patchEventRsvpButtons\(/g) || [];
-        expect(matches).toHaveLength(1);
+        const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
+        const boot = readSource('assets/js/pages/social-page-boot-runtime.js');
+        expect(page.match(/function patchEventRsvpButtons\(/g) || []).toHaveLength(0);
+        expect(interactions.match(/function patchEventRsvpButtons\(/g) || []).toHaveLength(1);
+        expect(boot).toContain('window.__kiuSocialPatchEventRsvp = patchEventRsvpButtons');
     });
 });

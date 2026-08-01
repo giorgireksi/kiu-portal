@@ -1988,6 +1988,7 @@ body.lux-route-library #page-library .library-catalog-filters-panel.home-hover-c
 ) {
   contain: none;
   overflow: visible;
+  isolation: auto;
 }
 
 :is(#page-library, .admin-library-modal) .admin-library-schema-empty.home-hover-chip,
@@ -2765,6 +2766,38 @@ body.lux-unified-shell.lux-route-social #social-neo-overlay-portal .social-neo-r
   overflow: visible;
 }
 
+/* Social surveys take: matte inners (motion → global .home-hover-chip SSOT). */
+body.lux-unified-shell.lux-route-social .social-neo-surveys-take-shell :is(
+  .social-neo-survey-take-hero.home-hover-chip,
+  .social-neo-survey-take-card.lux-soft-chrome.home-hover-chip,
+  .social-neo-survey-take-choice.lux-soft-chrome.home-hover-chip
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+  overflow: visible;
+  contain: none;
+}
+
+body.lux-unified-shell.lux-route-social .social-neo-surveys-take-shell .social-neo-survey-take-choice.lux-soft-chrome.home-hover-chip {
+  border-radius: 14px;
+}
+
+body.lux-unified-shell.lux-route-social .social-neo-surveys-take-shell .social-neo-survey-take-choice:has(input:checked).home-hover-chip {
+  border-color: rgba(var(--lux-accent-rgb), 0.45);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2)), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.18);
+}
+
+body.lux-unified-shell.lux-route-social .social-neo-surveys-take-shell {
+  overflow: visible;
+  contain: none;
+}
+
 /* Orders inbox primary shells: frosted panel glass (not matte soft-chrome). */
 body.lux-unified-shell .orders-inbox-shell[data-lux-glass-root="1"] .orders-inbox-workspace {
   background-color: var(--lux-panel-fill) !important;
@@ -3038,7 +3071,6 @@ body.lux-route-social .social-neo-event-feature.home-hover-chip {
 }
 
 body.lux-route-social .social-neo-lf-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip,
-body.lux-route-social .social-portfolio-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip,
 body.lux-route-social .social-portfolio-mini-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip {
   contain: none;
   overflow: visible;
@@ -3088,7 +3120,6 @@ body.lux-route-social :is(
   .social-photo-feed-card,
   .social-neo-group-card,
   .social-neo-directory-item,
-  .social-portfolio-card,
   .social-neo-entity-card,
   .social-neo-pages-hero,
   .social-neo-pages-hero-grid,
@@ -3120,10 +3151,22 @@ body.lux-route-social :is(
   .social-neo-surveys-hero-grid,
   .social-neo-surveys-hero-toolbar,
   .social-neo-survey-card,
+  .social-neo-surveys-take-shell,
+  .social-neo-survey-take-hero,
+  .social-neo-survey-take-card,
+  .social-neo-survey-take-choice,
   .social-neo-lost-found-hero,
   .social-neo-lost-found-hero-stats,
   .social-neo-lost-found-hero-toolbar,
   .social-neo-lf-card,
+  .social-neo-feed-header-card,
+  .social-neo-feed-hero-stats,
+  .social-neo-feed-hero-grid,
+  .social-neo-composer-cta-card,
+  .social-neo-post-card:not(.social-portfolio-card),
+  .social-neo-portfolio-hero-discover,
+  .social-portfolio-search-row,
+  .social-portfolio-tag-row,
   .social-project-hub-filterbar,
   .social-project-hub-attention,
   .social-project-hub-rail-card,
@@ -3292,6 +3335,10 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
     .social-neo-surveys-hero-grid,
     .social-neo-surveys-hero-toolbar,
     .social-neo-survey-card,
+    .social-neo-surveys-take-shell,
+    .social-neo-survey-take-hero,
+    .social-neo-survey-take-card,
+    .social-neo-survey-take-choice,
     .social-neo-lost-found-hero,
     .social-neo-lost-found-hero-stats,
     .social-neo-lost-found-hero-toolbar,
@@ -3336,6 +3383,10 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
       .social-neo-surveys-hero-grid,
       .social-neo-surveys-hero-toolbar,
       .social-neo-survey-card,
+      .social-neo-surveys-take-shell,
+      .social-neo-survey-take-hero,
+      .social-neo-survey-take-card,
+      .social-neo-survey-take-choice,
       .social-neo-lost-found-hero,
       .social-neo-lost-found-hero-stats,
       .social-neo-lost-found-hero-toolbar,

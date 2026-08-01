@@ -53,6 +53,12 @@ describe('admin library route regressions.test', () => {
         expect(html).toContain('lux-soft-chrome');
         expect(html).toContain('admin-library-shell');
         expect(html).toContain('lux-secondary-btn admin-library-schema-editor-btn');
+        expect(html).toContain('lux-secondary-btn admin-library-filters-editor-btn');
+        expect(html).toContain('data-admin-library-open-filters-editor');
+        expect(html).toContain('library-filters-overlay');
+        expect(html).toContain('id="browse-filter-fields-list"');
+        expect(html).toMatch(/alib-panel--filters[^>]*lux-soft-chrome/);
+        expect(html).not.toMatch(/alib-panel--filters[^>]*\bhidden\b/);
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('#page-library .admin-library-shell');
         expect(bare).toContain('#page-library .alib-workspace');
@@ -67,6 +73,9 @@ describe('admin library route regressions.test', () => {
         expect(adminLibraryJs).toContain('renderAdminLibrary();');
         expect(adminLibraryJs).toContain('loadDeferredAdminLibraryScripts');
         expect(adminLibraryJs).toMatch(/ensureAdminLibraryState\(\);\s*renderAdminLibrary\(\);/);
+        expect(adminLibraryJs).toContain('openLibraryFiltersModal');
+        expect(adminLibraryJs).toContain('renderBrowseFilterFieldsList');
+        expect(adminLibraryJs).toContain('setLibraryBrowseFilterFieldIds');
         expect(adminLibraryJs).toContain("row.className = 'admin-library-schema-field-row home-hover-chip'");
         expect(adminLibraryJs).toContain("row.className = 'admin-library-section-row lux-soft-chrome home-hover-chip'");
         expect(adminLibraryJs).toContain('lux-card-copy admin-library-section-row-title');
@@ -81,9 +90,20 @@ describe('admin library route regressions.test', () => {
         expect(primitives).toContain('.admin-library-modal-title.lux-glass-dialog-title');
         expect(primitives).toContain('.admin-library-section-row-title.lux-card-copy');
         expect(adminLibraryJs).toContain('lux-secondary-btn admin-library-schema-btn-remove home-hover-chip');
+        expect(adminLibraryJs).toContain('function schemaFieldHasEditableOptions');
+        expect(adminLibraryJs).toContain('function getSchemaFieldEditableOptions');
+        expect(adminLibraryJs).toContain('params[paramKey]');
+        expect(adminLibraryJs).toMatch(/field\.type === 'select'[\s\S]*paramKey|paramKey[\s\S]*field\.type === 'select'/);
+        expect(adminLibraryJs).toContain("KIU_STATE.adminLibrary.params[paramKey] = nextOptions.slice()");
+        expect(adminLibraryJs).toContain('function armDroplistOptionRemove');
+        expect(adminLibraryJs).toContain('function clearPendingDroplistOptionRemove');
+        expect(adminLibraryJs).toContain('data-pending-remove');
+        expect(adminLibraryJs).toMatch(/pendingRemove === 'true'[\s\S]*removeDroplistOptionFromEditor|armDroplistOptionRemove[\s\S]*removeDroplistOptionFromEditor/);
+        expect(adminLibraryJs).toContain('Confirm remove');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toContain('.admin-library-modal) :is(');
         expect(fouc).toContain('.admin-library-schema-field-row.home-hover-chip');
+        expect(fouc).toContain('isolation: auto');
         expect(fouc).toContain('.alib-panel.lux-soft-chrome.home-hover-chip');
         expect(fouc).toContain('.admin-library-metric-card.home-hover-chip');
         expect(fouc).toContain('.admin-library-tab-btn.home-hover-chip');
@@ -95,10 +115,19 @@ describe('admin library route regressions.test', () => {
         expect(html).not.toContain('features/ui.js');
         expect(html).not.toContain('lux-scroll-rail.js');
         const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toMatch(/\.admin-library-schema-field-row\.home-hover-chip\s*\{[^}]*isolation:\s*auto/);
         expect(modals).toContain('.admin-library-schema-section');
         expect(modals).toContain('.admin-library-sections-modal.lux-glass-dialog-card');
         expect(modals).toContain('.admin-library-sections-list');
         expect(modals).toContain('.admin-library-schema-droplist-editor-body');
+        expect(modals).toContain('.admin-library-chip button.is-pending-remove');
+        expect(modals).toMatch(/\.admin-library-schema-field-actions\s*\{[^}]*pointer-events:\s*auto/);
+        expect(modals).toMatch(/\.admin-library-schema-btn-remove[\s\S]{0,200}pointer-events:\s*auto/);
+        expect(modals).toMatch(/\.admin-library-schema-btn-options i[\s\S]{0,80}pointer-events:\s*none/);
+        expect(modals).toContain(
+            '.admin-library-modal .lux-secondary-btn:not(.admin-library-schema-btn-remove):not(.admin-library-schema-btn-options)'
+        );
+        expect(modals).not.toContain('.admin-library-modal .lux-secondary-btn {\n    width: 100%;');
         expect(modals).toMatch(/\.lux-glass-dialog-overlay[\s\S]*?\.is-open\s*>\s*\*[\s\S]*?opacity:\s*1/);
         expect(modals).not.toMatch(/\.admin-library-schema-field-row\s*\{[^}]*background:\s*var\(--lux-panel-modal-section/);
     });

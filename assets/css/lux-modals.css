@@ -5421,6 +5421,10 @@ body.admin-library-modal-open {
   opacity: 1;
   color: var(--lux-red, #de6262);
 }
+.admin-library-chip button.is-pending-remove {
+  opacity: 1;
+  color: var(--lux-red, #de6262);
+}
 
 /* Schema editor */
 .admin-library-schema-section {
@@ -5451,8 +5455,17 @@ body.admin-library-modal-open {
   padding: 12px 14px;
   border-radius: 14px;
   cursor: default;
+  contain: none;
+  overflow: visible;
+  isolation: auto;
 }
-.admin-library-schema-field-row.admin-library-schema-field-droplist {
+.admin-library-schema-field-row.home-hover-chip {
+  contain: none;
+  overflow: visible;
+  isolation: auto;
+}
+.admin-library-schema-field-row.admin-library-schema-field-droplist,
+.admin-library-schema-field-row.admin-library-schema-field-options {
   cursor: pointer;
 }
 .admin-library-schema-type-badge {
@@ -5489,17 +5502,28 @@ body.admin-library-modal-open {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 .admin-library-schema-btn-options,
 .admin-library-schema-btn-remove {
   width: 36px;
   height: 36px;
   min-width: 36px;
+  max-width: 36px;
   padding: 0;
   border-radius: 10px;
   display: inline-grid;
   place-items: center;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
   cursor: pointer;
+}
+.admin-library-schema-btn-options i,
+.admin-library-schema-btn-remove i {
+  pointer-events: none;
 }
 .admin-library-schema-btn-remove:hover {
   color: var(--lux-red, #de6262);
@@ -5719,7 +5743,7 @@ body.admin-library-modal-open {
   }
   .admin-library-schema-add-form .lux-primary-btn,
   .admin-library-modal .lux-primary-btn,
-  .admin-library-modal .lux-secondary-btn {
+  .admin-library-modal .lux-secondary-btn:not(.admin-library-schema-btn-remove):not(.admin-library-schema-btn-options) {
     width: 100%;
     justify-self: stretch;
   }

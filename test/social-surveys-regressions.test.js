@@ -15,6 +15,6 @@ describe('social-surveys-regressions (bare-shell era)', () => {
         expect(surveys).toContain("text(runtime.ui?.surveyTakingId || '')");
         expect(surveys).toContain('return renderTakeSurvey(survey)');
         expect(surveys).toContain("data-action=\"survey-take-open\"");
-        expect(page).toContain('social-surveys.js?v=20260731-surveytake1');
+        expect(page).toContain('social-surveys.js?v=20260801-surveytake2');
     });
 });

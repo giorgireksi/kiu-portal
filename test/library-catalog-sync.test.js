@@ -35,6 +35,29 @@ describe('library catalog sync', () => {
         expect(sandbox.getLibraryFormSchema().length).toBeGreaterThan(0);
         expect(sandbox.getLibraryFormSchema().some((field) => field.id === 'title')).toBe(true);
         expect(sandbox.KIU_STATE.adminLibrary.formSchema.length).toBeGreaterThan(0);
+        expect(sandbox.getLibraryBrowseFilterFieldIds()).toEqual(
+            expect.arrayContaining(['thematic', 'language', 'status'])
+        );
+    });
+
+    it('prunes browseFilterFieldIds when schema fields are removed', () => {
+        const sandbox = runLibraryCatalogSync({
+            KIU_STATE: {
+                adminLibrary: {
+                    formSchema: [
+                        { id: 'title', label: 'Title', type: 'text' },
+                        { id: 'language', label: 'Language', type: 'select', paramKey: 'language' }
+                    ],
+                    formSchemaCustomized: true,
+                    browseFilterFieldIds: ['language', 'status', 'ghost'],
+                    params: {},
+                    books: []
+                }
+            }
+        });
+        expect(sandbox.getLibraryBrowseFilterFieldIds()).toEqual(['language']);
+        sandbox.enableLibraryBrowseFilterField('language');
+        expect(sandbox.getLibraryBrowseFilterFieldIds()).toEqual(['language']);
     });
 
     it('does not re-seed defaults when customized schema is intentionally empty', () => {

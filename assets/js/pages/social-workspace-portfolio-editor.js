@@ -63,108 +63,68 @@
         `;
     }
 
-    function renderBuiltinEntry(sectionKey, entry, index) {
-        const fields = entry?.fields || {};
-        if (sectionKey === 'education') {
-            return `
-                <article class="portfolio-entry-card" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}">
-                    <div class="portfolio-entry-grid">
-                        <label><span>School</span><input class="social-neo-input lux-control" name="portfolioEducationSchool" value="${escapeHtml(fieldText(fields.school))}"></label>
-                        <label><span>Degree</span><input class="social-neo-input lux-control" name="portfolioEducationDegree" value="${escapeHtml(fieldText(fields.degree))}"></label>
-                        ${renderDateRangeInputs('portfolioEducationDates', fields.dates)}
-                        <label class="portfolio-entry-span-2"><span>Notes</span><textarea class="social-neo-textarea lux-control" name="portfolioEducationNote" rows="2">${escapeHtml(fieldText(fields.note))}</textarea></label>
-                    </div>
-                    <button class="lux-ghost-btn lux-secondary-btn-sm" type="button" data-action="portfolio-entry-remove" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}"><i class="fas fa-trash"></i> Remove</button>
-                </article>
-            `;
-        }
-        if (sectionKey === 'experience') {
-            return `
-                <article class="portfolio-entry-card" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}">
-                    <div class="portfolio-entry-grid">
-                        <label><span>Role</span><input class="social-neo-input lux-control" name="portfolioExperienceRole" value="${escapeHtml(fieldText(fields.role))}"></label>
-                        <label><span>Organization</span><input class="social-neo-input lux-control" name="portfolioExperienceOrganization" value="${escapeHtml(fieldText(fields.organization))}"></label>
-                        ${renderDateRangeInputs('portfolioExperienceDates', fields.dates)}
-                        <label class="portfolio-entry-span-2"><span>Description</span><textarea class="social-neo-textarea lux-control" name="portfolioExperienceDescription" rows="3">${escapeHtml(fieldText(fields.description))}</textarea></label>
-                    </div>
-                    <button class="lux-ghost-btn lux-secondary-btn-sm" type="button" data-action="portfolio-entry-remove" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}"><i class="fas fa-trash"></i> Remove</button>
-                </article>
-            `;
-        }
-        if (sectionKey === 'projects') {
-            return `
-                <article class="portfolio-entry-card" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}">
-                    <div class="portfolio-entry-grid">
-                        <label><span>Title</span><input class="social-neo-input lux-control" name="portfolioProjectTitle" value="${escapeHtml(fieldText(fields.title))}"></label>
-                        <label><span>Link</span><input class="social-neo-input lux-control" name="portfolioProjectLink" value="${escapeHtml(fieldLinkUrl(fields.link))}"></label>
-                        <label class="portfolio-entry-span-2"><span>Description</span><textarea class="social-neo-textarea lux-control" name="portfolioProjectDescription" rows="3">${escapeHtml(fieldText(fields.description))}</textarea></label>
-                    </div>
-                    <button class="lux-ghost-btn lux-secondary-btn-sm" type="button" data-action="portfolio-entry-remove" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}"><i class="fas fa-trash"></i> Remove</button>
-                </article>
-            `;
-        }
-        if (sectionKey === 'skills') {
-            return `
-                <article class="portfolio-entry-card" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}">
-                    <label class="portfolio-entry-span-2"><span>Skills (comma separated)</span><input class="social-neo-input lux-control" name="portfolioSkillsTags" value="${escapeHtml(fieldText(fields.tags))}" placeholder="Research, Python, UX writing"></label>
-                </article>
-            `;
-        }
-        return '';
+    function extraKindLabel(kind) {
+        const labels = { subject: 'Subject / course', project: 'Project', link: 'Link', note: 'Note' };
+        return labels[text(kind)] || 'Note';
     }
 
-    function renderCustomEntry(sectionKey, section, entry, index) {
-        const defs = Array.isArray(section.fieldDefinitions) ? section.fieldDefinitions : [];
-        const fields = entry?.fields || {};
+    function renderExtrasList(extras) {
+        const items = Array.isArray(extras) ? extras : [];
+        if (!items.length) {
+            return `<div class="portfolio-section-empty">No extras yet. Add subjects, projects, or links if you want.</div>`;
+        }
+        return items.map((extra, index) => {
+            const kind = text(extra.kind || 'note') || 'note';
+            return `
+                <article class="portfolio-extra-card" data-extra-index="${index}">
+                    <div class="portfolio-entry-grid">
+                        <label>
+                            <span>Type</span>
+                            <select class="social-neo-select lux-control" name="portfolioExtraKind" data-extra-index="${index}">
+                                ${['subject', 'project', 'link', 'note'].map((option) => `
+                                    <option value="${escapeHtml(option)}" ${kind === option ? 'selected' : ''}>${escapeHtml(extraKindLabel(option))}</option>
+                                `).join('')}
+                            </select>
+                        </label>
+                        <label><span>Title</span><input class="social-neo-input lux-control" name="portfolioExtraTitle" data-extra-index="${index}" value="${escapeHtml(text(extra.title))}" placeholder="Course, project, or highlight"></label>
+                        <label class="portfolio-entry-span-2"><span>Details</span><textarea class="social-neo-textarea lux-control" name="portfolioExtraDetail" data-extra-index="${index}" rows="2" placeholder="Optional context">${escapeHtml(text(extra.detail))}</textarea></label>
+                        <label class="portfolio-entry-span-2"><span>Link</span><input class="social-neo-input lux-control" name="portfolioExtraUrl" data-extra-index="${index}" value="${escapeHtml(text(extra.url))}" placeholder="https:// (optional)"></label>
+                    </div>
+                    <button class="lux-ghost-btn lux-secondary-btn-sm" type="button" data-action="portfolio-extra-remove" data-extra-index="${index}"><i class="fas fa-trash"></i> Remove</button>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function renderResumeBlock(resume) {
+        const name = text(resume?.name || '');
+        const hasFile = Boolean(text(resume?.storageKey) || text(resume?.dataUrl));
         return `
-            <article class="portfolio-entry-card" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}">
+            <section class="portfolio-basics-card sns-portfolio-editor-panel">
+                <div class="social-neo-section-head">
+                    <div>
+                        <strong>Resume PDF</strong>
+                        <span>Build your resume elsewhere, then upload it here for interviews and Discover.</span>
+                    </div>
+                </div>
                 <div class="portfolio-entry-grid">
-                    ${defs.map((def) => {
-                        const key = text(def.key);
-                        const label = text(def.label || key || 'Field');
-                        const field = fields[key];
-                        if (text(def.type) === 'dateRange') {
-                            return `<div class="portfolio-entry-span-2">${renderDateRangeInputs(`portfolioCustom_${sectionKey}_${key}`, field)}</div>`;
-                        }
-                        if (text(def.type) === 'link') {
-                            return `<label class="portfolio-entry-span-2"><span>${escapeHtml(label)}</span><input class="social-neo-input lux-control" data-field-key="${escapeHtml(key)}" value="${escapeHtml(fieldLinkUrl(field))}" placeholder="https://"></label>`;
-                        }
-                        return `<label class="portfolio-entry-span-2"><span>${escapeHtml(label)}</span><input class="social-neo-input lux-control" data-field-key="${escapeHtml(key)}" value="${escapeHtml(fieldText(field))}"></label>`;
-                    }).join('')}
+                    <label class="portfolio-entry-span-2">
+                        <span>Upload resume</span>
+                        <input class="social-neo-input lux-control" type="file" name="portfolioResumeFile" accept=".pdf,application/pdf">
+                    </label>
+                    <div class="portfolio-entry-span-2 portfolio-resume-status">
+                        ${hasFile
+                            ? `<span class="social-neo-pill lux-status-pill"><strong>Ready</strong><span>${escapeHtml(name || 'resume.pdf')}</span></span>
+                               <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-resume-clear">Remove file</button>`
+                            : `<span class="social-neo-muted">No resume uploaded yet.</span>`}
+                    </div>
                 </div>
-                <button class="lux-ghost-btn lux-secondary-btn-sm" type="button" data-action="portfolio-entry-remove" data-section-key="${escapeHtml(sectionKey)}" data-entry-index="${index}"><i class="fas fa-trash"></i> Remove</button>
-            </article>
+            </section>
         `;
     }
 
-    function renderSection(sectionKey, section, options = {}) {
-        if (!section) return '';
-        const openSections = options.openPortfolioSections || {};
-        const isOpen = openSections[sectionKey] !== false;
-        const label = text(section.label || sectionKey);
-        const entries = Array.isArray(section.entries) ? section.entries : [];
-        const isSkills = sectionKey === 'skills';
-        const entryMarkup = entries.length
-            ? entries.map((entry, index) => (
-                sectionKey.startsWith('custom_')
-                    ? renderCustomEntry(sectionKey, section, entry, index)
-                    : renderBuiltinEntry(sectionKey, entry, index)
-            )).join('')
-            : `<div class="portfolio-section-empty">No entries yet.</div>`;
-
-        return `
-            <article class="portfolio-section-card sns-portfolio-editor-panel ${isOpen ? 'is-open' : ''}" data-section-key="${escapeHtml(sectionKey)}">
-                <button class="portfolio-section-toggle" type="button" data-action="portfolio-section-toggle" data-section-key="${escapeHtml(sectionKey)}" aria-expanded="${isOpen ? 'true' : 'false'}">
-                    <strong>${escapeHtml(label)}</strong>
-                    <span class="social-neo-pill home-hover-chip">${escapeHtml(String(entries.length))}</span>
-                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
-                </button>
-                <div class="portfolio-section-body" ${isOpen ? '' : 'hidden'}>
-                    ${entryMarkup}
-                    ${isSkills ? '' : `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-entry-add" data-section-key="${escapeHtml(sectionKey)}"><i class="fas fa-plus"></i> Add entry</button>`}
-                </div>
-            </article>
-        `;
+    function renderSection() {
+        return '';
     }
 
     function renderPublishPanel(portfolio, options = {}) {
@@ -209,9 +169,7 @@
     function renderEditor(portfolio, options = {}) {
         const doc = portfolio && typeof portfolio === 'object' ? portfolio : {};
         const basics = doc.basics || {};
-        const sectionOrder = Array.isArray(doc.sectionOrder) && doc.sectionOrder.length
-            ? doc.sectionOrder
-            : Object.keys(doc.sections || {});
+        const extras = Array.isArray(doc.extras) ? doc.extras : [];
         const status = text(options.portfolioSaveStatus || 'Changes autosave as you type.');
         const linkValue = basicsLinkUrl(basics.links);
 
@@ -220,23 +178,37 @@
                 <header class="portfolio-editor-toolbar">
                     <span class="portfolio-save-status">${escapeHtml(status)}</span>
                     <div class="portfolio-editor-actions">
-                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-open"><i class="fas fa-layer-group"></i> Custom section</button>
                         <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-save"><i class="fas fa-save"></i> Save</button>
                     </div>
                 </header>
+                ${renderResumeBlock(doc.resume)}
                 <section class="portfolio-basics-card sns-portfolio-editor-panel">
                     <div class="social-neo-section-head">
-                        <div><strong>Profile basics</strong><span>Name, headline, and summary shown at the top of your showcase.</span></div>
+                        <div>
+                            <strong>Discover card</strong>
+                            <span>A short About helps people skim before opening your resume.</span>
+                        </div>
                     </div>
                     <div class="portfolio-entry-grid">
                         <label><span>Name</span><input class="social-neo-input lux-control" name="portfolioBasicsName" value="${escapeHtml(text(basics.name))}"></label>
                         <label><span>Email</span><input class="social-neo-input lux-control" name="portfolioBasicsEmail" value="${escapeHtml(text(basics.email))}"></label>
-                        <label class="portfolio-entry-span-2"><span>Headline</span><input class="social-neo-input lux-control" name="portfolioBasicsHeadline" value="${escapeHtml(text(basics.headline))}" placeholder="Economics researcher · startup builder"></label>
-                        <label class="portfolio-entry-span-2"><span>Summary</span><textarea class="social-neo-textarea lux-control" name="portfolioBasicsSummary" rows="3">${escapeHtml(text(basics.summary))}</textarea></label>
-                        <label class="portfolio-entry-span-2"><span>Profile link</span><input class="social-neo-input lux-control" name="portfolioBasicsLink" value="${escapeHtml(linkValue)}" placeholder="https://"></label>
+                        <label class="portfolio-entry-span-2"><span>Headline</span><input class="social-neo-input lux-control" name="portfolioBasicsHeadline" value="${escapeHtml(text(basics.headline))}" placeholder="CS student · product intern · research assistant"></label>
+                        <label class="portfolio-entry-span-2"><span>About</span><textarea class="social-neo-textarea lux-control" name="portfolioBasicsSummary" rows="3" placeholder="1–3 sentences: what you study, what you want, one proof point.">${escapeHtml(text(basics.summary))}</textarea></label>
+                        <label class="portfolio-entry-span-2"><span>Profile link</span><input class="social-neo-input lux-control" name="portfolioBasicsLink" value="${escapeHtml(linkValue)}" placeholder="https:// (optional)"></label>
                     </div>
                 </section>
-                ${sectionOrder.map((sectionKey) => renderSection(sectionKey, doc.sections?.[sectionKey], options)).join('')}
+                <section class="portfolio-basics-card sns-portfolio-editor-panel">
+                    <div class="social-neo-section-head">
+                        <div>
+                            <strong>Optional extras</strong>
+                            <span>Subjects, projects, or links — only if you want more than the resume.</span>
+                        </div>
+                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-extra-add"><i class="fas fa-plus"></i> Add extra</button>
+                    </div>
+                    <div class="portfolio-extras-list">
+                        ${renderExtrasList(extras)}
+                    </div>
+                </section>
                 ${renderPublishPanel(doc, options)}
             </div>
         `;
@@ -248,100 +220,41 @@
     };
 
     if (!window.KiuPortfolioCustomBuilder) {
-        const TEMPLATE_FIELDS = {
-            awards: [
-                { key: 'title', type: 'text', label: 'Award' },
-                { key: 'issuer', type: 'text', label: 'Issuer' },
-                { key: 'dates', type: 'dateRange', label: 'Dates' }
-            ],
-            certifications: [
-                { key: 'name', type: 'text', label: 'Certification' },
-                { key: 'link', type: 'link', label: 'Credential link' }
-            ],
-            blank: [
-                { key: 'title', type: 'text', label: 'Title' },
-                { key: 'details', type: 'text', label: 'Details' }
-            ]
-        };
-
-        function renderCustomBuilderHead(subtitle) {
-            return `
-                <div class="lux-glass-dialog-section-head lux-glass-dialog-head portfolio-custom-dialog-head">
-                    <div class="social-neo-surveys-hero-copy">
-                        <span class="social-neo-section-kicker">Portfolio</span>
-                        <h2>Custom section</h2>
-                        <p class="lux-glass-dialog-portfolio-editor-subtitle">${escapeHtml(subtitle)}</p>
-                    </div>
-                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="portfolio-custom-close" aria-label="Close"><i class="fas fa-times"></i></button>
-                </div>`;
-        }
-
-        const CUSTOM_BUILDER_BACKDROP = 'lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child lux-glass-dialog-backdrop--portfolio-custom';
-        const CUSTOM_BUILDER_CARD = 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact lux-glass-dialog-card--portfolio-custom lux-glass-dialog-card--social-glass portfolio-custom-builder-card';
-
         window.KiuPortfolioCustomBuilder = {
-            templateFields(templateId) {
-                return (TEMPLATE_FIELDS[text(templateId)] || TEMPLATE_FIELDS.blank).map((field) => ({ ...field }));
-            },
-            renderCustomBuilderDialog(ui = {}) {
-                const step = Number(ui.customBuilderStep || 1);
-                const fields = Array.isArray(ui.customBuilderFields) ? ui.customBuilderFields : [];
-                if (step === 1) {
-                    return `
-                        <div class="${CUSTOM_BUILDER_BACKDROP}" data-action="portfolio-custom-close" role="dialog" aria-modal="true" aria-label="Custom section">
-                            <form class="${CUSTOM_BUILDER_CARD}" data-action="noop" data-lux-transparency-exempt="1" autocomplete="off">
-                                ${renderCustomBuilderHead('Pick a starter template for your custom portfolio section.')}
-                                <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-custom">
-                                    <div class="portfolio-custom-template-grid">
-                                        <button class="portfolio-custom-template-card lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-template" data-template-id="awards"><strong>Awards</strong><span>Title, issuer, and dates.</span></button>
-                                        <button class="portfolio-custom-template-card lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-template" data-template-id="certifications"><strong>Certifications</strong><span>Name and credential link.</span></button>
-                                        <button class="portfolio-custom-template-card lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-template" data-template-id="blank"><strong>Blank</strong><span>Start from a simple title and details pair.</span></button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    `;
-                }
-                return `
-                    <div class="${CUSTOM_BUILDER_BACKDROP}" data-action="portfolio-custom-close" role="dialog" aria-modal="true" aria-label="Custom section">
-                        <form class="${CUSTOM_BUILDER_CARD}" data-action="noop" data-lux-transparency-exempt="1" autocomplete="off">
-                            ${renderCustomBuilderHead('Name your section and customize the fields students will fill in.')}
-                            <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-custom">
-                                <label class="lux-glass-dialog-field">
-                                    <span class="social-neo-label">Section name</span>
-                                    <input class="social-neo-input lux-control" name="portfolioCustomSectionName" value="${escapeHtml(text(ui.customBuilderName))}" autocomplete="off">
-                                </label>
-                                <div class="portfolio-custom-field-list">
-                                    ${fields.map((field, index) => `
-                                        <label class="lux-glass-dialog-field">
-                                            <span class="social-neo-label">Field label</span>
-                                            <input class="social-neo-input lux-control" name="portfolioCustomFieldLabel" data-field-index="${index}" value="${escapeHtml(text(field.label))}" autocomplete="off">
-                                        </label>
-                                    `).join('')}
-                                </div>
-                                <div class="portfolio-custom-field-actions">
-                                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-field-add" data-field-type="text">Text field</button>
-                                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-field-add" data-field-type="link">Link field</button>
-                                    <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-field-add" data-field-type="dateRange">Date range</button>
-                                </div>
-                            </div>
-                            <div class="lux-glass-dialog-form-actions">
-                                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-back">Back</button>
-                                <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="portfolio-custom-save">Add section</button>
-                            </div>
-                        </form>
-                    </div>
-                `;
-            }
+            templateFields() { return []; },
+            renderCustomBuilderDialog() { return ''; }
         };
     }
 
     if (!window.KiuPortfolioApi) {
         async function portfolioRequest(path, options = {}) {
-            const response = await fetch(path, {
+            const method = text(options.method || 'GET') || 'GET';
+            const getToken = typeof getPortalSessionToken === 'function'
+                ? getPortalSessionToken
+                : (typeof window.getPortalSessionToken === 'function' ? window.getPortalSessionToken : null);
+            const token = getToken ? text(getToken()) : '';
+            const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+            if (token) headers['X-Portal-Session'] = token;
+
+            const portalFetch = typeof kiuPortalFetch === 'function'
+                ? kiuPortalFetch
+                : (typeof window.kiuPortalFetch === 'function' ? window.kiuPortalFetch : null);
+            if (portalFetch) {
+                return portalFetch(path, { ...options, method, headers });
+            }
+
+            const backendUrl = typeof getKiuPortalBackendUrl === 'function'
+                ? text(getKiuPortalBackendUrl()).replace(/\/$/, '')
+                : (typeof window.getKiuPortalBackendUrl === 'function'
+                    ? text(window.getKiuPortalBackendUrl()).replace(/\/$/, '')
+                    : '');
+            const url = backendUrl && path.startsWith('/') ? `${backendUrl}${path}` : path;
+            const response = await fetch(url, {
                 credentials: 'same-origin',
-                headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-                ...options
+                cache: 'no-store',
+                ...options,
+                method,
+                headers
             });
             const payload = await response.json().catch(() => ({}));
             if (!response.ok || payload.ok === false) {

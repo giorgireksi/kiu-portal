@@ -129,6 +129,7 @@
                 <div class="social-neo-pages-hero-header">
                     <div class="social-neo-pages-hero-head">
                         <div class="social-neo-pages-hero-actions">
+                            ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                             <button class="lux-primary-btn social-neo-pages-create-trigger" type="button" data-action="page-create-open">
                                 <i class="fas fa-plus"></i> Create Page
                             </button>
@@ -236,7 +237,15 @@
     function renderPagesPanel() {
         const runtime = state();
         const social = runtime.social || {};
-        const pages = Array.isArray(social.pages) ? social.pages : [];
+        const chrome = window.KiuSocialChromeModel || {};
+        const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+            ? chrome.socialBrowseFacultyValue(runtime)
+            : (text(runtime.ui?.socialBrowseFaculty || 'all') || 'all');
+        const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+            ? chrome.socialMatchesBrowseFaculty
+            : () => true;
+        const pages = (Array.isArray(social.pages) ? social.pages : [])
+            .filter((page) => matchesBrowse(page, browseFaculty));
         const activeTab = text(runtime.ui?.pagesTab || 'discover');
         const activeProfileId = text(runtime.ui?.activePageProfileId || '');
         const activeProfile = pages.find((page) => text(page?.id) === activeProfileId) || null;
@@ -594,6 +603,18 @@
                                     <option value="public" ${pageVisibility === 'public' ? 'selected' : ''}>Public</option>
                                     <option value="private" ${pageVisibility === 'private' ? 'selected' : ''}>Private</option>
                                 </select>
+                            </label>
+                            <label class="lux-glass-dialog-field">
+                                <span class="social-neo-label">Faculty</span>
+                                ${(window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+                                    ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                                        name: 'pageFaculty',
+                                        includeAll: false,
+                                        required: true,
+                                        value: text(runtime.ui?.pageFaculty || '') || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                                        label: 'Faculty'
+                                    }))
+                                    : `<select class="social-neo-select lux-control" name="pageFaculty" required data-lux-picker><option value="">Select faculty</option></select>`}
                             </label>
                         </div>
                     ` : ''}
@@ -1081,9 +1102,12 @@
                     avatarImage,
                     coverImage,
                     official: pageType === 'campus',
-                    verified: pageType === 'campus'
+                    verified: pageType === 'campus',
+                    facultyCode: text(form.pageFaculty?.value || runtime.ui?.pageFaculty || '')
+                        || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '')
                 };
                 if (!payload.name) throw new Error('Page name is required.');
+                if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
                 if (!payload.category) throw new Error('Page category is required.');
                 if (!payload.description && !payload.about) throw new Error('Add a description or about section for the page.');
                 const createdPage = await createPortalSocialPage(payload);

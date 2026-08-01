@@ -154,14 +154,15 @@
                         <h2>${escape(laneCopy.title)}</h2>
                         <p>${escape(laneCopy.text)}</p>
                     </div>
-                    ${canCreate ? `
                     <div class="social-neo-surveys-hero-actions">
+                        ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
+                        ${canCreate ? `
                         <button class="lux-primary-btn social-neo-surveys-hero-create-btn" type="button" data-action="survey-create-open">
                             <i class="fas ${escape(createIcon)}"></i>
                             <span>${escape(createLabel)}</span>
                         </button>
+                        ` : ''}
                     </div>
-                    ` : ''}
                 </div>
                 <div class="social-neo-surveys-hero-stats home-hover-chip">
                     ${stats.map((stat) => `
@@ -256,7 +257,7 @@
             ? 'social-neo-survey-take-choice--radio'
             : 'social-neo-survey-take-choice--checkbox';
         return `
-            <label class="social-neo-survey-take-choice ${modifier}">
+            <label class="social-neo-survey-take-choice lux-soft-chrome home-hover-chip ${modifier}">
                 <input type="${inputType}" name="${name}" value="${value}" data-question-id="${qId}"${questionRequiredAttr(question)}${extraInputAttrs}${checkedAttr}>
                 <span>${label}</span>
             </label>
@@ -326,8 +327,8 @@
         const questions = Array.isArray(survey?.questions) ? survey.questions : [];
         return `
             <div class="social-neo-surveys-take-shell">
-                <button class="social-survey-back social-survey-mono" type="button" data-action="survey-take-close">&larr; Back to Surveys</button>
-                <header class="social-neo-card social-neo-survey-take-hero">
+                <button class="lux-secondary-btn home-hover-chip" type="button" data-action="survey-take-close">&larr; Back to Surveys</button>
+                <header class="social-neo-card social-neo-survey-take-hero home-hover-chip">
                     <div class="social-neo-section-head">
                         <div>
                             <strong>${escape(text(survey.title))}</strong>
@@ -338,7 +339,7 @@
                 </header>
                 <form class="social-neo-stack" data-form="survey-response" data-survey-id="${escape(text(survey.id))}">
                     ${questions.map((question, index) => `
-                        <section class="social-neo-card social-neo-survey-take-card" data-question-id="${escape(text(question.id))}" style="--survey-stagger: ${index}">
+                        <section class="social-neo-card social-neo-survey-take-card lux-soft-chrome home-hover-chip" data-question-id="${escape(text(question.id))}" style="--survey-stagger: ${index}">
                             <div class="social-neo-survey-take-card-head">
                                 <span class="social-neo-survey-take-card-index">Question ${index + 1} of ${questions.length}</span>
                                 <span class="social-neo-label">${escape(text(question.prompt))}${question.required === false ? '' : ' *'}</span>
@@ -349,7 +350,7 @@
                     `).join('')}
                     <div class="social-neo-inline social-neo-events-form-actions social-neo-survey-submit-actions">
                         <span class="social-neo-flex-spacer"></span>
-                        <button class="lux-primary-btn social-neo-survey-submit-btn" type="submit">
+                        <button class="lux-primary-btn social-neo-survey-submit-btn home-hover-chip" type="submit">
                             <span class="social-neo-survey-submit-btn-icon" aria-hidden="true"><i class="fas fa-paper-plane"></i></span>
                             <span class="social-neo-survey-submit-btn-label">Submit responses</span>
                         </button>
@@ -964,6 +965,18 @@
                                 ${audienceOptions.map((option) => `<option value="${escape(option.value)}" ${selectedAudience === option.value ? 'selected' : ''}>${escape(option.label)}</option>`).join('')}
                             </select>
                         </label>
+                        <label class="lux-glass-dialog-field">
+                            <span class="social-neo-label">Faculty</span>
+                            ${(window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+                                ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                                    name: 'surveyFaculty',
+                                    includeAll: false,
+                                    required: true,
+                                    value: text(runtime.ui?.surveyDraftFaculty || '') || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                                    label: 'Faculty'
+                                }))
+                                : `<select class="social-neo-select lux-control" name="surveyFaculty" required data-lux-picker><option value="">Select faculty</option></select>`}
+                        </label>
                         <label class="lux-glass-dialog-field" for="${escape(closesAtId)}">
                             <span class="social-neo-label">Closes</span>
                             <input class="social-neo-input lux-control" id="${escape(closesAtId)}" type="datetime-local" name="surveyClosesAt" min="${escape(closesAtMin)}" value="${escape(selectedClosesAt)}" required>
@@ -1032,7 +1045,15 @@
         const isOfficialLane = activeLane === 'official';
         const canCreate = !isOfficialLane || canPublishOfficialSurveys();
         const allForTab = surveysForTab(activeTab);
+        const chrome = window.KiuSocialChromeModel || {};
+        const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+            ? chrome.socialBrowseFacultyValue(runtime)
+            : (text(runtime.ui?.socialBrowseFaculty || 'all') || 'all');
+        const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+            ? chrome.socialMatchesBrowseFaculty
+            : () => true;
         const surveys = allForTab.filter((survey) => {
+            if (!matchesBrowse(survey, browseFaculty)) return false;
             const isOfficial = Boolean(survey?.isOfficial);
             if (isOfficialLane !== isOfficial) return false;
             if (!searchValue) return true;
@@ -1297,6 +1318,9 @@
                 if (scope.scopeType === 'group' && audience === 'campus') audience = 'group';
                 if (scope.scopeType === 'page' && audience === 'campus') audience = 'page';
                 const visibility = audience === 'faculty' ? 'faculty' : 'public';
+                const facultyCode = text(form.surveyFaculty?.value || state().ui?.surveyDraftFaculty || '')
+                    || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(state()) || '');
+                if (!facultyCode || facultyCode === 'all') throw new Error('Faculty is required.');
                 let resultsVisibility = text(form.surveyResultsVisibility?.value || (isOfficial ? 'public_after_close' : 'respondents_after_close'))
                     || (isOfficial ? 'public_after_close' : 'respondents_after_close');
                 const allowAnonymous = Boolean(form.surveyAnonymous?.checked);
@@ -1309,6 +1333,8 @@
                     allowAnonymous,
                     audience,
                     visibility,
+                    facultyCode,
+                    audienceFacultyCode: facultyCode,
                     scopeType: scope.scopeType,
                     scopeId: scope.scopeId,
                     scopeName: scope.scopeName,

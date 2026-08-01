@@ -183,7 +183,7 @@ function __kiuFeedExpose(map) {
         const contextLine = `${accountSubtitle(author)} - ${feedReason(post, author)}`;
         const commentTotal = comments.length + Number(post.replyCount || 0);
         return `
-            <article class="social-neo-card social-neo-post-card ${post.isPinned ? 'is-pinned' : ''}">
+            <article class="social-neo-card social-neo-post-card lux-soft-chrome home-hover-chip ${post.isPinned ? 'is-pinned' : ''}">
                 <div class="social-neo-post-head">
                     <button class="social-neo-post-author social-neo-clickable" type="button" data-action="profile-view" data-user-id="${escape(text(author.id))}">
                         ${avatar(author)}
@@ -495,6 +495,7 @@ function __kiuFeedExpose(map) {
             <div class="social-neo-feed-hero">
                 <div class="social-neo-feed-hero-head">
                     <div class="social-neo-feed-hero-actions">
+                        ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                         <button class="lux-primary-btn social-neo-feed-hero-action-btn" type="button" data-action="feed-refresh">
                             <i class="fas fa-arrows-rotate"></i> Refresh feed
                         </button>
@@ -503,7 +504,7 @@ function __kiuFeedExpose(map) {
                         </button>
                     </div>
                 </div>
-                <div class="social-neo-feed-hero-stats">
+                <div class="social-neo-feed-hero-stats home-hover-chip">
                     ${stats.map((stat) => `
                         <article class="social-neo-feed-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip">
                             <strong>${escape(String(stat.value))}</strong>
@@ -511,7 +512,7 @@ function __kiuFeedExpose(map) {
                         </article>
                     `).join('')}
                 </div>
-                <div class="social-neo-feed-hero-grid">
+                <div class="social-neo-feed-hero-grid home-hover-chip">
                     ${tabs.map((tab) => `
                         <button class="lux-secondary-btn social-neo-feed-hero-tab ${activeFilter === tab.tab ? 'is-focused' : ''}" type="button" data-action="panel-feed" data-home-filter="${escape(tab.tab)}" aria-pressed="${activeFilter === tab.tab ? 'true' : 'false'}">
                             <span class="social-neo-feed-hero-tab-icon"><i class="fas ${escape(tab.icon)}"></i></span>
@@ -535,7 +536,18 @@ function __kiuFeedExpose(map) {
         /* ── Prepare feed data and apply active filter ── */
         const feed = Array.isArray(runtime.feed) ? runtime.feed : [];
         const homeFilter = text(runtime.ui?.homeFeedFilter || 'all') || 'all';
-        const visibleFeed = filterFeedForHome(feed, homeFilter);
+        const chrome = window.KiuSocialChromeModel || {};
+        const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+            ? chrome.socialBrowseFacultyValue(runtime)
+            : (text(runtime.ui?.socialBrowseFaculty || 'all') || 'all');
+        const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+            ? chrome.socialMatchesBrowseFaculty
+            : () => true;
+        const visibleFeed = filterFeedForHome(feed, homeFilter).filter((post) => {
+            if (matchesBrowse(post, browseFaculty)) return true;
+            const author = typeof accountById === 'function' ? accountById(post?.authorUserId) : null;
+            return matchesBrowse(author || {}, browseFaculty);
+        });
 
         /* ── Generate stable DOM IDs for form controls ── */
         const feedScopeId = controlId('feedScope');
@@ -549,7 +561,7 @@ function __kiuFeedExpose(map) {
 
         const firstName = displayName(currentUser()).split(' ')[0] || 'there';
         const composerMarkup = `
-            <div class="social-neo-feed-composer-zone social-neo-composer-card social-neo-composer-cta-card">
+            <div class="social-neo-feed-composer-zone social-neo-composer-card social-neo-composer-cta-card lux-soft-chrome home-hover-chip">
                 <button class="social-neo-composer-cta" type="button" data-action="post-compose-open">
                     ${avatar(currentUser())}
                     <span class="social-neo-composer-cta-copy">What's on your mind, ${escape(firstName)}?</span>
@@ -561,7 +573,7 @@ function __kiuFeedExpose(map) {
         /* ── Assemble the feed panel layout ── */
         return `
             <div class="social-neo-feed-shell">
-                <section class="social-neo-card social-neo-feed-header-card">
+                <section class="social-neo-card social-neo-feed-header-card lux-soft-chrome home-hover-chip">
                     ${renderFeedHero(runtime, homeFilter, feedHeroMetrics, focusOptions, feedScopeId)}
                     <div class="social-neo-feed-header-divider" aria-hidden="true"></div>
                     ${composerMarkup}

@@ -22225,6 +22225,64 @@ body.lux-route-social #app-content {
   width: 100%;
 }
 
+body.lux-route-social #social-neo-command-region:not(:empty) {
+  display: grid;
+  gap: 8px;
+  padding: 0 0 10px;
+  min-width: 0;
+}
+
+body.lux-route-social .social-neo-hero-faculty {
+  display: block;
+  width: auto;
+  max-width: 220px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+body.lux-route-social .social-neo-hero-faculty .lux-universal-picker-field,
+body.lux-route-social .social-neo-hero-faculty .lux-picker-field {
+  width: auto;
+  max-width: 220px;
+}
+
+body.lux-route-social :is(
+  .social-neo-feed-hero-actions,
+  .social-neo-community-hero-actions,
+  .social-neo-groups-hero-actions,
+  .social-neo-workspace-hero-actions,
+  .social-neo-portfolio-hero-actions,
+  .social-neo-research-hero-actions,
+  .social-neo-pages-hero-actions,
+  .social-neo-events-hero-actions,
+  .social-neo-surveys-hero-actions,
+  .social-neo-lost-found-hero-actions,
+  .social-photo-chrome-actions
+) {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  body.lux-route-social :is(
+    .social-neo-feed-hero-actions,
+    .social-neo-community-hero-actions,
+    .social-neo-groups-hero-actions,
+    .social-neo-workspace-hero-actions,
+    .social-neo-portfolio-hero-actions,
+    .social-neo-research-hero-actions,
+    .social-neo-pages-hero-actions,
+    .social-neo-events-hero-actions,
+    .social-neo-surveys-hero-actions,
+    .social-neo-lost-found-hero-actions,
+    .social-photo-chrome-actions
+  ) {
+    flex-wrap: wrap;
+  }
+}
+
 body.lux-route-social :is(#page-social, #public-social-root, .social-route-standalone-shell) {
   width: 100%;
   max-width: none;
@@ -22345,7 +22403,7 @@ body.lux-route-social .social-neo-rail-head-copy {
 body.lux-route-social .social-neo-feed-header-card {
   display: grid;
   gap: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 body.lux-route-social .social-neo-feed-header-divider {
@@ -22368,8 +22426,8 @@ body.lux-route-social .social-neo-feed-hero-head {
 
 body.lux-route-social .social-neo-feed-hero-actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
 }
@@ -22625,8 +22683,8 @@ body.lux-route-social :is(
   .social-neo-portfolio-hero-actions
 ) {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
 }
@@ -22689,6 +22747,109 @@ body.lux-route-social .social-neo-lost-found-hero-stats--dual {
 
 body.lux-route-social .social-neo-surveys-hero-stats--triple {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Surveys take — layout only (matte paint in lux-fouc-ht.css) */
+body.lux-route-social .social-neo-surveys-take-shell {
+  display: grid;
+  gap: 14px;
+  overflow: visible;
+}
+body.lux-route-social .social-neo-survey-take-hero .social-neo-section-head > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+body.lux-route-social .social-neo-survey-take-hero .social-neo-section-head strong {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+body.lux-route-social .social-neo-survey-take-hero .social-neo-section-head span,
+body.lux-route-social .social-neo-survey-take-card-index {
+  color: var(--lux-text-muted);
+  font-size: 12px;
+}
+body.lux-route-social .social-neo-survey-take-card-head {
+  display: grid;
+  gap: 6px;
+}
+body.lux-route-social .social-neo-survey-take-card.is-invalid {
+  border-color: color-mix(in srgb, var(--lux-danger, #f87171) 45%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--lux-danger, #f87171) 18%, transparent);
+}
+body.lux-route-social .social-neo-survey-take-choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+body.lux-route-social .social-neo-survey-take-choice input {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+body.lux-route-social .social-neo-survey-take-choice span {
+  min-width: 0;
+  line-height: 1.45;
+}
+body.lux-route-social .social-neo-survey-take-choice:has(input:checked) {
+  border-color: rgba(var(--lux-accent-rgb), 0.45);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2)), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.18);
+}
+body.lux-route-social .social-neo-survey-take-choice-list {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-social .social-neo-survey-take-choice-list--inline,
+body.lux-route-social .social-neo-survey-rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+body.lux-route-social .social-neo-survey-rating-row .social-neo-survey-take-choice {
+  min-width: 44px;
+  justify-content: center;
+}
+body.lux-route-social .social-neo-survey-submit-actions {
+  padding-top: 4px;
+}
+@keyframes social-survey-take-choice-select {
+  0% { transform: scale(1); }
+  45% { transform: scale(0.985); }
+  100% { transform: scale(1); }
+}
+@keyframes social-survey-take-ripple {
+  0% { opacity: 0.35; transform: scale(0); }
+  100% { opacity: 0; transform: scale(2.6); }
+}
+body.lux-route-social .social-neo-survey-take-choice.is-selecting {
+  animation: social-survey-take-choice-select 0.32s ease;
+}
+body.lux-route-social .social-neo-survey-take-choice.is-rippling::after {
+  content: "";
+  position: absolute;
+  left: var(--survey-ripple-x, 50%);
+  top: var(--survey-ripple-y, 50%);
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 50%;
+  background: rgba(var(--lux-accent-rgb), 0.22);
+  pointer-events: none;
+  animation: social-survey-take-ripple 0.42s ease-out;
+}
+body.lux-route-social .social-neo-survey-submit-btn.is-acting {
+  opacity: 0.88;
+}
+body.lux-route-social .social-neo-survey-submit-btn.is-success {
+  border-color: color-mix(in srgb, var(--lux-green, #34d399) 45%, transparent);
+}
+body.lux-route-social .social-neo-survey-submit-btn.is-error {
+  border-color: color-mix(in srgb, var(--lux-danger, #f87171) 45%, transparent);
 }
 
 /* Research publications panel — layout only */
@@ -22879,21 +23040,111 @@ body.lux-route-social .social-neo-research-pdf-thumb.is-active {
   border-color: rgba(var(--lux-accent-rgb), 0.4);
 }
 body.lux-route-social .social-neo-research-pdf-viewport {
-  overflow: auto;
-  max-height: 70vh;
+  width: 100%;
+  min-width: 0;
   border: 1px solid var(--lux-border);
   border-radius: 14px;
   padding: 12px;
+}
+body.lux-route-social .social-neo-research-pdf-shell[data-view-mode="scroll"] .social-neo-research-pdf-viewport {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+}
+body.lux-route-social .social-neo-research-pdf-shell[data-view-mode="scroll"] .social-neo-research-pdf-page-wrap {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+body.lux-route-social .social-neo-research-pdf-shell[data-view-mode="pages"] .social-neo-research-pdf-viewport {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+}
+body.lux-route-social .social-neo-research-pdf-shell[data-view-mode="pages"] .social-neo-research-pdf-viewport.is-zoomed-past-fit {
+  overflow: auto;
 }
 body.lux-route-social .social-neo-research-pdf-pages {
   display: grid;
   gap: 12px;
   justify-items: center;
 }
+body.lux-route-social .social-neo-research-pdf-shell[data-view-mode="pages"] .social-neo-research-pdf-pages {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
 body.lux-route-social .social-neo-research-pdf-canvas {
   max-width: 100%;
   height: auto;
   background: #fff;
+}
+body.lux-route-social .social-neo-research-pdf-shell[data-view-mode="pages"] .social-neo-research-pdf-canvas {
+  max-width: none;
+}
+body.lux-route-social .social-neo-research-pdf-page-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+body.lux-route-social .social-neo-research-pdf-shell[data-view-mode="pages"] .social-neo-research-pdf-page-wrap {
+  max-width: none;
+  flex-shrink: 0;
+}
+body.lux-route-social .social-neo-research-pdf-page-wrap .textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  line-height: 1;
+  opacity: 1;
+  user-select: text;
+}
+body.lux-route-social .social-neo-research-pdf-page-wrap .textLayer span,
+body.lux-route-social .social-neo-research-pdf-page-wrap .textLayer br {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  transform-origin: 0 0;
+  cursor: text;
+}
+body.lux-route-social .social-neo-research-pdf-page-wrap .textLayer span::selection,
+body.lux-route-social .social-neo-research-pdf-page-wrap .textLayer br::selection {
+  background: rgba(var(--lux-accent-rgb), 0.28);
+}
+body.lux-route-social .social-neo-research-doc-view {
+  max-height: 70vh;
+  overflow: auto;
+  border: 1px solid var(--lux-border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  background: var(--lux-surface, #fff);
+}
+body.lux-route-social .social-neo-research-doc-view p,
+body.lux-route-social .social-neo-research-doc-view li {
+  margin: 0 0 0.75em;
+}
+body.lux-route-social .social-neo-research-slides-view {
+  max-height: 70vh;
+  overflow: auto;
+  border: 1px solid var(--lux-border);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--lux-surface, #fff);
+}
+body.lux-route-social .social-neo-research-slide-card {
+  display: grid;
+  gap: 12px;
+}
+body.lux-route-social .social-neo-research-slide-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+body.lux-route-social .social-neo-research-slide-text {
+  display: grid;
+  gap: 0.5em;
 }
 body.lux-route-social .social-neo-research-create-body {
   display: grid;
@@ -23069,7 +23320,7 @@ body.lux-route-social .social-neo-events-hero.is-merged .social-neo-events-suppo
 
 body.lux-route-social .social-neo-events-hero.is-merged .social-neo-events-manage-card,
 body.lux-route-social .social-neo-events-hero.is-merged .social-neo-events-list-card {
-  padding: 14px 16px;
+  padding: 10px 12px;
   min-width: 0;
 }
 
@@ -23079,9 +23330,9 @@ body.lux-route-social .social-neo-events-hero.is-merged :is(.social-neo-events-m
 
 body.lux-route-social .social-neo-event-date-group {
   display: grid;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 16px;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 14px;
   min-width: 0;
   background-color: var(--social-chip-fill);
   background-image: var(--social-chip-surface);
@@ -23091,15 +23342,15 @@ body.lux-route-social .social-neo-event-date-group {
 
 body.lux-route-social .social-neo-event-date-group-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 2px;
+  gap: 10px;
+  padding-bottom: 0;
 }
 
 body.lux-route-social .social-neo-event-date-group-head strong {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--lux-text);
 }
@@ -23110,10 +23361,10 @@ body.lux-route-social .social-neo-event-date-group-head span {
 }
 
 body.lux-route-social .social-neo-event-date-group-title {
-  margin: 6px 0 0;
-  font-size: 20px;
+  margin: 4px 0 0;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--lux-text);
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -23121,7 +23372,7 @@ body.lux-route-social .social-neo-event-date-group-title {
 
 body.lux-route-social .social-neo-event-date-group-body {
   display: grid;
-  gap: 14px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -23129,9 +23380,9 @@ body.lux-route-social .social-neo-event-feature {
   position: relative;
   isolation: isolate;
   display: grid;
-  gap: 14px;
-  padding: 20px 24px 20px 32px;
-  border-radius: 22px;
+  gap: 8px;
+  padding: 12px 14px 12px 18px;
+  border-radius: 16px;
   min-width: 0;
   overflow: visible;
   contain: layout style;
@@ -23148,9 +23399,9 @@ body.lux-route-social .social-neo-event-feature--university {
 body.lux-route-social .social-neo-event-feature::before {
   content: "";
   position: absolute;
-  left: 10px;
-  top: 12px;
-  bottom: 12px;
+  left: 8px;
+  top: 10px;
+  bottom: 10px;
   width: 3px;
   border-radius: 3px;
   background: var(--event-accent, var(--lux-accent, var(--sn-accent)));
@@ -23165,7 +23416,7 @@ body.lux-route-social .social-neo-event-feature > * {
 }
 
 body.lux-route-social .social-neo-event-feature-cover {
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--social-chip-border);
 }
@@ -23173,13 +23424,13 @@ body.lux-route-social .social-neo-event-feature-cover {
 body.lux-route-social .social-neo-event-feature-cover img {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 140px;
   object-fit: cover;
 }
 
 body.lux-route-social .social-neo-event-feature-head {
   display: grid;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -23187,9 +23438,9 @@ body.lux-route-social .social-neo-event-feature-datebox {
   display: inline-grid;
   grid-auto-flow: column;
   align-items: baseline;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 12px;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: 10px;
   background: color-mix(in srgb, var(--event-accent, var(--lux-accent)) 14%, var(--social-chip-fill));
   border: 1px solid color-mix(in srgb, var(--event-accent, var(--lux-accent)) 28%, var(--social-chip-border));
   flex: 0 0 auto;
@@ -23198,14 +23449,14 @@ body.lux-route-social .social-neo-event-feature-datebox {
 }
 
 body.lux-route-social .social-neo-event-feature-datebox span {
-  font-size: 9.5px;
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   color: var(--lux-text-muted, var(--lux-text-secondary));
 }
 
 body.lux-route-social .social-neo-event-feature-datebox strong {
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1;
   font-weight: 700;
   color: var(--lux-text);
@@ -23214,9 +23465,26 @@ body.lux-route-social .social-neo-event-feature-datebox strong {
 body.lux-route-social .social-neo-event-feature-head-top {
   display: flex;
   align-items: center;
-  gap: 10px 14px;
+  gap: 8px 12px;
   flex-wrap: wrap;
   min-width: 0;
+}
+
+body.lux-route-social .social-neo-event-feature-head-main {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 160px;
+}
+
+body.lux-route-social .social-neo-event-feature-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 body.lux-route-social .social-neo-event-feature-head-top .social-neo-events-badges {
@@ -23225,7 +23493,7 @@ body.lux-route-social .social-neo-event-feature-head-top .social-neo-events-badg
 }
 
 body.lux-route-social .social-neo-events-badges {
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -23233,7 +23501,7 @@ body.lux-route-social .social-neo-event-feature-head-actions {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
   flex-wrap: wrap;
 }
@@ -23246,31 +23514,33 @@ body.lux-route-social .social-neo-events-owner-pill {
 }
 
 body.lux-route-social .social-neo-events-edit-btn--head {
-  min-height: 34px;
-  padding: 6px 12px;
+  min-height: 30px;
+  padding: 4px 10px;
   font-size: 12px;
   border-radius: 10px;
   white-space: nowrap;
 }
 
 body.lux-route-social .social-neo-event-feature-desc-rail {
-  height: 100%;
-  min-height: inherit;
-  border-radius: 14px;
+  height: auto;
+  min-height: 0;
+  max-height: 5.5rem;
+  border-radius: 12px;
   border: 1px solid var(--social-chip-border);
   background-color: color-mix(in srgb, var(--lux-text) 4%, var(--social-chip-fill));
-  padding: 4px 6px 4px 4px;
+  padding: 2px 4px 2px 2px;
 }
 
 body.lux-route-social .social-neo-event-feature-desc-viewport {
-  padding: 12px 14px;
+  padding: 8px 10px;
+  max-height: 5rem;
   overscroll-behavior: contain;
 }
 
 body.lux-route-social .social-neo-event-feature-desc {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.45;
   color: var(--lux-text-muted, var(--lux-text-secondary));
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -23280,8 +23550,8 @@ body.lux-route-social .social-neo-event-feature-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 20px;
-  padding: 6px 2px;
+  gap: 4px 14px;
+  padding: 4px 0;
   border-top: 1px solid var(--social-fade-border-soft);
   border-bottom: 1px solid var(--social-fade-border-soft);
 }
@@ -23289,26 +23559,22 @@ body.lux-route-social .social-neo-event-feature-meta {
 body.lux-route-social .social-neo-event-feature-meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 body.lux-route-social .social-neo-event-feature-meta-item i {
   color: var(--event-accent, var(--lux-accent, var(--sn-accent)));
   flex-shrink: 0;
-  font-size: 14px;
-  width: 14px;
-  text-align: center;
-}
-
-body.lux-route-social .social-neo-event-feature-meta-item > div {
-  min-width: 0;
+  font-size: 12px;
+  width: 12px;
 }
 
 body.lux-route-social .social-neo-event-feature-meta-item strong {
   display: block;
-  font-size: 13px;
+  font-size: 12.5px;
+  line-height: 1.3;
   font-weight: 700;
   color: var(--lux-text);
   word-break: break-word;
@@ -23317,9 +23583,9 @@ body.lux-route-social .social-neo-event-feature-meta-item strong {
 
 body.lux-route-social .social-neo-event-feature-meta-item span {
   display: block;
-  margin-top: 2px;
-  font-size: 11.5px;
-  line-height: 1.5;
+  margin-top: 1px;
+  font-size: 10.5px;
+  line-height: 1.4;
   color: var(--lux-text-muted, var(--lux-text-secondary));
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -23329,39 +23595,39 @@ body.lux-route-social .social-neo-event-feature-bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 14px 28px;
-  padding-top: 12px;
+  gap: 8px 16px;
+  padding-top: 8px;
   border-top: 1px solid var(--social-fade-border-soft);
   min-width: 0;
 }
 
 body.lux-route-social .social-neo-event-feature-foot {
-  min-height: clamp(96px, 14vh, 180px);
+  min-height: 0;
   min-width: 0;
-  padding-top: 12px;
+  padding-top: 8px;
   border-top: 1px solid var(--social-fade-border-soft);
 }
 
 body.lux-route-social .social-neo-event-feature-foot .social-neo-event-feature-desc-rail {
-  height: 100%;
-  min-height: inherit;
+  height: auto;
+  min-height: 0;
 }
 
 body.lux-route-social .social-neo-event-feature-host {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
 }
 
 body.lux-route-social .social-neo-event-feature-host small {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--lux-text-muted, var(--lux-text-secondary));
 }
 
 body.lux-route-social .social-neo-event-feature-host strong {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--lux-text);
   word-break: break-word;
@@ -23373,12 +23639,12 @@ body.lux-route-social .social-neo-event-feature-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 body.lux-route-social .social-neo-event-feature-actions :is(.lux-primary-btn, .lux-secondary-btn) {
-  min-height: 34px;
-  padding: 6px 12px;
+  min-height: 30px;
+  padding: 4px 10px;
   border-width: 1px;
   text-shadow: none;
   font-size: 12px;
@@ -23429,6 +23695,7 @@ html.lux-light-mode body.lux-route-social .social-neo-events-content {
 body.lux-light-mode.lux-route-social .social-neo-events-content :is(
   strong,
   .social-neo-event-date-group-title,
+  .social-neo-event-feature-title,
   .social-neo-event-feature-meta-item strong,
   .social-neo-event-feature-host strong,
   .social-neo-event-feature-datebox strong
@@ -23436,6 +23703,7 @@ body.lux-light-mode.lux-route-social .social-neo-events-content :is(
 html.lux-light-mode body.lux-route-social .social-neo-events-content :is(
   strong,
   .social-neo-event-date-group-title,
+  .social-neo-event-feature-title,
   .social-neo-event-feature-meta-item strong,
   .social-neo-event-feature-host strong,
   .social-neo-event-feature-datebox strong
@@ -23485,7 +23753,7 @@ html.lux-light-mode body.lux-route-social .social-neo-events-hero-tab-copy small
 
 @media (max-width: 640px) {
   body.lux-route-social .social-neo-event-feature {
-    padding: 18px 18px 18px 26px;
+    padding: 12px 12px 12px 16px;
   }
 
   body.lux-route-social .social-neo-event-feature-bar {
@@ -23516,10 +23784,7 @@ body.lux-route-social :is(
 body.lux-route-social .social-neo-portfolio-hero-discover {
   padding: 12px 14px;
   border-radius: 16px;
-  background-color: var(--social-chip-fill);
-  background-image: var(--social-chip-surface);
-  border: 1px solid var(--social-chip-border);
-  box-shadow: var(--lux-elev-1, none);
+  overflow: visible;
 }
 
 body.lux-route-social .social-portfolio-toolbar-head > div {
@@ -23612,58 +23877,105 @@ body.lux-route-social .social-portfolio-search .lux-control {
 
 body.lux-route-social .social-portfolio-feed {
   display: grid;
-  gap: 24px;
+  gap: 8px;
   min-width: 0;
+  padding: 2px 0 4px;
   overflow: visible;
-}
-
-/* Compound selector beats later .social-project-scroll-list { gap: var(--social-gap-tight) }. */
-body.lux-route-social .social-portfolio-feed.social-project-scroll-list {
-  gap: 24px;
 }
 
 body.lux-route-social .social-portfolio-card {
-  padding: 16px 16px 32px;
-  border-radius: 16px;
+  padding: 8px 10px;
+  border-radius: 12px;
   display: grid;
-  gap: 12px;
+  gap: 4px;
   align-content: start;
 }
 
-body.lux-route-social .social-portfolio-card.home-hover-chip,
-body.lux-unified-shell.lux-route-social .social-portfolio-card.home-hover-chip,
+body.lux-route-social .social-neo-post-card.social-portfolio-card.home-hover-chip,
 body.lux-unified-shell.lux-route-social .social-neo-post-card.social-portfolio-card.home-hover-chip {
-  overflow: visible;
-  contain: none;
+  overflow: hidden;
+  contain: paint;
   min-height: min-content;
+}
+
+body.lux-route-social .social-portfolio-card.social-neo-post-card {
+  gap: 4px;
 }
 
 body.lux-route-social .social-portfolio-card-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 6px;
   flex-wrap: wrap;
+}
+
+body.lux-route-social .social-portfolio-card .social-neo-person {
+  gap: 6px;
+  align-items: center;
+}
+
+body.lux-route-social .social-portfolio-card .social-neo-avatar-sm {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+}
+
+body.lux-route-social .social-portfolio-card .social-neo-person strong {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+body.lux-route-social .social-portfolio-card .social-neo-muted,
+body.lux-route-social .social-portfolio-card .lms-route-meta-12 {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+body.lux-route-social .social-portfolio-card .social-neo-badge-row {
+  gap: 3px;
+}
+
+body.lux-route-social .social-portfolio-card .social-neo-pill {
+  padding: 1px 6px;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+body.lux-route-social .social-portfolio-card .social-portfolio-featured-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+body.lux-route-social .social-portfolio-card .social-portfolio-featured-pill strong {
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+body.lux-route-social .social-portfolio-card .social-portfolio-featured-pill span {
+  display: none;
 }
 
 body.lux-route-social .social-portfolio-body {
   display: grid;
-  gap: 8px;
+  gap: 2px;
   min-width: 0;
 }
 
 body.lux-route-social .social-portfolio-body h3 {
   margin: 0;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   color: var(--lux-text);
 }
 
 body.lux-route-social .social-portfolio-body p {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 12px;
+  line-height: 1.35;
   color: var(--lux-text-muted, var(--lux-text-secondary));
 }
 
@@ -23671,21 +23983,16 @@ body.lux-route-social .social-portfolio-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  overflow: visible;
-  position: relative;
-  z-index: 1;
+  padding-top: 0;
 }
 
-body.lux-route-social .social-project-scroll-list--portfolio {
-  --project-scroll-max: 720px;
-  gap: 24px;
-  padding: 10px 8px 16px;
-  overflow-x: hidden;
-  overflow-y: auto;
+body.lux-route-social .social-portfolio-actions :is(.lux-primary-btn, .lux-secondary-btn) {
+  min-height: 28px;
+  padding: 4px 10px;
+  font-size: 11px;
+  gap: 4px;
 }
 
 body.lux-route-social .social-neo-muted {
@@ -25638,8 +25945,7 @@ body.lux-unified-shell.lux-route-social .social-neo-community-panel--requests.is
 body.lux-unified-shell.lux-route-social .social-neo-community-panel--connections.is-merged,
 body.lux-unified-shell.lux-route-social .social-neo-community-panel--staff.is-merged,
 body.lux-unified-shell.lux-route-social .social-neo-community-panel--groups.is-merged,
-body.lux-unified-shell.lux-route-social .social-neo-community-panel--portfolio.is-merged,
-body.lux-unified-shell.lux-route-social .social-portfolio-card.home-hover-chip {
+body.lux-unified-shell.lux-route-social .social-neo-community-panel--portfolio.is-merged {
   overflow: visible;
   contain: none;
 }
@@ -31406,9 +31712,6 @@ body.lux-route-social .lux-glass-dialog-body--project-column-tasks .social-proje
     body.lux-route-social .social-project-tab-row { top: 4px; }
     body.lux-route-social .social-project-scroll-list {
         --project-scroll-max: 360px;
-    }
-    body.lux-route-social .social-project-scroll-list--portfolio {
-        --project-scroll-max: 640px;
     }
     body.lux-route-social .social-project-task-stats-bar {
         grid-template-columns: repeat(3, 1fr);
@@ -37553,11 +37856,6 @@ body.lux-route-social .social-project-task-card-stack {
 body.lux-route-social .social-project-scroll-list {
   display: grid;
   gap: var(--social-gap-tight);
-}
-
-body.lux-route-social .social-portfolio-feed.social-project-scroll-list,
-body.lux-route-social .social-portfolio-feed.social-project-scroll-list--portfolio {
-  gap: 24px;
 }
 
 body.lux-route-social .social-project-detail-hero {

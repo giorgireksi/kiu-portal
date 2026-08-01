@@ -79,11 +79,30 @@ describe('social-research-regressions', () => {
         expect(research).toContain('.ppt');
         expect(research).toContain('.docx');
         expect(research).toContain('name="researchFiles"');
-        expect(research).toContain('Download to open');
+        expect(research).not.toContain('Download to open');
+        expect(research).toContain('renderResearchViewerBlock');
+        expect(research).toContain('data-research-viewer-shell="1"');
+        expect(research).toContain('<i class="fas fa-download"></i> Download');
         expect(research).toContain('lux-primary-btn lux-glass-dialog-submit-btn home-hover-chip');
         expect(research).toContain("openDialog('research-create', {})");
         expect(research).toContain('__kiuOpenSocialDialog');
-        expect(research).toContain('mountSocialResearchPdfViewer');
+        expect(research).toContain('patchResearchDepositFileList');
+        expect(research).toContain('refreshResearchDepositFiles');
+        expect(research).toContain('resolvePortalCreateResearchApi');
+        expect(research).toMatch(/researchFiles[\s\S]*?refreshResearchDepositFiles/);
+        const renderPlan = readSource('assets/js/pages/social-render-plan.js');
+        expect(renderPlan).toContain("'research-create-open'");
+        expect(renderPlan).toMatch(/researchCreateDialogReasons[\s\S]*?'research-create-open'/);
+        const centerOnlyBlock = renderPlan.match(/const centerOnlyReasons = new Set\(\[[\s\S]*?\]\);/)?.[0] || '';
+        expect(centerOnlyBlock).not.toContain("'research-create-open'");
+        const html = readSource('social.html');
+        expect(html).toContain('social-render-plan.js?v=20260801-researchfiles1');
+        expect(html).toContain('social-page.js?v=20260801-researchviewer3');
+        const page = readSource('assets/js/pages/social-page.js');
+        expect(page).toContain('social-research.js?v=20260801-researchviewer3');
+        expect(page).toContain('social-research-pdf-runtime.js?v=20260801-researchviewer12');
+        expect(research).toMatch(/resolvePortalCreateResearchApi[\s\S]*?Upload unavailable/);
+        expect(research).toMatch(/if \(!created\)[\s\S]*?Deposit failed/);
     });
 
     it('research editor module is removed from page load chain', () => {
@@ -111,9 +130,49 @@ describe('social-research-regressions', () => {
 
     it('pdf runtime reuses pdfjs-dist@3.11.174 CDN pattern', () => {
         const pdf = readSource('assets/js/pages/social-research-pdf-runtime.js');
+        const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
         expect(pdf).toContain("PDFJS_VERSION = '3.11.174'");
         expect(pdf).toContain('cdn.jsdelivr.net/npm/pdfjs-dist@');
         expect(pdf).toContain('mountSocialResearchPdfViewer');
+        expect(pdf).toContain('scheduleResearchFileViewerMount');
+        expect(pdf).toContain('fetchResearchFileBlob');
+        expect(pdf).toContain('getPortalStoredFileUrl');
+        expect(pdf).toContain('getPortalSocialRuntimeState');
+        expect(pdf).toContain('getResearchViewerRuntime');
+        expect(pdf).toContain('getShellFileCacheKey');
+        expect(pdf).toContain('setResearchPdfViewMode');
+        expect(pdf).toContain('resolvePdfPageScale');
+        expect(pdf).toContain('measurePdfViewportBox');
+        expect(pdf).toContain('measurePdfShellBox');
+        expect(pdf).toContain('measurePdfViewportBox(viewportEl)');
+        expect(pdf).toContain('void shell.offsetWidth');
+        expect(pdf).toContain('syncPdfViewportToPage');
+        expect(pdf).toContain('clearPdfViewportPageSize');
+        expect(pdf).toContain('getPdfViewportPadding');
+        expect(pdf).not.toContain('viewportEl.style.width');
+        expect(pdf).toContain('.observe(shell)');
+        expect(pdf).toContain('bindPdfViewportObserver');
+        expect(pdf).toContain('ResizeObserver');
+        expect(pdf).toContain('PDF_NATURAL_SCALE');
+        expect(pdf).toContain('computeDefaultPdfScale');
+        expect(pdf).toContain('Math.min(widthFit, PDF_NATURAL_SCALE)');
+        expect(pdf).toContain('patchPdfThumbActiveState');
+        expect(pdf).toContain('replaceChildren');
+        expect(pdf).toContain('--scale-factor');
+        expect(pdf).toContain('X-Portal-Session');
+        expect(pdf).not.toContain('portalFetch(target');
+        expect(pdf).toContain('textLayer');
+        expect(pdf).toContain('mammoth');
+        expect(pdf).toContain('parsePptxSlides');
+        expect(interactions).toContain('scheduleResearchFileViewerMount');
+        expect(readSource('assets/js/pages/social-research.js')).toMatch(/setResearchPdfViewMode/);
+        expect(readSource('assets/js/pages/social-research.js')).toMatch(
+            /research-pdf-mode[\s\S]*?setResearchPdfViewMode\(mode\)/
+        );
+        expect(readSource('assets/js/pages/social-research.js')).not.toMatch(/queueMicrotask\(\(\) => \{[\s\S]*mountSocialResearchPdfViewer/);
+        const fingerprint = readSource('assets/js/pages/social-fingerprint-model.js');
+        expect(fingerprint).toContain('researchPdfPage');
+        expect(fingerprint).toContain('researchPdfZoom');
     });
 
     it('bare-lite + primitives cover research deposit shell', () => {
@@ -124,6 +183,19 @@ describe('social-research-regressions', () => {
         expect(bare).toContain('.social-neo-research-shell');
         expect(bare).toContain('.social-neo-research-grid');
         expect(bare).toContain('.social-neo-research-pdf-shell');
+        expect(bare).toContain('[data-view-mode="pages"]');
+        expect(bare).toContain('.social-neo-research-pdf-shell[data-view-mode="pages"] .social-neo-research-pdf-viewport');
+        expect(bare).toMatch(/social-neo-research-pdf-shell\[data-view-mode="pages"\] \.social-neo-research-pdf-viewport \{[\s\S]*?overflow: hidden/);
+        expect(bare).toMatch(/social-neo-research-pdf-shell\[data-view-mode="scroll"\] \.social-neo-research-pdf-viewport \{[\s\S]*?scroll-snap-type: y mandatory/);
+        expect(bare).toMatch(/social-neo-research-pdf-shell\[data-view-mode="scroll"\] \.social-neo-research-pdf-page-wrap \{[\s\S]*?scroll-snap-align: start/);
+        expect(bare).not.toContain('--research-pdf-viewport-height');
+        expect(bare).not.toContain('calc(100dvh - 10rem)');
+        expect(bare).toMatch(/\.social-neo-research-doc-view \{[\s\S]*?max-height: 70vh/);
+        expect(bare).toMatch(/\.social-neo-research-slides-view \{[\s\S]*?max-height: 70vh/);
+        expect(bare).toContain('.is-zoomed-past-fit');
+        expect(bare).toContain('.social-neo-research-doc-view');
+        expect(bare).toContain('.social-neo-research-slides-view');
+        expect(bare).toContain('.textLayer');
         expect(bare).toContain('.social-neo-research-file-list');
         expect(bare).not.toContain('--research-prose-measure');
         expect(bare).not.toContain('.social-neo-research-prose');

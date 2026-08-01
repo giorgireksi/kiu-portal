@@ -31,8 +31,45 @@
             const legacyEntries = (Array.isArray(state().social?.projects) ? state().social.projects : [])
                 .map((entry) => normalizePortfolioEntry(entry))
                 .filter((entry) => canViewerAccessPortfolioEntry(entry));
-            // Discover list is legacy projects only (orphan portfolio helper tree removed E6).
-            return legacyEntries;
+            const portfolioDocs = (Array.isArray(state().social?.portfolios) ? state().social.portfolios : [])
+                .map((doc) => {
+                    if (!doc || typeof doc !== 'object') return null;
+                    const extras = Array.isArray(doc.extras) ? doc.extras : [];
+                    const links = [
+                        ...(Array.isArray(doc.basics?.links) ? doc.basics.links : []),
+                        ...extras.filter((item) => text(item?.url)).map((item) => ({
+                            label: text(item.title || item.url),
+                            url: text(item.url)
+                        }))
+                    ];
+                    return normalizePortfolioEntry({
+                        id: `portfolio-doc:${text(doc.userId)}`,
+                        title: text(doc.basics?.headline || doc.basics?.name || 'Campus portfolio'),
+                        summary: text(doc.basics?.summary || ''),
+                        description: text(doc.basics?.summary || ''),
+                        ownerUserId: text(doc.userId),
+                        ownerFacultyCode: text(doc.ownerFacultyCode || ''),
+                        facultyCodes: [text(doc.ownerFacultyCode || '')].filter(Boolean),
+                        status: text(doc.status || 'draft'),
+                        visibilityMode: text(doc.visibilityMode || 'staff_only'),
+                        mediaItems: doc.resume ? [doc.resume] : [],
+                        externalLinks: links,
+                        hashtags: extras.filter((item) => text(item.kind) === 'subject').map((item) => text(item.title)).filter(Boolean),
+                        skillTags: extras.filter((item) => text(item.kind) === 'project').map((item) => text(item.title)).filter(Boolean),
+                        createdAt: text(doc.createdAt || ''),
+                        updatedAt: text(doc.updatedAt || doc.publishedAt || ''),
+                        isPortfolioDocument: true,
+                        extras,
+                        resume: doc.resume || null
+                    });
+                })
+                .filter((entry) => entry && canViewerAccessPortfolioEntry(entry));
+            const byOwner = new Map();
+            [...portfolioDocs, ...legacyEntries].forEach((entry) => {
+                const key = text(entry.isPortfolioDocument ? `doc:${entry.ownerUserId}` : `legacy:${entry.id}`);
+                if (!byOwner.has(key)) byOwner.set(key, entry);
+            });
+            return Array.from(byOwner.values());
         }
 
         function portfolioDraftExists() {
@@ -86,6 +123,8 @@
                     summary: '',
                     links: []
                 },
+                resume: null,
+                extras: [],
                 sectionOrder: ['education', 'experience', 'projects', 'skills'],
                 sections: {
                     education: { builtinKey: 'education', label: 'Education', repeatable: true, visible: true, fieldDefinitions: [], entries: [] },
@@ -110,6 +149,7 @@
             if (typeof window.KiuPortfolioApi?.loadMyPortfolio !== 'function') {
                 return ensureMyPortfolioDocument();
             }
+            if (force) myPortfolioApiDenied = false;
             if (myPortfolioApiDenied) {
                 return ensureMyPortfolioDocument();
             }
@@ -165,81 +205,51 @@
                     : []
             };
 
-            const collectBuiltin = (sectionKey, mapper) => {
-                const section = portfolio.sections?.[sectionKey];
-                if (!section) return;
-                const cards = root ? Array.from(root.querySelectorAll(`.portfolio-entry-card[data-section-key="${sectionKey}"]`)) : [];
-                section.entries = cards.map((card, index) => mapper(card, index)).filter(Boolean);
-            };
+            const pendingResume = state().ui?.portfolioResumePending;
+            if (pendingResume && typeof pendingResume === 'object') {
+                portfolio.resume = pendingResume;
+            } else if (portfolio.resume === undefined) {
+                portfolio.resume = null;
+            }
 
-            collectBuiltin('education', (card, index) => ({
-                id: portfolioMakeId('entry'),
-                order: index,
-                fields: {
-                    school: portfolioFieldValue('text', card.querySelector('[name="portfolioEducationSchool"]')?.value),
-                    degree: portfolioFieldValue('text', card.querySelector('[name="portfolioEducationDegree"]')?.value),
-                    dates: portfolioReadDateRange('portfolioEducationDates', card),
-                    note: portfolioFieldValue('text', card.querySelector('[name="portfolioEducationNote"]')?.value)
-                }
-            }));
-
-            collectBuiltin('experience', (card, index) => ({
-                id: portfolioMakeId('entry'),
-                order: index,
-                fields: {
-                    role: portfolioFieldValue('text', card.querySelector('[name="portfolioExperienceRole"]')?.value),
-                    organization: portfolioFieldValue('text', card.querySelector('[name="portfolioExperienceOrganization"]')?.value),
-                    dates: portfolioReadDateRange('portfolioExperienceDates', card),
-                    description: portfolioFieldValue('text', card.querySelector('[name="portfolioExperienceDescription"]')?.value)
-                }
-            }));
-
-            collectBuiltin('projects', (card, index) => ({
-                id: portfolioMakeId('entry'),
-                order: index,
-                fields: {
-                    title: portfolioFieldValue('text', card.querySelector('[name="portfolioProjectTitle"]')?.value),
-                    description: portfolioFieldValue('text', card.querySelector('[name="portfolioProjectDescription"]')?.value),
-                    link: portfolioFieldValue('link', { url: card.querySelector('[name="portfolioProjectLink"]')?.value || '' }),
-                    file: portfolio.sections?.projects?.entries?.[index]?.fields?.file || portfolioFieldValue('file', null)
-                }
-            }));
-
-            collectBuiltin('skills', (card, index) => ({
-                id: 'skills-default',
-                order: index,
-                fields: {
-                    tags: portfolioFieldValue('text', card.querySelector('[name="portfolioSkillsTags"]')?.value)
-                }
-            }));
-
-            Object.keys(portfolio.sections || {}).filter((key) => key.startsWith('custom_')).forEach((sectionKey) => {
-                const section = portfolio.sections[sectionKey];
-                const cards = root ? Array.from(root.querySelectorAll(`.portfolio-entry-card[data-section-key="${sectionKey}"]`)) : [];
-                section.entries = cards.map((card, index) => {
-                    const fields = {};
-                    (section.fieldDefinitions || []).forEach((def) => {
-                        if (def.type === 'dateRange') {
-                            fields[def.key] = portfolioReadDateRange(`portfolioCustom_${sectionKey}_${def.key}`, card);
-                            return;
-                        }
-                        const input = card.querySelector(`[data-field-key="${def.key}"]`);
-                        if (def.type === 'link') {
-                            fields[def.key] = portfolioFieldValue('link', { url: input?.value || '' });
-                            return;
-                        }
-                        if (def.type === 'file') {
-                            fields[def.key] = section.entries?.[index]?.fields?.[def.key] || portfolioFieldValue('file', null);
-                            return;
-                        }
-                        fields[def.key] = portfolioFieldValue('text', input?.value || '');
-                    });
-                    return { id: portfolioMakeId('entry'), order: index, fields };
-                });
-            });
+            const cards = root ? Array.from(root.querySelectorAll('.portfolio-extra-card[data-extra-index]')) : [];
+            portfolio.extras = cards.map((card, index) => {
+                const kind = text(card.querySelector('[name="portfolioExtraKind"]')?.value || 'note') || 'note';
+                const title = text(card.querySelector('[name="portfolioExtraTitle"]')?.value || '');
+                const detail = text(card.querySelector('[name="portfolioExtraDetail"]')?.value || '');
+                const url = text(card.querySelector('[name="portfolioExtraUrl"]')?.value || '');
+                if (!title && !detail && !url) return null;
+                return {
+                    id: text(portfolio.extras?.[index]?.id) || portfolioMakeId('extra'),
+                    kind,
+                    title: title || (kind === 'link' ? url : 'Highlight'),
+                    detail,
+                    url
+                };
+            }).filter(Boolean);
 
             state().ui.myPortfolio = portfolio;
             return portfolio;
+        }
+
+        async function readPortfolioResumeFile(file) {
+            if (!file) return null;
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result || ''));
+                reader.onerror = () => reject(reader.error || new Error('Could not read resume file.'));
+                reader.readAsDataURL(file);
+            });
+            if (!dataUrl) return null;
+            return {
+                id: portfolioMakeId('resume'),
+                name: text(file.name || 'resume.pdf') || 'resume.pdf',
+                type: text(file.type || 'application/pdf') || 'application/pdf',
+                size: Number(file.size) || 0,
+                dataUrl,
+                storageKey: '',
+                storageBackend: 'inline'
+            };
         }
 
         async function saveMyPortfolioDocument({ flash = true } = {}) {
@@ -251,6 +261,7 @@
                 const saved = await window.KiuPortfolioApi.saveMyPortfolio(portfolio);
                 if (saved) {
                     state().ui.myPortfolio = clonePortfolioDocument(saved);
+                    state().ui.portfolioResumePending = null;
                     const existing = Array.isArray(state().social?.portfolios) ? state().social.portfolios : [];
                     state().social.portfolios = [saved, ...existing.filter((item) => text(item?.userId) !== text(saved.userId))];
                 }
@@ -297,7 +308,7 @@
             runtime.ui.projectStatus = 'draft';
             runtime.ui.projectVisibility = 'all_logged_in';
             runtime.ui.projectCourseTag = '';
-            runtime.ui.projectFacultyCodes = [currentFacultyCode()];
+            runtime.ui.projectFacultyCodes = [((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || currentFacultyCode())];
             runtime.ui.projectSkillTags = '';
             runtime.ui.projectHashtags = '';
             runtime.ui.projectExternalLinks = '';
@@ -331,6 +342,7 @@
             saveMyPortfolioDocument,
             openPortfolioEditor,
             resetPortfolioEditor,
+            readPortfolioResumeFile,
             PORTFOLIO_DISCOVER_ROLE_TARGETS
         };
     }

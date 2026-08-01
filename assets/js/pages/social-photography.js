@@ -253,8 +253,19 @@
                 .filter((rel) => text(rel.toType) === 'profile')
                 .map((rel) => text(rel.toId))
         );
+        const chrome = window.KiuSocialChromeModel || {};
+        const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+            ? chrome.socialBrowseFacultyValue(state())
+            : (text(state()?.ui?.socialBrowseFaculty || 'all') || 'all');
+        const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+            ? chrome.socialMatchesBrowseFaculty
+            : () => true;
 
         let items = posts.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+        if (browseFaculty && browseFaculty !== 'all') {
+            items = items.filter((post) => matchesBrowse(post, browseFaculty));
+        }
 
         if (tab === 'following') {
             items = items.filter((post) => followedIds.has(text(post.authorUserId)));
@@ -678,6 +689,7 @@
                             <p class="social-photo-chrome-subtitle social-neo-muted">${escape(tabCopy[tab] || tabCopy.explore)}</p>
                         </div>
                         <div class="social-photo-chrome-actions">
+                            ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                             ${searchMarkup}
                             ${uploadFabMarkup}
                             ${myProfileBtn}
@@ -908,13 +920,25 @@
                 <label class="social-photo-field social-photo-mono">Location
                     <input class="social-neo-input lux-control" type="text" name="photographyLocation" value="${escape(text(draft.location || ''))}" placeholder="Library quad">
                 </label>
+                <label class="social-photo-field social-photo-mono">Faculty
+                    ${(window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+                        ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                            name: 'photographyFaculty',
+                            includeAll: false,
+                            required: true,
+                            value: text(draft.facultyCode || '') || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                            label: 'Faculty'
+                        }))
+                        : `<select class="social-neo-select lux-control" name="photographyFaculty" required data-lux-picker><option value="">Select faculty</option></select>`}
+                </label>
             `;
         } else {
+            const reviewFaculty = text(draft.facultyCode || '') || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || currentFacultyCode());
             body = `
                 <div class="social-photo-upload-review">
                     ${preview ? `<div class="social-photo-feed-media"><img src="${escape(preview)}" alt="Review"></div>` : ''}
                     <p class="social-photo-feed-caption">${escape(text(draft.caption || 'No caption'))}</p>
-                    <p class="social-photo-mono">Faculty: ${escape(currentFacultyCode())} · Audience: Campus</p>
+                    <p class="social-photo-mono">Faculty: ${escape(reviewFaculty)} · Audience: Campus</p>
                 </div>
             `;
         }
@@ -1004,6 +1028,12 @@
                 state().ui.photographyUploadDraft.caption = text(form?.photographyCaption?.value || '');
                 state().ui.photographyUploadDraft.tags = text(form?.photographyTags?.value || '');
                 state().ui.photographyUploadDraft.location = text(form?.photographyLocation?.value || '');
+                state().ui.photographyUploadDraft.facultyCode = text(form?.photographyFaculty?.value || '')
+                    || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(state()) || '');
+                if (!state().ui.photographyUploadDraft.facultyCode || state().ui.photographyUploadDraft.facultyCode === 'all') {
+                    if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Faculty is required.', 'danger');
+                    return;
+                }
             }
             const nextStep = Math.min(3, step + 1);
             state().ui.photographyUploadStep = nextStep;
@@ -1020,6 +1050,9 @@
                 state().ui.photographyUploadDraft.caption = text(form?.photographyCaption?.value || '');
                 state().ui.photographyUploadDraft.tags = text(form?.photographyTags?.value || '');
                 state().ui.photographyUploadDraft.location = text(form?.photographyLocation?.value || '');
+                state().ui.photographyUploadDraft.facultyCode = text(form?.photographyFaculty?.value || '')
+                    || state().ui.photographyUploadDraft.facultyCode
+                    || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(state()) || '');
             }
             const step = Math.max(1, currentStep - 1);
             state().ui.photographyUploadStep = step;
@@ -1141,6 +1174,10 @@
             const caption = text(draft.caption || form.photographyCaption?.value || '');
             if (!file) throw new Error('Choose an image before publishing.');
             if (typeof submitPost !== 'function') throw new Error('Photo publishing is unavailable.');
+            const facultyCode = text(draft.facultyCode || form.photographyFaculty?.value || '')
+                || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(live) || '')
+                || (typeof facultyCodeFn === 'function' ? facultyCodeFn() : '');
+            if (!facultyCode || facultyCode === 'all') throw new Error('Faculty is required.');
             const tags = text(draft.tags || form.photographyTags?.value || '')
                 .split(',')
                 .map((tag) => text(tag).replace(/^#/, ''))
@@ -1150,10 +1187,12 @@
                 category: 'Photography',
                 file,
                 fileScope: 'social',
+                audienceFacultyCode: facultyCode,
+                facultyCode,
                 photoMeta: {
                     tags,
                     location: text(draft.location || form.photographyLocation?.value || ''),
-                    facultyCode: facultyCodeFn()
+                    facultyCode
                 }
             });
             if (!published) throw new Error('Photo could not be published.');

@@ -372,6 +372,16 @@
             const target = event.target;
             if (!target || !socialInteractionContains(target)) return;
 
+            if (target.matches?.('select[name="socialBrowseFaculty"]')) {
+                event.__kiuSocialChangeHandled = true;
+                const next = text(target.value || 'all') || 'all';
+                runtime.ui.socialBrowseFaculty = next;
+                runtime.ui.projectDiscoverFaculty = next === 'all' ? 'all' : next;
+                runtime.ui.researchFaculty = next === 'all' ? '' : next;
+                renderSocialPageNow('social-browse-faculty');
+                return;
+            }
+
             const changeDomain = routeSocialDomain(target, [
                 {
                     is: 'isSocialWorkspaceChangeTarget',

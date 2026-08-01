@@ -258,4 +258,15 @@ describe('social-overlay-chrome', () => {
         api.pruneStaleSocialOverlayState();
         expect(runtime.ui.socialDialog).toEqual({ type: 'group-create' });
     });
+
+    it('restores saved scroll before clearing overlay lock artifacts', () => {
+        const source = readFileSync(join(process.cwd(), 'assets/js/pages/social-overlay-chrome.js'), 'utf8');
+        const unlock = source.match(/if \(!stateOpen\) \{[\s\S]*?\n            \}/);
+        expect(unlock?.[0] || '').toContain('socialOverlayScrollY');
+        expect(unlock?.[0] || '').toContain('socialOverlayCenterScrollY');
+        expect(unlock?.[0] || '').toMatch(/const scrollY[\s\S]*const centerScrollY[\s\S]*clearSocialOverlayLockArtifacts\(\)/);
+        expect(unlock?.[0] || '').toMatch(/clearSocialOverlayLockArtifacts\(\)[\s\S]*scrollSocialCenterTo\(centerScrollY/);
+        expect(readFileSync(join(process.cwd(), 'social.html'), 'utf8'))
+            .toContain('social-overlay-chrome.js?v=20260801-dialogscroll1');
+    });
 });

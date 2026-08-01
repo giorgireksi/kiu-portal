@@ -85,7 +85,63 @@
             if (!book.sectionId) book.sectionId = 'books';
         });
 
+        normalizeLibraryBrowseFilterFieldIds(store);
+
         return store;
+    }
+
+    function isLibraryFilterableSchemaField(field) {
+        const type = String(field?.type || '');
+        return type === 'select' || type === 'droplist';
+    }
+
+    function getLibraryFilterableSchemaFieldIds(schema) {
+        return (Array.isArray(schema) ? schema : [])
+            .filter(isLibraryFilterableSchemaField)
+            .map((field) => String(field.id || '').trim())
+            .filter(Boolean);
+    }
+
+    function normalizeLibraryBrowseFilterFieldIds(store = null) {
+        const target = store || ensureLibraryCatalogState();
+        const filterableIds = getLibraryFilterableSchemaFieldIds(target.formSchema);
+        const allowed = new Set(filterableIds);
+        if (!Array.isArray(target.browseFilterFieldIds)) {
+            target.browseFilterFieldIds = filterableIds.slice();
+            return target.browseFilterFieldIds.slice();
+        }
+        target.browseFilterFieldIds = target.browseFilterFieldIds
+            .map((id) => String(id || '').trim())
+            .filter((id) => id && allowed.has(id));
+        return target.browseFilterFieldIds.slice();
+    }
+
+    function getLibraryBrowseFilterFieldIds() {
+        return normalizeLibraryBrowseFilterFieldIds();
+    }
+
+    function setLibraryBrowseFilterFieldIds(fieldIds) {
+        const store = ensureLibraryCatalogState();
+        const allowed = new Set(getLibraryFilterableSchemaFieldIds(store.formSchema));
+        store.browseFilterFieldIds = (Array.isArray(fieldIds) ? fieldIds : [])
+            .map((id) => String(id || '').trim())
+            .filter((id) => id && allowed.has(id));
+        return store.browseFilterFieldIds.slice();
+    }
+
+    function enableLibraryBrowseFilterField(fieldId) {
+        const store = ensureLibraryCatalogState();
+        const normalized = String(fieldId || '').trim();
+        if (!normalized) return getLibraryBrowseFilterFieldIds();
+        const allowed = new Set(getLibraryFilterableSchemaFieldIds(store.formSchema));
+        if (!allowed.has(normalized)) return getLibraryBrowseFilterFieldIds();
+        if (!Array.isArray(store.browseFilterFieldIds)) {
+            store.browseFilterFieldIds = getLibraryFilterableSchemaFieldIds(store.formSchema);
+        }
+        if (!store.browseFilterFieldIds.includes(normalized)) {
+            store.browseFilterFieldIds.push(normalized);
+        }
+        return store.browseFilterFieldIds.slice();
     }
 
     function getLibraryCatalogSections() {
@@ -355,4 +411,9 @@
     global.renderLibraryCatalogTableHead = renderLibraryCatalogTableHead;
     global.renderLibraryCatalogRow = renderLibraryCatalogRow;
     global.slugifyLibrarySectionId = slugifyLibrarySectionId;
+    global.isLibraryFilterableSchemaField = isLibraryFilterableSchemaField;
+    global.normalizeLibraryBrowseFilterFieldIds = normalizeLibraryBrowseFilterFieldIds;
+    global.getLibraryBrowseFilterFieldIds = getLibraryBrowseFilterFieldIds;
+    global.setLibraryBrowseFilterFieldIds = setLibraryBrowseFilterFieldIds;
+    global.enableLibraryBrowseFilterField = enableLibraryBrowseFilterField;
 })(typeof window !== 'undefined' ? window : globalThis);

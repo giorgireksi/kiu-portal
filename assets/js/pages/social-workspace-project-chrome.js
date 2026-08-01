@@ -54,6 +54,7 @@
                 <section class="social-neo-card social-neo-workspace-hero social-neo-community-panel social-neo-community-panel--workspace home-hover-chip">
                     <div class="social-neo-workspace-hero-head">
                         <div class="social-neo-workspace-hero-actions">
+                            ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                             <button class="lux-primary-btn social-neo-workspace-hero-create-btn" type="button" data-action="project-create-open">
                                 <i class="fas fa-plus"></i> Create workspace
                             </button>
@@ -81,9 +82,10 @@
                 ...projects.flatMap((project) => Array.isArray(project?.facultyCodes) ? project.facultyCodes : []),
                 ...directory.map((account) => text(account?.facultyCode || account?.faculty))
             ]).filter(Boolean);
+            const defaultFaculty = ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || currentFacultyCode());
             const projectFaculties = Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length
                 ? runtime.ui.projectFacultyCodes
-                : [currentFacultyCode()];
+                : [defaultFaculty];
             const advisorCandidates = directory.filter((account) => isStaffAccount(account) || ['professor', 'ta', 'admin'].includes(text(account?.role || '').toLowerCase()));
             return {
                 facultyOptions,
@@ -327,7 +329,7 @@
                             </div>
                             ${neoField('Skills / roles', `<input class="social-neo-input lux-control" id="${escape(ctx.projectSkillTagsId)}" type="text" name="projectSkillTags" placeholder="developer, designer, researcher, analyst" value="${escape(text(runtime.ui?.projectSkillTags || ''))}">`, { forId: ctx.projectSkillTagsId })}
                             <div class="lux-glass-dialog-project-create-faculties">
-                                <span class="social-neo-label">Faculties involved</span>
+                                <span class="social-neo-label">Faculties involved *</span>
                                 <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                     ${ctx.facultyOptions.map((facultyCode) => `<button class="lux-secondary-btn ${ctx.projectFaculties.includes(facultyCode) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>`).join('')}
                                 </div>

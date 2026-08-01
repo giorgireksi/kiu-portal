@@ -78,7 +78,7 @@ describe('social state store domain split', () => {
         expect(upserted.lostFoundItems).toHaveLength(1);
         expect(upserted.lostFoundItems[0].status).toBe('lost');
         expect(upserted.lostFoundItems[0].kind).toBeUndefined();
-        expect(upserted.lostFoundItems[0].facultyCode).toBeUndefined();
+        expect(upserted.lostFoundItems[0].facultyCode).toBe('ECON');
 
         const chat = store.ensureSocialGroupChat('group-1', 'owner-1');
         expect(chat?.chat?.groupId).toBe('group-1');

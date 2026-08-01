@@ -36,7 +36,7 @@
             when
         } = deps;
 
-        const portfolioPill = (innerHtml, extra = '') => `<span class="social-neo-pill lux-status-pill home-hover-chip ${extra}">${innerHtml}</span>`;
+        const portfolioPill = (innerHtml, extra = '') => `<span class="social-neo-pill lux-status-pill ${extra}">${innerHtml}</span>`;
 
         function renderPortfolioHero(runtime, metrics = {}) {
             const canCreate = Boolean(metrics.canCreate);
@@ -60,33 +60,30 @@
             ];
             const createCta = canCreate ? `
                 <button class="lux-primary-btn social-neo-portfolio-hero-create-btn" type="button" data-action="portfolio-create-open">
-                    <i class="fas fa-pen"></i> ${hasDraft ? 'Continue my portfolio' : 'Build my portfolio'}
+                    <i class="fas fa-file-arrow-up"></i> ${hasDraft ? 'Continue my portfolio' : 'Upload my resume'}
                 </button>
                 ${hasDraft ? `${portfolioPill('<strong>Draft saved</strong><span>Ready to publish</span>', 'social-portfolio-draft-pill')}` : ''}
             ` : '';
             const bodyHtml = text(metrics.bodyHtml || '');
             const merged = Boolean(bodyHtml);
             const discoverFilters = portfolioPanelTab === 'discover' ? `
-                <div class="social-neo-portfolio-hero-discover">
+                <div class="social-neo-portfolio-hero-discover lux-soft-chrome home-hover-chip">
                     <div class="social-portfolio-toolbar-head">
                         <div>
                             <strong>Discover talent across campus</strong>
                             <span class="lms-route-meta-12">Filter by faculty, audience, and tags without losing the social feel of the feed.</span>
                         </div>
                     </div>
-                    <div class="social-portfolio-search-row">
+                    <div class="social-portfolio-search-row lux-soft-chrome home-hover-chip">
                         <label class="social-portfolio-search">
                             <i class="fas fa-search"></i>
                             <input class="lux-control" type="search" name="projectDiscoverSearch" value="${escape(discoverSearch)}" placeholder="Search projects, skills, hashtags, people, or faculties">
                         </label>
-                        <select class="social-neo-select lux-control lux-universal-native-select" name="projectDiscoverFaculty" data-lux-picker>
-                            ${facultyOptions.map((facultyCode) => `<option value="${escape(facultyCode)}" ${discoverFaculty === facultyCode ? 'selected' : ''}>${escape(facultyCode === 'all' ? 'All faculties' : facultyLabel(facultyCode))}</option>`).join('')}
-                        </select>
                         <select class="social-neo-select lux-control lux-universal-native-select" name="projectDiscoverRole" data-lux-picker>
                             ${PORTFOLIO_DISCOVER_ROLE_TARGETS.map(([value, label]) => `<option value="${escape(value)}" ${discoverRole === value ? 'selected' : ''}>${escape(label)}</option>`).join('')}
                         </select>
                     </div>
-                    <div class="social-portfolio-tag-row">
+                    <div class="social-portfolio-tag-row lux-soft-chrome home-hover-chip">
                         <button class="${!discoverTag ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="">All tags</button>
                         ${tagOptions.map((tag) => `
                             <button class="${discoverTag === text(tag).toLowerCase() ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="portfolio-filter-tag" data-tag="${escape(text(tag).toLowerCase())}">
@@ -100,6 +97,7 @@
                 <section class="social-neo-card social-neo-portfolio-hero social-neo-community-panel social-neo-community-panel--portfolio home-hover-chip${merged ? ' is-merged' : ''}">
                     <div class="social-neo-portfolio-hero-head">
                         <div class="social-neo-portfolio-hero-actions">
+                            ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                             ${createCta}
                             <button class="lux-secondary-btn social-neo-portfolio-hero-profile-btn" type="button" data-action="profile-portfolio-open">
                                 <i class="fas fa-id-card"></i> Open profile portfolio
@@ -140,7 +138,7 @@
             const facultyOptions = uniqueStrings(['all', currentFaculty, ...allEntries.flatMap((entry) => entry.facultyCodes || [])]).filter(Boolean);
             const draftFaculties = Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length
                 ? runtime.ui.projectFacultyCodes
-                : [currentFaculty];
+                : [((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || currentFaculty)];
             const mediaItems = Array.isArray(runtime.ui?.projectMediaItems) ? runtime.ui.projectMediaItems : [];
             const editing = text(runtime.ui?.projectEditId || '');
             const customAudienceOpen = text(runtime.ui?.projectVisibility || 'all_logged_in') === 'custom';
@@ -189,7 +187,7 @@
                                 ${neoField('Media upload', `<input class="social-neo-input lux-control" type="file" name="projectMediaFile" accept="image/*,.pdf,.ppt,.pptx,.doc,.docx,.zip,.fig,.sketch">`)}
                             </div>
                             <div class="lux-glass-dialog-portfolio-create-faculties">
-                                <span class="social-neo-label">Faculty tags</span>
+                                <span class="social-neo-label">Faculty tags *</span>
                                 <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                     ${uniqueStrings([currentFaculty, 'BUS', 'CS', 'LAW', 'MED', 'ARTS', ...facultyOptions.filter((code) => code !== 'all')]).map((facultyCode) => `
                                         <button class="lux-secondary-btn ${draftFaculties.includes(facultyCode) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>
@@ -211,7 +209,7 @@
                                         if (url && isImage(item)) {
                                             return `<img src="${escape(url)}" alt="${escape(text(item.name || 'Portfolio media'))}">`;
                                         }
-                                        return `<span class="social-neo-pill home-hover-chip">${escape(text(item.name || 'Uploaded media'))}</span>`;
+                                        return `<span class="social-neo-pill">${escape(text(item.name || 'Uploaded media'))}</span>`;
                                     }).join('')}
                                 </div>
                             ` : ''}
@@ -248,7 +246,7 @@
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Portfolio</span>
                             <h2>My portfolio</h2>
-                            <p class="lux-glass-dialog-portfolio-editor-subtitle">Build sections, save drafts, and publish your campus showcase.</p>
+                            <p class="lux-glass-dialog-portfolio-editor-subtitle">Upload your resume, add a short About, and optionally attach subjects or projects.</p>
                         </div>
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
                     </div>
@@ -276,7 +274,7 @@
                     <div class="social-neo-section-head">
                         <div><strong>${isOwn ? 'Your portfolio' : 'Portfolio highlights'}</strong><span>${isOwn ? 'Showcase projects, research, design, and startup work inside campus social.' : 'Visible showcase entries from this profile.'}</span></div>
                         <div class="social-neo-inline social-neo-inline-gap-8-wrap">
-                            <span class="social-neo-pill lux-status-pill home-hover-chip"><strong>${escape(items.length)}</strong><span>Visible</span></span>
+                            <span class="social-neo-pill lux-status-pill"><strong>${escape(items.length)}</strong><span>Visible</span></span>
                             ${isOwn ? `<button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="profile-portfolio-open"><i class="fas fa-briefcase"></i> Open Portfolio</button>` : ''}
                         </div>
                     </div>
@@ -297,7 +295,7 @@
                                 </article>
                             `).join('')}
                         </div>
-                    ` : `<div class="social-neo-empty">Build your first portfolio card to share work, ideas, and startup-ready projects with the university community.</div>`}
+                    ` : `<div class="social-neo-empty">Build your first portfolio by uploading a resume and a short About for campus discovery.</div>`}
                 </section>
             `;
         }
@@ -308,7 +306,10 @@
             const viewer = currentUser();
             const canCreate = Boolean(viewer);
             const allEntries = portfolioEntriesForViewer();
-            const discoverFaculty = text(runtime.ui?.projectDiscoverFaculty || currentFacultyCode()) || currentFacultyCode();
+            const chrome = window.KiuSocialChromeModel || {};
+            const discoverFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+                ? chrome.socialBrowseFacultyValue(runtime)
+                : (text(runtime.ui?.projectDiscoverFaculty || 'all') || 'all');
             const discoverRole = text(runtime.ui?.projectDiscoverRole || 'all') || 'all';
             const discoverSearch = text(runtime.ui?.projectDiscoverSearch || '').toLowerCase();
             const discoverTag = text(runtime.ui?.projectDiscoverTag || '').toLowerCase();
@@ -316,8 +317,11 @@
             const currentFaculty = currentFacultyCode();
             const facultyOptions = uniqueStrings(['all', currentFaculty, ...allEntries.flatMap((entry) => entry.facultyCodes || [])]).filter(Boolean);
             const tagOptions = uniqueStrings(allEntries.flatMap((entry) => entry.hashtags || [])).slice(0, 12);
+            const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+                ? chrome.socialMatchesBrowseFaculty
+                : (entry, faculty) => faculty === 'all' || (entry.facultyCodes || []).includes(faculty);
             const filteredEntries = allEntries.filter((entry) => {
-                if (discoverFaculty !== 'all' && !(entry.facultyCodes || []).includes(discoverFaculty)) return false;
+                if (!matchesBrowse(entry, discoverFaculty)) return false;
                 if (!portfolioMatchesRoleFilter(entry, discoverRole)) return false;
                 if (discoverTag && !(entry.hashtags || []).some((tag) => text(tag).toLowerCase() === discoverTag.replace(/^#/, ''))) return false;
                 if (discoverSearch) {
@@ -331,7 +335,7 @@
             const editing = text(runtime.ui?.projectEditId || '');
             const hasDraft = Boolean(editing || portfolioDraftExists());
             const portfolioPanelTabs = [
-                { tab: 'mine', label: 'My portfolio', helper: 'Build and publish your showcase', attrs: 'data-portfolio-tab="mine"' },
+                { tab: 'mine', label: 'My portfolio', helper: 'Upload resume and publish', attrs: 'data-portfolio-tab="mine"' },
                 { tab: 'discover', label: 'Discover', helper: 'Browse talent across campus', attrs: 'data-portfolio-tab="discover"' },
             ];
             const discoverFeedMarkup = filteredEntries.length ? filteredEntries.map((entry, index) => {
@@ -393,7 +397,17 @@
                                     ` : ''}
                                     <div class="social-portfolio-actions">
                                         ${entry.isPortfolioDocument ? `
-                                            <button class="lux-secondary-btn" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>
+                                            ${(() => {
+                                                const resumeUrl = entry.resume ? fileUrl(entry.resume) : (entry.mediaItems[0] ? fileUrl(entry.mediaItems[0]) : '');
+                                                return resumeUrl
+                                                    ? `<a class="lux-secondary-btn" href="${escape(resumeUrl)}" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> View resume</a>`
+                                                    : `<button class="lux-secondary-btn" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>`;
+                                            })()}
+                                            ${(Array.isArray(entry.extras) && entry.extras.length) ? `
+                                                <div class="social-portfolio-extras">
+                                                    ${entry.extras.slice(0, 4).map((extra) => portfolioPill(escape(text(extra.title || extra.kind || 'Extra')))).join('')}
+                                                </div>
+                                            ` : ''}
                                             ${entry.canEdit ? `<button class="lux-primary-btn" type="button" data-action="portfolio-create-open"><i class="fas fa-pen"></i> Edit portfolio</button>` : `<button class="lux-primary-btn" type="button" data-action="portfolio-contact" data-project-id="${escape(entry.id)}" data-user-id="${escape(entry.ownerUserId)}"><i class="fas fa-envelope"></i> Message creator</button>`}
                                         ` : `
                                             <button class="lux-secondary-btn" type="button" data-action="${isOpen ? 'projects-back' : 'project-open'}" data-project-id="${escape(entry.id)}">${isOpen ? 'Hide details' : 'Open entry'}</button>
@@ -406,7 +420,7 @@
             }).join('') : `<div class="social-neo-empty social-neo-portfolio-feed-empty">No portfolio entries matched the current filters.</div>`;
             const panelBodyMarkup = portfolioPanelTab === 'mine'
                 ? renderMyPortfolioPanel()
-                : `<div class="social-portfolio-feed social-project-scroll-list social-project-scroll-list--portfolio">${discoverFeedMarkup}</div>`;
+                : `<div class="social-portfolio-feed">${discoverFeedMarkup}</div>`;
             return `
                 <div class="social-neo-stack social-neo-portfolio-shell social-neo-portfolio-shell--merged">
                     ${renderPortfolioHero(runtime, {

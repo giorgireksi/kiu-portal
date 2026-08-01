@@ -74,6 +74,7 @@
             projectComposerOpen: false,
             projectDiscoverSearch: '',
             projectDiscoverFaculty: 'all',
+            socialBrowseFaculty: 'all',
             projectDiscoverRole: 'all',
             projectDiscoverTag: '',
             projectName: '',
@@ -325,6 +326,7 @@
         runtime.ui.projectHubStatus = 'all';
         runtime.ui.projectHubViewMode = 'grid';
         runtime.ui.projectDiscoverFaculty = 'all';
+        runtime.ui.socialBrowseFaculty = 'all';
         runtime.ui.projectDiscoverSearch = '';
         runtime.ui.projectDiscoverTag = '';
         runtime.ui.activeProjectId = '';

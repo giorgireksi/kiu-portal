@@ -1,7 +1,6 @@
 (function initLibraryCatalogView(global) {
     'use strict';
 
-    const FILTER_FIELDS = ['topic', 'language', 'status'];
     const PAGE_SIZE_OPTIONS = [10, 25, 50, 100, 250, 320];
     const READONLY_PAGINATION_KEY = 'library-catalog-readonly-pagination';
 
@@ -38,18 +37,7 @@
                         <span class="lux-picker-label">Search</span>
                         <input id="library-filter-search" name="library_filter_search" type="text" class="lux-control" placeholder="Title, author, year..." data-library-catalog-search="query">
                     </label>
-                    <label class="lux-picker-field">
-                        <span class="lux-picker-label">Topic</span>
-                        <select id="library-filter-topic" name="library_filter_topic" data-lux-picker-label="Topic" data-library-catalog-select-field="topic"></select>
-                    </label>
-                    <label class="lux-picker-field">
-                        <span class="lux-picker-label">Language</span>
-                        <select id="library-filter-language" name="library_filter_language" data-lux-picker-label="Language" data-library-catalog-select-field="language"></select>
-                    </label>
-                    <label class="lux-picker-field">
-                        <span class="lux-picker-label">Status</span>
-                        <select id="library-filter-status" name="library_filter_status" data-lux-picker-label="Status" data-library-catalog-select-field="status"></select>
-                    </label>
+                    <div data-library-catalog-filter-fields style="display:contents"></div>
                 </div>
             </section>
             <section class="lux-strip-card admin-library-catalog-card lux-soft-chrome home-hover-chip" aria-label="Shared catalog">
@@ -146,6 +134,66 @@
         return Array.isArray(global.KIU_STATE?.adminLibrary?.formSchema)
             ? global.KIU_STATE.adminLibrary.formSchema.slice()
             : [];
+    }
+
+    function isFilterableSchemaField(field) {
+        if (typeof global.isLibraryFilterableSchemaField === 'function') {
+            return global.isLibraryFilterableSchemaField(field);
+        }
+        const type = String(field?.type || '');
+        return type === 'select' || type === 'droplist';
+    }
+
+    function getFilterableSchemaFields() {
+        return getFormSchema().filter(isFilterableSchemaField);
+    }
+
+    function getBrowseFilterFieldIds() {
+        ensureCatalogState();
+        if (typeof global.getLibraryBrowseFilterFieldIds === 'function') {
+            return global.getLibraryBrowseFilterFieldIds();
+        }
+        if (typeof global.normalizeLibraryBrowseFilterFieldIds === 'function') {
+            return global.normalizeLibraryBrowseFilterFieldIds();
+        }
+        const store = global.KIU_STATE?.adminLibrary || {};
+        const filterableIds = getFilterableSchemaFields().map((field) => String(field.id || '').trim()).filter(Boolean);
+        if (!Array.isArray(store.browseFilterFieldIds)) {
+            store.browseFilterFieldIds = filterableIds.slice();
+        } else {
+            const allowed = new Set(filterableIds);
+            store.browseFilterFieldIds = store.browseFilterFieldIds
+                .map((id) => String(id || '').trim())
+                .filter((id) => id && allowed.has(id));
+        }
+        return store.browseFilterFieldIds.slice();
+    }
+
+    function getBrowseFilterSchemaFields() {
+        const enabled = new Set(getBrowseFilterFieldIds());
+        return getFilterableSchemaFields().filter((field) => enabled.has(String(field.id || '')));
+    }
+
+    function getVisibleFilterSchemaFields(mode) {
+        return normalizeMode(mode) === 'admin'
+            ? getFilterableSchemaFields()
+            : getBrowseFilterSchemaFields();
+    }
+
+    function getSchemaFieldFilterOptions(field) {
+        if (Array.isArray(field?.options) && field.options.length) return field.options;
+        const params = global.KIU_STATE?.adminLibrary?.params || {};
+        if (field?.paramKey && Array.isArray(params[field.paramKey])) return params[field.paramKey];
+        return [];
+    }
+
+    function readSchemaFilterValues(mode) {
+        const values = {};
+        getVisibleFilterSchemaFields(mode).forEach((field) => {
+            const select = global.document.getElementById(`library-filter-${field.id}`);
+            values[field.id] = select?.value || 'all';
+        });
+        return values;
     }
 
     function loadReadonlyPagination() {
@@ -253,15 +301,16 @@
         const meta = library.meta && typeof library.meta === 'object' ? library.meta : {};
         const schema = getFormSchema();
         const schemaSig = schema.map((field) => `${field.id}:${field.type || ''}`).join('|');
+        const browseFilterSig = getBrowseFilterFieldIds().join(',');
         const sectionSig = sections.map((section) => `${section.id}:${section.label || ''}`).join('|');
         if (!books.length) {
-            return `0::${sectionSig}::${meta.savedAt || meta.updatedAt || ''}::${schemaSig}`;
+            return `0::${sectionSig}::${meta.savedAt || meta.updatedAt || ''}::${schemaSig}::${browseFilterSig}`;
         }
         const first = String(books[0]?.id || '');
         const last = String(books[books.length - 1]?.id || '');
         const pivot = books[Math.floor(books.length / 2)] || books[0];
         const pivotStamp = String(pivot?.updatedAt || pivot?.id || '');
-        return `${books.length}::${sectionSig}::${meta.savedAt || meta.updatedAt || ''}::${first}::${last}::${pivotStamp}::${schemaSig}`;
+        return `${books.length}::${sectionSig}::${meta.savedAt || meta.updatedAt || ''}::${first}::${last}::${pivotStamp}::${schemaSig}::${browseFilterSig}`;
     }
 
     function resolveSectionBooks(sectionId) {
@@ -293,10 +342,7 @@
             const pageStart = pageIndex * pageSize;
             const pagedBooks = filteredBooks.slice(pageStart, pageStart + pageSize);
             const q = (global.document.getElementById('library-filter-search')?.value || '').trim();
-            const topicFilter = global.document.getElementById('library-filter-topic')?.value || 'all';
-            const languageFilter = global.document.getElementById('library-filter-language')?.value || 'all';
-            const statusFilter = global.document.getElementById('library-filter-status')?.value || 'all';
-            const droplistFilters = getDroplistFilters(normalizedMode);
+            const schemaFilters = readSchemaFilterValues(normalizedMode);
             return {
                 sectionId,
                 books,
@@ -306,10 +352,7 @@
                 pageStart,
                 pagedBooks,
                 q,
-                topicFilter,
-                languageFilter,
-                statusFilter,
-                droplistFilters
+                schemaFilters
             };
         }
         const sectionId = typeof global.getActiveLibrarySectionId === 'function'
@@ -322,10 +365,7 @@
         const pageStart = pageIndex * pageSize;
         const pagedBooks = filteredBooks.slice(pageStart, pageStart + pageSize);
         const q = (global.document.getElementById('library-filter-search')?.value || '').trim();
-        const topicFilter = global.document.getElementById('library-filter-topic')?.value || 'all';
-        const languageFilter = global.document.getElementById('library-filter-language')?.value || 'all';
-        const statusFilter = global.document.getElementById('library-filter-status')?.value || 'all';
-        const droplistFilters = getDroplistFilters(normalizedMode);
+        const schemaFilters = readSchemaFilterValues(normalizedMode);
         return {
             sectionId,
             books,
@@ -335,10 +375,7 @@
             pageStart,
             pagedBooks,
             q,
-            topicFilter,
-            languageFilter,
-            statusFilter,
-            droplistFilters
+            schemaFilters
         };
     }
 
@@ -349,10 +386,7 @@
             mode,
             state.sectionId,
             state.q,
-            state.topicFilter,
-            state.languageFilter,
-            state.statusFilter,
-            JSON.stringify(state.droplistFilters),
+            JSON.stringify(state.schemaFilters || {}),
             state.pageSize,
             state.pageIndex,
             pageIds,
@@ -378,16 +412,8 @@
                 : 'books'
         );
         const q = (global.document.getElementById('library-filter-search')?.value || '').trim().toLowerCase();
-        const topicFilter = global.document.getElementById('library-filter-topic')?.value || 'all';
-        const languageFilter = global.document.getElementById('library-filter-language')?.value || 'all';
-        const statusFilter = global.document.getElementById('library-filter-status')?.value || 'all';
-        const schema = getFormSchema();
-        const droplistFilters = getDroplistFilters(mode);
-        const droplistMatch = (book) => schema.every((field) => {
-            if (field.type !== 'droplist') return true;
-            const value = droplistFilters[field.id] || 'all';
-            return value === 'all' || String(book[field.id] || '') === value;
-        });
+        const schemaFilters = readSchemaFilterValues(mode);
+        const filterFields = getVisibleFilterSchemaFields(mode);
 
         return books.filter((book) => {
             const queryMatch = !q
@@ -397,10 +423,11 @@
                 || String(book.author || '').toLowerCase().includes(q)
                 || String(book.year || '').toLowerCase().includes(q)
                 || String(book.thematic || '').toLowerCase().includes(q);
-            const topicMatch = topicFilter === 'all' || String(book.thematic || '') === topicFilter;
-            const languageMatch = languageFilter === 'all' || String(book.language || '') === languageFilter;
-            const statusMatch = statusFilter === 'all' || String(book.status || '') === statusFilter;
-            return queryMatch && topicMatch && languageMatch && statusMatch && droplistMatch(book);
+            const schemaMatch = filterFields.every((field) => {
+                const value = schemaFilters[field.id] || 'all';
+                return value === 'all' || String(book[field.id] || '') === value;
+            });
+            return queryMatch && schemaMatch;
         });
     }
 
@@ -420,12 +447,12 @@
 
     function syncCatalogFilterPickers(root) {
         const scope = root
+            || global.document.querySelector('[data-library-catalog-filter-fields]')
             || global.document.querySelector('.alib-filter-stack')
             || global.document.querySelector('.library-catalog-filters-panel .alib-filter-stack');
         if (!scope) return;
-        FILTER_FIELDS.forEach((field) => {
-            const select = global.document.getElementById(`library-filter-${field}`);
-            if (!select || select.dataset.luxPickerEnhanced === 'true') return;
+        scope.querySelectorAll('[data-library-catalog-filter-field]').forEach((select) => {
+            if (select.dataset.luxPickerEnhanced === 'true') return;
             if (typeof global.enhanceUniversalPicker === 'function') {
                 global.enhanceUniversalPicker(select);
             }
@@ -434,40 +461,50 @@
 
     function renderCatalogFilters(mode) {
         ensureCatalogState();
-        const params = global.KIU_STATE.adminLibrary.params || {};
-        const applyOptions = (id, label, items) => {
-            const el = global.document.getElementById(id);
-            if (!el) return;
-            const fragment = global.document.createDocumentFragment();
-            fragment.appendChild(createSelectOption('all', label));
-            (Array.isArray(items) ? items : []).forEach((item) => {
-                fragment.appendChild(createSelectOption(String(item), String(item)));
-            });
-            el.replaceChildren(fragment);
-        };
-        applyOptions('library-filter-topic', 'All Topics', params.thematic);
-        applyOptions('library-filter-language', 'All Languages', params.language);
-        applyOptions('library-filter-status', 'All Statuses', params.status);
-        syncCatalogFilterPickers();
-    }
+        if (typeof global.normalizeLibraryBrowseFilterFieldIds === 'function') {
+            global.normalizeLibraryBrowseFilterFieldIds();
+        }
+        const host = global.document.querySelector('[data-library-catalog-filter-fields]');
+        if (!host) return;
 
-    function createDroplistHeader(field, mode) {
-        const th = global.document.createElement('th');
-        th.className = 'admin-library-droplist-header-cell';
-        const filters = getDroplistFilters(mode);
-        const current = filters[field.id] || 'all';
-        const select = global.document.createElement('select');
-        select.className = 'lux-modern-field admin-library-droplist-select';
-        select.id = `library-droplist-${field.id}-select`;
-        select.dataset.adminLibraryDroplistSelect = field.id;
-        select.dataset.luxPickerLabel = field.label;
-        select.appendChild(createSelectOption('all', `All ${field.label}`));
-        (field.options || []).forEach((opt) => {
-            select.appendChild(createSelectOption(String(opt), String(opt)));
+        const previous = {};
+        host.querySelectorAll('[data-library-catalog-filter-field]').forEach((select) => {
+            previous[select.dataset.libraryCatalogFilterField] = select.value;
         });
-        select.value = current;
-        th.appendChild(select);
-        return th;
+
+        const fragment = global.document.createDocumentFragment();
+        getVisibleFilterSchemaFields(mode).forEach((field) => {
+            const label = global.document.createElement('label');
+            label.className = 'lux-picker-field';
+
+            const caption = global.document.createElement('span');
+            caption.className = 'lux-picker-label';
+            caption.textContent = field.label || field.id;
+            label.appendChild(caption);
+
+            const select = global.document.createElement('select');
+            select.id = `library-filter-${field.id}`;
+            select.name = `library_filter_${field.id}`;
+            select.dataset.luxPickerLabel = field.label || field.id;
+            select.dataset.libraryCatalogFilterField = field.id;
+
+            const options = getSchemaFieldFilterOptions(field);
+            select.appendChild(createSelectOption('all', `All ${field.label || field.id}`));
+            options.forEach((item) => {
+                select.appendChild(createSelectOption(String(item), String(item)));
+            });
+
+            const preferred = previous[field.id] || 'all';
+            select.value = options.some((item) => String(item) === preferred) || preferred === 'all'
+                ? preferred
+                : 'all';
+
+            label.appendChild(select);
+            fragment.appendChild(label);
+        });
+
+        host.replaceChildren(fragment);
+        syncCatalogFilterPickers(host);
     }
 
     function createActionCell(bookId) {
@@ -529,31 +566,27 @@
         const headerSignature = buildCatalogTableHeaderSignature(mode);
         if (thead.dataset.renderSignature === headerSignature && thead.children.length) return;
         const schema = getFormSchema();
-        const hasDroplist = schema.some((field) => field.type === 'droplist');
         const createActionHeader = () => {
             const th = global.document.createElement('th');
             th.textContent = 'Action';
             return th;
         };
 
-        if (typeof global.renderLibraryCatalogTableHead === 'function' && !hasDroplist) {
+        if (typeof global.renderLibraryCatalogTableHead === 'function') {
             global.renderLibraryCatalogTableHead(thead, schema, {
                 includeAction: options.includeAction,
                 table,
                 createActionHeader: options.includeAction ? createActionHeader : undefined
             });
+            thead.dataset.renderSignature = headerSignature;
             return;
         }
 
         const fragment = global.document.createDocumentFragment();
         schema.forEach((field) => {
-            if (field.type === 'droplist') {
-                fragment.appendChild(createDroplistHeader(field, mode));
-            } else {
-                const th = global.document.createElement('th');
-                th.textContent = field.label;
-                fragment.appendChild(th);
-            }
+            const th = global.document.createElement('th');
+            th.textContent = field.label;
+            fragment.appendChild(th);
         });
         if (options.includeAction) fragment.appendChild(createActionHeader());
         thead.replaceChildren(fragment);
@@ -737,16 +770,6 @@
             });
         }
 
-        FILTER_FIELDS.forEach((field) => {
-            const select = global.document.getElementById(`library-filter-${field}`);
-            if (select) {
-                select.addEventListener('change', () => {
-                    resetCatalogPage(mode);
-                    renderCatalogTable({ mode });
-                });
-            }
-        });
-
         const pageSizeSelect = global.document.getElementById('admin-library-catalog-page-size');
         if (pageSizeSelect) {
             pageSizeSelect.addEventListener('change', () => {
@@ -757,10 +780,10 @@
         }
 
         global.document.addEventListener('change', (event) => {
-            if (!event.target?.matches?.('[data-admin-library-droplist-select]')) return;
-            const fieldId = event.target.dataset.adminLibraryDroplistSelect;
-            const value = event.target.value;
-            setDroplistFilter(mode, fieldId, value);
+            const filterSelect = event.target?.closest?.('[data-library-catalog-filter-field]');
+            if (!filterSelect) return;
+            const fieldId = filterSelect.dataset.libraryCatalogFilterField;
+            if (fieldId) setDroplistFilter(mode, fieldId, filterSelect.value);
             if (getModeOptions(mode).persistPagination && typeof global.saveState === 'function') {
                 global.saveState();
             }

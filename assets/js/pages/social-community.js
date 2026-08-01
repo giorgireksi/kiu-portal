@@ -131,10 +131,20 @@
         const activeCommunityTab = rawCommunityTab === 'suggested' ? 'people' : rawCommunityTab;
         const directorySearchId = controlId('directorySearch');
         const directoryRoleId = controlId('directoryRole');
-        const staff = directory.filter(isStaffAccount);
+        const chrome = window.KiuSocialChromeModel || {};
+        const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+            ? chrome.socialBrowseFacultyValue(runtime)
+            : (text(runtime.ui?.socialBrowseFaculty || 'all') || 'all');
+        const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+            ? chrome.socialMatchesBrowseFaculty
+            : () => true;
+        const matchesPersonFaculty = (account) => matchesBrowse(account, browseFaculty);
+        const staff = directory.filter(isStaffAccount).filter(matchesPersonFaculty);
         const connectionAccounts = connections
             .map((relationship) => text(relationship.fromId) === currentUserId() ? text(relationship.toId) : text(relationship.fromId))
-            .map((userId) => accountById(userId) || directory.find((entry) => text(entry.id) === userId) || { id: userId });
+            .map((userId) => accountById(userId) || directory.find((entry) => text(entry.id) === userId) || { id: userId })
+            .filter(matchesPersonFaculty);
+        const peopleDirectory = directory.filter(matchesPersonFaculty);
         const communityStats = {
             profiles: directory.length,
             requests: incoming.length + outgoing.length,
@@ -268,7 +278,7 @@
             activeBody = renderDirectoryBody(staff, { showSuggestion: true, showStaffMeta: true, emptyText: 'No staff profiles matched the current filter.' });
             panelClass = 'social-neo-community-panel--staff';
         } else {
-            activeBody = renderDirectoryBody(directory, { showSuggestion: true, emptyText: 'No people matched the current filter.' });
+            activeBody = renderDirectoryBody(peopleDirectory, { showSuggestion: true, emptyText: 'No people matched the current filter.' });
         }
 
         return `

@@ -26,10 +26,15 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(bare).not.toMatch(/\.social-neo-event-feature\s*\{[\s\S]{0,400}backdrop-filter:/);
     });
 
-    it('RSVP buttons use shared lux classes without duplicate secondary', () => {
+    it('RSVP is a single Interested toggle with count', () => {
         const events = readSource('assets/js/pages/social-events.js');
-        expect(events).toMatch(/viewerRsvpStatus === 'going' \? 'lux-primary-btn' : 'lux-secondary-btn'\} lux-secondary-btn-sm/);
-        expect(events).not.toMatch(/lux-secondary-btn \$\{item\.viewerRsvpStatus/);
+        expect(events).toMatch(/isInterested \? 'lux-primary-btn' : 'lux-secondary-btn'\} lux-secondary-btn-sm/);
+        expect(events).toMatch(/data-status="\$\{isInterested \? 'declined' : 'interested'\}"/);
+        expect(events).toContain('Interested · ${escape(String(interestedCount))}');
+        expect(events).toContain('`${interestedCount} interested`');
+        expect(events).not.toMatch(/data-status="going">Going</);
+        expect(events).not.toMatch(/data-status="declined">Decline</);
+        expect(events).not.toMatch(/viewerRsvpStatus === 'going'/);
     });
 
     it('event RSVP click path resolves portal API and exports handler after init', () => {
@@ -45,10 +50,25 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(events).toContain("trigger.closest('.social-neo-time-group')");
         expect(events).not.toMatch(/event-time-group-toggle[\s\S]{0,80}event\.preventDefault\(\)/);
 
+        expect(page).toContain('social-events.js?v=20260801-socialeventrsvp2');
         expect(page).toContain('respondPortalSocialEventRsvp: window.respondPortalSocialEventRsvp');
         expect(page).toContain('createPortalSocialEvent: window.createPortalSocialEvent');
         expect(page).toContain('typeof window.handleSocialEventsClick === \'function\'');
-        expect(page).toContain('social-events.js?v=20260731-eventrsvp1');
+        expect(events).toMatch(/action === 'event-rsvp'[\s\S]{0,280}patchEventRsvpButtons\(eventId\)/);
+        expect(events).not.toMatch(/action === 'event-rsvp'[\s\S]{0,280}renderSocialPageNow\('event-rsvp'\)/);
+    });
+
+    it('event feature title lives in the card, not the date-group head', () => {
+        const events = readSource('assets/js/pages/social-events.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(events).toContain('social-neo-event-feature-title');
+        expect(events).toContain('social-neo-event-feature-head-main');
+        expect(events).not.toMatch(/social-neo-event-date-group-head[\s\S]{0,400}social-neo-event-date-group-title/);
+        expect(bare).toContain('.social-neo-event-feature-title');
+        expect(bare).toMatch(/\.social-neo-event-feature\s*\{[\s\S]{0,120}padding:\s*12px 14px 12px 18px/);
+        expect(bare).toMatch(/\.social-neo-event-date-group\s*\{[\s\S]{0,80}padding:\s*8px 10px/);
+        expect(bare).toMatch(/\.social-neo-event-feature-foot\s*\{[\s\S]{0,80}min-height:\s*0/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail\s*\{[\s\S]{0,120}max-height:\s*5\.5rem/);
     });
 
     it('event shells use global home-hover-chip for lift motion', () => {
@@ -104,7 +124,8 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(photo).toContain('social-photo-grid-tile home-hover-chip');
         expect(portfolio).toContain('social-portfolio-card lux-soft-chrome home-hover-chip');
         expect(portfolio).toContain('social-portfolio-mini-card home-hover-chip');
-        expect(portfolio).toContain('social-neo-pill lux-status-pill home-hover-chip');
+        expect(portfolio).toContain('social-neo-pill lux-status-pill');
+        expect(portfolio).not.toMatch(/social-neo-pill lux-status-pill home-hover-chip/);
         expect(portfolio).toContain('social-neo-community-panel--portfolio home-hover-chip');
         expect(portfolio).toContain('social-neo-portfolio-hero-stats home-hover-chip');
         expect(groups).toContain('social-neo-group-card home-hover-chip');
@@ -149,7 +170,8 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(fouc).toContain('.social-neo-lost-found-hero-stats');
         expect(fouc).toContain('.social-neo-lost-found-hero-toolbar');
         expect(fouc).toContain('.social-neo-lf-card');
-        expect(fouc).toContain('.social-portfolio-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip');
+        expect(fouc).not.toContain('.social-portfolio-card :is(.social-neo-pill, .lux-status-pill).home-hover-chip');
+        expect(fouc).toContain('.social-neo-post-card:not(.social-portfolio-card)');
         expect(fouc).toContain('[class*="-hero-grid"]');
         expect(fouc).toContain('[class*="-hero-toolbar"]');
 
@@ -160,24 +182,76 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(bare).toMatch(/\.social-neo-community-panel--hero\.is-merged[\s\S]*?overflow:\s*visible/);
     });
 
-    it('portfolio feed keeps card lift and action buttons unclipped', () => {
+    it('home feed shells use global home-hover-chip for lift motion', () => {
+        const feed = readSource('assets/js/pages/social-feed.js');
+        const page = readSource('assets/js/pages/social-page.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const html = readSource('social.html');
+
+        expect(feed).toContain('social-neo-card social-neo-post-card lux-soft-chrome home-hover-chip');
+        expect(feed).toContain('social-neo-feed-hero-stats home-hover-chip');
+        expect(feed).toContain('social-neo-feed-hero-grid home-hover-chip');
+        expect(feed).toContain('social-neo-composer-cta-card lux-soft-chrome home-hover-chip');
+        expect(feed).toContain('social-neo-feed-header-card lux-soft-chrome home-hover-chip');
+        expect(feed).toContain('social-neo-feed-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip');
+        expect(feed).not.toMatch(/social-neo-feed-hero-tab[\s\S]{0,120}home-hover-chip/);
+        expect(fouc).toContain('.social-neo-feed-header-card');
+        expect(fouc).toContain('.social-neo-feed-hero-stats');
+        expect(fouc).toContain('.social-neo-feed-hero-grid');
+        expect(fouc).toContain('.social-neo-composer-cta-card');
+        expect(fouc).toContain('.social-neo-post-card');
+        expect(bare).toMatch(/\.social-neo-feed-header-card\s*\{[^}]*overflow:\s*visible/);
+        expect(page).toContain('social-feed.js?v=20260801-socialfaculty3');
+        expect(html).toContain('lux-fouc-ht.css?v=20260801-portfoliocompact1');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260801-socialeventscompact1');
+        expect(html).toContain('social-page.js?v=20260801-socialfaculty3');
+    });
+
+    it('portfolio discover filter shell uses global home-hover-chip for lift motion', () => {
+        const portfolioUi = readSource('assets/js/pages/social-workspace-portfolio-ui.js');
+        const page = readSource('assets/js/pages/social-page.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+
+        expect(portfolioUi).toContain('social-neo-portfolio-hero-discover lux-soft-chrome home-hover-chip');
+        expect(portfolioUi).toContain('social-portfolio-search-row lux-soft-chrome home-hover-chip');
+        expect(portfolioUi).toContain('social-portfolio-tag-row lux-soft-chrome home-hover-chip');
+        expect(fouc).toContain('.social-neo-portfolio-hero-discover');
+        expect(fouc).toContain('.social-portfolio-search-row');
+        expect(fouc).toContain('.social-portfolio-tag-row');
+        expect(bare).toMatch(/\.social-neo-portfolio-hero-discover\s*\{[^}]*overflow:\s*visible/);
+        expect(bare).not.toMatch(/\.social-neo-portfolio-hero-discover\s*\{[^}]*background-color:\s*var\(--social-chip-fill\)/);
+        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260801-portfolioresume1');
+    });
+
+    it('portfolio feed grows with the page (no hub scroll-list cap)', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         const portfolioUi = readSource('assets/js/pages/social-workspace-portfolio-ui.js');
-        expect(bare).toContain('.social-portfolio-card.home-hover-chip');
-        expect(bare).toMatch(/\.social-portfolio-card\.home-hover-chip[\s\S]{0,160}overflow:\s*visible/);
-        expect(bare).toMatch(/\.social-portfolio-card\.home-hover-chip[\s\S]{0,200}min-height:\s*min-content/);
+        expect(portfolioUi).toContain('class="social-portfolio-feed"');
+        expect(portfolioUi).not.toContain('social-project-scroll-list');
+        expect(portfolioUi).not.toContain('social-project-scroll-list--portfolio');
+        expect(bare).not.toContain('.social-project-scroll-list--portfolio');
+        expect(bare).not.toContain('.social-portfolio-feed.social-project-scroll-list');
+        expect(bare).toMatch(/\.social-portfolio-feed\s*\{[\s\S]{0,120}gap:\s*8px/);
+        expect(bare).toMatch(/\.social-portfolio-feed\s*\{[\s\S]{0,160}padding:\s*2px 0 4px/);
+        expect(bare).toMatch(/\.social-portfolio-feed\s*\{[\s\S]{0,200}overflow:\s*visible/);
+        expect(bare).not.toMatch(/\.social-portfolio-feed[\s\S]{0,200}max-height/);
+        expect(bare).not.toMatch(/\.social-portfolio-feed[\s\S]{0,200}overflow-y:\s*auto/);
+        expect(bare).toContain('.social-neo-post-card.social-portfolio-card.home-hover-chip');
+        expect(bare).toMatch(/\.social-neo-post-card\.social-portfolio-card\.home-hover-chip[\s\S]{0,160}overflow:\s*hidden/);
+        expect(bare).toMatch(/\.social-neo-post-card\.social-portfolio-card\.home-hover-chip[\s\S]{0,200}contain:\s*paint/);
+        expect(bare).toMatch(/\.social-neo-post-card\.social-portfolio-card\.home-hover-chip[\s\S]{0,200}min-height:\s*min-content/);
         expect(bare).toContain('.social-neo-community-panel--portfolio.is-merged');
         expect(bare).toMatch(/\.social-neo-community-panel--portfolio\.is-merged[\s\S]{0,200}overflow:\s*visible/);
-        expect(bare).toContain('.social-project-scroll-list--portfolio');
-        expect(bare).toMatch(/\.social-project-scroll-list--portfolio[\s\S]{0,160}gap:\s*24px/);
-        expect(bare).toMatch(/\.social-project-scroll-list--portfolio[\s\S]{0,160}padding:\s*10px 8px 16px/);
-        expect(bare).toContain('.social-portfolio-feed.social-project-scroll-list');
-        expect(bare).toMatch(/\.social-portfolio-feed\.social-project-scroll-list\s*\{[\s\S]{0,60}gap:\s*24px/);
-        expect(bare).toMatch(/\.social-portfolio-card\s*\{[\s\S]{0,80}padding:\s*16px 16px 32px/);
-        expect(bare).toMatch(/\.social-portfolio-actions\s*\{[\s\S]{0,160}padding-bottom:\s*2px/);
+        expect(bare).toMatch(/\.social-portfolio-card\s*\{[\s\S]{0,80}padding:\s*8px 10px/);
+        expect(bare).toMatch(/\.social-portfolio-body h3\s*\{[\s\S]{0,80}font-size:\s*14px/);
+        expect(bare).toMatch(/\.social-portfolio-actions :is\(\.lux-primary-btn, \.lux-secondary-btn\)\s*\{[\s\S]{0,80}min-height:\s*28px/);
+        expect(bare).not.toMatch(/\.social-portfolio-actions\s*\{[\s\S]{0,200}z-index:\s*1/);
         expect(portfolioUi).toContain('social-portfolio-actions');
         expect(portfolioUi).not.toMatch(/social-portfolio-actions[\s\S]{0,600}home-hover-chip/);
+        expect(fouc).toContain('.social-neo-post-card:not(.social-portfolio-card)');
         // :is() must not include lux-card:not(...) or home-hover-chip inherits inflated specificity
         expect(fouc).not.toMatch(/:is\(\s*\n\s*\.home-hover-chip,\s*\n\s*\.lux-card:not\(\.orders-inbox-hero\)/);
         expect(fouc).toContain('body.lux-unified-shell .lux-card:not(.orders-inbox-workspace),');
@@ -187,7 +261,7 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toMatch(/\.social-neo-events-content[\s\S]{0,400}--social-events-title/);
         expect(bare).toMatch(/\.social-neo-events-hero\.is-merged\s*\{[\s\S]{0,120}overflow:\s*visible/);
-        expect(bare).toMatch(/\.social-neo-events-hero\.is-merged \.social-neo-events-manage-card[\s\S]{0,180}padding:\s*14px 16px/);
+        expect(bare).toMatch(/\.social-neo-events-hero\.is-merged \.social-neo-events-manage-card[\s\S]{0,180}padding:\s*10px 12px/);
         expect(bare).not.toMatch(/\.social-neo-events-hero\.is-merged \.social-neo-events-manage-card[\s\S]{0,180}padding:\s*0;/);
         expect(bare).toMatch(/\.social-neo-events-hero\.is-merged[\s\S]{0,500}overflow:\s*visible[\s\S]{0,80}contain:\s*layout style/);
         expect(bare).toMatch(/\.social-neo-event-feature\s*\{[\s\S]{0,260}overflow:\s*visible/);

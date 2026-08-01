@@ -122,6 +122,7 @@
             <section class="social-neo-card social-neo-events-hero home-hover-chip${merged ? ' is-merged' : ''}">
                 <div class="social-neo-events-hero-head">
                     <div class="social-neo-events-hero-actions">
+                        ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                         <button class="lux-primary-btn social-neo-events-create-trigger" type="button" data-action="event-create-open">
                             <i class="fas ${escape(text(actionConfig.icon || 'fa-calendar-plus'))}"></i>
                             <span>${escape(text(actionConfig.label || 'Create event'))}</span>
@@ -158,7 +159,15 @@
     function renderEventsPanel() {
         const runtime = state();
         const eventsTab = text(runtime.ui?.eventsSubTab || 'student');
-        const allEvents = Array.isArray(runtime.social?.events) ? runtime.social.events : [];
+        const chrome = window.KiuSocialChromeModel || {};
+        const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+            ? chrome.socialBrowseFacultyValue(runtime)
+            : (text(runtime.ui?.socialBrowseFaculty || 'all') || 'all');
+        const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+            ? chrome.socialMatchesBrowseFaculty
+            : () => true;
+        const allEvents = (Array.isArray(runtime.social?.events) ? runtime.social.events : [])
+            .filter((entry) => matchesBrowse(entry, browseFaculty));
         const userRole = text(currentUser()?.role || 'student');
         const isStaff = ['professor', 'ta', 'admin', 'student_service'].includes(userRole);
         const uniEvents = allEvents.filter((entry) => entry.category === 'university' || entry.isOfficial);
@@ -195,6 +204,7 @@
             const categoryLabel = text(item.category || (tone === 'university' ? 'university' : 'social'));
             const goingCount = Number(item?.attendeeSummary?.going || 0);
             const interestedCount = Number(item?.attendeeSummary?.interested || 0);
+            const isInterested = text(item.viewerRsvpStatus) === 'interested';
             const seatSummary = item.maxSeats ? `${goingCount}/${item.maxSeats} seats` : 'Unlimited seats';
             const monthLabel = hasStartDate ? startDate.toLocaleDateString('en-US', { month: 'short' }) : 'TBA';
             const dayLabel = hasStartDate ? startDate.toLocaleDateString('en-US', { day: '2-digit' }) : '--';
@@ -217,12 +227,15 @@
                                 <span>${escape(monthLabel)}</span>
                                 <strong>${escape(dayLabel)}</strong>
                             </div>
-                            <div class="social-neo-badge-row social-neo-events-badges">
-                                <span class="social-neo-pill home-hover-chip social-neo-event-category-pill is-${escape(tone)}">${escape(categoryLabel)}</span>
-                                ${item.isOfficial ? '<span class="social-neo-pill home-hover-chip">Official</span>' : ''}
-                                ${item.isOnline ? '<span class="social-neo-pill home-hover-chip">Online</span>' : ''}
-                                ${item.isRecurring ? '<span class="social-neo-pill home-hover-chip">Recurring</span>' : ''}
-                                ${item.maxSeats ? `<span class="social-neo-pill home-hover-chip">${escape(seatSummary)}</span>` : ''}
+                            <div class="social-neo-event-feature-head-main">
+                                <h3 class="social-neo-event-feature-title">${escape(title)}</h3>
+                                <div class="social-neo-badge-row social-neo-events-badges">
+                                    <span class="social-neo-pill home-hover-chip social-neo-event-category-pill is-${escape(tone)}">${escape(categoryLabel)}</span>
+                                    ${item.isOfficial ? '<span class="social-neo-pill home-hover-chip">Official</span>' : ''}
+                                    ${item.isOnline ? '<span class="social-neo-pill home-hover-chip">Online</span>' : ''}
+                                    ${item.isRecurring ? '<span class="social-neo-pill home-hover-chip">Recurring</span>' : ''}
+                                    ${item.maxSeats ? `<span class="social-neo-pill home-hover-chip">${escape(seatSummary)}</span>` : ''}
+                                </div>
                             </div>
                             ${eventCanManage(item) ? `
                                 <div class="social-neo-event-feature-head-actions">
@@ -250,7 +263,7 @@
                         <div class="social-neo-event-feature-meta-item">
                             <i class="fas fa-users"></i>
                             <div>
-                                <strong>${escape(`${goingCount} going`)}${interestedCount ? ` &middot; ${escape(`${interestedCount} interested`)}` : ''}</strong>
+                                <strong data-event-interested-count="${escape(eventId)}">${escape(`${interestedCount} interested`)}</strong>
                                 <span>${escape(item.joinMode === 'invite-only' ? 'Invite only' : item.joinMode === 'member-required' ? 'Members only' : 'Open registration')}</span>
                             </div>
                         </div>
@@ -261,9 +274,7 @@
                             <strong>${escape(scopeLabel)}</strong>
                         </div>
                         <div class="social-neo-event-feature-actions">
-                            <button class="${item.viewerRsvpStatus === 'going' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="going">Going</button>
-                            <button class="${item.viewerRsvpStatus === 'interested' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="interested">Interested</button>
-                            <button class="${item.viewerRsvpStatus === 'declined' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="declined">Decline</button>
+                            <button class="${isInterested ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="${isInterested ? 'declined' : 'interested'}">Interested · ${escape(String(interestedCount))}</button>
                             ${item.viewerCanDelete ? `<button class="lux-secondary-btn lux-secondary-btn-sm social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(eventId)}"><i class="fas fa-trash"></i> Remove event</button>` : ''}
                         </div>
                     </div>
@@ -289,14 +300,12 @@
             const events = sortEventsByStart(list);
             if (!events.length) return `<div class="social-neo-empty social-neo-events-empty home-hover-chip">${escape(emptyCopy)}</div>`;
             return events.map((item) => {
-                const title = text(item.title || 'Untitled event');
                 return `
                 <section class="social-neo-event-date-group home-hover-chip">
                     <div class="social-neo-event-date-group-head">
                         <div>
                             <strong>${escape(eventDateLabel(item))}</strong>
                             <span>1 event</span>
-                            <h3 class="social-neo-event-date-group-title">${escape(title)}</h3>
                         </div>
                         <span class="social-neo-pill home-hover-chip">${escape(tone === 'university' ? 'Official lane' : 'Student lane')}</span>
                     </div>
@@ -545,6 +554,18 @@
                         </label>
                         ${categoryField}
                     </div>
+                    <label class="lux-glass-dialog-field">
+                        <span class="social-neo-label">Faculty</span>
+                        ${(window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+                            ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                                name: 'eventFaculty',
+                                includeAll: false,
+                                required: true,
+                                value: text(runtime.ui?.eventFaculty || '') || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                                label: 'Faculty'
+                            }))
+                            : `<select class="social-neo-select lux-control" name="eventFaculty" required data-lux-picker><option value="">Select faculty</option></select>`}
+                    </label>
                     <div class="social-neo-form-grid social-neo-form-grid-3">
                         <label class="lux-glass-dialog-field" for="${escape(eventScopeId)}">
                             <span class="social-neo-label">Publish in</span>
@@ -704,8 +725,6 @@
             return withBusy(async () => {
                 await respondPortalSocialEventRsvp(eventId, trigger.getAttribute('data-status'));
                 patchEventRsvpButtons(eventId);
-                invalidateSocialRenderCache({ center: true });
-                renderSocialPageNow('event-rsvp');
             });
         }
         return false;
@@ -743,9 +762,12 @@
                     isOfficial: text(form.eventIsOfficial?.value || '') === 'true',
                     scopeType: text(scopeType || 'profile') || 'profile',
                     scopeId: text(scopeId || currentUserId()) || currentUserId(),
-                    scopeName: scope?.name || ''
+                    scopeName: scope?.name || '',
+                    facultyCode: text(form.eventFaculty?.value || runtime.ui?.eventFaculty || '')
+                        || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '')
                 };
                 if (!payload.title || !payload.startsAt) throw new Error('Event title and start time are required.');
+                if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
                 if (editId) {
                     const updatePayload = { ...payload };
                     if (imageUrl) updatePayload.imageUrl = imageUrl;

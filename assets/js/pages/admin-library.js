@@ -55,6 +55,12 @@ function bindAdminLibraryMutations() {
             return;
         }
 
+        const openFilters = event.target.closest('[data-admin-library-open-filters-editor]');
+        if (openFilters) {
+            openLibraryFiltersModal();
+            return;
+        }
+
         const addBook = event.target.closest('[data-admin-library-add-book]');
         if (addBook) {
             addAdminLibraryBook();
@@ -110,6 +116,17 @@ function bindAdminLibraryMutations() {
         const closeSchema = event.target.closest('[data-admin-library-close-schema-modal]');
         if (closeSchema) {
             closeLibrarySchemaModal(event);
+            return;
+        }
+
+        if (event.target.closest('[data-admin-library-filters-overlay]') && event.target === event.target.closest('[data-admin-library-filters-overlay]')) {
+            closeLibraryFiltersModal(event);
+            return;
+        }
+
+        const closeFilters = event.target.closest('[data-admin-library-close-filters-modal]');
+        if (closeFilters) {
+            closeLibraryFiltersModal(event);
             return;
         }
 
@@ -198,6 +215,27 @@ function renderAdminLibraryFormSelects() {
     renderSelect('book-status', params.status);
 }
 
+function schemaFieldHasEditableOptions(field) {
+    if (!field) return false;
+    if (field.type === 'droplist') return true;
+    if (field.type === 'select') {
+        return Boolean(field.paramKey) || Array.isArray(field.options);
+    }
+    return false;
+}
+
+function getSchemaFieldEditableOptions(field) {
+    if (!field) return [];
+    if (Array.isArray(field.options) && field.options.length) {
+        return field.options.map((opt) => String(opt));
+    }
+    const paramKey = String(field.paramKey || '').trim();
+    if (paramKey && Array.isArray(KIU_STATE.adminLibrary?.params?.[paramKey])) {
+        return KIU_STATE.adminLibrary.params[paramKey].map((opt) => String(opt));
+    }
+    return Array.isArray(field.options) ? field.options.map((opt) => String(opt)) : [];
+}
+
 function createSchemaFieldRow(field, index) {
     const row = document.createElement('div');
     row.className = 'admin-library-schema-field-row home-hover-chip';
@@ -226,8 +264,9 @@ function createSchemaFieldRow(field, index) {
     const actions = document.createElement('div');
     actions.className = 'admin-library-schema-field-actions';
 
-    if (field.type === 'droplist') {
-        row.classList.add('admin-library-schema-field-droplist');
+    if (schemaFieldHasEditableOptions(field)) {
+        row.classList.add('admin-library-schema-field-options');
+        if (field.type === 'droplist') row.classList.add('admin-library-schema-field-droplist');
         row.addEventListener('click', (event) => {
             if (event.target.closest('.admin-library-schema-field-actions')) return;
             openDroplistOptionsEditor(field.id);
@@ -356,6 +395,9 @@ function applyAdminLibraryFormSchema(nextSchema) {
     KIU_STATE.adminLibrary.formSchema = (Array.isArray(nextSchema) ? nextSchema : []).map((field) => ({ ...field }));
     KIU_STATE.adminLibrary.formSchemaRevision = Date.now();
     KIU_STATE.adminLibrary.formSchemaCustomized = true;
+    if (typeof normalizeLibraryBrowseFilterFieldIds === 'function') {
+        normalizeLibraryBrowseFilterFieldIds(KIU_STATE.adminLibrary);
+    }
 }
 
 function removeSchemaField(fieldId) {
@@ -415,6 +457,7 @@ function handleAdminLibraryDroplistOverlayClick(event) {
     if (!target || !target.closest) return;
 
     if (target.closest('[data-admin-library-droplist-overlay]') && target === target.closest('[data-admin-library-droplist-overlay]')) {
+        clearPendingDroplistOptionRemove();
         closeDroplistOptionsEditor();
         return;
     }
@@ -422,6 +465,7 @@ function handleAdminLibraryDroplistOverlayClick(event) {
     if (target.closest('[data-admin-library-droplist-editor-back]') || target.closest('[data-admin-library-droplist-editor-cancel]')) {
         event.preventDefault();
         event.stopPropagation();
+        clearPendingDroplistOptionRemove();
         closeDroplistOptionsEditor();
         return;
     }
@@ -429,6 +473,7 @@ function handleAdminLibraryDroplistOverlayClick(event) {
     if (target.closest('[data-admin-library-droplist-add-option]')) {
         event.preventDefault();
         event.stopPropagation();
+        clearPendingDroplistOptionRemove();
         addDroplistOptionToEditor();
         return;
     }
@@ -436,6 +481,7 @@ function handleAdminLibraryDroplistOverlayClick(event) {
     if (target.closest('[data-admin-library-droplist-editor-save]')) {
         event.preventDefault();
         event.stopPropagation();
+        clearPendingDroplistOptionRemove();
         saveDroplistOptionsEditor();
         return;
     }
@@ -444,8 +490,43 @@ function handleAdminLibraryDroplistOverlayClick(event) {
     if (removeOption) {
         event.preventDefault();
         event.stopPropagation();
-        removeDroplistOptionFromEditor(Number.parseInt(removeOption.dataset.adminLibraryDroplistOptionIndex || '-1', 10));
+        if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+        const index = Number.parseInt(removeOption.dataset.adminLibraryDroplistOptionIndex || '-1', 10);
+        if (removeOption.dataset.pendingRemove === 'true') {
+            clearPendingDroplistOptionRemove();
+            removeDroplistOptionFromEditor(index);
+        } else {
+            armDroplistOptionRemove(removeOption);
+        }
+        return;
     }
+
+    if (!target.closest('[data-admin-library-droplist-remove-option]')) {
+        clearPendingDroplistOptionRemove();
+    }
+}
+
+function clearPendingDroplistOptionRemove() {
+    document.querySelectorAll('[data-admin-library-droplist-remove-option][data-pending-remove="true"]').forEach((btn) => {
+        const opt = __adminLibraryDroplistEditorOptions[
+            Number.parseInt(btn.dataset.adminLibraryDroplistOptionIndex || '-1', 10)
+        ];
+        btn.dataset.pendingRemove = 'false';
+        btn.classList.remove('is-pending-remove');
+        btn.setAttribute('aria-label', `Remove ${opt || 'option'}`);
+        btn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
+    });
+}
+
+function armDroplistOptionRemove(button) {
+    if (!button) return;
+    clearPendingDroplistOptionRemove();
+    const index = Number.parseInt(button.dataset.adminLibraryDroplistOptionIndex || '-1', 10);
+    const opt = __adminLibraryDroplistEditorOptions[index];
+    button.dataset.pendingRemove = 'true';
+    button.classList.add('is-pending-remove');
+    button.setAttribute('aria-label', `Confirm remove ${opt || 'option'}`);
+    button.innerHTML = '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i>';
 }
 
 function bindAdminLibrarySchemaFieldsListInteractions() {
@@ -475,6 +556,8 @@ function bindAdminLibraryDroplistOverlayInteractions() {
 function refreshAdminLibrarySchemaSurfaces() {
     renderSchemaFieldsList();
     renderAdminLibraryEntryForm();
+    renderAdminLibraryFilters();
+    renderBrowseFilterFieldsList();
     renderDynamicTableHeader();
     renderAdminBookCatalog();
 }
@@ -500,9 +583,9 @@ function setAdminLibraryDroplistFilter(fieldId, value) {
 
 function openDroplistOptionsEditor(fieldId) {
     const field = getAdminLibraryFormSchema().find((f) => f.id === fieldId);
-    if (!field) return;
+    if (!field || !schemaFieldHasEditableOptions(field)) return;
     __adminLibraryDroplistEditorFieldId = fieldId;
-    __adminLibraryDroplistEditorOptions = Array.isArray(field.options) ? field.options.slice() : [];
+    __adminLibraryDroplistEditorOptions = getSchemaFieldEditableOptions(field);
 
     const title = document.getElementById('schema-droplist-editor-title');
     if (title) title.textContent = `Edit Options: ${field.label}`;
@@ -523,6 +606,7 @@ function closeDroplistOptionsEditor() {
         modal._luxHeavySurfaceInterceptor.disconnect();
         modal._luxHeavySurfaceInterceptor = null;
     }
+    clearPendingDroplistOptionRemove();
     setAdminLibraryDroplistModalOpen(false);
     setAdminLibrarySchemaModalOpen(true);
     __adminLibraryDroplistEditorFieldId = null;
@@ -551,6 +635,7 @@ function renderDroplistOptionsEditorList() {
         removeBtn.type = 'button';
         removeBtn.dataset.adminLibraryDroplistRemoveOption = 'true';
         removeBtn.dataset.adminLibraryDroplistOptionIndex = String(index);
+        removeBtn.dataset.pendingRemove = 'false';
         removeBtn.setAttribute('aria-label', `Remove ${opt}`);
         removeBtn.innerHTML = '<i class="fas fa-times" aria-hidden="true"></i>';
         chip.appendChild(removeBtn);
@@ -568,6 +653,7 @@ function addDroplistOptionToEditor() {
         if (input) input.value = '';
         return;
     }
+    clearPendingDroplistOptionRemove();
     __adminLibraryDroplistEditorOptions.push(value);
     if (input) input.value = '';
     renderDroplistOptionsEditorList();
@@ -575,6 +661,7 @@ function addDroplistOptionToEditor() {
 
 function removeDroplistOptionFromEditor(index) {
     if (index < 0 || index >= __adminLibraryDroplistEditorOptions.length) return;
+    clearPendingDroplistOptionRemove();
     __adminLibraryDroplistEditorOptions.splice(index, 1);
     renderDroplistOptionsEditorList();
 }
@@ -589,12 +676,23 @@ function saveDroplistOptionsEditor() {
     }
     const nextOptions = __adminLibraryDroplistEditorOptions.slice();
     if (!nextOptions.length) {
-        alert('A droplist must have at least one option.');
+        alert('A field must have at least one option.');
         return;
     }
-    applyAdminLibraryFormSchema(
-        schema.map((f) => (f.id === __adminLibraryDroplistEditorFieldId ? { ...f, options: nextOptions } : f))
-    );
+
+    const paramKey = String(field.paramKey || '').trim();
+    if (field.type === 'select' && paramKey) {
+        ensureAdminLibraryState();
+        if (!KIU_STATE.adminLibrary.params || typeof KIU_STATE.adminLibrary.params !== 'object') {
+            KIU_STATE.adminLibrary.params = {};
+        }
+        KIU_STATE.adminLibrary.params[paramKey] = nextOptions.slice();
+    } else {
+        applyAdminLibraryFormSchema(
+            schema.map((f) => (f.id === __adminLibraryDroplistEditorFieldId ? { ...f, options: nextOptions } : f))
+        );
+    }
+
     setAdminLibraryDroplistFilter(__adminLibraryDroplistEditorFieldId, 'all');
     persistAdminLibrarySchemaChange();
     refreshAdminLibrarySchemaSurfaces();
@@ -633,6 +731,11 @@ function addSchemaField() {
     }
 
     applyAdminLibraryFormSchema([...current, newField]);
+    if (type === 'select' || type === 'droplist') {
+        if (typeof enableLibraryBrowseFilterField === 'function') {
+            enableLibraryBrowseFilterField(id);
+        }
+    }
     resetAdminLibrarySchemaAddForm();
     persistAdminLibrarySchemaChange();
     refreshAdminLibrarySchemaSurfaces();
@@ -745,6 +848,7 @@ function disableHeavySurfaceObserverForDroplistModal() {
 
 const ADMIN_LIBRARY_MODAL_IDS = [
     'library-schema-overlay',
+    'library-filters-overlay',
     'library-schema-droplist-overlay',
     'library-sections-overlay'
 ];
@@ -764,12 +868,143 @@ function setAdminLibrarySchemaModalOpen(isOpen) {
     syncAdminLibraryModalBodyLock();
 }
 
+function setAdminLibraryFiltersModalOpen(isOpen) {
+    const overlay = document.getElementById('library-filters-overlay');
+    if (!overlay) return;
+    overlay.classList.toggle('active', Boolean(isOpen));
+    overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    syncAdminLibraryModalBodyLock();
+}
+
 function setAdminLibraryDroplistModalOpen(isOpen) {
     const overlay = document.getElementById('library-schema-droplist-overlay');
     if (!overlay) return;
     overlay.classList.toggle('active', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     syncAdminLibraryModalBodyLock();
+}
+
+function getAdminLibraryBrowseFilterFieldIds() {
+    ensureAdminLibraryState();
+    if (typeof getLibraryBrowseFilterFieldIds === 'function') {
+        return getLibraryBrowseFilterFieldIds();
+    }
+    if (typeof normalizeLibraryBrowseFilterFieldIds === 'function') {
+        return normalizeLibraryBrowseFilterFieldIds(KIU_STATE.adminLibrary);
+    }
+    return Array.isArray(KIU_STATE.adminLibrary?.browseFilterFieldIds)
+        ? KIU_STATE.adminLibrary.browseFilterFieldIds.slice()
+        : [];
+}
+
+function renderBrowseFilterFieldsList() {
+    ensureAdminLibraryState();
+    const list = document.getElementById('browse-filter-fields-list');
+    const count = document.getElementById('browse-filter-field-count');
+    if (!list) return;
+
+    const schema = getAdminLibraryFormSchema();
+    const filterable = schema.filter((field) => (
+        typeof isLibraryFilterableSchemaField === 'function'
+            ? isLibraryFilterableSchemaField(field)
+            : field.type === 'select' || field.type === 'droplist'
+    ));
+    const enabled = new Set(getAdminLibraryBrowseFilterFieldIds());
+    const enabledCount = filterable.filter((field) => enabled.has(String(field.id || ''))).length;
+    if (count) count.textContent = `${enabledCount} enabled`;
+
+    if (!filterable.length) {
+        list.innerHTML = '<div class="admin-library-schema-empty home-hover-chip">No select or droplist fields in the form schema yet.</div>';
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    filterable.forEach((field) => {
+        const row = document.createElement('div');
+        row.className = 'admin-library-schema-field-row home-hover-chip';
+        row.dataset.fieldId = field.id;
+
+        const typeBadge = document.createElement('span');
+        typeBadge.className = 'admin-library-schema-type-badge';
+        if (field.type === 'droplist') typeBadge.classList.add('type-droplist');
+        typeBadge.textContent = field.type;
+        row.appendChild(typeBadge);
+
+        const info = document.createElement('div');
+        info.className = 'admin-library-schema-field-info';
+        const label = document.createElement('strong');
+        label.textContent = field.label || field.id;
+        info.appendChild(label);
+        const meta = document.createElement('span');
+        meta.className = 'admin-library-schema-field-meta';
+        meta.textContent = enabled.has(String(field.id || ''))
+            ? 'Visible on other accounts'
+            : 'Hidden on other accounts';
+        info.appendChild(meta);
+        row.appendChild(info);
+
+        const actions = document.createElement('div');
+        actions.className = 'admin-library-schema-field-actions';
+        const toggle = document.createElement('label');
+        toggle.className = 'admin-library-schema-toggle';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = enabled.has(String(field.id || ''));
+        input.dataset.adminLibraryBrowseFilterToggle = field.id;
+        toggle.appendChild(input);
+        const track = document.createElement('span');
+        track.className = 'admin-library-schema-toggle-track';
+        track.setAttribute('aria-hidden', 'true');
+        const thumb = document.createElement('span');
+        thumb.className = 'admin-library-schema-toggle-thumb';
+        track.appendChild(thumb);
+        toggle.appendChild(track);
+        const toggleLabel = document.createElement('span');
+        toggleLabel.className = 'admin-library-schema-toggle-label';
+        toggleLabel.textContent = 'Show';
+        toggle.appendChild(toggleLabel);
+        actions.appendChild(toggle);
+        row.appendChild(actions);
+        fragment.appendChild(row);
+    });
+    list.replaceChildren(fragment);
+}
+
+function bindAdminLibraryFiltersOverlayInteractions() {
+    const overlay = document.getElementById('library-filters-overlay');
+    if (!overlay || overlay.dataset.filtersEditorBound === 'true') return;
+    overlay.dataset.filtersEditorBound = 'true';
+    overlay.addEventListener('change', (event) => {
+        const toggle = event.target?.closest?.('[data-admin-library-browse-filter-toggle]');
+        if (!toggle) return;
+        const fieldId = toggle.dataset.adminLibraryBrowseFilterToggle || '';
+        if (!fieldId) return;
+        const enabled = new Set(getAdminLibraryBrowseFilterFieldIds());
+        if (toggle.checked) enabled.add(fieldId);
+        else enabled.delete(fieldId);
+        if (typeof setLibraryBrowseFilterFieldIds === 'function') {
+            setLibraryBrowseFilterFieldIds(Array.from(enabled));
+        } else if (KIU_STATE.adminLibrary) {
+            KIU_STATE.adminLibrary.browseFilterFieldIds = Array.from(enabled);
+        }
+        persistAdminLibrarySchemaChange();
+        renderBrowseFilterFieldsList();
+        renderAdminLibraryFilters();
+        renderAdminBookCatalog();
+    });
+}
+
+function openLibraryFiltersModal() {
+    setAdminLibraryFiltersModalOpen(true);
+    bindAdminLibraryFiltersOverlayInteractions();
+    renderBrowseFilterFieldsList();
+}
+
+function closeLibraryFiltersModal(event) {
+    if (event && event.target.id !== 'library-filters-overlay' && !event.target.closest('.close-btn') && !event.target.closest('[data-admin-library-close-filters-modal]')) return;
+    setAdminLibraryFiltersModalOpen(false);
+    renderAdminLibraryFilters();
+    renderAdminBookCatalog();
 }
 
 function ensureAdminLibrarySchemaEditorReady() {

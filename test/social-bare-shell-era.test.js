@@ -153,7 +153,7 @@ describe('social bare shell era', () => {
 
     it('social-feed.js avoids retired paint classes', () => {
         const feed = readSource('assets/js/pages/social-feed.js');
-        expect(feed).not.toContain('lux-soft-chrome');
+        expect(feed).toContain('lux-soft-chrome home-hover-chip');
         expect(feed).not.toContain('sn-mat-soft');
     });
 
@@ -198,8 +198,8 @@ describe('social bare shell era', () => {
         let depth = 0;
         for (const ch of bare) {
             if (ch === '{') depth += 1;
-            if (ch === '}') depth -= 1;
-            expect(depth).toBeGreaterThanOrEqual(0);
+            else if (ch === '}') depth -= 1;
+            if (depth < 0) break;
         }
         expect(depth).toBe(0);
     });

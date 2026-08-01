@@ -76,6 +76,7 @@ function normalizeLostFoundItem(item = {}) {
         locationText: socialText(item?.locationText || item?.location || ''),
         eventDate: socialText(item?.eventDate || item?.lostAt || ''),
         imageUrl: socialText(item?.imageUrl || item?.photoUrl || ''),
+        facultyCode: socialText(item?.facultyCode || item?.faculty || ''),
         authorUserId: socialText(item?.authorUserId || item?.createdById || ''),
         authorName: socialText(item?.authorName || ''),
         createdAt: socialText(item?.createdAt || ''),
@@ -124,7 +125,6 @@ function migrateLostFoundSocialState(state = {}) {
         || portalItems.length > 0
         || socialItems.some((item) => (
             item?.kind != null
-            || item?.facultyCode != null
             || item?.campusScope != null
             || isLegacyLostFoundStatus(item?.status)
         ));

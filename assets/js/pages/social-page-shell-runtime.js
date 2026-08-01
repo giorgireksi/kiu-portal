@@ -32,8 +32,6 @@
         const clearSocialCenterScrollBounds = __dep('clearSocialCenterScrollBounds');
         const restoreInteractionState = __dep('restoreInteractionState');
         const ensureSocialOverlayPortal = __dep('ensureSocialOverlayPortal');
-        const socialOverlayLockArtifactsPresent = __dep('socialOverlayLockArtifactsPresent');
-        const clearSocialOverlayLockArtifacts = __dep('clearSocialOverlayLockArtifacts');
         const shellIdentitySignature = __dep('shellIdentitySignature');
         const currentUser = __dep('currentUser');
         const currentFacultyCode = __dep('currentFacultyCode');
@@ -255,9 +253,17 @@
             'pages',
             'profile',
         ]);
+        const SOCIAL_COMMAND_SKIPPED_PANELS = new Set([
+            'messages',
+            'alerts',
+            'profile',
+        ]);
 
         function isSocialTopbarSkippedPanel(panel) {
             return SOCIAL_TOPBAR_SKIPPED_PANELS.has(text(panel || ''));
+        }
+        function isSocialCommandSkippedPanel(panel) {
+            return SOCIAL_COMMAND_SKIPPED_PANELS.has(text(panel || ''));
         }
         function centerCanScroll(center, shell) {
             if (!center) return false;
@@ -282,17 +288,14 @@
             const socialRoot = document.getElementById(ROOT_ID);
             if (socialRoot) socialRoot.style.display = shouldLock ? 'flex' : 'block';
             if (shouldLock) {
-                if (!activeDialog() && socialOverlayLockArtifactsPresent()) {
-                    clearSocialOverlayLockArtifacts();
-                }
+                // Overlay unlock (restore scroll, then clear fixed body) is owned by
+                // syncSocialOverlayLock — do not clear lock artifacts here or the
+                // viewport jumps to top on dialog-close / event-deleted.
                 syncSocialVisualViewport();
                 bindSocialCenterWheelForward();
             } else {
                 document.documentElement.style.removeProperty('--social-visual-height');
                 clearSocialCenterScrollBounds(host);
-                if (!activeDialog() && socialOverlayLockArtifactsPresent()) {
-                    clearSocialOverlayLockArtifacts();
-                }
             }
             if (!host) return;
             updateSocialMeasuredChrome(host);
@@ -651,6 +654,7 @@
             isSocialAlertsPanel,
             isSocialInboxPanel,
             isSocialTopbarSkippedPanel,
+            isSocialCommandSkippedPanel,
             centerCanScroll,
             getSocialCenterScrollBudget,
             syncSocialScrollLayout,

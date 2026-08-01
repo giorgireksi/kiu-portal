@@ -134,6 +134,7 @@
             { tab: 'joined', label: 'Your groups', icon: 'fa-layer-group', helper: 'Rooms you belong to' },
         ];
         const createCta = `<div class="social-neo-groups-hero-actions">
+                ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                 <button class="lux-primary-btn social-neo-groups-hero-create-btn" type="button" data-action="group-create-open">
                     <i class="fas fa-plus"></i> ${activeTab === 'joined' ? 'Create Another Group' : 'Create Group'}
                 </button>
@@ -167,7 +168,15 @@
     function renderGroupsPanel() {
         const runtime = state();
         const social = runtime.social || {};
-        const groups = Array.isArray(social.groups) ? social.groups : [];
+        const chrome = window.KiuSocialChromeModel || {};
+        const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+            ? chrome.socialBrowseFacultyValue(runtime)
+            : (text(runtime.ui?.socialBrowseFaculty || 'all') || 'all');
+        const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+            ? chrome.socialMatchesBrowseFaculty
+            : () => true;
+        const groups = (Array.isArray(social.groups) ? social.groups : [])
+            .filter((group) => matchesBrowse(group, browseFaculty));
         const activeTab = text(runtime.ui?.groupsTab || 'discover');
         const joinedGroups = groups.filter(isJoinedGroup);
         const discoverGroups = groups;
@@ -410,6 +419,18 @@
                                     <option value="public" ${text(runtime.ui?.groupVisibility || 'public') === 'public' ? 'selected' : ''}>Public - Anyone can join</option>
                                     <option value="private" ${text(runtime.ui?.groupVisibility) === 'private' ? 'selected' : ''}>Private - Approval required</option>
                                 </select>
+                            </label>
+                            <label class="lux-glass-dialog-field">
+                                <span class="social-neo-label">Faculty</span>
+                                ${(window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+                                    ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                                        name: 'groupFaculty',
+                                        includeAll: false,
+                                        required: true,
+                                        value: text(runtime.ui?.groupFaculty || '') || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                                        label: 'Faculty'
+                                    }))
+                                    : `<select class="social-neo-select lux-control" name="groupFaculty" required data-lux-picker><option value="">Select faculty</option></select>`}
                             </label>
                             <label class="lux-glass-dialog-field" for="${escape(ctx.groupMaxMembersId)}">
                                 <span class="social-neo-label">Max members</span>
@@ -1441,9 +1462,12 @@
                     visibility: text(form.groupVisibility?.value || runtime.ui?.groupVisibility || 'public') || 'public',
                     type: text(form.groupType?.value || 'standard') || 'standard',
                     maxMembers: text(form.groupMaxMembers?.value || runtime.ui?.groupMaxMembers || ''),
+                    facultyCode: text(form.groupFaculty?.value || runtime.ui?.groupFaculty || '')
+                        || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
                     tags: text(form.groupType?.value || 'standard') === 'study' ? ['study'] : []
                 };
                 if (!payload.name) throw new Error('Group name is required.');
+                if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
                 const group = await createPortalSocialGroup(payload);
                 if (group?.id && inviteIds.length && typeof invitePortalSocialGroupMember === 'function') {
                     for (const memberId of inviteIds) {

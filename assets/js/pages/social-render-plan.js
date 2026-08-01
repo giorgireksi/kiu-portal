@@ -56,6 +56,21 @@
             return plan;
         }
 
+        if (reason === 'social-browse-faculty') {
+            const plan = {
+                ...fullPlan,
+                flash: false,
+                topbar: false,
+                toast: false,
+                dialog: false,
+                storyViewer: false,
+                storyComposer: false
+            };
+            if (!isMobileViewport) plan.mobileTab = false;
+            if (!drawerOpen) plan.drawer = false;
+            return plan;
+        }
+
         if (reason === 'panel' || reason === 'chat' || reason === 'mobile-nav') {
             const plan = {
                 ...fullPlan,
@@ -300,7 +315,6 @@
             'panel-surveys',
             'research-tab',
             'research-input',
-            'research-create-open',
             'research-created',
             'research-reader-open',
             'research-reader-close',
@@ -547,6 +561,9 @@
             'portfolio-custom-save',
             'portfolio-entry-add',
             'portfolio-entry-remove',
+            'portfolio-extra-add',
+            'portfolio-extra-remove',
+            'portfolio-resume-clear',
             'portfolio-section-toggle',
             'portfolio-publish-visibility'
         ]);
@@ -708,6 +725,24 @@
             'event-image'
         ]);
         if (eventCreateDialogReasons.has(reason) && text(activeDialog()?.type || '') === 'event-create') {
+            return {
+                flash: false,
+                topbar: false,
+                command: false,
+                center: false,
+                drawer: false,
+                mobileTab: false,
+                toast: false,
+                dialog: true,
+                storyViewer: false,
+                storyComposer: false
+            };
+        }
+
+        const researchCreateDialogReasons = new Set([
+            'research-create-open'
+        ]);
+        if (researchCreateDialogReasons.has(reason) && text(activeDialog()?.type || '') === 'research-create') {
             return {
                 flash: false,
                 topbar: false,

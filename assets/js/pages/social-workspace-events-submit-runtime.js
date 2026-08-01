@@ -154,7 +154,11 @@
                 return withBusy(async () => {
                     const facultyCodes = Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length
                         ? runtime.ui.projectFacultyCodes
-                        : [currentFacultyCode()];
+                        : [];
+                    if (!facultyCodes.length) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Select at least one faculty before publishing.', 'danger');
+                        return;
+                    }
                     await createPortalSocialProject({
                         title: text(form.projectName?.value || runtime.ui?.projectName),
                         name: text(form.projectName?.value || runtime.ui?.projectName),
@@ -222,7 +226,11 @@
                 return withBusy(async () => {
                     const facultyCodes = Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length
                         ? runtime.ui.projectFacultyCodes
-                        : [currentFacultyCode()];
+                        : [];
+                    if (!facultyCodes.length) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Select at least one faculty before creating the workspace.', 'danger');
+                        return;
+                    }
                     const skillTags = text(form.projectSkillTags?.value || runtime.ui?.projectSkillTags || '')
                         .split(',')
                         .map((item) => text(item))

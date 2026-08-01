@@ -28,5 +28,13 @@ describe('social-page-shell-runtime peel', () => {
         expect(html).toContain('social-page-shell-runtime.js');
         expect(html.indexOf('social-page-shell-runtime.js'))
             .toBeLessThan(html.indexOf('assets/js/pages/social-page.js'));
+        expect(html).toContain('social-page-shell-runtime.js?v=20260801-dialogscroll1');
+    });
+
+    it('does not clear overlay lock artifacts inside syncSocialScrollLayout', () => {
+        const shell = readSource('assets/js/pages/social-page-shell-runtime.js');
+        const layoutFn = shell.match(/function syncSocialScrollLayout\([\s\S]*?\n        function migrateSocialScrollOnLockChange/);
+        expect(layoutFn?.[0] || '').not.toContain('clearSocialOverlayLockArtifacts');
+        expect(shell).not.toMatch(/const clearSocialOverlayLockArtifacts = __dep/);
     });
 });

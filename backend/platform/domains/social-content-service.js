@@ -958,7 +958,7 @@ function createSocialPage(payload = {}, actorId = '') {
         ownerUserId,
         adminIds: [],
         visibility: normalizeSocialVisibility(payload.visibility, 'public'),
-        facultyCode: normalizeCode(getSocialActorFacultyCode.call(this, ownerUserId)),
+        facultyCode: normalizeCode(payload.facultyCode || payload.faculty || getSocialActorFacultyCode.call(this, ownerUserId)),
         createdAt: socialText(payload.createdAt || nowIso()),
         updatedAt: socialText(payload.updatedAt || nowIso()),
         resolutionAction: socialText(payload.resolutionAction || ''),
@@ -986,7 +986,7 @@ function createSocialGroup(payload = {}, actorId = '') {
         memberIds: [],
         pendingMemberIds: [],
         visibility: normalizeSocialVisibility(payload.visibility, 'public'),
-        facultyCode: normalizeCode(getSocialActorFacultyCode.call(this, ownerUserId)),
+        facultyCode: normalizeCode(payload.facultyCode || payload.faculty || getSocialActorFacultyCode.call(this, ownerUserId)),
         chatId: socialText(payload.chatId || ''),
         avatarImage: socialText(payload.avatarImage || payload.avatar || ''),
         bannerImage: socialText(payload.bannerImage || payload.banner || ''),
@@ -1364,7 +1364,13 @@ function createSocialPost(payload = {}, actorId = '') {
         scopeName,
         category: socialText(payload.category || ''),
         audience: normalizeSocialAudience(payload.audience || (scopeType === 'group' ? 'group' : scopeType === 'page' ? 'page' : 'campus')),
-        audienceFacultyCode: normalizeCode(payload.audienceFacultyCode || payload.authorFacultyCode || getSocialActorFacultyCode.call(this, authorUserId)),
+        audienceFacultyCode: normalizeCode(
+            payload.audienceFacultyCode
+            || payload.authorFacultyCode
+            || payload.facultyCode
+            || (payload.photoMeta && typeof payload.photoMeta === 'object' ? payload.photoMeta.facultyCode : '')
+            || getSocialActorFacultyCode.call(this, authorUserId)
+        ),
         body: bodyText,
         text: bodyText,
         media,
@@ -1549,7 +1555,7 @@ function createSocialEvent(payload = {}, actorId = '') {
         description: socialText(payload.description || ''),
         eventType: socialText(payload.eventType || 'meetup').toLowerCase() || 'meetup',
         visibility: normalizeSocialVisibility(payload.visibility, 'public'),
-        facultyCode: normalizeCode(getSocialActorFacultyCode.call(this, creatorId)),
+        facultyCode: normalizeCode(payload.facultyCode || payload.faculty || getSocialActorFacultyCode.call(this, creatorId)),
         scopeType,
         scopeId,
         scopeName: socialText(payload.scopeName || (
@@ -1633,6 +1639,9 @@ function updateSocialEvent(eventId, payload = {}, actorId = '') {
     }
     if (Object.prototype.hasOwnProperty.call(payload, 'imageUrl') && socialText(payload.imageUrl)) {
         event.imageUrl = socialText(payload.imageUrl);
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'facultyCode') || Object.prototype.hasOwnProperty.call(payload, 'faculty')) {
+        event.facultyCode = normalizeCode(payload.facultyCode || payload.faculty || event.facultyCode || '');
     }
     event.updatedAt = nowIso();
     this.saveSocialMutation(normalizedActorId, 'event-updated', 'social-event', socialText(event.id), beforeState, event);

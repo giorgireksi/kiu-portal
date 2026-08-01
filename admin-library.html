@@ -80,12 +80,13 @@
                 </div>
             </section>
 
-            <section class="alib-panel alib-panel--filters lux-soft-chrome home-hover-chip" hidden>
+            <section class="alib-panel alib-panel--filters lux-soft-chrome home-hover-chip">
                 <div class="lux-card-head">
                     <div>
                         <div class="lux-card-title">Catalog Controls</div>
                         <div class="lux-card-meta">Search the shared shelf and keep quick counts visible while editing.</div>
                     </div>
+                    <button type="button" class="lux-secondary-btn admin-library-filters-editor-btn" data-admin-library-open-filters-editor="true" data-lux-skip-modern-button="true"><i class="fas fa-filter"></i> Filters</button>
                 </div>
                 <div class="admin-library-metric-row admin-library-metric-row--compact">
                     <div class="lux-stat-card admin-library-metric-card home-hover-chip">
@@ -102,18 +103,7 @@
                         <span class="lux-picker-label">Search</span>
                         <input id="library-filter-search" name="library_filter_search" type="text" class="lux-control" placeholder="Title, author, year..." data-admin-library-search="query">
                     </label>
-                    <label class="lux-picker-field">
-                        <span class="lux-picker-label">Topic</span>
-                        <select id="library-filter-topic" name="library_filter_topic" data-lux-picker-label="Topic" data-admin-library-select-field="topic"></select>
-                    </label>
-                    <label class="lux-picker-field">
-                        <span class="lux-picker-label">Language</span>
-                        <select id="library-filter-language" name="library_filter_language" data-lux-picker-label="Language" data-admin-library-select-field="language"></select>
-                    </label>
-                    <label class="lux-picker-field">
-                        <span class="lux-picker-label">Status</span>
-                        <select id="library-filter-status" name="library_filter_status" data-lux-picker-label="Status" data-admin-library-select-field="status"></select>
-                    </label>
+                    <div data-library-catalog-filter-fields style="display:contents"></div>
                 </div>
             </section>
         </section>
@@ -233,6 +223,28 @@
         <div class="modal-footer admin-library-modal-foot">
             <span class="admin-library-modal-copy">Changes are saved immediately and affect the form and table.</span>
             <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-schema-modal="true">Close</button>
+        </div>
+    </div>
+</div>
+<div id="library-filters-overlay" class="modal-overlay admin-library-modal-overlay" data-admin-library-filters-overlay="true" data-lux-modal-overlay aria-hidden="true">
+    <div id="admin-library-filters-modal" class="modal-content admin-library-modal admin-library-filters-modal" data-lux-transparency-exempt="1">
+        <div class="modal-header admin-library-modal-head">
+            <h3><i class="fas fa-filter"></i> Catalog Filters Editor</h3>
+            <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-filters-modal="true"><i class="fas fa-times"></i> Close</button>
+        </div>
+        <div class="modal-body admin-library-modal-body">
+            <div class="admin-library-modal-copy">Choose which Form Schema select and droplist fields appear as browse filters on other accounts. Search always stays visible. Admin Catalog Controls still shows every filterable field.</div>
+            <div class="admin-library-schema-section">
+                <div class="admin-library-schema-section-head">
+                    <strong>Filters for other accounts</strong>
+                    <span id="browse-filter-field-count" class="admin-library-schema-count">0 enabled</span>
+                </div>
+                <div id="browse-filter-fields-list" class="admin-library-schema-fields-list"></div>
+            </div>
+        </div>
+        <div class="modal-footer admin-library-modal-foot">
+            <span class="admin-library-modal-copy">Changes are saved immediately to the shared library state.</span>
+            <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-filters-modal="true">Close</button>
         </div>
     </div>
 </div>

@@ -165,6 +165,7 @@ function normalizeLostFoundItem(item = {}) {
         locationText: text(item?.locationText || item?.location || ''),
         eventDate: text(item?.eventDate || item?.lostAt || ''),
         imageUrl: text(item?.imageUrl || item?.photoUrl || ''),
+        facultyCode: text(item?.facultyCode || item?.faculty || ''),
         authorUserId: text(item?.authorUserId || item?.createdById || ''),
         authorName: text(item?.authorName || ''),
         createdAt: text(item?.createdAt || ''),
@@ -208,8 +209,16 @@ function lostFoundRecoveredCount() {
 function lostFoundVisibleItems() {
     const runtime = state();
     const search = text(runtime.ui?.lostFoundSearch || '').toLowerCase();
+    const chrome = window.KiuSocialChromeModel || {};
+    const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+        ? chrome.socialBrowseFacultyValue(runtime)
+        : (text(runtime.ui?.socialBrowseFaculty || 'all') || 'all');
+    const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+        ? chrome.socialMatchesBrowseFaculty
+        : () => true;
     return lostFoundActiveItems()
         .filter((item) => item.status === 'lost')
+        .filter((item) => matchesBrowse(item, browseFaculty))
         .filter((item) => {
             if (!search) return true;
             const blob = [

@@ -633,15 +633,17 @@
                 const hubStatus = text(runtime.ui?.projectHubStatus || 'all') || 'all';
                 const hubViewMode = text(runtime.ui?.projectHubViewMode || 'grid') || 'grid';
                 const discoverSearch = text(runtime.ui?.projectDiscoverSearch || '').toLowerCase();
-                const discoverFaculty = text(runtime.ui?.projectDiscoverFaculty || '') || (hubScope === 'faculty' ? currentFacultyCode() : 'all');
+                const chrome = window.KiuSocialChromeModel || {};
+                const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
+                    ? chrome.socialBrowseFacultyValue(runtime)
+                    : (text(runtime.ui?.projectDiscoverFaculty || '') || (hubScope === 'faculty' ? currentFacultyCode() : 'all'));
+                const discoverFaculty = browseFaculty;
                 const discoverTag = text(runtime.ui?.projectDiscoverTag || '').toLowerCase();
                 const currentUser = currentUserId();
                 const hubSkillOptions = uniqueStrings(projects.flatMap((project) => Array.isArray(project?.skillTags) ? project.skillTags : [])).slice(0, 16);
-                const hubFacultyCodes = uniqueStrings([
-                    currentFacultyCode(),
-                    ...projects.flatMap((project) => Array.isArray(project?.facultyCodes) ? project.facultyCodes : [])
-                ]).filter(Boolean);
-                const hubFacultyOptions = ['all', ...hubFacultyCodes.filter((code) => text(code) !== 'all')];
+                const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
+                    ? chrome.socialMatchesBrowseFaculty
+                    : (project, facultyCode) => facultyCode === 'all' || (Array.isArray(project?.facultyCodes) ? project.facultyCodes : []).some((code) => text(code) === facultyCode);
                 const projectNeedsMyAttention = (project) => {
                     const tasks = Array.isArray(project?.tasks) ? project.tasks : [];
                     const now = Date.now();
@@ -666,14 +668,16 @@
                     ].join(' ').toLowerCase();
                     return blob.includes(discoverSearch);
                 };
-                const matchesHubFaculty = (project, facultyCode) => (Array.isArray(project?.facultyCodes) ? project.facultyCodes : [])
-                    .some((code) => text(code) === facultyCode);
+                const matchesHubFaculty = (project, facultyCode) => matchesBrowse(project, facultyCode);
                 let hubProjects = [...projects];
+                if (discoverFaculty && discoverFaculty !== 'all') {
+                    hubProjects = hubProjects.filter((project) => matchesHubFaculty(project, discoverFaculty));
+                }
                 if (hubScope === 'mine' || hubScope === 'attention') {
                     hubProjects = hubProjects.filter(canViewProjectWorkspaceCard);
                     if (hubScope === 'attention') hubProjects = hubProjects.filter(projectNeedsMyAttention);
                 } else if (hubScope === 'faculty') {
-                    // Faculty scope defaults to current faculty when select is "All faculties"
+                    // Faculty scope defaults to current faculty when browse is "All faculties"
                     const facultyCode = (discoverFaculty && discoverFaculty !== 'all') ? discoverFaculty : currentFacultyCode();
                     hubProjects = hubProjects.filter((project) => matchesHubFaculty(project, facultyCode));
                 }
@@ -778,12 +782,6 @@
                                                     <button class="${hubStatus === value ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-hub-status" data-status="${escape(value)}">${escape(label)}${value !== 'all' ? ` (${escape(String(hubStatusCounts[value] || 0))})` : ''}</button>
                                                 `).join('')}
                                             </div>
-                                        </div>
-                                        <div class="social-project-hub-filter-group">
-                                            <span class="social-project-hub-filter-label">Faculty</span>
-                                            <select class="social-neo-select social-neo-select-sm lux-control lux-universal-native-select" name="projectDiscoverFaculty" data-lux-picker data-lux-picker-label="Faculty">
-                                                ${hubFacultyOptions.map((code) => `<option value="${escape(code)}" ${discoverFaculty === code ? 'selected' : ''}>${escape(code === 'all' ? 'All faculties' : code)}</option>`).join('')}
-                                            </select>
                                         </div>
                                         <div class="social-project-hub-filter-group social-project-hub-filter-group--skills">
                                             <span class="social-project-hub-filter-label">Skills</span>

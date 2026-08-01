@@ -495,8 +495,13 @@
                 state().ui.portfolioCustomBuilderOpen = false;
                 setPanel('projects');
                 return withBusy(async () => {
-                    await hydrateMyPortfolioDocument(true);
-                    openDialog('portfolio-editor');
+                    try {
+                        await hydrateMyPortfolioDocument(true);
+                    } catch (_error) {
+                        // hydrate already local-ensures; still open editor
+                    } finally {
+                        openDialog('portfolio-editor');
+                    }
                 });
             }
             if (action === 'portfolio-section-toggle') {
@@ -507,32 +512,38 @@
                 return renderSocialPageNow('portfolio-section-toggle');
             }
             if (action === 'portfolio-entry-add') {
-                const sectionKey = text(trigger.getAttribute('data-section-key'));
-                const portfolio = portfolioCollectDocumentFromUi();
-                const section = portfolio.sections?.[sectionKey];
-                if (!section) return;
-                section.entries = Array.isArray(section.entries) ? section.entries : [];
-                if (sectionKey === 'skills') {
-                    section.entries = [{ id: 'skills-default', order: 0, fields: { tags: { type: 'text', value: '' } } }];
-                } else {
-                    section.entries.push({ id: portfolioMakeId('entry'), order: section.entries.length, fields: {} });
-                }
-                state().ui.openPortfolioSections = state().ui.openPortfolioSections || {};
-                state().ui.openPortfolioSections[sectionKey] = true;
-                state().ui.myPortfolio = portfolio;
-                if (patchPortfolioSection(sectionKey)) return;
-                return renderSocialPageNow('portfolio-entry-add');
+                return false;
             }
             if (action === 'portfolio-entry-remove') {
-                const sectionKey = text(trigger.getAttribute('data-section-key'));
-                const entryIndex = Number(trigger.getAttribute('data-entry-index'));
+                return false;
+            }
+            if (action === 'portfolio-extra-add') {
                 const portfolio = portfolioCollectDocumentFromUi();
-                const section = portfolio.sections?.[sectionKey];
-                if (!section || !Array.isArray(section.entries)) return;
-                section.entries.splice(entryIndex, 1);
+                portfolio.extras = Array.isArray(portfolio.extras) ? portfolio.extras : [];
+                portfolio.extras.push({
+                    id: portfolioMakeId('extra'),
+                    kind: 'note',
+                    title: '',
+                    detail: '',
+                    url: ''
+                });
                 state().ui.myPortfolio = portfolio;
-                if (patchPortfolioSection(sectionKey)) return;
-                return renderSocialPageNow('portfolio-entry-remove');
+                return renderSocialPageNow('portfolio-extra-add');
+            }
+            if (action === 'portfolio-extra-remove') {
+                const entryIndex = Number(trigger.getAttribute('data-extra-index'));
+                const portfolio = portfolioCollectDocumentFromUi();
+                portfolio.extras = Array.isArray(portfolio.extras) ? portfolio.extras : [];
+                if (Number.isFinite(entryIndex) && entryIndex >= 0) portfolio.extras.splice(entryIndex, 1);
+                state().ui.myPortfolio = portfolio;
+                return renderSocialPageNow('portfolio-extra-remove');
+            }
+            if (action === 'portfolio-resume-clear') {
+                const portfolio = portfolioCollectDocumentFromUi();
+                portfolio.resume = null;
+                state().ui.portfolioResumePending = null;
+                state().ui.myPortfolio = portfolio;
+                return renderSocialPageNow('portfolio-resume-clear');
             }
             if (action === 'portfolio-save') {
                 return withBusy(() => saveMyPortfolioDocument({ flash: true }));

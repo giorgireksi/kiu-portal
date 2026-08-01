@@ -133,4 +133,22 @@ describe('social-fingerprint-model', () => {
         expect(sig).toContain('post-compose');
         expect(sig).toContain('ok');
     });
+
+    it('portfolio fingerprint changes when extras are added', () => {
+        const empty = {
+            ui: { myPortfolio: { status: 'draft', sections: [], extras: [] }, portfolioSaveStatus: '' }
+        };
+        const withExtra = {
+            ui: {
+                myPortfolio: {
+                    status: 'draft',
+                    sections: [],
+                    extras: [{ id: 'extra-1', kind: 'note', title: '', detail: '', url: '' }]
+                },
+                portfolioSaveStatus: ''
+            }
+        };
+        expect(win.buildPortfolioFingerprint(empty)).not.toBe(win.buildPortfolioFingerprint(withExtra));
+        expect(win.buildPortfolioFingerprint(withExtra)).toContain(':1:');
+    });
 });

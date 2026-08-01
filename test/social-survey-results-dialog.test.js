@@ -34,6 +34,26 @@ describe('social-survey-results-dialog (shared shell CSS)', () => {
         expect(fouc).toContain('.social-neo-survey-card');
     });
 
+    it('survey take view wires shared chip and typography classes', () => {
+        const surveys = readSource('assets/js/pages/social-surveys.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+
+        expect(surveys).toContain('function renderTakeSurvey(survey)');
+        expect(surveys).toContain('social-neo-survey-take-hero home-hover-chip');
+        expect(surveys).toContain('social-neo-survey-take-card lux-soft-chrome home-hover-chip');
+        expect(surveys).toContain('social-neo-survey-take-choice lux-soft-chrome home-hover-chip');
+        expect(surveys).toContain('lux-primary-btn social-neo-survey-submit-btn home-hover-chip');
+        expect(surveys).toContain('lux-secondary-btn home-hover-chip');
+        expect(surveys).not.toContain('social-survey-back');
+        expect(fouc).toContain('.social-neo-surveys-take-shell :is(');
+        expect(fouc).toContain('.social-neo-survey-take-hero.home-hover-chip');
+        expect(fouc).toContain('.social-neo-survey-take-card');
+        expect(fouc).toContain('.social-neo-survey-take-choice');
+        expect(bare).toContain('.social-neo-surveys-take-shell');
+        expect(bare).toContain('.social-neo-survey-take-choice:has(input:checked)');
+    });
+
     it('lux-modals includes survey-results KPI grid and overflow rules', () => {
         const modals = readSource('assets/css/lux-modals.css');
         expect(modals).toContain('#social-neo-overlay-portal .lux-glass-dialog-card--survey-results .social-neo-surveys-results-kpis');
@@ -52,9 +72,9 @@ describe('social-survey-results-dialog (shared shell CSS)', () => {
         );
     });
 
-    it('social.html cache-busts survey-results CSS', () => {
+    it('social.html cache-busts survey take shell CSS', () => {
         const html = readSource('social.html');
-        expect(html).toMatch(/lux-modals\.css\?v=20260729-surveyresults1/);
-        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260729-researchcopy1/);
+        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260801-surveytake1/);
+        expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260801-surveytake1/);
     });
 });
