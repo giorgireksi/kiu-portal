@@ -144,20 +144,20 @@
     }
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260801-socialfaculty3';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
-    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260801-socialfaculty3';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260801-socialfaculty3';
-    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260801-surveytake2';
+    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260802-modulepins1';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260802-modulepins1';
+    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260802-modulepins1';
     const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260801-researchviewer12';
-    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260801-researchviewer3';
+    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260802-modulepins1';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260728-socworkspace2';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
-    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260801-socialeventrsvp2';
-    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260801-socialfaculty3';
+    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260802-modulepins1';
+    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260802-modulepins1';
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
-    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260801-socialfaculty3';
-    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260801-socialfaculty3';
+    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260802-modulepins1';
+    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260802-modulepins1';
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260726-socfix20';
@@ -170,7 +170,7 @@
     const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
     const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260801-portfolioresume3';
     const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260801-socialfaculty3';
-    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260801-portfolioresume3';
+    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260802-portfolio-viewer1';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
     const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260801-socialfaculty3';
@@ -178,12 +178,12 @@
     const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260726-socstack47';
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260726-socstack50';
     const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260728-socworkspace1';
-    const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260801-portfolioresume3';
-    const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260801-portfolioresume3';
-    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260801-portfolioresume3';
+    const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260802-portfolio-viewer1';
+    const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer2';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260802-portfolio-viewer2';
     const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260801-socialfaculty3';
-    const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260726-socstack47';
-    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260801-portfolioresume3';
+    const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260802-portfolio-viewer1';
+    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260802-portfolio-viewer1';
     const DIRECTORY_REFRESH_MS = 180;
     const MAX_RENDER_ATTEMPTS = 24;
     const USER_ROLES_FALLBACK = {
@@ -1524,7 +1524,7 @@
         bindSocialCenterWheelForward, scheduleDeferredWindowScrollRestore,
         ensureSocialShell, queueDeferredModuleRender, applyShellIdentity, revealShell,
         queueDirectoryRefresh, queueGroupInviteSearchRefresh, queueProjectInviteSearchRefresh,
-        queuePageMembersSearchRefresh,
+        queuePageMembersSearchRefresh, queueEventEditorSearchRefresh,
         normalizeGroupLeaveToken, buildGroupLeaveVerification, renderGroupLeaveDialog
     } = __socialShellApi;
 
@@ -1546,6 +1546,7 @@
         hasSocialPhotographyModule, hasSocialSurveysModule, hasSocialResearchModule, hasSocialWorkspaceModule,
         normalizeComposerEntityLinks, normalizeProjectTaskStatusId, openDialog, photographyPosts,
         portfolioEntriesForViewer, postEntityLinks, queueDeferredModuleRender,
+        openPortfolioViewerForUser: __kiuWorkspaceStubBag.openPortfolioViewerForUser,
         renderProjectHealthPlanCardHtml, renderProjectHealthPlanPickBodyHtml, resolveEntityLinkMeta,
         root, state, text, PANEL_KEY, WORKSPACE_NAV_COLLAPSED_KEY,
         renderSocialPageNow: (reason) => {
@@ -1945,13 +1946,20 @@
             : () => {}
     });
 
+    window.__kiuSocialChromeHooks = window.__kiuSocialChromeHooks || {};
+    Object.assign(window.__kiuSocialChromeHooks, {
+        state, text, currentUserId, currentUser
+    });
+
     window.__kiuSocialEventsHooks = window.__kiuSocialEventsHooks || {};
     Object.assign(window.__kiuSocialEventsHooks, {
         state, currentUser, currentUserId, text, escape,
-        when, eventCanManage, controlId, activeDialog, eventScopeOptions,
+        when, eventCanManage, eventCanManageEditors, controlId, activeDialog, eventScopeOptions,
         setPanel, openDialog, renderSocialPageNow, withBusy, clearEventDraft,
         prefillEventEditDraft, patchEventRsvpButtons, invalidateSocialRenderCache, ensureSocialGroupsModule,
-        closeDialog, fromDateTimeLocalValue, readFileAsDataUrl,
+        closeDialog, fromDateTimeLocalValue, readFileAsDataUrl, optimizeEventCoverFile,
+        accountById, displayName, avatar, accountSubtitle, facultyLabel, roleLabel,
+        queueEventEditorSearchRefresh,
         // Use window.* lookups — bare identifiers throw if portal APIs were not exported yet
         // and would abort this Object.assign (silent RSVP / create-event no-op).
         respondPortalSocialEventRsvp: window.respondPortalSocialEventRsvp,
@@ -1979,7 +1987,7 @@
         pageAvatar, pageCover, pageTypeLabel, uniqueStrings, renderFileChip,
         renderPost, getSocialPageRecord, buildPageMembersList, pageAdminIdsFor, pageFollowerIdsFor,
         presencePill, accountById, accountSubtitle, avatar, displayName,
-        roleLabel, currentUserId, setPanel, openDialog, renderSocialPageNow,
+        roleLabel, facultyLabel, currentUserId, setPanel, openDialog, renderSocialPageNow,
         withBusy, patchPageFollowState, shouldPatchPageComposeBlock, patchPageComposeBlock, patchSocialFlash,
         togglePortalSocialFollow, reportPortalSocialContent, invalidateSocialRenderCache, refreshPortalSocialFeed, updatePortalSocialPage,
         closeDialog, createPortalSocialPage, readFileAsDataUrl, submitSocialPost, queuePageMembersSearchRefresh,
@@ -2044,6 +2052,7 @@
         patchPhotographyFollowButtons, photographyUploadForm, reactToPortalSocialPost, refreshPhotographyPanelStage, renderPhotographyUploadDialogNow,
         revokePhotographyUploadPreview, togglePortalSocialFollow, patchSocialFlash, invalidateSocialRenderCache,
         deletePortalSocialPost: typeof window.deletePortalSocialPost === 'function' ? window.deletePortalSocialPost : null,
+        updatePortalSocialPost: typeof window.updatePortalSocialPost === 'function' ? window.updatePortalSocialPost : null,
         submitSocialPost: typeof window.submitSocialPost === 'function' ? window.submitSocialPost : submitSocialPost,
         applyPhotographyUploadFile
     });

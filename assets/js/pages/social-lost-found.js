@@ -73,6 +73,7 @@
         const lostCount = Number(metrics.lost || 0);
         const foundCount = Number(metrics.found || 0);
         const searchValue = text(options.searchValue || '');
+        const activeTab = text(options.tab || runtime.ui?.lostFoundTab || 'all') || 'all';
         const bodyHtml = text(options.bodyHtml || '');
         const controlIdFn = typeof options.controlId === 'function' ? options.controlId : (name) => text(name);
         const merged = Boolean(bodyHtml);
@@ -112,6 +113,10 @@
                     `).join('')}
                 </div>
                 <div class="social-neo-lost-found-hero-toolbar home-hover-chip">
+                    <div class="social-neo-lost-found-tabs" role="tablist" aria-label="Lost and found views">
+                        <button class="${activeTab === 'all' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="lost-found-tab" data-lost-found-tab="all">All listings</button>
+                        <button class="${activeTab === 'pinned' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="lost-found-tab" data-lost-found-tab="pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i> Pinned</button>
+                    </div>
                     <label for="${escape(searchId)}">
                         <span class="social-neo-label">Search</span>
                         <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" name="lostFoundSearch" placeholder="Search title, category, location, or author" value="${escape(searchValue)}">
@@ -321,6 +326,21 @@
         const isModerator = ['admin', 'student_service'].includes(role);
         const items = lostFoundVisibleItems();
 
+        const renderLfCardDescRail = (itemId, body) => `
+            <div class="lux-scroll-rail social-neo-lf-card-desc-rail" data-lux-scroll-rail data-lf-desc-rail="${escape(itemId)}">
+                <div class="lux-scroll-rail__controls social-neo-lf-card-desc-controls" hidden aria-hidden="true">
+                    <div class="lux-scroll-rail__dock lux-scroll-rail__dock--vertical" role="group" aria-label="Listing description">
+                        <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="up" aria-label="Scroll description up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
+                        <span class="lux-scroll-rail__spine" aria-hidden="true"></span>
+                        <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="down" aria-label="Scroll description down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+                <div class="lux-scrollbar lux-scroll-rail__viewport social-neo-lf-card-desc-viewport" aria-label="Listing description">
+                    <div class="social-neo-muted social-neo-lf-card-desc">${escape(body)}</div>
+                </div>
+            </div>
+        `;
+
         const renderCard = (item) => {
             const author = accountById(item.authorUserId) || { id: item.authorUserId, displayName: item.authorName || item.authorUserId };
             const isOwn = text(item.authorUserId) === currentUserId();
@@ -330,6 +350,10 @@
             const statusLabel = text(item.status) === 'found' ? 'Found' : 'Lost';
             const statusTone = text(item.status) === 'found' ? 'is-success' : 'is-warning';
             const pill = (label, extra = '') => `<span class="social-neo-pill lux-status-pill home-hover-chip ${extra}">${label}</span>`;
+            const pinModel = window.KiuSocialPinModel;
+            const pinActions = pinModel ? pinModel.renderModulePinActions('lostFound', item.id, {
+                canCuratorPin: pinModel.viewerCanCuratorPin('lostFound', item)
+            }) : '';
             return `
                 <article class="social-neo-card social-neo-entity-card social-neo-lf-card home-hover-chip">
                     <div class="social-neo-inline social-neo-inline-between-start-wrap social-neo-lf-card-head">
@@ -351,7 +375,7 @@
                     <div class="${item.imageUrl ? 'social-neo-grid-2' : 'social-neo-stack'} social-neo-grid-tight social-neo-grid-mt-12 social-neo-lf-card-media-grid ${item.imageUrl ? 'social-neo-lf-card-media-grid-has-media' : 'social-neo-lf-card-media-grid-no-media'}">
                         ${item.imageUrl ? `<div class="social-neo-media social-neo-lf-card-media-frame"><img class="social-neo-lf-card-media-image" src="${escape(item.imageUrl)}" alt="${escape(text(item.title || 'Lost item'))}"></div>` : ''}
                         <div class="social-neo-stack social-neo-lf-card-content ${item.imageUrl ? 'social-neo-lf-card-content-has-media' : 'social-neo-lf-card-content-full'}">
-                            <div class="social-neo-muted">${escape(text(item.description || 'No description provided.'))}</div>
+                            ${renderLfCardDescRail(text(item.id), text(item.description || 'No description provided.'))}
                             <div class="social-neo-badge-row">
                                 ${text(item.locationText) ? pill(`<i class="fas fa-location-dot"></i> ${escape(item.locationText)}`) : ''}
                                 ${text(item.expiresAt) ? pill(`<i class="fas fa-hourglass-end"></i> Ends ${escape(when(item.expiresAt))}`) : ''}
@@ -363,6 +387,7 @@
                                     ${canMarkFound ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="lost-found-mark-found" data-item-id="${escape(item.id)}"><i class="fas fa-circle-check"></i> Mark as found</button>` : ''}
                                 </div>
                                 <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-actions-side">
+                                    ${pinActions}
                                     ${canManage ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="lost-found-edit" data-item-id="${escape(item.id)}"><i class="fas fa-pen"></i> Edit</button>` : ''}
                                     ${canRemove ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="lost-found-delete" data-item-id="${escape(item.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                                 </div>
@@ -373,25 +398,37 @@
             `;
         };
 
-        const heroMetrics = { lost: lostFoundActiveCount(), found: lostFoundRecoveredCount() };
-        const listingsBody = `
-            <div class="social-neo-section-head">
-                <div>
-                    <strong>Lost items</strong>
-                    <span>${escape(items.length ? `${items.length} item${items.length === 1 ? '' : 's'} in view` : 'No lost items right now')}</span>
-                </div>
-            </div>
-            ${items.length ? items.map(renderCard).join('') : `
+        const activeTab = text(runtime.ui?.lostFoundTab || 'all') || 'all';
+        const pinModel = window.KiuSocialPinModel;
+        const sortedItems = pinModel && activeTab !== 'pinned'
+            ? pinModel.sortWithCuratorPins('lostFound', items)
+            : items;
+        const pinnedSections = activeTab === 'pinned' && pinModel
+            ? pinModel.partitionPinnedTab('lostFound', items)
+            : null;
+        const listingCards = activeTab === 'pinned' && pinnedSections && pinModel
+            ? pinModel.renderPinnedSections('lostFound', pinnedSections, (item) => renderCard(item), 'No pinned listings yet.')
+            : (sortedItems.length ? sortedItems.map(renderCard).join('') : `
                 <div class="social-neo-empty-hero social-neo-lf-empty">
                     <i class="fas fa-magnifying-glass-location"></i>
                     <strong>No lost items right now</strong>
                     <span>Post a missing item and campus can help track it down.</span>
                 </div>
-            `}
+            `);
+        const heroMetrics = { lost: lostFoundActiveCount(), found: lostFoundRecoveredCount() };
+        const listingsBody = `
+            <div class="social-neo-section-head">
+                <div>
+                    <strong>${activeTab === 'pinned' ? 'Pinned listings' : 'Lost items'}</strong>
+                    <span>${escape(sortedItems.length ? `${sortedItems.length} item${sortedItems.length === 1 ? '' : 's'} in view` : 'No lost items right now')}</span>
+                </div>
+            </div>
+            ${listingCards}
         `;
         const heroOptions = {
             searchValue: text(runtime.ui?.lostFoundSearch || ''),
             controlId,
+            tab: activeTab,
             bodyHtml: listingsBody
         };
 
@@ -409,6 +446,10 @@
 
     function handleSocialLostFoundClick(action, trigger) {
         if (!isSocialLostFoundClickAction(action)) return false;
+        if (action === 'lost-found-tab') {
+            state().ui.lostFoundTab = text(trigger.getAttribute('data-lost-found-tab') || 'all') || 'all';
+            return renderSocialPageNow('lost-found-tab');
+        }
         if (action === 'lost-found-create-open') {
             resetLostFoundDraft();
             state().ui.lostFoundExpiresAt = toDateTimeLocalValue(defaultLostFoundExpiresAt());

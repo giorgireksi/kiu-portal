@@ -118,4 +118,10 @@ describe('social-chrome-model', () => {
         expect(win.postKey({ id: 'p1' })).toBe('p1');
         expect(win.escape('<x>')).toBe('&lt;x&gt;');
     });
+
+    it('does not recurse when chrome hooks re-export escape', () => {
+        win.__kiuSocialChromeHooks.escape = win.escape;
+        expect(() => win.escape('<tag>')).not.toThrow();
+        expect(win.escape('<tag>')).toBe('&lt;tag&gt;');
+    });
 });

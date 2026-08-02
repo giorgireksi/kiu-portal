@@ -158,4 +158,16 @@ describe('social-form-model', () => {
         expect(surveyAudienceCreateLabel('faculty')).toBe('My faculty');
         expect(parseSurveyScopeValue('profile:u1').scopeType).toBe('profile');
     });
+
+    it('renders unavailable media without bridge URLs when storage is missing', () => {
+        const model = readSource('assets/js/pages/social-form-model.js');
+        const runtime = readSource('assets/js/shared/social-runtime-lite.js');
+        const content = readSource('assets/js/pages/social-chrome-model.js');
+        expect(model).toContain('file.storageMissing === true');
+        expect(model).toContain('Image unavailable');
+        expect(model).toContain("this.closest('.social-neo-media')?.classList.add('is-broken')");
+        expect(runtime).toContain('const storageMissing = file.storageMissing === true');
+        expect(runtime).toContain('if (storageMissing) return preview');
+        expect(content).toContain('const storageMissing = file?.storageMissing === true');
+    });
 });

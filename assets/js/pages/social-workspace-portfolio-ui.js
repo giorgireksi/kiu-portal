@@ -10,6 +10,7 @@
     function createKiuSocialWorkspacePortfolioUiApi(deps) {
         if (!deps || typeof deps !== 'object') throw new Error('workspace portfolio-ui deps required');
         const {
+            accountById,
             avatar,
             currentFacultyCode,
             currentUser,
@@ -37,6 +38,21 @@
         } = deps;
 
         const portfolioPill = (innerHtml, extra = '') => `<span class="social-neo-pill lux-status-pill ${extra}">${innerHtml}</span>`;
+
+        const renderPortfolioCardTextRail = ({ entryId, dataAttr, ariaLabel, body, railClass, controlsClass, viewportClass, textClass, textTag = 'p' }) => `
+            <div class="lux-scroll-rail ${railClass}" data-lux-scroll-rail ${dataAttr}="${escape(entryId)}">
+                <div class="lux-scroll-rail__controls ${controlsClass}" hidden aria-hidden="true">
+                    <div class="lux-scroll-rail__dock lux-scroll-rail__dock--vertical" role="group" aria-label="${escape(ariaLabel)}">
+                        <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="up" aria-label="Scroll up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
+                        <span class="lux-scroll-rail__spine" aria-hidden="true"></span>
+                        <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="down" aria-label="Scroll down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+                <div class="lux-scrollbar lux-scroll-rail__viewport ${viewportClass}" aria-label="${escape(ariaLabel)}">
+                    <${textTag} class="${textClass}">${escape(body)}</${textTag}>
+                </div>
+            </div>
+        `;
 
         function renderPortfolioHero(runtime, metrics = {}) {
             const canCreate = Boolean(metrics.canCreate);
@@ -239,6 +255,35 @@
             return `<section class="social-neo-card"><div class="social-neo-empty">Portfolio editor is loading.</div></section>`;
         }
 
+        function renderPortfolioViewerDialog(dialog) {
+            const userId = text(dialog?.userId || state().ui?.viewingPortfolioUserId || '');
+            const owner = accountById(userId) || {};
+            const portfolio = state().ui?.viewingPortfolio;
+            const error = text(state().ui?.viewingPortfolioError || '');
+            const ownerName = displayName(owner) || text(portfolio?.basics?.name) || 'Portfolio';
+            let bodyMarkup = '<div class="social-neo-empty">Loading portfolio…</div>';
+            if (error) {
+                bodyMarkup = `<div class="social-neo-empty">${escape(error)}</div>`;
+            } else if (portfolio && typeof window.KiuPortfolioEditor?.renderViewer === 'function') {
+                bodyMarkup = window.KiuPortfolioEditor.renderViewer(portfolio);
+            }
+            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${escape(ownerName)} portfolio">
+                <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-editor lux-glass-dialog-card--portfolio-viewer lux-glass-dialog-card--social-glass sns-portfolio-editor-dialog" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="lux-glass-dialog-section-head lux-glass-dialog-head social-neo-surveys-hero-head portfolio-editor-dialog-head">
+                        <div class="social-neo-surveys-hero-copy">
+                            <span class="social-neo-section-kicker">Portfolio</span>
+                            <h2>${escape(ownerName)}</h2>
+                            <p class="lux-glass-dialog-portfolio-editor-subtitle">Campus portfolio showcase</p>
+                        </div>
+                        <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="lux-glass-dialog-body lux-glass-dialog-body--portfolio-editor lux-glass-dialog-body--portfolio-viewer">
+                        ${bodyMarkup}
+                    </div>
+                </div>
+            </div>`;
+        }
+
         function renderPortfolioEditorDialog() {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="My portfolio">
                 <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--portfolio-editor lux-glass-dialog-card--social-glass sns-portfolio-editor-dialog" data-action="noop" data-lux-transparency-exempt="1">
@@ -337,8 +382,38 @@
             const portfolioPanelTabs = [
                 { tab: 'mine', label: 'My portfolio', helper: 'Upload resume and publish', attrs: 'data-portfolio-tab="mine"' },
                 { tab: 'discover', label: 'Discover', helper: 'Browse talent across campus', attrs: 'data-portfolio-tab="discover"' },
+                { tab: 'pinned', label: 'Pinned', helper: 'Highlights and your pins', attrs: 'data-portfolio-tab="pinned"' },
             ];
-            const discoverFeedMarkup = filteredEntries.length ? filteredEntries.map((entry, index) => {
+            const pinModel = window.KiuSocialPinModel;
+            const discoverFeedMarkup = portfolioPanelTab === 'pinned'
+                ? (pinModel
+                    ? pinModel.renderPinnedSections('portfolio', pinModel.partitionPinnedTab('portfolio', filteredEntries), (entry) => {
+                        const owner = entry.owner;
+                        const isOpen = highlightedOpenId === entry.id;
+                        const mediaPreview = entry.mediaItems[0] || null;
+                        const mediaUrl = mediaPreview ? fileUrl(mediaPreview) : '';
+                        const featured = false;
+                        return `
+                                <article class="social-neo-post-card social-portfolio-card lux-soft-chrome home-hover-chip ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
+                                    <div class="social-portfolio-card-head">
+                                        <div class="social-neo-person">
+                                            ${avatar(owner, 'social-neo-avatar-sm')}
+                                            <div>
+                                                <strong>${escape(displayName(owner))}</strong>
+                                                <div class="social-neo-muted lms-route-meta-12">${escape(roleLabel(owner?.role))} / ${escape(facultyLabel(entry.ownerFacultyCode || currentFaculty))}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="social-portfolio-body">
+                                        <h3 class="social-portfolio-card-title">${escape(entry.title)}</h3>
+                                        <p class="social-portfolio-card-summary">${escape(entry.summary || entry.description || 'Portfolio showcase')}</p>
+                                    </div>
+                                    <div class="social-portfolio-card-pin">${pinModel.renderModulePinActions('portfolio', entry.id, { canCuratorPin: pinModel.viewerCanCuratorPin('portfolio', entry) })}</div>
+                                </article>
+                            `;
+                    }, 'No pinned portfolio entries yet.')
+                    : `<div class="social-neo-empty social-neo-portfolio-feed-empty">No pinned portfolio entries yet.</div>`)
+                : filteredEntries.length ? (pinModel ? pinModel.sortWithCuratorPins('portfolio', filteredEntries) : filteredEntries).map((entry, index) => {
                             const owner = entry.owner;
                             const isOpen = highlightedOpenId === entry.id;
                             const mediaPreview = entry.mediaItems[0] || null;
@@ -361,10 +436,30 @@
                                             ${portfolioPill(escape(when(entry.updatedAt || entry.createdAt)))}
                                         </div>
                                     </div>
-                                    ${mediaUrl && isImage(mediaPreview) ? `<div class="social-portfolio-cover"><img src="${escape(mediaUrl)}" alt="${escape(entry.title)}"></div>` : ''}
+                                    ${mediaUrl && isImage(mediaPreview) ? `<div class="social-portfolio-cover"><img src="${escape(mediaUrl)}" alt="${escape(entry.title)}" onerror="this.closest('.social-portfolio-cover')?.classList.add('is-broken');this.remove();"></div>` : ''}
                                     <div class="social-portfolio-body">
-                                        <h3>${escape(entry.title)}</h3>
-                                        <p>${escape(isOpen ? (entry.description || entry.summary || 'Portfolio showcase') : (entry.summary || entry.description || 'Portfolio showcase'))}</p>
+                                        ${renderPortfolioCardTextRail({
+                                            entryId: text(entry.id),
+                                            dataAttr: 'data-portfolio-title-rail',
+                                            ariaLabel: 'Portfolio title',
+                                            body: text(entry.title),
+                                            railClass: 'social-portfolio-card-title-rail',
+                                            controlsClass: 'social-portfolio-card-title-controls',
+                                            viewportClass: 'social-portfolio-card-title-viewport',
+                                            textClass: 'social-portfolio-card-title',
+                                            textTag: 'h3',
+                                        })}
+                                        ${renderPortfolioCardTextRail({
+                                            entryId: text(entry.id),
+                                            dataAttr: 'data-portfolio-summary-rail',
+                                            ariaLabel: 'Portfolio summary',
+                                            body: isOpen ? (entry.description || entry.summary || 'Portfolio showcase') : (entry.summary || entry.description || 'Portfolio showcase'),
+                                            railClass: 'social-portfolio-card-summary-rail',
+                                            controlsClass: 'social-portfolio-card-summary-controls',
+                                            viewportClass: 'social-portfolio-card-summary-viewport',
+                                            textClass: 'social-portfolio-card-summary',
+                                            textTag: 'p',
+                                        })}
                                         <div class="social-neo-badge-row">
                                             ${(entry.facultyCodes || []).slice(0, 3).map((facultyCode) => portfolioPill(escape(facultyLabel(facultyCode)))).join('')}
                                             ${(entry.skillTags || []).slice(0, 4).map((skill) => portfolioPill(escape(skill))).join('')}
@@ -388,7 +483,7 @@
                                                 <div class="social-portfolio-media-strip">
                                                     ${entry.mediaItems.slice(0, 6).map((item) => {
                                                         const url = fileUrl(item);
-                                                        if (url && isImage(item)) return `<img src="${escape(url)}" alt="${escape(text(item.name || entry.title))}">`;
+                                                        if (url && isImage(item)) return `<img src="${escape(url)}" alt="${escape(text(item.name || entry.title))}" onerror="this.remove();">`;
                                                         return portfolioPill(escape(text(item.name || 'Attachment')));
                                                     }).join('')}
                                                 </div>
@@ -396,12 +491,13 @@
                                         </div>
                                     ` : ''}
                                     <div class="social-portfolio-actions">
+                                        ${pinModel ? `<div class="social-portfolio-card-pin">${pinModel.renderModulePinActions('portfolio', entry.id, { canCuratorPin: pinModel.viewerCanCuratorPin('portfolio', entry) })}</div>` : ''}
                                         ${entry.isPortfolioDocument ? `
                                             ${(() => {
                                                 const resumeUrl = entry.resume ? fileUrl(entry.resume) : (entry.mediaItems[0] ? fileUrl(entry.mediaItems[0]) : '');
                                                 return resumeUrl
                                                     ? `<a class="lux-secondary-btn" href="${escape(resumeUrl)}" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> View resume</a>`
-                                                    : `<button class="lux-secondary-btn" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}">View portfolio</button>`;
+                                                    : `<button class="lux-secondary-btn" type="button" data-action="portfolio-doc-open" data-user-id="${escape(entry.ownerUserId)}" data-project-id="${escape(text(entry.id))}">View portfolio</button>`;
                                             })()}
                                             ${(Array.isArray(entry.extras) && entry.extras.length) ? `
                                                 <div class="social-portfolio-extras">
@@ -450,6 +546,7 @@
             renderPortfolioCreateDialog,
             renderMyPortfolioPanel,
             renderPortfolioEditorDialog,
+            renderPortfolioViewerDialog,
             renderPortfolioCustomBuilderOverlay,
             renderPortfolioProfileBlock,
             renderProjectsPanel

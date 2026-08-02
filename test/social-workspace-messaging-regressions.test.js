@@ -71,7 +71,9 @@ describe('social workspace messaging regressions', () => {
         const store = readSource('backend/platform/store.js');
 
         expect(routeModule).toContain("app.post('/api/messenger/chats/:chatId/read'");
+        expect(routeModule).toContain('decodeURIComponent(chatId)');
         expect(routeModule).toContain('store.markChatMessagesRead');
         expect(store).toContain('markChatMessagesRead(chatId, userId)');
+        expect(store).toContain('repairSocialGroupChatMembership(chatId, userId)');
     });
 });

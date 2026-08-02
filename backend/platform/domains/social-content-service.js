@@ -352,6 +352,11 @@ function canDeleteSocialPage(page, userId) {
     return socialText(page.ownerUserId || page.ownerId || '') === normalizedUserId;
 }
 
+function getSocialEventEditorIds(event) {
+    const creatorId = socialText(event?.createdById || '');
+    return socialIdArray(event?.editorIds || []).filter((editorId) => editorId && editorId !== creatorId);
+}
+
 function canDeleteSocialEvent(event, userId) {
     const normalizedUserId = socialText(userId);
     if (!normalizedUserId || !event) return false;
@@ -373,8 +378,15 @@ function canDeleteSocialEvent(event, userId) {
     return false;
 }
 
-function canEditSocialEvent(event, userId) {
+function canManageSocialEventEditors(event, userId) {
     return canDeleteSocialEvent.call(this, event, userId);
+}
+
+function canEditSocialEvent(event, userId) {
+    const normalizedUserId = socialText(userId);
+    if (!normalizedUserId || !event) return false;
+    if (canDeleteSocialEvent.call(this, event, normalizedUserId)) return true;
+    return getSocialEventEditorIds(event).includes(normalizedUserId);
 }
 
 function canEditSocialPost(post, userId) {
@@ -829,7 +841,9 @@ function decorateSocialPost(post, viewerUserId = '') {
         audienceFacultyCode: normalizeCode(normalized.audienceFacultyCode || normalized.authorFacultyCode || getSocialActorFacultyCode.call(this, authorUserId)),
         body: socialText(normalized.body || normalized.text || ''),
         text: socialText(normalized.text || normalized.body || ''),
-        media: asArray(normalized.media).map(item => clone(item)).filter(Boolean),
+        media: asArray(normalized.media)
+            .map((item) => this.enrichStoredFileReference(item))
+            .filter(Boolean),
         reactions,
         likes: reactions.like || [],
         reactionCounts,
@@ -895,6 +909,8 @@ function decorateSocialEvent(event, viewerUserId = '') {
         viewerRsvpStatus: viewerUserId
             ? (relatedRsvps.find(item => item.userId === socialText(viewerUserId))?.status || '')
             : '',
+        editorIds: getSocialEventEditorIds(normalized),
+        viewerIsEditor: viewerUserId ? getSocialEventEditorIds(normalized).includes(socialText(viewerUserId)) : false,
         viewerCanDelete: viewerUserId ? canDeleteSocialEvent.call(this, normalized, viewerUserId) : false,
         viewerCanEdit: viewerUserId ? canEditSocialEvent.call(this, normalized, viewerUserId) : false,
         createdAt: socialText(normalized.createdAt || nowIso()),
@@ -1033,7 +1049,10 @@ function updateSocialPage(pageId, payload = {}, actorId = '') {
     if (Object.prototype.hasOwnProperty.call(payload, 'verified')) page.verified = Boolean(payload.verified);
     if (Object.prototype.hasOwnProperty.call(payload, 'visibility')) page.visibility = normalizeSocialVisibility(payload.visibility, page.visibility || 'public');
     if (Object.prototype.hasOwnProperty.call(payload, 'adminIds') || Object.prototype.hasOwnProperty.call(payload, 'admins')) {
-        page.adminIds = socialIdArray(payload.adminIds || payload.admins || []);
+        const ownerUserId = socialText(page.ownerUserId || page.ownerId || '');
+        page.adminIds = socialIdArray(payload.adminIds || payload.admins || [])
+            .filter((id) => socialText(id) && socialText(id) !== ownerUserId)
+            .filter((id) => Boolean(getSocialAccount.call(this, id)));
     }
     page.updatedAt = nowIso();
     this.saveSocialMutation(normalizedActorId, 'page-updated', 'social-page', socialText(page.id), beforeState, page);
@@ -1426,6 +1445,26 @@ function updateSocialPost(postId, payload = {}, actorId = '') {
         post.text = post.body;
         post.mentions = resolveSocialMentionUserIds.call(this, bodyText);
     }
+    if (payload.photoMeta && typeof payload.photoMeta === 'object') {
+        const incoming = payload.photoMeta;
+        post.photoMeta = post.photoMeta && typeof post.photoMeta === 'object' ? clone(post.photoMeta) : {};
+        if (Object.prototype.hasOwnProperty.call(incoming, 'location')) {
+            post.photoMeta.location = socialText(incoming.location);
+        }
+        if (Object.prototype.hasOwnProperty.call(incoming, 'facultyCode')) {
+            post.photoMeta.facultyCode = normalizeCode(socialText(incoming.facultyCode));
+        }
+    }
+    const facultyCode = normalizeCode(
+        socialText(payload.facultyCode || '')
+        || (payload.photoMeta && typeof payload.photoMeta === 'object' ? socialText(payload.photoMeta.facultyCode) : '')
+    );
+    if (facultyCode) {
+        post.audienceFacultyCode = facultyCode;
+        if (post.photoMeta && typeof post.photoMeta === 'object') {
+            post.photoMeta.facultyCode = facultyCode;
+        }
+    }
     post.updatedAt = nowIso();
     this.saveSocialMutation(normalizedActorId, 'post-updated', 'social-post', socialText(post.id), beforeState, post);
     return decorateSocialPost.call(this, post, normalizedActorId);
@@ -1582,6 +1621,7 @@ function createSocialEvent(payload = {}, actorId = '') {
         isRecurring: Boolean(payload.isRecurring),
         imageUrl: socialText(payload.imageUrl || ''),
         maxSeats: Math.max(0, safeNumber(payload.maxSeats ?? payload.capacity, 0)),
+        editorIds: getSocialEventEditorIds({ createdById: creatorId, editorIds: payload.editorIds }),
         createdAt: socialText(payload.createdAt || nowIso()),
         updatedAt: socialText(payload.updatedAt || nowIso())
     };
@@ -1642,6 +1682,11 @@ function updateSocialEvent(eventId, payload = {}, actorId = '') {
     }
     if (Object.prototype.hasOwnProperty.call(payload, 'facultyCode') || Object.prototype.hasOwnProperty.call(payload, 'faculty')) {
         event.facultyCode = normalizeCode(payload.facultyCode || payload.faculty || event.facultyCode || '');
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'editorIds')) {
+        if (canManageSocialEventEditors.call(this, event, normalizedActorId)) {
+            event.editorIds = getSocialEventEditorIds({ createdById: event.createdById, editorIds: payload.editorIds });
+        }
     }
     event.updatedAt = nowIso();
     this.saveSocialMutation(normalizedActorId, 'event-updated', 'social-event', socialText(event.id), beforeState, event);
@@ -1756,6 +1801,7 @@ module.exports = {
     canDeleteSocialPage,
     canEditSocialEvent,
     canEditSocialPost,
+    canManageSocialEventEditors,
     canManageSocialGroup,
     canManageSocialPage,
     canManageSocialScope,

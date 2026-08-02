@@ -108,7 +108,22 @@
         const tab = text(raw || 'explore') || 'explore';
         if (tab === 'grid') return 'grid';
         if (tab === 'following') return 'following';
+        if (tab === 'pinned') return 'pinned';
         return 'explore';
+    }
+
+    function photoPinModel() {
+        return window.KiuSocialPinModel || null;
+    }
+
+    function renderPhotoPinActions(post) {
+        const pinModel = photoPinModel();
+        if (!pinModel) return '';
+        const postId = typeof postKey === 'function' ? postKey(post) : text(post.id);
+        return pinModel.renderModulePinActions('photo', postId, {
+            canCuratorPin: pinModel.viewerCanCuratorPin('photo', post),
+            showPersonal: false
+        });
     }
 
     function photoTab() {
@@ -239,6 +254,35 @@
         return text(post?.authorUserId) === currentUserId();
     }
 
+    function renderPhotographyOwnerHeadActions(postId) {
+        const normalizedPostId = text(postId);
+        if (!normalizedPostId) return '';
+        return `
+            <div class="social-photo-feed-head-actions">
+                <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="photography-edit-open" data-post-id="${escape(normalizedPostId)}" aria-label="Edit photo" title="Edit photo">
+                    <i class="fas fa-pen" aria-hidden="true"></i> Edit
+                </button>
+                <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm" type="button" data-action="photography-delete-open" data-post-id="${escape(normalizedPostId)}" aria-label="Remove photo" title="Remove photo">
+                    <i class="fas fa-trash" aria-hidden="true"></i> Remove
+                </button>
+            </div>
+        `;
+    }
+
+    function resolvePhotographyUploadFacultyCode(runtime, form = null) {
+        const chrome = window.KiuSocialChromeModel || {};
+        const draft = runtime?.ui?.photographyUploadDraft || {};
+        const raw = text(draft.facultyCode || form?.photographyFaculty?.value || '')
+            || (typeof chrome.socialDefaultCreateFaculty === 'function' ? chrome.socialDefaultCreateFaculty(runtime) : '')
+            || (typeof currentFacultyCode === 'function' ? currentFacultyCode() : '');
+        const normalized = typeof chrome.normalizeSocialFacultyCode === 'function'
+            ? chrome.normalizeSocialFacultyCode(raw, '')
+            : text(raw).toUpperCase();
+        if (normalized && normalized !== 'all') return normalized;
+        const codes = typeof chrome.socialBrowseFacultyCodes === 'function' ? chrome.socialBrowseFacultyCodes() : [];
+        return text(codes[0] || '') || 'ECON';
+    }
+
     function isFollowingProfile(userId) {
         const { follows } = relationshipBuckets();
         return follows.some((rel) => text(rel.toType) === 'profile' && text(rel.toId) === text(userId));
@@ -274,9 +318,20 @@
         if (query) {
             items = items.filter((post) => {
                 const author = accountById(post.authorUserId);
-                const blob = `${text(post.body)} ${displayName(author)} ${text(post.photoMeta?.location)} ${(post.photoMeta?.tags || []).join(' ')}`.toLowerCase();
+                const blob = `${text(post.body)} ${displayName(author)} ${text(post.photoMeta?.location)}`.toLowerCase();
                 return blob.includes(query);
             });
+        }
+
+        if (tab === 'pinned') {
+            const pinModel = photoPinModel();
+            if (!pinModel) return [];
+            return pinModel.partitionPinnedTab('photo', items).all;
+        }
+
+        const pinModel = photoPinModel();
+        if (pinModel) {
+            items = pinModel.sortWithCuratorPins('photo', items, (post) => (typeof postKey === 'function' ? postKey(post) : text(post.id)));
         }
 
         return items;
@@ -396,11 +451,7 @@
                         <button class="${isFollowingProfile(author.id) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="photography-follow" data-user-id="${escape(text(author.id))}">
                             ${isFollowingProfile(author.id) ? 'Following' : 'Follow'}
                         </button>
-                    ` : canRemove ? `
-                        <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm" type="button" data-action="photography-delete-open" data-post-id="${escape(normalizedPostId)}" aria-label="Remove photo" title="Remove photo">
-                            <i class="fas fa-trash" aria-hidden="true"></i> Remove
-                        </button>
-                    ` : ''}
+                    ` : canRemove ? renderPhotographyOwnerHeadActions(normalizedPostId) : ''}
                 </div>
                 ${src ? `
                     <button class="social-photo-feed-media" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}" aria-label="View photo and comments">
@@ -433,6 +484,7 @@
                         ${reactionPicker}
                     </div>
                     <span class="social-neo-flex-spacer"></span>
+                    ${renderPhotoPinActions(post)}
                     <button class="lux-secondary-btn social-neo-post-save-btn ${saved ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Keep'}
                     </button>
@@ -467,9 +519,14 @@
                     </span>
                 </button>
                 ${canRemove ? `
-                    <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm social-photo-grid-tile-remove" type="button" data-action="photography-delete-open" data-post-id="${escape(normalizedPostId)}" aria-label="Remove photo" title="Remove photo">
-                        <i class="fas fa-trash" aria-hidden="true"></i>
-                    </button>
+                    <div class="social-photo-grid-tile-actions">
+                        <button class="lux-secondary-btn lux-secondary-btn-sm social-photo-grid-tile-edit" type="button" data-action="photography-edit-open" data-post-id="${escape(normalizedPostId)}" aria-label="Edit photo" title="Edit photo">
+                            <i class="fas fa-pen" aria-hidden="true"></i>
+                        </button>
+                        <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm social-photo-grid-tile-remove" type="button" data-action="photography-delete-open" data-post-id="${escape(normalizedPostId)}" aria-label="Remove photo" title="Remove photo">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 ` : ''}
             </div>
         `;
@@ -496,6 +553,8 @@
     function renderPhotoEmpty(tab) {
         const emptyCopy = tab === 'following'
             ? { title: 'No photos from people you follow', hint: 'Follow campus photographers above, then their shots will appear here.', cta: '' }
+            : tab === 'pinned'
+                ? { title: 'No pinned photos yet', hint: 'Highlight campus shots or keep photos you want to revisit.', cta: '' }
             : { title: 'No campus photos yet', hint: 'Share the quad, library, sunset, or any campus moment. Your gallery starts with one photo.', cta: 'Share a photo' };
         return `
             <div class="social-photo-content-stage is-empty">
@@ -511,6 +570,10 @@
 
     function renderPhotoFeed(posts, tab) {
         if (!posts.length) return renderPhotoEmpty(tab);
+        if (tab === 'pinned' && photoPinModel()) {
+            const sections = photoPinModel().partitionPinnedTab('photo', posts);
+            return `<div class="social-photo-content-stage">${photoPinModel().renderPinnedSections('photo', sections, (post) => renderPhotoFeedCard(post), 'No pinned photos yet.')}</div>`;
+        }
         if (tab === 'explore') return `<div class="social-photo-content-stage">${renderPhotoFeedList(posts)}</div>`;
         return `<div class="social-photo-content-stage">${renderPhotoExploreGrid(posts)}</div>`;
     }
@@ -660,9 +723,10 @@
                 <input class="social-neo-input lux-control" id="${escape(searchId)}" type="search" placeholder="Search photos..." value="${escape(text(runtime.ui?.photographySearch || ''))}" data-action="photography-search-input" autocomplete="off">
             </label>
         ` : '';
-        const uploadFabMarkup = hasCatalog ? `
-            <button class="lux-primary-btn lux-secondary-btn-sm social-photo-upload-fab" type="button" data-action="photography-upload-open" aria-label="Share a photo" title="Share a photo">
-                <i class="fas fa-plus"></i>
+        const uploadBtnMarkup = user ? `
+            <button class="lux-primary-btn social-photo-upload-btn" type="button" data-action="photography-upload-open" aria-label="Share a photo" title="Share a photo">
+                <i class="fas fa-camera" aria-hidden="true"></i>
+                <span>Share a photo</span>
             </button>
         ` : '';
         const myProfileBtn = user ? `
@@ -674,11 +738,13 @@
             explore: 'Campus Exposé',
             grid: 'Photo grid',
             following: 'Following feed',
+            pinned: 'Pinned photos',
         };
         const tabCopy = {
             explore: 'Discover campus photography from students, clubs, and events.',
             grid: 'Browse the full campus photo grid in a compact layout.',
             following: 'Photos from photographers you follow across campus.',
+            pinned: 'Highlighted campus photos and shots you kept.',
         };
         return `
             <div class="social-photo-shell social-neo-community-panel">
@@ -690,8 +756,8 @@
                         </div>
                         <div class="social-photo-chrome-actions">
                             ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
+                            ${uploadBtnMarkup}
                             ${searchMarkup}
-                            ${uploadFabMarkup}
                             ${myProfileBtn}
                         </div>
                     </div>
@@ -699,6 +765,7 @@
                         <button class="${tab === 'explore' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'explore' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'explore' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="explore">Explore</button>
                         <button class="${tab === 'grid' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'grid' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'grid' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="grid">Grid</button>
                         <button class="${tab === 'following' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'following' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'following' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="following">Following</button>
+                        <button class="${tab === 'pinned' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'pinned' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'pinned' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i> Pinned</button>
                     </nav>
                 </section>
                 ${renderDiscoverStrip(discover)}
@@ -815,6 +882,9 @@
                                 </div>
                                 <div class="social-photo-ig-comments-head-actions">
                                     ${canRemove ? `
+                                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="photography-edit-open" data-post-id="${escape(dialogNormalizedPostId)}" aria-label="Edit photo" title="Edit photo">
+                                            <i class="fas fa-pen" aria-hidden="true"></i> Edit
+                                        </button>
                                         <button class="lux-secondary-btn lux-btn-danger lux-secondary-btn-sm" type="button" data-action="photography-delete-open" data-post-id="${escape(dialogNormalizedPostId)}" aria-label="Remove photo" title="Remove photo">
                                             <i class="fas fa-trash" aria-hidden="true"></i> Remove
                                         </button>
@@ -852,7 +922,7 @@
         const caption = text(post.body || '');
         const previewTitle = caption || 'Campus photo';
         const previewImage = src
-            ? `<div class="social-photo-delete-preview-media"><img src="${escape(src)}" alt="${escape(previewTitle)}"></div>`
+            ? `<div class="social-photo-upload-review"><div class="social-photo-feed-media"><img src="${escape(src)}" alt="${escape(previewTitle)}"></div></div>`
             : '';
         return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
             <form class="lux-glass-dialog-card social-neo-delete-confirm lux-glass-dialog-card--social-glass" data-form="dialog-photography-delete" data-action="noop" data-lux-transparency-exempt="1">
@@ -879,6 +949,55 @@
                 <div class="social-neo-delete-confirm-actions">
                     <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
                     <button class="lux-secondary-btn lux-primary-btn lux-btn-danger lux-glass-dialog-submit-btn" type="submit">Remove photo</button>
+                </div>
+                <input type="hidden" name="postId" value="${escape(postId)}">
+            </form>
+        </div>`;
+    };
+
+    window.renderPhotographyEditDialog = function renderPhotographyEditDialog(dialog = {}) {
+        const postId = text(dialog.postId || '');
+        const post = findPhotographyPost(postId);
+        if (!post || !canRemovePhotographyPost(post)) return '';
+        const runtime = state();
+        const src = postImageSrc(post);
+        const caption = text(post.body || '');
+        const location = text(post.photoMeta?.location || '');
+        const facultyCode = text(post.photoMeta?.facultyCode || post.audienceFacultyCode || '');
+        const previewImage = src
+            ? `<div class="social-photo-upload-review"><div class="social-photo-feed-media"><img src="${escape(src)}" alt="${escape(caption || 'Campus photo')}"></div></div>`
+            : '';
+        const facultySelect = (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultySelect
+            ? (window.KiuSocialChromeModel.renderSocialBrowseFacultySelect(runtime, {
+                name: 'photographyFaculty',
+                includeAll: false,
+                required: true,
+                value: facultyCode || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                label: 'Faculty'
+            }))
+            : `<select class="social-neo-select lux-control" name="photographyFaculty" required data-lux-picker><option value="">Select faculty</option></select>`;
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--photography-edit lux-glass-dialog-card--social-glass social-photo-upload-card" data-form="dialog-photography-edit" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="lux-glass-dialog-section-head lux-glass-dialog-head">
+                    <div class="lux-glass-dialog-heading">
+                        <strong class="lux-glass-dialog-title">Edit photo</strong>
+                        <span class="lux-glass-dialog-subtitle">Update the caption, location, and faculty for this Exposé post.</span>
+                    </div>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                ${previewImage}
+                <label class="social-photo-field social-photo-mono">Caption
+                    <textarea class="social-neo-textarea lux-control" name="photographyCaption" rows="3" placeholder="Describe this campus moment...">${escape(caption)}</textarea>
+                </label>
+                <label class="social-photo-field social-photo-mono">Location
+                    <input class="social-neo-input lux-control" type="text" name="photographyLocation" value="${escape(location)}" placeholder="Library quad">
+                </label>
+                <label class="social-photo-field social-photo-mono">Faculty
+                    ${facultySelect}
+                </label>
+                <div class="lux-glass-dialog-actions">
+                    <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                    <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit">Save changes</button>
                 </div>
                 <input type="hidden" name="postId" value="${escape(postId)}">
             </form>
@@ -913,9 +1032,6 @@
             body = `
                 <label class="social-photo-field social-photo-mono">Caption
                     <textarea class="social-neo-textarea lux-control" name="photographyCaption" rows="3" placeholder="Describe this campus moment...">${escape(text(draft.caption || ''))}</textarea>
-                </label>
-                <label class="social-photo-field social-photo-mono">Tags
-                    <input class="social-neo-input lux-control" type="text" name="photographyTags" value="${escape(text(draft.tags || ''))}" placeholder="sunset, library, quad">
                 </label>
                 <label class="social-photo-field social-photo-mono">Location
                     <input class="social-neo-input lux-control" type="text" name="photographyLocation" value="${escape(text(draft.location || ''))}" placeholder="Library quad">
@@ -1026,11 +1142,9 @@
                 const form = photographyUploadForm();
                 state().ui.photographyUploadDraft = state().ui.photographyUploadDraft || {};
                 state().ui.photographyUploadDraft.caption = text(form?.photographyCaption?.value || '');
-                state().ui.photographyUploadDraft.tags = text(form?.photographyTags?.value || '');
                 state().ui.photographyUploadDraft.location = text(form?.photographyLocation?.value || '');
-                state().ui.photographyUploadDraft.facultyCode = text(form?.photographyFaculty?.value || '')
-                    || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(state()) || '');
-                if (!state().ui.photographyUploadDraft.facultyCode || state().ui.photographyUploadDraft.facultyCode === 'all') {
+                state().ui.photographyUploadDraft.facultyCode = resolvePhotographyUploadFacultyCode(state(), form);
+                if (!state().ui.photographyUploadDraft.facultyCode) {
                     if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Faculty is required.', 'danger');
                     return;
                 }
@@ -1048,7 +1162,6 @@
                 const form = photographyUploadForm();
                 state().ui.photographyUploadDraft = state().ui.photographyUploadDraft || {};
                 state().ui.photographyUploadDraft.caption = text(form?.photographyCaption?.value || '');
-                state().ui.photographyUploadDraft.tags = text(form?.photographyTags?.value || '');
                 state().ui.photographyUploadDraft.location = text(form?.photographyLocation?.value || '');
                 state().ui.photographyUploadDraft.facultyCode = text(form?.photographyFaculty?.value || '')
                     || state().ui.photographyUploadDraft.facultyCode
@@ -1073,6 +1186,14 @@
             const post = findPhotographyPost(postId);
             if (!post || !canRemovePhotographyPost(post)) return;
             return openDialog('photography-delete', { postId });
+        }
+
+        if (action === 'photography-edit-open') {
+            const postId = text(trigger.getAttribute('data-post-id'));
+            if (!postId) return;
+            const post = findPhotographyPost(postId);
+            if (!post || !canRemovePhotographyPost(post)) return;
+            return openDialog('photography-edit', { postId });
         }
 
         if (action === 'photography-view-profile') {
@@ -1121,7 +1242,26 @@
 
     function isSocialPhotographySubmitForm(formType) {
         const form = text(formType || '');
-        return form === 'photography-upload' || form === 'dialog-photography-delete';
+        return form === 'photography-upload' || form === 'dialog-photography-delete' || form === 'dialog-photography-edit';
+    }
+
+    function refreshPhotographyAfterMutation(reason) {
+        const closeDialogFn = resolvePhotographyHook('closeDialog') || closeDialog;
+        const invalidate = resolvePhotographyHook('invalidateSocialRenderCache');
+        const renderNow = resolvePhotographyHook('renderSocialPageNow') || renderSocialPageNow;
+        const patchFlash = resolvePhotographyHook('patchSocialFlash');
+        const rootFn = resolvePhotographyHook('root');
+        closeDialogFn();
+        const host = typeof rootFn === 'function' ? rootFn() : null;
+        if (host) host.__kiuLastRenderSignature = '';
+        if (typeof invalidate === 'function') invalidate({ center: true });
+        const refreshStage = resolvePhotographyHook('refreshPhotographyPanelStage');
+        if (typeof refreshStage === 'function' && refreshStage()) {
+            if (typeof patchFlash === 'function') patchFlash();
+            return;
+        }
+        renderNow(reason);
+        if (typeof patchFlash === 'function') patchFlash();
     }
 
     function handleSocialPhotographySubmit(formType, form, runtime, event) {
@@ -1139,22 +1279,27 @@
                 const deletePost = resolvePhotographyHook('deletePortalSocialPost');
                 if (typeof deletePost !== 'function') throw new Error('Photo removal is unavailable.');
                 await deletePost(postId);
-                const closeDialogFn = resolvePhotographyHook('closeDialog') || closeDialog;
-                const invalidate = resolvePhotographyHook('invalidateSocialRenderCache');
-                const renderNow = resolvePhotographyHook('renderSocialPageNow') || renderSocialPageNow;
-                const patchFlash = resolvePhotographyHook('patchSocialFlash');
-                const rootFn = resolvePhotographyHook('root');
-                closeDialogFn();
-                const host = typeof rootFn === 'function' ? rootFn() : null;
-                if (host) host.__kiuLastRenderSignature = '';
-                if (typeof invalidate === 'function') invalidate({ center: true });
-                const refreshStage = resolvePhotographyHook('refreshPhotographyPanelStage');
-                if (typeof refreshStage === 'function' && refreshStage()) {
-                    if (typeof patchFlash === 'function') patchFlash();
-                    return;
-                }
-                renderNow('photography-deleted');
-                if (typeof patchFlash === 'function') patchFlash();
+                refreshPhotographyAfterMutation('photography-deleted');
+            });
+        }
+
+        if (formType === 'dialog-photography-edit') {
+            return busy(async () => {
+                const postId = text(form.postId?.value);
+                if (!postId) throw new Error('Photo could not be updated.');
+                const post = findPhotographyPost(postId);
+                if (!post || !canRemovePhotographyPost(post)) throw new Error('You can only edit photos you posted.');
+                const caption = text(form.photographyCaption?.value || '');
+                const location = text(form.photographyLocation?.value || '');
+                const facultyCode = resolvePhotographyUploadFacultyCode(state(), form);
+                if (!facultyCode) throw new Error('Faculty is required.');
+                const updatePost = resolvePhotographyHook('updatePortalSocialPost');
+                if (typeof updatePost !== 'function') throw new Error('Photo editing is unavailable.');
+                await updatePost(postId, caption, {
+                    photoMeta: { location, facultyCode },
+                    facultyCode
+                });
+                refreshPhotographyAfterMutation('photography-edited');
             });
         }
 
@@ -1166,7 +1311,6 @@
             const setPanelFn = resolvePhotographyHook('setPanel') || setPanel;
             const renderNow = resolvePhotographyHook('renderSocialPageNow') || renderSocialPageNow;
             const revokePreview = resolvePhotographyHook('revokePhotographyUploadPreview') || revokePhotographyUploadPreview;
-            const facultyCodeFn = resolvePhotographyHook('currentFacultyCode') || currentFacultyCode;
             const patchFlash = resolvePhotographyHook('patchSocialFlash');
             const live = state();
             const draft = live.ui?.photographyUploadDraft || {};
@@ -1174,14 +1318,8 @@
             const caption = text(draft.caption || form.photographyCaption?.value || '');
             if (!file) throw new Error('Choose an image before publishing.');
             if (typeof submitPost !== 'function') throw new Error('Photo publishing is unavailable.');
-            const facultyCode = text(draft.facultyCode || form.photographyFaculty?.value || '')
-                || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(live) || '')
-                || (typeof facultyCodeFn === 'function' ? facultyCodeFn() : '');
-            if (!facultyCode || facultyCode === 'all') throw new Error('Faculty is required.');
-            const tags = text(draft.tags || form.photographyTags?.value || '')
-                .split(',')
-                .map((tag) => text(tag).replace(/^#/, ''))
-                .filter(Boolean);
+            const facultyCode = resolvePhotographyUploadFacultyCode(live, form);
+            if (!facultyCode) throw new Error('Faculty is required.');
             const published = await submitPost(caption, {
                 postType: 'photo',
                 category: 'Photography',
@@ -1190,7 +1328,6 @@
                 audienceFacultyCode: facultyCode,
                 facultyCode,
                 photoMeta: {
-                    tags,
                     location: text(draft.location || form.photographyLocation?.value || ''),
                     facultyCode
                 }

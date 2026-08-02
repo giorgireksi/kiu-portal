@@ -137,6 +137,14 @@ describe('social-page-feed-runtime peel', () => {
         expect(main).toMatch(/__kiuSocialWorkspaceHooks[\s\S]*projectRiskScaleRank/);
     });
 
+    it('portfolio entity links open portfolio viewer dialog', () => {
+        const feed = readSource('assets/js/pages/social-page-feed-runtime.js');
+        expect(feed).toContain("if (type === 'portfolio')");
+        expect(feed).toContain('openPortfolioViewerForUser(userId)');
+        expect(feed).not.toContain('state().ui.activeProjectId = docId');
+        expect(feed).not.toContain('activePortfolioUserId');
+    });
+
     it('feed factory init succeeds when createSocialLazyStub is wired (regression: Missing social feed dep)', () => {
         const feedSource = readSource('assets/js/pages/social-page-feed-runtime.js');
         const depNames = extractFeedRuntimeDepNames(feedSource);

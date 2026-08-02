@@ -192,6 +192,7 @@
                 dialogType === 'page-create'
                 || dialogType === 'survey-create'
                 || dialogType === 'portfolio-editor'
+                || dialogType === 'portfolio-viewer'
                 || dialogType === 'research-create'
                 || dialogType === 'event-create'
                 || dialogType === 'project-create'
@@ -466,6 +467,11 @@
             if (closingType === 'survey-results') {
                 ui.surveyResultsId = '';
                 ui.surveyResultsPayload = null;
+            }
+            if (closingType === 'portfolio-viewer') {
+                ui.viewingPortfolioUserId = '';
+                ui.viewingPortfolio = null;
+                ui.viewingPortfolioError = '';
             }
             if (closingType === 'project-task-detail') {
                 ui.projectTaskChecklist = [];

@@ -366,7 +366,7 @@
                     <label class="lux-glass-dialog-field lux-glass-dialog-invite-faculty-field" for="${escape(ctx.memberFacultyId)}">
                         <span class="social-neo-label">Faculty</span>
                         <select class="social-neo-select lux-control" id="${escape(ctx.memberFacultyId)}" name="groupMemberFaculty" data-lux-picker>
-                            ${ctx.facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${ctx.facultyFilter === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
+                            ${ctx.facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${ctx.facultyFilter === faculty ? 'selected' : ''}>${escape((window.KiuSocialChromeModel || {}).socialBrowseFacultyOptionLabel?.(faculty) || facultyLabel(faculty))}</option>`).join('')}
                         </select>
                     </label>
                 </div>
@@ -535,6 +535,11 @@
                             <strong class="lux-card-title">Pinned resources</strong>
                             <span class="lux-card-copy">${escape(String(pinnedCount))} pinned updates in this group feed.</span>
                         </div>
+                        ${pinnedCount ? `
+                            <button class="lux-secondary-btn home-hover-chip" type="button" data-action="group-view-pinned-feed" data-group-id="${escape(text(group.id))}">
+                                <i class="fas fa-thumbtack"></i> View pinned posts
+                            </button>
+                        ` : ''}
                     </section>
                     ${group.isManager ? `
                     <section class="lux-glass-dialog-group-section social-neo-group-detail-section lux-soft-chrome home-hover-chip">
@@ -1056,7 +1061,7 @@
                                 <label class="lux-glass-dialog-field">
                                     <span class="social-neo-label">Faculty</span>
                                     <select class="social-neo-select lux-control" data-bind="group-thread-invite-faculty" data-chat-id="${escape(text(dialog.chatId))}" data-lux-picker>
-                                        ${facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${inviteFaculty === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
+                                        ${facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${inviteFaculty === faculty ? 'selected' : ''}>${escape((window.KiuSocialChromeModel || {}).socialBrowseFacultyOptionLabel?.(faculty) || facultyLabel(faculty))}</option>`).join('')}
                                     </select>
                                 </label>
                             </div>
@@ -1292,6 +1297,25 @@
                     setActiveChat(chat.id);
                     setPanel('messages');
                 }
+            });
+        }
+
+        if (action === 'group-view-pinned-feed') {
+            const groupId = text(trigger.getAttribute('data-group-id') || '');
+            if (!groupId) return false;
+            const runtime = state();
+            runtime.ui = runtime.ui || {};
+            runtime.ui.feedScopeType = 'group';
+            runtime.ui.feedScopeId = groupId;
+            runtime.ui.homeFeedFilter = 'pinned';
+            closeDialog?.();
+            setPanel('feed');
+            return withBusy(async () => {
+                if (typeof window.refreshPortalSocialFeed === 'function') {
+                    await window.refreshPortalSocialFeed(true);
+                }
+                invalidateSocialRenderCache({ center: true });
+                renderSocialPageNow('group-view-pinned-feed');
             });
         }
 

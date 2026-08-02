@@ -89,16 +89,21 @@ async function createFileFromUpload(payload = {}) {
     }
     fs.writeFileSync(filePath, parsed.buffer);
     const ownerUserId = String(payload.ownerUserId || payload.uploadedBy || '').trim();
+    const mimeType = sanitizeStoredFileMimeType(payload.type || parsed.mimeType || 'application/octet-stream');
+    const previewDataUrl = mimeType.startsWith('image/') && parsed.buffer.length <= 200 * 1024
+        ? `data:${mimeType};base64,${parsed.buffer.toString('base64')}`
+        : '';
     const record = {
         id,
         name: String(payload.name || `${id}${ext || '.bin'}`).trim(),
-        type: sanitizeStoredFileMimeType(payload.type || parsed.mimeType || 'application/octet-stream'),
+        type: mimeType,
         size: parsed.buffer.length,
         path: filePath,
         ownerUserId,
         uploadedAt: String(payload.uploadedAt || nowIso()),
         uploadedBy: String(payload.uploadedBy || '').trim(),
         scope: String(payload.scope || 'file').trim(),
+        previewDataUrl,
         createdAt: nowIso(),
         updatedAt: nowIso()
     };
@@ -411,12 +416,29 @@ function canActorAccessStoredFile(fileId, actorUserId = '', actorRole = '') {
     });
 }
 
+function enrichStoredFileReference(fileRef = null) {
+    if (!fileRef || typeof fileRef !== 'object') return null;
+    const cloned = clone(fileRef);
+    const storageKey = String(cloned.storageKey || cloned.id || '').trim();
+    if (!storageKey) return cloned;
+    const record = getFile.call(this, storageKey);
+    if (!record) {
+        cloned.storageMissing = true;
+        return cloned;
+    }
+    const previewDataUrl = String(record.previewDataUrl || cloned.previewDataUrl || '').trim();
+    if (previewDataUrl) cloned.previewDataUrl = previewDataUrl;
+    const resolvedPath = resolveStoredFileDiskPath.call(this, record);
+    if (!resolvedPath || !fs.existsSync(resolvedPath)) cloned.storageMissing = true;
+    return cloned;
+}
+
 function normalizeMessageAttachment(file, senderId) {
     if (!file || typeof file !== 'object') return null;
     const resolvedStorageKey = String(file.storageKey || file.id || '').trim();
     if (resolvedStorageKey && this.state.files[resolvedStorageKey]) {
         if (!isStoredFileOwnedByActor(this.state.files[resolvedStorageKey], senderId)) return null;
-        return {
+        return enrichStoredFileReference.call(this, {
             id: String(file.id || makeId('file_ref')).trim(),
             name: String(file.name || this.state.files[resolvedStorageKey].name || 'download.bin').trim(),
             type: String(file.type || this.state.files[resolvedStorageKey].type || 'application/octet-stream').trim(),
@@ -424,7 +446,7 @@ function normalizeMessageAttachment(file, senderId) {
             storageKey: resolvedStorageKey,
             storageBackend: String(file.storageBackend || 'bridge').trim(),
             dataUrl: ''
-        };
+        });
     }
     if (file.dataUrl) {
         const stored = createFileFromUpload.call(this, {
@@ -432,10 +454,10 @@ function normalizeMessageAttachment(file, senderId) {
             type: file.type || 'application/octet-stream',
             dataUrl: file.dataUrl,
             uploadedBy: senderId,
-            scope: 'messenger'
+            scope: String(file.scope || 'messenger').trim() || 'messenger'
         });
         if (!stored) return null;
-        return {
+        return enrichStoredFileReference.call(this, {
             id: String(file.id || makeId('file_ref')).trim(),
             name: stored.name,
             type: stored.type,
@@ -443,7 +465,7 @@ function normalizeMessageAttachment(file, senderId) {
             storageKey: stored.id,
             storageBackend: 'bridge',
             dataUrl: ''
-        };
+        });
     }
     return null;
 }
@@ -452,6 +474,7 @@ module.exports = {
     adoptUploadFileFromDisk,
     canActorAccessStoredFile,
     createFileFromUpload,
+    enrichStoredFileReference,
     getFile,
     healAllStoredFilePaths,
     healStoredFileRecord,

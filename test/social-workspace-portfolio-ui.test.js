@@ -122,4 +122,26 @@ describe('social-workspace-portfolio-ui', () => {
         const html = api.renderPortfolioCreateDialog({ ui: {} });
         expect(html).toContain('lux-glass-dialog');
     });
+
+    it('portfolio-doc-open opens read-only portfolio viewer dialog', () => {
+        const events = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-events.js'), 'utf8');
+        const portfolioUi = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-portfolio-ui.js'), 'utf8');
+        const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
+        const runtime = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-portfolio-runtime.js'), 'utf8');
+
+        expect(events).toContain("if (action === 'portfolio-doc-open')");
+        expect(events).toContain('openPortfolioViewerForUser(userId)');
+        expect(events).not.toContain('state().ui.activeProjectId = docId');
+        expect(events).not.toMatch(/portfolio-doc-open[\s\S]{0,400}projectDiscoverSearch/);
+
+        expect(portfolioUi).toContain('data-action="portfolio-doc-open"');
+        expect(portfolioUi).toContain('data-project-id="${escape(text(entry.id))}"');
+        expect(portfolioUi).toContain('renderPortfolioViewerDialog');
+
+        expect(runtime).toContain("openDialog('portfolio-viewer'");
+        expect(runtime).toContain('openPortfolioViewerForUser');
+
+        expect(page).toContain('social-workspace-events.js?v=20260802-portfolio-viewer1');
+        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260802-portfolio-viewer2');
+    });
 });

@@ -89,7 +89,13 @@ function registerMessengerCallsRoutes(app, deps = {}) {
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
-        const chat = store.markChatMessagesRead(request.params.chatId, actorUserId);
+        let chatId = String(request.params.chatId || '').trim();
+        try {
+            chatId = decodeURIComponent(chatId);
+        } catch (error) {
+            chatId = String(request.params.chatId || '').trim();
+        }
+        const chat = store.markChatMessagesRead(chatId, actorUserId);
         if (!chat) {
             sendError(response, 400, 'Chat could not be marked read.');
             return;

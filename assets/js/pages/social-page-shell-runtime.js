@@ -56,6 +56,7 @@
         let groupInviteSearchTimer = 0;
         let projectInviteSearchTimer = 0;
         let pageMembersSearchTimer = 0;
+        let eventEditorSearchTimer = 0;
 
         function readWorkspaceNavCollapsed() {
             try {
@@ -406,7 +407,7 @@
         function syncEventDescScrollRails(scope = root()) {
             const host = scope || root();
             if (!host) return;
-            const selector = '[data-event-desc-rail]';
+            const selector = '[data-event-desc-rail], [data-page-desc-rail], [data-page-about-rail], [data-lf-desc-rail], [data-portfolio-title-rail], [data-portfolio-summary-rail], [data-survey-desc-rail]';
             if (!host.querySelector(selector)) return;
             if (typeof window.initLuxScrollRail === 'function') {
                 window.initLuxScrollRail(host, { shellSelector: selector });
@@ -615,6 +616,12 @@
                 renderSocialPageNow('page-members-search');
             }, GROUP_INVITE_SEARCH_MS);
         }
+        function queueEventEditorSearchRefresh() {
+            if (eventEditorSearchTimer) window.clearTimeout(eventEditorSearchTimer);
+            eventEditorSearchTimer = window.setTimeout(() => {
+                renderSocialPageNow('event-editor-search');
+            }, GROUP_INVITE_SEARCH_MS);
+        }
 
         function normalizeGroupLeaveToken(value) {
             if (typeof window.normalizeGroupLeaveToken === 'function'
@@ -675,6 +682,7 @@
             queueGroupInviteSearchRefresh,
             queueProjectInviteSearchRefresh,
             queuePageMembersSearchRefresh,
+            queueEventEditorSearchRefresh,
             normalizeGroupLeaveToken,
             buildGroupLeaveVerification,
             renderGroupLeaveDialog,

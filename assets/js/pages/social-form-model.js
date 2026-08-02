@@ -508,11 +508,25 @@ function entityDetailStats(type, e) {
 function filePreview(file) {
     if (!file) return '';
     if (isImage(file)) {
+        if (file.storageMissing === true && !text(file.previewDataUrl || file.dataUrl)) {
+            return `
+                <div class="social-neo-media is-broken is-unavailable">
+                    <span class="social-neo-muted">Image unavailable</span>
+                </div>
+            `;
+        }
         const src = fileUrl(file);
         if (src) {
             return `
                 <div class="social-neo-media">
-                    <img src="${escape(src)}" alt="${escape(text(file.name || 'Image'))}">
+                    <img src="${escape(src)}" alt="${escape(text(file.name || 'Image'))}" onerror="this.closest('.social-neo-media')?.classList.add('is-broken');this.remove();">
+                </div>
+            `;
+        }
+        if (text(file.storageKey) || file.storageMissing === true) {
+            return `
+                <div class="social-neo-media is-broken is-unavailable">
+                    <span class="social-neo-muted">Image unavailable</span>
                 </div>
             `;
         }

@@ -28,4 +28,15 @@ describe('social-event-create-dialog.test (bare-shell era)', () => {
         expect(deleteFormLine).toContain('data-lux-transparency-exempt="1"');
         expect(events).toContain('lux-glass-dialog-body');
     });
+
+    it('online event toggle keeps URL field in DOM without dialog re-render', () => {
+        const events = readSource('assets/js/pages/social-events.js');
+        expect(events).toContain('name="eventOnlineLink"');
+        expect(events).not.toMatch(/\$\{runtime\.ui\?\.eventIsOnline \? `[\s\S]*name="eventOnlineLink"/);
+        const handlerBlock = events.split('function handleSocialEventsChange')[1]?.split('function ')[0] || '';
+        const onlineHandler = handlerBlock.match(/\[name="eventIsOnline"\][\s\S]*?return;/);
+        expect(onlineHandler).toBeTruthy();
+        expect(onlineHandler[0]).not.toContain('renderSocialPageNow');
+        expect(onlineHandler[0]).toContain('link.hidden');
+    });
 });

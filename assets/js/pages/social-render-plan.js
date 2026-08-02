@@ -271,6 +271,7 @@
             'profile-cancel',
             'pages-search',
             'events-tab',
+            'events-student-filter',
             'group-member-search',
             'portfolio-filter-tag',
             'portfolio-compose-open',
@@ -582,6 +583,25 @@
             };
         }
 
+        const portfolioViewerDialogReasons = new Set([
+            'portfolio-viewer-open',
+            'portfolio-viewer-loaded'
+        ]);
+        if (portfolioViewerDialogReasons.has(reason) && text(activeDialog()?.type || '') === 'portfolio-viewer') {
+            return {
+                flash: false,
+                topbar: false,
+                command: false,
+                center: false,
+                drawer: false,
+                mobileTab: false,
+                toast: false,
+                dialog: true,
+                storyViewer: false,
+                storyComposer: false
+            };
+        }
+
         const portfolioCreateDialogReasons = new Set([
             'project-faculty-toggle',
             'portfolio-create-input'
@@ -603,9 +623,34 @@
 
         const pageMembersDialogReasons = new Set([
             'page-members-search',
-            'page-members-filter'
+            'page-members-filter',
+            'page-members-faculty-filter',
+            'page-members-role-filter',
+            'page-member-demote-admin',
+            'page-admins-updated'
         ]);
         if (pageMembersDialogReasons.has(reason) && text(activeDialog()?.type || '') === 'page-members') {
+            return {
+                flash: false,
+                topbar: false,
+                command: false,
+                center: false,
+                drawer: false,
+                mobileTab: false,
+                toast: false,
+                dialog: true,
+                storyViewer: false,
+                storyComposer: false
+            };
+        }
+
+        const pageAdminPromoteDialogReasons = new Set([
+            'page-admin-promote-open',
+            'page-admin-promote-wizard-next',
+            'page-admin-promote-wizard-prev',
+            'page-admins-updated'
+        ]);
+        if (pageAdminPromoteDialogReasons.has(reason) && text(activeDialog()?.type || '') === 'page-admin-promote') {
             return {
                 flash: false,
                 topbar: false,
@@ -722,7 +767,11 @@
         const eventCreateDialogReasons = new Set([
             'event-create-input',
             'event-online-toggle',
-            'event-image'
+            'event-image',
+            'event-editor-search',
+            'event-editor-add',
+            'event-editor-remove',
+            'event-editor-faculty'
         ]);
         if (eventCreateDialogReasons.has(reason) && text(activeDialog()?.type || '') === 'event-create') {
             return {

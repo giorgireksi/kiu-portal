@@ -75,6 +75,7 @@
             openDialog,
             openPortalDirectChat,
             openPortfolioEditor,
+            openPortfolioViewerForUser,
             openProjectRiskForTask,
             parseDependsOnFromForm,
             parsePortfolioLinksInput,
@@ -556,10 +557,28 @@
             if (action === 'portfolio-publish-save') {
                 return withBusy(async () => {
                     await saveMyPortfolioDocument({ flash: false });
+                    const portfolio = state().ui?.myPortfolio || {};
+                    const basics = portfolio?.basics || {};
+                    if (!text(basics.name)) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Add your name before publishing.', 'danger');
+                        return renderSocialPageNow('portfolio-published');
+                    }
+                    if (!portfolio?.resume) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Upload your resume PDF before publishing.', 'danger');
+                        return renderSocialPageNow('portfolio-published');
+                    }
+                    if (!text(basics.summary) && !text(basics.headline)) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Add a short About so Discover cards are scannable.', 'danger');
+                        return renderSocialPageNow('portfolio-published');
+                    }
                     const visibilityMode = text(state().ui.publishVisibility || 'staff_only') || 'staff_only';
                     const consentAcknowledged = visibilityMode === 'students_only'
                         ? Boolean(state().ui.publishConsent || document.querySelector('[name="portfolioPublishConsent"]')?.checked)
                         : true;
+                    if (visibilityMode === 'students_only' && !consentAcknowledged) {
+                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Confirm campus visibility before publishing to peers.', 'danger');
+                        return renderSocialPageNow('portfolio-published');
+                    }
                     try {
                         const published = await window.KiuPortfolioApi.publishMyPortfolio({ visibilityMode, consentAcknowledged });
                         if (published) {
@@ -664,10 +683,10 @@
                 });
             }
             if (action === 'portfolio-doc-open') {
-                const userId = text(trigger.getAttribute('data-user-id'));
-                state().ui.portfolioPanelTab = 'discover';
-                state().ui.projectDiscoverSearch = userId ? displayName(accountById(userId)) : '';
-                return renderSocialPageNow('portfolio-doc-open');
+                const userId = text(trigger.getAttribute('data-user-id'))
+                    || text(trigger.getAttribute('data-project-id')).replace(/^portfolio-doc:/, '');
+                if (!userId) return false;
+                return openPortfolioViewerForUser(userId);
             }
             if (action === 'portfolio-edit') {
                 const projectId = text(trigger.getAttribute('data-project-id'));

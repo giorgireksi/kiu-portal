@@ -127,6 +127,9 @@
             pageAbout: '',
             pageMembersSearch: '',
             pageMembersFilter: 'all',
+            pageMembersFacultyFilter: 'all',
+            pageMembersRoleFilter: 'all',
+            pageAdminPromoteStep: 1,
             pageWebsite: '',
             pageContactEmail: '',
             pageLocation: '',
@@ -151,6 +154,9 @@
             eventOnlineLink: '',
             eventIsOnline: false,
             eventJoinMode: 'open',
+            eventEditorSearch: '',
+            eventEditorFaculty: 'all',
+            eventEditorSelectedIds: [],
             directorySearch: '',
             directoryRole: 'all',
             commentDraftByPost: {},
@@ -817,7 +823,7 @@
     async function loadSocialState(force = false, options = {}) {
         const user = currentUser();
         if (!user?.id) {
-            runtime.social = { profiles: {}, pages: [], groups: [], projects: [], portfolios: [], relationships: [], events: [], rsvps: [], reports: [], lostFoundItems: [], surveys: [], surveyResponses: [], researchPublications: [], savedPosts: [] };
+            runtime.social = { profiles: {}, pages: [], groups: [], projects: [], portfolios: [], relationships: [], events: [], rsvps: [], reports: [], lostFoundItems: [], surveys: [], surveyResponses: [], researchPublications: [], moduleCuratorPins: {}, userPins: {}, savedPosts: [] };
             return runtime.social;
         }
         const requestUserId = text(user.id);
@@ -836,7 +842,8 @@
                     events: Array.isArray(social?.events)
                         ? social.events.map((event) => ({
                             ...event,
-                            viewerCanEdit: Boolean(event?.viewerCanEdit || event?.viewerCanDelete)
+                            viewerCanEdit: Boolean(event?.viewerCanEdit || event?.viewerCanDelete || event?.viewerIsEditor),
+                            viewerIsEditor: Boolean(event?.viewerIsEditor)
                         }))
                         : [],
                     rsvps: Array.isArray(social?.rsvps) ? social.rsvps : [],
@@ -845,6 +852,8 @@
                     surveys: Array.isArray(social?.surveys) ? social.surveys : [],
                     surveyResponses: Array.isArray(social?.surveyResponses) ? social.surveyResponses : [],
                     researchPublications: Array.isArray(social?.researchPublications) ? social.researchPublications : [],
+                    moduleCuratorPins: social?.moduleCuratorPins && typeof social.moduleCuratorPins === 'object' ? social.moduleCuratorPins : {},
+                    userPins: social?.userPins && typeof social.userPins === 'object' ? social.userPins : {},
                     savedPosts: []
                 };
                 await fetchAccountsByIds(collectSocialAccountIds(runtime.social));
@@ -1435,15 +1444,18 @@
 
     function fileUrl(file) {
         if (!file || typeof file !== 'object') return '';
+        const preview = text(file.previewDataUrl || file.dataUrl);
         const storageKey = text(file.storageKey || file.id || '');
+        const storageMissing = file.storageMissing === true;
+        if (storageMissing) return preview;
         const backend = text(file.storageBackend).toLowerCase();
-        if (storageKey && typeof getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !text(file.dataUrl))) {
+        if (storageKey && typeof getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !preview)) {
             const type = text(file.type).toLowerCase();
             const name = text(file.name).toLowerCase();
             const forDisplay = type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name);
             return getPortalStoredFileUrl(storageKey, { inline: forDisplay, forDisplay });
         }
-        return text(file.dataUrl);
+        return preview;
     }
 
     function isImageFile(file) {
@@ -1460,6 +1472,89 @@
             reader.onerror = () => reject(new Error('Could not read the selected file.'));
             reader.readAsDataURL(file);
         });
+    }
+
+    const EVENT_COVER_TARGET_WIDTH = 1280;
+    const EVENT_COVER_TARGET_HEIGHT = 360;
+    const EVENT_COVER_SKIP_MAX_BYTES = 1.5 * 1024 * 1024;
+    const EVENT_COVER_ASPECT = EVENT_COVER_TARGET_WIDTH / EVENT_COVER_TARGET_HEIGHT;
+
+    function eventCoverCropRect(srcW, srcH) {
+        const srcAspect = srcW / srcH;
+        if (srcAspect > EVENT_COVER_ASPECT) {
+            const cropH = srcH;
+            const cropW = Math.round(srcH * EVENT_COVER_ASPECT);
+            return {
+                cropX: Math.round((srcW - cropW) / 2),
+                cropY: 0,
+                cropW,
+                cropH
+            };
+        }
+        const cropW = srcW;
+        const cropH = Math.round(srcW / EVENT_COVER_ASPECT);
+        return {
+            cropX: 0,
+            cropY: Math.round((srcH - cropH) / 2),
+            cropW,
+            cropH
+        };
+    }
+
+    function loadImageFromFile(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve(img);
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error('image load failed'));
+            };
+            img.src = url;
+        });
+    }
+
+    function eventCoverOutputName(fileName, ext) {
+        const base = text(fileName).replace(/\.[^.]+$/, '') || 'event-cover';
+        return `${base}.${ext}`;
+    }
+
+    async function optimizeEventCoverFile(file) {
+        if (!(file instanceof Blob) || !isImageFile(file)) return file;
+        try {
+            const img = await loadImageFromFile(file);
+            const srcW = img.naturalWidth || 0;
+            const srcH = img.naturalHeight || 0;
+            if (!srcW || !srcH) return file;
+            const { cropX, cropY, cropW, cropH } = eventCoverCropRect(srcW, srcH);
+            if (cropW <= EVENT_COVER_TARGET_WIDTH
+                && cropH <= EVENT_COVER_TARGET_HEIGHT
+                && file.size <= EVENT_COVER_SKIP_MAX_BYTES) {
+                return file;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = EVENT_COVER_TARGET_WIDTH;
+            canvas.height = EVENT_COVER_TARGET_HEIGHT;
+            const ctx = canvas.getContext('2d', { alpha: false });
+            if (!ctx) return file;
+            ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, EVENT_COVER_TARGET_WIDTH, EVENT_COVER_TARGET_HEIGHT);
+            const webpBlob = await new Promise((resolve) => {
+                canvas.toBlob(resolve, 'image/webp', 0.85);
+            });
+            if (webpBlob && webpBlob.type === 'image/webp') {
+                return new File([webpBlob], eventCoverOutputName(file.name, 'webp'), { type: 'image/webp' });
+            }
+            const jpegBlob = await new Promise((resolve) => {
+                canvas.toBlob(resolve, 'image/jpeg', 0.88);
+            });
+            if (!jpegBlob) return file;
+            return new File([jpegBlob], eventCoverOutputName(file.name, 'jpg'), { type: 'image/jpeg' });
+        } catch (error) {
+            return file;
+        }
     }
 
     async function openDirectChat(userId) {
@@ -1704,6 +1799,7 @@
     resolvePortalSocialFileUrl: fileUrl,
     isPortalSocialImage: isImageFile,
     readPortalSocialFile: readFileAsDataUrl,
+    optimizePortalSocialEventCoverFile: optimizeEventCoverFile,
     loadPortalSocialState: loadSocialState,
     refreshPortalSocialFeed: refreshFeed,
     hydratePortalSocialRuntime: hydrateRuntime,
@@ -1755,6 +1851,7 @@
     reportPortalSocialContent: reportSocialContent,
     resolvePortalSocialReport: resolveSocialReport,
     pinPortalSocialPost: pinSocialPost,
+    togglePortalSocialModulePin: toggleModulePin,
     loadPortalSavedSocialPosts: loadSavedPosts,
     createPortalSocialEvent: createEvent,
     updatePortalSocialEvent: updateEvent,

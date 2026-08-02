@@ -425,6 +425,8 @@ Public API:
 - `canDeleteSocialGroup(group, userId)`
 - `canDeleteSocialPage(page, userId)`
 - `canDeleteSocialEvent(event, userId)`
+- `canEditSocialEvent(event, userId)`
+- `canManageSocialEventEditors(event, userId)`
 - `canEditSocialPost(post, userId)`
 - `canViewSocialPost(post, userId)`
 - `normalizeSocialComment(comment = {})`

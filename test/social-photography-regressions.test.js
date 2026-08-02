@@ -60,17 +60,27 @@ describe('social-photography-regressions (bare-shell era)', () => {
 
     it('photography remove uses author-only guard and two-step delete dialog', () => {
         const photo = readSource('assets/js/pages/social-photography.js');
+        const modals = readSource('assets/css/lux-modals.css');
+        const deleteDialogChunk = photo.slice(
+            photo.indexOf('window.renderPhotographyDeleteDialog = function renderPhotographyDeleteDialog'),
+            photo.indexOf('window.renderPhotographyEditDialog = function renderPhotographyEditDialog')
+        );
         expect(photo).toContain('function canRemovePhotographyPost(post)');
         expect(photo).toMatch(/authorUserId\) === currentUserId\(\)/);
         expect(photo).toContain('photography-delete-open');
         expect(photo).toContain('dialog-photography-delete');
         expect(photo).toContain('confirmPhotographyDelete');
         expect(photo).toContain('renderPhotographyDeleteDialog');
+        expect(deleteDialogChunk).toContain('social-photo-upload-review');
+        expect(deleteDialogChunk).toContain('social-photo-feed-media');
+        expect(deleteDialogChunk).not.toContain('social-photo-delete-preview-media');
         expect(photo).toMatch(/resolvePhotographyHook\('deletePortalSocialPost'\)/);
+        expect(modals).toContain('.social-neo-delete-confirm .lux-glass-dialog-preview-danger');
         const router = readSource('assets/js/pages/social-dialog-router.js');
         expect(router).toContain("kind === 'photography-delete'");
         const page = readSource('assets/js/pages/social-page.js');
         expect(page).toMatch(/deletePortalSocialPost/);
+        expect(page).toContain('social-photography.js?v=20260802-modulepins1');
     });
 
     it('photography explore feed uses centered scroll column with square media tiles', () => {
@@ -89,6 +99,75 @@ describe('social-photography-regressions (bare-shell era)', () => {
         expect(modals).toContain('.social-photo-ig-modal-body');
         expect(modals).toMatch(/\.social-photo-ig-media-pane img[\s\S]*?object-fit:\s*contain/);
         expect(modals).toContain('grid-template-columns: minmax(0, 1fr) minmax(420px, 520px)');
+    });
+
+    it('keeps campus expose upload available for signed-in viewers and resolves faculty for staff', () => {
+        const photo = readSource('assets/js/pages/social-photography.js');
+        const chrome = readSource('assets/js/pages/social-chrome-model.js');
+        const page = readSource('assets/js/pages/social-page.js');
+        const renderPanelChunk = photo.slice(
+            photo.indexOf('window.renderPhotographyPanel = function renderPhotographyPanel()'),
+            photo.indexOf('window.refreshPhotographyFeedStage = function refreshPhotographyFeedStage()')
+        );
+
+        expect(renderPanelChunk).toMatch(/const uploadBtnMarkup = user \?/);
+        expect(renderPanelChunk).not.toMatch(/const uploadBtnMarkup = hasCatalog \?/);
+        expect(renderPanelChunk).toContain('social-photo-upload-btn');
+        expect(renderPanelChunk).not.toContain('social-photo-upload-fab');
+        expect(renderPanelChunk).toMatch(/social-photo-chrome-actions[\s\S]*uploadBtnMarkup[\s\S]*searchMarkup/);
+        expect(photo).toContain('function resolvePhotographyUploadFacultyCode(runtime, form = null)');
+        expect(photo).toContain('resolvePhotographyUploadFacultyCode(state(), form)');
+        expect(photo).toContain('resolvePhotographyUploadFacultyCode(live, form)');
+        expect(chrome).toMatch(/function socialDefaultCreateFaculty\(runtime\)[\s\S]{0,400}socialBrowseFacultyCodes\(\)\[0\]/);
+        expect(page).toContain('social-photography.js?v=20260802-modulepins1');
+    });
+
+    it('photography edit uses author-only guard, metadata dialog, and update hook', () => {
+        const photo = readSource('assets/js/pages/social-photography.js');
+        const router = readSource('assets/js/pages/social-dialog-router.js');
+        const runtime = readSource('assets/js/shared/social-lite-content-runtime.js');
+        const domain = readSource('backend/platform/domains/social-content-service.js');
+        const page = readSource('assets/js/pages/social-page.js');
+        const events = readSource('assets/js/pages/social-page-events.js');
+        const modals = readSource('assets/css/lux-modals.css');
+        const editDialogChunk = photo.slice(
+            photo.indexOf('window.renderPhotographyEditDialog = function renderPhotographyEditDialog'),
+            photo.indexOf('window.renderPhotographyUploadDialog = function renderPhotographyUploadDialog')
+        );
+
+        expect(photo).toContain('photography-edit-open');
+        expect(photo).toContain('renderPhotographyEditDialog');
+        expect(photo).toContain('dialog-photography-edit');
+        expect(editDialogChunk).toContain('social-photo-upload-card');
+        expect(editDialogChunk).toContain('social-photo-upload-review');
+        expect(editDialogChunk).not.toContain('social-photo-edit-preview-media');
+        expect(photo).toMatch(/resolvePhotographyHook\('updatePortalSocialPost'\)/);
+        expect(photo).toContain('name="photographyCaption"');
+        expect(photo).toContain('name="photographyLocation"');
+        expect(photo).toContain('name="photographyFaculty"');
+        expect(router).toContain("kind === 'photography-edit'");
+        expect(page).toMatch(/updatePortalSocialPost/);
+        expect(events).toContain('dialog-photography-edit');
+        expect(runtime).toContain('requestBody.photoMeta = opts.photoMeta');
+        expect(domain).toContain('post.photoMeta.location = socialText(incoming.location)');
+        expect(domain).toContain('post.audienceFacultyCode = facultyCode');
+        expect(modals).toContain('.lux-glass-dialog-card--photography-edit');
+    });
+
+    it('keeps photography upload button inline in hero chrome, not fixed FAB', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).not.toMatch(/social-photo-upload-fab[\s\S]*?position:\s*fixed/);
+        expect(bare).not.toContain('.social-photo-upload-fab');
+    });
+
+    it('photography upload dialog omits tags field', () => {
+        const photo = readSource('assets/js/pages/social-photography.js');
+        const uploadDialogChunk = photo.slice(
+            photo.indexOf('window.renderPhotographyUploadDialog = function renderPhotographyUploadDialog()'),
+            photo.indexOf('function isSocialPhotographyClickAction(action)')
+        );
+        expect(uploadDialogChunk).not.toContain('photographyTags');
+        expect(uploadDialogChunk).not.toMatch(/>Tags</);
     });
 
     it('photography grid uses performant tile markup and CSS', () => {

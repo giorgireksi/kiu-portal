@@ -84,4 +84,51 @@ describe('social state store domain split', () => {
         expect(chat?.chat?.groupId).toBe('group-1');
         expect(chat?.social?.groups).toHaveLength(1);
     });
+
+    it('repairs social group chat membership when a viewer can access the group but is not yet a chat member', () => {
+        const store = new PlatformStore({});
+        store.state.accounts['owner-1'] = {
+            id: 'owner-1',
+            displayName: 'Owner One',
+            email: 'owner@example.com',
+            role: 'student',
+            facultyCode: 'ECON',
+            accountStatus: 'active'
+        };
+        store.state.accounts['admin-1'] = {
+            id: 'admin-1',
+            displayName: 'Admin One',
+            email: 'admin@example.com',
+            role: 'admin',
+            facultyCode: 'ECON',
+            accountStatus: 'active'
+        };
+        store.state.social.groups = [{
+            id: 'group_29bbf4bfb8d2ca01',
+            name: 'Workspace Group',
+            ownerUserId: 'owner-1',
+            memberIds: ['owner-1'],
+            pendingMemberIds: [],
+            joinedAtByUser: { 'owner-1': '2026-01-01T00:00:00.000Z' },
+            visibility: 'public',
+            facultyCode: 'ECON',
+            avatarImage: '',
+            bannerImage: '',
+            createdAt: '2026-01-01T00:00:00.000Z'
+        }];
+        const chatId = 'portal-group::social::group_29bbf4bfb8d2ca01';
+        store.ensureChatBase({
+            id: chatId,
+            type: 'group',
+            members: ['owner-1'],
+            name: 'Workspace Group',
+            groupId: 'group_29bbf4bfb8d2ca01',
+            createdBy: 'owner-1',
+            createdAt: '2026-01-01T00:00:00.000Z'
+        });
+        store.state.social.groups[0].chatId = chatId;
+
+        expect(store.markChatMessagesRead(chatId, 'admin-1')?.id).toBe(chatId);
+        expect(store.state.chats[chatId].members).toContain('admin-1');
+    });
 });

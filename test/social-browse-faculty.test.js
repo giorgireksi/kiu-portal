@@ -16,6 +16,11 @@ describe('social global browse faculty', () => {
 
         expect(runtime).toContain("socialBrowseFaculty: 'all'");
         expect(chrome).toContain('function socialBrowseFacultyValue');
+        expect(chrome).toContain('function socialBrowseFacultyAllLabel');
+        expect(chrome).toContain('function socialBrowseFacultyOptionLabel');
+        expect(chrome).toContain('data-lux-picker-subtitle="Show content from every faculty"');
+        expect(chrome).toContain("return 'All faculties'");
+        expect(chrome).toMatch(/value="\$\{SOCIAL_BROWSE_FACULTY_ALL\}"/);
         expect(chrome).toContain('function socialMatchesBrowseFaculty');
         expect(chrome).toContain('function renderSocialBrowseFacultyHeroControl');
         expect(chrome).toContain('social-neo-hero-faculty');
@@ -43,6 +48,8 @@ describe('social global browse faculty', () => {
             'assets/js/pages/social-lost-found.js'
         ].map(readSource).join('\n');
         expect(heroes).toContain('renderSocialBrowseFacultyHeroControl');
+        expect(readSource('assets/js/pages/social-events.js')).toContain('socialBrowseFacultyOptionLabel');
+        expect(readSource('assets/js/pages/social-groups.js')).toContain('socialBrowseFacultyOptionLabel');
     });
 
     it('filters listed content panels with the shared matcher', () => {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, readFileSync, rmSync } from 'fs';
+import { mkdtempSync, readFileSync, rmSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { createRequire } from 'module';
@@ -15,8 +15,8 @@ function makeTempDir() {
     return dir;
 }
 
-function buildDataUrl(text) {
-    return `data:text/plain;base64,${Buffer.from(text, 'utf8').toString('base64')}`;
+function buildDataUrl(text, mimeType = 'text/plain') {
+    return `data:${mimeType};base64,${Buffer.from(text, 'utf8').toString('base64')}`;
 }
 
 afterEach(() => {
@@ -185,6 +185,32 @@ describe('platform file upload security', () => {
         expect(store.canActorAccessStoredFile(newsFile.id, 'news-admin', 'admin')).toBe(true);
         expect(store.canActorAccessStoredFile(newsFile.id, 'student-news', 'student')).toBe(true);
         expect(store.canActorAccessStoredFile(newsFile.id, 'outsider', 'student')).toBe(false);
+    });
+
+    it('keeps image preview fallbacks and flags missing bridge files on attachments', async () => {
+        const uploadsDir = makeTempDir();
+        const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 1024 * 1024 });
+        const file = await store.createFileFromUpload({
+            id: 'missing-preview',
+            name: 'photo.jpg',
+            type: 'image/jpeg',
+            dataUrl: buildDataUrl('tiny-image-bytes', 'image/jpeg'),
+            ownerUserId: 'student-1',
+            uploadedBy: 'student-1',
+            scope: 'social'
+        });
+
+        expect(file.previewDataUrl).toMatch(/^data:image\/jpeg;base64,/);
+        unlinkSync(file.path);
+
+        const enriched = store.enrichStoredFileReference({
+            storageKey: file.id,
+            storageBackend: 'bridge',
+            type: 'image/jpeg',
+            name: 'photo.jpg'
+        });
+        expect(enriched.storageMissing).toBe(true);
+        expect(enriched.previewDataUrl).toMatch(/^data:image\/jpeg;base64,/);
     });
 
     it('keeps upload ownership server-derived and flushes pending writes before responding', () => {

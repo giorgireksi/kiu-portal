@@ -21,6 +21,7 @@ describe('social session actor route regressions', () => {
         expect(routeModule).toContain("const report = store.resolveSocialReport(request.params.id, request.body || {}, actorUserId);");
         expect(routeModule).toContain("const profile = store.upsertSocialProfile(request.params.id, request.body || {}, actorUserId);");
         expect(routeModule).toContain("const event = store.respondSocialEventRsvp(request.params.id, actorUserId, request.body?.status || 'going');");
+        expect(routeModule).toContain("const result = store.toggleSocialModulePin(");
         expect(routeModule).not.toContain("const post = store.toggleSocialReaction(request.params.id, request.body?.userId, request.body?.reactionType || 'like');");
         expect(routeModule).not.toContain("const profile = store.upsertSocialProfile(request.params.id, request.body || {}, request.body?.actorId || request.params.id);");
         expect(routeModule).not.toContain("const event = store.respondSocialEventRsvp(request.params.id, request.body?.userId, request.body?.status || 'going');");

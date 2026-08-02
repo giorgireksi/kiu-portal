@@ -16,6 +16,7 @@
             currentUser,
             currentUserId,
             normalizePortfolioEntry,
+            openDialog,
             patchPortfolioSaveStatus,
             portfolioEditorFormRoot,
             portfolioFieldValue,
@@ -24,7 +25,8 @@
             serializePortfolioLinks,
             setPortalSocialFlash,
             state,
-            text
+            text,
+            withBusy
         } = deps;
 
         function portfolioEntriesForViewer() {
@@ -320,6 +322,31 @@
             runtime.ui.projectMediaFile = null;
         }
 
+        function openPortfolioViewerForUser(userId) {
+            const normalizedUserId = text(userId);
+            if (!normalizedUserId) return false;
+            return withBusy(async () => {
+                const ui = state().ui;
+                ui.viewingPortfolioUserId = normalizedUserId;
+                ui.viewingPortfolio = null;
+                ui.viewingPortfolioError = '';
+                openDialog('portfolio-viewer', { userId: normalizedUserId });
+                renderSocialPageNow('portfolio-viewer-open');
+                try {
+                    const api = window.KiuPortfolioApi;
+                    if (!api || typeof api.loadPortfolio !== 'function') {
+                        throw new Error('Portfolio viewer is loading.');
+                    }
+                    const portfolio = await api.loadPortfolio(normalizedUserId);
+                    if (!portfolio?.canView) throw new Error('Portfolio not found.');
+                    ui.viewingPortfolio = portfolio;
+                } catch (error) {
+                    ui.viewingPortfolioError = text(error?.message || 'Portfolio could not be loaded.');
+                }
+                renderSocialPageNow('portfolio-viewer-loaded');
+            });
+        }
+
         const PORTFOLIO_DISCOVER_ROLE_TARGETS = [
             ['all', 'All audiences'],
             ['all_logged_in', 'All logged-in'],
@@ -341,6 +368,7 @@
             portfolioCollectDocumentFromUi,
             saveMyPortfolioDocument,
             openPortfolioEditor,
+            openPortfolioViewerForUser,
             resetPortfolioEditor,
             readPortfolioResumeFile,
             PORTFOLIO_DISCOVER_ROLE_TARGETS

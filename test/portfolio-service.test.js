@@ -73,4 +73,29 @@ describe('portfolio service', () => {
         }, 'student-1');
         expect(published.status).toBe('published');
     });
+
+    it('marks missing resume files as storageMissing in decorated portfolio', () => {
+        const store = new PlatformStore({});
+        seedStudent(store, 'student-1');
+        store.state.files['file_missing_resume'] = {
+            id: 'file_missing_resume',
+            name: 'resume.pdf',
+            type: 'application/pdf',
+            path: '/tmp/does-not-exist-resume.pdf',
+            ownerUserId: 'student-1'
+        };
+        store.savePortfolioForUser('student-1', {
+            basics: { name: 'Student One', summary: 'About me' },
+            resume: {
+                id: 'file_missing_resume',
+                storageKey: 'file_missing_resume',
+                storageBackend: 'bridge',
+                name: 'resume.pdf',
+                type: 'application/pdf'
+            }
+        }, 'student-1');
+
+        const portfolio = store.getPortfolioForUser('student-1', 'student-1');
+        expect(portfolio.resume?.storageMissing).toBe(true);
+    });
 });

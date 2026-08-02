@@ -12,7 +12,7 @@
         'group-panel-media', 'group-panel-members', 'group-panel-files',
         'group-panel-links', 'group-panel-invite', 'group-panel-settings'
     ];
-    const PAGES_FALLBACK = ['page-about', 'page-members', 'page-create', 'page-post-compose'];
+    const PAGES_FALLBACK = ['page-about', 'page-members', 'page-admin-promote', 'page-create', 'page-post-compose'];
     const FEED_FALLBACK = [
         'post-compose', 'post-compose-attach', 'post-edit', 'post-share', 'post-report',
         'post-delete', 'post-comments', 'comment-report', 'comment-delete'
@@ -24,7 +24,7 @@
         'project-create', 'project-task-create', 'project-task-edit', 'project-task-graph',
         'project-task-graph-history', 'project-task-graph-schedule-help', 'project-column-tasks',
         'project-task-detail', 'project-task-delete', 'project-settings', 'project-health',
-        'project-health-plan-pick', 'project-risk', 'portfolio-create', 'portfolio-editor', 'project-leave'
+        'project-health-plan-pick', 'project-risk', 'portfolio-create', 'portfolio-editor', 'portfolio-viewer', 'project-leave'
     ];
 
     function kindOwned(setName, fallback, kind) {
@@ -68,6 +68,10 @@
             if (kind === 'photography-delete' && deps.hasSocialPhotographyModule()
                 && typeof window.renderPhotographyDeleteDialog === 'function') {
                 return window.renderPhotographyDeleteDialog(dialog);
+            }
+            if (kind === 'photography-edit' && deps.hasSocialPhotographyModule()
+                && typeof window.renderPhotographyEditDialog === 'function') {
+                return window.renderPhotographyEditDialog(dialog);
             }
 
             if (kindOwned('GROUP_OWNED_DIALOG_KINDS', GROUP_FALLBACK, kind)) {

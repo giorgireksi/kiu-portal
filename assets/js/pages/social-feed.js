@@ -472,12 +472,16 @@ function __kiuFeedExpose(map) {
             { label: 'Following', value: following },
             { label: 'Joined groups', value: joinedGroups },
         ];
+        const scopedFeed = text(runtime.ui?.feedScopeType);
         const tabs = [
             { tab: 'all', label: 'All', icon: 'fa-globe', helper: 'Full campus stream' },
             { tab: 'following', label: 'Following', icon: 'fa-user-check', helper: 'People and pages you follow' },
             { tab: 'groups', label: 'Groups', icon: 'fa-users', helper: 'Group posts only' },
             { tab: 'pages', label: 'Pages', icon: 'fa-flag', helper: 'Official page updates' },
             { tab: 'campus', label: 'Campus', icon: 'fa-landmark', helper: 'Campus-wide visibility' },
+            ...(scopedFeed === 'group' || scopedFeed === 'page'
+                ? [{ tab: 'pinned', label: 'Pinned', icon: 'fa-thumbtack', helper: 'Pinned posts in this scope' }]
+                : []),
         ];
         const scopeMarkup = Array.isArray(scopeOptions) && scopeOptions.length
             ? `

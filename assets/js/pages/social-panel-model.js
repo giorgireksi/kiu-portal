@@ -156,6 +156,7 @@ function filterFeedForHome(feed, filterId) {
     if (filterId === 'groups') return feed.filter((post) => text(post.scopeType) === 'group');
     if (filterId === 'pages') return feed.filter((post) => text(post.scopeType) === 'page');
     if (filterId === 'campus') return feed.filter((post) => !text(post.audience) || text(post.audience) === 'campus');
+    if (filterId === 'pinned') return feed.filter((post) => Boolean(post?.isPinned));
     return feed;
 }
 

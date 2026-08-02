@@ -27,6 +27,7 @@ const {
     adoptUploadFileFromDisk,
     canActorAccessStoredFile,
     createFileFromUpload,
+    enrichStoredFileReference,
     getFile,
     healAllStoredFilePaths,
     listUnindexedBackgroundGalleryDiskFileIds,
@@ -192,6 +193,7 @@ const {
     canDeleteSocialPage,
     canEditSocialEvent,
     canEditSocialPost,
+    canManageSocialEventEditors,
     canManageSocialGroup,
     canManageSocialPage,
     canManageSocialScope,
@@ -274,6 +276,11 @@ const {
     toggleSocialResearchSave,
     updateSocialResearchPublication
 } = require('./domains/social-research-service');
+const {
+    getSocialPinBootstrap,
+    listModulePinnedIds,
+    toggleSocialModulePin
+} = require('./domains/social-pin-service');
 const {
     buildExamSessionCourseKey,
     buildProtectedQuizClientUrl,
@@ -4338,11 +4345,40 @@ class PlatformStore {
         return clone(chat);
     }
 
+    repairSocialGroupChatMembership(chatId, userId) {
+        const normalizedChatId = String(chatId || '').trim();
+        const normalizedUserId = String(userId || '').trim();
+        const match = normalizedChatId.match(/^portal-group::social::(.+)$/);
+        if (!match || !normalizedUserId) return false;
+        const group = this.getSocialGroupRecord(match[1]);
+        if (!group || !this.canViewSocialGroup(group, normalizedUserId)) return false;
+        const members = uniqueStrings([...this.getSocialGroupMemberIds(group), normalizedUserId]);
+        this.ensureChatBase({
+            id: normalizedChatId,
+            type: 'group',
+            members,
+            name: String(group.name || 'Social group').trim(),
+            groupId: String(group.id || '').trim(),
+            avatarImage: String(group.avatarImage || '').trim(),
+            bannerImage: String(group.bannerImage || '').trim(),
+            createdBy: String(group.ownerUserId || normalizedUserId || members[0] || '').trim(),
+            createdAt: String(group.createdAt || nowIso())
+        });
+        group.chatId = normalizedChatId;
+        this.save();
+        return true;
+    }
+
     markChatMessagesRead(chatId, userId) {
         const normalizedChatId = String(chatId || '').trim();
         const normalizedUserId = String(userId || '').trim();
         if (!normalizedChatId || !normalizedUserId) return null;
-        const chat = this.state.chats[normalizedChatId];
+        let chat = this.state.chats[normalizedChatId];
+        if (!chat || !asArray(chat.members).includes(normalizedUserId)) {
+            if (this.repairSocialGroupChatMembership(normalizedChatId, normalizedUserId)) {
+                chat = this.state.chats[normalizedChatId];
+            }
+        }
         if (!chat || !asArray(chat.members).includes(normalizedUserId)) return null;
         let changed = false;
         const now = nowIso();
@@ -4405,6 +4441,10 @@ class PlatformStore {
 
     normalizeMessageAttachment(file, senderId) {
         return normalizeMessageAttachment.call(this, file, senderId);
+    }
+
+    enrichStoredFileReference(fileRef) {
+        return enrichStoredFileReference.call(this, fileRef);
     }
 
     appendMessage(payload = {}) {
@@ -4660,6 +4700,9 @@ class PlatformStore {
     upsertSocialProfile(userId = '', payload = {}, actorId = '') { return upsertSocialProfile.call(this, userId, payload, actorId); }
     resolveSocialPosts(postIds = [], viewerUserId = '') { return resolveSocialPosts.call(this, postIds, viewerUserId); }
     toggleSocialScopePostPin(scopeType, scopeId, postId, actorId = '') { return toggleSocialScopePostPin.call(this, scopeType, scopeId, postId, actorId); }
+    toggleSocialModulePin(module, entityId, kind = 'personal', actorId = '') { return toggleSocialModulePin.call(this, module, entityId, kind, actorId); }
+    listModulePinnedIds(module, viewerId = '', kind = 'all') { return listModulePinnedIds.call(this, module, viewerId, kind); }
+    getSocialPinBootstrap(viewerUserId = '') { return getSocialPinBootstrap.call(this, viewerUserId); }
     toggleSocialCommentReaction(postId, commentId, userId, reactionType = 'like') { return toggleSocialCommentReaction.call(this, postId, commentId, userId, reactionType); }
     removeSocialComment(postId, commentId, actorId = '') { return removeSocialComment.call(this, postId, commentId, actorId); }
     resolveSocialReport(reportId, payload = {}, actorId = '') { return resolveSocialReport.call(this, reportId, payload, actorId); }
@@ -4745,6 +4788,8 @@ class PlatformStore {
     canDeleteSocialGroup(group, userId) { return canDeleteSocialGroup.call(this, group, userId); }
     canDeleteSocialPage(page, userId) { return canDeleteSocialPage.call(this, page, userId); }
     canDeleteSocialEvent(event, userId) { return canDeleteSocialEvent.call(this, event, userId); }
+    canEditSocialEvent(event, userId) { return canEditSocialEvent.call(this, event, userId); }
+    canManageSocialEventEditors(event, userId) { return canManageSocialEventEditors.call(this, event, userId); }
     canEditSocialPost(post, userId) { return canEditSocialPost.call(this, post, userId); }
     canViewSocialPost(post, userId) { return canViewSocialPost.call(this, post, userId); }
     normalizeSocialComment(comment = {}) { return normalizeSocialComment.call(this, comment); }

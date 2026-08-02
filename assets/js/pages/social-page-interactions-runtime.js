@@ -556,6 +556,13 @@ function readFileAsDataUrl(file) {
         reader.readAsDataURL(file);
     });
 }
+function optimizeEventCoverFile(file) {
+    if (!file) return Promise.resolve(null);
+    if (typeof optimizePortalSocialEventCoverFile === 'function') {
+        return Promise.resolve(optimizePortalSocialEventCoverFile(file));
+    }
+    return Promise.resolve(file);
+}
 function setPanel(panel) {
     const runtime = state();
     const normalizedPanel = text(panel).toLowerCase() === 'lost-found' ? 'lost-and-found' : text(panel);
@@ -969,7 +976,7 @@ function renderSocialPageNow(reason = 'manual') {
                 if (cs && Number.isFinite(interactionSnapshot.centerScrollY)) cs.scrollTop = interactionSnapshot.centerScrollY;
             }
             scheduleSocialCenterScrollRepair(host);
-            if (activePanel === 'events') syncEventDescScrollRails(host);
+            if (activePanel === 'events' || activePanel === 'pages' || activePanel === 'lost-and-found' || activePanel === 'projects' || activePanel === 'surveys') syncEventDescScrollRails(host);
             if (typeof window.enhanceUniversalPickers === 'function') {
                 try { window.enhanceUniversalPickers(shell.center); } catch (e) {}
             }
@@ -1163,6 +1170,7 @@ function renderSocialPageNow(reason = 'manual') {
             patchCommentReactionsByIds,
             deleteCommentInline,
             readFileAsDataUrl,
+            optimizeEventCoverFile,
             setPanel,
             finalizeSetPanel,
             setActiveChat,

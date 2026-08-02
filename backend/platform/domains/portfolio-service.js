@@ -276,6 +276,9 @@ function normalizePortfolioResume(raw) {
 
 function hasPortfolioResume(resume) {
     if (!resume || typeof resume !== 'object') return false;
+    if (resume.storageMissing === true) {
+        return Boolean(portfolioText(resume.dataUrl));
+    }
     return Boolean(portfolioText(resume.storageKey) || portfolioText(resume.dataUrl));
 }
 
@@ -449,11 +452,16 @@ function canViewPortfolio(portfolio, viewerUserId) {
 
 function decoratePortfolio(portfolio, viewerUserId = '') {
     const normalized = normalizePortfolioDocument(portfolio, getSocialAccountBasics.call(this, portfolio?.userId));
-    const canView = canViewPortfolio.call(this, normalized, viewerUserId);
+    let resume = normalized.resume;
+    if (resume && typeof this.enrichStoredFileReference === 'function') {
+        resume = this.enrichStoredFileReference(resume);
+    }
+    const canView = canViewPortfolio.call(this, { ...normalized, resume }, viewerUserId);
     const canEdit = portfolioText(viewerUserId) === portfolioText(normalized.userId)
         || ['admin', 'student_service'].includes(portfolioText(this.getSocialAccount(viewerUserId)?.role).toLowerCase());
     return {
         ...normalized,
+        resume,
         canView,
         canEdit,
         isOwner: portfolioText(viewerUserId) === portfolioText(normalized.userId)

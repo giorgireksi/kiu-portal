@@ -2,7 +2,8 @@ const {
     asArray,
     clone,
     makeId,
-    nowIso
+    nowIso,
+    uniqueStrings
 } = require('../utils');
 const { createEmptySocialState } = require('../state-shape');
 
@@ -231,6 +232,9 @@ function getSocialBootstrap(viewerUserId = '') {
     const reports = asArray(this.state.social.reports)
         .filter(() => this.isSocialAdmin(normalizedViewerId))
         .map(item => clone(item));
+    const pinBootstrap = typeof this.getSocialPinBootstrap === 'function'
+        ? this.getSocialPinBootstrap(normalizedViewerId)
+        : { moduleCuratorPins: {}, userPins: {} };
     return {
         profiles: clone(this.state.social.profiles || {}) || {},
         pages,
@@ -242,6 +246,8 @@ function getSocialBootstrap(viewerUserId = '') {
         surveys,
         researchPublications,
         lostFoundItems: normalizeLostFoundItems(this.state.social.lostFoundItems),
+        moduleCuratorPins: pinBootstrap.moduleCuratorPins || {},
+        userPins: pinBootstrap.userPins || {},
         surveyResponses: normalizedViewerId
             ? asArray(this.state.social.surveyResponses).filter(item => socialText(item?.userId) === normalizedViewerId).map(item => clone(item))
             : [],
@@ -279,7 +285,12 @@ function upsertSocialState(social, actorId = '', reason = 'social-save') {
 function ensureSocialGroupChat(groupId, actorId = '') {
     const group = this.getSocialGroupRecord(groupId);
     if (!group) return null;
-    const members = this.getSocialGroupMemberIds(group);
+    const normalizedActorId = socialText(actorId);
+    if (normalizedActorId && !this.canViewSocialGroup(group, normalizedActorId)) return null;
+    const members = uniqueStrings([
+        ...this.getSocialGroupMemberIds(group),
+        normalizedActorId
+    ]);
     let chat = this.ensureChatBase({
         id: socialText(group.chatId || `portal-group::social::${socialText(group.id)}`),
         type: 'group',

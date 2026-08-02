@@ -49,7 +49,7 @@ install([
         'renderProjectTaskGraphFullscreen', 'isProjectTaskGraphDialogOpen', 'renderProjectCreateInviteSection', 'renderProjectTaskCard', 'renderProjectTaskDetailModal', 'renderProjectColumnTasksModal',
         'renderProjectTaskCreateDialog', 'renderProjectHealthDialog', 'renderProjectHealthPlanCardHtml', 'renderProjectHealthPlanPickBodyHtml', 'renderProjectHealthPlanPickDialog', 'renderProjectRiskDialog',
         'renderProjectSettingsDialog', 'renderProjectCreateDialog', 'renderPortfolioCreateDialog', 'portfolioStatus', 'portfolioVisibilityMode', 'portfolioAudienceLabel',
-        'portfolioMakeId', 'portfolioFieldValue', 'renderMyPortfolioPanel', 'renderPortfolioEditorDialog', 'renderPortfolioCustomBuilderOverlay', 'renderPortfolioProfileBlock'
+        'portfolioMakeId', 'portfolioFieldValue', 'renderMyPortfolioPanel', 'renderPortfolioEditorDialog', 'renderPortfolioViewerDialog', 'renderPortfolioCustomBuilderOverlay', 'renderPortfolioProfileBlock'
 ], '');
 install([
         'writeProjectWeekPlan', 'addToProjectWeekPlan', 'addManyToProjectWeekPlan', 'removeFromProjectWeekPlan', 'normalizeProjectWeekPlanWindow', 'syncProjectTaskMatrixPreview',
@@ -61,7 +61,7 @@ install([
         'syncProjectTaskGraphGroupFocus', 'syncProjectTaskGraphSelection', 'syncProjectTaskGraphCanvas', 'syncProjectTaskGraphQuickCreate', 'syncProjectTaskGraphSidebar', 'detachProjectTaskGraphPanWindowListeners',
         'attachProjectTaskGraphPanWindowListeners', 'closeProjectTaskGraphContextMenu', 'bindProjectTaskGraphInteractions', 'bindProjectTaskGraphDrag', 'bindProjectTaskGraphResizeObserver', 'syncProjectTabPills',
         'clearProjectTabPaneCache', 'clearProjectTabPaneCacheKey', 'markProjectTaskGraphPreviewStale', 'syncDeskToolbarFromFreshMarkup', 'notifyProjectTaskGraphSurfaceChanged', 'revealDeskExpandTarget',
-        'clearPortfolioApiDeniedFlag', 'portfolioReadDateRange', 'openPortfolioEditor', 'resetPortfolioEditor'
+        'clearPortfolioApiDeniedFlag', 'portfolioReadDateRange', 'openPortfolioEditor', 'openPortfolioViewerForUser', 'resetPortfolioEditor'
 ], undefined);
 install([
         'shouldRenderProjectHealthStack', 'taskHasPert', 'refreshProjectTasksTabBody', 'refreshProjectTasksTabPane', 'rebuildActiveProjectTabPaneIfPreviewHost', 'patchProjectWorkspaceTab',

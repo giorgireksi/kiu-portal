@@ -14,6 +14,7 @@
         escape,
         when,
         eventCanManage,
+        eventCanManageEditors,
         controlId,
         activeDialog,
         eventScopeOptions,
@@ -28,7 +29,15 @@
         ensureSocialGroupsModule,
         closeDialog,
         fromDateTimeLocalValue,
-        readFileAsDataUrl
+        readFileAsDataUrl,
+        optimizeEventCoverFile,
+        accountById,
+        displayName,
+        avatar,
+        accountSubtitle,
+        facultyLabel,
+        roleLabel,
+        queueEventEditorSearchRefresh
     } = hooks;
     // Prefer window.* for portal mutations — bare hook values can be missing if
     // Object.assign ran before social-runtime-lite exported them (silent RSVP no-op).
@@ -57,6 +66,18 @@
         return fn(...a);
     }
 
+    function eventPinModel() {
+        return window.KiuSocialPinModel || null;
+    }
+
+    function renderEventPinActions(item) {
+        const pinModel = eventPinModel();
+        if (!pinModel) return '';
+        return pinModel.renderModulePinActions('event', item.id, {
+            canCuratorPin: pinModel.viewerCanCuratorPin('event', item)
+        });
+    }
+
     if (
         typeof state !== 'function'
         || typeof currentUser !== 'function'
@@ -65,6 +86,7 @@
         || typeof escape !== 'function'
         || typeof when !== 'function'
         || typeof eventCanManage !== 'function'
+        || typeof eventCanManageEditors !== 'function'
         || typeof controlId !== 'function'
         || typeof activeDialog !== 'function'
         || typeof eventScopeOptions !== 'function'
@@ -80,6 +102,14 @@
         || typeof closeDialog !== 'function'
         || typeof fromDateTimeLocalValue !== 'function'
         || typeof readFileAsDataUrl !== 'function'
+        || typeof optimizeEventCoverFile !== 'function'
+        || typeof accountById !== 'function'
+        || typeof displayName !== 'function'
+        || typeof avatar !== 'function'
+        || typeof accountSubtitle !== 'function'
+        || typeof facultyLabel !== 'function'
+        || typeof roleLabel !== 'function'
+        || typeof queueEventEditorSearchRefresh !== 'function'
         || typeof window.respondPortalSocialEventRsvp !== 'function'
         || typeof window.createPortalSocialEvent !== 'function'
         || typeof window.deletePortalSocialEvent !== 'function'
@@ -87,6 +117,125 @@
     ) {
         window.__KIU_SOCIAL_EVENTS_MODULE_LOADED = false;
         throw new Error('Social events hooks are unavailable.');
+    }
+
+    function buildEventEditorInviteContext(runtime) {
+        const memberSearchId = controlId('eventEditorSearch');
+        const memberFacultyId = controlId('eventEditorFaculty');
+        const selectedMemberIds = Array.isArray(runtime.ui?.eventEditorSelectedIds)
+            ? runtime.ui.eventEditorSelectedIds.map((item) => text(item)).filter(Boolean)
+            : [];
+        const memberSearch = text(runtime.ui?.eventEditorSearch || '').trim().toLowerCase();
+        const facultyFilter = text(runtime.ui?.eventEditorFaculty || 'all') || 'all';
+        const allAccounts = Object.values(runtime.accountsById || {})
+            .filter((account) => text(account?.id) && text(account.id) !== currentUserId())
+            .sort((left, right) => displayName(left).localeCompare(displayName(right)));
+        const browseCodes = (window.KiuSocialChromeModel || {}).socialBrowseFacultyCodes?.() || [];
+        const accountFaculties = [...new Set(allAccounts
+            .map((account) => text(account?.facultyCode || account?.faculty || ''))
+            .filter(Boolean))];
+        const extraFaculties = accountFaculties.filter((code) => !browseCodes.includes(code));
+        const facultyOptions = ['all', ...browseCodes, ...extraFaculties];
+        const candidateAccounts = allAccounts.filter((account) => {
+            const accountId = text(account?.id);
+            if (!accountId || selectedMemberIds.includes(accountId)) return false;
+            if (facultyFilter !== 'all' && text(account?.facultyCode || account?.faculty || '') !== facultyFilter) return false;
+            if (!memberSearch) return true;
+            const haystack = [
+                displayName(account),
+                account?.email,
+                account?.facultyCode,
+                account?.faculty,
+                roleLabel(account?.role)
+            ].filter(Boolean).join(' ').toLowerCase();
+            return haystack.includes(memberSearch);
+        });
+        const selectedMembersMarkup = selectedMemberIds.length
+            ? selectedMemberIds.map((memberId) => {
+                const account = accountById(memberId) || { id: memberId };
+                return `
+                    <div class="social-neo-item-line social-neo-group-creator-member is-selected">
+                        <div class="social-neo-person">
+                            ${avatar(account, 'social-neo-avatar-sm')}
+                            <div>
+                                <strong>${escape(displayName(account))}</strong>
+                                <span>${escape(accountSubtitle(account))}</span>
+                            </div>
+                        </div>
+                        <button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="event-editor-remove" data-user-id="${escape(text(memberId))}">
+                            <i class="fas fa-xmark"></i> Remove
+                        </button>
+                    </div>
+                `;
+            }).join('')
+            : '<p class="lux-glass-dialog-hint">No editors selected yet.</p>';
+        const searchResultsMarkup = candidateAccounts.length
+            ? candidateAccounts.slice(0, 12).map((account) => `
+                <div class="social-neo-item-line social-neo-group-creator-member">
+                    <div class="social-neo-person">
+                        ${avatar(account, 'social-neo-avatar-sm')}
+                        <div>
+                            <strong>${escape(displayName(account))}</strong>
+                            <span>${escape(accountSubtitle(account))}</span>
+                        </div>
+                    </div>
+                    <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="event-editor-add" data-user-id="${escape(text(account.id))}">
+                        <i class="fas fa-user-plus"></i> Add
+                    </button>
+                </div>
+            `).join('')
+            : `<p class="lux-glass-dialog-hint">${memberSearch || facultyFilter !== 'all' ? 'No people match the current search or faculty filter.' : 'Start typing or choose a faculty to find people.'}</p>`;
+        return {
+            memberSearchId,
+            memberFacultyId,
+            selectedMemberIds,
+            candidateAccounts,
+            facultyOptions,
+            facultyFilter,
+            memberSearch,
+            selectedMembersMarkup,
+            searchResultsMarkup
+        };
+    }
+
+    function renderEventEditorInviteSection(runtime, inviteContext) {
+        const ctx = inviteContext || buildEventEditorInviteContext(runtime);
+        return `
+            <section class="lux-glass-dialog-group-section lux-glass-dialog-group-section--invite">
+                <div class="lux-glass-dialog-group-section-head">
+                    <strong>Event editors</strong>
+                    <span>Editors can update event details but cannot delete the event or change this list.</span>
+                </div>
+                <div class="lux-glass-dialog-invite-toolbar">
+                    <label class="lux-glass-dialog-field lux-glass-dialog-invite-search-field" for="${escape(ctx.memberSearchId)}">
+                        <span class="social-neo-label">Search people</span>
+                        <input class="social-neo-input lux-control" id="${escape(ctx.memberSearchId)}" type="search" name="eventEditorSearch" placeholder="Search people to add as editors..." value="${escape(text(runtime.ui?.eventEditorSearch || ''))}">
+                    </label>
+                    <label class="lux-glass-dialog-field lux-glass-dialog-invite-faculty-field" for="${escape(ctx.memberFacultyId)}">
+                        <span class="social-neo-label">Faculty</span>
+                        <select class="social-neo-select lux-control" id="${escape(ctx.memberFacultyId)}" name="eventEditorFaculty" data-lux-picker>
+                            ${ctx.facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${ctx.facultyFilter === faculty ? 'selected' : ''}>${escape((window.KiuSocialChromeModel || {}).socialBrowseFacultyOptionLabel?.(faculty) || facultyLabel(faculty))}</option>`).join('')}
+                        </select>
+                    </label>
+                </div>
+                <div class="lux-glass-dialog-invite-columns">
+                    <article class="lux-glass-dialog-invite-block">
+                        <div class="lux-glass-dialog-invite-block-head">
+                            <strong>Selected editors</strong>
+                            <span>${escape(ctx.selectedMemberIds.length)} editor${ctx.selectedMemberIds.length === 1 ? '' : 's'} selected.</span>
+                        </div>
+                        <div class="social-neo-list lux-glass-dialog-invite-list" data-lux-transparency-exempt="1">${ctx.selectedMembersMarkup}</div>
+                    </article>
+                    <article class="lux-glass-dialog-invite-block">
+                        <div class="lux-glass-dialog-invite-block-head">
+                            <strong>Search results</strong>
+                            <span>${escape(ctx.candidateAccounts.length)} people available.</span>
+                        </div>
+                        <div class="social-neo-list lux-glass-dialog-invite-list" data-lux-transparency-exempt="1">${ctx.searchResultsMarkup}</div>
+                    </article>
+                </div>
+            </section>
+        `;
     }
 
     function renderEventsHero(runtime, activeTab, metrics = {}, createActionConfig = {}) {
@@ -109,6 +258,7 @@
             { tab: 'student', label: 'Student events', icon: 'fa-calendar-days', helper: 'Clubs, meetups, study jams' },
             { tab: 'university', label: 'University events', icon: 'fa-landmark', helper: 'Official sessions and notices' },
             { tab: 'studygroups', label: 'Study groups', icon: 'fa-users', helper: 'Course circles and practice teams' },
+            { tab: 'pinned', label: 'Pinned', icon: 'fa-thumbtack', helper: 'Highlighted and saved events' },
         ];
         const hints = [
             { icon: 'fa-calendar-day', title: 'Time grouping', text: 'Events are organized by today, upcoming, and category lanes.' },
@@ -172,7 +322,6 @@
         const isStaff = ['professor', 'ta', 'admin', 'student_service'].includes(userRole);
         const uniEvents = allEvents.filter((entry) => entry.category === 'university' || entry.isOfficial);
         const studentEvents = allEvents.filter((entry) => entry.category !== 'university' && !entry.isOfficial);
-        const manageableStudentEvents = studentEvents.filter((entry) => eventCanManage(entry));
         const manageableUniversityEvents = uniEvents.filter((entry) => eventCanManage(entry));
         const studyGroups = Array.isArray(runtime.social?.groups)
             ? runtime.social.groups.filter((group) => group.type === 'study' || (group.tags || []).includes('study'))
@@ -180,6 +329,14 @@
         const studentSectionState = eventsTab === 'student' ? 'is-focused' : '';
         const universitySectionState = eventsTab === 'university' ? 'is-focused' : '';
         const studySectionState = eventsTab === 'studygroups' ? 'is-focused' : '';
+
+        const studentFilter = text(runtime.ui?.eventsStudentFilter || 'community') || 'community';
+        const myStudentEvents = studentEvents.filter((entry) => eventCanManage(entry));
+        const communityStudentEvents = studentEvents.filter((entry) => !eventCanManage(entry));
+        const visibleStudentEvents = studentFilter === 'mine' ? myStudentEvents : communityStudentEvents;
+        const studentEventsEmptyCopy = studentFilter === 'mine'
+            ? 'You have not created or co-managed any student events yet.'
+            : 'No other student events in this lane yet.';
 
         function sortEventsByStart(list) {
             return [...list].sort((left, right) => {
@@ -214,11 +371,13 @@
             const title = text(item.title || 'Untitled event');
             const eventId = text(item.id);
             const scopeLabel = text(item.scopeName || (tone === 'university' ? 'Campus-wide official listing' : 'Community event feed'));
+            const canEditEvent = Boolean(item.viewerCanEdit || item.viewerCanDelete || item.viewerIsEditor) || eventCanManage(item);
+            const canDeleteEvent = Boolean(item.viewerCanDelete);
             return `
                 <article class="social-neo-event-feature social-neo-event-feature--${escape(tone)} home-hover-chip">
                     ${item.imageUrl ? `
                         <div class="social-neo-event-feature-cover">
-                            <img src="${escape(item.imageUrl)}" alt="${escape(title)}">
+                            <img src="${escape(item.imageUrl)}" alt="${escape(title)}" decoding="async" loading="lazy">
                         </div>
                     ` : ''}
                     <div class="social-neo-event-feature-head">
@@ -237,7 +396,7 @@
                                     ${item.maxSeats ? `<span class="social-neo-pill home-hover-chip">${escape(seatSummary)}</span>` : ''}
                                 </div>
                             </div>
-                            ${eventCanManage(item) ? `
+                            ${canEditEvent ? `
                                 <div class="social-neo-event-feature-head-actions">
                                     <span class="social-neo-pill home-hover-chip social-neo-events-owner-pill">You manage this</span>
                                     <button class="lux-secondary-btn social-neo-events-edit-btn social-neo-events-edit-btn--head" type="button" data-action="event-edit-open" data-event-id="${escape(eventId)}"><i class="fas fa-pen"></i> Edit</button>
@@ -274,14 +433,16 @@
                             <strong>${escape(scopeLabel)}</strong>
                         </div>
                         <div class="social-neo-event-feature-actions">
+                            ${renderEventPinActions(item)}
+                            ${canEditEvent ? `<button class="lux-primary-btn lux-secondary-btn-sm social-neo-events-edit-btn social-neo-events-edit-btn--feature" type="button" data-action="event-edit-open" data-event-id="${escape(eventId)}"><i class="fas fa-pen"></i> Edit</button>` : ''}
                             <button class="${isInterested ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="event-rsvp" data-event-id="${escape(eventId)}" data-status="${isInterested ? 'declined' : 'interested'}">Interested · ${escape(String(interestedCount))}</button>
-                            ${item.viewerCanDelete ? `<button class="lux-secondary-btn lux-secondary-btn-sm social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(eventId)}"><i class="fas fa-trash"></i> Remove event</button>` : ''}
+                            ${canDeleteEvent ? `<button class="lux-secondary-btn lux-secondary-btn-sm social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(eventId)}"><i class="fas fa-trash"></i> Remove event</button>` : ''}
                         </div>
                     </div>
                     <div class="social-neo-event-feature-foot">
                         <div class="lux-scroll-rail social-neo-event-feature-desc-rail" data-lux-scroll-rail data-event-desc-rail="${escape(eventId)}">
-                            <div class="lux-scroll-rail__controls social-neo-event-feature-desc-controls" aria-hidden="true">
-                                <div class="lux-scroll-rail__dock" role="group" aria-label="Scroll event description">
+                            <div class="lux-scroll-rail__controls social-neo-event-feature-desc-controls" hidden aria-hidden="true">
+                                <div class="lux-scroll-rail__dock lux-scroll-rail__dock--vertical" role="group" aria-label="Scroll event description">
                                     <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="up" aria-label="Scroll description up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
                                     <span class="lux-scroll-rail__spine" aria-hidden="true"></span>
                                     <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="down" aria-label="Scroll description down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
@@ -336,9 +497,9 @@
                                 <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                     <span class="social-neo-pill home-hover-chip">${escape(text(item.scopeName || 'Published event'))}</span>
                                     <button class="lux-primary-btn social-neo-events-edit-btn social-neo-events-edit-btn--manage" type="button" data-action="event-edit-open" data-event-id="${escape(text(item.id))}"><i class="fas fa-pen"></i> Edit</button>
-                                    <button class="lux-secondary-btn social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(text(item.id))}">
+                                    ${item.viewerCanDelete ? `<button class="lux-secondary-btn social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(text(item.id))}">
                                         <i class="fas fa-trash"></i> Remove
-                                    </button>
+                                    </button>` : ''}
                                 </div>
                             </article>
                         `).join('') : `<div class="social-neo-empty social-neo-events-empty home-hover-chip">${escape(emptyCopy)}</div>`}
@@ -406,7 +567,29 @@
             studyGroups: studyGroups.length
         };
 
-        const activeSectionMarkup = eventsTab === 'university'
+        const pinnedSectionState = eventsTab === 'pinned' ? 'is-focused' : '';
+
+        const pinnedEventsMarkup = (() => {
+            if (eventsTab !== 'pinned') return '';
+            const pinModel = eventPinModel();
+            if (!pinModel) {
+                return `<div class="social-neo-empty social-neo-events-empty home-hover-chip">No pinned events yet.</div>`;
+            }
+            const sections = pinModel.partitionPinnedTab('event', allEvents);
+            return pinModel.renderPinnedSections('event', sections, (item) => renderEventFeatureCard(item, text(item.category) === 'university' || item.isOfficial ? 'university' : 'student'), 'No pinned events yet.');
+        })();
+
+        const activeSectionMarkup = eventsTab === 'pinned'
+            ? `
+                <div class="social-neo-events-hub-body social-neo-events-lane social-neo-events-lane--pinned ${pinnedSectionState}">
+                    <div class="social-neo-events-content">
+                        <div class="social-neo-events-hub-section social-neo-events-list-card home-hover-chip">
+                            ${pinnedEventsMarkup}
+                        </div>
+                    </div>
+                </div>
+            `
+            : eventsTab === 'university'
             ? `
                 <div class="social-neo-events-hub-body social-neo-events-lane social-neo-events-lane--university ${universitySectionState}">
                     <div class="social-neo-events-content">
@@ -434,15 +617,18 @@
                 : `
                     <div class="social-neo-events-hub-body social-neo-events-lane social-neo-events-lane--student ${studentSectionState}">
                         <div class="social-neo-events-content">
-                            ${renderManagedEventsCard('Your student events', manageableStudentEvents, 'You have not created any removable student events yet.')}
                             <div class="social-neo-events-hub-section social-neo-events-list-card home-hover-chip">
-                                <div class="social-neo-section-head">
+                                <div class="social-neo-section-head social-neo-section-head--events-student">
                                     <div>
                                         <strong>Student event calendar</strong>
-                                        <span>Grouped by date, with the important details visible before people click anything.</span>
+                                        <span>${studentFilter === 'mine' ? 'Events you created or co-manage.' : 'Events from other students on campus.'}</span>
+                                    </div>
+                                    <div class="social-neo-events-student-filter" role="tablist" aria-label="Student event filter">
+                                        <button class="lux-secondary-btn social-neo-events-student-filter-tab ${studentFilter === 'community' ? 'is-focused' : ''}" type="button" role="tab" data-action="events-student-filter" data-events-student-filter="community" aria-pressed="${studentFilter === 'community' ? 'true' : 'false'}">Community events</button>
+                                        <button class="lux-secondary-btn social-neo-events-student-filter-tab ${studentFilter === 'mine' ? 'is-focused' : ''}" type="button" role="tab" data-action="events-student-filter" data-events-student-filter="mine" aria-pressed="${studentFilter === 'mine' ? 'true' : 'false'}">My events</button>
                                     </div>
                                 </div>
-                                <div class="social-neo-stack">${renderEventGroups(studentEvents, 'student', 'No student events yet. Publish the first community event in this lane.')}</div>
+                                <div class="social-neo-stack">${renderEventGroups(sortEventsByStart(visibleStudentEvents), 'student', studentEventsEmptyCopy)}</div>
                             </div>
                         </div>
                     </div>
@@ -490,6 +676,11 @@
                 : 'Advanced publishing for student-led meetups, sessions, and community activity.');
         const submitLabel = isEditing ? 'Update event' : (isUniversity ? 'Publish official event' : 'Create student event');
         const submitIcon = isEditing ? 'fa-pen' : (isUniversity ? 'fa-university' : 'fa-calendar-plus');
+        const editingEvent = isEditing
+            ? (Array.isArray(runtime.social?.events) ? runtime.social.events : []).find((entry) => text(entry?.id) === text(runtime.ui?.eventEditId || dialog.eventId))
+            : null;
+        const showEditorPicker = !isEditing || eventCanManageEditors(editingEvent || {});
+        const editorInviteSection = showEditorPicker ? renderEventEditorInviteSection(runtime) : '';
         if (isUniversity && !isStaff) {
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--event-create lux-glass-dialog-card--social-glass" data-lux-transparency-exempt="1">
@@ -595,9 +786,7 @@
                             <input id="${escape(eventRecurringId)}" type="checkbox" name="eventRecurring" ${runtime.ui?.eventRecurring ? 'checked' : ''}>
                             <span>Recurring weekly</span>
                         </label>
-                        ${runtime.ui?.eventIsOnline ? `
-                            <input class="social-neo-input lux-control social-neo-input-flex-1-180" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
-                        ` : ''}
+                        <input class="social-neo-input lux-control social-neo-input-flex-1-180" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." value="${escape(text(runtime.ui?.eventOnlineLink || ''))}" ${runtime.ui?.eventIsOnline ? '' : 'hidden aria-hidden="true" tabindex="-1"'}>
                     </div>
                     <div class="social-neo-inline social-neo-events-form-actions">
                         <label class="lux-secondary-btn lux-secondary-btn-pointer">
@@ -606,6 +795,7 @@
                         </label>
                         ${runtime.ui?.eventImageFile ? `<span class="social-neo-draft-file"><i class="fas fa-image"></i> ${escape(runtime.ui.eventImageFile.name)}</span>` : (runtime.ui?.eventImageUrl ? '<span class="social-neo-draft-file"><i class="fas fa-image"></i> Current cover</span>' : '')}
                     </div>
+                    ${editorInviteSection}
                 </div>
                 <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
                     <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
@@ -678,13 +868,8 @@
             const events = Array.isArray(runtime.social?.events) ? runtime.social.events : [];
             const event = events.find((entry) => text(entry?.id) === eventId);
             if (!event) return;
-            const userId = currentUserId();
-            const inManageList = events.some((entry) => text(entry?.id) === eventId && eventCanManage(entry));
-            const canEdit = eventCanManage(event)
-                || text(event.createdById) === userId
-                || (text(event.scopeType) === 'profile' && text(event.scopeId) === userId)
-                || inManageList;
-            if (!canEdit) return;
+            const canEditEvent = Boolean(event.viewerCanEdit || event.viewerCanDelete || event.viewerIsEditor) || eventCanManage(event);
+            if (!canEditEvent) return;
             prefillEventEditDraft(event);
             const variant = (text(event.category) === 'university' || event.isOfficial) ? 'university' : 'student';
             setPanel('events');
@@ -695,6 +880,14 @@
             state().ui.eventsSubTab = 'student';
             state().ui.eventsComposerSection = '';
             return renderSocialPageNow('events-tab');
+        }
+
+        if (action === 'events-student-filter') {
+            const next = text(trigger.getAttribute('data-events-student-filter'));
+            if (next !== 'mine' && next !== 'community') return true;
+            if (text(state().ui.eventsStudentFilter || 'community') === next) return true;
+            state().ui.eventsStudentFilter = next;
+            return renderSocialPageNow('events-student-filter');
         }
 
         if (action === 'events-tab-university') {
@@ -727,6 +920,22 @@
                 patchEventRsvpButtons(eventId);
             });
         }
+
+        if (action === 'event-editor-add') {
+            const runtime = state();
+            runtime.ui.eventEditorSelectedIds = Array.isArray(runtime.ui.eventEditorSelectedIds) ? runtime.ui.eventEditorSelectedIds : [];
+            const memberId = text(trigger.getAttribute('data-user-id'));
+            if (memberId && !runtime.ui.eventEditorSelectedIds.includes(memberId)) runtime.ui.eventEditorSelectedIds.push(memberId);
+            return renderSocialPageNow('event-editor-add');
+        }
+
+        if (action === 'event-editor-remove') {
+            const runtime = state();
+            const memberId = text(trigger.getAttribute('data-user-id'));
+            runtime.ui.eventEditorSelectedIds = (Array.isArray(runtime.ui.eventEditorSelectedIds) ? runtime.ui.eventEditorSelectedIds : []).filter((item) => text(item) !== memberId);
+            return renderSocialPageNow('event-editor-remove');
+        }
+
         return false;
     }
 
@@ -746,7 +955,10 @@
                 const scopeRaw = text(form.eventScope?.value || `${text(runtime.ui?.activeScopeType || 'profile')}:${text(runtime.ui?.activeScopeId || currentUserId())}`);
                 const [scopeType, scopeId] = scopeRaw.split(':');
                 const scope = eventScopeOptions().find((item) => item.type === text(scopeType) && item.id === text(scopeId));
-                const imageUrl = runtime.ui?.eventImageFile ? await readFileAsDataUrl(runtime.ui.eventImageFile) : '';
+                const coverFile = runtime.ui?.eventImageFile
+                    ? await optimizeEventCoverFile(runtime.ui.eventImageFile)
+                    : null;
+                const imageUrl = coverFile ? await readFileAsDataUrl(coverFile) : '';
                 const payload = {
                     title: text(form.eventTitle?.value || runtime.ui?.eventTitle),
                     description: text(form.eventDescription?.value || runtime.ui?.eventDescription),
@@ -768,15 +980,25 @@
                 };
                 if (!payload.title || !payload.startsAt) throw new Error('Event title and start time are required.');
                 if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
+                const selectedEditorIds = Array.isArray(runtime.ui?.eventEditorSelectedIds)
+                    ? runtime.ui.eventEditorSelectedIds.map((item) => text(item)).filter(Boolean)
+                    : [];
+                const editingEvent = editId
+                    ? (Array.isArray(runtime.social?.events) ? runtime.social.events : []).find((entry) => text(entry?.id) === editId)
+                    : null;
                 if (editId) {
                     const updatePayload = { ...payload };
                     if (imageUrl) updatePayload.imageUrl = imageUrl;
+                    if (!editingEvent || eventCanManageEditors(editingEvent)) {
+                        updatePayload.editorIds = selectedEditorIds;
+                    }
                     await updatePortalSocialEvent(editId, updatePayload);
                     clearEventDraft();
                     closeDialog();
                     renderSocialPageNow('event-updated');
                     return;
                 }
+                payload.editorIds = selectedEditorIds;
                 payload.imageUrl = imageUrl;
                 await createPortalSocialEvent(payload);
                 clearEventDraft();
@@ -826,6 +1048,11 @@
         if (target.matches('form[data-form="create-event"] [name="eventLocation"]')) runtime.ui.eventLocation = target.value;
         if (target.matches('form[data-form="create-event"] [name="eventOnlineLink"]')) runtime.ui.eventOnlineLink = target.value;
         if (target.matches('form[data-form="create-event"] [name="eventMaxSeats"]')) runtime.ui.eventMaxSeats = target.value;
+        if (target.matches('form[data-form="create-event"] [name="eventEditorSearch"]')) {
+            runtime.ui.eventEditorSearch = target.value;
+            queueEventEditorSearchRefresh();
+            return;
+        }
 
         return true;
     }
@@ -847,11 +1074,22 @@
         if (target.matches('form[data-form="create-event"] [name="eventJoinMode"]')) runtime.ui.eventJoinMode = text(target.value || 'open') || 'open';
         if (target.matches('form[data-form="create-event"] [name="eventCategory"]')) runtime.ui.eventCategory = text(target.value || 'social') || 'social';
         if (target.matches('form[data-form="create-event"] [name="eventIsOnline"]')) {
-            runtime.ui.eventIsOnline = Boolean(target.checked);
-            renderSocialPageNow(text(activeDialog()?.type || '') === 'event-create' ? 'event-create-input' : 'event-online-toggle');
+            const isOnline = Boolean(target.checked);
+            runtime.ui.eventIsOnline = isOnline;
+            const link = target.closest('form')?.querySelector('[name="eventOnlineLink"]');
+            if (link) {
+                link.hidden = !isOnline;
+                link.setAttribute('aria-hidden', isOnline ? 'false' : 'true');
+                link.tabIndex = isOnline ? 0 : -1;
+            }
             return;
         }
         if (target.matches('form[data-form="create-event"] [name="eventRecurring"]')) runtime.ui.eventRecurring = Boolean(target.checked);
+        if (target.matches('form[data-form="create-event"] [name="eventEditorFaculty"]')) {
+            runtime.ui.eventEditorFaculty = text(target.value || 'all') || 'all';
+            renderSocialPageNow('event-editor-faculty');
+            return;
+        }
         if (target.name === 'eventImage') {
             runtime.ui.eventImageFile = target.files?.[0] || null;
             renderSocialPageNow(text(activeDialog()?.type || '') === 'event-create' ? 'event-create-input' : 'event-image');

@@ -58,6 +58,7 @@
         const normalizeComposerEntityLinks = __dep('normalizeComposerEntityLinks');
         const normalizeProjectTaskStatusId = __dep('normalizeProjectTaskStatusId');
         const openDialog = __dep('openDialog');
+        const openPortfolioViewerForUser = __dep('openPortfolioViewerForUser');
         const photographyPosts = __dep('photographyPosts');
         const portfolioEntriesForViewer = __dep('portfolioEntriesForViewer');
         const postEntityLinks = __dep('postEntityLinks');
@@ -93,16 +94,16 @@
             }
             if (type === 'portfolio') {
                 const entry = portfolioEntriesForViewer().find((item) => text(item?.id) === id);
-                const userId = text(entry?.userId || entry?.ownerUserId || id);
+                const userId = text(entry?.userId || entry?.ownerUserId || id.replace(/^portfolio-doc:/, ''));
                 if (userId === currentUserId()) {
                     setPanel('projects');
                     state().ui.portfolioPanelTab = 'mine';
                     return renderSocialPageNow('profile-portfolio-open');
                 }
-                state().ui.activePortfolioUserId = userId;
-                setPanel('projects');
-                state().ui.portfolioPanelTab = 'discover';
-                return renderSocialPageNow('portfolio-doc-open');
+                if (typeof openPortfolioViewerForUser === 'function') {
+                    return openPortfolioViewerForUser(userId);
+                }
+                return openDialog('portfolio-viewer', { userId });
             }
             if (type === 'page') {
                 state().ui.activePageProfileId = id;

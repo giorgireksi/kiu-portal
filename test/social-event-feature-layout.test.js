@@ -50,7 +50,7 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(events).toContain("trigger.closest('.social-neo-time-group')");
         expect(events).not.toMatch(/event-time-group-toggle[\s\S]{0,80}event\.preventDefault\(\)/);
 
-        expect(page).toContain('social-events.js?v=20260801-socialeventrsvp2');
+        expect(page).toContain('social-events.js?v=20260802-event-desc-rail2');
         expect(page).toContain('respondPortalSocialEventRsvp: window.respondPortalSocialEventRsvp');
         expect(page).toContain('createPortalSocialEvent: window.createPortalSocialEvent');
         expect(page).toContain('typeof window.handleSocialEventsClick === \'function\'');
@@ -68,7 +68,36 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(bare).toMatch(/\.social-neo-event-feature\s*\{[\s\S]{0,120}padding:\s*12px 14px 12px 18px/);
         expect(bare).toMatch(/\.social-neo-event-date-group\s*\{[\s\S]{0,80}padding:\s*8px 10px/);
         expect(bare).toMatch(/\.social-neo-event-feature-foot\s*\{[\s\S]{0,80}min-height:\s*0/);
-        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail\s*\{[\s\S]{0,120}max-height:\s*5\.5rem/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail\.is-scrollable[\s\S]{0,400}min-height:\s*calc\(1\.45em \* 6 \+ 16px \+ 12px\)/);
+    });
+
+    it('event description scroll rail clips long text inside the card', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail[\s\S]{0,600}overflow:\s*hidden/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail[\s\S]{0,600}minmax\(0,\s*1fr\)/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-viewport\s*\{[\s\S]{0,300}max-height:\s*calc\(1\.45em \* 6 \+ 16px\)/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail\.is-scrollable \.social-neo-event-feature-desc-viewport[\s\S]{0,400}min-height:\s*calc\(1\.45em \* 6 \+ 16px\)/);
+        expect(bare).not.toMatch(/:not\(\.is-scrollable\)[\s\S]{0,400}\.social-neo-event-feature-desc-viewport[\s\S]{0,200}max-height:\s*none/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-viewport[\s\S]{0,400}overflow-y:\s*auto/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc\s*\{[\s\S]{0,200}max-width:\s*100%/);
+        expect(bare).toMatch(/\.social-neo-event-feature\s*\{[\s\S]{0,260}overflow:\s*visible/);
+    });
+
+    it('event description scroll rail uses vertical stacked chip controls', () => {
+        const events = readSource('assets/js/pages/social-events.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const page = readSource('assets/js/pages/social-page.js');
+
+        expect(events).toContain('lux-scroll-rail__dock--vertical');
+        expect(events).toContain('hidden aria-hidden="true"');
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-controls[\s\S]{0,400}\.lux-scroll-rail__dock--vertical\s*\{[\s\S]{0,200}flex-direction:\s*column/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-controls[\s\S]{0,400}\.lux-scroll-rail__dock--vertical\s*\{[\s\S]{0,300}flex-shrink:\s*0/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-controls[\s\S]{0,400}justify-content:\s*center/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail[\s\S]{0,600}grid-template-columns:\s*44px minmax\(0,\s*1fr\)/);
+        expect(bare).toMatch(/\.social-neo-event-feature-desc-rail[\s\S]{0,1200}:not\(\.is-scrollable\)[\s\S]{0,200}min-height:\s*0/);
+        expect(bare).toMatch(/\.is-scrollable \.lux-scroll-rail__controls:not\(\[hidden\]\)\s*\{[\s\S]{0,120}display:\s*flex/);
+        expect(readSource('assets/js/shared/lux-scroll-rail.js')).toMatch(/observer\.observe\(list\);[\s\S]{0,120}firstElementChild/);
+        expect(page).toContain('social-events.js?v=20260802-event-desc-rail2');
     });
 
     it('event shells use global home-hover-chip for lift motion', () => {
@@ -255,6 +284,25 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         // :is() must not include lux-card:not(...) or home-hover-chip inherits inflated specificity
         expect(fouc).not.toMatch(/:is\(\s*\n\s*\.home-hover-chip,\s*\n\s*\.lux-card:not\(\.orders-inbox-hero\)/);
         expect(fouc).toContain('body.lux-unified-shell .lux-card:not(.orders-inbox-workspace),');
+    });
+
+    it('student events calendar uses my/community filter toggle without a separate manage panel', () => {
+        const events = readSource('assets/js/pages/social-events.js');
+        const fingerprint = readSource('assets/js/pages/social-fingerprint-model.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(events).not.toContain("'Your student events'");
+        expect(events).not.toContain('sortEventsWithManageableFirst');
+        expect(events).toContain('eventsStudentFilter');
+        expect(events).toContain('social-neo-events-student-filter');
+        expect(events).toContain("data-events-student-filter=\"community\"");
+        expect(events).toContain("data-events-student-filter=\"mine\"");
+        expect(events).toContain('myStudentEvents = studentEvents.filter((entry) => eventCanManage(entry))');
+        expect(events).toContain('communityStudentEvents = studentEvents.filter((entry) => !eventCanManage(entry))');
+        expect(events).toContain('renderEventGroups(sortEventsByStart(visibleStudentEvents)');
+        expect(events).toContain("renderSocialPageNow('events-student-filter')");
+        expect(events).toContain("renderManagedEventsCard('Your official events'");
+        expect(fingerprint).toContain('eventsStudentFilter');
+        expect(bare).toContain('.social-neo-events-student-filter');
     });
 
     it('events hero light mode uses darker copy tokens and avoids corner clipping', () => {

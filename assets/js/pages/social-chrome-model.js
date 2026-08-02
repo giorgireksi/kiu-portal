@@ -43,7 +43,7 @@
 
     function escape(value) {
         const hook = hooks().escape;
-        if (typeof hook === 'function') return hook(value);
+        if (typeof hook === 'function' && hook !== escape) return hook(value);
         try {
             if (typeof window.escapePortalSocialHtml === 'function') return window.escapePortalSocialHtml(value);
         } catch (error) {}
@@ -181,15 +181,18 @@
                 if (resolved) return resolved;
             }
         } catch (error) {}
+        const preview = text(file?.previewDataUrl || file?.dataUrl);
         const storageKey = text(file?.storageKey || file?.id || '');
+        const storageMissing = file?.storageMissing === true;
+        if (storageMissing) return preview;
         const backend = text(file?.storageBackend).toLowerCase();
-        if (storageKey && typeof window.getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !text(file?.dataUrl))) {
+        if (storageKey && typeof window.getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !preview)) {
             const type = text(file?.type).toLowerCase();
             const name = text(file?.name).toLowerCase();
             const forDisplay = type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name);
             return window.getPortalStoredFileUrl(storageKey, { inline: forDisplay, forDisplay });
         }
-        return text(file?.dataUrl);
+        return preview;
     }
 
     function isImage(file) {
@@ -252,9 +255,20 @@
     }
 
     const SOCIAL_BROWSE_FACULTY_CODES = ['CS', 'ECON', 'LAW', 'MED', 'ARTS'];
+    const SOCIAL_BROWSE_FACULTY_ALL = 'all';
 
     function socialBrowseFacultyCodes() {
         return SOCIAL_BROWSE_FACULTY_CODES.slice();
+    }
+
+    function socialBrowseFacultyAllLabel() {
+        return 'All faculties';
+    }
+
+    function socialBrowseFacultyOptionLabel(code) {
+        const raw = text(code);
+        if (!raw || raw === SOCIAL_BROWSE_FACULTY_ALL || raw.toUpperCase() === 'ALL') return socialBrowseFacultyAllLabel();
+        return facultyLabel(raw);
     }
 
     function normalizeSocialFacultyCode(value, fallback = '') {
@@ -277,7 +291,9 @@
     function socialDefaultCreateFaculty(runtime) {
         const browse = socialBrowseFacultyValue(runtime);
         if (browse && browse !== 'all') return browse;
-        return currentFacultyCode();
+        const actorFaculty = normalizeSocialFacultyCode(currentFacultyCode(), '');
+        if (actorFaculty && actorFaculty !== 'all') return actorFaculty;
+        return socialBrowseFacultyCodes()[0] || 'ECON';
     }
 
     function socialEntityFacultyCodes(entity) {
@@ -319,7 +335,7 @@
         const label = text(opts.label || 'Faculty') || 'Faculty';
         const options = [];
         if (includeAll) {
-            options.push(`<option value="all"${selected === 'all' ? ' selected' : ''}>All faculties</option>`);
+            options.push(`<option value="${SOCIAL_BROWSE_FACULTY_ALL}" data-lux-picker-subtitle="Show content from every faculty"${selected === SOCIAL_BROWSE_FACULTY_ALL ? ' selected' : ''}>${escape(socialBrowseFacultyAllLabel())}</option>`);
         }
         socialBrowseFacultyCodes().forEach((code) => {
             options.push(`<option value="${escape(code)}"${selected === code ? ' selected' : ''}>${escape(facultyLabel(code))}</option>`);
@@ -467,6 +483,9 @@
         ui.eventRecurring = false;
         ui.eventImageFile = null;
         ui.eventImageUrl = '';
+        ui.eventEditorSearch = '';
+        ui.eventEditorFaculty = 'all';
+        ui.eventEditorSelectedIds = [];
     }
 
     function prefillEventEditDraft(event = {}) {
@@ -486,14 +505,29 @@
         ui.eventScope = `${text(event.scopeType || 'profile')}:${text(event.scopeId || currentUserId())}`;
         ui.eventImageFile = null;
         ui.eventImageUrl = text(event.imageUrl || '');
+        ui.eventEditorSearch = '';
+        ui.eventEditorFaculty = 'all';
+        ui.eventEditorSelectedIds = Array.isArray(event.editorIds)
+            ? event.editorIds.map((item) => text(item)).filter(Boolean)
+            : [];
+    }
+
+    function eventCanManageEditors(item = {}) {
+        const userId = currentUserId();
+        if (!userId || !item) return false;
+        if (item.viewerCanDelete) return true;
+        if (text(item.createdById) === userId) return true;
+        return false;
     }
 
     function eventCanManage(item = {}) {
+        if (!item) return false;
+        if (item.viewerCanEdit || item.viewerCanDelete || item.viewerIsEditor) return true;
         const userId = currentUserId();
-        if (!userId || !item) return false;
-        if (item.viewerCanEdit || item.viewerCanDelete) return true;
+        if (!userId) return false;
         if (text(item.createdById) === userId) return true;
         if (text(item.scopeType) === 'profile' && text(item.scopeId) === userId) return true;
+        if (Array.isArray(item.editorIds) && item.editorIds.some((editorId) => text(editorId) === userId)) return true;
         return false;
     }
 
@@ -574,6 +608,8 @@
         getSafeSocialExternalUrl,
         roleLabel,
         facultyLabel,
+        socialBrowseFacultyAllLabel,
+        socialBrowseFacultyOptionLabel,
         socialBrowseFacultyCodes,
         socialBrowseFacultyValue,
         socialDefaultCreateFaculty,
@@ -602,6 +638,7 @@
         resetLostFoundDraft,
         clearEventDraft,
         prefillEventEditDraft,
+        eventCanManageEditors,
         eventCanManage,
         buildContextTabItems,
         renderContextTabsMarkup,

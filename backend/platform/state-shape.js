@@ -29,7 +29,16 @@ function createEmptySocialState() {
         surveyQuestions: [],
         surveyResponses: [],
         researchPublications: [],
-        migrationVersion: 7
+        moduleCuratorPins: {
+            portfolio: [],
+            research: [],
+            event: [],
+            survey: [],
+            photo: [],
+            lostFound: []
+        },
+        userPins: {},
+        migrationVersion: 8
     };
 }
 

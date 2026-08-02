@@ -126,8 +126,21 @@
 
     function activeResearchTab() {
         const tab = text(state()?.ui?.researchTab || 'faculty').toLowerCase();
-        if (tab === 'student' || tab === 'mine') return tab;
+        if (tab === 'student' || tab === 'mine' || tab === 'pinned') return tab;
         return 'faculty';
+    }
+
+    function researchPinModel() {
+        return window.KiuSocialPinModel || null;
+    }
+
+    function renderResearchPinActions(item) {
+        const pinModel = researchPinModel();
+        if (!pinModel) return '';
+        return pinModel.renderModulePinActions('research', item.id, {
+            canCuratorPin: pinModel.viewerCanCuratorPin('research', item),
+            showPersonal: false
+        });
     }
 
     function researchById(id) {
@@ -149,6 +162,12 @@
     }
 
     function filterPublicationsForTab(tab) {
+        if (tab === 'pinned') {
+            const pinModel = researchPinModel();
+            const pool = publications().filter((item) => text(item.status) === 'published' || text(item.authorUserId) === text(currentUserId?.() || ''));
+            if (!pinModel) return [];
+            return pinModel.partitionPinnedTab('research', pool).all;
+        }
         const ui = state()?.ui || {};
         const search = text(ui.researchSearch || '').toLowerCase();
         const format = text(ui.researchFormat || 'all').toLowerCase();
@@ -162,7 +181,7 @@
         })();
         const userId = text(currentUserId?.() || '');
 
-        return publications().filter((item) => {
+        const filtered = publications().filter((item) => {
             if (tab === 'mine') {
                 if (!userId) return false;
                 return text(item.authorUserId) === userId
@@ -192,6 +211,8 @@
             ].map((part) => text(part).toLowerCase()).join(' ');
             return hay.includes(search);
         });
+        const pinModel = researchPinModel();
+        return pinModel ? pinModel.sortWithCuratorPins('research', filtered) : filtered;
     }
 
     function laneLabel(lane) {
@@ -281,12 +302,15 @@
         const tabs = [
             { tab: 'faculty', label: 'Faculty & Staff', helper: 'Scholarship stream', icon: 'fa-chalkboard-user', count: facultyCount },
             { tab: 'student', label: 'Student Research', helper: 'Separate student lane', icon: 'fa-graduation-cap', count: studentCount },
-            { tab: 'mine', label: 'Mine', helper: 'Drafts & published', icon: 'fa-user', count: mineCount }
+            { tab: 'mine', label: 'Mine', helper: 'Drafts & published', icon: 'fa-user', count: mineCount },
+            { tab: 'pinned', label: 'Pinned', helper: 'Highlights and saves', icon: 'fa-thumbtack', count: filterPublicationsForTab('pinned').length }
         ];
         const kicker = tab === 'student'
             ? 'Student papers and course research — kept separate from faculty.'
             : tab === 'mine'
                 ? 'Your drafts and published research deposits.'
+                : tab === 'pinned'
+                    ? 'Curator highlights and your saved research deposits.'
                 : 'Faculty and staff scholarship deposits for the campus.';
 
         return `
@@ -357,26 +381,32 @@
         const files = itemFiles(item);
         const status = text(item.status) === 'draft' ? '<span class="lux-status-pill home-hover-chip is-warning">Draft</span>' : '';
         const fileHint = files[0]?.fileName || '';
+        const pinModel = researchPinModel();
+        const flagged = pinModel ? pinModel.applyPinFlags('research', [item])[0] : item;
         return `
-            <button class="social-neo-card social-neo-research-card home-hover-chip" type="button"
-                data-action="research-reader-open" data-research-id="${escape(item.id)}">
+            <article class="social-neo-card social-neo-research-card home-hover-chip">
                 <div class="social-neo-research-card-top">
                     <span class="lux-status-pill home-hover-chip ${kind === 'pdf' ? 'is-warning' : kind === 'slides' ? 'is-info' : 'is-muted'}">${escape(fileKindLabel(kind))}</span>
                     ${status}
                     <span class="lux-status-pill home-hover-chip is-muted">${escape(laneLabel(item.authorLane))}</span>
+                    ${flagged.isCuratorPinned ? '<span class="lux-status-pill home-hover-chip"><i class="fas fa-thumbtack"></i> Highlighted</span>' : ''}
                 </div>
-                <strong class="lux-card-copy social-neo-research-card-title">${escape(item.title || 'Untitled')}</strong>
-                <span class="lux-panel-copy social-neo-research-card-meta">
-                    ${escape(item.authorName || 'Author')}
-                    ${item.facultyCode ? ` · ${escape(item.facultyCode)}` : ''}
-                </span>
-                ${item.abstract ? `<p class="lux-panel-copy social-neo-research-card-abstract">${escape(item.abstract)}</p>` : ''}
-                ${fileHint ? `<span class="lux-panel-copy social-neo-research-card-file">${escape(fileHint)}${files.length > 1 ? ` · +${files.length - 1}` : ''}</span>` : ''}
-                <span class="lux-panel-copy social-neo-research-card-foot">
-                    ${escape(readingMeta(item))}
-                    ${item.publishedAt || item.createdAt ? ` · ${escape(dateLabel(item.publishedAt || item.createdAt))}` : ''}
-                </span>
-            </button>
+                <button class="social-neo-research-card-open" type="button"
+                    data-action="research-reader-open" data-research-id="${escape(item.id)}">
+                    <strong class="lux-card-copy social-neo-research-card-title">${escape(item.title || 'Untitled')}</strong>
+                    <span class="lux-panel-copy social-neo-research-card-meta">
+                        ${escape(item.authorName || 'Author')}
+                        ${item.facultyCode ? ` · ${escape(item.facultyCode)}` : ''}
+                    </span>
+                    ${item.abstract ? `<p class="lux-panel-copy social-neo-research-card-abstract">${escape(item.abstract)}</p>` : ''}
+                    ${fileHint ? `<span class="lux-panel-copy social-neo-research-card-file">${escape(fileHint)}${files.length > 1 ? ` · +${files.length - 1}` : ''}</span>` : ''}
+                    <span class="lux-panel-copy social-neo-research-card-foot">
+                        ${escape(readingMeta(item))}
+                        ${item.publishedAt || item.createdAt ? ` · ${escape(dateLabel(item.publishedAt || item.createdAt))}` : ''}
+                    </span>
+                </button>
+                <div class="social-neo-research-card-pin">${renderResearchPinActions(item)}</div>
+            </article>
         `;
     }
 
@@ -495,6 +525,7 @@
                         ${item.publishedAt || item.createdAt ? ` · ${escape(dateLabel(item.publishedAt || item.createdAt))}` : ''}
                     </p>
                     <div class="social-neo-research-reader-actions">
+                        ${renderResearchPinActions(item)}
                         <button class="lux-secondary-btn" type="button" data-action="research-save" data-research-id="${escape(item.id)}">
                             <i class="fas fa-bookmark"></i> ${item.isSaved ? 'Saved' : 'Save'}
                         </button>
@@ -694,14 +725,27 @@
             state().ui.researchReaderId = '';
         }
         const tab = activeResearchTab();
-        const items = filterPublicationsForTab(tab);
+        let listItems = [];
+        let pinnedSections = null;
+        if (tab === 'pinned') {
+            const pinModel = researchPinModel();
+            const pool = publications().filter((item) => text(item.status) === 'published' || text(item.authorUserId) === text(currentUserId?.() || ''));
+            if (pinModel) {
+                pinnedSections = pinModel.partitionPinnedTab('research', pool);
+                listItems = pinnedSections.all;
+            }
+        } else {
+            listItems = filterPublicationsForTab(tab);
+        }
         return `
             <div class="social-neo-stack social-neo-research-shell">
-                ${renderResearchHero(items)}
+                ${renderResearchHero(listItems)}
                 <section class="social-neo-card social-neo-research-catalog home-hover-chip">
-                    ${renderResearchFilters()}
-                    ${items.length
-                        ? `<div class="social-neo-research-grid">${items.map(renderResearchCard).join('')}</div>`
+                    ${tab === 'pinned' ? '' : renderResearchFilters()}
+                    ${listItems.length
+                        ? (tab === 'pinned' && pinnedSections && researchPinModel()
+                            ? researchPinModel().renderPinnedSections('research', pinnedSections, (entry) => renderResearchCard(entry), 'No pinned research yet.')
+                            : `<div class="social-neo-research-grid">${listItems.map(renderResearchCard).join('')}</div>`)
                         : `<div class="lux-empty-state social-neo-research-empty">
                                 <i class="fas fa-book-open" aria-hidden="true"></i>
                                 <strong class="lux-empty-state__title">No deposits in this lane</strong>
@@ -727,7 +771,7 @@
 
         if (action === 'panel-research') {
             const tab = text(trigger?.getAttribute('data-research-tab') || '');
-            if (tab === 'faculty' || tab === 'student' || tab === 'mine') {
+            if (tab === 'faculty' || tab === 'student' || tab === 'mine' || tab === 'pinned') {
                 runtime.ui.researchTab = tab;
             }
             runtime.ui.researchReaderId = '';

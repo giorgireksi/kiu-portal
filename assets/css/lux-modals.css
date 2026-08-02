@@ -2645,11 +2645,32 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(
   min-width: 0;
 }
 #social-neo-overlay-portal .social-neo-delete-confirm-preview {
+  display: grid;
+  gap: 10px;
   margin: 0 0 18px;
   padding: 14px 16px;
   border-radius: 14px;
   background: color-mix(in srgb, var(--lux-text) 4%, transparent);
   border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
+}
+#social-neo-overlay-portal .social-neo-delete-confirm .lux-glass-dialog-preview-danger {
+  margin: 0 0 14px;
+  border-color: color-mix(in srgb, #f87171 42%, var(--lux-panel-border-soft, var(--lux-border)));
+  background: color-mix(in srgb, #f87171 10%, var(--lux-panel-modal-section, transparent));
+  color: var(--lux-text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+#social-neo-overlay-portal .social-neo-delete-confirm .lux-glass-dialog-checkbox-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+#social-neo-overlay-portal .social-neo-delete-confirm .lux-glass-dialog-checkbox-copy {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--lux-text-muted, color-mix(in srgb, var(--lux-text) 72%, transparent));
 }
 #social-neo-overlay-portal .social-neo-delete-confirm-author {
   display: flex;
@@ -3439,7 +3460,8 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   max-height: min(90vh, 960px);
 }
 
-#social-neo-overlay-portal .lux-glass-dialog-card--photography-upload {
+#social-neo-overlay-portal .lux-glass-dialog-card--photography-upload,
+#social-neo-overlay-portal .lux-glass-dialog-card--photography-edit {
   width: min(520px, calc(100vw - 32px));
   max-width: 520px;
 }
@@ -3969,6 +3991,27 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
 #social-neo-overlay-portal .lux-glass-dialog-card--compact {
   width: min(560px, calc(100vw - 32px));
   max-width: 560px;
+}
+
+#social-neo-overlay-portal .lux-glass-dialog-preview.social-neo-page-about-dialog-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 18px 12px;
+  align-self: stretch;
+  max-height: min(50vh, 420px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#social-neo-overlay-portal .social-neo-page-about-dialog-copy {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--lux-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* Feed owned action dialogs: body fields between head and footer actions. */

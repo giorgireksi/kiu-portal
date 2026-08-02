@@ -191,7 +191,7 @@
                         <label class="lux-glass-dialog-field lux-glass-dialog-invite-faculty-field" for="${escape(ctx.projectInviteFacultyId)}">
                             <span class="social-neo-label">Faculty</span>
                             <select class="social-neo-select lux-control" id="${escape(ctx.projectInviteFacultyId)}" name="projectInviteFaculty" data-lux-picker>
-                                ${ctx.facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${ctx.facultyFilter === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
+                                ${ctx.facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${ctx.facultyFilter === faculty ? 'selected' : ''}>${escape((window.KiuSocialChromeModel || {}).socialBrowseFacultyOptionLabel?.(faculty) || facultyLabel(faculty))}</option>`).join('')}
                             </select>
                         </label>
                     </div>

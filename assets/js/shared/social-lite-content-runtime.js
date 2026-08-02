@@ -183,6 +183,7 @@ async function createPage(input = {}) {
             actionUrl: text(input.actionUrl || ''),
             avatarImage: text(input.avatarImage || ''),
             coverImage: text(input.coverImage || ''),
+            facultyCode: text(input.facultyCode || input.faculty || ''),
             official: Boolean(input.official),
             verified: Boolean(input.verified)
         })
@@ -590,15 +591,22 @@ async function toggleFollow(targetType, targetId, options = {}) {
     return payload;
 }
 
-async function updatePost(postId, body) {
+async function updatePost(postId, body, options = {}) {
     const actorId = currentUserId();
     if (!actorId || !text(postId)) throw new Error('Post could not be updated.');
+    const requestBody = {
+        actorId,
+        body: text(body)
+    };
+    const opts = options && typeof options === 'object' ? options : {};
+    if (opts.photoMeta && typeof opts.photoMeta === 'object') {
+        requestBody.photoMeta = opts.photoMeta;
+    }
+    const facultyCode = text(opts.facultyCode || '');
+    if (facultyCode) requestBody.facultyCode = facultyCode;
     const payload = await portalRequest(`/api/social/posts/${encodeURIComponent(text(postId))}`, {
         method: 'PATCH',
-        body: JSON.stringify({
-            actorId,
-            body: text(body)
-        })
+        body: JSON.stringify(requestBody)
     });
     await Promise.all([loadSocialState(true), refreshFeed(true)]);
     setFlash('Post updated.', 'success', { skipRender: true });
@@ -788,6 +796,33 @@ async function pinSocialPost(postId) {
     return payload?.post || null;
 }
 
+async function toggleModulePin(module, entityId, kind = 'personal') {
+    const actorId = currentUserId();
+    const normalizedModule = text(module);
+    const normalizedEntityId = text(entityId);
+    const normalizedKind = text(kind).toLowerCase() === 'curator' ? 'curator' : 'personal';
+    if (!actorId || !normalizedModule || !normalizedEntityId) throw new Error('Pin state could not be updated.');
+    if (normalizedModule === 'photo' && normalizedKind === 'personal') {
+        const toggleSaved = typeof window.toggleSavedPost === 'function' ? window.toggleSavedPost : null;
+        if (!toggleSaved) throw new Error('Pin state could not be updated.');
+        await toggleSaved(normalizedEntityId);
+        setFlash('Pinned.', 'success', { skipRender: true });
+        return { module: normalizedModule, entityId: normalizedEntityId, kind: normalizedKind, pinned: true };
+    }
+    const payload = await portalRequest('/api/social/pins/toggle', {
+        method: 'POST',
+        body: JSON.stringify({
+            actorId,
+            module: normalizedModule,
+            entityId: normalizedEntityId,
+            kind: normalizedKind
+        })
+    });
+    await Promise.all([loadSocialState(true), refreshFeed(true)]);
+    setFlash(payload?.pinned ? 'Pinned.' : 'Unpinned.', 'success', { skipRender: true });
+    return payload;
+}
+
 async function createEvent(input = {}) {
     const actorId = currentUserId();
     if (!actorId) throw new Error('Session required.');
@@ -811,7 +846,9 @@ async function createEvent(input = {}) {
             isOfficial: Boolean(input.isOfficial),
             scopeType: text(input.scopeType || 'profile') || 'profile',
             scopeId: text(input.scopeId || actorId) || actorId,
-            projectId: text(input.projectId || '')
+            projectId: text(input.projectId || ''),
+            facultyCode: text(input.facultyCode || ''),
+            editorIds: Array.isArray(input.editorIds) ? input.editorIds.map((item) => text(item)).filter(Boolean) : []
         })
     });
     await loadSocialState(true);
@@ -837,8 +874,12 @@ async function updateEvent(eventId, input = {}) {
         isRecurring: Boolean(input.isRecurring),
         isOfficial: Boolean(input.isOfficial),
         scopeType: text(input.scopeType || 'profile') || 'profile',
-        scopeId: text(input.scopeId || actorId) || actorId
+        scopeId: text(input.scopeId || actorId) || actorId,
+        facultyCode: text(input.facultyCode || '')
     };
+    if (Array.isArray(input.editorIds)) {
+        body.editorIds = input.editorIds.map((item) => text(item)).filter(Boolean);
+    }
     if (text(input.imageUrl)) body.imageUrl = text(input.imageUrl);
     const payload = await portalRequest(`/api/social/events/${encodeURIComponent(text(eventId))}`, {
         method: 'PATCH',
@@ -1339,6 +1380,7 @@ async function leaveGroupCall(chatId) {
             removeComment,
             resolveSocialReport,
             pinSocialPost,
+            toggleModulePin,
             createEvent,
             updateEvent,
             createSurvey,

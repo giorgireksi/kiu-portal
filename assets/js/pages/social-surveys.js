@@ -137,7 +137,8 @@
             { tab: 'available', label: 'Available', icon: 'fa-inbox', helper: 'Surveys you can take now' },
             { tab: 'my-responses', label: 'My responses', icon: 'fa-check-double', helper: 'What you already answered' },
             ...(showManaged ? [{ tab: 'managed', label: 'Manage', icon: 'fa-sliders', helper: 'Surveys you created' }] : []),
-            { tab: 'closed', label: 'Closed', icon: 'fa-archive', helper: 'Completed surveys' }
+            { tab: 'closed', label: 'Closed', icon: 'fa-archive', helper: 'Completed surveys' },
+            { tab: 'pinned', label: 'Pinned', icon: 'fa-thumbtack', helper: 'Highlighted and saved surveys' }
         ];
         const laneCopy = isOfficialLane
             ? { kicker: 'Official feedback', title: 'University services, policy, and academic experience', text: 'Take official campus surveys published by staff and track published results.' }
@@ -575,11 +576,30 @@
 
     window.renderSurveyResultsDialog = renderSurveyResultsDialog;
 
+    const renderSurveyCardDescRail = (surveyId, body) => `
+        <div class="lux-scroll-rail social-neo-survey-card-desc-rail" data-lux-scroll-rail data-survey-desc-rail="${escape(surveyId)}">
+            <div class="lux-scroll-rail__controls social-neo-survey-card-desc-controls" hidden aria-hidden="true">
+                <div class="lux-scroll-rail__dock lux-scroll-rail__dock--vertical" role="group" aria-label="Survey description">
+                    <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="up" aria-label="Scroll description up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
+                    <span class="lux-scroll-rail__spine" aria-hidden="true"></span>
+                    <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="down" aria-label="Scroll description down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                </div>
+            </div>
+            <div class="lux-scrollbar lux-scroll-rail__viewport social-neo-survey-card-desc-viewport" aria-label="Survey description">
+                <div class="social-neo-muted social-neo-survey-card-desc">${escape(body)}</div>
+            </div>
+        </div>
+    `;
+
     function renderSurveyCard(survey) {
         const status = surveyStatusLabel(survey);
         const canTake = Boolean(survey.viewerCanRespond);
         const hasResponded = Boolean(survey.viewerHasResponded);
         const canViewResults = Boolean(survey.viewerCanViewResults);
+        const pinModel = window.KiuSocialPinModel;
+        const pinActions = pinModel ? pinModel.renderModulePinActions('survey', survey.id, {
+            canCuratorPin: pinModel.viewerCanCuratorPin('survey', survey)
+        }) : '';
         return `
             <article class="social-neo-card social-neo-entity-card social-neo-survey-card home-hover-chip" data-survey-id="${escape(text(survey.id))}">
                 <div class="social-neo-inline social-neo-inline-between-start-wrap social-neo-survey-card-head">
@@ -597,13 +617,14 @@
                         ${survey.allowAnonymous ? '<span class="social-neo-pill home-hover-chip"><i class="fas fa-user-secret"></i> Anonymous</span>' : ''}
                     </div>
                 </div>
-                ${text(survey.description) ? `<div class="social-neo-muted social-neo-survey-card-desc">${escape(text(survey.description))}</div>` : ''}
+                ${text(survey.description) ? renderSurveyCardDescRail(text(survey.id), text(survey.description)) : ''}
                 <div class="social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-survey-card-actions">
                     <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                         ${canTake ? `<button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="survey-take-open" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-play"></i> Take survey</button>` : ''}
                         ${hasResponded && !canTake ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" disabled><i class="fas fa-check"></i> Completed</button>` : ''}
                     </div>
                     <div class="social-neo-inline social-neo-inline-gap-8-wrap">
+                        ${pinActions}
                         ${canViewResults ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-results-open" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-chart-column"></i> Results</button>` : ''}
                         ${survey.viewerCanManage ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-export" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-file-export"></i> Export</button>` : ''}
                         ${survey.viewerCanManage && text(survey.status) === 'published' ? `<button class="lux-secondary-btn lux-secondary-btn-sm" type="button" data-action="survey-close" data-survey-id="${escape(text(survey.id))}"><i class="fas fa-lock"></i> Close</button>` : ''}
@@ -1044,7 +1065,7 @@
         const searchValue = text(runtime.ui?.surveysSearch || '');
         const isOfficialLane = activeLane === 'official';
         const canCreate = !isOfficialLane || canPublishOfficialSurveys();
-        const allForTab = surveysForTab(activeTab);
+        const pinModel = window.KiuSocialPinModel;
         const chrome = window.KiuSocialChromeModel || {};
         const browseFaculty = typeof chrome.socialBrowseFacultyValue === 'function'
             ? chrome.socialBrowseFacultyValue(runtime)
@@ -1052,7 +1073,19 @@
         const matchesBrowse = typeof chrome.socialMatchesBrowseFaculty === 'function'
             ? chrome.socialMatchesBrowseFaculty
             : () => true;
-        const surveys = allForTab.filter((survey) => {
+        const lanePool = (Array.isArray(runtime.social?.surveys) ? runtime.social.surveys : [])
+            .filter((survey) => surveyMatchesLane(survey, activeLane))
+            .filter((survey) => {
+                if (!matchesBrowse(survey, browseFaculty)) return false;
+                const isOfficial = Boolean(survey?.isOfficial);
+                return isOfficialLane === isOfficial;
+            })
+            .filter((survey) => {
+                if (!searchValue) return true;
+                const hay = `${text(survey?.title)} ${text(survey?.description)} ${text(survey?.createdByName)} ${surveyAudienceLabel(survey)}`.toLowerCase();
+                return hay.includes(searchValue.toLowerCase());
+            });
+        const allForTab = activeTab === 'pinned' ? lanePool : surveysForTab(activeTab).filter((survey) => {
             if (!matchesBrowse(survey, browseFaculty)) return false;
             const isOfficial = Boolean(survey?.isOfficial);
             if (isOfficialLane !== isOfficial) return false;
@@ -1060,6 +1093,14 @@
             const hay = `${text(survey?.title)} ${text(survey?.description)} ${text(survey?.createdByName)} ${surveyAudienceLabel(survey)}`.toLowerCase();
             return hay.includes(searchValue.toLowerCase());
         });
+        let surveys = allForTab;
+        let pinnedSections = null;
+        if (activeTab === 'pinned' && pinModel) {
+            pinnedSections = pinModel.partitionPinnedTab('survey', lanePool);
+            surveys = pinnedSections.all;
+        } else if (pinModel) {
+            surveys = pinModel.sortWithCuratorPins('survey', surveys);
+        }
         const openCount = allForTab.filter((survey) => text(survey?.status) === 'published' && survey.viewerCanRespond).length;
         const respondedCount = allForTab.filter((survey) => survey.viewerHasResponded).length;
         const managedCount = allForTab.filter((survey) => survey.viewerCanManage).length;
@@ -1085,9 +1126,14 @@
             if (activeTab === 'my-responses') {
                 return 'You have not answered any student surveys yet.';
             }
+            if (activeTab === 'pinned') {
+                return 'No pinned surveys yet. Highlight campus polls or pin surveys for yourself.';
+            }
             return 'Create a survey or switch tabs to see other student polls.';
         })();
-        const listingsBody = `
+        const listingsBody = activeTab === 'pinned' && pinnedSections && pinModel
+            ? pinModel.renderPinnedSections('survey', pinnedSections, (survey) => renderSurveyCard(survey), 'No pinned surveys yet.')
+            : `
             ${surveys.length ? surveys.map((survey) => renderSurveyCard(survey)).join('') : `
                 <div class="social-neo-empty-hero social-neo-surveys-empty">
                     <i class="fas fa-clipboard-list"></i>

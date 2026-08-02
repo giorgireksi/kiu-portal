@@ -96,6 +96,113 @@
         }).join('');
     }
 
+    function portfolioFileUrl(file) {
+        if (!file || typeof file !== 'object') return '';
+        const preview = text(file.previewDataUrl || file.dataUrl);
+        const storageMissing = file.storageMissing === true;
+        if (storageMissing) return preview;
+        const storageKey = text(file.storageKey || file.id || '');
+        const storageMissing = file.storageMissing === true;
+        if (storageMissing) return preview;
+        const backend = text(file.storageBackend).toLowerCase();
+        if (storageKey && typeof window.getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !preview)) {
+            return window.getPortalStoredFileUrl(storageKey, { inline: false, forDisplay: false });
+        }
+        return preview;
+    }
+
+    function safeExternalHref(url) {
+        const value = text(url);
+        return /^https?:\/\//i.test(value) ? value : '';
+    }
+
+    function renderResumeViewerBlock(resume) {
+        const name = text(resume?.name || 'resume.pdf') || 'resume.pdf';
+        const url = portfolioFileUrl(resume);
+        if (!url) return '';
+        return `
+            <section class="portfolio-basics-card sns-portfolio-editor-panel">
+                <div class="social-neo-section-head">
+                    <div>
+                        <strong>Resume</strong>
+                        <span>Download or open the uploaded resume PDF.</span>
+                    </div>
+                </div>
+                <div class="portfolio-entry-grid">
+                    <div class="portfolio-entry-span-2 portfolio-resume-status">
+                        <a class="lux-secondary-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><i class="fas fa-file-pdf"></i> ${escapeHtml(name)}</a>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderExtrasViewerList(extras) {
+        const items = Array.isArray(extras) ? extras : [];
+        if (!items.length) {
+            return `<div class="portfolio-section-empty">No additional subjects, projects, or links shared.</div>`;
+        }
+        return items.map((extra) => {
+            const kind = text(extra.kind || 'note') || 'note';
+            const title = text(extra.title) || extraKindLabel(kind);
+            const detail = text(extra.detail);
+            const link = safeExternalHref(extra.url);
+            return `
+                <article class="portfolio-extra-card portfolio-extra-card--readonly">
+                    <div class="portfolio-entry-grid">
+                        <div><span class="social-neo-muted">${escapeHtml(extraKindLabel(kind))}</span><strong class="portfolio-viewer-extra-title">${escapeHtml(title)}</strong></div>
+                        ${detail ? `<p class="portfolio-viewer-extra-detail portfolio-entry-span-2">${escapeHtml(detail)}</p>` : ''}
+                        ${link ? `<p class="portfolio-entry-span-2"><a class="social-portfolio-link" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link)} <i class="fas fa-arrow-up-right-from-square"></i></a></p>` : ''}
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function renderViewer(portfolio, options = {}) {
+        const doc = portfolio && typeof portfolio === 'object' ? portfolio : {};
+        const basics = doc.basics || {};
+        const extras = Array.isArray(doc.extras) ? doc.extras : [];
+        const linkValue = basicsLinkUrl(basics.links);
+        const safeLink = safeExternalHref(linkValue);
+        const name = text(basics.name);
+        const email = text(basics.email);
+        const headline = text(basics.headline);
+        const summary = text(basics.summary);
+
+        return `
+            <div class="portfolio-editor-stack is-readonly" data-form="portfolio-viewer">
+                ${renderResumeViewerBlock(doc.resume)}
+                <section class="portfolio-basics-card sns-portfolio-editor-panel">
+                    <div class="social-neo-section-head">
+                        <div>
+                            <strong>About</strong>
+                            <span>Profile summary and contact details.</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-entry-grid portfolio-viewer-fields">
+                        ${name ? `<div><span class="social-neo-muted">Name</span><strong>${escapeHtml(name)}</strong></div>` : ''}
+                        ${email ? `<div><span class="social-neo-muted">Email</span><span>${escapeHtml(email)}</span></div>` : ''}
+                        ${headline ? `<div class="portfolio-entry-span-2"><span class="social-neo-muted">Headline</span><strong>${escapeHtml(headline)}</strong></div>` : ''}
+                        ${summary ? `<div class="portfolio-entry-span-2"><span class="social-neo-muted">About</span><p>${escapeHtml(summary)}</p></div>` : ''}
+                        ${safeLink ? `<div class="portfolio-entry-span-2"><span class="social-neo-muted">Profile link</span><a class="social-portfolio-link" href="${escapeHtml(safeLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml(safeLink)} <i class="fas fa-arrow-up-right-from-square"></i></a></div>` : ''}
+                    </div>
+                </section>
+                <section class="portfolio-basics-card sns-portfolio-editor-panel">
+                    <div class="social-neo-section-head">
+                        <div>
+                            <strong>Extras</strong>
+                            <span>Subjects, projects, and links shared with this portfolio.</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-extras-list">
+                        ${renderExtrasViewerList(extras)}
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
     function renderResumeBlock(resume) {
         const name = text(resume?.name || '');
         const hasFile = Boolean(text(resume?.storageKey) || text(resume?.dataUrl));
@@ -216,6 +323,7 @@
 
     window.KiuPortfolioEditor = {
         renderEditor,
+        renderViewer,
         renderSection
     };
 
@@ -268,6 +376,12 @@
         window.KiuPortfolioApi = {
             async loadMyPortfolio() {
                 const payload = await portfolioRequest('/api/social/portfolio/me');
+                return payload.portfolio || null;
+            },
+            async loadPortfolio(userId) {
+                const normalizedUserId = text(userId);
+                if (!normalizedUserId) return null;
+                const payload = await portfolioRequest(`/api/social/portfolio/${encodeURIComponent(normalizedUserId)}`);
                 return payload.portfolio || null;
             },
             async saveMyPortfolio(portfolio) {

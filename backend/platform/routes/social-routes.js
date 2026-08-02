@@ -1048,6 +1048,37 @@ function registerSocialRoutes(app, deps = {}) {
         response.json({ ok: true, post });
     });
 
+    app.post('/api/social/pins/toggle', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const body = request.body || {};
+        const result = store.toggleSocialModulePin(
+            body.module || body.targetModule || '',
+            body.entityId || body.id || '',
+            body.kind || body.pinKind || 'personal',
+            actorUserId
+        );
+        if (!result) {
+            sendError(response, 400, 'Pin state could not be updated.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, ...result });
+    });
+
+    app.get('/api/social/pins', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const module = request.query?.module || '';
+        const kind = request.query?.kind || 'all';
+        const payload = store.listModulePinnedIds(module, actorUserId, kind);
+        response.json({ ok: true, ...payload });
+    });
+
     app.post('/api/social/posts/:id/pin', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;

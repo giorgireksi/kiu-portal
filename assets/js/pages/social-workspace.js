@@ -354,6 +354,7 @@
         currentUser,
         currentUserId,
         normalizePortfolioEntry,
+        openDialog,
         patchPortfolioSaveStatus,
         portfolioEditorFormRoot,
         portfolioFieldValue,
@@ -363,6 +364,7 @@
         setPortalSocialFlash,
         state,
         text,
+        withBusy,
         })
         : null);
     const portfolioEntriesForViewer = __wsPortRtApi?.portfolioEntriesForViewer;
@@ -375,6 +377,7 @@
     const portfolioCollectDocumentFromUi = __wsPortRtApi?.portfolioCollectDocumentFromUi;
     const saveMyPortfolioDocument = __wsPortRtApi?.saveMyPortfolioDocument;
     const openPortfolioEditor = __wsPortRtApi?.openPortfolioEditor;
+    const openPortfolioViewerForUser = __wsPortRtApi?.openPortfolioViewerForUser;
     const resetPortfolioEditor = __wsPortRtApi?.resetPortfolioEditor;
     const readPortfolioResumeFile = __wsPortRtApi?.readPortfolioResumeFile;
     const PORTFOLIO_DISCOVER_ROLE_TARGETS = __wsPortRtApi?.PORTFOLIO_DISCOVER_ROLE_TARGETS;
@@ -423,6 +426,7 @@
     /* ── Portfolio UI: social-workspace-portfolio-ui.js ── */
     const __wsPortUiApi = (typeof (window.createKiuSocialWorkspacePortfolioUiApi || window.__kiuCreateSocialWorkspacePortfolioUiApi) === 'function'
         ? (window.__kiuCreateSocialWorkspacePortfolioUiApi || window.createKiuSocialWorkspacePortfolioUiApi)({
+        accountById,
         avatar,
         currentFacultyCode,
         currentUser,
@@ -453,6 +457,7 @@
     const renderPortfolioCreateDialog = __wsPortUiApi?.renderPortfolioCreateDialog;
     const renderMyPortfolioPanel = __wsPortUiApi?.renderMyPortfolioPanel;
     const renderPortfolioEditorDialog = __wsPortUiApi?.renderPortfolioEditorDialog;
+    const renderPortfolioViewerDialog = __wsPortUiApi?.renderPortfolioViewerDialog;
     const renderPortfolioCustomBuilderOverlay = __wsPortUiApi?.renderPortfolioCustomBuilderOverlay;
     const renderPortfolioProfileBlock = __wsPortUiApi?.renderPortfolioProfileBlock;
     const renderProjectsPanel = __wsPortUiApi?.renderProjectsPanel;
@@ -1229,6 +1234,7 @@
     __kiuSwApi.portfolioCollectDocumentFromUi = portfolioCollectDocumentFromUi;
     __kiuSwApi.saveMyPortfolioDocument = saveMyPortfolioDocument;
     __kiuSwApi.openPortfolioEditor = openPortfolioEditor;
+    __kiuSwApi.openPortfolioViewerForUser = openPortfolioViewerForUser;
     __kiuSwApi.resetPortfolioEditor = resetPortfolioEditor;
 
     /* ── Dialog routing: social-workspace-dialog-route.js ── */
@@ -1245,6 +1251,7 @@
         projectTaskGraphStackedBackdropClass,
         renderPortfolioCreateDialog,
         renderPortfolioEditorDialog,
+        renderPortfolioViewerDialog,
         renderProjectColumnTasksModal,
         renderProjectCreateDialog,
         renderProjectHealthDialog,
@@ -1352,6 +1359,7 @@
         openDialog,
         openPortalDirectChat: typeof openPortalDirectChat === 'function' ? openPortalDirectChat : window.openPortalDirectChat,
         openPortfolioEditor,
+        openPortfolioViewerForUser,
         openProjectRiskForTask,
         parseDependsOnFromForm,
         parsePortfolioLinksInput,

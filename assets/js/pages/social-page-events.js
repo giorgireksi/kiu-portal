@@ -112,6 +112,28 @@
                 revealShell();
             }
 
+            if (action === 'module-curator-pin' || action === 'module-personal-pin') {
+                event.__kiuSocialHandled = true;
+                event.preventDefault();
+                const module = text(trigger.getAttribute('data-pin-module') || '');
+                const entityId = text(trigger.getAttribute('data-entity-id') || '');
+                const kind = action === 'module-curator-pin' ? 'curator' : 'personal';
+                const togglePin = typeof window.togglePortalSocialModulePin === 'function'
+                    ? window.togglePortalSocialModulePin
+                    : null;
+                if (!togglePin) {
+                    flashSocialError('Pin state could not be updated.');
+                    return;
+                }
+                try {
+                    await togglePin(module, entityId, kind);
+                    if (typeof renderSocialPageNow === 'function') renderSocialPageNow('module-pin');
+                } catch (error) {
+                    flashSocialError(error?.message || 'Pin state could not be updated.');
+                }
+                return;
+            }
+
             const shellNav = handleShellNavClick(action, trigger);
             if (shellNav.handled) {
                 event.__kiuSocialHandled = true;
@@ -203,7 +225,7 @@
                 },
                 {
                     is: 'isSocialPhotographySubmitForm',
-                    fallback: (t) => t === 'photography-upload' || t === 'dialog-photography-delete',
+                    fallback: (t) => t === 'photography-upload' || t === 'dialog-photography-delete' || t === 'dialog-photography-edit',
                     has: hasSocialPhotographyModule,
                     ensure: ensureSocialPhotographyModule,
                     handle: 'handleSocialPhotographySubmit'

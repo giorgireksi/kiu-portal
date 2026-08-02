@@ -21,6 +21,12 @@ describe('social-portfolio-editor-regressions.test (bare-shell era)', () => {
 
         expect(editor).toContain('window.KiuPortfolioEditor');
         expect(editor).toContain('renderEditor');
+        expect(editor).toContain('renderViewer');
+        expect(editor).toContain('loadPortfolio');
+        const viewerSource = editor.slice(editor.indexOf('function renderViewer'), editor.indexOf('function renderResumeBlock(resume)'));
+        expect(viewerSource).not.toContain('portfolio-save');
+        expect(viewerSource).not.toContain('portfolio-extra-add');
+        expect(viewerSource).toContain('data-form="portfolio-viewer"');
         expect(editor).toContain('portfolio-editor-stack');
         expect(editor).toContain('name="portfolioResumeFile"');
         expect(editor).toContain('Optional extras');
@@ -38,13 +44,14 @@ describe('social-portfolio-editor-regressions.test (bare-shell era)', () => {
         expect(runtime).toContain('isPortfolioDocument: true');
         expect(runtime).toMatch(/if \(force\)\s*myPortfolioApiDenied\s*=\s*false/);
         const html = readSource('social.html');
-        expect(html).toContain('social-page.js?v=20260801-portfolioresume4');
+        expect(html).toContain('social-page.js?v=20260802-escapefix1');
         expect(html).toContain('social-fingerprint-model.js?v=20260801-portfolioresume4');
-        expect(html).toContain('social-render-plan.js?v=20260801-portfolioresume4');
-        expect(page).toContain('social-workspace-portfolio-editor.js?v=20260801-portfolioresume3');
-        expect(page).toContain('social-workspace-portfolio-runtime.js?v=20260801-portfolioresume3');
-        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260801-portfolioresume3');
-        expect(page).toContain('social-workspace-events.js?v=20260801-portfolioresume3');
+        expect(html).toContain('social-render-plan.js?v=20260801-researchfiles1');
+        expect(html).toContain('social-page-feed-runtime.js?v=20260802-portfolio-viewer1');
+        expect(page).toContain('social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer1');
+        expect(page).toContain('social-workspace-portfolio-runtime.js?v=20260802-portfolio-viewer1');
+        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260802-portfolio-viewer1');
+        expect(page).toContain('social-workspace-events.js?v=20260802-portfolio-viewer1');
         const fingerprint = readSource('assets/js/pages/social-fingerprint-model.js');
         expect(fingerprint).toMatch(/buildPortfolioFingerprint[\s\S]*extras\.length/);
         const renderPlan = readSource('assets/js/pages/social-render-plan.js');
@@ -58,6 +65,8 @@ describe('social-portfolio-editor-regressions.test (bare-shell era)', () => {
         expect(interactions).toContain("dep('portfolioCollectDocumentFromUi')");
         expect(page).toMatch(/__socialInteractionsDeps[\s\S]*ensureMyPortfolioDocument/);
         expect(portfolioUi).toContain('KiuPortfolioEditor?.renderEditor');
+        expect(portfolioUi).toContain('renderPortfolioViewerDialog');
+        expect(portfolioUi).toContain('KiuPortfolioEditor?.renderViewer');
         expect(portfolioUi).toContain('Upload my resume');
         expect(portfolioUi).toContain('View resume');
         expect(bare).toContain('.portfolio-editor-stack');

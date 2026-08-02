@@ -21,6 +21,7 @@
             projectTaskGraphStackedBackdropClass,
             renderPortfolioCreateDialog,
             renderPortfolioEditorDialog,
+            renderPortfolioViewerDialog,
             renderProjectColumnTasksModal,
             renderProjectCreateDialog,
             renderProjectHealthDialog,
@@ -67,6 +68,7 @@
             'project-risk',
             'portfolio-create',
             'portfolio-editor',
+            'portfolio-viewer',
             'project-leave'
         ]);
 
@@ -245,6 +247,9 @@
             }
             if (kind === 'portfolio-editor') {
                 return renderPortfolioEditorDialog();
+            }
+            if (kind === 'portfolio-viewer') {
+                return renderPortfolioViewerDialog(dialog);
             }
 
             if (kind === 'project-leave') {

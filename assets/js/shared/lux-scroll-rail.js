@@ -110,6 +110,8 @@
         if (global.ResizeObserver) {
             const observer = new global.ResizeObserver(() => syncScrollRail(shell, config));
             observer.observe(list);
+            const content = list.firstElementChild;
+            if (content) observer.observe(content);
             shell._luxScrollRailResizeObserver = observer;
         }
 

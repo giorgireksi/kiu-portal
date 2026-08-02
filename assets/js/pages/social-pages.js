@@ -28,6 +28,7 @@
         avatar,
         displayName,
         roleLabel,
+        facultyLabel,
         currentUserId,
         setPanel,
         openDialog,
@@ -72,6 +73,7 @@
         || typeof avatar !== 'function'
         || typeof displayName !== 'function'
         || typeof roleLabel !== 'function'
+        || typeof facultyLabel !== 'function'
         || typeof currentUserId !== 'function'
         || typeof setPanel !== 'function'
         || typeof openDialog !== 'function'
@@ -97,6 +99,195 @@
     }
 
     window.__KIU_SOCIAL_PAGES_MODULE_LOADED = true;
+
+    function pageFacultyOptionLabel(value) {
+        const normalized = text(value || 'all') || 'all';
+        if (normalized === 'all') return 'All faculties';
+        const chrome = window.KiuSocialChromeModel || {};
+        if (typeof chrome.socialBrowseFacultyOptionLabel === 'function') return chrome.socialBrowseFacultyOptionLabel(normalized);
+        if (typeof facultyLabel === 'function') return facultyLabel(normalized);
+        return normalized;
+    }
+
+    function matchesPageMemberAccountFilters(account, options = {}) {
+        const facultyFilter = text(options.facultyFilter || 'all') || 'all';
+        const roleFilter = text(options.roleFilter || 'all') || 'all';
+        if (facultyFilter !== 'all' && text(account?.facultyCode || account?.faculty || '') !== facultyFilter) return false;
+        if (roleFilter !== 'all' && text(account?.role || '').toLowerCase() !== roleFilter) return false;
+        return true;
+    }
+
+    function matchesPageMemberSearch(account, member, search) {
+        if (!search) return true;
+        const haystack = [
+            displayName(account),
+            account?.email,
+            account?.facultyCode,
+            account?.faculty,
+            roleLabel(account?.role),
+            member?.role
+        ].filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(search);
+    }
+
+    function pageAdminIdsWithoutOwner(page) {
+        const ownerId = text(page?.ownerUserId || '');
+        return pageAdminIdsFor(page).filter((id) => text(id) !== ownerId);
+    }
+
+    function nextPageAdminIds(page, userId, mode) {
+        const normalizedUserId = text(userId);
+        let extra = pageAdminIdsWithoutOwner(page);
+        if (mode === 'promote' && normalizedUserId && !extra.includes(normalizedUserId)) {
+            extra = [...extra, normalizedUserId];
+        } else if (mode === 'demote' && normalizedUserId) {
+            extra = extra.filter((id) => text(id) !== normalizedUserId);
+        }
+        return uniqueStrings(extra.filter(Boolean));
+    }
+
+    async function updatePageAdmins(pageId, userId, mode) {
+        const page = getSocialPageRecord(pageId);
+        if (!page?.isManager) throw new Error('You cannot manage page admins.');
+        const adminIds = nextPageAdminIds(page, userId, mode);
+        const updated = await updatePortalSocialPage(pageId, { adminIds });
+        if (!updated) throw new Error('Page admins could not be updated.');
+        if (typeof refreshPortalSocialFeed === 'function') await refreshPortalSocialFeed(true);
+        const fresh = getSocialPageRecord(pageId);
+        const activeType = text(activeDialog()?.type || '');
+        if (fresh && (activeType === 'page-members' || activeType === 'page-admin-promote')) {
+            if (activeType === 'page-admin-promote') closeDialog();
+            state().ui.pageAdminPromoteStep = 1;
+            return openDialog('page-members', { pageId, page: fresh });
+        }
+        invalidateSocialRenderCache({ center: true });
+        renderSocialPageNow('page-admins-updated');
+    }
+
+    function normalizePageAdminPromoteToken(value) {
+        return String(value || '').trim().toUpperCase();
+    }
+
+    function buildPageAdminPromoteVerification(candidate) {
+        const displayNameValue = displayName(candidate || {});
+        return {
+            displayName: displayNameValue,
+            expectedToken: normalizePageAdminPromoteToken(displayNameValue),
+        };
+    }
+
+    function renderPageAdminPromoteDialog(runtime, dialog) {
+        const page = dialog.page || getSocialPageRecord(dialog.pageId);
+        const userId = text(dialog.userId || '');
+        const candidate = dialog.candidate || accountById(userId) || { id: userId };
+        if (!page || !userId) return '';
+        const promoteStep = Math.min(3, Math.max(1, Number(runtime.ui?.pageAdminPromoteStep || 1) || 1));
+        const verification = buildPageAdminPromoteVerification(candidate);
+        const pageName = text(page?.name || 'Page');
+        const candidateName = text(verification.displayName || userId);
+        const isFollower = pageFollowerIdsFor(page).map((id) => text(id)).includes(userId);
+        const statusLabel = pageAdminIdsFor(page).map((id) => text(id)).includes(userId) ? 'Admin' : (isFollower ? 'Follower' : 'Campus member');
+        const stepBody = promoteStep === 1
+            ? `<div class="lux-glass-dialog-preview">
+                    <div class="social-neo-person">
+                        ${avatar(candidate, 'social-neo-avatar-sm')}
+                        <div class="lux-glass-dialog-member-info">
+                            <strong>${escape(candidateName)}</strong>
+                            <span>${escape(accountSubtitle(candidate))}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lux-glass-dialog-preview">
+                    <strong class="lux-glass-dialog-preview-title">${escape(pageName)}</strong>
+                    <div class="social-neo-muted social-neo-muted-mt-6">Current status: ${escape(statusLabel)}</div>
+                </div>`
+            : promoteStep === 2
+                ? `<div class="lux-glass-dialog-preview lux-glass-dialog-preview-danger">
+                    <p>Page admins can edit the page profile, publish official posts, and manage members and other admins.</p>
+                    <p class="social-neo-muted social-neo-muted-mt-6">Only continue if you trust ${escape(candidateName)} with these permissions.</p>
+                </div>`
+                : `<label class="social-neo-label" for="pageAdminPromoteToken">Step 3 of 3: Type ${escape(verification.expectedToken)} to confirm.</label>
+                <input class="social-neo-input lux-control" id="pageAdminPromoteToken" name="pageAdminPromoteToken" type="text" autocomplete="off" placeholder="${escape(verification.displayName)}">`;
+        const actions = promoteStep < 3
+            ? `<button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="${promoteStep === 1 ? 'dialog-close' : 'page-admin-promote-wizard-prev'}">${promoteStep === 1 ? 'Cancel' : 'Back'}</button>
+               <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="page-admin-promote-wizard-next">Next</button>`
+            : `<button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="page-admin-promote-wizard-prev">Back</button>
+               <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit"><i class="fas fa-user-shield" aria-hidden="true"></i> Make admin</button>`;
+        return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
+            <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--social-glass" data-form="dialog-page-admin-promote" data-action="noop">
+                <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
+                    <div class="social-neo-surveys-hero-copy">
+                        <span class="social-neo-section-kicker">Page</span>
+                        <h2>Make admin</h2>
+                        <p>Complete all three verification steps before granting admin access.</p>
+                    </div>
+                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="lux-glass-dialog-body">
+                    <div class="social-neo-pages-wizard-steps lux-glass-dialog-page-create-steps">
+                        ${[
+                            ['1', 'Review'],
+                            ['2', 'Impact'],
+                            ['3', 'Confirm'],
+                        ].map(([value, label]) => `
+                            <span class="social-neo-pages-wizard-step ${Number(value) === promoteStep ? 'is-active' : Number(value) < promoteStep ? 'is-complete' : ''}">
+                                <strong>${escape(value)}</strong>
+                                <span>${escape(label)}</span>
+                            </span>
+                        `).join('')}
+                    </div>
+                    ${stepBody}
+                </div>
+                <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                    ${actions}
+                </div>
+                <input type="hidden" name="pageId" value="${escape(text(page.id))}">
+                <input type="hidden" name="userId" value="${escape(userId)}">
+                <input type="hidden" name="expectedPromoteToken" value="${escape(verification.expectedToken)}">
+            </form>
+        </div>`;
+    }
+
+    function validatePageWizardStep(step, runtime) {
+        const ui = runtime?.ui || {};
+        const normalizedStep = Number(step) || 1;
+        if (normalizedStep === 1) {
+            const name = text(ui.pageName);
+            const facultyCode = text(ui.pageFaculty)
+                || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '');
+            if (!name) {
+                return { ok: false, message: 'Page name is required.', focusStep: 1 };
+            }
+            if (!facultyCode || facultyCode === 'all') {
+                return { ok: false, message: 'Faculty is required.', focusStep: 1 };
+            }
+        }
+        if (normalizedStep === 3) {
+            const description = text(ui.pageDescription);
+            const about = text(ui.pageAbout);
+            const tagline = text(ui.pageTagline);
+            if (!description && !about && !tagline) {
+                return {
+                    ok: false,
+                    message: 'Add a short description, tagline, or about section before continuing.',
+                    focusStep: 3
+                };
+            }
+        }
+        return { ok: true, message: '', focusStep: normalizedStep };
+    }
+
+    function syncPageCreateFormDraft(form, runtime) {
+        if (!form || !runtime?.ui) return;
+        if (form.pageName) runtime.ui.pageName = form.pageName.value;
+        if (form.pageFaculty) runtime.ui.pageFaculty = text(form.pageFaculty.value || '');
+        if (form.pageCategory) runtime.ui.pageCategory = text(form.pageCategory.value || '');
+        if (form.pageType) runtime.ui.pageType = text(form.pageType.value || '');
+        if (form.pageVisibility) runtime.ui.pageVisibility = text(form.pageVisibility.value || '');
+        if (form.pageTagline) runtime.ui.pageTagline = form.pageTagline.value;
+        if (form.pageDescription) runtime.ui.pageDescription = form.pageDescription.value;
+        if (form.pageAbout) runtime.ui.pageAbout = form.pageAbout.value;
+    }
 
     function renderPagesHero(runtime, pages, activeTab, options = {}) {
         const {
@@ -306,6 +497,7 @@
             if (!page) return [];
             if (pageProfileTab === 'about') return [];
             const records = profilePosts.filter((post) => {
+                if (pageProfileTab === 'pinned') return Boolean(post?.isPinned);
                 if (pageProfileTab === 'official') return text(post?.postType || '') === 'official';
                 if (pageProfileTab === 'community') return text(post?.postType || '') === 'community';
                 return true;
@@ -316,13 +508,35 @@
         const PAGE_ABOUT_PREVIEW_MAX = 140;
         const pageAboutText = (page) => text(page?.about || page?.description || 'No profile summary yet.');
         const pageAboutNeedsMore = (page) => pageAboutText(page).length > PAGE_ABOUT_PREVIEW_MAX;
+        const pageAboutPreviewText = (page) => {
+            const raw = pageAboutText(page);
+            if (raw.length <= PAGE_ABOUT_PREVIEW_MAX) return raw;
+            return `${raw.slice(0, PAGE_ABOUT_PREVIEW_MAX).trimEnd()}…`;
+        };
+
+        const renderPageCardTextRail = ({ pageId, dataAttr, ariaLabel, body, railClass, controlsClass, viewportClass, textClass, textTag = 'p' }) => `
+            <div class="lux-scroll-rail ${railClass}" data-lux-scroll-rail ${dataAttr}="${escape(pageId)}">
+                <div class="lux-scroll-rail__controls ${controlsClass}" hidden aria-hidden="true">
+                    <div class="lux-scroll-rail__dock lux-scroll-rail__dock--vertical" role="group" aria-label="${escape(ariaLabel)}">
+                        <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="up" aria-label="Scroll up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
+                        <span class="lux-scroll-rail__spine" aria-hidden="true"></span>
+                        <button type="button" class="lux-scroll-rail__btn" data-lux-scroll="down" aria-label="Scroll down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+                <div class="lux-scrollbar lux-scroll-rail__viewport ${viewportClass}" aria-label="${escape(ariaLabel)}">
+                    <${textTag} class="${textClass}">${escape(body)}</${textTag}>
+                </div>
+            </div>
+        `;
 
         const renderPageCard = (page) => {
             const followerIds = followerIdsFor(page);
             const coverSrc = pageCover(page);
             const actionHref = normalizeLink(page?.actionUrl || page?.website || '');
             const pinnedCount = Array.isArray(page?.pinnedPostIds) ? page.pinnedPostIds.length : 0;
-            const aboutText = pageAboutText(page);
+            const pageId = text(page?.id);
+            const taglineBody = text(page?.tagline || page?.description || 'No tagline yet.');
+            const aboutBody = pageAboutText(page);
             return `
                 <article class="social-neo-card social-neo-page-card social-neo-page-card-rich home-hover-chip">
                     <div class="social-neo-page-card-cover">
@@ -340,7 +554,16 @@
                                 </span>
                             </div>
                         </div>
-                        <p class="social-neo-page-card-desc">${escape(text(page?.tagline || page?.description || 'No tagline yet.'))}</p>
+                        ${renderPageCardTextRail({
+                            pageId,
+                            dataAttr: 'data-page-desc-rail',
+                            ariaLabel: 'Page tagline',
+                            body: taglineBody,
+                            railClass: 'social-neo-page-card-desc-rail',
+                            controlsClass: 'social-neo-page-card-desc-controls',
+                            viewportClass: 'social-neo-page-card-desc-viewport',
+                            textClass: 'social-neo-page-card-desc',
+                        })}
                         <div class="social-neo-badge-row">
                             <span class="social-neo-pill home-hover-chip">${escape(page?.followerCount || followerIds.length || 0)} followers</span>
                             ${page?.location ? `<span class="social-neo-pill home-hover-chip">${escape(page.location)}</span>` : ''}
@@ -361,11 +584,18 @@
                         </div>
                         <div class="social-neo-page-card-support">
                             <article class="social-neo-entity-card social-neo-page-card-about">
-                                <div>
-                                    <strong>About</strong>
-                                    <span class="social-neo-page-card-about-text">${escape(aboutText)}</span>
-                                    ${pageAboutNeedsMore(page) ? `<button class="lux-ghost-btn social-neo-page-card-about-more" type="button" data-action="page-about-more" data-page-id="${escape(text(page?.id))}">More</button>` : ''}
-                                </div>
+                                <strong>About</strong>
+                                ${renderPageCardTextRail({
+                                    pageId,
+                                    dataAttr: 'data-page-about-rail',
+                                    ariaLabel: 'Page about',
+                                    body: aboutBody,
+                                    railClass: 'social-neo-page-card-about-rail',
+                                    controlsClass: 'social-neo-page-card-about-controls',
+                                    viewportClass: 'social-neo-page-card-about-viewport',
+                                    textClass: 'social-neo-page-card-about-text',
+                                    textTag: 'span',
+                                })}
                             </article>
                         </div>
                     </div>
@@ -416,7 +646,7 @@
                     </form>
                 `;
             }
-            const aboutText = pageAboutText(page);
+            const aboutPreview = pageAboutPreviewText(page);
             return `
                 <div class="social-neo-page-profile-layout">
                     <article class="social-neo-card social-neo-page-about-card home-hover-chip">
@@ -432,7 +662,7 @@
                             ` : ''}
                         </div>
                         <div class="social-neo-list">
-                            <article class="social-neo-entity-card social-neo-page-card-about home-hover-chip"><div><strong class="lux-card-title">About</strong><span class="social-neo-page-card-about-text lux-card-copy">${escape(aboutText)}</span>${pageAboutNeedsMore(page) ? `<button class="lux-ghost-btn social-neo-page-card-about-more home-hover-chip" type="button" data-action="page-about-more" data-page-id="${escape(text(page?.id))}">More</button>` : ''}</div></article>
+                            <article class="social-neo-entity-card social-neo-page-card-about home-hover-chip"><div><strong class="lux-card-title">About</strong><span class="social-neo-page-card-about-text lux-card-copy">${escape(aboutPreview)}</span>${pageAboutNeedsMore(page) ? `<button class="lux-ghost-btn social-neo-page-card-about-more home-hover-chip" type="button" data-action="page-about-more" data-page-id="${escape(text(page?.id))}">More</button>` : ''}</div></article>
                             <article class="social-neo-entity-card home-hover-chip"><div><strong class="lux-card-title">Contact</strong><span class="lux-card-copy">${escape(text(page?.contactEmail || 'No contact email listed.'))}</span></div></article>
                             <article class="social-neo-entity-card home-hover-chip"><div><strong class="lux-card-title">Website</strong><span class="lux-card-copy">${actionHref ? `<a href="${escape(actionHref)}" target="_blank" rel="noopener">${escape(text(page?.website || page?.actionUrl || 'Visit page'))}</a>` : 'No website linked yet.'}</span></div></article>
                             <article class="social-neo-entity-card home-hover-chip"><div><strong class="lux-card-title">Location</strong><span class="lux-card-copy">${escape(text(page?.location || 'No location listed.'))}</span></div></article>
@@ -501,6 +731,7 @@
                                 ['all', 'All', 'fa-layer-group'],
                                 ['official', 'Official', 'fa-certificate'],
                                 ['community', 'Community', 'fa-users'],
+                                ['pinned', 'Pinned', 'fa-thumbtack'],
                                 ['about', 'About', 'fa-circle-info']
                             ].map(([value, label, icon]) => `
                                 <button class="social-neo-page-profile-tab home-hover-chip ${pageProfileTab === value ? 'is-active' : ''}" type="button" role="tab" aria-selected="${pageProfileTab === value ? 'true' : 'false'}" data-action="page-profile-tab" data-page-profile-tab="${escape(value)}">
@@ -515,8 +746,8 @@
                             ${posts.length ? posts.map((post) => renderPost(post)).join('') : `
                                 <div class="social-neo-empty-hero home-hover-chip">
                                     <i class="fas fa-comments"></i>
-                                    <strong class="lux-card-title">${pageProfileTab === 'official' ? 'No official posts yet' : pageProfileTab === 'community' ? 'No community posts yet' : 'This page has not posted yet'}</strong>
-                                    <span class="lux-card-copy">${pageProfileTab === 'community' ? 'Followers can publish community posts here once they follow the page.' : 'Publish the first post to start the page conversation.'}</span>
+                                    <strong class="lux-card-title">${pageProfileTab === 'pinned' ? 'No pinned posts yet' : pageProfileTab === 'official' ? 'No official posts yet' : pageProfileTab === 'community' ? 'No community posts yet' : 'This page has not posted yet'}</strong>
+                                    <span class="lux-card-copy">${pageProfileTab === 'pinned' ? 'Pinned updates from page managers appear here.' : pageProfileTab === 'community' ? 'Followers can publish community posts here once they follow the page.' : 'Publish the first post to start the page conversation.'}</span>
                                 </div>
                             `}
                         </section>
@@ -771,6 +1002,7 @@
     const PAGES_OWNED_DIALOG_KINDS = new Set([
         'page-about',
         'page-members',
+        'page-admin-promote',
         'page-create',
         'page-post-compose'
     ]);
@@ -800,7 +1032,7 @@
                         </div>
                         <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="lux-glass-dialog-preview social-neo-page-about-dialog-body">${escape(aboutBody)}</div>
+                    <div class="lux-glass-dialog-preview social-neo-page-about-dialog-body"><p class="lux-glass-dialog-preview-copy social-neo-page-about-dialog-copy">${escape(aboutBody)}</p></div>
                     <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
                         <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="button" data-action="dialog-close">Close</button>
                     </div>
@@ -812,17 +1044,53 @@
             if (!page) return '';
             const membersSearch = text(runtime.ui?.pageMembersSearch || '').trim().toLowerCase();
             const membersFilter = text(runtime.ui?.pageMembersFilter || 'all') || 'all';
+            const membersFacultyFilter = text(runtime.ui?.pageMembersFacultyFilter || 'all') || 'all';
+            const membersRoleFilter = text(runtime.ui?.pageMembersRoleFilter || 'all') || 'all';
+            const isManager = Boolean(page.isManager);
+            const ownerId = text(page?.ownerUserId || '');
+            const adminSet = new Set(pageAdminIdsFor(page).map((id) => text(id)));
+            const allAccounts = Array.isArray(runtime.accounts)
+                ? runtime.accounts
+                : (Array.isArray(state().accounts) ? state().accounts : []);
+            const facultyOptions = ['all', ...new Set(allAccounts.map((account) => text(account?.facultyCode || account?.faculty || '')).filter(Boolean))];
             const members = buildPageMembersList(page).filter((member) => {
                 if (membersFilter === 'admins' && member.role !== 'admin') return false;
                 if (membersFilter === 'followers' && member.role !== 'follower') return false;
-                if (!membersSearch) return true;
                 const account = accountById(member.id) || { id: member.id };
-                const haystack = [displayName(account), account?.email, account?.facultyCode, account?.faculty, roleLabel(account?.role), member.role].filter(Boolean).join(' ').toLowerCase();
-                return haystack.includes(membersSearch);
+                if (!matchesPageMemberAccountFilters(account, { facultyFilter: membersFacultyFilter, roleFilter: membersRoleFilter })) return false;
+                return matchesPageMemberSearch(account, member, membersSearch);
             });
+            const candidates = isManager ? allAccounts.filter((account) => {
+                const id = text(account?.id);
+                if (!id || id === text(currentUserId()) || adminSet.has(id)) return false;
+                if (!matchesPageMemberAccountFilters(account, { facultyFilter: membersFacultyFilter, roleFilter: membersRoleFilter })) return false;
+                if (!membersSearch) return true;
+                const haystack = [displayName(account), account?.email, account?.facultyCode, account?.faculty, roleLabel(account?.role)].filter(Boolean).join(' ').toLowerCase();
+                return haystack.includes(membersSearch);
+            }).slice(0, 40) : [];
             const adminCount = pageAdminIdsFor(page).length;
             const followerCount = page?.followerCount || pageFollowerIdsFor(page).length || 0;
             const filterChip = (value, label) => `<button class="social-neo-pill home-hover-chip social-neo-page-members-filter ${membersFilter === value ? 'is-active' : ''}" type="button" data-action="page-members-filter" data-filter="${escape(value)}">${escape(label)}</button>`;
+            const facultySelect = `
+                <label class="lux-glass-dialog-field">
+                    <span class="social-neo-label">Faculty</span>
+                    <select class="social-neo-select lux-control" data-bind="page-members-faculty-filter" data-lux-picker>
+                        ${facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${membersFacultyFilter === faculty ? 'selected' : ''}>${escape(pageFacultyOptionLabel(faculty))}</option>`).join('')}
+                    </select>
+                </label>
+            `;
+            const roleSelect = `
+                <label class="lux-glass-dialog-field">
+                    <span class="social-neo-label">Role</span>
+                    <select class="social-neo-select lux-control" data-bind="page-members-role-filter" data-lux-picker>
+                        <option value="all" ${membersRoleFilter === 'all' ? 'selected' : ''}>All roles</option>
+                        <option value="student" ${membersRoleFilter === 'student' ? 'selected' : ''}>Students</option>
+                        <option value="professor" ${membersRoleFilter === 'professor' ? 'selected' : ''}>Professors</option>
+                        <option value="ta" ${membersRoleFilter === 'ta' ? 'selected' : ''}>Teaching Assistants</option>
+                        <option value="admin" ${membersRoleFilter === 'admin' ? 'selected' : ''}>Admins</option>
+                    </select>
+                </label>
+            `;
             return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
                 <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--panel lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-glass-dialog-card--panel-members" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="lux-glass-dialog-head social-neo-surveys-hero-head">
@@ -846,8 +1114,12 @@
                             </div>
                             <label class="lux-glass-dialog-field">
                                 <span class="social-neo-label">Search members</span>
-                                <input class="social-neo-input lux-control" type="search" data-bind="page-members-search" placeholder="Search by name, email, or faculty..." value="${escape(text(runtime.ui?.pageMembersSearch || ''))}">
+                                <input class="social-neo-input lux-control" type="search" data-bind="page-members-search" placeholder="Search by name, email, or faculty..." value="${escape(text(runtime.ui?.pageMembersSearch || ''))}" autocomplete="off">
                             </label>
+                            <div class="social-neo-form-grid-2 social-neo-panel-invite-filters">
+                                ${facultySelect}
+                                ${roleSelect}
+                            </div>
                             <div class="social-neo-page-members-filters social-neo-panel-filter-row">
                                 ${filterChip('all', 'All')}
                                 ${filterChip('admins', 'Admins')}
@@ -870,14 +1142,47 @@
                                             ${presencePill(account)}
                                             <button class="lux-ghost-btn" type="button" data-action="profile-view" data-user-id="${escape(text(member.id))}">Profile</button>
                                             ${!isSelf ? `<button class="lux-ghost-btn" type="button" data-action="directory-message" data-user-id="${escape(text(member.id))}">Message</button>` : ''}
+                                            ${isManager && member.role === 'follower' ? `<button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="page-member-promote-admin" data-page-id="${escape(text(page.id))}" data-user-id="${escape(text(member.id))}"><i class="fas fa-user-shield" aria-hidden="true"></i> Make admin</button>` : ''}
+                                            ${isManager && member.role === 'admin' && text(member.id) !== ownerId ? `<button class="lux-ghost-btn" type="button" data-action="page-member-demote-admin" data-page-id="${escape(text(page.id))}" data-user-id="${escape(text(member.id))}">Remove admin</button>` : ''}
                                         </div>
                                     </div>`;
                                 }).join('') : '<div class="social-neo-empty">No members match the current search.</div>'}
                             </div>
                         </section>
+                        ${isManager ? `<section class="lux-glass-dialog-group-section lux-glass-dialog-panel-section">
+                            <div class="lux-glass-dialog-group-section-head">
+                                <strong>Find people</strong>
+                                <span>Search campus accounts and add page admins.</span>
+                            </div>
+                            <div class="social-neo-surveys-hero-stats social-neo-surveys-hero-stats--triple social-neo-panel-dialog-stats">
+                                <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(String(candidates.length))}</strong><span>Matches</span></article>
+                                <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(pageFacultyOptionLabel(membersFacultyFilter))}</strong><span>Faculty</span></article>
+                                <article class="social-neo-surveys-hero-stat social-neo-events-hero-stat lux-strip-card surface-card lux-soft-chrome home-hover-chip"><strong>${escape(membersRoleFilter === 'all' ? 'All roles' : roleLabel(membersRoleFilter))}</strong><span>Role</span></article>
+                            </div>
+                            <div class="lux-glass-dialog-member-list">
+                                ${candidates.length ? candidates.map((candidate) => `
+                                    <div class="lux-glass-dialog-member-row">
+                                        <div class="social-neo-person">
+                                            ${avatar(candidate, 'social-neo-avatar-sm')}
+                                            <div class="lux-glass-dialog-member-info">
+                                                <strong>${escape(displayName(candidate))}</strong>
+                                                <span>${escape(accountSubtitle(candidate))}</span>
+                                            </div>
+                                        </div>
+                                        <div class="social-neo-inline social-neo-inline-gap-6-wrap">
+                                            <button class="lux-ghost-btn" type="button" data-action="profile-view" data-user-id="${escape(text(candidate.id))}">Profile</button>
+                                            <button class="lux-primary-btn lux-secondary-btn-sm" type="button" data-action="page-member-add-admin" data-page-id="${escape(text(page.id))}" data-user-id="${escape(text(candidate.id))}"><i class="fas fa-user-shield" aria-hidden="true"></i> Make admin</button>
+                                        </div>
+                                    </div>
+                                `).join('') : '<div class="social-neo-empty">No people match the current filters.</div>'}
+                            </div>
+                        </section>` : ''}
                     </div>
                 </div>
             </div>`;
+        }
+        if (kind === 'page-admin-promote') {
+            return renderPageAdminPromoteDialog(runtime, dialog);
         }
         return '';
     }
@@ -912,12 +1217,41 @@
             return renderSocialPageNow('page-members-filter');
         }
 
+        if (action === 'page-member-promote-admin' || action === 'page-member-add-admin') {
+            const pageId = text(trigger.getAttribute('data-page-id'));
+            const userId = text(trigger.getAttribute('data-user-id'));
+            const page = getSocialPageRecord(pageId);
+            if (!pageId || !userId || !page) return;
+            const candidate = accountById(userId) || { id: userId };
+            state().ui.pageAdminPromoteStep = 1;
+            return openDialog('page-admin-promote', { pageId, userId, page, candidate });
+        }
+
+        if (action === 'page-admin-promote-wizard-next') {
+            state().ui.pageAdminPromoteStep = Math.min(3, Math.max(1, Number(state().ui?.pageAdminPromoteStep || 1) + 1));
+            return renderSocialPageNow('page-admin-promote-wizard-next');
+        }
+
+        if (action === 'page-admin-promote-wizard-prev') {
+            state().ui.pageAdminPromoteStep = Math.min(3, Math.max(1, Number(state().ui?.pageAdminPromoteStep || 1) - 1));
+            return renderSocialPageNow('page-admin-promote-wizard-prev');
+        }
+
+        if (action === 'page-member-demote-admin') {
+            const pageId = text(trigger.getAttribute('data-page-id'));
+            const userId = text(trigger.getAttribute('data-user-id'));
+            if (!pageId || !userId) return;
+            return withBusy(() => updatePageAdmins(pageId, userId, 'demote'));
+        }
+
         if (action === 'page-members-open') {
             const pageId = text(trigger.getAttribute('data-page-id'));
             const page = getSocialPageRecord(pageId);
             if (!page) return;
             state().ui.pageMembersSearch = '';
             state().ui.pageMembersFilter = 'all';
+            state().ui.pageMembersFacultyFilter = 'all';
+            state().ui.pageMembersRoleFilter = 'all';
             return openDialog('page-members', { pageId, page });
         }
 
@@ -998,7 +1332,17 @@
         }
 
         if (action === 'page-wizard-next') {
-            state().ui.pageWizardStep = Math.min(5, Math.max(1, Number(state().ui?.pageWizardStep || 1) + 1));
+            const runtime = state();
+            const form = trigger.closest?.('form[data-form="create-page"]');
+            syncPageCreateFormDraft(form, runtime);
+            const step = Number(runtime.ui?.pageWizardStep || 1) || 1;
+            const check = validatePageWizardStep(step, runtime);
+            if (!check.ok) {
+                if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(check.message, 'danger');
+                if (check.focusStep) runtime.ui.pageWizardStep = check.focusStep;
+                return renderSocialPageNow('page-wizard-validate');
+            }
+            runtime.ui.pageWizardStep = Math.min(5, step + 1);
             return renderSocialPageNow('page-wizard-next');
         }
 
@@ -1076,11 +1420,26 @@
 
     function isSocialPagesSubmitForm(formType) {
         const f = text(formType || '');
-        return f === 'create-page' || f === 'pages-search' || f === 'update-page-profile' || f === 'page-profile-post';
+        return f === 'create-page' || f === 'pages-search' || f === 'update-page-profile' || f === 'page-profile-post' || f === 'dialog-page-admin-promote';
     }
 
     function handleSocialPagesSubmit(formType, form, runtime, event) {
         if (!isSocialPagesSubmitForm(formType)) return false;
+        if (formType === 'dialog-page-admin-promote') {
+            return withBusy(async () => {
+                const promoteStep = Math.min(3, Math.max(1, Number(runtime.ui?.pageAdminPromoteStep || 1) || 1));
+                if (promoteStep !== 3) throw new Error('Complete all verification steps before making someone an admin.');
+                const typedToken = normalizePageAdminPromoteToken(form.pageAdminPromoteToken?.value);
+                const expectedToken = normalizePageAdminPromoteToken(form.expectedPromoteToken?.value);
+                if (!typedToken || typedToken !== expectedToken) {
+                    throw new Error('Type the person\'s name exactly to confirm.');
+                }
+                const pageId = text(form.pageId?.value);
+                const userId = text(form.userId?.value);
+                if (!pageId || !userId) throw new Error('Page admin promotion could not be completed.');
+                await updatePageAdmins(pageId, userId, 'promote');
+            });
+        }
         if (formType === 'create-page') {
             return withBusy(async () => {
                 const avatarImage = text(form.pageAvatarUrl?.value || runtime.ui?.pageAvatarUrl || '') || await readFileAsDataUrl(runtime.ui?.pageAvatarFile || null);
@@ -1109,7 +1468,12 @@
                 if (!payload.name) throw new Error('Page name is required.');
                 if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
                 if (!payload.category) throw new Error('Page category is required.');
-                if (!payload.description && !payload.about) throw new Error('Add a description or about section for the page.');
+                if (!payload.description && payload.tagline) payload.description = payload.tagline;
+                if (!payload.description && !payload.about) {
+                    runtime.ui.pageWizardStep = 3;
+                    renderSocialPageNow('page-create-validate');
+                    throw new Error('Add a short description or about section on step 3.');
+                }
                 const createdPage = await createPortalSocialPage(payload);
                 runtime.ui.pageName = '';
                 runtime.ui.pageDescription = '';
@@ -1211,6 +1575,7 @@
         try {
 
         if (target.matches('[data-bind="pages-search"], [data-bind="page-members-search"]')) return true;
+        if (target.matches('[data-bind="page-members-faculty-filter"], [data-bind="page-members-role-filter"]')) return true;
         if (target.closest && target.closest('form[data-form="create-page"], form[data-form="update-page-profile"], form[data-form="page-profile-post"]')) return true;
 
         } catch (e) {}
@@ -1229,6 +1594,16 @@
                 queuePageMembersSearchRefresh();
                 return;
             }
+        }
+        if (target.matches('[data-bind="page-members-faculty-filter"]')) {
+            runtime.ui.pageMembersFacultyFilter = text(target.value || 'all') || 'all';
+            renderSocialPageNow('page-members-faculty-filter');
+            return;
+        }
+        if (target.matches('[data-bind="page-members-role-filter"]')) {
+            runtime.ui.pageMembersRoleFilter = text(target.value || 'all') || 'all';
+            renderSocialPageNow('page-members-role-filter');
+            return;
         }
         if (target.matches('form[data-form="create-page"] [name="pageName"]')) runtime.ui.pageName = target.value;
         if (target.matches('form[data-form="create-page"] [name="pageDescription"]')) runtime.ui.pageDescription = target.value;
@@ -1265,6 +1640,7 @@
         if (!target || typeof target.matches !== 'function') return false;
         try {
 
+        if (target.matches('[data-bind="page-members-faculty-filter"], [data-bind="page-members-role-filter"]')) return true;
         if (target.closest && target.closest('form[data-form="create-page"], form[data-form="update-page-profile"], form[data-form="page-profile-post"]')) return true;
         if (target.name === 'pagePostFile' || target.name === 'pageAvatarFile' || target.name === 'pageCoverFile') return true;
 
@@ -1274,6 +1650,16 @@
 
     function handleSocialPagesChange(target, runtime, event) {
         if (!isSocialPagesChangeTarget(target)) return false;
+        if (target.matches('[data-bind="page-members-faculty-filter"]')) {
+            runtime.ui.pageMembersFacultyFilter = text(target.value || 'all') || 'all';
+            renderSocialPageNow('page-members-faculty-filter');
+            return true;
+        }
+        if (target.matches('[data-bind="page-members-role-filter"]')) {
+            runtime.ui.pageMembersRoleFilter = text(target.value || 'all') || 'all';
+            renderSocialPageNow('page-members-role-filter');
+            return true;
+        }
         if (target.matches('form[data-form="create-page"] [name="pageVisibility"]')) runtime.ui.pageVisibility = text(target.value || 'public') || 'public';
         if (target.matches('form[data-form="create-page"] [name="pageType"]')) runtime.ui.pageType = text(target.value || 'brand') || 'brand';
         if (target.matches('form[data-form="update-page-profile"] [name="pageVisibility"]')) runtime.ui.pageVisibility = text(target.value || 'public') || 'public';

@@ -76,6 +76,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@dietrichgebert/ponytail": "^4.8.4",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "pg": "^8.16.3",
