@@ -618,6 +618,9 @@ function switchRole(newRole) {
         }
         if (!warnMissingImpersonationPersona(requestedRole)) return;
         if (canApplyInPlaceAdminRoleSwitchOnStandaloneLms()) {
+            if (typeof setActiveSessionUserByRole === 'function') {
+                setActiveSessionUserByRole(requestedRole);
+            }
             await syncPortalBackendImpersonationBeforeRedirect(requestedRole);
             if (await applyInPlaceAdminRoleSwitchOnStandaloneLms(requestedRole)) {
                 return;

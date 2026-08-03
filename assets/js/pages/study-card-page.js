@@ -447,9 +447,9 @@ function renderStudyCardTermsRegion(context) {
         const rows = context.semesterBuckets[termNum]
             .sort((a, b) => String(a.courseName || '').localeCompare(String(b.courseName || ''), undefined, { sensitivity: 'base' }))
             .map((subject) => {
-                const assessmentCacheKey = `study-card-${studyCardDomToken(subject.courseId)}-${studyCardDomToken(subject.groupId || subject.groupName)}-${termNum}`;
-                assessmentWindowCache[assessmentCacheKey] = subject;
-                return `
+            const assessmentCacheKey = `study-card-${studyCardDomToken(subject.courseId)}-${studyCardDomToken(subject.groupId || subject.groupName)}-${termNum}`;
+            assessmentWindowCache[assessmentCacheKey] = subject;
+            return `
                 <tr class="study-card-term-row lux-soft-chrome home-hover-chip">
                     <td class="study-card-cell study-card-cell--subject">
                         <div class="lms-route-card-title">${escapeHtml(subject.courseName)}</div>

@@ -259,10 +259,14 @@
                 const runtime = window.STUDENT_SERVICE_RUNTIME || {};
                 if (Number(runtime.suppressRealtimeRefreshUntil || 0) > Date.now()) return;
                 if (runtime.pendingAnswerHelpfulIds?.size) return;
+                if (runtime.pendingOwnerResolutionIds?.size) return;
+                if (runtime.pendingQuestionHelpfulIds?.size) return;
                 fetchStudentServiceBootstrap(true)
                     .then(() => {
                         if (Number(runtime.suppressRealtimeRefreshUntil || 0) > Date.now()) return;
                         if (runtime.pendingAnswerHelpfulIds?.size) return;
+                        if (runtime.pendingOwnerResolutionIds?.size) return;
+                        if (runtime.pendingQuestionHelpfulIds?.size) return;
                         const ui = typeof window.ensureStudentServiceUiState === 'function'
                             ? window.ensureStudentServiceUiState()
                             : null;

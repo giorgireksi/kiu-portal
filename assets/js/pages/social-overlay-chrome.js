@@ -15,6 +15,7 @@
         const PROJECT_TASK_GRAPH_STACKED_DIALOGS = deps.PROJECT_TASK_GRAPH_STACKED_DIALOGS || new Set();
         const PROJECT_HEALTH_OVERLAY_DIALOGS = deps.PROJECT_HEALTH_OVERLAY_DIALOGS || new Set();
         const workspaceDialogKeepsCenter = deps.workspaceDialogKeepsCenter || (() => false);
+        const overlayDialogPreservesScroll = deps.overlayDialogPreservesScroll || (() => false);
         const isProjectTaskGraphStackActive = deps.isProjectTaskGraphStackActive || (() => false);
         const getProjectTaskGraphStackAnchorDialog = deps.getProjectTaskGraphStackAnchorDialog || (() => null);
         const renderDialogOnlyNow = deps.renderDialogOnlyNow || (() => {});
@@ -58,6 +59,7 @@
         }
 
         function clearSocialOverlayLockArtifacts() {
+            restoreCenterScrollerOverlayPin();
             delete document.body.dataset.socialOverlayScrollY;
             delete document.body.dataset.socialOverlayCenterScrollY;
             delete document.body.dataset.socialOverlayLocked;
@@ -67,6 +69,24 @@
             document.body.style.left = '';
             document.body.style.right = '';
             document.body.style.width = '';
+        }
+
+        function pinCenterScrollerForOverlay() {
+            const centerScroller = getSocialCenterScroller(root());
+            if (!centerScroller || centerScroller.dataset.socialOverlayOverflowPinned === '1') return;
+            centerScroller.dataset.socialOverlayPriorOverflow = centerScroller.style.overflow || '';
+            centerScroller.style.overflow = 'hidden';
+            centerScroller.dataset.socialOverlayOverflowPinned = '1';
+        }
+
+        function restoreCenterScrollerOverlayPin() {
+            const centerScroller = getSocialCenterScroller(root());
+            if (!centerScroller || centerScroller.dataset.socialOverlayOverflowPinned !== '1') return;
+            const prior = centerScroller.dataset.socialOverlayPriorOverflow || '';
+            if (prior) centerScroller.style.overflow = prior;
+            else centerScroller.style.removeProperty('overflow');
+            delete centerScroller.dataset.socialOverlayPriorOverflow;
+            delete centerScroller.dataset.socialOverlayOverflowPinned;
         }
 
         function clearStaleSocialOverlayDom() {
@@ -245,11 +265,15 @@
                 document.body.dataset.socialOverlayCenterScrollY = String(centerScrollY);
                 document.body.dataset.socialOverlayLocked = '1';
                 document.body.classList.add('social-overlay-open');
-                document.body.style.position = 'fixed';
-                document.body.style.top = `-${scrollY}px`;
-                document.body.style.left = '0';
-                document.body.style.right = '0';
-                document.body.style.width = '100%';
+                if (socialScrollLockActive()) {
+                    pinCenterScrollerForOverlay();
+                } else {
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = `-${scrollY}px`;
+                    document.body.style.left = '0';
+                    document.body.style.right = '0';
+                    document.body.style.width = '100%';
+                }
                 return;
             }
 
@@ -261,14 +285,19 @@
 
                 const scrollY = Number(document.body.dataset.socialOverlayScrollY || 0);
                 const centerScrollY = Number(document.body.dataset.socialOverlayCenterScrollY || 0);
-                clearSocialOverlayLockArtifacts();
                 if (isLocked) {
                     if (socialScrollLockActive()) {
-                        scrollSocialCenterTo(centerScrollY, 'auto');
+                        const centerScroller = getSocialCenterScroller(root());
+                        restoreCenterScrollerOverlayPin();
+                        if (centerScroller && Number.isFinite(centerScrollY)
+                            && Math.abs(centerScroller.scrollTop - centerScrollY) > 1) {
+                            centerScroller.scrollTop = centerScrollY;
+                        }
                     } else {
-                        window.scrollTo(0, scrollY);
+                        try { window.scrollTo(0, scrollY); } catch (error) {}
                     }
                 }
+                clearSocialOverlayLockArtifacts();
             }
         }
 
@@ -341,6 +370,12 @@
             return false;
         }
 
+        function shouldUseDialogOnlyRender(type, activePanel) {
+            if (overlayDialogPreservesScroll(type)) return true;
+            return workspaceDialogKeepsCenter(type)
+                && ['projects', 'workspace', 'photography'].includes(activePanel);
+        }
+
         function openDialog(type, payload = {}) {
             if (type === 'group-leave') {
                 state().ui.groupLeaveStep = 1;
@@ -389,7 +424,7 @@
             ui.socialDialog = { type, ...payload };
             ensureSocialOverlayPortal();
             const activePanel = text(state().ui?.activePanel || '');
-            if (workspaceDialogKeepsCenter(type) && ['projects', 'workspace'].includes(activePanel)) {
+            if (shouldUseDialogOnlyRender(type, activePanel)) {
                 renderDialogOnlyNow();
             } else {
                 renderSocialPageNow(`dialog-${type}`);
@@ -432,7 +467,7 @@
                     ui.previousDialog = null;
                     clearStaleSocialOverlayDom();
                     renderDialogOnlyNow();
-                    window.requestAnimationFrame(() => syncSocialOverlayLock());
+                    syncSocialOverlayLock();
                 }
                 return;
             }
@@ -452,6 +487,7 @@
                 restorePreviousDialog();
                 return;
             }
+            ui.closingDialogType = closingType;
             ui.socialDialog = null;
             ui.previousDialog = null;
             ui.projectTaskGraphStackAnchor = null;
@@ -506,12 +542,13 @@
                 ui.projectTaskGraphPreviewStale = false;
             }
             const activePanel = text(state().ui?.activePanel || '');
-            if (workspaceDialogKeepsCenter(closingType) && ['projects', 'workspace'].includes(activePanel)) {
+            if (shouldUseDialogOnlyRender(closingType, activePanel)) {
                 renderDialogOnlyNow();
             } else {
                 renderSocialPageNow('dialog-close');
             }
-            window.requestAnimationFrame(() => syncSocialOverlayLock());
+            ui.closingDialogType = '';
+            syncSocialOverlayLock();
         }
 
         function restorePreviousDialog() {
@@ -544,8 +581,7 @@
                 stack?.classList.remove('social-project-task-graph-stack--child-open');
             }
             const activePanel = text(ui.activePanel || '');
-            if ((parentType === 'project-task-graph' || parentType === 'project-health' || workspaceDialogKeepsCenter(parentType))
-                && ['projects', 'workspace'].includes(activePanel)) {
+            if (shouldUseDialogOnlyRender(parentType, activePanel)) {
                 renderDialogOnlyNow();
             } else {
                 renderSocialPageNow(`dialog-${parentType}`);

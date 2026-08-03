@@ -860,6 +860,7 @@ describe('global interaction performance guardrails', () => {
     expect(shell).toContain('now - lastAt < 90');
     expect(shell).not.toContain('spawnStudioChipBurstParticles._live');
     expect(shell).toContain('if (bit._done) return');
+    expect(shell).toContain('window.spawnLuxChipBurstParticles = spawnStudioChipBurstParticles');
     const studioCss = readSource('assets/css/lux-studio.css');
     expect(studioCss).toContain('lux-chip-burst-particle--spark');
     expect(studioCss).toContain('lux-chip-burst-particle--streak');

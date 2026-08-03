@@ -384,7 +384,7 @@
         const pinModel = researchPinModel();
         const flagged = pinModel ? pinModel.applyPinFlags('research', [item])[0] : item;
         return `
-            <article class="social-neo-card social-neo-research-card home-hover-chip">
+            <article class="social-neo-card social-neo-entity-card social-neo-research-card home-hover-chip">
                 <div class="social-neo-research-card-top">
                     <span class="lux-status-pill home-hover-chip ${kind === 'pdf' ? 'is-warning' : kind === 'slides' ? 'is-info' : 'is-muted'}">${escape(fileKindLabel(kind))}</span>
                     ${status}
@@ -742,11 +742,13 @@
                 ${renderResearchHero(listItems)}
                 <section class="social-neo-card social-neo-research-catalog home-hover-chip">
                     ${tab === 'pinned' ? '' : renderResearchFilters()}
-                    ${listItems.length
-                        ? (tab === 'pinned' && pinnedSections && researchPinModel()
-                            ? researchPinModel().renderPinnedSections('research', pinnedSections, (entry) => renderResearchCard(entry), 'No pinned research yet.')
-                            : `<div class="social-neo-research-grid">${listItems.map(renderResearchCard).join('')}</div>`)
-                        : `<div class="lux-empty-state social-neo-research-empty">
+                    ${tab === 'pinned' && !listItems.length
+                        ? `<div class="social-neo-empty home-hover-chip social-neo-research-empty">No pinned research yet. Highlight deposits or save publications to revisit them.</div>`
+                        : listItems.length
+                            ? (tab === 'pinned' && pinnedSections && researchPinModel()
+                                ? `<div class="social-neo-research-grid">${researchPinModel().renderPinnedSections('research', pinnedSections, (entry) => renderResearchCard(entry), 'No pinned research yet.')}</div>`
+                                : `<div class="social-neo-research-grid">${listItems.map(renderResearchCard).join('')}</div>`)
+                            : `<div class="lux-empty-state social-neo-research-empty">
                                 <i class="fas fa-book-open" aria-hidden="true"></i>
                                 <strong class="lux-empty-state__title">No deposits in this lane</strong>
                                 <span class="lux-empty-state__copy">Drop PDF, slides, or documents — student and faculty streams stay separate.</span>

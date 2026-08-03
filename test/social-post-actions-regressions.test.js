@@ -127,6 +127,9 @@ describe('social post actions regressions', () => {
         expect(feedModule).not.toContain('isCommentDialog()) {\n                return withBusy(() => deleteCommentInline');
         expect(source).toContain('window.relayoutCommentTrunks || window.__kiuRelayoutCommentTrunks');
         expect(readSource('assets/js/pages/social-overlay-chrome.js')).toContain('requestAnimationFrame(() => relayoutCommentTrunks())');
+        expect(readSource('assets/js/pages/social-page.js')).toContain("const OVERLAY_DIALOG_PRESERVE_SCROLL = new Set([");
+        expect(readSource('assets/js/pages/social-page.js')).toContain("'post-comments'");
+        expect(readSource('assets/js/pages/social-overlay-chrome.js')).toContain('shouldUseDialogOnlyRender');
         expect(source).not.toMatch(/function renderPost\(post\)[\s\S]*function renderPost\(post\)/);
 
         expect(sw).toContain('function isSocialRuntimeScriptRequest(url, request)');

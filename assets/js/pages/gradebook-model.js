@@ -1360,6 +1360,11 @@ function createStudentEvaluationAttempt(studentId, criterion, studentName = '', 
         alert('Only professors or teaching assistants can create evaluation attempts.');
         return;
     }
+    if (currentGradebookSection?.courseId && currentGradebookSection?.groupId && typeof syncGradebookRosterFromEnrollment === 'function') {
+        syncGradebookRosterFromEnrollment(currentGradebookSection.courseId, currentGradebookSection.groupId);
+    } else if (typeof syncGradebookRostersForStudent === 'function') {
+        syncGradebookRostersForStudent(studentId, currentRosterId);
+    }
     const roster = Array.isArray(KIU_STATE.studentGrades?.[currentRosterId]) ? KIU_STATE.studentGrades[currentRosterId] : (Array.isArray(mockStudents) ? mockStudents : []);
     const index = roster.findIndex(entry => String(entry.id) === String(studentId));
     const existing = index >= 0 ? roster[index] : (mockStudents || []).find(entry => String(entry.id) === String(studentId));
@@ -1411,6 +1416,11 @@ function removeStudentEvaluationEntry(studentId, criterion, number, studentName 
     if (![USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(getEffectiveUserRole())) {
         alert('Only professors or teaching assistants can remove evaluation attempts.');
         return;
+    }
+    if (currentGradebookSection?.courseId && currentGradebookSection?.groupId && typeof syncGradebookRosterFromEnrollment === 'function') {
+        syncGradebookRosterFromEnrollment(currentGradebookSection.courseId, currentGradebookSection.groupId);
+    } else if (typeof syncGradebookRostersForStudent === 'function') {
+        syncGradebookRostersForStudent(studentId, currentRosterId);
     }
     const normalizedCriterion = normalizeGradebookCriterion(criterion);
     const targetNumber = normalizeAssessmentNumber(number, 1);

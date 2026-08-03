@@ -49,6 +49,7 @@ describe('study card route regressions.test', () => {
         expect(studyCardJs).toContain('study-card-term-row lux-soft-chrome home-hover-chip');
         expect(studyCardJs).toContain('study-card-term-header lux-soft-chrome home-hover-chip');
         expect(studyCardJs).toContain('lms-route-field-label study-card-heading');
+        expect(studyCardJs).toContain('assessmentWindowCache[assessmentCacheKey] = subject');
         expect(studyCardJs).toContain('lux-empty-state__title lms-route-empty-title');
         expect(studyCardJs).toContain('resolveStudyCardScheduleRefs');
         expect(studyCardJs).toContain('studyCardDomToken');
@@ -92,5 +93,61 @@ describe('study card route regressions.test', () => {
         expect(studyCardJs).toContain('lux-panel-copy study-card-assessment-panel-copy');
         expect(studyCardJs).not.toContain('study-card-assessment-window lux-soft-chrome');
         expect(gradebookModel).toContain('study-card-activity-item lux-soft-chrome home-hover-chip');
+    });
+
+    it('gradebook overlay uses shared panel padding and overflow contract', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+
+        expect(bare).toMatch(
+            /body:is\(\.lux-route-lms, \.lux-route-faculty-gradebook, \.lux-route-study-card\) \.lms-route-panel-compact[\s\S]*padding:\s*16px/
+        );
+        expect(bare).toContain('.study-card-gradebook-overlay .gb-scheme-progress-section.is-study-card-overlay');
+        expect(bare).toMatch(
+            /\.study-card-gradebook-overlay \.gb-scheme-progress-section\.is-study-card-overlay[\s\S]*gap:\s*10px/
+        );
+        expect(fouc).toMatch(
+            /\.study-card-gradebook-overlay \.gb-weight-card\.lux-soft-chrome\.home-hover-chip[\s\S]*overflow:\s*visible/
+        );
+        expect(fouc).toMatch(
+            /\.study-card-gradebook-overlay \.gb-weight-card\.lux-soft-chrome\.home-hover-chip[\s\S]*contain:\s*none/
+        );
+    });
+
+    it('category history modal uses shared layout, paint, and study-card overlay stacking', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+
+        expect(bare).toMatch(
+            /body:is\(\.lux-route-lms, \.lux-route-faculty-gradebook, \.lux-route-study-card\) #gradebook-category-history-modal \.gb-category-history-card[\s\S]*padding:\s*14px 16px/
+        );
+        expect(bare).toContain('body.lux-route-study-card #gradebook-category-history-modal.gb-category-history-overlay');
+        expect(bare).toMatch(/#gradebook-category-history-modal\.gb-category-history-overlay[\s\S]*z-index:\s*7500/);
+        expect(bare).toMatch(
+            /#gradebook-category-history-modal \.gb-category-history-card\.lux-soft-chrome[\s\S]*overflow:\s*visible/
+        );
+        expect(fouc).toMatch(
+            /body:is\(\.lux-route-lms, \.lux-route-faculty-gradebook, \.lux-route-study-card\) #gradebook-category-history-modal :is\([\s\S]*\.gb-category-history-card\.lux-soft-chrome/
+        );
+    });
+
+    it('evaluation history modal uses shared layout, paint, and study-card overlay stacking', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+
+        expect(bare).toMatch(
+            /body:is\(\.lux-route-lms, \.lux-route-faculty-gradebook, \.lux-route-study-card\) button\.gb-modal-category-card[\s\S]*padding:\s*16px/
+        );
+        expect(bare).toContain('body.lux-route-study-card #student-evaluation-history-modal.gb-modal-overlay');
+        expect(bare).toMatch(/#student-evaluation-history-modal\.gb-modal-overlay[\s\S]*z-index:\s*7400/);
+        expect(bare).toMatch(
+            /#student-evaluation-history-modal :is\([\s\S]*\.gb-modal-history-card\.lux-soft-chrome[\s\S]*overflow:\s*visible/
+        );
+        expect(bare).toMatch(
+            /:is\(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal\)[\s\S]*gb-score-history-row/
+        );
+        expect(fouc).toMatch(
+            /body:is\(\.lux-route-lms, \.lux-route-faculty-gradebook, \.lux-route-study-card\) #student-evaluation-history-modal :is\([\s\S]*\.gb-modal-history-card\.lux-soft-chrome/
+        );
     });
 });

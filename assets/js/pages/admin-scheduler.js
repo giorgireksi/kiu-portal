@@ -6,8 +6,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 (function initAdminSchedulerController() {
     'use strict';
     const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const SLOT_TIMES = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
-    const SCHEDULER_START_MINUTES = 9 * 60;
     const SCHEDULER_FACULTY_OPTIONS = [
         ['ECON', 'Management'],
         ['CS', 'Computer Science'],
@@ -37,6 +35,17 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     let schedulerPresetSearchHandle = 0;
     let schedulerRefreshHandle = 0;
     let schedulerRevealShellQueued = false;
+    let schedulerStaffPickerState = {
+        role: 'professor',
+        targetId: '',
+        records: [],
+        selectedId: '',
+        query: '',
+        activeSectionId: '',
+        profileSections: new Map(),
+        profileSectionsByType: new Map(),
+        profileMarkup: new Map()
+    };
 // --- READABILITY: Grid ---
     let schedulerRefreshQueued = { palette: false, grid: false, paletteSearchOnly: false };
     function el(id) {
@@ -112,8 +121,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function openSchedulerPortalModal(overlay, options = {}) {
         if (!overlay || typeof window.openLuxPortalModal !== 'function') return;
-        window.openLuxPortalModal(overlay, { scrollLock: true, ...options });
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+        const { refreshTransparency = true, ...modalOptions } = options;
+        window.openLuxPortalModal(overlay, { scrollLock: true, ...modalOptions });
+        if (refreshTransparency && typeof window.queueLuxuryTransparencyRefresh === 'function') {
             window.queueLuxuryTransparencyRefresh(undefined, { roots: [overlay] });
         }
     }
@@ -689,6 +699,431 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         return String(person.name || person.nameEn || person.displayName || person.id || '').trim();
     }
 
+    function escapeSchedulerStaffPickerHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function schedulerStaffPickerAvatarSource(value) {
+        const candidate = String(value || '').trim();
+        if (!candidate) return '';
+        if (/^(data:|blob:|https?:\/\/|file:\/\/|\/|\.{1,2}\/)/i.test(candidate)) return candidate;
+        return /\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i.test(candidate) ? candidate : '';
+    }
+
+    function schedulerStaffPickerRoleLabel(role) {
+        return role === 'ta' ? 'Teaching assistant' : 'Professor';
+    }
+
+    function schedulerStaffPickerRecordKey(person) {
+        return String(person?.id || schedulerRosterDisplayName(person)).trim();
+    }
+
+    function getSchedulerStaffPickerRecords(role) {
+        const facultyValue = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
+        const facultyFilter = facultyValue === 'all' ? null : normalizeFacultyCode(facultyValue, getCurrentFaculty());
+        return (typeof getAllStaff === 'function'
+            ? getAllStaff(role === 'ta' ? 'tas' : 'professors', facultyFilter)
+            : []
+        ).filter((person) => schedulerRosterDisplayName(person)).map((person) => {
+            const staffTypeId = person.staffTypeId || (role === 'ta' ? 'ta' : 'professor');
+            const fieldValues = typeof hydrateFieldValuesFromRecord === 'function'
+                ? hydrateFieldValuesFromRecord(person, staffTypeId)
+                : (person.fieldValues && typeof person.fieldValues === 'object' ? person.fieldValues : {});
+            return { ...person, staffTypeId, fieldValues };
+        });
+    }
+
+    function schedulerStaffPickerFieldValue(person, role) {
+        return schedulerRosterDisplayName(person) || (role === 'ta' ? 'No TA' : 'No professor');
+    }
+
+    function schedulerStaffPickerValue(value, emptyLabel) {
+        return value == null || value === '' ? emptyLabel : String(value);
+    }
+
+    function renderSchedulerStaffPickerProfileFallback(person) {
+        if (!person) {
+            return '<div class="sch-staff-picker-empty"><i class="fas fa-user-slash"></i><strong>Select a staff member</strong><span>Review their profile details before assigning them.</span></div>';
+        }
+        const role = schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role);
+        const name = schedulerRosterDisplayName(person);
+        const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'ST';
+        const details = [
+            ['Role', person.title || role],
+            ['Staff ID', person.staffId || person.id],
+            ['Faculty', person.facultyName || person.facultyCode || person.faculty],
+            ['Department', person.department],
+            ['Email', person.email || person.emailAddress],
+            ['Phone', person.phone || person.phoneNumber],
+            ['Office', person.office || person.officeLocation],
+            ['Status', person.status || person.accountStatus]
+        ].filter(([, value]) => value);
+        const courses = [
+            ...(Array.isArray(person.courses) ? person.courses : []),
+            ...(Array.isArray(person.subjects) ? person.subjects : [])
+        ].map((course) => typeof course === 'object' ? (course.name || course.id || '') : course).filter(Boolean);
+        const scheduleSessions = Array.isArray(person.scheduleSessions) ? person.scheduleSessions : [];
+        const officeHours = Array.isArray(person.officeHours) ? person.officeHours : [];
+        const availability = [person.availability, ...officeHours].filter(Boolean).map((item) => typeof item === 'object' ? (item.day && item.time ? `${item.day} ${item.time}` : item.label || '') : item).filter(Boolean).join(' · ');
+        const scheduleSummary = scheduleSessions.map((session) => {
+            if (typeof session !== 'object') return session;
+            return [session.courseId || session.code, session.day, session.time, session.room].filter(Boolean).join(' · ');
+        }).filter(Boolean);
+        const links = Array.isArray(person.links) ? person.links.map((link) => typeof link === 'object' ? (link.label || link.url || '') : link).filter(Boolean) : [];
+        const documents = [
+            ...(Array.isArray(person.customDocs) ? person.customDocs : []),
+            ...(Array.isArray(person.documents) ? person.documents : [])
+        ].map((doc) => typeof doc === 'object' ? (doc.title || doc.name || '') : doc).filter(Boolean);
+        const customFields = person.fieldValues && typeof person.fieldValues === 'object'
+            ? Object.entries(person.fieldValues).filter(([, value]) => value !== '' && value != null).slice(0, 12)
+            : [];
+        return `
+            <div class="sch-staff-picker-profile-head">
+                <div class="sch-staff-picker-avatar">${schedulerStaffPickerAvatarSource(person.photo) ? `<img src="${escapeSchedulerStaffPickerHtml(schedulerStaffPickerAvatarSource(person.photo))}" alt="">` : initials}</div>
+                <div>
+                    <div class="sch-staff-picker-kicker">${escapeSchedulerStaffPickerHtml(role)} · ${escapeSchedulerStaffPickerHtml(person.facultyName || person.facultyCode || '')}</div>
+                    <h3>${escapeSchedulerStaffPickerHtml(name)}</h3>
+                    <p>${escapeSchedulerStaffPickerHtml(person.title || person.department || role)}</p>
+                </div>
+            </div>
+            <div class="sch-staff-picker-section">
+                <div class="sch-staff-picker-section-title">Overview</div>
+                <div class="sch-staff-picker-detail-grid">
+                    ${details.map(([label, value]) => `<div><span>${escapeSchedulerStaffPickerHtml(label)}</span><strong>${escapeSchedulerStaffPickerHtml(value)}</strong></div>`).join('')}
+                </div>
+            </div>
+            ${courses.length || scheduleSummary.length ? `<div class="sch-staff-picker-section"><div class="sch-staff-picker-section-title">Teaching</div><p class="sch-staff-picker-copy">${[...courses, ...scheduleSummary].map(escapeSchedulerStaffPickerHtml).join(' · ')}</p></div>` : ''}
+            ${availability ? `<div class="sch-staff-picker-section"><div class="sch-staff-picker-section-title">Availability</div><p class="sch-staff-picker-copy">${escapeSchedulerStaffPickerHtml(availability)}</p></div>` : ''}
+            ${links.length ? `<div class="sch-staff-picker-section"><div class="sch-staff-picker-section-title">Links</div><p class="sch-staff-picker-copy">${links.map(escapeSchedulerStaffPickerHtml).join(' · ')}</p></div>` : ''}
+            ${customFields.length ? `<div class="sch-staff-picker-section"><div class="sch-staff-picker-section-title">Profile details</div><div class="sch-staff-picker-detail-grid">${customFields.map(([label, value]) => `<div><span>${escapeSchedulerStaffPickerHtml(label)}</span><strong>${escapeSchedulerStaffPickerHtml(Array.isArray(value) ? value.join(', ') : value)}</strong></div>`).join('')}</div></div>` : ''}
+            ${documents.length ? `<div class="sch-staff-picker-section"><div class="sch-staff-picker-section-title">Documents</div><p class="sch-staff-picker-copy">${documents.map(escapeSchedulerStaffPickerHtml).join(' · ')}</p></div>` : ''}
+        `;
+    }
+
+    function getSchedulerStaffPickerProfileSections(person) {
+        const recordKey = schedulerStaffPickerRecordKey(person);
+        const cachedSections = schedulerStaffPickerState.profileSections?.get(recordKey);
+        if (cachedSections) return cachedSections;
+        const typeId = person?.staffTypeId || (schedulerStaffPickerState.role === 'ta' ? 'ta' : 'professor');
+        const cachedTypeSections = schedulerStaffPickerState.profileSectionsByType?.get(typeId);
+        if (cachedTypeSections) {
+            schedulerStaffPickerState.profileSections?.set(recordKey, cachedTypeSections);
+            return cachedTypeSections;
+        }
+        const schema = typeof getStaffFormSchema === 'function' ? getStaffFormSchema(typeId) : null;
+        const blueprintSections = (schema?.sections || [])
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .filter((section) => (section.fields || []).length)
+            .filter((section) => !/^admin$/i.test(String(section.id || '').trim()))
+            .filter((section) => !/^admin$/i.test(String(section.title || '').trim()));
+        const sections = blueprintSections.length
+            ? blueprintSections
+            : [
+                { id: 'overview', title: 'Overview' },
+                { id: 'teaching', title: 'Teaching' },
+                { id: 'availability', title: 'Availability' },
+                { id: 'documents', title: 'Links & documents' }
+            ];
+        schedulerStaffPickerState.profileSections?.set(recordKey, sections);
+        schedulerStaffPickerState.profileSectionsByType?.set(typeId, sections);
+        return sections;
+    }
+
+    function renderSchedulerStaffPickerLegacySection(person, section) {
+        const details = [
+            ['Role', person.title || schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role)],
+            ['Staff ID', person.staffId || person.id],
+            ['Faculty', person.facultyName || person.facultyCode || person.faculty],
+            ['Department', person.department],
+            ['Email', person.email || person.emailAddress],
+            ['Phone', person.phone || person.phoneNumber],
+            ['Office', person.office || person.officeLocation],
+            ['Status', person.status || person.accountStatus]
+        ].filter(([, value]) => value);
+        const courses = [
+            ...(Array.isArray(person.courses) ? person.courses : []),
+            ...(Array.isArray(person.subjects) ? person.subjects : [])
+        ].map((course) => typeof course === 'object' ? (course.name || course.id || '') : course).filter(Boolean);
+        const schedule = (Array.isArray(person.scheduleSessions) ? person.scheduleSessions : []).map((session) => {
+            if (typeof session !== 'object') return session;
+            return [session.courseId || session.code, session.day, session.time, session.room].filter(Boolean).join(' · ');
+        }).filter(Boolean);
+        const officeHours = Array.isArray(person.officeHours) ? person.officeHours : [];
+        const availability = [person.availability, ...officeHours].filter(Boolean).map((item) => typeof item === 'object'
+            ? (item.day && item.time ? `${item.day} ${item.time}` : item.label || '')
+            : item).filter(Boolean);
+        const links = Array.isArray(person.links) ? person.links.map((link) => typeof link === 'object' ? (link.label || link.url || '') : link).filter(Boolean) : [];
+        const documents = [
+            ...(Array.isArray(person.customDocs) ? person.customDocs : []),
+            ...(Array.isArray(person.documents) ? person.documents : [])
+        ].map((doc) => typeof doc === 'object' ? (doc.title || doc.name || '') : doc).filter(Boolean);
+        const list = (items, emptyLabel) => items.length
+            ? `<div class="staff-hub-list">${items.map((item) => `<div class="staff-hub-list-item"><strong>${escapeSchedulerStaffPickerHtml(item)}</strong></div>`).join('')}</div>`
+            : `<div class="staff-hub-schema-empty"><p>${escapeSchedulerStaffPickerHtml(emptyLabel)}</p></div>`;
+        const sectionTitle = section.title || 'Profile';
+        if (section.id === 'teaching') {
+            return `<section class="staff-hub-form-section lux-data-card"><div class="staff-hub-form-section-head"><span class="staff-hub-overline">Profile section</span><strong>${escapeSchedulerStaffPickerHtml(sectionTitle)}</strong></div>${list([...courses, ...schedule], 'No teaching or schedule details have been added.')}</section>`;
+        }
+        if (section.id === 'availability') {
+            return `<section class="staff-hub-form-section lux-data-card"><div class="staff-hub-form-section-head"><span class="staff-hub-overline">Profile section</span><strong>${escapeSchedulerStaffPickerHtml(sectionTitle)}</strong></div>${list(availability, 'No availability details have been added.')}</section>`;
+        }
+        if (section.id === 'documents') {
+            return `<section class="staff-hub-form-section lux-data-card"><div class="staff-hub-form-section-head"><span class="staff-hub-overline">Profile section</span><strong>${escapeSchedulerStaffPickerHtml(sectionTitle)}</strong></div><div class="staff-hub-form-grid">${[
+                ['Links', links],
+                ['Documents', documents]
+            ].map(([label, items]) => `<div class="staff-hub-info-card"><span>${label}</span>${list(items, `No ${label.toLowerCase()} have been added.`)}</div>`).join('')}</div></section>`;
+        }
+        return `<section class="staff-hub-form-section lux-data-card"><div class="staff-hub-form-section-head"><span class="staff-hub-overline">Profile section</span><strong>${escapeSchedulerStaffPickerHtml(sectionTitle)}</strong></div><div class="staff-hub-form-grid">${details.map(([label, value]) => `<div class="staff-hub-profile-field"><span class="staff-hub-profile-field-label">${escapeSchedulerStaffPickerHtml(label)}</span><div class="staff-hub-profile-field-value">${escapeSchedulerStaffPickerHtml(value)}</div></div>`).join('')}</div></section>`;
+    }
+
+    function renderSchedulerStaffPickerProfile(person) {
+        if (!person) return renderSchedulerStaffPickerProfileFallback(person);
+        const recordKey = schedulerStaffPickerRecordKey(person);
+        const role = schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role);
+        const name = schedulerRosterDisplayName(person);
+        const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'ST';
+        const sections = getSchedulerStaffPickerProfileSections(person);
+        const hasBlueprintSections = sections.some((section) => (section.fields || []).length);
+        const activeSection = sections.find((section) => section.id === schedulerStaffPickerState.activeSectionId) || sections[0];
+        if (activeSection) schedulerStaffPickerState.activeSectionId = activeSection.id;
+        const profileCacheKey = `${recordKey}::${activeSection?.id || 'overview'}`;
+        const cachedMarkup = schedulerStaffPickerState.profileMarkup?.get(profileCacheKey);
+        if (cachedMarkup) return cachedMarkup;
+        const statusChips = [person.status, person.accountStatus, person.lmsRole]
+            .filter(Boolean)
+            .map((value) => `<span class="staff-hub-chip lux-status-pill">${escapeSchedulerStaffPickerHtml(value)}</span>`)
+            .join('');
+        const sectionBody = activeSection && typeof renderStaffBlueprintProfileView === 'function'
+            && hasBlueprintSections
+            ? renderStaffBlueprintProfileView(person.staffTypeId, person, { activeSectionId: activeSection.id })
+            : renderSchedulerStaffPickerLegacySection(person, activeSection || { id: 'overview', title: 'Overview' });
+        const markup = `
+            <div class="sch-staff-picker-profile-head staff-hub-profile-head">
+                <div class="sch-staff-picker-avatar staff-hub-avatar is-large">${schedulerStaffPickerAvatarSource(person.photo) ? `<img src="${escapeSchedulerStaffPickerHtml(schedulerStaffPickerAvatarSource(person.photo))}" alt="">` : initials}</div>
+                <div>
+                    <div class="sch-staff-picker-kicker staff-hub-kicker">${escapeSchedulerStaffPickerHtml(role)} · ${escapeSchedulerStaffPickerHtml(person.staffId || person.id || '')}</div>
+                    <h3>${escapeSchedulerStaffPickerHtml(name)}</h3>
+                    <p>${escapeSchedulerStaffPickerHtml(person.title || person.department || role)}${person.department ? ` · ${escapeSchedulerStaffPickerHtml(person.department)}` : ''}</p>
+                    <div class="staff-hub-chips staff-hub-chips--spaced">${statusChips}</div>
+                </div>
+            </div>
+            ${sections.length ? `
+                <div class="staff-hub-tabs lux-tab-strip is-profile-tabs sch-staff-picker-tabs" role="tablist" aria-label="Staff profile sections">
+                    ${sections.map((section) => {
+                        const active = section.id === activeSection?.id;
+                        return `<button type="button" class="staff-hub-tab lux-tab-btn staff-hub-profile-tab${active ? ' is-active' : ''}" aria-pressed="${active ? 'true' : 'false'}" data-scheduler-staff-picker-section="${escapeSchedulerStaffPickerHtml(section.id)}">${escapeSchedulerStaffPickerHtml(section.title || 'Profile')}</button>`;
+                    }).join('')}
+                </div>` : ''}
+            <div class="staff-hub-profile-body sch-staff-picker-profile-body">${sectionBody}</div>
+        `;
+        schedulerStaffPickerState.profileMarkup?.set(profileCacheKey, markup);
+        return markup;
+    }
+
+    function getVisibleSchedulerStaffPickerRecords() {
+        const query = schedulerStaffPickerState.query.toLowerCase();
+        return schedulerStaffPickerState.records.filter((person) => {
+            const haystack = [
+                schedulerRosterDisplayName(person),
+                person.nameEn,
+                person.staffId,
+                person.department,
+                person.title,
+                person.facultyName,
+                person.email
+            ].filter(Boolean).join(' ').toLowerCase();
+            return !query || haystack.includes(query);
+        });
+    }
+
+    function renderSchedulerStaffPickerRoster(visibleRecords) {
+        const overlay = el('schStaffPickerOverlay');
+        const list = overlay?.querySelector('#sch-staff-picker-list');
+        if (!list) return;
+        list.innerHTML = visibleRecords.length
+            ? visibleRecords.map((person) => {
+                const key = schedulerStaffPickerRecordKey(person);
+                const name = schedulerRosterDisplayName(person);
+                return `<button type="button" class="sch-staff-picker-person${key === schedulerStaffPickerState.selectedId ? ' is-selected' : ''}" aria-pressed="${key === schedulerStaffPickerState.selectedId ? 'true' : 'false'}" data-scheduler-staff-picker-person="${escapeSchedulerStaffPickerHtml(key)}"><strong>${escapeSchedulerStaffPickerHtml(name)}</strong><span>${escapeSchedulerStaffPickerHtml(person.department || person.facultyName || schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role))}</span></button>`;
+            }).join('')
+            : '<div class="sch-staff-picker-empty">No matching staff members.</div>';
+    }
+
+    function syncSchedulerStaffPickerSelection() {
+        const list = el('schStaffPickerOverlay')?.querySelector('#sch-staff-picker-list');
+        if (!list) return;
+        list.querySelectorAll('[data-scheduler-staff-picker-person]').forEach((button) => {
+            const isSelected = button.dataset.schedulerStaffPickerPerson === schedulerStaffPickerState.selectedId;
+            button.classList.toggle('is-selected', isSelected);
+            button.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+        });
+    }
+
+    function renderSchedulerStaffPicker(options = {}) {
+        const overlay = el('schStaffPickerOverlay');
+        if (!overlay) return;
+        const roleLabel = schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role);
+        const visibleRecords = getVisibleSchedulerStaffPickerRecords();
+        const selected = schedulerStaffPickerState.records.find((person) => schedulerStaffPickerRecordKey(person) === schedulerStaffPickerState.selectedId)
+            || visibleRecords[0]
+            || null;
+        if (selected && !schedulerStaffPickerState.selectedId) {
+            schedulerStaffPickerState.selectedId = schedulerStaffPickerRecordKey(selected);
+        }
+        const list = overlay.querySelector('#sch-staff-picker-list');
+        const profile = overlay.querySelector('#sch-staff-picker-profile');
+        const choose = overlay.querySelector('[data-scheduler-staff-picker-choose]');
+        const title = overlay.querySelector('[data-scheduler-staff-picker-title]');
+        if (title) title.textContent = `Choose ${roleLabel}`;
+        if (options.roster !== false) renderSchedulerStaffPickerRoster(visibleRecords);
+        if (options.roster === false) syncSchedulerStaffPickerSelection();
+        if (options.profile !== false && profile) profile.innerHTML = renderSchedulerStaffPickerProfile(selected);
+        if (choose) choose.disabled = !selected;
+    }
+
+    function ensureSchedulerStaffPicker() {
+        let overlay = el('schStaffPickerOverlay');
+        if (overlay) return overlay;
+        overlay = document.createElement('div');
+        overlay.id = 'schStaffPickerOverlay';
+        overlay.className = 'lux-glass-dialog-overlay sch-staff-picker-overlay';
+        overlay.dataset.luxTransparencyExempt = '1';
+        overlay.hidden = true;
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.innerHTML = `
+            <div class="lux-glass-dialog-card lux-glass-dialog-card--hub-dialog sch-staff-picker" role="dialog" aria-modal="true" aria-labelledby="sch-staff-picker-title">
+                <div class="lux-glass-dialog-head sch-staff-picker-head">
+                    <div><div class="sch-staff-picker-kicker">Staff assignment</div><h2 id="sch-staff-picker-title" data-scheduler-staff-picker-title>Choose Professor</h2><p>Review the staff profile before assigning this person.</p></div>
+                    <button type="button" class="lux-ghost-btn lux-glass-dialog-close-btn sch-staff-picker-close" data-scheduler-staff-picker-close aria-label="Close"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="lux-glass-dialog-body sch-staff-picker-body">
+                    <div class="sch-staff-picker-roster">
+                        <label for="sch-staff-picker-search">Search staff</label>
+                        <input id="sch-staff-picker-search" class="lux-control" type="search" placeholder="Name, department, or staff ID" autocomplete="off">
+                        <div id="sch-staff-picker-list" class="sch-staff-picker-list"></div>
+                    </div>
+                    <section id="sch-staff-picker-profile" class="sch-staff-picker-profile"></section>
+                </div>
+                <div class="lux-glass-dialog-actions sch-staff-picker-foot">
+                    <button type="button" class="lux-secondary-btn" data-scheduler-staff-picker-clear>Clear assignment</button>
+                    <button type="button" class="lux-primary-btn" data-scheduler-staff-picker-choose><i class="fas fa-check" aria-hidden="true"></i> Choose this person</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        return overlay;
+    }
+
+    function closeSchedulerStaffPicker() {
+        const overlay = el('schStaffPickerOverlay');
+        if (!overlay) return;
+        if (typeof window.closeLuxPortalModal === 'function') {
+            closeSchedulerPortalModal(overlay);
+        } else {
+            overlay.hidden = true;
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+    }
+
+    function openSchedulerStaffPicker(targetId, role) {
+        const overlay = ensureSchedulerStaffPicker();
+        const target = el(targetId);
+        const records = getSchedulerStaffPickerRecords(role);
+        schedulerStaffPickerState = {
+            role,
+            targetId,
+            records,
+            selectedId: '',
+            query: '',
+            activeSectionId: '',
+            profileSections: new Map(),
+            profileSectionsByType: new Map(),
+            profileMarkup: new Map()
+        };
+        records.forEach((person) => {
+            getSchedulerStaffPickerProfileSections(person);
+        });
+        const currentValue = target?.value || '';
+        const selected = schedulerStaffPickerState.records.find((person) => schedulerStaffPickerFieldValue(person, role) === currentValue);
+        schedulerStaffPickerState.selectedId = selected ? schedulerStaffPickerRecordKey(selected) : '';
+        const search = overlay.querySelector('#sch-staff-picker-search');
+        if (search) search.value = '';
+        renderSchedulerStaffPicker();
+        openSchedulerPortalModal(overlay, {
+            focusSelector: '#sch-staff-picker-search',
+            refreshTransparency: false
+        });
+    }
+
+    function applySchedulerStaffPickerValue(value) {
+        const target = el(schedulerStaffPickerState.targetId);
+        if (!target) return;
+        target.value = value;
+        syncSchedulerPickerSelect(schedulerStaffPickerState.targetId);
+        if (schedulerStaffPickerState.targetId.startsWith('admin-tt-')) {
+            queueSchedulerRefresh({ grid: true });
+        } else {
+            schCheckConflict();
+        }
+        closeSchedulerStaffPicker();
+    }
+
+    function bindSchedulerStaffPickerListeners() {
+        if (window.__kiuSchedulerStaffPickerBound) return;
+        window.__kiuSchedulerStaffPickerBound = true;
+        document.addEventListener('click', (event) => {
+            const trigger = event.target.closest?.('#admin-tt-prof-lux-btn, #admin-tt-ta-lux-btn, #sch-prof-lux-btn, #sch-ta-lux-btn');
+            if (trigger) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                const role = trigger.id.includes('-ta-') ? 'ta' : 'professor';
+                const targetId = trigger.id.includes('admin-tt-')
+                    ? (role === 'ta' ? 'admin-tt-ta' : 'admin-tt-prof')
+                    : (role === 'ta' ? 'sch-ta' : 'sch-prof');
+                openSchedulerStaffPicker(targetId, role);
+                return;
+            }
+            const personButton = event.target.closest?.('[data-scheduler-staff-picker-person]');
+            if (personButton) {
+                const nextSelectedId = personButton.dataset.schedulerStaffPickerPerson || '';
+                if (nextSelectedId === schedulerStaffPickerState.selectedId) return;
+                schedulerStaffPickerState.selectedId = nextSelectedId;
+                schedulerStaffPickerState.activeSectionId = '';
+                renderSchedulerStaffPicker({ roster: false });
+                return;
+            }
+            const sectionButton = event.target.closest?.('[data-scheduler-staff-picker-section]');
+            if (sectionButton) {
+                schedulerStaffPickerState.activeSectionId = sectionButton.dataset.schedulerStaffPickerSection || '';
+                renderSchedulerStaffPicker({ roster: false });
+                return;
+            }
+            if (event.target.closest?.('[data-scheduler-staff-picker-close]')) {
+                closeSchedulerStaffPicker();
+                return;
+            }
+            if (event.target.closest?.('[data-scheduler-staff-picker-clear]')) {
+                applySchedulerStaffPickerValue(schedulerStaffPickerState.targetId.startsWith('admin-tt-') ? 'all' : '');
+                return;
+            }
+            if (event.target.closest?.('[data-scheduler-staff-picker-choose]')) {
+                const selected = schedulerStaffPickerState.records.find((person) => schedulerStaffPickerRecordKey(person) === schedulerStaffPickerState.selectedId);
+                if (selected) applySchedulerStaffPickerValue(schedulerStaffPickerFieldValue(selected, schedulerStaffPickerState.role));
+            }
+        }, true);
+        document.addEventListener('input', (event) => {
+            if (event.target.id !== 'sch-staff-picker-search') return;
+            schedulerStaffPickerState.query = event.target.value || '';
+            renderSchedulerStaffPicker();
+        });
+    }
+
     function populateProfList() {
         const facultyValue = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
         const facultyFilter = facultyValue === 'all' ? null : normalizeFacultyCode(facultyValue, getCurrentFaculty());
@@ -718,6 +1153,41 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             taSelect.value = [...taSelect.options].some((option) => option.value === currentValue) ? currentValue : 'all';
             taSelect.removeAttribute('size');
             taSelect.size = 0;
+        }
+
+        const modalProf = el('sch-prof');
+        if (modalProf && modalProf.tagName === 'SELECT') {
+            const currentValue = modalProf.value || '';
+            const normalizedCurrent = currentValue === 'TBD' ? '' : currentValue;
+            modalProf.innerHTML = '<option value="">No professor</option>'
+                + professors.map((person) => {
+                    const label = schedulerRosterDisplayName(person);
+                    return `<option value="${label}">${label}</option>`;
+                }).join('');
+            if (normalizedCurrent && ![...modalProf.options].some((option) => option.value === normalizedCurrent)) {
+                modalProf.insertAdjacentHTML('beforeend', `<option value="${normalizedCurrent}">${normalizedCurrent}</option>`);
+            }
+            modalProf.value = [...modalProf.options].some((option) => option.value === normalizedCurrent)
+                ? normalizedCurrent
+                : '';
+            modalProf.removeAttribute('size');
+            modalProf.size = 0;
+        }
+
+        const modalTa = el('sch-ta');
+        if (modalTa && modalTa.tagName === 'SELECT') {
+            const currentValue = modalTa.value || '';
+            modalTa.innerHTML = '<option value="">No TA</option>'
+                + tas.map((person) => {
+                    const label = schedulerRosterDisplayName(person);
+                    return `<option value="${label}">${label}</option>`;
+                }).join('');
+            if (currentValue && ![...modalTa.options].some((option) => option.value === currentValue)) {
+                modalTa.insertAdjacentHTML('beforeend', `<option value="${currentValue}">${currentValue}</option>`);
+            }
+            modalTa.value = [...modalTa.options].some((option) => option.value === currentValue) ? currentValue : '';
+            modalTa.removeAttribute('size');
+            modalTa.size = 0;
         }
     }
 
@@ -888,10 +1358,22 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         });
         bindNodeOnce(el('sch-room'), 'change', 'schedulerRoomInputBound', schCheckConflict);
         bindNodeOnce(el('sch-day'), 'change', 'schedulerDayBound', schCheckConflict);
+        bindNodeOnce(el('sch-prof'), 'change', 'schedulerProfBound', schCheckConflict);
+        bindNodeOnce(el('sch-ta'), 'change', 'schedulerTaBound', schCheckConflict);
         bindNodeOnce(el('sch-create-btn'), 'click', 'schedulerCreateButtonBound', (event) => {
             event.preventDefault();
             schCreateSession();
         });
+
+        const closeControl = modal.querySelector('[data-admin-scheduler-modal-close]');
+        if (closeControl) {
+            bindNodeOnce(closeControl, 'keydown', 'schedulerModalCloseKeyBound', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    closeSchModal();
+                }
+            });
+        }
     }
 
     function ensureSchedulerCreateModal() {
@@ -994,6 +1476,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (el('sch-room')) el('sch-room').value = roomValue;
         if (el('sch-prof')) el('sch-prof').value = session.prof && session.prof !== 'TBD' ? session.prof : '';
         if (el('sch-ta')) el('sch-ta').value = session.ta || '';
+        populateProfList();
         if (el('sch-session-type')) {
             const sessionType = String(session.sessionType || '').toLowerCase() === 'seminar' ? 'seminar' : 'lecture';
             el('sch-session-type').value = sessionType;
@@ -1015,7 +1498,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (el('sch-edit-weekstart')) el('sch-edit-weekstart').value = normalizedWeek;
         if (el('sch-edit-was-override')) el('sch-edit-was-override').value = session.isWeekOverride ? '1' : '0';
 
-        ['sch-group', 'sch-room', 'sch-day', 'sch-duration', 'sch-session-type', 'sch-apply-scope', 'sch-subject'].forEach(syncSchedulerPickerSelect);
+        ['sch-group', 'sch-room', 'sch-day', 'sch-duration', 'sch-session-type', 'sch-apply-scope', 'sch-subject', 'sch-prof', 'sch-ta'].forEach(syncSchedulerPickerSelect);
         schCheckConflict();
     }
 
@@ -1107,39 +1590,34 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         return card;
     }
 
-    function buildSchedulerDayHeader(entry, isToday) {
+    function buildSchedulerDayHeader(entry, isToday, semester, weekStart) {
         const dayCol = document.createElement('div');
-        dayCol.className = `sch-day-col${isToday ? ' is-today' : ''}`;
+        dayCol.className = `headInfo sch-weeklist-day${isToday ? ' is-today' : ''}`;
+
+        const header = document.createElement('div');
+        header.className = 'day-title sch-weeklist-day-head';
 
         const title = document.createElement('div');
-        title.className = 'sch-day-col-label';
+        title.className = 'day-name sch-day-col-label';
         title.textContent = entry.en;
 
         const meta = document.createElement('div');
-        meta.className = 'sch-day-col-meta';
+        meta.className = 'day-number sch-day-col-meta';
         meta.textContent = entry.shortDate;
-        dayCol.append(title, meta);
+
+        const addButton = document.createElement('button');
+        addButton.type = 'button';
+        addButton.className = 'sch-weeklist-add lux-secondary-btn';
+        addButton.dataset.schedulerDayAdd = entry.en;
+        addButton.dataset.schedulerDayAddTime = '09:00';
+        addButton.dataset.schedulerDayAddSemester = String(semester);
+        addButton.dataset.schedulerDayAddWeek = weekStart;
+        addButton.setAttribute('aria-label', `Add session on ${entry.en}`);
+        addButton.innerHTML = '<i class="fas fa-plus" aria-hidden="true"></i><span>Add session</span>';
+
+        header.append(title, meta, addButton);
+        dayCol.appendChild(header);
         return dayCol;
-    }
-
-    function buildSchedulerTimeSlot(slot) {
-        const timeSlot = document.createElement('div');
-        timeSlot.className = 'sch-time-slot';
-        const label = document.createElement('span');
-        label.className = 'sch-time-slot-copy';
-        label.textContent = slot;
-        timeSlot.appendChild(label);
-        return timeSlot;
-    }
-
-    function buildSchedulerSlotBackground(entry, slot, semester, weekStart) {
-        const slotNode = document.createElement('div');
-        slotNode.className = 'sch-slot-bg';
-        slotNode.dataset.schedulerSlotDay = entry.en;
-        slotNode.dataset.schedulerSlotTime = slot;
-        slotNode.dataset.schedulerSlotSemester = String(semester);
-        slotNode.dataset.schedulerSlotWeek = weekStart;
-        return slotNode;
     }
 
     function buildSchedulerEventMeta(iconClass, content) {
@@ -1161,14 +1639,17 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     }
 
     function buildSchedulerEventAction(action, courseId, groupId, iconClass) {
-        const actionNode = document.createElement('div');
+        const actionNode = document.createElement('button');
+        actionNode.type = 'button';
         actionNode.className = `ev-trash ev-action ev-action--${action}`;
         actionNode.dataset.schedulerSessionAction = action;
         actionNode.dataset.courseId = courseId;
         actionNode.dataset.groupId = groupId;
+        actionNode.setAttribute('aria-label', 'Delete session');
 
         const icon = document.createElement('i');
         icon.className = iconClass;
+        icon.setAttribute('aria-hidden', 'true');
         actionNode.appendChild(icon);
         return actionNode;
     }
@@ -1184,19 +1665,13 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     }
 
     function buildSchedulerEventCard(session, weekStart) {
-        const startMinutes = convertTimeToMinutes(session.time) - SCHEDULER_START_MINUTES;
-        const topPx = (startMinutes / 60) * 100;
-        const durationMinutes = parseInt(String(session.duration || '110').match(/\d+/)?.[0] || '110', 10);
-        const heightPx = Math.max(40, (durationMinutes / 60) * 100 - 4);
         const facultyCode = normalizeFacultyCode(session.faculty || deriveFaculty(session.courseId));
         const toneToken = getSchedulerEventToneToken(facultyCode);
         const tone = getSchedulerFacultyTone(facultyCode);
         const isDraft = session.prof === 'TBD' || session.room === 'TBD';
 
         const card = document.createElement('div');
-        card.className = 'sch-event';
-        card.style.setProperty('--sch-event-top', `${topPx}px`);
-        card.style.setProperty('--sch-event-height', `${heightPx}px`);
+        card.className = 'sch-event weeklist-item sch-weeklist-item';
         card.style.setProperty('--sch-event-rgb', tone.rgb);
         card.dataset.schedulerSessionAction = 'edit';
         card.dataset.courseId = session.courseId;
@@ -1229,6 +1704,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         title.appendChild(titleMeta);
         card.appendChild(title);
 
+        const timeLabel = `${session.time || '09:00'}${session.endTime ? ` - ${session.endTime}` : ''}`;
+        card.appendChild(buildSchedulerEventMeta('far fa-clock', timeLabel));
+
         const professorContent = session.prof === 'TBD'
             ? (() => {
                 const missing = document.createElement('span');
@@ -1254,16 +1732,11 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         roomWrapper.appendChild(duration);
         card.appendChild(buildSchedulerEventMeta('fas fa-map-marker-alt', roomWrapper));
 
-        card.appendChild(buildSchedulerEventAction('stats', session.courseId, session.id, 'fas fa-circle-info'));
-        card.appendChild(buildSchedulerEventAction('delete', session.courseId, session.id, 'fas fa-trash'));
+        const actions = document.createElement('div');
+        actions.className = 'ev-actions';
+        actions.appendChild(buildSchedulerEventAction('delete', session.courseId, session.id, 'fas fa-trash'));
+        card.appendChild(actions);
         return card;
-    }
-
-    function buildSchedulerInfoBanner(message) {
-        const banner = document.createElement('div');
-        banner.className = 'sch-info-banner lux-soft-chrome';
-        banner.textContent = message;
-        return banner;
     }
 
     function buildSchedulerEmptyWeekNotice(weekStart) {
@@ -1281,6 +1754,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         messageBox.dataset.conflictState = state;
         textNode.textContent = text;
         iconNode.className = iconClass;
+        messageBox.hidden = false;
         messageBox.classList.add('show');
     }
 
@@ -1288,6 +1762,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const messageBox = el('sch-conflict-msg');
         if (!messageBox) return;
         messageBox.dataset.conflictState = 'hidden';
+        messageBox.hidden = true;
         messageBox.classList.remove('show');
     }
 
@@ -1356,66 +1831,45 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const weekStart = getSchedulerWeekStart();
         const weekEntries = getWeekDateEntries(weekStart);
         const semester = parseInt(el('admin-tt-semester')?.value || '3', 10);
-        const profFilter = el('admin-tt-prof')?.value || 'all';
-        const taFilter = el('admin-tt-ta')?.value || 'all';
         const sessions = getVisibleSchedulerSessions();
         const isCurrentWeek = weekStart === getCurrentWeekStartISO();
 
         syncSchedulerWeekChrome();
 
         const root = document.createElement('div');
-        root.className = 'sch-grid-root';
+        root.className = 'sch-weeklist-root';
         root.dataset.schedulerWeekState = isCurrentWeek ? 'current' : 'selected';
 
-        const headerRow = document.createElement('div');
-        headerRow.className = 'sch-header-row';
-        const timezoneCol = document.createElement('div');
-        timezoneCol.className = 'sch-time-col sch-time-col--header';
-        const timezoneCopy = document.createElement('div');
-        timezoneCopy.className = 'sch-time-col-copy';
-        timezoneCopy.textContent = 'GMT+4';
-        timezoneCol.appendChild(timezoneCopy);
-        headerRow.appendChild(timezoneCol);
-
+        const weekList = document.createElement('div');
+        weekList.className = 'weeklist-container sch-weeklist-container';
         weekEntries.forEach((entry, index) => {
             const isToday = isCurrentWeek && (new Date().getDay() === (index === 6 ? 0 : index + 1));
-            headerRow.appendChild(buildSchedulerDayHeader(entry, isToday));
-        });
-        root.appendChild(headerRow);
-
-        const body = document.createElement('div');
-        body.className = 'sch-body';
-        const timeLabels = document.createElement('div');
-        timeLabels.className = 'sch-time-labels';
-        SLOT_TIMES.forEach((slot) => {
-            timeLabels.appendChild(buildSchedulerTimeSlot(slot));
-        });
-
-        const dayLanes = document.createElement('div');
-        dayLanes.className = 'sch-day-lanes';
-        weekEntries.forEach((entry) => {
-            const lane = document.createElement('div');
-            lane.className = 'sch-lane';
-            SLOT_TIMES.forEach((slot) => {
-                lane.appendChild(buildSchedulerSlotBackground(entry, slot, semester, weekStart));
-            });
-
-            const daySessions = sessions.filter((session) => normalizeSchedulerDayLabel(session.day, 'en') === entry.en);
+            const dayColumn = buildSchedulerDayHeader(entry, isToday, semester, weekStart);
+            const daySessions = sessions
+                .filter((session) => normalizeSchedulerDayLabel(session.day, 'en') === entry.en)
+                .sort((a, b) => convertTimeToMinutes(a.time) - convertTimeToMinutes(b.time));
+            const list = document.createElement('div');
+            list.className = 'weeklist sch-weeklist-items';
             daySessions.forEach((session) => {
-                lane.appendChild(buildSchedulerEventCard(session, weekStart));
+                list.appendChild(buildSchedulerEventCard(session, weekStart));
             });
-            dayLanes.appendChild(lane);
+            if (!daySessions.length) {
+                const empty = document.createElement('div');
+                empty.className = 'sch-weeklist-empty';
+                empty.textContent = 'No sessions';
+                list.appendChild(empty);
+            }
+            const count = document.createElement('span');
+            count.className = 'sch-weeklist-day-count';
+            count.textContent = `${daySessions.length} ${daySessions.length === 1 ? 'session' : 'sessions'}`;
+            dayColumn.querySelector('.sch-weeklist-day-head')?.appendChild(count);
+            dayColumn.appendChild(list);
+            weekList.appendChild(dayColumn);
         });
-
-        body.append(timeLabels, dayLanes);
-        root.appendChild(body);
+        root.appendChild(weekList);
 
         const fragment = document.createDocumentFragment();
         fragment.appendChild(root);
-
-        if (profFilter === 'all' && taFilter === 'all') {
-            fragment.appendChild(buildSchedulerInfoBanner('Showing all staff for this faculty and semester. Select a professor or teaching assistant only if you want a narrower view.'));
-        }
 
         if (!sessions.length) {
             fragment.appendChild(buildSchedulerEmptyWeekNotice(weekStart));
@@ -1425,13 +1879,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         container.setAttribute('aria-busy', 'false');
         updateSchedulerRailChrome();
         });
-    }
-    function schShowStats(courseId, groupId) {
-        const session = resolveScheduledGroupForWeek(courseId, groupId, getSchedulerWeekStart());
-        if (!session) return;
-        const enrolled = session.registered || 0;
-        const percentage = session.capacity ? Math.round((enrolled / session.capacity) * 100) : 0;
-        alert(`Session Details\n\nSubject: ${courseId}\nGroup: ${session.name}\nWeek: ${formatWeekRangeLabel(session.weekStart || getSchedulerWeekStart())}\nDay: ${normalizeSchedulerDayLabel(session.day, 'en')} ${session.time}-${session.endTime || ''}\nRoom: ${session.room}\nProfessor: ${session.prof}\nTA: ${session.ta || 'None'}\nCapacity: ${enrolled}/${session.capacity} (${percentage}%)\nStatus: ${percentage > 90 ? 'Near Full' : 'Open'}${session.isWeekOverride ? '\nMode: Selected week override' : '\nMode: Recurring template'}`);
     }
 
     function schDeleteSession(courseId, groupId) {
@@ -1507,6 +1954,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     }
 
     function bindSchedulerListeners() {
+        bindSchedulerStaffPickerListeners();
         bindNodeOnce(el('admin-tt-faculty'), 'change', 'schedulerFacultyBound', (event) => {
             syncSchedulerFacultyScope(event.target.value);
         });
@@ -1540,6 +1988,18 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             selectPaletteItem(card.dataset.schedulerSubjectId);
         });
         bindNodeOnce(el('scheduler-grid'), 'click', 'schedulerGridClickBound', (event) => {
+            const addNode = event.target.closest('[data-scheduler-day-add]');
+            if (addNode) {
+                event.preventDefault();
+                openSchModal(
+                    addNode.dataset.schedulerDayAdd || 'Monday',
+                    addNode.dataset.schedulerDayAddTime || '09:00',
+                    parseInt(addNode.dataset.schedulerDayAddSemester || '3', 10) || 3,
+                    addNode.dataset.schedulerDayAddWeek || getSchedulerWeekStart()
+                );
+                return;
+            }
+
             const actionNode = event.target.closest('[data-scheduler-session-action]');
             if (actionNode) {
                 event.preventDefault();
@@ -1549,20 +2009,10 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
                 const groupId = actionNode.dataset.groupId || '';
                 const weekStart = actionNode.dataset.weekStart || getSchedulerWeekStart();
                 if (action === 'edit') openSchEditModal(courseId, groupId, weekStart);
-                if (action === 'stats') schShowStats(courseId, groupId);
                 if (action === 'delete') schDeleteSession(courseId, groupId);
                 return;
             }
 
-            const slotNode = event.target.closest('[data-scheduler-slot-day]');
-            if (!slotNode) return;
-            event.preventDefault();
-            openSchModal(
-                slotNode.dataset.schedulerSlotDay || 'Monday',
-                slotNode.dataset.schedulerSlotTime || '09:00',
-                parseInt(slotNode.dataset.schedulerSlotSemester || '3', 10) || 3,
-                slotNode.dataset.schedulerSlotWeek || getSchedulerWeekStart()
-            );
         });
 
         document.querySelectorAll('[data-admin-scheduler-week]').forEach((button) => {
@@ -1642,7 +2092,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         schCalcEnd,
         schCheckConflict,
         renderGrid,
-        schShowStats,
         schDeleteSession,
         schCreateSession,
         updateSchedulerRailChrome,

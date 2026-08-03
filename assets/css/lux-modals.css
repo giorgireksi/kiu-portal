@@ -163,7 +163,7 @@
   .pv-modal-card,
   .lms-quiz-board-modal,
   .lms-personal-dashboard-card,
-  .sch-modal ),
+  :is(#schPresetManagerOverlay, #profQuizModalOverlay) > .sch-modal ),
   [data-lux-transparency-exempt="1"].lux-glass-dialog-card,
   [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-card ),
   .modal-content.lux-panel[data-lux-transparency-exempt="1"] {
@@ -192,7 +192,7 @@
   .pv-modal-card,
   .lms-quiz-board-modal,
   .lms-personal-dashboard-card,
-  .sch-modal ),
+  :is(#schPresetManagerOverlay, #profQuizModalOverlay) > .sch-modal ),
   :is(html.lux-light-mode,
   body.lux-light-mode) [data-lux-transparency-exempt="1"].lux-glass-dialog-card,
   :is(html.lux-light-mode,
@@ -281,7 +281,8 @@
   color: var(--lux-text);
 }
 [data-lux-transparency-exempt="1"] :is( .lux-hub-form-modal-foot,
-  .sch-modal-foot,
+  #schPresetManagerOverlay .sch-modal-foot,
+  #profQuizModalOverlay .sch-modal-foot,
   .newsx-publisher-footer,
   .orders-recipient-filter-editor-actions ) {
   border-top: 1px solid var(--lux-modal-glass-border);
@@ -289,12 +290,13 @@
   color: var(--lux-text-muted);
 }
 :is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .lux-hub-form-modal-foot,
-  .sch-modal-foot,
+  #schPresetManagerOverlay .sch-modal-foot,
+  #profQuizModalOverlay .sch-modal-foot,
   .newsx-publisher-footer,
   .orders-recipient-filter-editor-actions ) {
   background: var(--lux-panel-modal-foot-tint-light);
 }
-[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .lux-glass-dialog-card--social-glass *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *, .admin-orders-create-head *, .admin-orders-create-foot-actions *, .admin-orders-thread-header-actions *, .orders-recipient-action-row *, .orders-compose-head *, .admin-orders-titles-head *, .admin-orders-titles-foot *, .admin-orders-titles-row-actions *, .admin-orders-titles-add-row *, .orders-recipient-filter-editor-head *, .orders-recipient-filter-editor-body *, .orders-recipient-filter-editor-actions *, #admin-orders-root .orders-admin-command-actions *, #newsx-post-detail-panel *, #newsx-attachment-viewer-panel *)) {
+[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .lux-glass-dialog-card--social-glass *, .quiz-questions-head-row *, .sch-preset-manage-add-row *, .sch-preset-manage-item-actions *, .sch-modal-close-muted, .sch-preset-manage-link, .admin-orders-create-head *, .admin-orders-create-foot-actions *, .admin-orders-thread-header-actions *, .orders-recipient-action-row *, .orders-compose-head *, .admin-orders-titles-head *, .admin-orders-titles-foot *, .admin-orders-titles-row-actions *, .admin-orders-titles-add-row *, .orders-recipient-filter-editor-head *, .orders-recipient-filter-editor-body *, .orders-recipient-filter-editor-actions *, #admin-orders-root .orders-admin-command-actions *, #newsx-post-detail-panel *, #newsx-attachment-viewer-panel *)) {
   background: transparent;
   border: 1px solid var(--lux-modal-glass-border);
   box-shadow: none;
@@ -311,7 +313,10 @@
   -webkit-backdrop-filter: none;
 }
 /* Scheduler modal fields — layout only; CTA chrome comes from global .lux-control / .lux-picker-btn--compact. */
-[data-lux-transparency-exempt="1"] .sch-modal :is(
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal :is(
   .lux-control,
   .lux-picker-btn--compact,
   input:not([type='hidden']):not([type='checkbox']):not([type='radio']),
@@ -322,77 +327,188 @@
   min-width: 0;
 }
 
-/* Scheduler session modal — warmglass head, foot, sections, conflict callout. */
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-head {
+/* Shared scheduler modal chrome (session + preset manager). */
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-modal-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 16px 18px;
+  gap: 16px;
+  padding: 20px 24px;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--lux-modal-glass-border);
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-title {
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-modal-head > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-close-muted {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--lux-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  text-shadow: none;
+}
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-close-muted:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--lux-accent-2) 72%, transparent);
+  outline-offset: 2px;
+}
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-close-muted:hover,
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-close-muted:focus-visible {
+  color: var(--lux-text);
+}
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-foot .sch-create-btn {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 240px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-preset-manage-link:not(.lux-secondary-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--lux-accent-2);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  text-shadow: none;
+}
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-preset-manage-link:not(.lux-secondary-btn):hover,
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-preset-manage-link:not(.lux-secondary-btn):focus-visible {
+  color: var(--lux-text);
+}
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-modal-foot-tint);
+}
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-form-section-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-form-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--lux-text);
+  margin: 0;
+}
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-form-section-copy {
+  color: var(--lux-text-muted);
+  line-height: 1.5;
+  font-size: 12px;
+  margin: 0 0 4px;
+}
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-form-section .sch-input-row:first-of-type {
+  margin-top: 0;
+}
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] :is(.sch-modal-subtitle, .sch-modal-week) {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--lux-text-muted);
+}
+
+/* Preset manager — keep distinct from session SSOT. */
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-modal-head-accent {
+  background: var(--lux-panel-modal-head-tint);
+  border-bottom-color: color-mix(in srgb, var(--lux-modal-glass-border) 72%, transparent);
+  border-radius: var(--lux-panel-radius, 22px) var(--lux-panel-radius, 22px) 0 0;
+  color: var(--lux-text);
+}
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-modal-title {
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: inherit;
-  font-size: 16px;
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
   color: var(--lux-text);
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay :is(.sch-modal-subtitle, .sch-modal-week) {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--lux-text-muted);
-}
-[data-lux-transparency-exempt="1"] :is(#schModalOverlay, #schPresetManagerOverlay) .sch-modal-close-muted.lux-secondary-btn {
-  flex: 0 0 auto;
-  min-width: var(--lux-primary-btn-min-height, 46px);
-  width: var(--lux-primary-btn-min-height, 46px);
-  height: var(--lux-primary-btn-min-height, 46px);
-  padding: 0;
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-mode-chip.home-hover-chip {
-  color: var(--lux-accent-2);
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 14px 18px;
-  display: grid;
-  gap: 12px;
-  color: var(--lux-text);
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-foot {
-  display: flex;
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-modal-mode-chip {
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 12px 18px;
-  flex-shrink: 0;
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-modal-foot .sch-create-btn.lux-primary-btn {
-  min-width: 240px;
-}
-[data-lux-transparency-exempt="1"] :is(#schModalOverlay, #schPresetManagerOverlay) .sch-form-section.home-hover-chip {
-  display: grid;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 14px;
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-form-section-title {
-  font-size: 13px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: rgba(var(--lux-accent-rgb), 0.14);
+  color: var(--lux-accent-2);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.04em;
   text-transform: none;
-  color: var(--lux-text);
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay :is(
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] :is(
   .sch-input-group > label,
   .sch-input-label-row label
 ) {
@@ -402,91 +518,77 @@
   text-transform: uppercase;
   font-size: 11px;
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-form-section-copy {
-  color: var(--lux-text-muted);
-  line-height: 1.5;
-  font-size: 12px;
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-inline-required {
-  color: #f87171;
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-inline-required {
+  color: var(--lux-btn-danger-border, #dc2626);
   font-weight: 800;
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay :is(.lux-control, .lux-picker-btn--compact) {
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) :is(.lux-control, .lux-picker-btn--compact) {
   color: var(--lux-btn-label, var(--lux-text));
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .lux-control::placeholder {
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .lux-control::placeholder {
   color: color-mix(in srgb, var(--lux-btn-label, var(--lux-text)) 58%, transparent);
   opacity: 1;
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .lux-picker-btn--compact :is(.lux-picker-value, strong, i) {
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .lux-picker-btn--compact :is(.lux-picker-value, strong, i) {
   color: inherit;
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .lux-picker-btn--compact i {
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .lux-picker-btn--compact i {
   opacity: 0.82;
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-input-readonly.lux-control {
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .lux-picker-field > .lux-picker-btn--compact {
+  justify-content: space-between;
+  align-items: center;
+}
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-input-readonly.lux-control {
   color: color-mix(in srgb, var(--lux-btn-label, var(--lux-text)) 76%, var(--lux-text-muted));
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay input[type='time'].lux-control,
-[data-lux-transparency-exempt="1"] #schModalOverlay input[type='number'].lux-control {
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) input[type='time'].lux-control,
+:is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) input[type='number'].lux-control {
   color: var(--lux-btn-label, var(--lux-text));
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-preset-manage-link.lux-secondary-btn {
+#schPresetManagerOverlay[data-lux-transparency-exempt="1"] .sch-preset-manage-link.lux-secondary-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 5px;
+  min-height: 30px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border-width: 1px;
+  font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
   text-transform: none;
   letter-spacing: 0.04em;
-  min-height: auto;
-  padding: 4px 10px;
+  background: transparent;
+  border-color: var(--lux-modal-glass-border);
+  box-shadow: none;
+  color: var(--lux-text-muted);
 }
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert {
-  display: none;
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert.show {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  font-size: 13px;
-  line-height: 1.5;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
-  border-style: solid;
-  border-width: var(--lux-btn-frame-width, 3.5px);
-  box-shadow: var(--lux-btn-frame-shadow);
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert.show i {
-  flex: 0 0 auto;
-  margin-top: 2px;
-  font-size: 14px;
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger'] {
-  background: color-mix(in srgb, #7f1d1d 22%, var(--lux-btn-well-soft));
-  border-color: var(--lux-btn-danger-border, #dc2626);
-  color: #fecaca;
-}
-[data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert.show[data-conflict-state='success'] {
-  background: color-mix(in srgb, #14532d 20%, var(--lux-btn-well-soft));
-  border-color: color-mix(in srgb, #22c55e 72%, var(--lux-btn-border-solid, var(--lux-accent)));
-  color: #bbf7d0;
-}
-:is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert.show[data-conflict-state='danger'] {
-  color: #991b1b;
-  background: color-mix(in srgb, #fecaca 48%, var(--lux-btn-well-soft));
-}
-:is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] #schModalOverlay .sch-conflict-alert.show[data-conflict-state='success'] {
-  color: #166534;
-  background: color-mix(in srgb, #bbf7d0 44%, var(--lux-btn-well-soft));
-}
-:is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] #schModalOverlay :is(.lux-control, .lux-picker-btn--compact) {
-  text-shadow: none;
-}
+
 /* Volumetric fog parameters dialog — typography + field paint; shell from §1–§2 exempt warmglass. */
 [data-lux-transparency-exempt="1"] #lux-bg-mode-params-backdrop .lux-bg-mode-params-head {
   display: flex;
@@ -669,7 +771,7 @@
   background: var(--lux-warmglass-overlay-light);
 }
 :is(.lux-glass-dialog-overlay, .lms-glass-dialog-overlay, .registration-structured-modal-backdrop, .registration-section-picker-backdrop) > :is(.lux-glass-dialog-card, .lms-quiz-board-modal, .registration-section-picker-dialog),
-.sch-modal-overlay > .sch-modal,
+#schPresetManagerOverlay > .sch-modal,
 .lms-quiz-board-overlay > .lms-quiz-board-modal,
 .gb-modal-overlay > .lux-glass-dialog-card {
   width: min(960px, 100%);
@@ -677,12 +779,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-#schModalOverlay > .sch-modal {
-  width: min(760px, 100%);
-}
-#schModalOverlay.is-open > .sch-modal {
-  pointer-events: auto;
 }
 .registration-section-picker-backdrop > .registration-section-picker-dialog {
   width: min(980px, 100%);
@@ -943,6 +1039,13 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lu
   justify-content: space-between;
   align-items: center;
 }
+body.lux-full-paint.lux-unified-shell :is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .lux-picker-field > .lux-picker-btn--compact {
+  justify-content: space-between;
+  align-items: center;
+}
 body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lux-glass-dialog-card--hub-form, .lux-glass-dialog-card--hub-dialog, #lux-studio-backdrop .lux-studio-panel, .lux-bg-mode-params-dialog, .lux-bg-gallery-dialog, .lux-glass-dialog-card:not(.lux-glass-dialog-card--social-glass)) .lux-secondary-btn {
   min-height: 40px;
   padding-inline: 16px;
@@ -988,21 +1091,37 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lu
   .lux-secondary-btn,
   .lux-ghost-btn
 )::before,
+body.lux-full-paint.lux-unified-shell :is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-foot .lux-primary-btn::before,
 body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lux-glass-dialog-card--hub-form, .lux-glass-dialog-card--hub-dialog, #lux-studio-backdrop .lux-studio-panel, .lux-bg-mode-params-dialog, .lux-bg-gallery-dialog, .lux-glass-dialog-card:not(.lux-glass-dialog-card--social-glass)) :is(
   .lux-primary-btn,
   .lux-secondary-btn,
   .lux-ghost-btn
-)::after {
+)::after,
+body.lux-full-paint.lux-unified-shell :is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-foot .lux-primary-btn::after {
   display: none;
 }
 body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lux-glass-dialog-card--hub-form, .lux-glass-dialog-card--hub-dialog, #lux-studio-backdrop .lux-studio-panel, .lux-bg-mode-params-dialog, .lux-bg-gallery-dialog, .lux-glass-dialog-card:not(.lux-glass-dialog-card--social-glass)) :is(
   .lux-primary-btn,
   .lux-secondary-btn,
   .lux-ghost-btn
-):active {
+):active,
+body.lux-full-paint.lux-unified-shell :is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-foot .lux-primary-btn:active {
   transform: none;
 }
-body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lux-glass-dialog-card--hub-form, .lux-glass-dialog-card--hub-dialog, #lux-studio-backdrop .lux-studio-panel, .lux-bg-mode-params-dialog, .lux-bg-gallery-dialog, .lux-glass-dialog-card:not(.lux-glass-dialog-card--social-glass)) .lux-primary-btn {
+body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lux-glass-dialog-card--hub-form, .lux-glass-dialog-card--hub-dialog, #lux-studio-backdrop .lux-studio-panel, .lux-bg-mode-params-dialog, .lux-bg-gallery-dialog, .lux-glass-dialog-card:not(.lux-glass-dialog-card--social-glass)) .lux-primary-btn,
+body.lux-full-paint.lux-unified-shell :is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-foot .lux-primary-btn {
   min-height: 40px;
   padding-inline: 16px;
   border-radius: 12px;
@@ -1015,7 +1134,11 @@ body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lu
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lux-glass-dialog-card--hub-form, .lux-glass-dialog-card--hub-dialog, #lux-studio-backdrop .lux-studio-panel, .lux-bg-mode-params-dialog, .lux-bg-gallery-dialog, .lux-glass-dialog-card:not(.lux-glass-dialog-card--social-glass)) .lux-primary-btn:is(:hover, :focus-visible) {
+body.lux-full-paint.lux-unified-shell [data-lux-transparency-exempt="1"] :is(.lux-glass-dialog-card--hub-form, .lux-glass-dialog-card--hub-dialog, #lux-studio-backdrop .lux-studio-panel, .lux-bg-mode-params-dialog, .lux-bg-gallery-dialog, .lux-glass-dialog-card:not(.lux-glass-dialog-card--social-glass)) .lux-primary-btn:is(:hover, :focus-visible),
+body.lux-full-paint.lux-unified-shell :is(
+  #schModalOverlay[data-lux-transparency-exempt="1"],
+  #schPresetManagerOverlay[data-lux-transparency-exempt="1"]
+) .sch-modal-foot .lux-primary-btn:is(:hover, :focus-visible) {
   transform: none;
   box-shadow: 0 4px 14px rgba(var(--lux-accent-rgb), 0.38);
 }

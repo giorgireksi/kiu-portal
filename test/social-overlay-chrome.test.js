@@ -54,6 +54,7 @@ function loadOverlayChrome(extraDeps = {}) {
         console
     };
     sandbox.window.window = sandbox.window;
+    sandbox.requestAnimationFrame = sandbox.window.requestAnimationFrame;
     sandbox.document.body.dataset = {};
     vm.runInNewContext(
         readFileSync(join(process.cwd(), 'assets/js/pages/social-overlay-chrome.js'), 'utf8'),
@@ -76,6 +77,7 @@ function loadOverlayChrome(extraDeps = {}) {
                 : (runtime.ui.previousDialog?.type === 'project-task-graph' ? runtime.ui.previousDialog : null)
         ),
         workspaceDialogKeepsCenter: () => false,
+        overlayDialogPreservesScroll: () => false,
         isProjectTaskGraphStackActive: () => false,
         renderDialogOnlyNow: () => { renders.push('dialog-only'); },
         renderSocialPageNow: (reason) => { renders.push(reason); },
@@ -145,6 +147,40 @@ describe('social-overlay-chrome', () => {
         api.closeDialog();
         expect(runtime.ui.socialDialog).toBe(null);
         expect(renders).toContain('dialog-close');
+    });
+
+    it('uses dialog-only render for post-comments open and close', () => {
+        const preservedTypes = new Set(['post-comments', 'photography-comments', 'comment-delete', 'comment-report']);
+        const preserved = loadOverlayChrome({
+            overlayDialogPreservesScroll: (type) => preservedTypes.has(String(type || '').trim())
+        });
+        const { api: preservedApi, runtime: preservedRuntime, renders: preservedRenders } = preserved;
+
+        preservedRenders.length = 0;
+        preservedApi.openDialog('post-comments', { postId: 'p1' });
+        expect(preservedRuntime.ui.socialDialog).toEqual({ type: 'post-comments', postId: 'p1' });
+        expect(preservedRenders).toEqual(['dialog-only']);
+
+        preservedRenders.length = 0;
+        preservedApi.closeDialog();
+        expect(preservedRuntime.ui.socialDialog).toBe(null);
+        expect(preservedRenders).toEqual(['dialog-only']);
+        expect(preservedRenders).not.toContain('dialog-close');
+        expect(preservedRuntime.ui.closingDialogType).toBe('');
+    });
+
+    it('restores post-comments with dialog-only render when leaving comment-delete', () => {
+        const preservedTypes = new Set(['post-comments', 'photography-comments', 'comment-delete', 'comment-report']);
+        const preserved = loadOverlayChrome({
+            overlayDialogPreservesScroll: (type) => preservedTypes.has(String(type || '').trim())
+        });
+        const { api: preservedApi, runtime: preservedRuntime, renders: preservedRenders } = preserved;
+        preservedRuntime.ui.socialDialog = { type: 'comment-delete', postId: 'p1', commentId: 'c1' };
+        preservedRuntime.ui.previousDialog = { type: 'post-comments', postId: 'p1' };
+        preservedRenders.length = 0;
+        preservedApi.restorePreviousDialog();
+        expect(preservedRuntime.ui.socialDialog).toEqual({ type: 'post-comments', postId: 'p1' });
+        expect(preservedRenders).toEqual(['dialog-only']);
     });
 
     it('stacks project-health above an open task graph', () => {
@@ -259,14 +295,52 @@ describe('social-overlay-chrome', () => {
         expect(runtime.ui.socialDialog).toEqual({ type: 'group-create' });
     });
 
+    it('uses desktop center-scroller overlay lock without body position fixed', () => {
+        const source = readFileSync(join(process.cwd(), 'assets/js/pages/social-overlay-chrome.js'), 'utf8');
+        expect(source).toContain('function pinCenterScrollerForOverlay()');
+        expect(source).toContain('function restoreCenterScrollerOverlayPin()');
+        expect(source).toMatch(/if \(socialScrollLockActive\(\)\) \{[\s\S]*pinCenterScrollerForOverlay\(\)/);
+        expect(source).toMatch(/if \(socialScrollLockActive\(\)\) \{[\s\S]*pinCenterScrollerForOverlay\(\)[\s\S]*\} else \{[\s\S]*document\.body\.style\.position = 'fixed'/);
+    });
+
     it('restores saved scroll before clearing overlay lock artifacts', () => {
         const source = readFileSync(join(process.cwd(), 'assets/js/pages/social-overlay-chrome.js'), 'utf8');
         const unlock = source.match(/if \(!stateOpen\) \{[\s\S]*?\n            \}/);
         expect(unlock?.[0] || '').toContain('socialOverlayScrollY');
         expect(unlock?.[0] || '').toContain('socialOverlayCenterScrollY');
         expect(unlock?.[0] || '').toMatch(/const scrollY[\s\S]*const centerScrollY[\s\S]*clearSocialOverlayLockArtifacts\(\)/);
-        expect(unlock?.[0] || '').toMatch(/clearSocialOverlayLockArtifacts\(\)[\s\S]*scrollSocialCenterTo\(centerScrollY/);
+        expect(unlock?.[0] || '').toMatch(/centerScroller\.scrollTop = centerScrollY[\s\S]*clearSocialOverlayLockArtifacts\(\)/);
+        expect(unlock?.[0] || '').not.toMatch(/clearSocialOverlayLockArtifacts\(\)[\s\S]*scrollSocialCenterTo\(centerScrollY/);
         expect(readFileSync(join(process.cwd(), 'social.html'), 'utf8'))
-            .toContain('social-overlay-chrome.js?v=20260801-dialogscroll1');
+            .toContain('social-overlay-chrome.js?v=20260802-dialogscroll3');
+    });
+
+    it('does not call scrollSocialCenterTo on desktop overlay unlock', () => {
+        const centerScroller = {
+            scrollTop: 420,
+            style: {
+                overflow: '',
+                removeProperty(key) { delete this[key]; }
+            },
+            dataset: {}
+        };
+        let scrollSocialCenterToCalls = 0;
+        const { api, runtime, sandbox } = loadOverlayChrome({
+            root: () => ({ querySelector: () => centerScroller }),
+            getSocialCenterScroller: () => centerScroller,
+            socialScrollLockActive: () => true,
+            scrollSocialCenterTo: () => { scrollSocialCenterToCalls += 1; },
+            overlayDialogPreservesScroll: (type) => type === 'post-comments'
+        });
+        const body = sandbox.document.body;
+        api.openDialog('post-comments', { postId: 'p1' });
+        expect(body.dataset.socialOverlayCenterScrollY).toBe('420');
+        expect(centerScroller.style.overflow).toBe('hidden');
+        scrollSocialCenterToCalls = 0;
+        api.closeDialog();
+        expect(scrollSocialCenterToCalls).toBe(0);
+        expect(centerScroller.scrollTop).toBe(420);
+        expect(body.dataset.socialOverlayLocked).toBeUndefined();
+        expect(runtime.ui.socialDialog).toBe(null);
     });
 });

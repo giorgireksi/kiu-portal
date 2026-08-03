@@ -69,6 +69,38 @@ describe('social-pin-service', () => {
         expect(listed.all).toEqual(['event-2', 'event-1']);
     });
 
+    it('ensureStateShape initializes social pin buckets on hydrate', () => {
+        const store = new PlatformStore();
+        store.state = store.ensureStateShape({ social: { events: [] } });
+        expect(store.state.social.moduleCuratorPins.survey).toEqual([]);
+        expect(store.state.social.moduleCuratorPins.event).toEqual([]);
+        expect(store.state.social.userPins).toEqual({});
+    });
+
+    it('exposes pin API version and health wiring', () => {
+        const pinService = readSource('backend/platform/domains/social-pin-service.js');
+        expect(pinService).toContain('SOCIAL_PIN_API_VERSION = 1');
+
+        const systemRoutes = readSource('backend/platform/routes/system-routes.js');
+        expect(systemRoutes).toContain('socialPinApiVersion: SOCIAL_PIN_API_VERSION');
+
+        const launcher = readSource('start-local-lms-anticheat.sh');
+        expect(launcher).toContain('pin_api_healthy()');
+        expect(launcher).toContain('pin_api_healthy &&');
+        expect(launcher).toContain('Backend missing socialPinApiVersion');
+    });
+
+    it('wires module Save buttons through renderModulePinActions', () => {
+        const surveys = readSource('assets/js/pages/social-surveys.js');
+        const events = readSource('assets/js/pages/social-events.js');
+        const lostFound = readSource('assets/js/pages/social-lost-found.js');
+        const portfolioUi = readSource('assets/js/pages/social-workspace-portfolio-ui.js');
+        expect(surveys).toContain('renderModulePinActions');
+        expect(events).toContain('renderModulePinActions');
+        expect(lostFound).toContain('renderModulePinActions');
+        expect(portfolioUi).toContain('renderModulePinActions');
+    });
+
     it('exposes pin routes and client wiring', () => {
         const routes = readSource('backend/platform/routes/social-routes.js');
         expect(routes).toContain("app.post('/api/social/pins/toggle'");
@@ -76,12 +108,16 @@ describe('social-pin-service', () => {
         expect(routes).toContain('store.toggleSocialModulePin(');
 
         const pinModel = readSource('assets/js/pages/social-pin-model.js');
-        expect(pinModel).toContain('module-curator-pin');
         expect(pinModel).toContain('module-personal-pin');
+        expect(pinModel).not.toContain('social-module-pin-menu-shell');
+        expect(pinModel).not.toContain('module-curator-pin');
         expect(pinModel).toContain('renderPinnedSections');
+        expect(pinModel).toContain('getPortalSocialRuntimeState');
+        expect(pinModel).not.toContain('__kiuSocialRuntime');
 
         const pageEvents = readSource('assets/js/pages/social-page-events.js');
         expect(pageEvents).toContain("action === 'module-curator-pin'");
+        expect(pageEvents).not.toContain('social-module-pin-menu-shell');
         expect(pageEvents).toContain('togglePortalSocialModulePin');
 
         const research = readSource('assets/js/pages/social-research.js');

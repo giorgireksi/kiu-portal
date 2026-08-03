@@ -249,23 +249,71 @@ const toggleUtilityPanel = window.toggleUtilityPanel;
 const closePickerPanels = window.closePickerPanels;
 const bindLuxPickerDismissHandlers = window.bindLuxPickerDismissHandlers;
 const togglePickerPanel = window.togglePickerPanel;
+const isLuxUtilityInteractionTarget = window.isLuxUtilityInteractionTarget;
 
 function callBindLuxPickerDismissHandlers() {
     if (typeof bindLuxPickerDismissHandlers === 'function') bindLuxPickerDismissHandlers();
 }
 
-function renderTopbarUtilityPanels(currentUser) {
-    const notificationPanel = ensureTopbarUtilityPanel('lux-notification-panel');
-    const chatPanel = ensureTopbarUtilityPanel('lux-chat-panel');
-    if (!notificationPanel || !chatPanel) return;
+let utilityAlertsModelPromise = null;
+
+function ensureUtilityAlertsModel() {
+    if (typeof window.filterNotificationsByView === 'function' && Array.isArray(window.ALERTS_CATEGORIES)) {
+        return Promise.resolve(true);
+    }
+    if (!utilityAlertsModelPromise) {
+        utilityAlertsModelPromise = import('../pages/social-alerts-model.js?v=20260720-w24alerts1')
+            .then(() => Boolean(typeof window.filterNotificationsByView === 'function'))
+            .catch((error) => {
+                console.warn('Utility alerts model failed to load', error);
+                return false;
+            });
+    }
+    return utilityAlertsModelPromise;
+}
+
+function utilityNotificationRowIcon(item) {
+    if (typeof window.classifyNotificationCategory === 'function' && Array.isArray(window.ALERTS_CATEGORIES)) {
+        const cat = window.classifyNotificationCategory(item);
+        const catInfo = window.ALERTS_CATEGORIES.find((entry) => entry.id === cat);
+        if (catInfo) return `fas ${catInfo.icon}`;
+    }
+    return item.source === 'social' ? 'fas fa-comments' : 'far fa-bell';
+}
+
+function utilityNotificationEmptyMessage(activeFilter) {
+    const messages = window.ALERTS_CATEGORY_EMPTY_MESSAGES;
+    if (messages) return messages[activeFilter] || messages.all || 'Campus alerts, academic updates, and social notifications will appear here.';
+    return 'Campus alerts, academic updates, and social notifications will appear here.';
+}
+
+function renderNotificationUtilityPanelContent(notificationPanel, currentUser) {
     const notifications = typeof getNotificationSnapshot === 'function' ? getNotificationSnapshot(currentUser) : { items: [], unread: 0 };
-    const messenger = typeof getMessengerSnapshot === 'function' ? getMessengerSnapshot(currentUser) : { recent: [], unread: 0 };
-    const notificationRows = notifications.items.slice(0, 5);
-    const chatRows = messenger.recent.slice(0, 5);
+    const activeFilter = notificationPanel.dataset.alertsFilter || 'all';
+    const items = notifications.items || [];
+    const hasHelpers = typeof window.filterNotificationsByView === 'function' && typeof window.getCategoryUnreadCounts === 'function';
+    const counts = hasHelpers ? window.getCategoryUnreadCounts(items) : { all: 0 };
+    const filtered = hasHelpers ? window.filterNotificationsByView(items, activeFilter) : items;
+    const notificationRows = filtered.slice(0, 5);
+    const filterStrip = hasHelpers && typeof window.renderAlertsCategoryFilterStrip === 'function'
+        ? window.renderAlertsCategoryFilterStrip(activeFilter, counts, {
+            filterAttr: 'data-utility-alerts-filter',
+            categoryFiltersClass: 'lux-utility-category-filters',
+            wrapper: true
+        })
+        : '';
+    const headHtml = `<div class="lux-utility-head"><div><strong>Notifications</strong><span>${notifications.unread > 0 ? `${notifications.unread} unread` : 'Everything reviewed'}</span></div><button class="lux-ghost-btn" type="button" data-utility-action="open-notifications">Open full view</button></div>`;
+    const listHtml = notificationRows.length
+        ? notificationRows.map((item, index) => {
+            const iconClass = utilityNotificationRowIcon(item);
+            const title = typeof cleanupUiText === 'function' ? cleanupUiText(item.title || item.type || 'Notification', 'Notification') : (item.title || 'Notification');
+            const body = typeof cleanupUiText === 'function' ? cleanupUiText(item.text || 'New portal activity.', 'New portal activity.') : (item.text || 'New portal activity.');
+            const when = typeof formatRelativeTime === 'function' ? formatRelativeTime(item.createdAt || item.updatedAt) : '';
+            return `<button class="lux-utility-item lux-soft-chrome home-hover-chip" type="button" data-notification-key="${escapeHtml(`${item.source || 'school'}:${item.id || index}`)}" data-route-page="${escapeHtml(item.routePage || 'social')}"><div class="lux-utility-item-icon"><i class="${escapeHtml(iconClass)}"></i></div><div class="lux-utility-item-copy"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(body)}</span></div><em>${escapeHtml(when)}</em></button>`;
+        }).join('')
+        : `<div class="lux-utility-empty lux-soft-chrome home-hover-chip"><strong>${escapeHtml(activeFilter === 'all' ? 'No new notifications' : 'Nothing in this category')}</strong><span>${escapeHtml(utilityNotificationEmptyMessage(activeFilter))}</span></div>`;
 
-    notificationPanel.innerHTML = `<div class="lux-utility-head"><div><strong>Notifications</strong><span>${notifications.unread > 0 ? `${notifications.unread} unread` : 'Everything reviewed'}</span></div><button class="lux-ghost-btn" type="button" data-utility-action="open-notifications">Open full view</button></div><div class="lux-utility-list">${notificationRows.length ? notificationRows.map((item, index) => `<button class="lux-utility-item" type="button" data-notification-key="${escapeHtml(`${item.source || 'school'}:${item.id || index}`)}" data-route-page="${escapeHtml(item.routePage || 'social')}"><div class="lux-utility-item-icon"><i class="${escapeHtml(item.source === 'social' ? 'fas fa-comments' : 'far fa-bell')}"></i></div><div class="lux-utility-item-copy"><strong>${escapeHtml(typeof cleanupUiText === 'function' ? cleanupUiText(item.title || item.type || 'Notification', 'Notification') : (item.title || 'Notification'))}</strong><span>${escapeHtml(typeof cleanupUiText === 'function' ? cleanupUiText(item.text || 'New portal activity.', 'New portal activity.') : (item.text || 'New portal activity.'))}</span></div><em>${escapeHtml(typeof formatRelativeTime === 'function' ? formatRelativeTime(item.createdAt || item.updatedAt) : '')}</em></button>`).join('') : `<div class="lux-utility-empty"><strong>No new notifications</strong><span>Campus alerts, academic updates, and social notifications will appear here.</span></div>`}</div>`;
-
-    chatPanel.innerHTML = `<div class="lux-utility-head"><div><strong>Messenger</strong><span>${messenger.unread > 0 ? `${messenger.unread} unread` : 'No unread chats'}</span></div><button class="lux-ghost-btn" type="button" data-utility-action="open-messenger">Open full view</button></div><div class="lux-utility-list">${chatRows.length ? chatRows.map((chat) => `<button class="lux-utility-item" type="button" data-chat-id="${escapeHtml(chat.id)}"><div class="lux-utility-item-icon"><i class="fas fa-comments"></i></div><div class="lux-utility-item-copy"><strong>${escapeHtml(chat.title)}</strong><span>${escapeHtml(chat.preview)}</span></div><em>${chat.unread > 0 ? `${chat.unread}` : escapeHtml(chat.when || '')}</em></button>`).join('') : `<div class="lux-utility-empty"><strong>No active chats</strong><span>Recent conversations and unread chat messages will appear here.</span></div>`}</div>`;
+    notificationPanel.innerHTML = `${headHtml}${filterStrip}<div class="lux-utility-list">${listHtml}</div>`;
 
     notificationPanel.querySelectorAll('[data-utility-action="open-notifications"]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -285,6 +333,14 @@ function renderTopbarUtilityPanels(currentUser) {
         });
     });
 
+    notificationPanel.querySelectorAll('[data-utility-alerts-filter]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            notificationPanel.dataset.alertsFilter = button.getAttribute('data-utility-alerts-filter') || 'all';
+            renderNotificationUtilityPanelContent(notificationPanel, currentUser);
+        });
+    });
+
     notificationPanel.querySelectorAll('[data-notification-key]').forEach((button) => {
         button.addEventListener('click', () => {
             const notificationKey = button.getAttribute('data-notification-key');
@@ -296,6 +352,23 @@ function renderTopbarUtilityPanels(currentUser) {
             if (routePage && typeof navigate === 'function') navigate(pageTarget(routePage));
         });
     });
+}
+
+function renderTopbarUtilityPanels(currentUser) {
+    const notificationPanel = ensureTopbarUtilityPanel('lux-notification-panel');
+    const chatPanel = ensureTopbarUtilityPanel('lux-chat-panel');
+    if (!notificationPanel || !chatPanel) return;
+
+    renderNotificationUtilityPanelContent(notificationPanel, currentUser);
+    ensureUtilityAlertsModel().then((loaded) => {
+        if (!loaded) return;
+        renderNotificationUtilityPanelContent(notificationPanel, currentUser);
+    });
+
+    const messenger = typeof getMessengerSnapshot === 'function' ? getMessengerSnapshot(currentUser) : { recent: [], unread: 0 };
+    const chatRows = messenger.recent.slice(0, 5);
+
+    chatPanel.innerHTML = `<div class="lux-utility-head"><div><strong>Messenger</strong><span>${messenger.unread > 0 ? `${messenger.unread} unread` : 'No unread chats'}</span></div><button class="lux-ghost-btn" type="button" data-utility-action="open-messenger">Open full view</button></div><div class="lux-utility-list">${chatRows.length ? chatRows.map((chat) => `<button class="lux-utility-item lux-soft-chrome home-hover-chip" type="button" data-chat-id="${escapeHtml(chat.id)}"><div class="lux-utility-item-icon"><i class="fas fa-comments"></i></div><div class="lux-utility-item-copy"><strong>${escapeHtml(chat.title)}</strong><span>${escapeHtml(chat.preview)}</span></div><em>${chat.unread > 0 ? `${chat.unread}` : escapeHtml(chat.when || '')}</em></button>`).join('') : `<div class="lux-utility-empty lux-soft-chrome home-hover-chip"><strong>No active chats</strong><span>Recent conversations and unread chat messages will appear here.</span></div>`}</div>`;
 
     chatPanel.querySelectorAll('[data-utility-action="open-messenger"]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -523,6 +596,8 @@ function spawnStudioChipBurstParticles(shell, _event, root) {
         appendBit(bit);
     });
 }
+
+window.spawnLuxChipBurstParticles = spawnStudioChipBurstParticles;
 
 function launchBackgroundGallery(mediaType) {
     const open = () => {
@@ -1676,7 +1751,13 @@ function bindTopbarControls() {
     }
 
     if (!document.body.dataset.luxTopbarCloseBound) {
-        document.addEventListener('click', () => {
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            if (typeof isLuxUtilityInteractionTarget === 'function' && isLuxUtilityInteractionTarget(target)) return;
+            if (target?.closest?.('.lux-picker-panel.is-open, .lux-picker-panel.is-closing, .lux-picker-wrap')) return;
+            const userMenu = document.getElementById('lux-user-menu');
+            const userChip = document.getElementById('lux-user-chip');
+            if (userMenu?.classList.contains('is-open') && (userMenu.contains(target) || userChip?.contains(target))) return;
             closeUtilityPanels();
             closePickerPanels({ immediate: true });
             closeUserMenu();

@@ -505,30 +505,43 @@ function entityDetailStats(type, e) {
     return [];
 }
 
-function filePreview(file) {
-    if (!file) return '';
-    if (isImage(file)) {
-        if (file.storageMissing === true && !text(file.previewDataUrl || file.dataUrl)) {
-            return `
+function isSocialFileUnavailableKey(storageKey = '') {
+    try {
+        if (typeof window.__kiuIsSocialFileUnavailable === 'function') {
+            return window.__kiuIsSocialFileUnavailable(storageKey);
+        }
+    } catch (error) {}
+    return false;
+}
+
+function filePreviewUnavailableMarkup() {
+    return `
                 <div class="social-neo-media is-broken is-unavailable">
                     <span class="social-neo-muted">Image unavailable</span>
                 </div>
             `;
+}
+
+function filePreview(file) {
+    if (!file) return '';
+    if (isImage(file)) {
+        if (file.storageMissing === true && !text(file.previewDataUrl || file.dataUrl)) {
+            return filePreviewUnavailableMarkup();
+        }
+        const storageKey = text(file.storageKey || file.id || '');
+        if (isSocialFileUnavailableKey(storageKey)) {
+            return filePreviewUnavailableMarkup();
         }
         const src = fileUrl(file);
         if (src) {
             return `
                 <div class="social-neo-media">
-                    <img src="${escape(src)}" alt="${escape(text(file.name || 'Image'))}" onerror="this.closest('.social-neo-media')?.classList.add('is-broken');this.remove();">
+                    <img src="${escape(src)}" alt="${escape(text(file.name || 'Image'))}" data-social-file-key="${escape(storageKey)}">
                 </div>
             `;
         }
-        if (text(file.storageKey) || file.storageMissing === true) {
-            return `
-                <div class="social-neo-media is-broken is-unavailable">
-                    <span class="social-neo-muted">Image unavailable</span>
-                </div>
-            `;
+        if (storageKey || file.storageMissing === true) {
+            return filePreviewUnavailableMarkup();
         }
     }
     const href = fileUrl(file);

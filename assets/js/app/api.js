@@ -535,6 +535,34 @@ async function destroyPortalBackendSession(token = getPortalSessionToken()) {
     }
 }
 
+function resolvePortalImpersonationUserId(role, userId = '') {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    let resolvedUserId = String(userId || '').trim();
+    if (resolvedUserId) return resolvedUserId;
+    const activeSessionKey = typeof ACTIVE_SESSION_KEY !== 'undefined' ? ACTIVE_SESSION_KEY : 'KIU_ACTIVE_SESSION_USER_ID';
+    try {
+        const sessionUserId = sessionStorage.getItem(activeSessionKey);
+        if (sessionUserId) resolvedUserId = String(sessionUserId).trim();
+    } catch (error) {}
+    if (resolvedUserId) return resolvedUserId;
+    if (typeof getPreferredImpersonationUserForRole === 'function') {
+        let preferredFaculty = 'ECON';
+        try {
+            preferredFaculty = localStorage.getItem('currentFaculty')
+                || localStorage.getItem('KIU_FACULTY_CONTEXT')
+                || '';
+        } catch (error) {}
+        const persona = getPreferredImpersonationUserForRole(normalizedRole, preferredFaculty);
+        if (persona?.id) return String(persona.id).trim();
+    }
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const currentRole = String(currentUser?.role || '').trim().toLowerCase();
+    if (currentUser?.id && currentRole === normalizedRole) {
+        return String(currentUser.id).trim();
+    }
+    return '';
+}
+
 async function syncPortalBackendImpersonation(role, userId = '') {
     const token = getPortalSessionToken();
     if (!token) return null;
@@ -546,8 +574,7 @@ async function syncPortalBackendImpersonation(role, userId = '') {
                 body: JSON.stringify({ token })
             });
         }
-        const persona = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-        const resolvedUserId = String(userId || persona?.id || '').trim();
+        const resolvedUserId = resolvePortalImpersonationUserId(normalizedRole, userId);
         if (!resolvedUserId) return null;
         return await kiuPortalFetch('/api/session/impersonate-role', {
             method: 'POST',

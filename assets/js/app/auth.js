@@ -159,6 +159,7 @@ function loadAuthState() {
             if (hasSessionToken) {
                 if (typeof schedulePortalBackendBootstrap === 'function') schedulePortalBackendBootstrap();
                 else scheduleKiuRealtimeBootstrap();
+                schedulePortalLiveAlertBootstrap();
             }
         } catch (e) {
             console.error("Failed to restore auth state", e);
@@ -208,6 +209,7 @@ function loadAuthState() {
                 if (hasSessionToken) {
                     if (typeof schedulePortalBackendBootstrap === 'function') schedulePortalBackendBootstrap();
                     else scheduleKiuRealtimeBootstrap();
+                    schedulePortalLiveAlertBootstrap();
                 }
             } catch (restoreError) {
                 console.warn('Could not preserve auth session after restore error.', restoreError);
@@ -1094,6 +1096,21 @@ function handleKiuRealtimeEventPayload(payload) {
         case 'social:state-upsert':
             if (typeof schedulePortalSocialBootstrap === 'function') schedulePortalSocialBootstrap(true);
             break;
+        case 'notification:created':
+            if (typeof window.showPortalLiveAlertFromRealtime === 'function') {
+                window.showPortalLiveAlertFromRealtime(payload);
+            } else if (typeof window.showPortalLiveAlert === 'function') {
+                window.showPortalLiveAlert({
+                    id: payload?.notification?.id,
+                    title: payload?.notification?.title,
+                    text: payload?.notification?.body,
+                    type: payload?.notification?.type,
+                    source: payload?.notification?.sourceDomain,
+                    force: true
+                });
+            }
+            if (typeof window.syncTopbar === 'function') window.syncTopbar();
+            break;
         case 'news:updated':
             if (!payload.silent) {
                 showBrowserNotification('University news updated', {
@@ -1461,6 +1478,7 @@ async function authLogin(email, password) {
     queueRealtimeUserSync(user);
     scheduleKiuRealtimeBootstrap(true);
     schedulePortalBackendBootstrap(true);
+    schedulePortalLiveAlertBootstrap();
     if (typeof createPortalAuditEvent === 'function') {
         createPortalAuditEvent({
             actorUserId: user.id,
@@ -1602,4 +1620,57 @@ function getAllAuthUsersFromState(state) {
         ...((state && Array.isArray(state.users)) ? state.users : []),
         ...collectFacultyMembers(state?.facultyProfiles || {})
     ]);
+}
+
+const PORTAL_LIVE_ALERT_SCRIPT = 'assets/js/shared/portal-live-alert-runtime.js?v=livealert1';
+let portalLiveAlertLoadPromise = null;
+
+function ensurePortalLiveAlertRuntime() {
+    if (window.__KIU_PORTAL_LIVE_ALERT_LOADED) {
+        if (typeof window.startPortalLiveAlertLoop === 'function') window.startPortalLiveAlertLoop();
+        return Promise.resolve(true);
+    }
+    if (portalLiveAlertLoadPromise) return portalLiveAlertLoadPromise;
+    portalLiveAlertLoadPromise = new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-kiu-live-alert="1"]');
+        if (existing) {
+            const done = () => {
+                if (typeof window.startPortalLiveAlertLoop === 'function') window.startPortalLiveAlertLoop();
+                resolve(true);
+            };
+            if (existing.dataset.kiuLoaded === '1' || window.__KIU_PORTAL_LIVE_ALERT_LOADED) {
+                done();
+                return;
+            }
+            existing.addEventListener('load', done, { once: true });
+            existing.addEventListener('error', () => reject(new Error('Failed to load portal live alerts.')), { once: true });
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = PORTAL_LIVE_ALERT_SCRIPT;
+        script.defer = true;
+        script.dataset.kiuLiveAlert = '1';
+        script.onload = () => {
+            script.dataset.kiuLoaded = '1';
+            if (typeof window.startPortalLiveAlertLoop === 'function') window.startPortalLiveAlertLoop();
+            resolve(true);
+        };
+        script.onerror = () => reject(new Error('Failed to load portal live alerts.'));
+        document.head.appendChild(script);
+    }).catch((error) => {
+        portalLiveAlertLoadPromise = null;
+        console.warn(error.message || error);
+        return false;
+    });
+    return portalLiveAlertLoadPromise;
+}
+
+function schedulePortalLiveAlertBootstrap() {
+    const userId = typeof getCurrentUserId === 'function'
+        ? String(getCurrentUserId() || '').trim()
+        : String(currentUser?.id || '').trim();
+    if (!userId) return;
+    const hasSessionToken = typeof getPortalSessionToken === 'function' && !!getPortalSessionToken();
+    if (!hasSessionToken) return;
+    ensurePortalLiveAlertRuntime();
 }

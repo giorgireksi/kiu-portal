@@ -89,7 +89,9 @@ describe('impersonation actor binding', () => {
     it('syncs persona userId to backend impersonation endpoint', () => {
         const apiSource = readSource('assets/js/app/api.js');
         const authMaintenance = readSource('backend/platform/routes/auth-maintenance-routes.js');
-        expect(apiSource).toContain('userId');
+        expect(apiSource).toContain('function resolvePortalImpersonationUserId(role, userId = \'\')');
+        expect(apiSource).toContain('getPreferredImpersonationUserForRole(normalizedRole, preferredFaculty)');
+        expect(apiSource).toContain('resolvePortalImpersonationUserId(normalizedRole, userId)');
         expect(apiSource).toMatch(/impersonate-role[\s\S]*userId/);
         expect(authMaintenance).toContain('userId is required for impersonation');
     });

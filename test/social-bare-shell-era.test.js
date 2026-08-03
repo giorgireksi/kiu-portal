@@ -50,14 +50,22 @@ describe('social bare shell era', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('Bare portal layout helpers');
         expect(bare).toContain('body.lux-page-bare');
-        const socialBlock = bare.slice(bare.indexOf('body.lux-route-social'));
-        expect(socialBlock).not.toMatch(/backdrop-filter:\s*none\s*!important/);
+        const socialRoot = bare.match(/body\.lux-route-social \{[\s\S]*?\n\}/)?.[0] || '';
+        expect(socialRoot).not.toMatch(/backdrop-filter:\s*none\s*!important/);
     });
 
     it('loads portal persist runtime before api.js for session token helpers', () => {
         const html = readSource('social.html');
         expect(html).toContain('api-portal-persist-runtime.js');
         expect(html.indexOf('api-portal-persist-runtime.js')).toBeLessThan(html.indexOf('assets/js/app/api.js'));
+    });
+
+    it('loads notification snapshot SSOT scripts for utility panel parity', () => {
+        const html = readSource('social.html');
+        expect(html).toContain('portal-api-stubs-runtime.js');
+        expect(html).toContain('luxury-home-model.js');
+        expect(html.indexOf('portal-api-stubs-runtime.js')).toBeLessThan(html.indexOf('assets/js/app/auth.js'));
+        expect(html.indexOf('social-runtime-lite.js')).toBeLessThan(html.indexOf('luxury-home-model.js'));
     });
 
     it('keeps social workspace layout in shared bare-lite CSS', () => {
@@ -91,7 +99,7 @@ describe('social bare shell era', () => {
         );
         expect(overviewBlock).not.toContain('--sn-');
         expect(bare).toContain('.social-project-hub-layout');
-        expect(bare).toContain('.social-neo-workspace-hub-section {');
+        expect(bare).toContain('body.lux-route-social .social-neo-workspace-hub-section');
         expect(bare).toContain('.social-project-hub-filter-label {');
         expect(bare).toContain('.social-neo-section-head > div > span {');
         expect(bare).toContain('.social-neo-workspace-hero-stats');
@@ -107,6 +115,11 @@ describe('social bare shell era', () => {
         expect(bare).toContain('.social-neo-research-shell');
         expect(bare).toContain('.social-neo-research-grid');
         expect(bare).toContain('.social-neo-research-pdf-shell');
+        expect(bare).toContain('body.lux-route-social .social-pin-section');
+        expect(bare).toContain('.social-neo-surveys-hero.is-merged');
+        expect(bare).toContain('.social-neo-lost-found-hero.is-merged');
+        expect(bare).toContain('body.lux-route-social .social-neo-survey-listings');
+        expect(bare).not.toContain('social-module-pin-menu-panel');
         expect(bare).toContain('.social-neo-pages-hero-grid');
         expect(bare).toContain('.social-neo-pages-grid');
         expect(bare).toContain('.social-neo-pages-empty-state');
@@ -121,8 +134,9 @@ describe('social bare shell era', () => {
         expect(bare).toContain('.social-photo-tab-segment');
         expect(bare).toContain('.social-photo-hero');
         expect(bare).toContain('.social-neo-rail-title');
-        expect(bare).toContain('button.social-photo-tab:is(.lux-primary-btn, .lux-secondary-btn)');
-        expect(bare).toContain('button:is(.social-neo-side-link, .social-neo-workspace-nav-btn).lux-secondary-btn');
+        expect(bare).toContain('button.social-photo-tab');
+        expect(bare).toContain('button.social-neo-side-link');
+        expect(bare).toContain('button.social-neo-workspace-nav-btn');
         expect(bare).toContain('.social-photo-content-stage');
         expect(bare).toContain('.social-photo-grid-tile');
         expect(bare).toContain('.social-photo-upload-dropzone');

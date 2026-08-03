@@ -88,6 +88,9 @@ function buildFacultyGradebookAggregateRoster(filterOverrides = {}) {
 
     groups.forEach(group => {
         if (typeof buildGradebookStudents !== 'function') return;
+        if (typeof syncGradebookRosterFromEnrollment === 'function') {
+            syncGradebookRosterFromEnrollment(group.courseId, group.groupId);
+        }
         const gradebookState = buildGradebookStudents(group.courseId, group.groupId);
         const rosterKey = String(gradebookState?.rosterKey || '').trim();
         (gradebookState?.students || []).forEach(student => {
@@ -122,6 +125,23 @@ function buildFacultyGradebookAggregateRoster(filterOverrides = {}) {
     });
 
     const mergedStudents = [...studentMap.values()].map(student => ensureGradeRecordHistories(student));
+    mergedStudents.forEach((student) => {
+        const studentId = String(student?.id || '').trim();
+        if (!studentId) return;
+        (student._gradebookEnrollments || []).forEach((enrollment) => {
+            const rosterKey = String(enrollment?.rosterKey || '').trim();
+            if (!rosterKey) return;
+            if (!Array.isArray(KIU_STATE.studentGrades[rosterKey])) {
+                KIU_STATE.studentGrades[rosterKey] = [];
+            }
+            const roster = KIU_STATE.studentGrades[rosterKey];
+            if (!roster.some((entry) => String(entry?.id || '') === studentId)) {
+                KIU_STATE.studentGrades[rosterKey] = roster
+                    .concat(ensureGradeRecordHistories(student))
+                    .map((entry) => ensureGradeRecordHistories(entry));
+            }
+        });
+    });
     if (groups.length === 1) {
         const onlyGroup = groups[0];
         currentGradebookSection = { courseId: onlyGroup.courseId, groupId: onlyGroup.groupId };
@@ -157,6 +177,40 @@ function loadFacultyGradebookAggregateRoster(filterOverrides = {}) {
 function resolveFacultyGradebookRosterKeysForStudent(studentId) {
     const enrollments = facultyGradebookEnrollmentByStudentId.get(String(studentId || '').trim()) || [];
     return [...new Set(enrollments.map(entry => String(entry?.rosterKey || '').trim()).filter(Boolean))];
+}
+
+function syncFacultyGradebookRostersForStudent(studentId, rosterKey = '') {
+    const normalizedStudentId = String(studentId || '').trim();
+    if (!normalizedStudentId) return;
+    const normalizedRosterKey = typeof normalizeGradebookRosterKey === 'function'
+        ? normalizeGradebookRosterKey(rosterKey)
+        : String(rosterKey || '').trim().toLowerCase();
+    const enrollments = facultyGradebookEnrollmentByStudentId.get(normalizedStudentId) || [];
+    const mockRecord = (mockStudents || []).find((entry) => String(entry?.id || '') === normalizedStudentId);
+    const seen = new Set();
+    [...enrollments, ...(mockRecord?._gradebookEnrollments || [])].forEach((entry) => {
+        const courseId = String(entry?.courseId || '').trim();
+        const groupId = String(entry?.groupId || '').trim();
+        if (!courseId || !groupId) return;
+        const dedupeKey = `${courseId}::${groupId}`;
+        if (seen.has(dedupeKey)) return;
+        seen.add(dedupeKey);
+        const entryRosterKey = String(entry?.rosterKey || '').trim()
+            || (typeof resolveGradebookRosterKey === 'function'
+                ? resolveGradebookRosterKey(
+                    courseId,
+                    groupId,
+                    typeof getEnrolledStudentsForGroup === 'function' ? getEnrolledStudentsForGroup(courseId, groupId) : []
+                )
+                : '');
+        if (normalizedRosterKey && entryRosterKey && typeof normalizeGradebookRosterKey === 'function'
+            && normalizeGradebookRosterKey(entryRosterKey) !== normalizedRosterKey) {
+            return;
+        }
+        if (typeof syncGradebookRosterFromEnrollment === 'function') {
+            syncGradebookRosterFromEnrollment(courseId, groupId);
+        }
+    });
 }
 
 function getFacultyEnrollmentMetaLine(student) {
@@ -1716,6 +1770,7 @@ __kiuGbStaffExpose({
     initFacultyGradebookPage,
     buildFacultyGradebookAggregateRoster,
     loadFacultyGradebookAggregateRoster,
+    syncFacultyGradebookRostersForStudent,
     populateFacultyGradebookFilters,
     renderLmsEmbeddedStaffRosterList,
     renderLmsEmbeddedStaffGradingFocus,

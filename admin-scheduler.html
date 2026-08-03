@@ -17,12 +17,13 @@
     <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
     <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
     <link rel="stylesheet" href="assets/css/lux-droplist.css?v=20260725-legacypurge1">
-    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260729-schmodal2">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260803-schapply5">
     <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260725-wave2host1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260729-schmodal2">
+<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260803-weeklist1">
     <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260725-ssot1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260731-schrail1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260803-weeklist2">
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260724-chromeshare1">
+    <link rel="stylesheet" href="assets/css/admin-scheduler-session-modal.css?v=20260804-staffbuttons1">
     <script src="assets/js/theme-primer.js?v=20260730-navpreload1"></script>
 </head>
 <body class="kiu-shell-loading role-admin lux-nonhome-page lux-route-admin-scheduler lux-unified-shell lux-page-bare lux-full-paint">
@@ -57,22 +58,18 @@
                         <article class="sch-stat-card lux-strip-card lux-soft-chrome home-hover-chip">
                             <span class="sch-stat-label">Visible sessions</span>
                             <strong id="sch-stat-sessions">0</strong>
-                            <span>Scheduled in current board scope.</span>
                         </article>
                         <article class="sch-stat-card lux-strip-card lux-soft-chrome home-hover-chip">
                             <span class="sch-stat-label">Draft sessions</span>
                             <strong id="sch-stat-drafts">0</strong>
-                            <span>Need room or professor assignment.</span>
                         </article>
                         <article class="sch-stat-card lux-strip-card lux-soft-chrome home-hover-chip">
                             <span class="sch-stat-label">Rooms used</span>
                             <strong id="sch-stat-rooms">0</strong>
-                            <span>Reserved across the selected week.</span>
                         </article>
                         <article class="sch-stat-card lux-strip-card lux-soft-chrome home-hover-chip">
                             <span class="sch-stat-label">Teaching staff</span>
                             <strong id="sch-stat-instructors">0</strong>
-                            <span>Visible professors and assistants.</span>
                         </article>
                     </div>
                 </section>
@@ -100,10 +97,6 @@
                                 <option value="all">All teaching assistants</option>
                             </select>
                         </label>
-                    </div>
-                    <div class="sch-rail-note">
-                        <i class="fas fa-circle-info" aria-hidden="true"></i>
-                        <span>Filters apply to both the session grid and the subject palette, so the board and the search lane stay in sync.</span>
                     </div>
                 </section>
 
@@ -152,21 +145,21 @@
 </main>
 <!-- CREATE SESSION MODAL -->
 <template id="sch-modal-template">
-    <div class="sch-modal-overlay" id="schModalOverlay" data-admin-scheduler-modal-overlay="true" data-lux-transparency-exempt="1" hidden aria-hidden="true">
+    <div class="sch-modal-overlay" id="schModalOverlay" data-admin-scheduler-modal-overlay="true" data-lux-transparency-exempt="1" data-sch-session-modal-ssot="1" hidden aria-hidden="true">
         <div class="sch-modal" role="dialog" aria-modal="true" aria-labelledby="sch-modal-title">
-            <div class="sch-modal-head">
+            <div class="sch-modal-head sch-modal-head-accent">
                 <div>
-                    <div class="sch-modal-mode-chip home-hover-chip" id="sch-modal-mode-chip">Create</div>
-                    <div class="sch-modal-title" id="sch-modal-title"><i class="fas fa-calendar-plus"></i> New Class Session</div>
+                    <div class="sch-modal-mode-chip" id="sch-modal-mode-chip">Create</div>
+                    <div class="sch-modal-title" id="sch-modal-title"><i class="fas fa-calendar-plus" aria-hidden="true"></i> New Class Session</div>
                     <div class="sch-modal-subtitle" id="sch-modal-subtitle">Monday 09:00</div>
-                    <div class="sch-modal-week" id="sch-modal-week">Week of ...</div>
+                    <div class="sch-modal-week" id="sch-modal-week">Week of …</div>
                 </div>
-                <button type="button" class="lux-secondary-btn sch-modal-close-muted home-hover-chip" data-admin-scheduler-modal-close="true" data-lux-skip-modern-button="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+                <i class="fas fa-times sch-modal-close-muted" data-admin-scheduler-modal-close="true" role="button" tabindex="0" aria-label="Close"></i>
             </div>
             <div class="sch-modal-body">
-                <div class="sch-conflict-alert home-hover-chip" id="sch-conflict-msg" data-conflict-state="hidden"><i class="fas fa-circle-info" id="sch-conflict-icon"></i> <span id="sch-conflict-text"></span></div>
+                <div class="sch-conflict-alert" id="sch-conflict-msg" data-conflict-state="hidden" role="status" aria-live="polite" hidden><i class="fas fa-circle-info" id="sch-conflict-icon"></i> <span id="sch-conflict-text"></span></div>
 
-                <section class="sch-form-section home-hover-chip">
+                <section class="sch-form-section sch-form-section--identity">
                     <div class="sch-form-section-head">
                         <div class="sch-form-section-title">Session Basics</div>
                         <div class="sch-form-section-copy">Choose the subject and group this session belongs to.</div>
@@ -177,28 +170,26 @@
                                 <label for="sch-subject" id="sch-subject-field-label">Subject <span class="sch-inline-required">*</span></label>
                                 <span class="sch-input-label-spacer" aria-hidden="true"></span>
                             </div>
-                            <select class="lux-control" id="sch-subject" name="sch-subject" data-lux-picker-label="Subject *"></select>
+                            <select class="lux-control" id="sch-subject" name="sch-subject" data-lux-picker-label="Subject"></select>
                         </div>
                         <div class="sch-input-group">
                             <div class="sch-input-label-row">
-                                <label for="sch-group">Group ID <span class="sch-inline-required">*</span></label>
-                                <button type="button" class="lux-secondary-btn sch-preset-manage-link home-hover-chip" data-scheduler-preset-manage="group" data-lux-skip-modern-button="true">
-                                    <i class="fas fa-sliders-h"></i> Manage groups
-                                </button>
+                                <label for="sch-group" id="sch-group-field-label">Group ID <span class="sch-inline-required">*</span></label>
+                                <button type="button" class="sch-preset-manage-link" data-scheduler-preset-manage="group" data-lux-skip-modern-button="true"><i class="fas fa-sliders-h" aria-hidden="true"></i> Manage groups</button>
                             </div>
-                            <select class="lux-control" id="sch-group" name="sch-group" data-scheduler-preset-kind="group" data-lux-picker-label="Group ID"></select>
+                            <select class="lux-control" id="sch-group" name="sch-group" data-scheduler-preset-kind="group" data-lux-picker-label="Group ID" aria-label="Group ID"></select>
                         </div>
                     </div>
                 </section>
 
-                <section class="sch-form-section home-hover-chip">
+                <section class="sch-form-section sch-form-section--schedule">
                     <div class="sch-form-section-head">
                         <div class="sch-form-section-title">Time And Room</div>
                         <div class="sch-form-section-copy">Place the session on the calendar and reserve the room.</div>
                     </div>
                     <div class="sch-input-row sch-input-row-two">
                         <div class="sch-input-group">
-                            <label for="sch-day">Day</label>
+                            <label for="sch-day" id="sch-day-field-label">Day</label>
                             <select class="lux-control" id="sch-day" name="sch-day" data-lux-picker-label="Day">
                                 <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
                                 <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
@@ -206,10 +197,8 @@
                         </div>
                         <div class="sch-input-group">
                             <div class="sch-input-label-row">
-                                <label for="sch-room">Room</label>
-                                <button type="button" class="lux-secondary-btn sch-preset-manage-link home-hover-chip" data-scheduler-preset-manage="room" data-lux-skip-modern-button="true">
-                                    <i class="fas fa-sliders-h"></i> Manage rooms
-                                </button>
+                                <label for="sch-room" id="sch-room-field-label">Room</label>
+                                <button type="button" class="sch-preset-manage-link" data-scheduler-preset-manage="room" data-lux-skip-modern-button="true"><i class="fas fa-sliders-h" aria-hidden="true"></i> Manage rooms</button>
                             </div>
                             <select class="lux-control" id="sch-room" name="sch-room" data-scheduler-preset-kind="room" data-lux-picker-label="Room"></select>
                         </div>
@@ -221,7 +210,7 @@
                             <input type="time" class="lux-control" id="sch-time" name="sch-time" value="09:00" step="60" data-admin-scheduler-session-field="time">
                         </div>
                         <div class="sch-input-group">
-                            <label for="sch-duration">Duration</label>
+                            <label for="sch-duration" id="sch-duration-field-label">Duration</label>
                             <select class="lux-control" id="sch-duration" name="sch-duration" data-admin-scheduler-session-field="duration" data-lux-picker-label="Duration">
                                 <option value="custom">Custom</option>
                                 <option value="60">1h (60 min)</option>
@@ -239,25 +228,37 @@
                     </div>
                 </section>
 
-                <section class="sch-form-section home-hover-chip">
+                <section class="sch-form-section sch-form-section--staffing">
                     <div class="sch-form-section-head">
-                        <div class="sch-form-section-title">Session Type</div>
-                        <div class="sch-form-section-copy">Choose whether this slot is a lecture or a TA-led seminar.</div>
+                        <div class="sch-form-section-title">Staffing</div>
+                        <div class="sch-form-section-copy">Choose lecture or seminar and assign a professor or TA.</div>
                     </div>
                     <div class="sch-input-row sch-input-row-single">
                         <div class="sch-input-group">
-                            <label for="sch-session-type">Session type</label>
+                            <label for="sch-session-type" id="sch-session-type-field-label">Session type</label>
                             <select class="lux-control" id="sch-session-type" name="sch-session-type" data-admin-scheduler-session-field="session-type" data-lux-picker-label="Session type">
                                 <option value="lecture">Lecture</option>
                                 <option value="seminar">Seminar (TA-led)</option>
                             </select>
                         </div>
                     </div>
-                    <input type="hidden" id="sch-prof" name="sch-prof" data-admin-scheduler-session-field="prof">
-                    <input type="hidden" id="sch-ta" name="sch-ta" data-admin-scheduler-session-field="ta">
+                    <div class="sch-input-row sch-input-row-two">
+                        <div class="sch-input-group">
+                            <label for="sch-prof" id="sch-prof-field-label">Professor</label>
+                            <select class="lux-control" id="sch-prof" name="sch-prof" data-admin-scheduler-session-field="prof" data-lux-picker-label="Professor">
+                                <option value="">No professor</option>
+                            </select>
+                        </div>
+                        <div class="sch-input-group">
+                            <label for="sch-ta" id="sch-ta-field-label">Teaching assistant</label>
+                            <select class="lux-control" id="sch-ta" name="sch-ta" data-admin-scheduler-session-field="ta" data-lux-picker-label="Teaching assistant">
+                                <option value="">No TA</option>
+                            </select>
+                        </div>
+                    </div>
                 </section>
 
-                <section class="sch-form-section home-hover-chip">
+                <section class="sch-form-section sch-form-section--scope">
                     <div class="sch-form-section-head">
                         <div class="sch-form-section-title">Capacity And Scope</div>
                         <div class="sch-form-section-copy">Set attendance limits and choose whether the change is week-only or recurring.</div>
@@ -272,10 +273,9 @@
                             <input type="text" class="lux-control sch-input-readonly" id="sch-faculty-display" name="sch-faculty-display" readonly>
                         </div>
                     </div>
-
                     <div class="sch-input-row sch-input-row-single">
                         <div class="sch-input-group">
-                            <label for="sch-apply-scope">Apply Changes To</label>
+                            <label for="sch-apply-scope" id="sch-apply-scope-field-label">Apply Changes To</label>
                             <select class="lux-control" id="sch-apply-scope" name="sch-apply-scope" data-lux-picker-label="Apply Changes To">
                                 <option value="selected-week">Selected week only</option>
                                 <option value="recurring">Recurring template</option>
@@ -369,10 +369,13 @@
 <script defer src="assets/js/shared/utilities.js?v=20260725-legacypurge1"></script>
 <script defer src="assets/js/shared/lux-glass-dialog.js?v=20260725-portalmodal1"></script>
 <script defer src="assets/js/shared/lux-transparency.js?v=20260729-schmodal2"></script>
+<script defer src="assets/js/pages/staff-form-blueprint.js?v=20260804-staffsections1"></script>
+<script defer src="assets/js/pages/form-blueprint-runtime.js?v=20260804-staffsections1"></script>
+<script defer src="assets/js/pages/form-renderer-runtime.js?v=20260804-staffsections1"></script>
 <script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
 <script defer src="assets/js/pages/admin-scheduler-session-runtime.js?v=20260720-w18"></script>
 <script defer src="assets/js/pages/admin-scheduler-faculty-runtime.js?v=20260720-h2b"></script>
-<script defer src="assets/js/pages/admin-scheduler.js?v=20260729-schmodal2"></script>
+<script defer src="assets/js/pages/admin-scheduler.js?v=20260804-staffsections1"></script>
 <script defer src="assets/js/features/luxury-index-runtime.js?v=20260723-gpuperf2b"></script>
 <script defer src="assets/js/features/luxury-palette-runtime.js?v=20260719-luxpal1"></script>
 <script defer src="assets/js/features/luxury-atmosphere-runtime.js?v=20260723-gpuperf4p"></script>

@@ -61,11 +61,13 @@ function registerSystemRoutes(app, deps = {}) {
 
     app.get('/health', (request, response) => {
         const { STUDENT_SERVICE_API_MANIFEST_VERSION } = require('../contracts/student-service-api-contract');
+        const { SOCIAL_PIN_API_VERSION } = require('../domains/social-pin-service');
         response.json({
             ok: true,
             status: 'ready',
             backend: 'kiu-platform-server',
-            studentServiceApiManifestVersion: STUDENT_SERVICE_API_MANIFEST_VERSION
+            studentServiceApiManifestVersion: STUDENT_SERVICE_API_MANIFEST_VERSION,
+            socialPinApiVersion: SOCIAL_PIN_API_VERSION
         });
     });
 

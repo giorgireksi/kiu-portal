@@ -519,8 +519,22 @@ async function refreshNotifications(force = false) {
     if (runtime.notificationsPromise && !force) return runtime.notificationsPromise;
     runtime.notificationsPromise = portalRequest(`/api/notifications?userId=${encodeURIComponent(text(user.id))}&limit=50`)
         .then((payload) => {
+            const previousIds = new Set((runtime.notifications || []).map((item) => text(item?.id)).filter(Boolean));
             runtime.notifications = Array.isArray(payload?.items) ? payload.items : [];
             runtime.stories = Array.isArray(payload?.stories) ? payload.stories : runtime.stories || [];
+            runtime.notifications.forEach((item) => {
+                const id = text(item?.id);
+                if (!id || previousIds.has(id) || item?.isRead) return;
+                if (typeof window.showPortalLiveAlert === 'function') {
+                    window.showPortalLiveAlert({
+                        id,
+                        title: text(item?.title || 'Notification'),
+                        text: text(item?.body || ''),
+                        type: text(item?.type || ''),
+                        source: text(item?.sourceDomain || 'portal')
+                    });
+                }
+            });
             queueRender('notifications-refresh');
             return runtime.notifications;
         })
@@ -806,18 +820,33 @@ async function toggleModulePin(module, entityId, kind = 'personal') {
         const toggleSaved = typeof window.toggleSavedPost === 'function' ? window.toggleSavedPost : null;
         if (!toggleSaved) throw new Error('Pin state could not be updated.');
         await toggleSaved(normalizedEntityId);
-        setFlash('Pinned.', 'success', { skipRender: true });
-        return { module: normalizedModule, entityId: normalizedEntityId, kind: normalizedKind, pinned: true };
+        const pinned = typeof window.isPostSaved === 'function'
+            ? Boolean(window.isPostSaved(normalizedEntityId))
+            : true;
+        setFlash(pinned ? 'Pinned.' : 'Unpinned.', 'success', { skipRender: true });
+        return { module: normalizedModule, entityId: normalizedEntityId, kind: normalizedKind, pinned };
     }
-    const payload = await portalRequest('/api/social/pins/toggle', {
-        method: 'POST',
-        body: JSON.stringify({
-            actorId,
-            module: normalizedModule,
-            entityId: normalizedEntityId,
-            kind: normalizedKind
-        })
-    });
+    let payload;
+    try {
+        payload = await portalRequest('/api/social/pins/toggle', {
+            method: 'POST',
+            body: JSON.stringify({
+                actorId,
+                module: normalizedModule,
+                entityId: normalizedEntityId,
+                kind: normalizedKind
+            })
+        });
+    } catch (error) {
+        if (error?.status === 404) {
+            const pinModel = typeof window !== 'undefined' ? window.KiuSocialPinModel : null;
+            const message = pinModel?.PIN_API_UNAVAILABLE_MESSAGE
+                || 'Pin API unavailable — restart platform backend (npm run stop:local && npm run start:local).';
+            pinModel?.setPinApiUnavailable?.(true);
+            throw new Error(message);
+        }
+        throw error;
+    }
     await Promise.all([loadSocialState(true), refreshFeed(true)]);
     setFlash(payload?.pinned ? 'Pinned.' : 'Unpinned.', 'success', { skipRender: true });
     return payload;

@@ -67,7 +67,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:social": "node node_modules/vitest/vitest.mjs run test/social-*.test.js",
-    "verify:social": "node tools/verify_social_panels.mjs && node tools/verify_social_modules.mjs && node tools/verify_social_dialogs.mjs",
+    "verify:social": "node tools/verify_social_panels.mjs && node tools/verify_social_modules.mjs && node tools/verify_social_dialogs.mjs && node tools/verify_social_pins.mjs",
+    "verify:pins": "node tools/verify_social_pins.mjs",
     "graphify:watch": "bash ./tools/start-graphify-watch.sh",
     "graphify:watch:stop": "bash ./tools/stop-graphify-watch.sh",
     "graphify:watch:status": "systemctl --user status graphify-watch-asd.service --no-pager"

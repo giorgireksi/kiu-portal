@@ -277,6 +277,7 @@ const {
     updateSocialResearchPublication
 } = require('./domains/social-research-service');
 const {
+    ensureSocialPinState,
     getSocialPinBootstrap,
     listModulePinnedIds,
     toggleSocialModulePin
@@ -732,7 +733,7 @@ function mergeStudentServiceAnswerRecords(existing = {}, incoming = {}) {
         authorRole: String(preferred.authorRole || preferred.responderRole || fallback.authorRole || fallback.responderRole || '').trim(),
         responderUserId: String(preferred.responderUserId || fallback.responderUserId || existingAuthor || incomingAuthor || '').trim(),
         parentAnswerId: String(preferred.parentAnswerId || fallback.parentAnswerId || '').trim(),
-        helpfulVotes: asArray(incoming.helpfulVotes).length >= asArray(existing.helpfulVotes).length
+        helpfulVotes: Object.prototype.hasOwnProperty.call(incoming, 'helpfulVotes')
             ? asArray(incoming.helpfulVotes)
             : asArray(existing.helpfulVotes)
     });
@@ -1042,6 +1043,7 @@ class PlatformStore {
         state.audit = state.audit && typeof state.audit === 'object' ? state.audit : {};
         state.audit.events = Array.isArray(state.audit.events) ? state.audit.events : [];
         state.social = state.social && typeof state.social === 'object' ? state.social : createEmptySocialState();
+        ensureSocialPinState(state);
         state.studentService = state.studentService && typeof state.studentService === 'object' ? state.studentService : createEmptyStudentServiceState();
         ensureBackgroundGalleryState(state);
         state.importJobs = state.importJobs && typeof state.importJobs === 'object' ? state.importJobs : {};

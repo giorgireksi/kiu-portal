@@ -103,5 +103,7 @@ describe('lux picker open close animation', () => {
         expect(fouc).toMatch(/\.lux-user-menu\.is-open[\s\S]*?opacity:\s*1/);
         expect(fouc).toContain('transform-origin: top right');
         expect(fouc).not.toMatch(/\.lux-utility-panel\.is-open \{ display: block; \}/);
+        expect(shellChrome).toContain('function isLuxUtilityInteractionTarget(target)');
+        expect(shellChrome).toContain('isLuxUtilityInteractionTarget,');
     });
 });

@@ -165,9 +165,12 @@ describe('social-form-model', () => {
         const content = readSource('assets/js/pages/social-chrome-model.js');
         expect(model).toContain('file.storageMissing === true');
         expect(model).toContain('Image unavailable');
-        expect(model).toContain("this.closest('.social-neo-media')?.classList.add('is-broken')");
+        expect(model).toContain('data-social-file-key');
+        expect(model).toContain('__kiuIsSocialFileUnavailable');
         expect(runtime).toContain('const storageMissing = file.storageMissing === true');
-        expect(runtime).toContain('if (storageMissing) return preview');
+        expect(runtime).toContain('isSocialFileUnavailable(storageKey)');
+        expect(runtime).toContain("queueRender('file-unavailable')");
         expect(content).toContain('const storageMissing = file?.storageMissing === true');
+        expect(content).toContain('__kiuIsSocialFileUnavailable');
     });
 });

@@ -98,6 +98,7 @@ describe('social-page-events', () => {
         expect(page).not.toMatch(/function\s+handleChange\s*\(/);
         expect(page).toContain('createKiuSocialPageEventsApi');
         expect(html).toContain('social-page-events.js');
+        expect(html).toContain('social-page-events.js?v=20260802-pinfix4');
         expect(html.indexOf('social-shell-nav.js')).toBeLessThan(html.indexOf('social-page-events.js'));
         expect(html.indexOf('social-page-events.js')).toBeLessThan(html.indexOf('social-page.js'));
     });

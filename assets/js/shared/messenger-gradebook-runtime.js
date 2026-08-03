@@ -9,6 +9,47 @@
 function normalizeGradebookRosterKey(value) {
     return normalizeIdentifier(value);
 }
+function resolveStudentScheduleEntries(schedule) {
+    if (typeof normalizeStudentScheduleValue === 'function') {
+        return normalizeStudentScheduleValue(schedule);
+    }
+    if (Array.isArray(schedule)) return schedule.filter(Boolean);
+    if (schedule && typeof schedule === 'object') {
+        if (Array.isArray(schedule.entries)) return schedule.entries.filter(Boolean);
+        return Object.entries(schedule)
+            .filter(([, value]) => value != null && value !== '')
+            .map(([key, value]) => {
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    const hasEntryShape = Boolean(
+                        value.courseId
+                        || value.sourceCourseId
+                        || value.groupName
+                        || value.day
+                        || value.time
+                    );
+                    if (hasEntryShape) {
+                        return {
+                            ...value,
+                            courseId: value.courseId || value.sourceCourseId || (/^\d+$/.test(String(key)) ? '' : key),
+                            groupId: typeof value.groupId === 'string' || typeof value.groupId === 'number'
+                                ? value.groupId
+                                : (value.groupName || '')
+                        };
+                    }
+                }
+                return { courseId: key, groupId: value };
+            })
+            .filter((entry) => {
+                const courseId = String(entry?.courseId || '').trim();
+                if (!courseId) return false;
+                if (entry?.groupId != null && typeof entry.groupId === 'object') return false;
+                const groupId = String(entry?.groupId ?? '').trim();
+                if (!groupId && /^\d+$/.test(courseId)) return false;
+                return Boolean(courseId || groupId);
+            });
+    }
+    return [];
+}
 function getEnrolledStudentsForGroup(courseId, groupId) {
     const domain = getDomain();
     const students = [];
@@ -19,14 +60,7 @@ function getEnrolledStudentsForGroup(courseId, groupId) {
         .find(group => canonicalCourseKey(group?.id || group?.groupId || group?.name || '') === normalizedGroupId);
     const targetFaculty = normalizeFacultyCode(targetGroup?.faculty || (typeof deriveFacultyFromSubjectId === 'function' ? deriveFacultyFromSubjectId(courseId) : '') || '', '');
     Object.entries(KIU_STATE.studentSchedulesByStudent || {}).forEach(([studentId, schedule]) => {
-        const scheduleEntries = Array.isArray(schedule)
-            ? schedule
-            : (schedule && typeof schedule === 'object')
-                ? Object.entries(schedule).map(([scheduledCourseId, scheduledGroupId]) => ({
-                    courseId: scheduledCourseId,
-                    groupId: scheduledGroupId
-                }))
-                : [];
+        const scheduleEntries = resolveStudentScheduleEntries(schedule);
         const isEnrolled = scheduleEntries.some(item => (
             canonicalCourseKey(item?.courseId || item?.sourceCourseId || '') === normalizedCourseId
             && canonicalCourseKey(item?.groupId || item?.groupName || '') === normalizedGroupId
@@ -153,22 +187,115 @@ function buildGradebookStudents(courseId, groupId) {
         students: mergedStudents
     };
 }
+
+function normalizeTeachingScopeKey(value = '') {
+    return normalizeGradebookRosterKey(value);
+}
+
+function isPortalCurriculumStaffForTeachingGroup(courseId = '', groupId = '', userId = '', role = '') {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    const normalizedUserId = String(userId || '').trim();
+    if (!normalizedUserId || ![USER_ROLES.PROFESSOR, USER_ROLES.TA].includes(normalizedRole)) return false;
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const facultyCode = String(
+        user?.facultyCode
+        || user?.faculty
+        || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '')
+        || ''
+    ).trim().toUpperCase();
+    const profile = KIU_STATE?.facultyProfiles?.[facultyCode];
+    if (!profile || typeof profile !== 'object') return false;
+    const roster = normalizedRole === USER_ROLES.PROFESSOR
+        ? (Array.isArray(profile.professors) ? profile.professors : [])
+        : (Array.isArray(profile.tas) ? profile.tas : []);
+    if (!roster.some(member => String(member?.id || '').trim() === normalizedUserId)) return false;
+    const targetCourse = normalizeTeachingScopeKey(courseId);
+    const curriculum = typeof getActiveCurriculum === 'function'
+        ? getActiveCurriculum(facultyCode)
+        : profile.curriculum;
+    const inCurriculum = (Array.isArray(curriculum) ? curriculum : []).some(subject =>
+        normalizeTeachingScopeKey(subject?.id || subject?.subjectId || subject?.courseId || '') === targetCourse
+    );
+    if (!inCurriculum) return false;
+    if (!groupId) return true;
+    const targetGroup = normalizeTeachingScopeKey(groupId);
+    const groups = KIU_STATE?.availableGroups?.[courseId] || [];
+    return groups.some(group => normalizeTeachingScopeKey(group?.id || group?.name || '') === targetGroup);
+}
+
+function isUserNameAssignedToTeachingGroup(user = {}, group = {}) {
+    const identityKeys = typeof getUserNameVariants === 'function'
+        ? getUserNameVariants(user)
+        : (() => {
+            const fallback = new Set();
+            [user?.name, user?.nameEn, user?.email].forEach(value => {
+                const key = normalizePersonNameKey(value);
+                if (key) fallback.add(key);
+            });
+            return fallback;
+        })();
+    const profKey = normalizePersonNameKey(group?.prof);
+    const taKey = normalizePersonNameKey(group?.ta);
+    return identityKeys.has(profKey) || identityKeys.has(taKey);
+}
+
+function isUserAssignedToTeachingGroup(user = {}, group = {}, courseId = '') {
+    if (!user || !group) return false;
+    if (isUserNameAssignedToTeachingGroup(user, group)) return true;
+    const groupId = group?.id || group?.groupId || group?.name || '';
+    return isPortalCurriculumStaffForTeachingGroup(courseId, groupId, user?.id, user?.role);
+}
+
+function syncGradebookRosterFromEnrollment(courseId, groupId, state = KIU_STATE) {
+    const targetState = state && typeof state === 'object' ? state : KIU_STATE;
+    if (!targetState.studentGrades || typeof targetState.studentGrades !== 'object') {
+        targetState.studentGrades = {};
+    }
+    const enrolledStudents = getEnrolledStudentsForGroup(courseId, groupId);
+    const rosterKey = resolveGradebookRosterKey(courseId, groupId, enrolledStudents);
+    const existingRoster = (Array.isArray(targetState.studentGrades[rosterKey]) ? targetState.studentGrades[rosterKey] : [])
+        .map(student => ensureGradeRecordHistories(student));
+    const byId = new Map(existingRoster.map(student => [String(student?.id || ''), student]));
+    enrolledStudents.forEach(student => {
+        const studentId = String(student?.id || '').trim();
+        if (!studentId || byId.has(studentId)) return;
+        byId.set(studentId, ensureGradeRecordHistories({
+            id: studentId,
+            name: student?.name || `Student ${studentId}`,
+            assessments: {}
+        }));
+    });
+    targetState.studentGrades[rosterKey] = Array.from(byId.values()).map(student => ensureGradeRecordHistories(student));
+    return {
+        rosterKey,
+        students: targetState.studentGrades[rosterKey]
+    };
+}
+
+function syncGradebookRostersForStudent(studentId, rosterKey = '') {
+    const normalizedStudentId = String(studentId || '').trim();
+    const normalizedRosterKey = normalizeGradebookRosterKey(rosterKey);
+    if (!normalizedStudentId) return;
+    const rawSchedule = KIU_STATE.studentSchedulesByStudent?.[normalizedStudentId];
+    const scheduleEntries = resolveStudentScheduleEntries(rawSchedule);
+    scheduleEntries.forEach((entry) => {
+        const courseId = entry?.courseId || entry?.sourceCourseId || '';
+        const groupId = entry?.groupId || entry?.groupName || '';
+        if (!courseId || !groupId) return;
+        const enrolled = getEnrolledStudentsForGroup(courseId, groupId);
+        const entryRosterKey = resolveGradebookRosterKey(courseId, groupId, enrolled);
+        if (!normalizedRosterKey || normalizeGradebookRosterKey(entryRosterKey) === normalizedRosterKey) {
+            syncGradebookRosterFromEnrollment(courseId, groupId);
+        }
+    });
+    const section = typeof currentGradebookSection !== 'undefined' ? currentGradebookSection : null;
+    if (section?.courseId && section?.groupId) {
+        syncGradebookRosterFromEnrollment(section.courseId, section.groupId);
+    }
+}
 function getGradebookGroupsForCurrentUser(filterOverrides = null) {
     const currentUser = getCurrentUser();
     const currentFaculty = getCurrentFaculty();
-    const currentIdentityKeys = (() => {
-        if (typeof getUserNameVariants === 'function') {
-            return getUserNameVariants(currentUser);
-        }
-        const fallback = new Set();
-        [currentUser?.name, currentUser?.nameEn, currentUser?.email].forEach(value => {
-            const normalized = typeof normalizePersonNameKey === 'function'
-                ? normalizePersonNameKey(value)
-                : String(value || '').trim().toLowerCase();
-            if (normalized) fallback.add(normalized);
-        });
-        return fallback;
-    })();
     const semesterFilter = String(
         filterOverrides?.semester ?? document.getElementById('fs-filter-sem')?.value ?? ''
     ).trim();
@@ -199,15 +326,7 @@ function getGradebookGroupsForCurrentUser(filterOverrides = null) {
                         : String(currentFaculty || '').trim().toUpperCase();
                     return !selectedFaculty || groupFaculty === selectedFaculty;
                 })()
-                : (() => {
-                    const profKey = typeof normalizePersonNameKey === 'function'
-                        ? normalizePersonNameKey(group.prof)
-                        : String(group.prof || '').trim().toLowerCase();
-                    const taKey = typeof normalizePersonNameKey === 'function'
-                        ? normalizePersonNameKey(group.ta)
-                        : String(group.ta || '').trim().toLowerCase();
-                    return currentIdentityKeys.has(profKey) || currentIdentityKeys.has(taKey);
-                })();
+                : isUserAssignedToTeachingGroup(currentUser, group, courseId);
             if (!isAssigned) return;
             const subject = getDomain().subjectsById?.[courseId] || KIU_STATE.curriculum.find(item => item.id === courseId);
             const enrolledStudents = getEnrolledStudentsForGroup(courseId, group.id);
@@ -234,12 +353,18 @@ function getGradebookGroupsForCurrentUser(filterOverrides = null) {
 
         const api = {
             normalizeGradebookRosterKey,
+            normalizeTeachingScopeKey,
             getEnrolledStudentsForGroup,
             normalizePersonNameKey,
             getUserNameVariants,
             syncAvailableGroupEnrollmentCounts,
             resolveGradebookRosterKey,
             buildGradebookStudents,
+            syncGradebookRosterFromEnrollment,
+            syncGradebookRostersForStudent,
+            isPortalCurriculumStaffForTeachingGroup,
+            isUserNameAssignedToTeachingGroup,
+            isUserAssignedToTeachingGroup,
             getGradebookGroupsForCurrentUser
         };
         Object.assign(window, api);

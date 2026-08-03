@@ -892,18 +892,34 @@ function renderScheduleSessionDaySection(section, entry, dayItems, facultyAction
                     const marker = item.sessionMarker || null;
                     const markerMeta = marker ? getScheduleSessionMarkerTypeMeta(marker.type) : null;
                     const markerClass = marker ? ` has-session-marker marker-${scheduleMarkerClassToken(marker.type)}` : '';
+                    const focusTitle = formatTimetableHeroFocusTitle(item);
+                    const groupLabel = String(item.groupLabel || '').trim();
+                    const groupSubtitle = groupLabel
+                        && focusTitle !== groupLabel
+                        && focusTitle !== `Group ${groupLabel}`
+                        ? `Group ${groupLabel}`
+                        : '';
                     return `
                     <article class="schedule-session-card lux-timetable-session-card home-hover-chip${markerClass}">
                         <div class="schedule-session-card-header lux-timetable-session-card-header">
-                            <div>
+                            <div class="schedule-session-identity lux-timetable-session-identity">
                                 <div class="schedule-session-code-row lux-timetable-session-code-row">
                                     <span class="schedule-session-code lux-timetable-session-code">${escapeHtml(item.courseCode)}</span>
                                     ${item.roleBadge ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip role">${escapeHtml(item.roleBadge)}</span>` : ''}
                                     <span class="schedule-session-pill lux-timetable-session-pill home-hover-chip type">${escapeHtml(item.sessionTypeLabel)}</span>
                                     ${marker ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip important"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(markerMeta.label)}</span>` : ''}
                                 </div>
-                                <h3 class="schedule-session-title lux-timetable-session-title">${escapeHtml(formatTimetableHeroFocusTitle(item))}</h3>
-                                <div class="schedule-session-subtitle lux-timetable-session-subtitle">Group ${escapeHtml(item.groupLabel)}</div>
+                                <div class="schedule-session-meta-row lux-timetable-session-meta-row">
+                                    <span><i class="fas fa-location-dot"></i> ${escapeHtml(item.roomLabel)}</span>
+                                    <span><i class="fas fa-building"></i> ${escapeHtml(item.facultyName)}</span>
+                                    <span><i class="fas fa-user"></i> ${escapeHtml(item.prof || item.ta || 'Instructor TBA')}</span>
+                                </div>
+                            </div>
+                            <div class="schedule-session-focus lux-timetable-session-focus">
+                                <div class="schedule-session-focus-line lux-timetable-session-focus-line">
+                                    <h3 class="schedule-session-title lux-timetable-session-title">${escapeHtml(focusTitle)}</h3>
+                                    ${groupSubtitle ? `<span class="schedule-session-subtitle lux-timetable-session-subtitle">${escapeHtml(groupSubtitle)}</span>` : ''}
+                                </div>
                             </div>
                             <div class="schedule-session-rail lux-timetable-session-rail">
                                 <span class="schedule-session-time lux-timetable-session-time"><i class="far fa-clock"></i> ${escapeHtml(item.startTime)} - ${escapeHtml(item.endTime)}</span>
@@ -913,11 +929,6 @@ function renderScheduleSessionDaySection(section, entry, dayItems, facultyAction
                                     </button>
                                 ` : ''}
                             </div>
-                        </div>
-                        <div class="schedule-session-meta-row lux-timetable-session-meta-row">
-                            <span><i class="fas fa-location-dot"></i> ${escapeHtml(item.roomLabel)}</span>
-                            <span><i class="fas fa-building"></i> ${escapeHtml(item.facultyName)}</span>
-                            <span><i class="fas fa-user"></i> ${escapeHtml(item.prof || item.ta || 'Instructor TBA')}</span>
                         </div>
                         ${marker ? `
                             <div class="schedule-session-marker-banner">
@@ -1074,12 +1085,8 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     const weekStart = options.weekStart || getCurrentWeekStartISO();
     const weekEntries = getWeekDateEntries(weekStart);
     const isCurrentWeek = weekStart === getCurrentWeekStartISO();
-    const timeSlots = options.timeSlots || ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
     const normalizedItems = (items || []).map(item => normalizeScheduleSurfaceItem(item, weekStart));
     const columns = getWeeklyScheduleColumns(normalizedItems, weekStart);
-    const slotHeight = options.slotHeight || 96;
-    const minEventHeight = options.minEventHeight ?? 42;
-    const eventHeightInset = options.eventHeightInset ?? 6;
     const emptyMessage = options.emptyMessage || `No schedule sessions found for ${formatWeekRangeLabel(weekStart)}.`;
     const profileMode = options.profileMode === true;
     const usePageGridId = container.id === 'timetable-master-container';
@@ -1094,94 +1101,28 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     // Profile embeds sit inside an existing glass host — avoid nested blur roots.
     if (profileMode) delete shell.dataset.luxGlassRoot;
     else shell.dataset.luxGlassRoot = '1';
-    shell.style.setProperty('--sch-slot-height', `${slotHeight}px`);
-    shell.style.setProperty('--sch-slot-count', String(timeSlots.length));
 
     renderTimetableGridTopline(shell, weekStart, { profileMode });
     const gridHost = ensureTimetableGridHost(shell, usePageGridId);
 
-    let root = gridHost.querySelector(':scope > .sch-grid-root');
-    if (!root) {
-        root = document.createElement('div');
-        gridHost.replaceChildren(root);
-    }
-    root.className = 'sch-grid-root';
+    const root = document.createElement('div');
+    root.className = 'sch-weeklist-root';
     root.dataset.schedulerWeekState = isCurrentWeek ? 'current' : 'selected';
 
-    let headerRow = root.querySelector(':scope > .sch-header-row');
-    if (!headerRow) {
-        headerRow = document.createElement('div');
-        headerRow.className = 'sch-header-row';
-        root.appendChild(headerRow);
-    }
-
-    let body = root.querySelector(':scope > .sch-body');
-    if (!body) {
-        body = document.createElement('div');
-        body.className = 'sch-body';
-        root.appendChild(body);
-    }
-
-    let timeLabels = body.querySelector(':scope > .sch-time-labels');
-    if (!timeLabels) {
-        timeLabels = document.createElement('div');
-        timeLabels.className = 'sch-time-labels';
-        body.appendChild(timeLabels);
-    }
-
-    let dayLanes = body.querySelector(':scope > .sch-day-lanes');
-    if (!dayLanes) {
-        dayLanes = document.createElement('div');
-        dayLanes.className = 'sch-day-lanes';
-        body.appendChild(dayLanes);
-    }
-
-    let headerHtml = `<div class="sch-time-col sch-time-col--header"><div class="sch-time-col-copy">GMT+4</div></div>`;
-
-    weekEntries.forEach((entry, index) => {
-        const isToday = isCurrentWeek && (new Date().getDay() === (index === 6 ? 0 : index + 1));
+    let weekListHtml = '<div class="weeklist-container sch-weeklist-container">';
+    weekEntries.forEach((entry, columnIndex) => {
+        const column = columns[columnIndex] || [];
+        const isToday = isCurrentWeek && (new Date().getDay() === (columnIndex === 6 ? 0 : columnIndex + 1));
         const metaLabel = `${entry.shortDate}${isToday ? ' · Today' : ''}`;
-        headerHtml += `<div class="sch-day-col${isToday ? ' is-today' : ''}"><div class="sch-day-col-label">${escapeHtml(entry.en)}</div><div class="sch-day-col-meta">${escapeHtml(metaLabel)}</div></div>`;
-    });
-    headerRow.innerHTML = localizeHtmlMarkup(headerHtml);
-
-    let timeLabelHtml = '';
-    timeSlots.forEach(time => {
-        timeLabelHtml += `<div class="sch-time-slot"><span class="sch-time-slot-copy">${escapeHtml(time)}</span></div>`;
-    });
-    timeLabels.innerHTML = localizeHtmlMarkup(timeLabelHtml);
-
-    let lanesHtml = '';
-    const scheduleStartMinutes = convertTimeToMinutes(timeSlots[0]);
-    const scheduleEndMinutes = convertTimeToMinutes(timeSlots[timeSlots.length - 1]) + 60;
-    const todayColumnIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-    columns.forEach((column, columnIndex) => {
-        lanesHtml += `<div class="sch-lane">`;
-        timeSlots.forEach(() => {
-            lanesHtml += `<div class="sch-slot-bg"></div>`;
-        });
-
-        if (options.showNowLine !== false && isCurrentWeek && columnIndex === todayColumnIndex && nowMinutes >= scheduleStartMinutes && nowMinutes <= scheduleEndMinutes) {
-            const nowTopPx = ((nowMinutes - scheduleStartMinutes) / 60) * slotHeight;
-            const nowLabel = minutesToTimeString(nowMinutes);
-            lanesHtml += `<div class="schedule-now-line" style="--sch-now-top:${nowTopPx}px;"><span>${escapeHtml(nowLabel)}</span></div>`;
-        }
-
+        let cardsHtml = '';
         column.forEach(item => {
-            const startMin = convertTimeToMinutes(item.startTime || item.time) - scheduleStartMinutes;
-            const topPx = (startMin / 60) * slotHeight;
             const durMin = parseInt(String(item.durationMinutes || item.duration || '110').match(/\d+/)?.[0] || '110', 10);
-            const heightPx = Math.max(minEventHeight, (durMin / 60) * slotHeight - eventHeightInset);
             const facultyCode = normalizeFacultyCode(item.facultyCode || item.faculty || deriveFacultyFromSubjectId(item.courseId));
             const toneAttr = buildScheduleToneDataAttribute(facultyCode);
             const subjectLabel = escapeHtml(item.courseCode || item.courseId || 'Subject');
             const groupLabel = escapeHtml(item.groupLabel || item.name || item.id || item.groupId || '');
             const professorLabel = escapeHtml(item.prof || item.ta || 'Instructor TBA');
             const roomLabel = escapeHtml(item.roomLabel || item.room || 'Room TBA');
-            const facultyLabel = escapeHtml(item.facultyName || getFacultyProfile(facultyCode).name || facultyCode);
             const sessionTypeLabel = escapeHtml(item.sessionTypeLabel || (getStudentSectionTypeLabel ? getStudentSectionTypeLabel(item.sessionType || 'lecture') : 'Lecture'));
             const marker = item.sessionMarker || null;
             const markerMeta = marker ? getScheduleSessionMarkerTypeMeta(marker.type) : null;
@@ -1195,21 +1136,28 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
                 ? `<div class="ev-meta schedule-grid-marker-note"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(marker.title || markerMeta.label)}${marker.note ? ` - ${escapeHtml(marker.note)}` : ''}</div>`
                 : '';
 
-            lanesHtml += `<div class="sch-event${markerClass}" ${toneAttr} style="--sch-event-top:${topPx}px; --sch-event-height:${heightPx}px;">
+            cardsHtml += `<div class="sch-event weeklist-item sch-weeklist-item${markerClass}" ${toneAttr}>
                 ${extraBadge}
                 <div class="ev-title">${escapeHtml(item.subjectTitle || item.courseName || item.courseCode || item.courseId || 'Session')} <span class="ev-title-meta">(${subjectLabel}${groupLabel ? ` · ${groupLabel}` : ''})</span></div>
                 <div class="ev-meta"><i class="fas fa-tag"></i> ${sessionTypeLabel}</div>
                 <div class="ev-meta"><i class="far fa-clock"></i> ${escapeHtml(item.startTime)} - ${escapeHtml(item.endTime)} · ${durMin} min</div>
                 <div class="ev-meta"><i class="fas fa-location-dot"></i> ${roomLabel}</div>
                 <div class="ev-meta"><i class="fas fa-user"></i> ${professorLabel}</div>
-                <div class="ev-meta"><i class="fas fa-building"></i> ${facultyLabel}</div>
                 ${markerNote}
             </div>`;
         });
-
-        lanesHtml += `</div>`;
+        weekListHtml += `<section class="headInfo sch-weeklist-day${isToday ? ' is-today' : ''}">
+            <div class="day-title sch-weeklist-day-head">
+                <div class="day-name sch-day-col-label">${escapeHtml(entry.en)}</div>
+                <div class="day-number sch-day-col-meta">${escapeHtml(metaLabel)}</div>
+                <span class="sch-weeklist-day-count">${column.length} ${column.length === 1 ? 'session' : 'sessions'}</span>
+            </div>
+            <div class="weeklist sch-weeklist-items">${cardsHtml || `<div class="sch-weeklist-empty">No sessions</div>`}</div>
+        </section>`;
     });
-    dayLanes.innerHTML = localizeHtmlMarkup(lanesHtml);
+    weekListHtml += '</div>';
+    root.innerHTML = localizeHtmlMarkup(weekListHtml);
+    gridHost.replaceChildren(root);
 
     gridHost.querySelectorAll(':scope > .sch-empty-week-notice').forEach((node) => node.remove());
     if (!normalizedItems.length) {

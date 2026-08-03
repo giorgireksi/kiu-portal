@@ -57,9 +57,38 @@ function deleteGradebookCriterionDataForSubject(subjectId, criterionKey) {
 function persistStudentEvaluationEntryOnRoster(rosterKey, studentId, criterion, number, scoreValue, studentName = '', options = {}) {
     const rosterId = String(rosterKey || currentRosterId || '').trim();
     if (!rosterId) return null;
-    const roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
-    const index = roster.findIndex(entry => String(entry.id) === String(studentId));
-    const existing = index >= 0 ? roster[index] : null;
+    let roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
+    let index = roster.findIndex(entry => String(entry.id) === String(studentId));
+    let existing = index >= 0 ? roster[index] : null;
+    if (!existing && typeof isFacultyStandaloneGradebookContext === 'function' && isFacultyStandaloneGradebookContext()
+        && typeof syncFacultyGradebookRostersForStudent === 'function') {
+        syncFacultyGradebookRostersForStudent(studentId, rosterId);
+        roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
+        index = roster.findIndex(entry => String(entry.id) === String(studentId));
+        existing = index >= 0 ? roster[index] : null;
+    }
+    if (!existing && typeof syncGradebookRostersForStudent === 'function') {
+        syncGradebookRostersForStudent(studentId, rosterId);
+        roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
+        index = roster.findIndex(entry => String(entry.id) === String(studentId));
+        existing = index >= 0 ? roster[index] : null;
+    }
+    if (!existing && typeof isFacultyStandaloneGradebookContext === 'function' && isFacultyStandaloneGradebookContext()) {
+        const mockRecord = (mockStudents || []).find(entry => String(entry?.id || '') === String(studentId));
+        if (mockRecord?.id) {
+            const hydrated = ensureGradeRecordHistories(mockRecord);
+            roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? [...KIU_STATE.studentGrades[rosterId]] : [];
+            index = roster.findIndex(entry => String(entry.id) === String(studentId));
+            if (index >= 0) {
+                roster[index] = hydrated;
+            } else {
+                roster.push(hydrated);
+                index = roster.length - 1;
+            }
+            KIU_STATE.studentGrades[rosterId] = roster.map(student => ensureGradeRecordHistories(student));
+            existing = hydrated;
+        }
+    }
     if (!existing) return null;
     const numericScore = Number(scoreValue);
     if (!Number.isFinite(numericScore)) return null;
@@ -160,9 +189,38 @@ function persistStudentEvaluationEntry(studentId, criterion, number, scoreValue,
 function persistStudentEvaluationCommentOnRoster(rosterKey, studentId, criterion, number, commentText, studentName = '') {
     const rosterId = String(rosterKey || currentRosterId || '').trim();
     if (!rosterId) return null;
-    const roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
-    const index = roster.findIndex(entry => String(entry.id) === String(studentId));
-    const existing = index >= 0 ? roster[index] : null;
+    let roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
+    let index = roster.findIndex(entry => String(entry.id) === String(studentId));
+    let existing = index >= 0 ? roster[index] : null;
+    if (!existing && typeof isFacultyStandaloneGradebookContext === 'function' && isFacultyStandaloneGradebookContext()
+        && typeof syncFacultyGradebookRostersForStudent === 'function') {
+        syncFacultyGradebookRostersForStudent(studentId, rosterId);
+        roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
+        index = roster.findIndex(entry => String(entry.id) === String(studentId));
+        existing = index >= 0 ? roster[index] : null;
+    }
+    if (!existing && typeof syncGradebookRostersForStudent === 'function') {
+        syncGradebookRostersForStudent(studentId, rosterId);
+        roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? KIU_STATE.studentGrades[rosterId] : [];
+        index = roster.findIndex(entry => String(entry.id) === String(studentId));
+        existing = index >= 0 ? roster[index] : null;
+    }
+    if (!existing && typeof isFacultyStandaloneGradebookContext === 'function' && isFacultyStandaloneGradebookContext()) {
+        const mockRecord = (mockStudents || []).find(entry => String(entry?.id || '') === String(studentId));
+        if (mockRecord?.id) {
+            const hydrated = ensureGradeRecordHistories(mockRecord);
+            roster = Array.isArray(KIU_STATE.studentGrades?.[rosterId]) ? [...KIU_STATE.studentGrades[rosterId]] : [];
+            index = roster.findIndex(entry => String(entry.id) === String(studentId));
+            if (index >= 0) {
+                roster[index] = hydrated;
+            } else {
+                roster.push(hydrated);
+                index = roster.length - 1;
+            }
+            KIU_STATE.studentGrades[rosterId] = roster.map(student => ensureGradeRecordHistories(student));
+            existing = hydrated;
+        }
+    }
     if (!existing) return null;
     const targetNumber = normalizeAssessmentNumber(number, 1);
     const updated = setAssessmentCommentOnRecord(existing, criterion, targetNumber, commentText, {
@@ -302,6 +360,9 @@ function saveGradebookComment(studentId, criterion, number, inputId, studentName
 }
 
 function resolveLmsStudentGradebookRecord() {
+    if (document.body.classList.contains('study-card-assessment-open') && window.__studyCardActiveGradeRecord?.id) {
+        return window.__studyCardActiveGradeRecord;
+    }
     const currentUserId = String(getCurrentUserId?.() || window.currentUser?.id || '');
     if (!currentUserId) {
         return document.body.classList.contains('study-card-assessment-open') && window.__studyCardActiveGradeRecord
@@ -945,21 +1006,110 @@ function bindStandaloneGradebookShell() {
         }
     });
 }
+const GRADEBOOK_LINKED_QUIZ_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1',
+    'assets/js/pages/lms-quiz-model.js?v=20260720-w25quiz1',
+    'assets/js/pages/lms-quiz-model-bridge.js?v=20260720-w25quiz1',
+    'assets/js/pages/lms-quiz-blue-runtime.js?v=20260719-lmsblue1',
+    'assets/js/pages/lms-quiz-focus-runtime.js?v=20260719-quizfocus1',
+    'assets/js/pages/lms-quiz-workspace-session-runtime.js?v=20260729-lmsmatcache1',
+    'assets/js/pages/lms-quiz-workspace-review-runtime.js?v=20260720-w18',
+    'assets/js/pages/lms-quiz-workspace-runtime.js?v=20260729-lmquizshare1',
+    'assets/js/pages/lms-protected-quiz-runtime.js?v=20260729-lmsassignfix1'
+]);
+let gradebookLinkedQuizEnsurePromise = null;
+
+function loadGradebookLinkedQuizScriptOnce(url) {
+    return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${url}"]`);
+        if (existing) {
+            const settle = () => resolve();
+            if (existing.dataset.kiuLoaded === '1' || existing.readyState === 'complete' || existing.readyState === 'loaded') {
+                settle();
+                return;
+            }
+            existing.addEventListener('load', settle, { once: true });
+            existing.addEventListener('error', () => reject(new Error(`Could not load gradebook quiz module: ${url}`)), { once: true });
+            queueMicrotask(() => {
+                if (existing.readyState !== 'loading') settle();
+            });
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = false;
+        script.dataset.kiuInjected = '1';
+        if (/\/(lms-quiz-model)\.js(\?|$)/.test(url)) {
+            script.type = 'module';
+        }
+        script.addEventListener('load', () => {
+            script.dataset.kiuLoaded = '1';
+            resolve();
+        }, { once: true });
+        script.addEventListener('error', () => reject(new Error(`Could not load gradebook quiz module: ${url}`)), { once: true });
+        document.head.appendChild(script);
+    });
+}
+
+function isGradebookLinkedQuizRuntimeReady() {
+    return typeof window.openStudentQuizPaperFromHistoryImpl === 'function'
+        && typeof window.openLmsQuizReviewModal === 'function';
+}
+
+function ensureGradebookLinkedQuizRuntime() {
+    if (isGradebookLinkedQuizRuntimeReady()) return Promise.resolve(true);
+    if (typeof window.ensureLmsQuizRuntime === 'function') {
+        return window.ensureLmsQuizRuntime();
+    }
+    if (gradebookLinkedQuizEnsurePromise) return gradebookLinkedQuizEnsurePromise;
+    gradebookLinkedQuizEnsurePromise = GRADEBOOK_LINKED_QUIZ_MODULE_URLS
+        .reduce((chain, url) => chain.then(() => loadGradebookLinkedQuizScriptOnce(url)), Promise.resolve())
+        .then(() => {
+            if (!isGradebookLinkedQuizRuntimeReady()) {
+                throw new Error('Quiz review runtime loaded without expected exports.');
+            }
+            return true;
+        })
+        .catch((error) => {
+            console.error('Gradebook linked-quiz runtime load failed.', error);
+            throw error;
+        })
+        .finally(() => {
+            gradebookLinkedQuizEnsurePromise = null;
+        });
+    return gradebookLinkedQuizEnsurePromise;
+}
+
+function invokeOpenStudentQuizPaperFromHistory(studentId, criterion, number) {
+    if (typeof window.openStudentQuizPaperFromHistoryImpl === 'function') {
+        return window.openStudentQuizPaperFromHistoryImpl(studentId, criterion, number);
+    }
+    if (typeof window.openStudentQuizPaperFromHistory === 'function'
+        && window.openStudentQuizPaperFromHistory !== openStudentQuizPaperFromHistoryDeferred) {
+        return window.openStudentQuizPaperFromHistory(studentId, criterion, number);
+    }
+    return null;
+}
+
+function openStudentQuizPaperFromHistoryDeferred(studentId, criterion, number) {
+    return ensureGradebookLinkedQuizRuntime()
+        .then(() => invokeOpenStudentQuizPaperFromHistory(studentId, criterion, number))
+        .catch(() => {
+            if (typeof alert === 'function') {
+                alert('Quiz paper review is still loading. Wait a moment and try again.');
+            }
+            return null;
+        });
+}
+
 __kiuGbExpose({
     bindStandaloneGradebookShell,
     closeGradebookSpreadsheet,
     resolveGradebookSpreadsheetShell,
+    ensureGradebookLinkedQuizRuntime,
 });
 if (typeof window.openStudentQuizPaperFromHistory !== 'function') {
-    __kiuGbExpose({
-        openStudentQuizPaperFromHistory: function (...args) {
-            if (typeof window.openStudentQuizPaperFromHistoryImpl === 'function') {
-                return window.openStudentQuizPaperFromHistoryImpl(...args);
-            }
-            console.warn('Student quiz paper history is not ready yet.');
-            return null;
-        }
-    });
+    __kiuGbExpose({ openStudentQuizPaperFromHistory: openStudentQuizPaperFromHistoryDeferred });
 }
 function renderStaffCreateActionsPanel({
     record,
@@ -1271,12 +1421,15 @@ function renderGradebookLoadFallback(message = 'This roster currently has no res
 function loadGroupStudents(groupId, courseId = null) {
     try {
         if (courseId) {
+            const synced = typeof syncGradebookRosterFromEnrollment === 'function'
+                ? syncGradebookRosterFromEnrollment(courseId, groupId)
+                : null;
             const gradebookState = buildGradebookStudents(courseId, groupId);
             currentRosterId = gradebookState.rosterKey;
-            mockStudents = gradebookState.students.map(student => ensureGradeRecordHistories(student));
-            if (!KIU_STATE.studentGrades[currentRosterId]) {
-                KIU_STATE.studentGrades[currentRosterId] = JSON.parse(JSON.stringify(mockStudents));
-            }
+            const builtIds = new Set(gradebookState.students.map(student => String(student?.id || '')));
+            const preserved = (synced?.students || []).filter(student => !builtIds.has(String(student?.id || '')));
+            mockStudents = [...gradebookState.students, ...preserved].map(student => ensureGradeRecordHistories(student));
+            KIU_STATE.studentGrades[currentRosterId] = mockStudents.map(student => ensureGradeRecordHistories(student));
         } else {
             if (!KIU_STATE.studentGrades[groupId]) {
                 groupId = 'default_g1';

@@ -26,12 +26,21 @@
     }
 
     function socialHub() {
-        return global.__kiuSocialRuntime?.social || global.__kiuSocialState?.()?.social || {};
+        if (typeof global.getPortalSocialRuntimeState === 'function') {
+            return global.getPortalSocialRuntimeState()?.social || {};
+        }
+        return global.__kiuSocialLiteRuntime?.social || {};
     }
 
     function currentUserId() {
-        if (typeof global.__kiuSocialCurrentUserId === 'function') return text(global.__kiuSocialCurrentUserId());
-        return text(global.__kiuSocialState?.()?.user?.id || '');
+        if (typeof global.getCurrentUser === 'function') return text(global.getCurrentUser()?.id);
+        if (typeof global.getCurrentUserId === 'function') return text(global.getCurrentUserId());
+        return text(global.currentUser?.id || '');
+    }
+
+    function currentUserRole() {
+        if (typeof global.getCurrentUser === 'function') return text(global.getCurrentUser()?.role).toLowerCase();
+        return text(global.currentUser?.role || '').toLowerCase();
     }
 
     function curatorPinIds(module) {
@@ -53,7 +62,8 @@
                 .filter(Boolean);
         }
         if (normalized === 'photo') {
-            return (Array.isArray(hub.savedPosts) ? hub.savedPosts : [])
+            const savedHub = global.KIU_STATE?.socialHub;
+            return (Array.isArray(savedHub?.savedPosts) ? savedHub.savedPosts : [])
                 .filter((item) => text(item?.userId) === viewerId && text(item?.itemType) === 'post')
                 .map((item) => text(item?.itemId))
                 .filter(Boolean);
@@ -132,7 +142,7 @@
         const normalized = normalizeModule(module);
         const viewerId = currentUserId();
         if (!normalized || !item || !viewerId) return false;
-        const role = text(global.__kiuSocialCurrentUser?.()?.role || global.__kiuSocialState?.()?.user?.role || '').toLowerCase();
+        const role = currentUserRole();
         if (role === 'admin') return true;
         if (normalized === 'portfolio') {
             return Boolean(item.canEdit) || text(item.ownerUserId || item.userId) === viewerId;
@@ -155,37 +165,60 @@
         const normalized = normalizeModule(module);
         const id = text(entityId);
         if (!id) return '';
-        const canCurator = Boolean(options.canCuratorPin);
-        const curatorPinned = Boolean(options.isCuratorPinned ?? isCuratorPinned(normalized, id));
+        const showPersonal = options.showPersonal !== false && normalized !== 'research' && normalized !== 'photo';
+        if (!showPersonal) return '';
         const personalPinned = Boolean(options.isPersonalPinned ?? isPersonalPinned(normalized, id));
-        const parts = [];
-        if (canCurator) {
-            parts.push(`<button class="lux-secondary-btn lux-secondary-btn-sm social-module-pin-btn ${curatorPinned ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="module-curator-pin" data-pin-module="${escapeHtml(normalized)}" data-entity-id="${escapeHtml(id)}" title="${curatorPinned ? 'Unpin highlight' : 'Pin highlight'}"><i class="fas fa-thumbtack" aria-hidden="true"></i></button>`);
-        }
-        if (options.showPersonal !== false && normalized !== 'research' && normalized !== 'photo') {
-            parts.push(`<button class="lux-secondary-btn lux-secondary-btn-sm social-module-pin-btn ${personalPinned ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="module-personal-pin" data-pin-module="${escapeHtml(normalized)}" data-entity-id="${escapeHtml(id)}" title="${personalPinned ? 'Unpin' : 'Pin for me'}"><i class="fas fa-bookmark" aria-hidden="true"></i></button>`);
-        }
-        return parts.length ? `<span class="social-module-pin-actions">${parts.join('')}</span>` : '';
+        const pinAttrs = `data-pin-module="${escapeHtml(normalized)}" data-entity-id="${escapeHtml(id)}"`;
+        const label = personalPinned ? 'Saved' : 'Save';
+        const title = personalPinned ? 'Remove from saved' : 'Save for later';
+        return `<span class="social-module-pin-actions"><button class="lux-secondary-btn lux-secondary-btn-sm social-module-pin-btn ${personalPinned ? 'lux-primary-btn' : 'lux-secondary-btn'}" type="button" data-action="module-personal-pin" ${pinAttrs} title="${escapeHtml(title)}"><i class="fas fa-bookmark" aria-hidden="true"></i> ${escapeHtml(label)}</button></span>`;
     }
 
-    function renderPinnedSections(module, sections, renderItem, emptyCopy = 'No pinned items yet.') {
+    function renderPinnedSections(module, sections, renderItem, emptyCopy = 'No pinned items yet.', options = {}) {
         const highlighted = Array.isArray(sections?.highlighted) ? sections.highlighted : [];
         const yours = Array.isArray(sections?.yours) ? sections.yours : [];
+        const emptyClass = text(options.emptyClass || 'social-neo-empty home-hover-chip');
         if (!highlighted.length && !yours.length) {
-            return `<div class="social-neo-empty">${escapeHtml(emptyCopy)}</div>`;
+            return `<div class="${escapeHtml(emptyClass)}">${escapeHtml(emptyCopy)}</div>`;
         }
         const blocks = [];
         if (highlighted.length) {
-            blocks.push(`<section class="social-pin-section"><h3 class="social-pin-section-title">Highlighted</h3><div class="social-pin-section-list">${highlighted.map(renderItem).join('')}</div></section>`);
+            blocks.push(`<section class="social-pin-section"><h3 class="lux-section-kicker social-pin-section-title">Highlighted</h3><div class="social-pin-section-list">${highlighted.map(renderItem).join('')}</div></section>`);
         }
         if (yours.length) {
-            blocks.push(`<section class="social-pin-section"><h3 class="social-pin-section-title">Your pins</h3><div class="social-pin-section-list">${yours.map(renderItem).join('')}</div></section>`);
+            blocks.push(`<section class="social-pin-section"><h3 class="lux-section-kicker social-pin-section-title">Your pins</h3><div class="social-pin-section-list">${yours.map(renderItem).join('')}</div></section>`);
         }
         return blocks.join('');
     }
 
+    const PIN_API_UNAVAILABLE_MESSAGE = 'Pin API unavailable — restart platform backend (npm run stop:local && npm run start:local).';
+    const PIN_API_BANNER_MESSAGE = 'Pins won\'t save until the platform backend is restarted. Run: npm run stop:local && npm run start:local';
+
+    async function checkPinApiHealth() {
+        const backendUrl = typeof global.getKiuPortalBackendUrl === 'function'
+            ? text(global.getKiuPortalBackendUrl()).replace(/\/$/, '')
+            : '';
+        if (!backendUrl) return { ok: false, backendUrl: '' };
+        try {
+            const response = await fetch(`${backendUrl}/health`, { cache: 'no-store' });
+            if (!response.ok) return { ok: false, backendUrl };
+            const payload = await response.json().catch(() => null);
+            return { ok: Boolean(payload?.socialPinApiVersion), backendUrl };
+        } catch (error) {
+            return { ok: false, backendUrl };
+        }
+    }
+
+    function setPinApiUnavailable(unavailable) {
+        if (typeof global.getPortalSocialRuntimeState !== 'function') return;
+        const runtime = global.getPortalSocialRuntimeState();
+        if (runtime?.ui) runtime.ui.pinApiUnavailable = Boolean(unavailable);
+    }
+
     global.KiuSocialPinModel = {
         MODULES,
+        PIN_API_UNAVAILABLE_MESSAGE,
+        PIN_API_BANNER_MESSAGE,
         normalizeModule,
         curatorPinIds,
         userPinIds,
@@ -197,6 +230,8 @@
         renderPinTabButton,
         renderModulePinActions,
         renderPinnedSections,
-        viewerCanCuratorPin
+        viewerCanCuratorPin,
+        checkPinApiHealth,
+        setPinApiUnavailable
     };
 }(typeof window !== 'undefined' ? window : globalThis));

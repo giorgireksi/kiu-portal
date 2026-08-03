@@ -591,8 +591,13 @@
 .social-neo-research-card-meta.lux-panel-copy,
 .social-neo-research-card-abstract.lux-panel-copy,
 .social-neo-research-card-foot.lux-panel-copy,
+.social-neo-research-card-file.lux-panel-copy,
 .social-neo-research-article-p.lux-panel-copy {
   color: var(--lux-text-muted);
+}
+
+body.lux-route-social .social-pin-section-title.lux-section-kicker {
+  color: var(--lux-text);
 }
 
 /* Hub form builder typography (staff + students; layout in lux-page-bare-lite; matte in lux-fouc-ht). */

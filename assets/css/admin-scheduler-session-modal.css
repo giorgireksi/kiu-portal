@@ -1,0 +1,788 @@
+/* Session modal SSOT — #schModalOverlay only. Loaded last on admin-scheduler.html. */
+/* Exempt attr is on the overlay node: #schModalOverlay[data-lux-transparency-exempt="1"], not ancestor + descendant. */
+
+/* ── Shell .sch-modal ── */
+body.lux-route-admin-scheduler #schModalOverlay > .sch-modal {
+  width: min(760px, 100%) !important;
+  max-height: min(90vh, 1100px) !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--lux-panel-radius, 22px);
+  border: 1px solid var(--lux-modal-glass-border, var(--lux-popup-shell-border));
+  background: var(--lux-modal-glass-surface, var(--lux-popup-shell-surface));
+  box-shadow: var(--lux-modal-glass-shadow, var(--lux-popup-shell-shadow));
+  backdrop-filter: var(--lux-modal-glass-blur, var(--lux-popup-shell-blur));
+  -webkit-backdrop-filter: var(--lux-modal-glass-blur, var(--lux-popup-shell-blur));
+  color: var(--lux-text);
+  font-family: inherit;
+  text-shadow: none;
+}
+body.lux-route-admin-scheduler #schModalOverlay.is-open > .sch-modal {
+  pointer-events: auto;
+}
+
+/* ── Head .sch-modal-head.sch-modal-head-accent ── */
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-head-accent {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 88%, #1a1208),
+    color-mix(in srgb, rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), 1) 72%, #120d08)
+  );
+  color: #fff8ef;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--lux-panel-radius, 22px) var(--lux-panel-radius, 22px) 0 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-head-accent :is(
+  .sch-modal-title,
+  .sch-modal-subtitle,
+  .sch-modal-week
+) {
+  color: #fff8ef;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-head-accent :is(.sch-modal-subtitle, .sch-modal-week) {
+  color: rgba(255, 248, 239, 0.82);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-head-accent .sch-modal-mode-chip {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff8ef;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-head-accent .sch-modal-close-muted {
+  color: rgba(255, 248, 239, 0.78);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-head-accent .sch-modal-close-muted:hover,
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal-head-accent .sch-modal-close-muted:focus-visible {
+  color: #fff8ef;
+}
+
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  flex-shrink: 0;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-head.sch-modal-head-accent {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-head > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: normal;
+  line-height: 1.08;
+  text-shadow: none;
+  text-transform: none;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-title i {
+  font-size: 0.92em;
+  opacity: 0.9;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: rgba(var(--lux-accent-rgb), 0.14);
+  color: var(--lux-accent-2);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] :is(.sch-modal-subtitle, .sch-modal-week) {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* ── Body .sch-modal-body ── */
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 20px 24px 24px;
+  display: grid;
+  gap: 14px;
+  color: var(--lux-text);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  text-shadow: none;
+}
+
+/* ── Foot .sch-modal-foot ── */
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 20px 24px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--lux-modal-glass-border);
+  background: var(--lux-panel-modal-foot-tint);
+}
+
+/* ── Sections .sch-form-section* ── */
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-form-section {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  font-family: inherit;
+  text-shadow: none;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-form-section + .sch-form-section {
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--lux-modal-glass-border) 72%, transparent);
+}
+
+/* ── Read-only staff assignment picker ── */
+/* The picker can be opened above the session modal; keep the shared overlay paint and raise only its stack level. */
+body.lux-route-admin-scheduler .sch-staff-picker-overlay.lux-glass-dialog-overlay {
+  z-index: 2500;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-overlay[hidden] {
+  display: none;
+}
+body.lux-route-admin-scheduler .sch-staff-picker {
+  width: min(1180px, 100%);
+  max-height: min(92vh, 940px);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-head,
+body.lux-route-admin-scheduler .sch-staff-picker-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  flex-shrink: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-head h2,
+body.lux-route-admin-scheduler .sch-staff-picker-head p {
+  margin: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-head h2 {
+  font-size: 24px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-head p,
+body.lux-route-admin-scheduler .sch-staff-picker-kicker {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-kicker {
+  margin-bottom: 5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-close {
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-body {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+  gap: 18px;
+  overflow: auto;
+  padding: 18px 22px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-roster,
+body.lux-route-admin-scheduler .sch-staff-picker-profile {
+  min-width: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-roster {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-roster label {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-list {
+  display: grid;
+  gap: 6px;
+  max-height: 52vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 12px 40px 12px 14px;
+  border: 1px solid var(--lux-border);
+  border-radius: 12px;
+  background: var(--lux-panel-surface-soft);
+  background-image: var(--lux-soft-chrome-surface, none);
+  color: var(--lux-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person::before,
+body.lux-route-admin-scheduler .sch-staff-picker-person::after {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person::before {
+  right: 15px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid color-mix(in srgb, var(--lux-text-muted) 48%, transparent);
+  border-radius: 50%;
+  content: "";
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person::after {
+  right: 11px;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 82%, transparent);
+  color: var(--lux-text);
+  content: "✓";
+  font-size: 10px;
+  font-weight: 900;
+  opacity: 0;
+  scale: 0.5;
+  transition: opacity 180ms ease, scale 180ms ease;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person span {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  transition: color 180ms ease;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person.is-selected,
+body.lux-route-admin-scheduler .sch-staff-picker-person:hover {
+  border-color: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 48%, transparent);
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 13%, var(--lux-panel-surface-soft));
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person:hover {
+  transform: translateY(-1px);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person:active {
+  transform: translateY(0) scale(0.985);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person:focus-visible {
+  outline: 2px solid color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 72%, transparent);
+  outline-offset: 2px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person.is-selected {
+  border-color: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 76%, var(--lux-border));
+  background-color: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 18%, var(--lux-panel-surface-soft));
+  color: var(--lux-text);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person.is-selected::before {
+  opacity: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person.is-selected::after {
+  opacity: 1;
+  scale: 1;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-person.is-selected span {
+  color: color-mix(in srgb, var(--lux-text-muted) 72%, var(--lux-text));
+}
+body.lux-route-admin-scheduler .sch-staff-picker-foot [data-scheduler-staff-picker-choose] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  transition: transform 180ms ease, filter 180ms ease, border-color 180ms ease;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-foot [data-scheduler-staff-picker-choose]:not(:disabled):hover {
+  transform: translateY(-1px);
+  filter: saturate(1.08) brightness(1.04);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-foot [data-scheduler-staff-picker-choose]:not(:disabled):active {
+  transform: translateY(0) scale(0.985);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-foot [data-scheduler-staff-picker-choose]:focus-visible {
+  outline: 2px solid color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 72%, transparent);
+  outline-offset: 2px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-foot [data-scheduler-staff-picker-choose] i {
+  font-size: 12px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile > * {
+  animation: schStaffPickerProfileReveal 180ms ease both;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile > :nth-child(2) {
+  animation-delay: 25ms;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile > :nth-child(3) {
+  animation-delay: 45ms;
+}
+@keyframes schStaffPickerProfileReveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-tabs {
+  min-width: 0;
+  overflow-x: auto;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-tabs .staff-hub-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile-body {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-section {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--lux-modal-glass-border);
+  border-radius: 14px;
+  background: var(--lux-modal-glass-section);
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-section-head {
+  display: grid;
+  gap: 5px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-section-head strong {
+  font-size: 16px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-overline {
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-section-head p {
+  margin: 4px 0 0;
+  color: var(--lux-text-muted);
+  font-size: 12px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-grid,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-grid.is-one {
+  grid-template-columns: minmax(0, 1fr);
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-profile-field,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-card,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-list-item,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-warning,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-schema-empty {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--lux-modal-glass-border);
+  border-radius: 12px;
+  background: var(--lux-modal-glass-section);
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-profile-field.is-full,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-card.is-full,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-warning.is-full {
+  grid-column: 1 / -1;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-profile-field-label,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-card > span,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-warning strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-profile-field-value {
+  overflow-wrap: anywhere;
+  color: var(--lux-text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-profile-field-value.is-empty {
+  color: var(--lux-text-muted);
+  font-style: italic;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-profile-field-value p,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-card p,
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-warning div {
+  margin: 0;
+  color: var(--lux-text-muted);
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-list {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-list-item {
+  display: grid;
+  gap: 4px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-list-item strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-list-item small {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-schema-empty {
+  display: grid;
+  gap: 6px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-schema-empty p {
+  margin: 0;
+  color: var(--lux-text-muted);
+  font-size: 12px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-avatar {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 22%, var(--lux-panel-surface-soft));
+  color: var(--lux-text);
+  font-weight: 800;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile h3,
+body.lux-route-admin-scheduler .sch-staff-picker-profile p {
+  margin: 0;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile h3 {
+  font-size: 20px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-profile-head p,
+body.lux-route-admin-scheduler .sch-staff-picker-copy {
+  color: var(--lux-text-muted);
+  font-size: 12px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-section {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--lux-border);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-section-title {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-detail-grid > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--lux-panel-surface-soft);
+}
+body.lux-route-admin-scheduler .sch-staff-picker-detail-grid span {
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-detail-grid strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-empty {
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  min-height: 160px;
+  color: var(--lux-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-foot {
+  justify-content: flex-end;
+}
+@media (max-width: 900px) {
+  body.lux-route-admin-scheduler .sch-staff-picker-body {
+    grid-template-columns: 1fr;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-list {
+    max-height: 24vh;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-detail-grid,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-grid,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  body.lux-route-admin-scheduler .sch-staff-picker-head,
+  body.lux-route-admin-scheduler .sch-staff-picker-foot,
+  body.lux-route-admin-scheduler .sch-staff-picker-body {
+    padding: 14px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-head h2 {
+    font-size: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.lux-route-admin-scheduler .sch-staff-picker-person,
+  body.lux-route-admin-scheduler .sch-staff-picker-person::after,
+  body.lux-route-admin-scheduler .sch-staff-picker-foot [data-scheduler-staff-picker-choose] {
+    transition: none;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-profile > * {
+    animation: none;
+  }
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-form-section-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-form-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--lux-text);
+  margin: 0;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-form-section-copy {
+  color: var(--lux-text-muted);
+  line-height: 1.5;
+  font-size: 12px;
+  margin: 0 0 4px;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-form-section .sch-input-row:first-of-type {
+  margin-top: 0;
+}
+
+/* ── Field rows / grids ── */
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row {
+  display: grid;
+  gap: 12px;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-subject,
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-capacity {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-subject,
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-two,
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-three,
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-capacity,
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-single {
+  align-items: end;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-group > label {
+  margin-bottom: 0;
+}
+
+/* ── Labels ── */
+#schModalOverlay[data-lux-transparency-exempt="1"] :is(
+  .sch-input-group > label,
+  .sch-input-label-row label
+) {
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  line-height: 1.3;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 20px;
+  margin-bottom: 0;
+  font-family: inherit;
+  text-shadow: none;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-label-row label {
+  margin-bottom: 0;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-label-spacer {
+  display: inline-block;
+  min-width: 108px;
+  min-height: 1px;
+  visibility: hidden;
+  pointer-events: none;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] :is(.sch-inline-required, .sch-inline-optional) {
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* ── Field layout (paint: lux-controls + lux-modals) ── */
+#schModalOverlay[data-lux-transparency-exempt="1"] .lux-picker-field {
+  display: block;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .lux-picker-copy {
+  display: block;
+  gap: 0;
+  min-width: 0;
+}
+
+/* ── Pickers ── */
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-droplist-panel:not(.is-open):not(.is-closing),
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-picker-panel:not(.is-open):not(.is-closing) {
+  display: none !important;
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-picker-label,
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn .lux-picker-caption {
+  display: none;
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn i {
+  transition: transform var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease);
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn.is-active i {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn i {
+    transition: none !important;
+  }
+}
+
+/* ── Conflict alert ── */
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert[hidden],
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert:not(.show) {
+  display: none !important;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert.show:not([hidden]) {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  border: 1px solid transparent;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+  font-family: inherit;
+  text-shadow: none;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert.show i {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  font-size: 14px;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert.show[data-conflict-state='danger'] {
+  background: color-mix(in srgb, #7f1d1d 22%, transparent);
+  border-color: var(--lux-btn-danger-border, #dc2626);
+  color: #fecaca;
+}
+#schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert.show[data-conflict-state='success'] {
+  background: color-mix(in srgb, #14532d 20%, transparent);
+  border-color: color-mix(in srgb, #22c55e 72%, rgba(var(--lux-accent-rgb), 0.22));
+  color: #bbf7d0;
+}
+
+/* ── Light mode (conflict alert only; fields use lux-controls) ── */
+:is(html.lux-light-mode, body.lux-light-mode) #schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert.show[data-conflict-state='danger'] {
+  color: #991b1b;
+  background: color-mix(in srgb, #fecaca 48%, transparent);
+}
+:is(html.lux-light-mode, body.lux-light-mode) #schModalOverlay[data-lux-transparency-exempt="1"] .sch-conflict-alert.show[data-conflict-state='success'] {
+  color: #166534;
+  background: color-mix(in srgb, #bbf7d0 44%, transparent);
+}
+
+@media (max-width: 720px) {
+  #schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-two,
+  #schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-three,
+  #schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-subject,
+  #schModalOverlay[data-lux-transparency-exempt="1"] .sch-input-row-capacity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -76,53 +76,74 @@
 .schedule-session-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
-  padding: 18px;
+  gap: 10px;
+  padding: 12px;
 }
 .schedule-session-card {
   border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--lux-panel-surface, var(--lux-panel-surface-soft));
-  padding: 18px;
+  padding: 12px 14px;
   box-shadow: var(--lux-elev-2);
 }
 .schedule-session-card-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px 12px;
+}
+.schedule-session-identity {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.schedule-session-focus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.schedule-session-focus-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  min-width: 0;
 }
 .schedule-session-rail {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 .schedule-session-time {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 5px 10px;
   border-radius: 999px;
   border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
   background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
   color: var(--lux-text);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
 }
 .schedule-session-code-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
-.schedule-session-code { font-size: 17px; font-weight: 900; color: var(--lux-text); }
+.schedule-session-code { font-size: 14px; font-weight: 800; color: var(--lux-text); }
 .schedule-session-pill {
   display: inline-flex;
   align-items: center;
-  padding: 5px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
 }
 .schedule-session-pill.role {
@@ -134,22 +155,36 @@
   color: var(--lux-text);
 }
 .schedule-session-title {
-  margin: 10px 0 6px;
-  font-size: 15px;
-  line-height: 1.35;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.3;
   color: var(--lux-text);
 }
-.schedule-session-subtitle { color: var(--lux-text-muted); font-size: 12px; font-weight: 600; }
+.schedule-session-subtitle {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.schedule-session-subtitle::before {
+  content: "·";
+  margin-right: 6px;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
 .schedule-session-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
-  margin-top: 14px;
+  gap: 6px 12px;
+  margin-top: 0;
   color: var(--lux-text);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
-.schedule-session-action { white-space: nowrap; }
+.schedule-session-action {
+  white-space: nowrap;
+  min-height: 32px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
 .schedule-day-empty, .schedule-empty-state { padding: 22px; text-align: center; color: var(--lux-text-muted); }
 .schedule-empty-state {
   border: 1px dashed var(--lux-border);
@@ -160,7 +195,12 @@
 .schedule-empty-title { font-size: 15px; font-weight: 800; color: var(--lux-text); }
 .schedule-empty-copy { margin-top: 6px; font-size: 12px; }
 @media (max-width: 900px) {
-  .schedule-session-card-header { flex-direction: column; align-items: stretch; }
+  .schedule-session-card-header {
+    grid-template-columns: 1fr;
+  }
+  .schedule-session-rail {
+    justify-content: flex-start;
+  }
   .schedule-week-nav { width: 100%; justify-content: space-between; }
   .schedule-week-label { min-width: 0; flex: 1; }
 }

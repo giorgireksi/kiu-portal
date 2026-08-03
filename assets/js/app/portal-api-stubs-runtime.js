@@ -53,7 +53,19 @@
         });
 
         if (typeof window.getNotificationSnapshot !== 'function') {
-            const fallbackNotificationSnapshot = () => ({ unread: 0, items: [] });
+            const fallbackNotificationSnapshot = (user) => {
+                const userId = user?.id ?? user;
+                if (typeof window.getPortalNotificationItemsForUser === 'function') {
+                    const items = window.getPortalNotificationItemsForUser(userId) || [];
+                    const unread = typeof window.getPortalNotificationUnreadCount === 'function'
+                        ? window.getPortalNotificationUnreadCount(userId)
+                        : items.filter((item) => !item.read).length;
+                    if (items.length || unread) return { items, unread };
+                }
+                const cached = window.__kiuPortalLiveAlertSnapshot;
+                if (cached && (cached.unread > 0 || (cached.items && cached.items.length))) return cached;
+                return { unread: 0, items: [] };
+            };
             fallbackNotificationSnapshot.__kiuFallback = true;
             window['getNotificationSnapshot'] = fallbackNotificationSnapshot;
             stubs.getNotificationSnapshot = fallbackNotificationSnapshot;

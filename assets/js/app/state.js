@@ -1378,6 +1378,15 @@ function setCurrentStudentSchedule(schedule) {
             faculty: entry?.faculty || normalizeFacultyCode(studentFaculty, 'ECON')
         }));
     KIU_STATE.studentSchedulesByStudent[sessionUser.id] = JSON.parse(JSON.stringify(normalizedSchedule));
+    if (typeof syncGradebookRosterFromEnrollment === 'function') {
+        normalizedSchedule.forEach((entry) => {
+            const courseId = entry?.courseId || entry?.sourceCourseId || '';
+            const groupId = entry?.groupId || entry?.groupName || '';
+            if (courseId && groupId) {
+                syncGradebookRosterFromEnrollment(courseId, groupId, KIU_STATE);
+            }
+        });
+    }
     const previousSignature = buildPortalScheduleSignature(previousSchedule);
     const nextSignature = buildPortalScheduleSignature(normalizedSchedule);
     if (previousSignature && previousSignature !== nextSignature) {
@@ -1449,6 +1458,14 @@ function setActiveSessionUserByRole(role) {
     }
     KIU_STATE.domain = buildCanonicalDomain(KIU_STATE);
     syncLegacyStudentStateForCurrentUser();
+    if (typeof isAdminTestingPersonaId === 'function' && isAdminTestingPersonaId(targetUser.id)) {
+        if (typeof ensureAdminViewAccountFallbacks === 'function') {
+            ensureAdminViewAccountFallbacks(KIU_STATE);
+        }
+        if (normalizedRole === USER_ROLES.STUDENT && typeof ensureAdminTestingStudentAcademicShell === 'function') {
+            ensureAdminTestingStudentAcademicShell(targetUser.id, KIU_STATE);
+        }
+    }
     return getCurrentUserFromState(KIU_STATE);
 }
 

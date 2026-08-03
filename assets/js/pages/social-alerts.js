@@ -95,28 +95,13 @@
     }
 
     function renderPillBar(activeFilter, counts) {
-        return ALERTS_CATEGORIES.map((cat) => {
-            const isActive = activeFilter === cat.id;
-            const count = counts[cat.id] || 0;
-            const badgeLabel = count > 9 ? '9+' : String(count);
-            const ariaLabel = count > 0
-                ? `${cat.label}, ${count > 9 ? '9 plus' : count} unread`
-                : cat.label;
-            const countBadge = count > 0
-                ? `<span class="lux-tab-badge home-hover-chip">${escape(badgeLabel)}</span>`
-                : '';
-            return `<button class="lux-tab-btn lux-tab-btn--icon${isActive ? ' is-active' : ''}" type="button"
-                data-action="panel-alerts" data-alerts-filter="${escape(cat.id)}"
-                data-category="${escape(cat.id)}"
-                aria-selected="${isActive ? 'true' : 'false'}"
-                aria-pressed="${isActive ? 'true' : 'false'}"
-                aria-label="${escape(ariaLabel)}"
-                role="tab">
-                <i class="fas ${escape(cat.icon)}" aria-hidden="true"></i>
-                <span>${escape(cat.label)}</span>
-                ${countBadge}
-            </button>`;
-        }).join('');
+        if (typeof window.renderAlertsCategoryFilterStrip === 'function') {
+            return window.renderAlertsCategoryFilterStrip(activeFilter, counts, {
+                actionAttr: 'panel-alerts',
+                wrapper: false
+            });
+        }
+        return '';
     }
 
     function renderNotificationCard(notification) {

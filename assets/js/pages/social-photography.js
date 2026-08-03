@@ -307,6 +307,20 @@
 
         let items = posts.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
+        if (tab === 'pinned') {
+            const pinModel = photoPinModel();
+            if (!pinModel) return [];
+            items = pinModel.partitionPinnedTab('photo', items).all;
+            if (query) {
+                items = items.filter((post) => {
+                    const author = accountById(post.authorUserId);
+                    const blob = `${text(post.body)} ${displayName(author)} ${text(post.photoMeta?.location)}`.toLowerCase();
+                    return blob.includes(query);
+                });
+            }
+            return items;
+        }
+
         if (browseFaculty && browseFaculty !== 'all') {
             items = items.filter((post) => matchesBrowse(post, browseFaculty));
         }
@@ -321,12 +335,6 @@
                 const blob = `${text(post.body)} ${displayName(author)} ${text(post.photoMeta?.location)}`.toLowerCase();
                 return blob.includes(query);
             });
-        }
-
-        if (tab === 'pinned') {
-            const pinModel = photoPinModel();
-            if (!pinModel) return [];
-            return pinModel.partitionPinnedTab('photo', items).all;
         }
 
         const pinModel = photoPinModel();
@@ -768,7 +776,7 @@
                         <button class="${tab === 'pinned' ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm social-photo-tab${tab === 'pinned' ? ' is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'pinned' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i> Pinned</button>
                     </nav>
                 </section>
-                ${renderDiscoverStrip(discover)}
+                ${tab === 'pinned' ? '' : renderDiscoverStrip(discover)}
                 ${renderPhotoFeed(posts, tab)}
             </div>
         `;
@@ -820,7 +828,7 @@
             btn.setAttribute('aria-selected', active ? 'true' : 'false');
         });
 
-        const nextDiscover = renderDiscoverStrip(discover);
+        const nextDiscover = tab === 'pinned' ? '' : renderDiscoverStrip(discover);
         const discoverEl = shell.querySelector('.social-photo-discover-strip');
         if (nextDiscover) {
             if (discoverEl) discoverEl.outerHTML = nextDiscover;

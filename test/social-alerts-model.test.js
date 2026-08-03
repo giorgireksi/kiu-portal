@@ -12,11 +12,13 @@ function readSource(relativePath) {
 
 const {
     ALERTS_CATEGORIES,
+    ALERTS_CATEGORY_EMPTY_MESSAGES,
     classifyNotification,
     classifyNotificationCategory,
     getCategoryUnreadCounts,
     filterNotificationsByView,
-    buildNotificationTargetUrl
+    buildNotificationTargetUrl,
+    renderAlertsCategoryFilterStrip
 } = socialAlertsModelApi;
 
 describe('social-alerts-model', () => {
@@ -94,5 +96,21 @@ describe('social-alerts-model', () => {
         expect(buildNotificationTargetUrl({ routePage: 'news', routeData: {} }))
             .toBe('news.html');
         expect(buildNotificationTargetUrl(null)).toBeNull();
+    });
+
+    it('exports category filter strip helper with icon tabs and badges', () => {
+        expect(window.renderAlertsCategoryFilterStrip).toBe(renderAlertsCategoryFilterStrip);
+        expect(ALERTS_CATEGORY_EMPTY_MESSAGES.all).toContain('No notifications');
+        const strip = renderAlertsCategoryFilterStrip('all', { all: 3, social: 2 }, { wrapper: true });
+        expect(strip).toContain('lux-tab-btn--icon');
+        expect(strip).toContain('lux-tab-badge home-hover-chip');
+        expect(strip).toContain('data-alerts-filter="social"');
+        const buttons = renderAlertsCategoryFilterStrip('social', { social: 1 }, {
+            filterAttr: 'data-utility-alerts-filter',
+            wrapper: false
+        });
+        expect(buttons).toContain('data-utility-alerts-filter="social"');
+        expect(buttons).toContain('is-active');
+        expect(buttons).not.toContain('data-action=');
     });
 });

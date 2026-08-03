@@ -385,47 +385,19 @@
                 { tab: 'pinned', label: 'Pinned', helper: 'Highlights and your pins', attrs: 'data-portfolio-tab="pinned"' },
             ];
             const pinModel = window.KiuSocialPinModel;
-            const discoverFeedMarkup = portfolioPanelTab === 'pinned'
-                ? (pinModel
-                    ? pinModel.renderPinnedSections('portfolio', pinModel.partitionPinnedTab('portfolio', filteredEntries), (entry) => {
-                        const owner = entry.owner;
-                        const isOpen = highlightedOpenId === entry.id;
-                        const mediaPreview = entry.mediaItems[0] || null;
-                        const mediaUrl = mediaPreview ? fileUrl(mediaPreview) : '';
-                        const featured = false;
-                        return `
-                                <article class="social-neo-post-card social-portfolio-card lux-soft-chrome home-hover-chip ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
+            function renderPortfolioDiscoverCard(entry, index = 0) {
+                const owner = entry.owner;
+                const isOpen = highlightedOpenId === entry.id;
+                const mediaPreview = entry.mediaItems[0] || null;
+                const mediaUrl = mediaPreview ? fileUrl(mediaPreview) : '';
+                const featured = index === 0 || (index > 0 && index % 5 === 0);
+                return `
+                                <article class="social-neo-post-card social-neo-entity-card social-portfolio-card lux-soft-chrome home-hover-chip ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
                                     <div class="social-portfolio-card-head">
                                         <div class="social-neo-person">
                                             ${avatar(owner, 'social-neo-avatar-sm')}
                                             <div>
-                                                <strong>${escape(displayName(owner))}</strong>
-                                                <div class="social-neo-muted lms-route-meta-12">${escape(roleLabel(owner?.role))} / ${escape(facultyLabel(entry.ownerFacultyCode || currentFaculty))}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="social-portfolio-body">
-                                        <h3 class="social-portfolio-card-title">${escape(entry.title)}</h3>
-                                        <p class="social-portfolio-card-summary">${escape(entry.summary || entry.description || 'Portfolio showcase')}</p>
-                                    </div>
-                                    <div class="social-portfolio-card-pin">${pinModel.renderModulePinActions('portfolio', entry.id, { canCuratorPin: pinModel.viewerCanCuratorPin('portfolio', entry) })}</div>
-                                </article>
-                            `;
-                    }, 'No pinned portfolio entries yet.')
-                    : `<div class="social-neo-empty social-neo-portfolio-feed-empty">No pinned portfolio entries yet.</div>`)
-                : filteredEntries.length ? (pinModel ? pinModel.sortWithCuratorPins('portfolio', filteredEntries) : filteredEntries).map((entry, index) => {
-                            const owner = entry.owner;
-                            const isOpen = highlightedOpenId === entry.id;
-                            const mediaPreview = entry.mediaItems[0] || null;
-                            const mediaUrl = mediaPreview ? fileUrl(mediaPreview) : '';
-                            const featured = index === 0 || (index > 0 && index % 5 === 0);
-                            return `
-                                <article class="social-neo-post-card social-portfolio-card lux-soft-chrome home-hover-chip ${isOpen ? 'is-open' : ''} ${featured ? 'is-featured' : ''}">
-                                    <div class="social-portfolio-card-head">
-                                        <div class="social-neo-person">
-                                            ${avatar(owner, 'social-neo-avatar-sm')}
-                                            <div>
-                                                <strong>${escape(displayName(owner))}</strong>
+                                                <strong class="lux-card-copy">${escape(displayName(owner))}</strong>
                                                 <div class="social-neo-muted lms-route-meta-12">${escape(roleLabel(owner?.role))} / ${escape(facultyLabel(entry.ownerFacultyCode || currentFaculty))}</div>
                                             </div>
                                         </div>
@@ -446,7 +418,7 @@
                                             railClass: 'social-portfolio-card-title-rail',
                                             controlsClass: 'social-portfolio-card-title-controls',
                                             viewportClass: 'social-portfolio-card-title-viewport',
-                                            textClass: 'social-portfolio-card-title',
+                                            textClass: 'social-portfolio-card-title lux-card-copy',
                                             textTag: 'h3',
                                         })}
                                         ${renderPortfolioCardTextRail({
@@ -457,7 +429,7 @@
                                             railClass: 'social-portfolio-card-summary-rail',
                                             controlsClass: 'social-portfolio-card-summary-controls',
                                             viewportClass: 'social-portfolio-card-summary-viewport',
-                                            textClass: 'social-portfolio-card-summary',
+                                            textClass: 'social-portfolio-card-summary lux-panel-copy',
                                             textTag: 'p',
                                         })}
                                         <div class="social-neo-badge-row">
@@ -513,7 +485,12 @@
                                     </div>
                                 </article>
                             `;
-            }).join('') : `<div class="social-neo-empty social-neo-portfolio-feed-empty">No portfolio entries matched the current filters.</div>`;
+            }
+            const discoverFeedMarkup = portfolioPanelTab === 'pinned'
+                ? (pinModel
+                    ? pinModel.renderPinnedSections('portfolio', pinModel.partitionPinnedTab('portfolio', filteredEntries), (entry) => renderPortfolioDiscoverCard(entry), 'No pinned portfolio entries yet.')
+                    : `<div class="social-neo-empty social-neo-portfolio-feed-empty">No pinned portfolio entries yet.</div>`)
+                : filteredEntries.length ? (pinModel ? pinModel.sortWithCuratorPins('portfolio', filteredEntries) : filteredEntries).map((entry, index) => renderPortfolioDiscoverCard(entry, index)).join('') : `<div class="social-neo-empty social-neo-portfolio-feed-empty">No portfolio entries matched the current filters.</div>`;
             const panelBodyMarkup = portfolioPanelTab === 'mine'
                 ? renderMyPortfolioPanel()
                 : `<div class="social-portfolio-feed">${discoverFeedMarkup}</div>`;

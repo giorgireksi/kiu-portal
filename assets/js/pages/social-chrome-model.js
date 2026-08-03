@@ -184,7 +184,9 @@
         const preview = text(file?.previewDataUrl || file?.dataUrl);
         const storageKey = text(file?.storageKey || file?.id || '');
         const storageMissing = file?.storageMissing === true;
-        if (storageMissing) return preview;
+        if (storageMissing || (typeof window.__kiuIsSocialFileUnavailable === 'function' && window.__kiuIsSocialFileUnavailable(storageKey))) {
+            return preview;
+        }
         const backend = text(file?.storageBackend).toLowerCase();
         if (storageKey && typeof window.getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !preview)) {
             const type = text(file?.type).toLowerCase();

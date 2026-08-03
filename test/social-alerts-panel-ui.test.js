@@ -11,7 +11,8 @@ describe('social-alerts-panel-ui.test', () => {
         const alerts = readSource('assets/js/pages/social-alerts.js');
 
         expect(alerts).toContain('lux-tab-strip lux-tab-strip--segmented sn-alerts-category-filters');
-        expect(alerts).toContain('lux-tab-btn lux-tab-btn--icon');
+        expect(alerts).toContain('renderAlertsCategoryFilterStrip');
+        expect(alerts).toMatch(/function renderPillBar[\s\S]*?renderAlertsCategoryFilterStrip/);
         expect(alerts).not.toMatch(/renderPillBar[\s\S]*?social-neo-tab/);
     });
 

@@ -702,7 +702,9 @@
     }
 
     function setFlash(message, tone = 'info', options = {}) {
-        runtime.flash = message ? { message: text(message), tone: text(tone) || 'info' } : null;
+        const resolvedTone = text(tone) || 'info';
+        if (message && (resolvedTone === 'success' || resolvedTone === 'info')) return;
+        runtime.flash = message ? { message: text(message), tone: resolvedTone } : null;
         if (!options.skipRender) queueRender('flash');
         if (!message) return;
         window.setTimeout(() => {
@@ -1066,6 +1068,9 @@
                 runtime.chats = Array.isArray(messengerPayload?.chats) ? messengerPayload.chats : [];
                 runtime.calls = Array.isArray(messengerPayload?.calls) ? messengerPayload.calls : [];
                 mergeAccounts(Array.isArray(messengerPayload?.accounts) ? messengerPayload.accounts : []);
+                if (typeof window.syncTopbar === 'function') {
+                    try { window.syncTopbar(); } catch (error) {}
+                }
                 const deferredAccountIds = unique([
                     ...runtime.feed.map((post) => text(post?.authorUserId)),
                     ...collectSocialAccountIds(runtime.social),
@@ -1122,6 +1127,7 @@
     }
 
     function addToast(options = {}) {
+        if (text(options.type || 'info') === 'success') return '';
         const toast = {
             id: options.id || `toast-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             type: options.type || 'info',
@@ -1145,7 +1151,7 @@
         }
         queueRender('toast-added');
         if (options.autoDismiss !== false) {
-            const duration = Math.max(1000, Number(options.duration) || 5000);
+            const duration = Math.max(1000, Number(options.duration) || 7000);
             toast.timeoutId = window.setTimeout(() => dismissToast(toast.id), duration);
         }
         return toast.id;
@@ -1442,12 +1448,58 @@
         return displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('') || 'KI';
     }
 
+    function markSocialFileUnavailable(storageKey) {
+        const key = text(storageKey);
+        if (!key) return;
+        const keys = loadUnavailableFileKeys();
+        if (keys.has(key)) return;
+        keys.add(key);
+        persistUnavailableFileKeys();
+        invalidateSocialFeedRenderCache();
+        queueRender('file-unavailable');
+    }
+
+    const UNAVAILABLE_FILES_KEY = 'kiu.social.unavailableFiles';
+
+    function loadUnavailableFileKeys() {
+        if (runtime.unavailableFileKeys) return runtime.unavailableFileKeys;
+        runtime.unavailableFileKeys = new Set();
+        try {
+            const raw = sessionStorage.getItem(UNAVAILABLE_FILES_KEY);
+            if (!raw) return runtime.unavailableFileKeys;
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+                parsed.forEach((entry) => {
+                    const normalized = text(entry);
+                    if (normalized) runtime.unavailableFileKeys.add(normalized);
+                });
+            }
+        } catch (error) {}
+        return runtime.unavailableFileKeys;
+    }
+
+    function persistUnavailableFileKeys() {
+        try {
+            const keys = [...loadUnavailableFileKeys()].filter(Boolean);
+            if (!keys.length) {
+                sessionStorage.removeItem(UNAVAILABLE_FILES_KEY);
+                return;
+            }
+            sessionStorage.setItem(UNAVAILABLE_FILES_KEY, JSON.stringify(keys));
+        } catch (error) {}
+    }
+
+    function isSocialFileUnavailable(storageKey) {
+        const key = text(storageKey);
+        return Boolean(key && loadUnavailableFileKeys().has(key));
+    }
+
     function fileUrl(file) {
         if (!file || typeof file !== 'object') return '';
         const preview = text(file.previewDataUrl || file.dataUrl);
         const storageKey = text(file.storageKey || file.id || '');
         const storageMissing = file.storageMissing === true;
-        if (storageMissing) return preview;
+        if (storageMissing || isSocialFileUnavailable(storageKey)) return preview;
         const backend = text(file.storageBackend).toLowerCase();
         if (storageKey && typeof getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !preview)) {
             const type = text(file.type).toLowerCase();
@@ -1932,6 +1984,8 @@
     runtime.ui.activePanel = text(readStore(PANEL_KEY, 'feed')) || 'feed';
     if (runtime.ui.activePanel === 'lost-found') runtime.ui.activePanel = 'lost-and-found';
     runtime.ui.activeChatId = text(readStore(CHAT_KEY, ''));
+    window.__kiuMarkSocialFileUnavailable = markSocialFileUnavailable;
+    window.__kiuIsSocialFileUnavailable = isSocialFileUnavailable;
     window.__KIU_SOCIAL_RUNTIME_READY = true;
     window.__KIU_SOCIAL_CANONICAL_RUNTIME_READY = true;
     window.__KIU_SOCIAL_RUNTIME_LOADED = true;

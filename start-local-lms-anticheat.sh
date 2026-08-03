@@ -151,8 +151,13 @@ backend_manifest_matches() {
     [[ -n "$expected" && "$expected" == "$remote" ]]
 }
 
+pin_api_healthy() {
+    curl --silent --max-time 2 "$BACKEND_HEALTH_URL" \
+        | node -e "let s='';process.stdin.on('data',c=>s+=c);process.stdin.on('end',()=>{try{process.exit(JSON.parse(s).socialPinApiVersion?0:1)}catch{process.exit(1)}})"
+}
+
 core_stack_healthy() {
-    is_url_ready "$BACKEND_HEALTH_URL" && backend_manifest_matches && is_url_ready "$FRONTEND_HEALTH_URL"
+    is_url_ready "$BACKEND_HEALTH_URL" && backend_manifest_matches && pin_api_healthy && is_url_ready "$FRONTEND_HEALTH_URL"
 }
 
 print_stack_urls() {
@@ -199,6 +204,10 @@ backend_pid="$(read_pid_if_running "$BACKEND_PID_FILE" || true)"
 anticheat_pid="$(read_pid_if_running "$ANTICHEAT_PID_FILE" || true)"
 
 START_CORE=true
+
+if is_url_ready "$BACKEND_HEALTH_URL" && backend_manifest_matches && ! pin_api_healthy; then
+    echo "Backend missing socialPinApiVersion — restarting core stack"
+fi
 
 if core_stack_healthy; then
     if is_truthy "${KIU_SKIP_ANTICHEAT:-}" || is_url_ready "$BRIDGE_HEALTH_URL"; then

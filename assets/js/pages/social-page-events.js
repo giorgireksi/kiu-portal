@@ -76,6 +76,17 @@
             return Boolean(surface);
         }
 
+        function handleSocialFileImageError(event) {
+            const img = event.target;
+            if (!img?.matches?.('img[data-social-file-key]')) return;
+            if (!socialInteractionContains(img)) return;
+            const storageKey = text(img.getAttribute('data-social-file-key'));
+            if (!storageKey) return;
+            if (typeof window.__kiuMarkSocialFileUnavailable === 'function') {
+                window.__kiuMarkSocialFileUnavailable(storageKey);
+            }
+        }
+
         async function handleClick(event) {
             if (event.__kiuSocialHandled) return;
             if (event.target?.closest?.('label.social-photo-upload-dropzone, input[name="photographyUploadFile"]')) return;
@@ -115,6 +126,7 @@
             if (action === 'module-curator-pin' || action === 'module-personal-pin') {
                 event.__kiuSocialHandled = true;
                 event.preventDefault();
+                event.stopPropagation();
                 const module = text(trigger.getAttribute('data-pin-module') || '');
                 const entityId = text(trigger.getAttribute('data-entity-id') || '');
                 const kind = action === 'module-curator-pin' ? 'curator' : 'personal';
@@ -127,8 +139,14 @@
                 }
                 try {
                     await togglePin(module, entityId, kind);
+                    window.KiuSocialPinModel?.setPinApiUnavailable?.(false);
                     if (typeof renderSocialPageNow === 'function') renderSocialPageNow('module-pin');
                 } catch (error) {
+                    const pinUnavailable = /Pin API unavailable/i.test(text(error?.message || ''));
+                    if (pinUnavailable) {
+                        window.KiuSocialPinModel?.setPinApiUnavailable?.(true);
+                        if (typeof renderSocialPageNow === 'function') renderSocialPageNow('pin-api-unavailable');
+                    }
                     flashSocialError(error?.message || 'Pin state could not be updated.');
                 }
                 return;
@@ -626,6 +644,7 @@
             handleInput,
             handleChange,
             handleGlobalKeydown,
+            handleSocialFileImageError,
             handlePhotographyUploadDragEnter,
             handlePhotographyUploadDragOver,
             handlePhotographyUploadDragLeave,

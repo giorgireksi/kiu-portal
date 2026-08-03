@@ -27,8 +27,43 @@ function handleStudentServiceQaThreadClick(event) {
     if (questionFeedbackButton) {
 
         event.preventDefault();
+        event.stopPropagation();
 
-        setStudentServiceQuestionFeedback(
+        const resolveQuestionFeedback = () => {
+            const resolveFn = typeof resolveStudentServiceExportImpl === 'function'
+                ? resolveStudentServiceExportImpl
+                : (typeof window.resolveStudentServiceExportImpl === 'function'
+                    ? window.resolveStudentServiceExportImpl
+                    : null);
+            if (typeof resolveFn === 'function') {
+                const impl = resolveFn('setStudentServiceQuestionFeedback');
+                if (typeof impl === 'function') return impl;
+            }
+            if (typeof window.setStudentServiceQuestionFeedback === 'function') {
+                return window.setStudentServiceQuestionFeedback;
+            }
+            return window.KiuStudentService?.setStudentServiceQuestionFeedback;
+        };
+        const setQuestionFeedback = resolveQuestionFeedback();
+        if (typeof setQuestionFeedback !== 'function') {
+            if (typeof ensureStudentServiceQaModule === 'function') {
+                ensureStudentServiceQaModule()
+                    .then(() => {
+                        const retry = resolveQuestionFeedback();
+                        if (typeof retry === 'function') {
+                            retry(
+                                questionFeedbackButton.dataset.studentServiceQuestionId || '',
+                                questionFeedbackButton.dataset.studentServiceQuestionFeedback || '',
+                                questionFeedbackButton
+                            );
+                        }
+                    })
+                    .catch(() => null);
+            }
+            return true;
+        }
+
+        setQuestionFeedback(
 
             questionFeedbackButton.dataset.studentServiceQuestionId || '',
 
@@ -44,21 +79,55 @@ function handleStudentServiceQaThreadClick(event) {
 
 
 
-    const ownerResolutionButton = event.target.closest('[data-student-service-owner-resolution]');
+    const ownerResolutionButton = event.target.closest('[data-student-service-owner-resolution-cycle]')
+        || event.target.closest('[data-student-service-owner-resolution]');
 
     if (ownerResolutionButton) {
 
         event.preventDefault();
 
-        setStudentServiceQuestionOwnerResolution(
+        const questionId = ownerResolutionButton.dataset.studentServiceQuestionId || '';
+        const resolveCycleTarget = () => {
+            const resolveCycleFn = typeof getStudentServiceOwnerResolutionCycleTarget === 'function'
+                ? getStudentServiceOwnerResolutionCycleTarget
+                : (typeof window.getStudentServiceOwnerResolutionCycleTarget === 'function'
+                    ? window.getStudentServiceOwnerResolutionCycleTarget
+                    : (typeof window.resolveStudentServiceExportImpl === 'function'
+                        ? window.resolveStudentServiceExportImpl('getStudentServiceOwnerResolutionCycleTarget')
+                        : window.KiuStudentService?.getStudentServiceOwnerResolutionCycleTarget));
+            const resolveQuestionFn = typeof getStudentServiceQuestionById === 'function'
+                ? getStudentServiceQuestionById
+                : window.getStudentServiceQuestionById;
+            if (typeof resolveCycleFn === 'function' && typeof resolveQuestionFn === 'function') {
+                const question = resolveQuestionFn(questionId);
+                return resolveCycleFn(question?.ownerResolutionStatus);
+            }
+            return ownerResolutionButton.dataset.studentServiceOwnerResolution || 'answered';
+        };
+        const cycleTarget = resolveCycleTarget();
 
-            ownerResolutionButton.dataset.studentServiceQuestionId || '',
+        const setOwnerResolution = typeof setStudentServiceQuestionOwnerResolution === 'function'
+            ? setStudentServiceQuestionOwnerResolution
+            : (typeof window.setStudentServiceQuestionOwnerResolution === 'function'
+                ? window.setStudentServiceQuestionOwnerResolution
+                : window.KiuStudentService?.setStudentServiceQuestionOwnerResolution);
+        if (typeof setOwnerResolution !== 'function') {
+            if (typeof ensureStudentServiceQaModule === 'function') {
+                ensureStudentServiceQaModule()
+                    .then(() => {
+                        const retry = typeof setStudentServiceQuestionOwnerResolution === 'function'
+                            ? setStudentServiceQuestionOwnerResolution
+                            : window.setStudentServiceQuestionOwnerResolution;
+                        if (typeof retry === 'function') {
+                            retry(questionId, resolveCycleTarget(), ownerResolutionButton);
+                        }
+                    })
+                    .catch(() => null);
+            }
+            return true;
+        }
 
-            ownerResolutionButton.dataset.studentServiceOwnerResolution || '',
-
-            ownerResolutionButton
-
-        );
+        setOwnerResolution(questionId, cycleTarget, ownerResolutionButton);
 
         return true;
 
@@ -143,11 +212,28 @@ function handleStudentServiceQaThreadClick(event) {
         event.preventDefault();
         event.stopPropagation();
 
-        const setAnswerFeedback = typeof window.setStudentServiceAnswerFeedback === 'function'
-            ? window.setStudentServiceAnswerFeedback
-            : window.KiuStudentService?.setStudentServiceAnswerFeedback;
+        const setAnswerFeedback = typeof setStudentServiceAnswerFeedback === 'function'
+            ? setStudentServiceAnswerFeedback
+            : (typeof window.setStudentServiceAnswerFeedback === 'function'
+                ? window.setStudentServiceAnswerFeedback
+                : window.KiuStudentService?.setStudentServiceAnswerFeedback);
         if (typeof setAnswerFeedback !== 'function') {
-            if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
+            if (typeof ensureStudentServiceQaModule === 'function') {
+                ensureStudentServiceQaModule()
+                    .then(() => {
+                        const retry = typeof setStudentServiceAnswerFeedback === 'function'
+                            ? setStudentServiceAnswerFeedback
+                            : window.setStudentServiceAnswerFeedback;
+                        if (typeof retry === 'function') {
+                            retry(
+                                answerHelpfulButton.dataset.studentServiceQuestionId || '',
+                                answerHelpfulButton.dataset.studentServiceAnswerId || '',
+                                answerHelpfulButton
+                            );
+                        }
+                    })
+                    .catch(() => null);
+            }
             return true;
         }
 

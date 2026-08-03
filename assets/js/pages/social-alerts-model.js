@@ -23,6 +23,63 @@ const ALERTS_CATEGORIES = [
     { id: 'support', label: 'Support', icon: 'fa-headset' }
 ];
 
+const ALERTS_CATEGORY_EMPTY_MESSAGES = {
+    all: 'No notifications right now.',
+    unread: 'No unread notifications right now.',
+    academic: 'Grades, schedule changes, and enrollment updates will appear here.',
+    messages: 'Email, chat messages, and call alerts will appear here.',
+    social: 'Posts, follows, groups, and event updates will appear here.',
+    university: 'Announcements, news, and campus updates will appear here.',
+    support: 'Service tickets and moderation alerts will appear here.'
+};
+
+function escapeHtml(value) {
+    const hook = hooks().escape;
+    if (typeof hook === 'function') return hook(value);
+    const s = text(value);
+    return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function renderAlertsCategoryFilterStrip(activeFilter, counts, options = {}) {
+    const {
+        filterAttr = 'data-alerts-filter',
+        actionAttr = null,
+        categoryFiltersClass = 'sn-alerts-category-filters',
+        wrapper = false,
+        ariaLabel = 'Filter notifications by category'
+    } = options;
+    const buttons = ALERTS_CATEGORIES.map((cat) => {
+        const isActive = activeFilter === cat.id;
+        const count = counts[cat.id] || 0;
+        const badgeLabel = count > 9 ? '9+' : String(count);
+        const btnAriaLabel = count > 0
+            ? `${cat.label}, ${count > 9 ? '9 plus' : count} unread`
+            : cat.label;
+        const countBadge = count > 0
+            ? `<span class="lux-tab-badge home-hover-chip">${escapeHtml(badgeLabel)}</span>`
+            : '';
+        const actionMarkup = actionAttr ? ` data-action="${escapeHtml(actionAttr)}"` : '';
+        return `<button class="lux-tab-btn lux-tab-btn--icon${isActive ? ' is-active' : ''}" type="button"
+            ${actionMarkup}
+            ${filterAttr}="${escapeHtml(cat.id)}"
+            data-category="${escapeHtml(cat.id)}"
+            aria-selected="${isActive ? 'true' : 'false'}"
+            aria-pressed="${isActive ? 'true' : 'false'}"
+            aria-label="${escapeHtml(btnAriaLabel)}"
+            role="tab">
+            <i class="fas ${escapeHtml(cat.icon)}" aria-hidden="true"></i>
+            <span>${escapeHtml(cat.label)}</span>
+            ${countBadge}
+        </button>`;
+    }).join('');
+    if (!wrapper) return buttons;
+    return `<div class="lux-tab-strip lux-tab-strip--segmented ${categoryFiltersClass}" role="tablist" aria-label="${escapeHtml(ariaLabel)}">${buttons}</div>`;
+}
+
 function classifyNotification(notification) {
     const nType = String(notification?.type || '').toLowerCase();
     const blob = `${text(notification?.title)} ${text(notification?.text)}`.toLowerCase();
@@ -115,10 +172,12 @@ function buildNotificationTargetUrl(notification) {
 export const socialAlertsModelApi = {
     buildNotificationTargetUrl,
     ALERTS_CATEGORIES,
+    ALERTS_CATEGORY_EMPTY_MESSAGES,
     classifyNotification,
     classifyNotificationCategory,
     getCategoryUnreadCounts,
-    filterNotificationsByView
+    filterNotificationsByView,
+    renderAlertsCategoryFilterStrip
 };
 
 /** Install classic window / Kiu surface (idempotent). */

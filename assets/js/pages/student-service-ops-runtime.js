@@ -24,28 +24,79 @@ function ssForwardToLoadedModule(hasModule, ensureModule, name, localFn, args, f
 }
 
 
-function updateStudentServiceOwnerResolutionButtons(root, question = {}) {
-    if (!root) return;
+function getStudentServiceOwnerResolutionCycleTarget(current) {
+    const status = String(current || '').trim().toLowerCase();
+    if (status === 'answered') return 'unanswered';
+    if (status === 'unanswered') return 'unanswered';
+    return 'answered';
+}
+
+function getStudentServiceOwnerResolutionButtonPresentation(question = {}) {
     const ownerStatus = String(question.ownerResolutionStatus || '').trim().toLowerCase();
-    root.querySelectorAll('[data-student-service-owner-resolution]').forEach(button => {
-        const value = String(button.dataset.studentServiceOwnerResolution || '').trim().toLowerCase();
-        const isActive = ownerStatus === value;
-        button.classList.toggle('is-active', isActive);
-        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-        const icon = button.querySelector('i');
-        if (icon && value === 'answered') icon.className = `fas ${isActive ? 'fa-check-circle' : 'far fa-circle'}`;
-        if (icon && value === 'unanswered') icon.className = `fas ${isActive ? 'fa-hourglass-half' : 'far fa-hourglass'}`;
+    if (ownerStatus === 'answered') {
+        return {
+            label: 'Marked as answered',
+            iconClass: 'fas fa-check-circle',
+            isActive: true,
+            cycleTarget: 'unanswered',
+            ariaLabel: 'Marked as answered. Click to mark still waiting on this question.'
+        };
+    }
+    if (ownerStatus === 'unanswered') {
+        return {
+            label: 'Still waiting on this',
+            iconClass: 'fas fa-hourglass-half',
+            isActive: true,
+            cycleTarget: 'unanswered',
+            ariaLabel: 'Still waiting on this question. Click to clear status.'
+        };
+    }
+    return {
+        label: 'Set my status',
+        iconClass: 'far fa-circle',
+        isActive: false,
+        cycleTarget: 'answered',
+        ariaLabel: 'Set my question status. Click to mark as answered.'
+    };
+}
+
+function applyStudentServiceOwnerResolutionButtonPresentation(button, question = {}) {
+    if (!button) return;
+    const presentation = getStudentServiceOwnerResolutionButtonPresentation(question);
+    button.classList.toggle('is-active', presentation.isActive);
+    button.classList.toggle('lux-primary-btn', presentation.isActive);
+    button.setAttribute('aria-pressed', presentation.isActive ? 'true' : 'false');
+    button.setAttribute('aria-label', presentation.ariaLabel);
+    const icon = button.querySelector('i');
+    if (icon) icon.className = presentation.iconClass;
+    let label = button.querySelector('.student-service-qa-owner-resolution-label');
+    if (!label) {
+        label = button.querySelector('span');
+        if (label) label.className = 'student-service-qa-owner-resolution-label';
+    }
+    if (!label) {
+        label = document.createElement('span');
+        label.className = 'student-service-qa-owner-resolution-label';
+        button.appendChild(label);
+    }
+    label.textContent = presentation.label;
+}
+
+function updateStudentServiceOwnerResolutionButtons(root, question = {}, triggerButton = null) {
+    if (triggerButton?.dataset?.studentServiceOwnerResolutionCycle === 'true') {
+        applyStudentServiceOwnerResolutionButtonPresentation(triggerButton, question);
+    }
+    if (!root) return;
+    root.querySelectorAll('[data-student-service-owner-resolution-cycle]').forEach((button) => {
+        applyStudentServiceOwnerResolutionButtonPresentation(button, question);
     });
 }
 
 function renderStudentServiceOwnerResolutionButtonMarkup(question, skipLuxButton = 'data-lux-skip-modern-button="true"') {
     if (!canCurrentUserSetStudentServiceOwnerResolution(question)) return '';
-    const ownerStatus = String(question.ownerResolutionStatus || '').trim().toLowerCase();
-    const answeredActive = ownerStatus === 'answered';
-    const unansweredActive = ownerStatus === 'unanswered';
+    const presentation = getStudentServiceOwnerResolutionButtonPresentation(question);
     return `
-        <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--owner-resolution student-service-qa-owner-resolution-btn${answeredActive ? ' is-active' : ''}" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-owner-resolution="answered" aria-pressed="${answeredActive ? 'true' : 'false'}"><i class="${answeredActive ? 'fas fa-check-circle' : 'far fa-circle'}" aria-hidden="true"></i><span>Mark as answered</span></button>
-        <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--owner-resolution student-service-qa-owner-resolution-btn${unansweredActive ? ' is-active' : ''}" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-owner-resolution="unanswered" aria-pressed="${unansweredActive ? 'true' : 'false'}"><i class="${unansweredActive ? 'fas fa-hourglass-half' : 'far fa-hourglass'}" aria-hidden="true"></i><span>Still unanswered</span></button>
+        <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--owner-resolution student-service-qa-owner-resolution-btn student-service-qa-owner-resolution-cycle-btn${presentation.isActive ? ' is-active lux-primary-btn' : ''}" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-owner-resolution-cycle="true" aria-pressed="${presentation.isActive ? 'true' : 'false'}" aria-label="${ssEscape(presentation.ariaLabel)}"><i class="${presentation.iconClass}" aria-hidden="true"></i><span class="student-service-qa-owner-resolution-label">${ssEscape(presentation.label)}</span></button>
     `;
 }
 
@@ -59,6 +110,14 @@ function updateStudentServiceQuestionHelpfulButton(button, question = {}) {
 
 function triggerStudentServiceHelpfulAnimation(button, voted = true) {
     return ssForwardToLoadedModule(hasStudentServiceQaModule, ensureStudentServiceQaModule, 'triggerStudentServiceHelpfulAnimation', triggerStudentServiceHelpfulAnimation, arguments, undefined);
+}
+
+function triggerStudentServiceOwnerResolutionAnimation(button) {
+    if (!button) return;
+    button.classList.remove('is-owner-resolving');
+    void button.offsetWidth;
+    button.classList.add('is-owner-resolving');
+    window.setTimeout(() => button.classList.remove('is-owner-resolving'), 520);
 }
 
 function flashStudentServiceActionButton(button, outcome = 'acting') {
@@ -754,42 +813,89 @@ async function submitStudentServiceQuestionAnswer(questionId, triggerElement = n
     return ssForwardToLoadedModule(hasStudentServiceQaModule, ensureStudentServiceQaModule, 'submitStudentServiceQuestionAnswer', submitStudentServiceQuestionAnswer, arguments, null);
 }
 
-function patchStudentServiceOwnerResolutionUi(questionId) {
-    const question = getStudentServiceQuestionById(questionId);
+function patchStudentServiceOwnerResolutionUi(questionId, options = {}) {
+    const question = options.question || getStudentServiceQuestionById(questionId);
     if (!question) return false;
+    const roots = new Set();
+    if (options.actionRoot) roots.add(options.actionRoot);
+    const modalBody = getStudentServiceQuestionThreadModalBody();
+    const card = getStudentServiceQuestionCardElement(questionId);
+    modalBody?.querySelectorAll('.student-service-qa-detail-actions').forEach((root) => roots.add(root));
+    card?.querySelectorAll('.student-service-qa-detail-actions').forEach((root) => roots.add(root));
     const host = getStudentServiceQuestionThreadHost(questionId);
     const detail = host?.querySelector('.student-service-qa-detail');
     if (detail) {
-        updateStudentServiceOwnerResolutionButtons(detail, question);
+        detail.querySelectorAll('.student-service-qa-detail-actions').forEach((root) => roots.add(root));
         const meta = detail.querySelector('.student-service-qa-detail-meta');
         if (meta) {
-            meta.querySelectorAll('.student-service-pill--owner-answered, .student-service-pill--owner-unanswered').forEach(node => node.remove());
+            meta.querySelectorAll('.student-service-pill--owner-answered, .student-service-pill--owner-unanswered').forEach((node) => node.remove());
             const ownerPill = renderStudentServiceOwnerResolutionPillMarkup(question);
             if (ownerPill) meta.insertAdjacentHTML('beforeend', ownerPill);
         }
     }
+    roots.forEach((root) => updateStudentServiceOwnerResolutionButtons(root, question, options.triggerButton));
+    if (options.triggerButton) {
+        applyStudentServiceOwnerResolutionButtonPresentation(options.triggerButton, question);
+    }
     patchStudentServiceQuestionCardStats(questionId);
-    return true;
+    return roots.size > 0 || Boolean(detail);
 }
 
 async function setStudentServiceQuestionOwnerResolution(questionId, status, triggerButton = null) {
-    return ssForwardToLoadedModule(hasStudentServiceQaModule, ensureStudentServiceQaModule, 'setStudentServiceQuestionOwnerResolution', setStudentServiceQuestionOwnerResolution, arguments, null);
+    if (typeof hasStudentServiceQaModule === 'function' && hasStudentServiceQaModule()) {
+        const impl = typeof resolveStudentServiceExportImpl === 'function'
+            ? resolveStudentServiceExportImpl('setStudentServiceQuestionOwnerResolution')
+            : undefined;
+        if (typeof impl === 'function' && impl !== setStudentServiceQuestionOwnerResolution) {
+            return impl.apply(null, arguments);
+        }
+        const w = window.setStudentServiceQuestionOwnerResolution;
+        if (typeof w === 'function' && w !== setStudentServiceQuestionOwnerResolution) return w.apply(null, arguments);
+    }
+    if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
+    return null;
 }
 
 async function setStudentServiceQuestionFeedback(questionId, value, triggerButton = null) {
-    return ssForwardToLoadedModule(hasStudentServiceQaModule, ensureStudentServiceQaModule, 'setStudentServiceQuestionFeedback', setStudentServiceQuestionFeedback, arguments, null);
+    if (typeof hasStudentServiceQaModule === 'function' && hasStudentServiceQaModule()) {
+        const impl = typeof resolveStudentServiceExportImpl === 'function'
+            ? resolveStudentServiceExportImpl('setStudentServiceQuestionFeedback')
+            : undefined;
+        if (typeof impl === 'function' && impl !== setStudentServiceQuestionFeedback) {
+            return impl.apply(null, arguments);
+        }
+        const w = window.setStudentServiceQuestionFeedback;
+        if (typeof w === 'function' && w !== setStudentServiceQuestionFeedback) return w.apply(null, arguments);
+    }
+    if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
+    return null;
 }
 
 async function setStudentServiceAnswerFeedback(questionId, answerId, triggerButton = null) {
-    return ssForwardToLoadedModule(hasStudentServiceQaModule, ensureStudentServiceQaModule, 'setStudentServiceAnswerFeedback', setStudentServiceAnswerFeedback, arguments, null);
+    if (typeof hasStudentServiceQaModule === 'function' && hasStudentServiceQaModule()) {
+        const impl = typeof resolveStudentServiceExportImpl === 'function'
+            ? resolveStudentServiceExportImpl('setStudentServiceAnswerFeedback')
+            : undefined;
+        if (typeof impl === 'function' && impl !== setStudentServiceAnswerFeedback) {
+            return impl.apply(null, arguments);
+        }
+        const w = window.setStudentServiceAnswerFeedback;
+        if (typeof w === 'function' && w !== setStudentServiceAnswerFeedback) return w.apply(null, arguments);
+    }
+    if (typeof ensureStudentServiceQaModule === 'function') ensureStudentServiceQaModule().catch(() => null);
+    return null;
 }
 
         const api = {
+            getStudentServiceOwnerResolutionCycleTarget,
+            getStudentServiceOwnerResolutionButtonPresentation,
+            applyStudentServiceOwnerResolutionButtonPresentation,
             updateStudentServiceOwnerResolutionButtons,
             renderStudentServiceOwnerResolutionButtonMarkup,
             renderStudentServiceQuestionHelpfulButtonMarkup,
             updateStudentServiceQuestionHelpfulButton,
             triggerStudentServiceHelpfulAnimation,
+            triggerStudentServiceOwnerResolutionAnimation,
             flashStudentServiceActionButton,
             setStudentServiceActionButtonPending,
             patchStudentServiceQuestionHelpfulUi,

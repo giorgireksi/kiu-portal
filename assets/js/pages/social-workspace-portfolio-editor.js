@@ -102,8 +102,6 @@
         const storageMissing = file.storageMissing === true;
         if (storageMissing) return preview;
         const storageKey = text(file.storageKey || file.id || '');
-        const storageMissing = file.storageMissing === true;
-        if (storageMissing) return preview;
         const backend = text(file.storageBackend).toLowerCase();
         if (storageKey && typeof window.getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !preview)) {
             return window.getPortalStoredFileUrl(storageKey, { inline: false, forDisplay: false });

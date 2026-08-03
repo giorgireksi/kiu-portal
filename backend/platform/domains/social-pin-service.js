@@ -7,6 +7,7 @@ const {
 } = require('../utils');
 
 const SOCIAL_PIN_MODULES = ['portfolio', 'research', 'event', 'survey', 'photo', 'lostFound'];
+const SOCIAL_PIN_API_VERSION = 1;
 
 function socialText(value) {
     return String(value || '').trim();
@@ -307,6 +308,7 @@ function sortByPinOrder(items = [], curatorIds = []) {
 }
 
 module.exports = {
+    SOCIAL_PIN_API_VERSION,
     SOCIAL_PIN_MODULES,
     canCuratorPinModuleEntity,
     createEmptyModuleCuratorPins,

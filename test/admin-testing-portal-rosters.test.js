@@ -93,6 +93,7 @@ describe('admin testing portal rosters', () => {
         const apiSource = readSource('assets/js/app/api.js');
         const authSource = readSource('assets/js/app/auth.js');
         const schedulerSource = readSource('assets/js/pages/admin-scheduler.js');
+        const messengerSource = readSource('assets/js/shared/messenger-gradebook-runtime.js');
 
         expect(apiSource).toContain('retainAdminTestingPersonas: currentUser?.role === USER_ROLES.ADMIN');
         expect(authSource).toContain('function syncAdminTestingPersonaRosters(accounts = [])');
@@ -100,5 +101,6 @@ describe('admin testing portal rosters', () => {
         expect(authSource).toMatch(/hydratePortalUsersFromAccounts[\s\S]*syncAdminTestingPersonaRosters/);
         expect(schedulerSource).toContain('function schedulerRosterDisplayName(person = {})');
         expect(schedulerSource).toContain('getAllStaff(\'professors\'');
+        expect(messengerSource).toContain('function syncGradebookRosterFromEnrollment(');
     });
 });

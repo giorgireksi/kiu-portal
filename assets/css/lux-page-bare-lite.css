@@ -1375,11 +1375,16 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   --sch-grid-time-pill-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.06));
   --sch-grid-time-pill-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, transparent);
 }
+body.lux-route-admin-scheduler #app-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
 #page-admin-scheduler .scheduler-wrap {
   display: grid;
-  grid-template-columns: minmax(320px, var(--sch-sidebar-width)) minmax(0, 1fr);
-  gap: var(--sch-shell-gap);
-  align-items: start;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
   min-height: calc(100vh - var(--lux-topbar-height, 64px) - 40px);
 }
 #page-admin-scheduler .sch-sidebar,
@@ -1388,29 +1393,36 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   contain: layout style paint;
 }
 #page-admin-scheduler .sch-sidebar {
-  position: sticky;
-  top: calc(var(--lux-topbar-height, 64px) + 18px);
+  position: static;
   display: grid;
-  gap: 10px;
-  align-content: start;
-  max-height: calc(100vh - var(--lux-topbar-height, 64px) - 36px);
-  overflow: auto;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: start;
+  max-height: none;
+  overflow: visible;
   padding: 0;
   margin: 0;
 }
 #page-admin-scheduler .sch-rail-hero.lux-hero {
-  padding: 12px;
-  border-radius: var(--sch-panel-radius);
+  align-self: start;
+  height: fit-content;
+  min-height: 0;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-panel-radius) - 4px);
 }
 #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
   margin-top: 0;
 }
 #page-admin-scheduler .sch-stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   min-height: 0;
-  padding: 8px 10px;
-  border-radius: var(--sch-card-radius);
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-card-radius) - 4px);
 }
 #page-admin-scheduler .sch-stat-label,
 #page-admin-scheduler .sch-palette-count-label {
@@ -1419,59 +1431,81 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   gap: 6px;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--lux-text-soft, var(--lux-text-muted));
 }
 #page-admin-scheduler .sch-stat-card strong {
   display: block;
-  margin-top: 4px;
+  margin-top: 0;
   font-family: 'DM Mono', monospace;
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   color: var(--lux-text);
+  flex: 0 0 auto;
 }
 #page-admin-scheduler .sch-stat-card > span:last-child {
-  display: block;
-  margin-top: 4px;
-  font-size: 11px;
-  line-height: 1.35;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--lux-text-muted);
+  display: none;
 }
 #page-admin-scheduler .sch-rail-section {
+  align-self: start;
   display: grid;
-  gap: 8px;
-  padding: 12px;
-  border-radius: calc(var(--sch-panel-radius) - 2px);
+  gap: 6px;
+  height: fit-content;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-panel-radius) - 4px);
   content-visibility: auto;
   contain: layout style paint;
-  contain-intrinsic-size: auto 320px;
+  contain-intrinsic-size: auto 120px;
+}
+#page-admin-scheduler .sch-rail-section.sch-palette-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto auto;
+  gap: 8px 16px;
+  align-items: center;
+  contain-intrinsic-size: auto 160px;
+}
+#page-admin-scheduler .sch-palette-section .sch-rail-section-title {
+  grid-column: 1;
+  grid-row: 1;
+}
+#page-admin-scheduler .sch-palette-section .sch-palette-meta {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  margin: 0;
+}
+#page-admin-scheduler .sch-palette-section .sch-search-shell {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+#page-admin-scheduler .sch-palette-section .sch-palette-list {
+  grid-column: 1 / -1;
+  grid-row: 3;
 }
 #page-admin-scheduler .sch-rail-section-title {
   margin-bottom: 0;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--lux-text-soft, var(--lux-text-muted));
 }
 #page-admin-scheduler .sch-control-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 10px;
 }
 #page-admin-scheduler .sch-control-group {
   display: grid;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
 }
 #page-admin-scheduler .sch-control-group > span {
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--lux-text-soft, var(--lux-text-muted));
 }
@@ -1480,27 +1514,15 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   display: block;
   min-width: 0;
 }
-#page-admin-scheduler .sch-control-grid .lux-control,
-#page-admin-scheduler .sch-control-grid .lux-picker-btn--compact :is(.lux-picker-value, strong) {
+#page-admin-scheduler .sch-control-grid .lux-control {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+#page-admin-scheduler .sch-control-grid .lux-picker-btn--compact {
+  width: 100%;
+  min-width: 0;
 }
 #page-admin-scheduler .sch-rail-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 14px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--lux-text-muted);
-}
-#page-admin-scheduler .sch-rail-note i {
-  margin-top: 1px;
-  color: var(--lux-accent-2, var(--lux-accent));
-  flex: 0 0 auto;
+  display: none;
 }
 #page-admin-scheduler .sch-search-shell {
   position: relative;
@@ -1541,24 +1563,32 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   color: var(--lux-text);
 }
 #page-admin-scheduler .sch-palette-list {
-  display: grid;
-  gap: 6px;
-  max-height: 620px;
-  overflow: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
   padding-right: 2px;
+  padding-bottom: 2px;
+  scroll-snap-type: x proximity;
 }
 #page-admin-scheduler .palette-card {
   position: relative;
   display: grid;
   gap: 2px;
-  padding: 8px 10px 8px 14px;
+  padding: 10px 12px 10px 16px;
   min-height: 0;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 200px;
+  max-width: 240px;
   text-align: left;
-  border-radius: var(--sch-card-radius);
+  border-radius: calc(var(--sch-card-radius) - 4px);
   cursor: pointer;
   transform: none;
   outline: none;
+  scroll-snap-align: start;
 }
 #page-admin-scheduler .palette-card::before {
   content: '';
@@ -1604,8 +1634,9 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
 #page-admin-scheduler .sch-main {
   display: grid;
   gap: 8px;
-  align-content: start;
+  align-content: stretch;
   min-width: 0;
+  min-height: 0;
 }
 :is(#page-admin-scheduler, #page-timetable) .sch-grid-wrap {
   display: grid;
@@ -1613,11 +1644,12 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   padding: 0;
   flex: none;
   overflow: visible;
+  min-height: 0;
 }
 :is(#page-admin-scheduler, #page-timetable) .sch-grid-shell {
   padding: 18px;
   overflow: hidden;
-  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 56px);
+  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 200px);
 }
 :is(#page-admin-scheduler, #page-timetable) .sch-grid-topline {
   display: flex;
@@ -1685,50 +1717,44 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   overflow-x: auto;
   padding-bottom: 6px;
 }
-:is(#page-admin-scheduler, #page-timetable) .sch-grid-root {
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-root {
   min-width: 1420px;
   contain: layout style paint;
 }
-:is(#page-admin-scheduler, #page-timetable) .sch-header-row {
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-container {
   display: grid;
-  grid-template-columns: 92px repeat(7, minmax(180px, 1fr));
+  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  align-items: stretch;
   border: 1px solid var(--sch-grid-border);
-  border-bottom: 0;
-  border-radius: 24px 24px 0 0;
+  border-radius: 24px;
   overflow: hidden;
-  position: static;
-  top: auto;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-time-col,
-:is(#page-admin-scheduler, #page-timetable) .sch-day-col {
-  min-height: 74px;
-  padding: 14px 14px 12px;
-  border-right: 1px solid var(--sch-grid-chrome-border);
+  min-width: 0;
   background: var(--sch-grid-chrome-bg);
 }
-:is(#page-admin-scheduler, #page-timetable) .sch-time-col {
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day {
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--lux-text-soft, var(--lux-text-muted));
-  width: auto;
-  flex-shrink: unset;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-lane-bg);
 }
-:is(#page-admin-scheduler, #page-timetable) .sch-time-col-copy {
-  font-family: 'DM Mono', monospace;
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day:last-child {
+  border-right: 0;
 }
-:is(#page-admin-scheduler, #page-timetable) .sch-day-col {
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day-head {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 4px;
+  min-height: 86px;
+  padding: 14px 12px 12px;
+  border-bottom: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-chrome-bg);
   text-align: center;
-  flex: unset;
-  width: auto;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day.is-today .sch-weeklist-day-head {
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 8%, var(--sch-grid-chrome-bg));
 }
 :is(#page-admin-scheduler, #page-timetable) .sch-day-col-label {
   font-size: 14px;
@@ -1739,75 +1765,37 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   font-size: 11px;
   color: var(--lux-text-muted);
 }
-:is(#page-admin-scheduler, #page-timetable) .sch-body {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  border: 1px solid var(--sch-grid-border);
-  border-top: 0;
-  border-radius: 0 0 24px 24px;
-  overflow: hidden;
-  min-width: 0;
-  position: relative;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-time-labels {
-  display: grid;
-  grid-auto-rows: var(--sch-slot-height);
-  background: var(--sch-grid-chrome-bg);
-  border-right: 1px solid var(--sch-grid-chrome-border);
-  width: auto;
-  flex-shrink: unset;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-time-slot {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 12px;
-  border-top: 1px solid var(--sch-grid-border);
-  height: auto;
-  position: static;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-time-slot:first-child {
-  border-top: 0;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-time-slot-copy {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.04em;
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day-count {
+  font-size: 10px;
   color: var(--lux-text-soft, var(--lux-text-muted));
-  background: var(--sch-grid-time-pill-bg);
-  border: 1px solid var(--sch-grid-time-pill-border);
-  border-radius: 999px;
-  padding: 4px 10px;
-  min-width: 48px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 180px;
+  padding: 12px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-item {
+  flex: 0 0 auto;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-empty {
+  display: grid;
+  min-height: 110px;
+  place-items: center;
+  padding: 16px 8px;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  font-size: 11px;
+  text-align: center;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-add {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  position: static;
-  right: auto;
-  top: auto;
-  font-weight: 600;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-day-lanes {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(180px, 1fr));
-  flex: unset;
-  min-width: 0;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-lane {
-  position: relative;
-  min-height: calc(var(--sch-slot-height) * var(--sch-slot-count, 11));
-  display: grid;
-  grid-template-rows: repeat(var(--sch-slot-count, 11), var(--sch-slot-height));
-  border-left: 1px solid var(--sch-grid-chrome-border);
-  background: var(--sch-grid-lane-bg);
-  contain: layout style paint;
-  flex: unset;
-}
-:is(#page-admin-scheduler, #page-timetable) .sch-slot-bg {
-  border-top: 1px solid var(--sch-grid-muted-border);
-  background: var(--sch-grid-lane-bg);
-  height: auto;
-  transition: background 0.18s ease, box-shadow 0.18s ease;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 5px 8px;
+  font-size: 10px;
 }
 
 body.lux-route-timetable #page-timetable .sch-grid-shell {
@@ -1815,13 +1803,27 @@ body.lux-route-timetable #page-timetable .sch-grid-shell {
   padding: 14px;
 }
 
+body.lux-route-timetable #page-timetable .sch-grid-shell .sch-weeklist-root {
+  margin-inline: -14px;
+}
+
 body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile {
   --sch-slot-height: 36px;
   padding: 10px;
 }
 
-body.lux-route-timetable #page-timetable .sch-grid-root {
-  min-width: min(1420px, 100%);
+body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile .sch-weeklist-root {
+  margin-inline: -10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-weeklist-root {
+  width: 100%;
+  min-width: 0;
+}
+
+body.lux-route-timetable #page-timetable .sch-weeklist-container {
+  width: 100%;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 body.lux-route-timetable #page-timetable .schedule-now-line {
@@ -1850,11 +1852,12 @@ body.lux-route-timetable #page-timetable .schedule-now-line span {
 :is(#page-admin-scheduler, #page-timetable) .sch-grid-empty {
   margin-top: 14px;
 }
-#page-admin-scheduler .sch-form-section {
+/* Shared scheduler form layout: page + body-mounted modals */
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-form-section {
   display: grid;
   gap: 12px;
 }
-#page-admin-scheduler .sch-form-section-head {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-form-section-head {
   display: grid;
   gap: 4px;
 }
@@ -1870,39 +1873,91 @@ body.lux-route-timetable #page-timetable .schedule-now-line span {
   line-height: 1.45;
   color: var(--lux-text-muted);
 }
-#page-admin-scheduler .sch-input-row {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row {
   display: grid;
   gap: 10px;
 }
-#page-admin-scheduler .sch-input-row-two {
+#schPresetManagerOverlay .sch-input-row {
+  gap: 12px;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-#page-admin-scheduler .sch-input-row-three {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-#page-admin-scheduler .sch-input-row-subject,
-#page-admin-scheduler .sch-input-row-capacity {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-#page-admin-scheduler .sch-input-row-single {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-single {
   grid-template-columns: minmax(0, 1fr);
 }
-#page-admin-scheduler .sch-input-group {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-single {
+  align-items: end;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-group {
   display: grid;
   gap: 8px;
   min-width: 0;
 }
-#page-admin-scheduler .sch-input-group > label {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-group > label {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--lux-text-muted);
+  letter-spacing: -0.01em;
+  text-transform: none;
 }
-#page-admin-scheduler .sch-input-label-spacer {
-  display: inline-block;
-  min-width: 108px;
-  min-height: 1px;
-  visibility: hidden;
-  pointer-events: none;
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-row label {
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject .sch-input-group > label,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two .sch-input-group > label {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .lux-picker-field {
+  display: block;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .lux-picker-btn {
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="time"],
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="number"],
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-readonly {
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="time"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  line-height: 1.2;
 }
 body.lux-route-admin-scheduler .sch-modal-overlay {
   z-index: 2400;
@@ -1910,7 +1965,7 @@ body.lux-route-admin-scheduler .sch-modal-overlay {
 body.lux-route-admin-scheduler #schPresetManagerOverlay.sch-modal-overlay {
   z-index: 2500;
 }
-body.lux-route-admin-scheduler .sch-modal {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) > .sch-modal {
   width: min(760px, 100%);
   max-height: min(90vh, 1100px);
   overflow: hidden;
@@ -1924,8 +1979,8 @@ body.lux-route-admin-scheduler .sch-modal-wide {
 body.lux-route-admin-scheduler .sch-modal-narrow {
   width: min(520px, 100%);
 }
-body.lux-route-admin-scheduler .sch-modal-head,
-body.lux-route-admin-scheduler .sch-modal-foot {
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-head,
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1933,7 +1988,7 @@ body.lux-route-admin-scheduler .sch-modal-foot {
   padding: 20px 24px;
   flex: 0 0 auto;
 }
-body.lux-route-admin-scheduler .sch-modal-head {
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-head {
   border-bottom: 1px solid var(--sch-grid-border, var(--lux-border));
 }
 body.lux-route-admin-scheduler .quiz-modal-title {
@@ -1946,14 +2001,12 @@ body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverl
   font-size: 28px;
   line-height: 1.08;
 }
-body.lux-route-admin-scheduler .sch-modal-subtitle,
-body.lux-route-admin-scheduler .quiz-modal-subtitle,
-body.lux-route-admin-scheduler .sch-modal-week {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.sch-modal-subtitle, .quiz-modal-subtitle, .sch-modal-week) {
   margin-top: 6px;
   font-size: 12px;
   line-height: 1.5;
 }
-body.lux-route-admin-scheduler .sch-modal-mode-chip {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-mode-chip {
   display: inline-flex;
   align-items: center;
   padding: 6px 10px;
@@ -1964,13 +2017,20 @@ body.lux-route-admin-scheduler .sch-modal-mode-chip {
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-body.lux-route-admin-scheduler .quiz-modal-close,
-body.lux-route-admin-scheduler .sch-modal-close-muted {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.quiz-modal-close, .sch-modal-close-muted) {
   font-size: 18px;
   cursor: pointer;
   flex: 0 0 auto;
 }
-body.lux-route-admin-scheduler .sch-modal-body {
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+  padding: 14px 18px;
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-body {
   overflow: auto;
   padding: 20px 24px 24px;
   display: grid;
@@ -1985,7 +2045,7 @@ body.lux-route-admin-scheduler #profQuizModalOverlay.is-open .sch-modal-body {
 body.lux-route-admin-scheduler .sch-modal-body-pad {
   padding-top: 24px;
 }
-body.lux-route-admin-scheduler .sch-modal-foot {
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-foot {
   border-top: 1px solid var(--sch-grid-border, var(--lux-border));
 }
 body.lux-route-admin-scheduler .sch-modal-foot-between {
@@ -1999,46 +2059,6 @@ body.lux-route-admin-scheduler #profQuizModalOverlay .sch-form-section:not(.home
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-form-section-head {
-  display: grid;
-  gap: 4px;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-row-subject,
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-row-two,
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-row-three,
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-row-capacity,
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-row-single {
-  align-items: end;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-label-row {
-  min-height: 20px;
-  margin-bottom: 8px;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-label-row label {
-  margin-bottom: 0;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] .lux-picker-field {
-  display: block;
-  position: relative;
-  overflow: visible;
-  width: 100%;
-  min-width: 0;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] .lux-picker-btn {
-  width: 100%;
-  min-width: 0;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] input[type="time"],
-body.lux-route-admin-scheduler [id="schModalOverlay"] input[type="number"],
-body.lux-route-admin-scheduler [id="schModalOverlay"] .sch-input-readonly {
-  width: 100%;
-  min-width: 0;
-}
-body.lux-route-admin-scheduler [id="schModalOverlay"] input[type="time"] {
-  appearance: auto;
-  -webkit-appearance: auto;
-  line-height: 1.2;
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list-shell {
   max-height: min(52vh, 480px);
@@ -2094,19 +2114,15 @@ body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-b
   min-height: 44px;
   white-space: nowrap;
 }
-body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input,
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search {
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border-radius: 14px;
   outline: none;
 }
-#page-admin-scheduler .sch-input-label-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input {
+  width: 100%;
+  min-width: 0;
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list {
   display: grid;
@@ -2129,7 +2145,7 @@ body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-r
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-search-shell .sch-preset-manage-search {
   padding-left: 40px;
 }
-#page-admin-scheduler .sch-preset-manage-link {
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-preset-manage-link {
   padding: 4px 8px;
   font-size: 11px;
   white-space: nowrap;
@@ -2165,20 +2181,42 @@ body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-search-shell .sch-p
 @media (max-width: 1100px) {
   #page-admin-scheduler .scheduler-wrap {
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
   }
-  #page-admin-scheduler .sch-sidebar,
+  #page-admin-scheduler .sch-sidebar {
+    grid-template-columns: 1fr;
+    max-height: none;
+    min-height: 0;
+  }
   #page-admin-scheduler .sch-main {
     max-height: none;
     min-height: 0;
   }
 }
+@media (max-width: 900px) {
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-root {
+    min-width: 0;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #page-admin-scheduler .sch-control-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
 @media (max-width: 720px) {
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-container {
+    grid-template-columns: 1fr;
+  }
   #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid,
   #page-admin-scheduler .sch-control-grid,
-  #page-admin-scheduler .sch-input-row-two,
-  #page-admin-scheduler .sch-input-row-three,
-  #page-admin-scheduler .sch-input-row-subject,
-  #page-admin-scheduler .sch-input-row-capacity {
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity {
     grid-template-columns: 1fr;
   }
 }
@@ -3191,19 +3229,19 @@ body.lux-route-lms .lms-group-live-strip.is-live {
     background: rgba(var(--lux-accent-rgb), 0.1);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .lms-route-panel {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .lms-route-panel {
     display: grid;
     gap: 14px;
     padding: clamp(16px, 2vw, 20px);
     border-radius: 22px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .lms-route-panel-compact {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .lms-route-panel-compact {
     padding: 16px;
     border-radius: 18px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .lms-route-panel-pad-16-20 {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .lms-route-panel-pad-16-20 {
     padding: 16px 20px;
 }
 
@@ -4584,10 +4622,11 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-score-edit-optional {
     color: var(--lux-text-muted);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #gradebook-score-edit-modal,
     #gradebook-comment-modal,
-    #gradebook-category-history-modal
+    #gradebook-category-history-modal,
+    #student-evaluation-history-modal
 ) .lux-glass-dialog-card {
     min-width: 0;
 }
@@ -4597,25 +4636,25 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
     display: none !important;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-shell {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-shell {
     width: min(720px, calc(100vw - 32px));
     max-height: min(88vh, 820px);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-body {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-body {
     display: grid;
     gap: 12px;
     overflow: auto;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-card {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-card {
     display: grid;
     gap: 10px;
     padding: 14px 16px;
     border-radius: 16px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-card-head {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-card-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -4623,20 +4662,20 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-histor
     flex-wrap: wrap;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-card-head > div:first-child {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-card-head > div:first-child {
     display: grid;
     gap: 4px;
     min-width: 0;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-score {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-score {
     display: grid;
     justify-items: end;
     gap: 6px;
     text-align: right;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-comment {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-comment {
     display: flex;
     gap: 12px;
     align-items: flex-start;
@@ -4644,12 +4683,12 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-histor
     border-radius: 14px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-comment > i {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-comment > i {
     margin-top: 2px;
     color: rgb(var(--lux-accent-rgb));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-category-history-empty.lux-empty-state {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-empty.lux-empty-state {
     display: grid;
     gap: 8px;
     justify-items: center;
@@ -4657,28 +4696,31 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-histor
     text-align: center;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #gradebook-category-history-modal .gb-score-history-panel.is-compact {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
+    #gradebook-category-history-modal,
+    #student-evaluation-history-modal
+) .gb-score-history-panel.is-compact {
     margin-top: 2px;
 }
 
 /* Evaluation history / full grader modal (layout only — shell → lux-modals). */
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-shell {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-shell {
     width: min(1120px, 100%);
     max-height: 92vh;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-shell .lux-glass-dialog-body.gb-modal-body {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-shell .lux-glass-dialog-body.gb-modal-body {
     display: grid;
     gap: 16px;
     max-height: calc(100vh - 220px);
     overflow: auto;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-shell .lux-glass-dialog-head {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-shell .lux-glass-dialog-head {
     align-items: center;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-score {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-score {
     display: grid;
     place-items: center;
     gap: 4px;
@@ -4689,17 +4731,17 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-score {
     text-align: center;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-score-value {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-score-value {
     line-height: 1;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-grid {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) button.gb-modal-category-card {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) button.gb-modal-category-card {
     display: grid;
     grid-template-rows: auto auto minmax(34px, auto);
     gap: 10px;
@@ -4716,13 +4758,13 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) button.gb-modal-category-c
     min-width: 0;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-card.is-active,
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-card:hover {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-card.is-active,
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-card:hover {
     border-color: rgba(var(--lux-accent-rgb), 0.42);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-top,
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-body {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-top,
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-body {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -4730,68 +4772,68 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-body {
     min-width: 0;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-body {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-body {
     align-items: center;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-stats {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-stats {
     display: grid;
     justify-items: end;
     gap: 4px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-card > .gb-modal-category-footnote {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-card > .gb-modal-category-footnote {
     display: none;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-score {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-score {
     font-size: clamp(1.5rem, 3vw, 1.875rem);
     font-weight: 800;
     line-height: 1;
     color: var(--lux-text);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-latest {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-latest {
     min-width: 0;
     padding-top: 10px;
     border-top: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-category-latest span {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-latest span {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(.gb-staff-create-panel, .gb-modal-history-grid, .gb-modal-section-body) {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(.gb-staff-create-panel, .gb-modal-history-grid, .gb-modal-section-body) {
     display: grid;
     gap: 14px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-create-card {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-staff-create-card {
     display: grid;
     gap: 14px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-create-form {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-staff-create-form {
     display: grid;
     grid-template-columns: minmax(160px, 0.4fr) minmax(220px, 1fr) auto;
     gap: 10px;
     align-items: end;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-create-field {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-staff-create-field {
     display: grid;
     gap: 6px;
     min-width: 0;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-create-field--grow {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-staff-create-field--grow {
     min-width: 0;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-section-head {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-section-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -4799,7 +4841,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-section-head {
     flex-wrap: wrap;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(.gb-modal-section-actions, .gb-modal-history-actions) {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(.gb-modal-section-actions, .gb-modal-history-actions) {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -4807,7 +4849,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(.gb-modal-section-acti
     align-items: center;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-card {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-card {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(96px, auto);
     gap: 14px;
@@ -4818,22 +4860,22 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-card {
     border-left-color: rgba(148, 163, 184, 0.5);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-card.is-pending {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-card.is-pending {
     border-left-color: #f59e0b;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-card.is-graded {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-card.is-graded {
     border-left-color: #22c55e;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-main {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-main {
     display: grid;
     grid-template-columns: 38px minmax(0, 1fr);
     gap: 12px;
     grid-column: 1 / -1;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-icon {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-icon {
     width: 38px;
     height: 38px;
     display: grid;
@@ -4843,14 +4885,14 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-icon {
     border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-title {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-title {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-kind {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-kind {
     width: max-content;
     margin-top: 6px;
     padding: 4px 8px;
@@ -4858,30 +4900,30 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-kind {
     border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-score {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-score {
     display: grid;
     gap: 4px;
     justify-items: end;
     text-align: right;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-score-value {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-score-value {
     font-size: 1.35rem;
     font-weight: 800;
     line-height: 1;
     color: var(--lux-text);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-actions {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-actions {
     grid-column: 1 / -1;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-score-input.lux-control {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-score-input.lux-control {
     width: 100%;
     max-width: 120px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-empty {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-empty {
     display: grid;
     gap: 8px;
     justify-items: center;
@@ -4889,12 +4931,12 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-empty {
     text-align: center;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-empty i {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-empty i {
     font-size: 1.25rem;
     color: var(--lux-text-muted);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-history-modal :is(
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal :is(
     .lux-soft-chrome,
     .lms-route-panel
 ) {
@@ -4905,11 +4947,11 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-histor
     min-width: 0;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-history-modal .gb-modal-shell .lux-glass-dialog-body.gb-modal-body {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modal-shell .lux-glass-dialog-body.gb-modal-body {
     min-width: 0;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-history-modal .gb-modal-category-grid.is-filtered {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modal-category-grid.is-filtered {
     display: flex;
     flex-wrap: nowrap;
     gap: 12px;
@@ -4919,19 +4961,19 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-histor
     margin-bottom: 16px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-history-modal .gb-modal-category-grid.is-filtered .gb-modal-category-card {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modal-category-grid.is-filtered .gb-modal-category-card {
     flex: 0 0 min(260px, 78vw);
     min-height: 120px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-history-modal .gb-modal-category-card.is-active {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modal-category-card.is-active {
     border-color: rgba(var(--lux-accent-rgb), 0.52);
     box-shadow:
         inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.18),
         var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) #student-evaluation-history-modal .gb-modern-card-head .lms-route-copy {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modern-card-head .lms-route-copy {
     margin: 0;
 }
 
@@ -5014,27 +5056,27 @@ body.lux-route-lms #lms-quiz-board-modal .lms-quiz-card-stat.is-alert {
 }
 
 @media (max-width: 900px) {
-    body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-create-form,
-    body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-create-grid {
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-staff-create-form,
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-staff-create-grid {
         grid-template-columns: 1fr;
     }
 
-    body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-card {
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-card {
         grid-template-columns: 1fr;
     }
 
-    body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-history-score {
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-history-score {
         justify-items: start;
         text-align: left;
     }
 }
 
 @media (max-width: 720px) {
-    body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-shell .lux-glass-dialog-head {
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-shell .lux-glass-dialog-head {
         flex-wrap: wrap;
     }
 
-    body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-modal-score {
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-score {
         order: 3;
         width: 100%;
         min-width: 0;
@@ -5230,25 +5272,25 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     background: linear-gradient(180deg, rgba(245, 158, 11, 0.14), rgba(245, 158, 11, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-missing {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-missing {
     border-color: rgba(148, 163, 184, 0.28);
     color: #cbd5e1;
     background: linear-gradient(180deg, rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-graded {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-graded {
     border-color: rgba(16, 185, 129, 0.28);
     color: #9bf3c8;
     background: linear-gradient(180deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-pending {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-status-badge.lux-status-pill.is-pending {
     border-color: rgba(245, 158, 11, 0.28);
     color: #fde68a;
     background: linear-gradient(180deg, rgba(245, 158, 11, 0.14), rgba(245, 158, 11, 0.06)), var(--lux-soft-chrome-control, color-mix(in srgb, var(--lux-panel-fill, rgba(255, 255, 255, 0.08)) 72%, transparent));
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5259,7 +5301,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #047857;
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5270,7 +5312,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #1d4ed8;
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5278,7 +5320,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     #gradebook-comment-modal,
     #gradebook-category-history-modal
 ) .gb-letter-badge.grade-c,
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5289,7 +5331,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #b45309;
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5300,7 +5342,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #6d28d9;
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5311,7 +5353,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #b91c1c;
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5322,7 +5364,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #475569;
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5333,7 +5375,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #047857;
 }
 
-:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(
+:is(html.lux-light-mode, body.lux-light-mode) body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
     #lms-gradebook-wrapper,
     #faculty-master-container,
     #student-evaluation-history-modal,
@@ -5344,34 +5386,34 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     color: #b45309;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-scoreline {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-score-history-scoreline {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-scoreline strong {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-score-history-scoreline strong {
     font-size: 15px;
     font-weight: 800;
     line-height: 1.2;
     color: var(--lux-text);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-meta {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-score-history-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 12px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-meta .lms-route-meta-12 {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-score-history-meta .lms-route-meta-12 {
     font-size: 12px;
     font-weight: 600;
     line-height: 1.45;
     color: var(--lux-text-muted);
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) :is(
     button.gb-score-history-toggle.lms-route-copy,
     button.gb-score-history-toggle.lux-panel-copy
 ) {
@@ -5387,7 +5429,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-roster-id,
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-roster-assessment,
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-roster-score,
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-count {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-score-history-count {
     font-size: 12px;
     font-weight: 600;
     line-height: 1.45;
@@ -5515,17 +5557,17 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     }
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-panel {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-score-history-panel {
     display: grid;
     gap: 10px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) .gb-score-history-list {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) .gb-score-history-list {
     display: grid;
     gap: 8px;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(button, div).gb-score-history-row {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) :is(button, div).gb-score-history-row {
     display: grid;
     gap: 4px;
     width: 100%;
@@ -5537,15 +5579,15 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     text-align: left;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(button, div).gb-score-history-row:not(.lux-soft-chrome) {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) :is(button, div).gb-score-history-row:not(.lux-soft-chrome) {
     border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) button.gb-score-history-row {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) button.gb-score-history-row {
     cursor: pointer;
 }
 
-body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container, #gradebook-category-history-modal) :is(button, div).gb-score-history-row.is-current:not(.lux-soft-chrome) {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal) :is(button, div).gb-score-history-row.is-current:not(.lux-soft-chrome) {
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.14);
 }
@@ -11138,6 +11180,11 @@ body.lux-route-timetable .lux-timetable-page {
     padding: 12px 0 84px;
 }
 
+body.lux-route-timetable #app-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
 body.lux-route-timetable .lux-timetable-hero.page-hero {
     padding: 20px 22px 16px;
     min-height: 0;
@@ -11211,7 +11258,7 @@ body.lux-route-timetable .lux-timetable-page :is(
 }
 
 body.lux-route-timetable .lux-timetable-stage {
-    padding: 20px 22px;
+    padding: 20px 0;
     overflow: visible;
 }
 
@@ -13758,6 +13805,165 @@ body.lux-route-student-service #student-service-modal-root .student-service-qa-d
 body.lux-route-student-service #student-service-modal-root .student-service-qa-detail--modal .student-service-qa-detail-actions .lux-secondary-btn {
     flex: 0 0 auto;
     white-space: nowrap;
+}
+
+body.lux-route-student-service .student-service-qa-owner-resolution-btn:not(.is-active) {
+    color: var(--lux-text-muted);
+    border-color: color-mix(in srgb, var(--lux-text-muted) 28%, transparent);
+}
+
+body.lux-route-student-service .student-service-qa-owner-resolution-cycle-btn {
+    min-width: 11.5rem;
+}
+
+body.lux-route-student-service .student-service-qa-owner-resolution-cycle-btn .student-service-qa-owner-resolution-label {
+    min-width: 8.5rem;
+    text-align: left;
+}
+
+body.lux-route-student-service .student-service-qa-owner-resolution-btn.is-active.lux-primary-btn {
+    border-color: color-mix(in srgb, var(--lux-panel-cta-primary, var(--lux-accent, #7c6cff)) 55%, transparent);
+    box-shadow: var(--lux-elev-2, 0 0 0 1px color-mix(in srgb, var(--lux-accent-rgb, 124 108 255) 35%, transparent));
+}
+
+@keyframes student-service-owner-resolution-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: none;
+    }
+    40% {
+        transform: scale(1.04);
+        box-shadow:
+            0 0 0 2px color-mix(in srgb, rgb(var(--lux-accent-rgb, 124 108 255)) 45%, transparent),
+            var(--lux-elev-2, 0 4px 14px color-mix(in srgb, rgb(var(--lux-accent-rgb, 124 108 255)) 22%, transparent));
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: var(--lux-elev-2, none);
+    }
+}
+
+body.lux-route-student-service .student-service-qa-owner-resolution-btn.is-owner-resolving {
+    animation: student-service-owner-resolution-pulse 520ms ease;
+}
+
+body.lux-route-student-service .student-service-qa-owner-resolution-btn.is-owner-resolving i {
+    animation: student-service-owner-resolution-icon-pulse 520ms ease;
+}
+
+@keyframes student-service-owner-resolution-icon-pulse {
+    0%, 100% { opacity: 1; }
+    40% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.lux-route-student-service .student-service-qa-owner-resolution-btn.is-owner-resolving {
+        animation: none;
+    }
+    body.lux-route-student-service .student-service-qa-owner-resolution-btn.is-owner-resolving i {
+        animation: none;
+    }
+}
+
+/* Chip burst on thread-modal buttons (same particles as Studio lux-mode-btn) */
+body.lux-route-student-service #student-service-modal-root .student-service-qa-thread-modal button {
+    position: relative;
+}
+body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle {
+    position: fixed;
+    width: var(--burst-size, 5px);
+    height: var(--burst-size, 5px);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--lux-accent) 85%, #fff 15%);
+    pointer-events: none;
+    z-index: 2100;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    animation: lux-chip-particle-out 0.72s var(--lux-studio-chip-ease-out, cubic-bezier(0.16, 1, 0.3, 1)) var(--burst-delay, 0ms) forwards;
+}
+body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--sm {
+    --burst-size: 3px;
+}
+body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--md {
+    --burst-size: 5px;
+}
+body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--lg {
+    --burst-size: 7px;
+}
+body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--spark {
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--lux-accent) 70%, #fff 30%);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--lux-accent) 55%, transparent);
+    animation-name: lux-chip-particle-spark;
+}
+body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle--streak {
+    width: 2px;
+    height: 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--lux-accent) 75%, #fff 25%);
+    box-shadow: 0 0 5px color-mix(in srgb, var(--lux-accent) 45%, transparent);
+    animation-name: lux-chip-particle-streak;
+}
+@keyframes lux-chip-particle-out {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.45);
+    }
+    16% {
+        opacity: 0.95;
+        transform: translate(
+                calc(-50% + var(--burst-tx, 0px) * 0.18),
+                calc(-50% + var(--burst-ty, 0px) * 0.18)
+            )
+            scale(1.05);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px))) scale(0.4);
+    }
+}
+@keyframes lux-chip-particle-spark {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(45deg) scale(0.35);
+    }
+    16% {
+        opacity: 1;
+        transform: translate(
+                calc(-50% + var(--burst-tx, 0px) * 0.2),
+                calc(-50% + var(--burst-ty, 0px) * 0.2)
+            )
+            rotate(45deg) scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px)))
+            rotate(45deg) scale(0.35);
+    }
+}
+@keyframes lux-chip-particle-streak {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--burst-rot, 0deg)) scaleY(0.4);
+    }
+    18% {
+        opacity: 0.95;
+        transform: translate(
+                calc(-50% + var(--burst-tx, 0px) * 0.2),
+                calc(-50% + var(--burst-ty, 0px) * 0.2)
+            )
+            rotate(var(--burst-rot, 0deg)) scaleY(1.15);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px)))
+            rotate(var(--burst-rot, 0deg)) scaleY(0.5);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.lux-route-student-service #student-service-modal-root > .lux-chip-burst-particle {
+        animation: none !important;
+    }
 }
 
 body.lux-route-student-service #student-service-modal-root .student-service-qa-detail-body {
@@ -21695,6 +21901,8 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-list
   max-height: 420px;
   overflow: auto;
   padding: 14px;
+  align-content: start;
+  grid-auto-rows: max-content;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .admin-orders-create-modal .orders-recipient-list-shell {
   display: grid;
@@ -22214,6 +22422,74 @@ body.lux-route-social [class*="-hub-section"] {
 body.lux-route-social .social-neo-events-hero.is-merged {
   gap: 8px;
   overflow: visible;
+}
+
+body.lux-route-social .social-neo-surveys-hero.is-merged,
+body.lux-route-social .social-neo-lost-found-hero.is-merged {
+  gap: 8px;
+  overflow: visible;
+}
+
+body.lux-route-social .social-neo-surveys-hero.is-merged .social-neo-survey-listings,
+body.lux-route-social .social-neo-lost-found-hero.is-merged .social-neo-lf-listings {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+body.lux-route-social .social-neo-survey-listings {
+  display: grid;
+  gap: var(--social-gap-tight, 12px);
+}
+
+body.lux-route-social .social-pin-section {
+  display: grid;
+  gap: var(--social-gap-tight, 12px);
+}
+
+body.lux-route-social .social-pin-section-title {
+  margin: 0;
+}
+
+body.lux-route-social .social-pin-section-list {
+  display: grid;
+  gap: var(--social-gap-tight, 12px);
+}
+
+body.lux-route-social .social-neo-research-catalog .social-pin-section-list {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+body.lux-route-social .social-photo-content-stage:has(.social-pin-section) {
+  display: grid;
+  gap: var(--social-gap, 14px);
+}
+
+body.lux-route-social .social-portfolio-feed .social-pin-section-list {
+  gap: 8px;
+}
+
+body.lux-route-social .social-module-pin-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.lux-route-social .social-module-pin-btn {
+  min-width: 2rem;
+}
+
+body.lux-route-social .social-neo-pin-api-warning {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--lux-danger, #e35d6a) 42%, var(--social-chip-border, var(--lux-border)));
+  background: color-mix(in srgb, var(--lux-danger, #e35d6a) 12%, var(--lux-panel-fill, rgba(12, 18, 28, 0.82)));
+  color: var(--lux-text);
+  font-size: 0.92rem;
+  line-height: 1.45;
 }
 
 body.lux-route-social #app-content {
@@ -22933,13 +23209,31 @@ body.lux-route-social .social-neo-research-grid {
   gap: 12px;
 }
 body.lux-route-social .social-neo-research-card {
-  display: grid;
   gap: 8px;
-  padding: 14px 16px;
-  text-align: left;
   cursor: pointer;
   color: inherit;
   width: 100%;
+}
+body.lux-route-social .social-neo-research-card-open {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+body.lux-route-social .social-neo-research-card-open:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--lux-accent, #7c6cff) 28%, transparent);
 }
 body.lux-route-social .social-neo-research-card-top {
   display: flex;
@@ -28544,6 +28838,77 @@ body.lux-route-social .social-neo-toast {
   padding: 12px 14px;
   border-radius: 14px;
   pointer-events: auto;
+}
+
+.portal-live-alert-region {
+  position: fixed;
+  right: clamp(12px, 2vw, 24px);
+  bottom: clamp(12px, 2vw, 24px);
+  z-index: 120;
+  pointer-events: none;
+}
+
+.portal-live-alert-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.portal-live-alert {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  min-width: 280px;
+  max-width: 420px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  pointer-events: auto;
+  background: var(--lux-panel-bg, rgba(18, 22, 30, 0.92));
+  border: 1px solid var(--lux-panel-border, rgba(255, 255, 255, 0.12));
+  box-shadow: var(--lux-panel-shadow, 0 18px 40px rgba(0, 0, 0, 0.28));
+  backdrop-filter: blur(var(--lux-panel-blur, 16px));
+  color: var(--lux-panel-fg, inherit);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.portal-live-alert.is-dismissing {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.portal-live-alert__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--sn-accent, #c8822a);
+}
+
+.portal-live-alert__content {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.portal-live-alert__title {
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.portal-live-alert__text {
+  font-size: 0.85rem;
+  line-height: 1.35;
+  opacity: 0.82;
+}
+
+.portal-live-alert__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
 }
 
 /* Social: workspace project layout */
@@ -41329,6 +41694,13 @@ body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card-head {
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
+    overflow: visible;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-scheme-progress-section.is-study-card-overlay {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
 }
 
 body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card-head h3 {
@@ -41446,7 +41818,7 @@ body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row {
         "track track track";
     gap: 8px 12px;
     width: 100%;
-    padding: 12px 14px;
+    padding: 12px 16px;
     border-radius: 16px;
     border: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-border));
     background: transparent;
@@ -41506,6 +41878,7 @@ body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-score-badge.i
 body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row-chevron {
     grid-area: chevron;
     align-self: center;
+    flex-shrink: 0;
     color: var(--lux-text-muted);
 }
 
@@ -41563,6 +41936,34 @@ body.lux-route-study-card #student-evaluation-history-modal.gb-modal-overlay {
     align-items: center;
     justify-content: center;
     padding: 24px;
+}
+
+body.lux-route-study-card #gradebook-category-history-modal.gb-category-history-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 7500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-card.lux-soft-chrome {
+    overflow: visible;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal :is(
+    .gb-modal-history-card.lux-soft-chrome,
+    .gb-modal-category-card.lux-soft-chrome
+) {
+    overflow: visible;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) :is(
+    #gradebook-category-history-modal,
+    #student-evaluation-history-modal
+) :is(button, div).gb-score-history-row {
+    padding: 12px 14px;
 }
 
 /* Study card route: shared typography (layout above; surfaces → lux-fouc-ht). */

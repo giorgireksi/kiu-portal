@@ -43,4 +43,14 @@ describe('gradebook delegation regressions', () => {
         expect(source).not.toContain('onchange=');
         expect(source).not.toContain('oninput=');
     });
+
+    it('lazy-loads quiz review runtime before opening linked quiz papers', () => {
+        const workspace = readSource('assets/js/pages/gradebook-workspace.js');
+
+        expect(workspace).toContain('ensureGradebookLinkedQuizRuntime');
+        expect(workspace).toContain('GRADEBOOK_LINKED_QUIZ_MODULE_URLS');
+        expect(workspace).toContain('lms-quiz-workspace-session-runtime.js');
+        expect(workspace).toContain('openStudentQuizPaperFromHistoryDeferred');
+        expect(workspace).not.toContain('Student quiz paper history is not ready yet.');
+    });
 });

@@ -37,7 +37,8 @@
             text, state, root,
             PROJECT_TASK_GRAPH_STACKED_DIALOGS,
             PROJECT_HEALTH_OVERLAY_DIALOGS,
-            workspaceDialogKeepsCenter: typeof window.workspaceDialogKeepsCenter === 'function' ? window.workspaceDialogKeepsCenter : () => false,
+            workspaceDialogKeepsCenter: typeof window.workspaceDialogKeepsCenter === 'function' ? window.workspaceDialogKeepsCenter : workspaceDialogKeepsCenter,
+            overlayDialogPreservesScroll: typeof window.overlayDialogPreservesScroll === 'function' ? window.overlayDialogPreservesScroll : overlayDialogPreservesScroll,
             isProjectTaskGraphStackActive: typeof window.isProjectTaskGraphStackActive === 'function' ? window.isProjectTaskGraphStackActive : () => false,
             getProjectTaskGraphStackAnchorDialog: typeof window.getProjectTaskGraphStackAnchorDialog === 'function' ? window.getProjectTaskGraphStackAnchorDialog : () => null,
             renderDialogOnlyNow,
@@ -145,10 +146,10 @@
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260801-socialfaculty3';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
     const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260802-modulepins1';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260802-modulepins1';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260802-pincss1';
     const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260802-modulepins1';
     const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260801-researchviewer12';
-    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260802-modulepins1';
+    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260802-pincss1';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260728-socworkspace2';
@@ -179,8 +180,8 @@
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260726-socstack50';
     const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260728-socworkspace1';
     const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260802-portfolio-viewer1';
-    const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer2';
-    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260802-portfolio-viewer2';
+    const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer3';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260802-pincss1';
     const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260801-socialfaculty3';
     const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260802-portfolio-viewer1';
     const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260802-portfolio-viewer1';
@@ -319,6 +320,12 @@
         'project-risk',
         'project-health',
         'project-health-plan-pick'
+    ]);
+    const OVERLAY_DIALOG_PRESERVE_SCROLL = new Set([
+        'post-comments',
+        'photography-comments',
+        'comment-delete',
+        'comment-report'
     ]);
 
     const socialEventBinding = { bound: false, boundHost: null, hostEventAbort: null };
@@ -645,6 +652,9 @@
     }
     function workspaceDialogKeepsCenter(type = '') {
         return WORKSPACE_DIALOG_KEEP_CENTER.has(text(type || ''));
+    }
+    function overlayDialogPreservesScroll(type = '') {
+        return OVERLAY_DIALOG_PRESERVE_SCROLL.has(text(type || ''));
     }
     function currentUserId() {
         return text(currentUser()?.id);
@@ -1413,7 +1423,8 @@
         window.__kiuSocialRenderPlanHooks = {
             text,
             activeDialog,
-            WORKSPACE_DIALOG_KEEP_CENTER
+            WORKSPACE_DIALOG_KEEP_CENTER,
+            OVERLAY_DIALOG_PRESERVE_SCROLL
         };
         const impl = window.__kiuResolveSocialRenderPlan;
         if (typeof impl === 'function') return impl(reason, activePanel, runtime);
@@ -1864,7 +1875,7 @@
         applyShellIdentity, ensureSocialRouteHost, guardStandaloneSocialRoute,
         patchPostReactions, patchCommentReactionsByIds, patchEventRsvpButtons,
         bindPhotographyUploadDialogFileInput, openPhotographyUploadFilePicker, bindPhotographyUploadFileSinkChange,
-        renderPhotographyUploadDialogNow, renderDialogOnlyNow, workspaceDialogKeepsCenter,
+        renderPhotographyUploadDialogNow, renderDialogOnlyNow, workspaceDialogKeepsCenter, overlayDialogPreservesScroll,
         activeChats, activeChat, activeMessages, groupForChat, resolveProjectWorkspaceChat, ensureProjectWorkspaceChat,
         renderLinkedMessageText, scheduleDeferredDesktopModulePrefetch, scheduleDirectoryPrefetch,
         resolveSocialRenderPlan, saveLostFoundItems, socialHub, savedItems, savedPostRecords,

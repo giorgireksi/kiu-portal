@@ -10,9 +10,25 @@ describe('popup panel unification', () => {
     it('routes shell popovers through panel SSOT', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         const droplist = readSource('assets/css/lux-droplist.css');
+        const chrome = readSource('assets/js/features/luxury-shell-chrome.js');
 
         expect(fouc).toMatch(/\.lux-utility-panel\s*\{[\s\S]*?var\(--lux-panel-surface\)/);
         expect(fouc).toMatch(/\.lux-user-menu\s*\{[\s\S]*?var\(--lux-panel-surface\)/);
+        expect(fouc).toMatch(/\.lux-utility-head\s*\{[\s\S]*?display:\s*flex/);
+        expect(fouc).toMatch(/\.lux-utility-item\s*\{[\s\S]*?var\(--lux-soft-chrome-surface\)[\s\S]*?contain:\s*none/);
+        expect(fouc).toMatch(
+            /\.lux-utility-list\s*\{[\s\S]*?align-content:\s*start[\s\S]*?grid-auto-rows:\s*max-content/
+        );
+        expect(fouc).toMatch(
+            /\.lux-utility-panel :is\(\.lux-utility-item\.home-hover-chip, \.lux-utility-empty\.home-hover-chip\)[\s\S]*?contain:\s*none/
+        );
+        expect(chrome).toContain('lux-utility-item lux-soft-chrome home-hover-chip');
+        expect(chrome).toContain('lux-utility-category-filters');
+        expect(chrome).toContain('data-utility-alerts-filter');
+        expect(chrome).toContain('ensureUtilityAlertsModel');
+        expect(fouc).toMatch(/\.lux-utility-panel \.lux-utility-category-filters\.lux-tab-strip--segmented[\s\S]*?grid-template-columns:\s*repeat\(3/);
+        expect(chrome).toMatch(/isLuxUtilityInteractionTarget\(target\)[\s\S]*?closeUtilityPanels/);
+        expect(chrome).toContain('event.stopPropagation()');
         expect(droplist).toMatch(/\.lux-picker-panel\.lux-universal-picker-panel\.lux-droplist-panel[\s\S]*?backdrop-filter/);
     });
 

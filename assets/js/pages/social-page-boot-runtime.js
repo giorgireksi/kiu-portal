@@ -95,6 +95,7 @@
         const handleChange = __pageEvents?.handleChange || (() => {});
         const handlePointerDown = __pageEvents?.handlePointerDown || (() => {});
         const handleGlobalKeydown = __pageEvents?.handleGlobalKeydown || (() => {});
+        const handleSocialFileImageError = __pageEvents?.handleSocialFileImageError || (() => {});
         const bindPhotographyUploadPortalEvents = __pageEvents?.bindPhotographyUploadPortalEvents || (() => {});
 
         /** Common panel tab switch: set ui key, setPanel, invalidate. Caller keeps render reason literals for source-locks. */
@@ -102,6 +103,7 @@
         let portalEventAbort = null;
         let overlayCaptureClickBound = false;
         let overlayCaptureChangeBound = false;
+        let overlayCaptureErrorBound = false;
 
         function hostEventState() {
             return (eventBinding && typeof eventBinding === 'object')
@@ -139,6 +141,11 @@
             }, { capture: true });
             overlayCaptureChangeBound = true;
         }
+        function bindOverlayCaptureError() {
+            if (overlayCaptureErrorBound) return;
+            document.addEventListener('error', handleSocialFileImageError, true);
+            overlayCaptureErrorBound = true;
+        }
         function bindOverlayPortalEvents() {
             const portal = document.getElementById(SOCIAL_OVERLAY_PORTAL_ID);
             if (!portal) return;
@@ -168,6 +175,7 @@
             ensurePhotographyUploadFileSink();
             bindOverlayCaptureClick();
             bindOverlayCaptureChange();
+            bindOverlayCaptureError();
             bindOverlayPortalEvents();
             if (binding.bound && binding.boundHost === host) {
                 return;
@@ -183,6 +191,7 @@
             host.addEventListener('submit', handleSubmit, { signal });
             host.addEventListener('input', handleInput, { signal });
             host.addEventListener('change', handleChange, { signal });
+            host.addEventListener('error', handleSocialFileImageError, { signal, capture: true });
             if (!globalKeydownBound) {
                 document.addEventListener('keydown', handleGlobalKeydown);
                 globalKeydownBound = true;
@@ -233,6 +242,21 @@
                 try { initPalette(); } catch (error) {}
             }
         }
+        async function warnIfPinApiUnavailable() {
+            const pinModel = window.KiuSocialPinModel;
+            const checkHealth = pinModel?.checkPinApiHealth;
+            if (typeof checkHealth !== 'function') return;
+            const health = await checkHealth();
+            if (health.ok) {
+                pinModel.setPinApiUnavailable(false);
+                return;
+            }
+            pinModel.setPinApiUnavailable(true);
+            const message = pinModel.PIN_API_UNAVAILABLE_MESSAGE
+                || 'Pin API unavailable — restart platform backend (npm run stop:local && npm run start:local).';
+            if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(message, 'danger');
+            if (typeof renderSocialPageNow === 'function') renderSocialPageNow('pin-api-health');
+        }
         async function boot() {
             ensureSocialRouteHost();
             bindEvents();
@@ -249,6 +273,7 @@
                     ? () => Promise.resolve(hydratePortalSocialRuntime()).catch(() => null)
                     : null;
             if (runHydrate) await runHydrate();
+            await warnIfPinApiUnavailable();
             await pruneExpiredLostFoundItems().catch(() => null);
             window.requestAnimationFrame(renderOrRetry);
         }

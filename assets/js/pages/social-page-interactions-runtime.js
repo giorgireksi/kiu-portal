@@ -765,6 +765,11 @@ function renderSectionCommandCenter(activePanel, activeConfig, runtime) {
     return '';
 }
 function renderSocialFlashStatus(runtime) {
+    const pinWarning = runtime.ui?.pinApiUnavailable ? `
+        <div class="social-neo-pin-api-warning home-hover-chip" role="status">
+            ${escape(text(runtime.ui?.pinApiBannerMessage || window.KiuSocialPinModel?.PIN_API_BANNER_MESSAGE || 'Pins won\'t save until the platform backend is restarted. Run: npm run stop:local && npm run start:local'))}
+        </div>
+    ` : '';
     const flash = runtime.flash?.message ? `
         <div class="social-neo-flash ${runtime.flash?.tone === 'danger' ? 'is-danger' : runtime.flash?.tone === 'success' ? 'is-success' : ''}">
             ${escape(text(runtime.flash.message))}
@@ -775,7 +780,7 @@ function renderSocialFlashStatus(runtime) {
             ${escape(text(runtime.error))} If the page is running from local files, make sure the platform server is available at ${escape(typeof getKiuPortalBackendUrl === 'function' ? getKiuPortalBackendUrl() : 'http://127.0.0.1:48933')}.
         </div>
     ` : '';
-    return flash + status;
+    return pinWarning + flash + status;
 }
 function renderSocialTopbarRegion(activePanel, activeConfig, user) {
     // All panels use hero chrome; shell topbar region stays empty.

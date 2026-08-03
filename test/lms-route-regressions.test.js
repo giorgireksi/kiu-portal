@@ -104,6 +104,9 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(bare).toContain('.gb-modal-category-grid.is-filtered');
         expect(bare).toContain('.gb-modal-shell');
         expect(bare).toContain('.gb-modal-category-grid');
+        expect(bare).toMatch(
+            /:is\(#lms-gradebook-wrapper, #faculty-master-container, #student-evaluation-history-modal, #gradebook-category-history-modal\)[\s\S]*gb-score-history-row/
+        );
         const tabsRuntime = read('assets/js/pages/lms-classroom-tabs-runtime.js');
         expect(tabsRuntime).toContain('id="lms-session-marker-title" class="lms-route-input lux-control"');
         expect(tabsRuntime).toContain('id="lms-session-marker-section-filter" class="lms-route-select lux-control"');
@@ -241,6 +244,7 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(bare).toContain('#gradebook-category-history-modal .gb-category-history-body');
         expect(fouc).toContain('#gradebook-category-history-modal');
         expect(fouc).toContain('.gb-category-history-card.lux-soft-chrome');
+        expect(fouc).toMatch(/body:is\(\.lux-route-lms, \.lux-route-faculty-gradebook, \.lux-route-study-card\) #gradebook-category-history-modal/);
         expect(primitives).toContain('.gb-category-history-title.lux-card-copy');
         expect(primitives).toContain('.gb-category-history-score-value.lux-page-title');
         expect(tabsRuntime).toContain('gradebook-workspace.js?v=20260729-lmsgbshare3');

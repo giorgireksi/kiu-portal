@@ -123,6 +123,14 @@ describe('social-workspace-portfolio-ui', () => {
         expect(html).toContain('lux-glass-dialog');
     });
 
+    it('reuses discover card renderer on pinned portfolio tab', () => {
+        const portfolioUi = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-portfolio-ui.js'), 'utf8');
+        expect(portfolioUi).toContain('function renderPortfolioDiscoverCard(entry, index = 0)');
+        expect(portfolioUi).toMatch(/renderPinnedSections\('portfolio'[\s\S]*renderPortfolioDiscoverCard\(entry\)/);
+        expect(portfolioUi).toContain('social-neo-entity-card');
+        expect(portfolioUi).toContain('lux-card-copy');
+    });
+
     it('portfolio-doc-open opens read-only portfolio viewer dialog', () => {
         const events = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-events.js'), 'utf8');
         const portfolioUi = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-portfolio-ui.js'), 'utf8');
@@ -142,6 +150,6 @@ describe('social-workspace-portfolio-ui', () => {
         expect(runtime).toContain('openPortfolioViewerForUser');
 
         expect(page).toContain('social-workspace-events.js?v=20260802-portfolio-viewer1');
-        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260802-portfolio-viewer2');
+        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260802-pincss1');
     });
 });

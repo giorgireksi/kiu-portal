@@ -93,9 +93,45 @@ describe('social-fingerprint-model', () => {
 
     it('classifies force-render reasons', () => {
         expect(win.isSocialForceRenderReason('feed-tab')).toBe(true);
+        expect(win.isSocialForceRenderReason('lost-found-tab')).toBe(true);
         expect(win.isSocialForceRenderReason('dialog-open')).toBe(true);
         expect(win.isSocialForceRenderReason('manual')).toBe(false);
         expect(win.isSocialForceRenderReason('poll-tick')).toBe(false);
+    });
+
+    it('render signature changes when lostFoundTab changes', () => {
+        const baseRuntime = {
+            feed: [],
+            ui: { lostFoundTab: 'all' },
+            social: {
+                relationships: [],
+                lostFoundItems: [],
+                surveys: [],
+                surveyResponses: [],
+                events: [],
+                groups: [],
+                reports: [],
+                projects: [],
+                pages: []
+            },
+            directory: [],
+            notifications: [],
+            chats: []
+        };
+        win = loadFingerprintModel({
+            currentUser: () => ({ role: 'student' }),
+            currentUserId: () => 'u1',
+            currentFacultyCode: () => 'CS',
+            activeDialog: () => null,
+            isPortalStoryViewerOpen: () => false,
+            isPortalStoryComposerOpen: () => false
+        });
+        const allSig = win.buildSocialRenderSignature('lost-and-found', baseRuntime);
+        const pinnedSig = win.buildSocialRenderSignature('lost-and-found', {
+            ...baseRuntime,
+            ui: { lostFoundTab: 'pinned' }
+        });
+        expect(allSig).not.toBe(pinnedSig);
     });
 
     it('builds a render signature from ui + fingerprints', () => {

@@ -2623,6 +2623,10 @@ registerSocialRoutes(app, {
     sendError
 });
 
+if (['development', 'dev', 'local', 'test'].includes(CURRENT_ENVIRONMENT)) {
+    console.info('[platform] POST /api/social/pins/toggle registered');
+}
+
 function handleLogin(request, response) {
     if (!enforceRateLimit(request, response, 'auth-login', LOGIN_RATE_LIMIT_MAX, LOGIN_RATE_LIMIT_WINDOW_MS)) {
         return;
@@ -2791,6 +2795,18 @@ async function startServer() {
                 const notification = originalCreateNotification(payload);
                 if (notification?.recipientUserId) {
                     sendWebPushNotification(notification.recipientUserId, notification).catch(() => null);
+                    pushEvent([notification.recipientUserId], {
+                        type: 'notification:created',
+                        notification: {
+                            id: notification.id,
+                            title: notification.title,
+                            body: notification.body,
+                            type: notification.type,
+                            sourceDomain: notification.sourceDomain,
+                            routePage: notification.routePage,
+                            routeData: notification.routeData || {}
+                        }
+                    });
                 }
                 return notification;
             };

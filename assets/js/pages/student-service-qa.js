@@ -52,8 +52,17 @@
             ).trim(),
             parentAnswerId: String(answer.parentAnswerId || '').trim(),
             replyToName: String(answer.replyToName || '').trim(),
-            helpfulCount: Number(answer.helpfulCount || (Array.isArray(answer.helpfulVotes) ? answer.helpfulVotes.length : 0)),
-            viewerHelpfulVote: Boolean(answer.viewerHelpfulVote),
+            helpfulCount: Array.isArray(answer.helpfulVotes)
+                ? answer.helpfulVotes.length
+                : Number(answer.helpfulCount || 0),
+            helpfulVotes: Array.isArray(answer.helpfulVotes) ? answer.helpfulVotes : [],
+            viewerHelpfulVote: (() => {
+                const actorId = resolveStudentServiceActorUserId();
+                if (!actorId) return false;
+                return (answer.helpfulVotes || []).some(
+                    (entry) => String(entry?.userId || '') === actorId
+                );
+            })(),
             createdAt: answer.createdAt || ssNowIso(),
             updatedAt: answer.updatedAt || answer.createdAt || ssNowIso()
         };
@@ -143,16 +152,42 @@
             viewerCanSetOwnerResolution: typeof question.viewerCanSetOwnerResolution === 'boolean'
                 ? question.viewerCanSetOwnerResolution
                 : undefined,
-            helpfulVotes: Array.isArray(question.helpfulVotes) ? question.helpfulVotes : [],
-            helpfulCount: Number(
-                question.helpfulCount
-                ?? (Array.isArray(question.helpfulVotes)
-                    ? question.helpfulVotes.filter(entry => entry?.value === 'helpful').length
-                    : 0)
-            ),
-            notHelpfulCount: Number(question.notHelpfulCount || 0),
-            viewerVote: String(question.viewerVote || '').trim(),
-            viewerHelpfulVote: question.viewerVote === 'helpful' || Boolean(question.viewerHelpfulVote),
+            helpfulVotes: (() => {
+                const votes = Array.isArray(question.helpfulVotes) ? question.helpfulVotes : [];
+                return votes;
+            })(),
+            helpfulCount: (() => {
+                const votes = Array.isArray(question.helpfulVotes) ? question.helpfulVotes : null;
+                if (votes) {
+                    return votes.filter(entry => entry?.value === 'helpful').length;
+                }
+                return Number(question.helpfulCount || 0);
+            })(),
+            notHelpfulCount: (() => {
+                const votes = Array.isArray(question.helpfulVotes) ? question.helpfulVotes : null;
+                if (votes) {
+                    return votes.filter(entry => entry?.value === 'not_helpful').length;
+                }
+                return Number(question.notHelpfulCount || 0);
+            })(),
+            viewerVote: (() => {
+                const votes = Array.isArray(question.helpfulVotes) ? question.helpfulVotes : [];
+                const actorId = resolveStudentServiceActorUserId();
+                const viewerEntry = actorId
+                    ? votes.find(entry => String(entry?.userId || '') === actorId)
+                    : null;
+                if (viewerEntry) return String(viewerEntry.value || '').trim();
+                if (!actorId) return String(question.viewerVote || '').trim();
+                return '';
+            })(),
+            viewerHelpfulVote: (() => {
+                const votes = Array.isArray(question.helpfulVotes) ? question.helpfulVotes : [];
+                const actorId = resolveStudentServiceActorUserId();
+                if (!actorId) return false;
+                return votes.some(
+                    entry => String(entry?.userId || '') === actorId && entry?.value !== 'not_helpful'
+                );
+            })(),
             relatedQuestionIds: Array.isArray(question.relatedQuestionIds) ? question.relatedQuestionIds.map(String) : [],
             lastReviewedAt: question.lastReviewedAt || '',
             convertedTicketId: String(question.convertedTicketId || ''),
@@ -492,6 +527,13 @@
         return getStudentServiceVisibleQuestions().find(question => String(question.id) === normalizedId) || null;
     }
 
+    function getStudentServiceQuestionRecordById(questionId) {
+        const normalizedId = String(questionId || '').trim();
+        if (!normalizedId) return null;
+        const { questions } = ensureStudentServiceStores();
+        return questions.find(question => String(question.id) === normalizedId) || null;
+    }
+
     function findStudentServiceAnswerRecord(question, answerId) {
         const normalizedId = String(answerId || '').trim();
         if (!question || !normalizedId) return null;
@@ -674,8 +716,8 @@
         if (question) mountStudentServiceQuestionThreadModal(questionId);
     }
 
-    function patchStudentServiceQuestionCardStats(questionId) {
-        const question = getStudentServiceQuestionById(questionId);
+    function patchStudentServiceQuestionCardStats(questionId, questionOverride = null) {
+        const question = questionOverride || getStudentServiceQuestionById(questionId);
         const card = getStudentServiceQuestionCardElement(questionId);
         if (!question || !card) return;
         const answerCount = getStudentServiceQuestionAnswerCount(question);
@@ -694,21 +736,122 @@
         }
     }
 
-    function isStudentServiceQuestionHelpfulVoted(question = {}) {
-        return question.viewerVote === 'helpful' || Boolean(question.viewerHelpfulVote);
+    function isStudentServiceQuestionHelpfulVoted(question = {}, actorUserId = '') {
+        const actorId = resolveStudentServiceActorUserId(actorUserId);
+        if (!actorId) return false;
+        return (question.helpfulVotes || []).some(
+            (entry) => String(entry?.userId || '') === actorId && entry?.value !== 'not_helpful'
+        );
+    }
+
+    function getStudentServiceQuestionViewerHelpfulVote(question = {}, actorUserId = '') {
+        return isStudentServiceQuestionHelpfulVoted(question, actorUserId);
+    }
+
+    function reconcileStudentServiceQuestionViewerHelpful(question = {}, actorUserId = '') {
+        const actorId = resolveStudentServiceActorUserId(actorUserId);
+        const helpfulVotes = question.helpfulVotes || [];
+        const viewerEntry = actorId
+            ? helpfulVotes.find((entry) => String(entry?.userId || '') === actorId)
+            : null;
+        const viewerVote = String(viewerEntry?.value || '').trim();
+        const viewerHelpfulVote = Boolean(viewerEntry && viewerEntry.value !== 'not_helpful');
+        const helpfulCount = helpfulVotes.filter((entry) => entry?.value === 'helpful').length;
+        const notHelpfulCount = helpfulVotes.filter((entry) => entry?.value === 'not_helpful').length;
+        return {
+            ...question,
+            helpfulVotes,
+            helpfulCount,
+            notHelpfulCount,
+            viewerVote,
+            viewerHelpfulVote
+        };
+    }
+
+    function getStudentServiceQuestionHelpfulCount(question = {}) {
+        if (Array.isArray(question.helpfulVotes)) {
+            return question.helpfulVotes.filter((entry) => entry?.value === 'helpful').length;
+        }
+        const fromCount = Number(question.helpfulCount);
+        if (Number.isFinite(fromCount) && question.helpfulCount != null && question.helpfulCount !== '') {
+            return fromCount;
+        }
+        return 0;
+    }
+
+    function patchStudentServiceQuestionThreadPreviewMetrics(questionId, question = {}) {
+        const modalBody = getStudentServiceQuestionThreadModalBody();
+        if (!modalBody) return false;
+        const normalizedId = String(questionId || question.id || '').trim();
+        if (!normalizedId) return false;
+        const metrics = modalBody.querySelector('.lux-glass-dialog-comment-preview .lux-glass-dialog-comment-post-metrics');
+        if (!metrics) return false;
+        const helpfulMetric = metrics.querySelector('.social-neo-post-metric');
+        if (!helpfulMetric) return false;
+        const helpful = getStudentServiceQuestionHelpfulCount(question);
+        helpfulMetric.textContent = `Helpful (${helpful})`;
+        return true;
+    }
+
+    function resolveStudentServiceActorUserId(passedUserId = '') {
+        const fromArg = String(passedUserId || '').trim();
+        if (fromArg) return fromArg;
+        const currentUser = typeof getStudentServiceCurrentUser === 'function'
+            ? getStudentServiceCurrentUser()
+            : window.getStudentServiceCurrentUser?.();
+        return String(currentUser?.id || '').trim();
+    }
+
+    function buildStudentServiceQuestionHelpfulToggleSnapshot(question, actorUserId, wasHelpful) {
+        const userId = resolveStudentServiceActorUserId(actorUserId);
+        if (!userId) return null;
+        const helpfulVotes = (question.helpfulVotes || [])
+            .filter((entry) => String(entry?.userId || '') !== userId);
+        if (!wasHelpful) {
+            helpfulVotes.push({ userId, value: 'helpful', updatedAt: ssNowIso() });
+        }
+        const helpfulCount = helpfulVotes.filter((entry) => entry?.value === 'helpful').length;
+        const notHelpfulCount = helpfulVotes.filter((entry) => entry?.value === 'not_helpful').length;
+        return {
+            ...question,
+            helpfulVotes,
+            helpfulCount,
+            notHelpfulCount,
+            viewerVote: wasHelpful ? '' : 'helpful',
+            viewerHelpfulVote: !wasHelpful,
+            updatedAt: ssNowIso()
+        };
+    }
+
+    function buildStudentServiceAnswerHelpfulToggleSnapshot(answer, actorUserId, wasHelpful) {
+        const userId = resolveStudentServiceActorUserId(actorUserId);
+        if (!userId) return null;
+        const helpfulVotes = (answer.helpfulVotes || [])
+            .filter((entry) => String(entry?.userId || '') !== userId);
+        if (!wasHelpful) {
+            helpfulVotes.push({ userId, updatedAt: ssNowIso() });
+        }
+        return {
+            ...answer,
+            helpfulVotes,
+            helpfulCount: helpfulVotes.length,
+            viewerHelpfulVote: !wasHelpful,
+            updatedAt: ssNowIso()
+        };
     }
 
     function renderStudentServiceQuestionHelpfulButtonMarkup(question, skipLuxButton = 'data-lux-skip-modern-button="true"') {
-        const helpful = Number(question.helpfulCount || 0);
+        const helpful = getStudentServiceQuestionHelpfulCount(question);
         const viewerHelpfulVote = isStudentServiceQuestionHelpfulVoted(question);
-        return `<button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--feedback student-service-qa-question-helpful-btn${viewerHelpfulVote ? ' is-active' : ''}" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-feedback="helpful" aria-pressed="${viewerHelpfulVote ? 'true' : 'false'}"><i class="${viewerHelpfulVote ? 'fas' : 'far'} fa-thumbs-up" aria-hidden="true"></i><span class="student-service-qa-question-helpful-label">Helpful (${helpful})</span></button>`;
+        return `<button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--feedback student-service-qa-question-helpful-btn${viewerHelpfulVote ? ' is-active lux-primary-btn' : ''}" ${skipLuxButton} data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-feedback="helpful" aria-pressed="${viewerHelpfulVote ? 'true' : 'false'}"><i class="${viewerHelpfulVote ? 'fas' : 'far'} fa-thumbs-up" aria-hidden="true"></i><span class="student-service-qa-question-helpful-label">Helpful${helpful ? ` (${helpful})` : ''}</span></button>`;
     }
 
     function updateStudentServiceQuestionHelpfulButton(button, question = {}) {
         if (!button) return;
-        const helpful = Number(question.helpfulCount || 0);
+        const helpful = getStudentServiceQuestionHelpfulCount(question);
         const viewerHelpfulVote = isStudentServiceQuestionHelpfulVoted(question);
         button.classList.toggle('is-active', viewerHelpfulVote);
+        button.classList.toggle('lux-primary-btn', viewerHelpfulVote);
         button.setAttribute('aria-pressed', viewerHelpfulVote ? 'true' : 'false');
         const icon = button.querySelector('i');
         if (icon) icon.className = `${viewerHelpfulVote ? 'fas' : 'far'} fa-thumbs-up`;
@@ -718,7 +861,7 @@
             label.className = 'student-service-qa-question-helpful-label';
             button.appendChild(label);
         }
-        label.textContent = `Helpful (${helpful})`;
+        label.textContent = `Helpful${helpful ? ` (${helpful})` : ''}`;
     }
 
     function triggerStudentServiceHelpfulAnimation(button, voted = true) {
@@ -730,21 +873,30 @@
     }
 
     function patchStudentServiceQuestionHelpfulUi(questionId, options = {}) {
-        const question = getStudentServiceQuestionById(questionId);
+        const question = options.question || getStudentServiceQuestionById(questionId);
         if (!question) return false;
-        patchStudentServiceQuestionCardStats(questionId);
+        patchStudentServiceQuestionCardStats(questionId, question);
+        patchStudentServiceQuestionThreadPreviewMetrics(questionId, question);
+        const buttons = new Set();
+        if (options.triggerButton) buttons.add(options.triggerButton);
         const card = getStudentServiceQuestionCardElement(questionId);
         const modalBody = getStudentServiceQuestionThreadModalBody();
-        const detailBtn = modalBody?.querySelector('[data-student-service-question-feedback="helpful"]')
-            || card?.querySelector('[data-student-service-question-feedback="helpful"]');
-        if (!detailBtn) return Boolean(card || modalBody);
-        updateStudentServiceQuestionHelpfulButton(detailBtn, question);
-        if (options.animate) triggerStudentServiceHelpfulAnimation(detailBtn);
+        modalBody?.querySelectorAll('[data-student-service-question-feedback="helpful"]').forEach((btn) => buttons.add(btn));
+        card?.querySelectorAll('[data-student-service-question-feedback="helpful"]').forEach((btn) => buttons.add(btn));
+        if (!buttons.size) return Boolean(card || modalBody);
+        buttons.forEach((btn) => updateStudentServiceQuestionHelpfulButton(btn, question));
+        if (options.animate && options.triggerButton) {
+            triggerStudentServiceHelpfulAnimation(options.triggerButton);
+        }
         return true;
     }
 
-    function isStudentServiceAnswerHelpfulVoted(answer = {}) {
-        return Boolean(answer.viewerHelpfulVote);
+    function isStudentServiceAnswerHelpfulVoted(answer = {}, actorUserId = '') {
+        const actorId = resolveStudentServiceActorUserId(actorUserId);
+        if (!actorId) return false;
+        return (answer.helpfulVotes || []).some(
+            (entry) => String(entry?.userId || '') === actorId
+        );
     }
 
     function renderStudentServiceAnswerHelpfulButtonMarkup(question, answer, skipLuxButton = 'data-lux-skip-modern-button="true"') {
@@ -777,8 +929,8 @@
 
     function patchStudentServiceAnswerHelpfulBtn(questionId, answerId, options = {}) {
         const question = getStudentServiceQuestionById(questionId);
-        const answer = findStudentServiceAnswerRecord(question, answerId);
-        if (!question || !answer) return false;
+        const answer = options.answer || findStudentServiceAnswerRecord(question, answerId);
+        if (!answer) return false;
         const normalizedAnswerId = String(answerId || '').trim();
         const escaped = normalizedAnswerId.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         const selector = `article.social-neo-comment[data-student-service-answer-id="${escaped}"]`;
@@ -865,6 +1017,12 @@
         const thread = body.querySelector('.student-service-qa-thread-comments');
         bindStudentServiceThreadResizeObserver(thread);
         scheduleStudentServiceThreadRelayout(thread);
+        patchStudentServiceQuestionHelpfulUi(questionId, { question });
+        (question.answers || []).forEach((answer) => {
+            const answerId = String(answer?.id || '').trim();
+            if (!answerId) return;
+            patchStudentServiceAnswerHelpfulBtn(questionId, answerId, { answer });
+        });
         return true;
     }
 
@@ -1251,7 +1409,7 @@
         const skipLuxButton = options.skipLuxButton || 'data-lux-skip-modern-button="true"';
         const canModerate = canCurrentUserModerateStudentService();
         const canDeleteQuestion = canCurrentUserDeleteStudentServiceQuestion(question);
-        const helpful = Number(question.helpfulCount || 0);
+        const helpful = getStudentServiceQuestionHelpfulCount(question);
         const btnSize = inThreadModal ? 'lux-secondary-btn lux-secondary-btn-sm' : 'lux-secondary-btn';
         const deleteBtn = canDeleteQuestion
             ? `<button type="button" class="${btnSize} student-service-qa-detail-action-btn student-service-qa-detail-action-btn--danger" ${skipLuxButton} data-student-service-delete-question="true" data-student-service-question-id="${ssEscape(question.id)}"><i class="fas fa-trash" aria-hidden="true"></i> Delete question</button>`
@@ -1310,7 +1468,7 @@
         if (!question) return '';
         const authorLabel = getStudentServiceQuestionAuthorLabel(question);
         const answerCount = getStudentServiceQuestionAnswerCount(question);
-        const helpful = Number(question.helpfulCount || 0);
+        const helpful = getStudentServiceQuestionHelpfulCount(question);
         return `
             <div class="lux-glass-dialog-comment-preview lux-soft-chrome home-hover-chip">
                 <div class="lux-glass-dialog-comment-post-head">
@@ -1569,6 +1727,33 @@
     }
 
     /* Wave 18: student-service-qa-staff-runtime.js */
+    function invokeStudentServicePostService(...args) {
+        const fn = window.postStudentService;
+        if (typeof fn !== 'function') {
+            throw new Error('Student Service API client is not loaded. Refresh the page and try again.');
+        }
+        return fn(...args);
+    }
+
+    function invokeStudentServiceApiPath(method, ...args) {
+        const builder = window.STUDENT_SERVICE_API_PATHS?.[method];
+        if (typeof builder !== 'function') {
+            throw new Error(`Student Service API path "${method}" is not available. Refresh the page and try again.`);
+        }
+        return builder(...args);
+    }
+
+    function invokeStudentServiceScrollPreserved(fn) {
+        const runner = window.runStudentServiceScrollPreserved;
+        if (typeof runner !== 'function') return fn();
+        return runner(fn);
+    }
+
+    function invokeSyncStudentServiceRenderSignature(...args) {
+        const fn = window.syncStudentServiceRenderSignature;
+        if (typeof fn === 'function') return fn(...args);
+    }
+
     const __w18Deps = {
         getStudentServiceQuestionThreadHost,
         updateStudentServiceQuestionCardToggleUi,
@@ -1581,7 +1766,33 @@
         setStudentServiceOpenQuestionId,
         restoreStudentServiceOpenQuestionFromUi,
         patchStudentServiceQuestionCardStats,
+        canCurrentUserSetStudentServiceOwnerResolution: window.canCurrentUserSetStudentServiceOwnerResolution,
+        updateStudentServiceOwnerResolutionButtons: window.updateStudentServiceOwnerResolutionButtons,
+        patchStudentServiceOwnerResolutionUi: window.patchStudentServiceOwnerResolutionUi,
+        triggerStudentServiceOwnerResolutionAnimation: window.triggerStudentServiceOwnerResolutionAnimation,
+        setStudentServiceActionButtonPending: window.setStudentServiceActionButtonPending,
+        flashStudentServiceActionButton: window.flashStudentServiceActionButton,
         isStudentServiceQuestionHelpfulVoted,
+        getStudentServiceQuestionViewerHelpfulVote,
+        reconcileStudentServiceQuestionViewerHelpful,
+        getStudentServiceQuestionHelpfulCount,
+        patchStudentServiceQuestionThreadPreviewMetrics,
+        resolveStudentServiceActorUserId,
+        buildStudentServiceQuestionHelpfulToggleSnapshot,
+        buildStudentServiceAnswerHelpfulToggleSnapshot,
+        getStudentServiceCurrentUser: (...args) => window.getStudentServiceCurrentUser?.(...args),
+        postStudentService: invokeStudentServicePostService,
+        STUDENT_SERVICE_API_PATHS: {
+            questionOwnerResolution: (questionId) => invokeStudentServiceApiPath('questionOwnerResolution', questionId),
+            questionFeedback: (questionId) => invokeStudentServiceApiPath('questionFeedback', questionId),
+            questionAnswerFeedback: (questionId, answerId) =>
+                invokeStudentServiceApiPath('questionAnswerFeedback', questionId, answerId),
+            questionDelete: (questionId) => invokeStudentServiceApiPath('questionDelete', questionId),
+            questionAnswerDelete: (questionId, answerId) =>
+                invokeStudentServiceApiPath('questionAnswerDelete', questionId, answerId)
+        },
+        runStudentServiceScrollPreserved: invokeStudentServiceScrollPreserved,
+        syncStudentServiceRenderSignature: invokeSyncStudentServiceRenderSignature,
         renderStudentServiceQuestionHelpfulButtonMarkup,
         updateStudentServiceQuestionHelpfulButton,
         triggerStudentServiceHelpfulAnimation,
@@ -1622,6 +1833,7 @@
         submitStudentServiceQuestionAnswer,
         mergeStudentServiceQuestionSnapshot,
         getStudentServiceQuestionById,
+        getStudentServiceQuestionRecordById,
         findStudentServiceAnswerRecord,
         removeStudentServiceQuestionFromSnapshot,
         removeStudentServiceQuestionCard,
@@ -1701,6 +1913,7 @@
     __kiuSsApi.getStudentServiceFilteredQuestions = getStudentServiceFilteredQuestions;
     __kiuSsApi.relayoutStudentServiceCommentTrunks = relayoutStudentServiceCommentTrunks;
     __kiuSsApi.getStudentServiceQuestionById = window.getStudentServiceQuestionById = getStudentServiceQuestionById;
+    __kiuSsApi.getStudentServiceQuestionRecordById = window.getStudentServiceQuestionRecordById = getStudentServiceQuestionRecordById;
     __kiuSsApi.findStudentServiceAnswerRecord = window.findStudentServiceAnswerRecord = findStudentServiceAnswerRecord;
     __kiuSsApi.studentServiceAnswerArticleEl = studentServiceAnswerArticleEl;
     __kiuSsApi.getStudentServiceQuestionCardElement = getStudentServiceQuestionCardElement;
@@ -1719,6 +1932,13 @@
     __kiuSsApi.restoreStudentServiceOpenQuestionFromUi = restoreStudentServiceOpenQuestionFromUi;
     __kiuSsApi.patchStudentServiceQuestionCardStats = patchStudentServiceQuestionCardStats;
     __kiuSsApi.isStudentServiceQuestionHelpfulVoted = isStudentServiceQuestionHelpfulVoted;
+    __kiuSsApi.getStudentServiceQuestionViewerHelpfulVote = getStudentServiceQuestionViewerHelpfulVote;
+    __kiuSsApi.reconcileStudentServiceQuestionViewerHelpful = reconcileStudentServiceQuestionViewerHelpful;
+    __kiuSsApi.getStudentServiceQuestionHelpfulCount = getStudentServiceQuestionHelpfulCount;
+    __kiuSsApi.patchStudentServiceQuestionThreadPreviewMetrics = patchStudentServiceQuestionThreadPreviewMetrics;
+    __kiuSsApi.resolveStudentServiceActorUserId = window.resolveStudentServiceActorUserId = resolveStudentServiceActorUserId;
+    __kiuSsApi.buildStudentServiceQuestionHelpfulToggleSnapshot = window.buildStudentServiceQuestionHelpfulToggleSnapshot = buildStudentServiceQuestionHelpfulToggleSnapshot;
+    __kiuSsApi.buildStudentServiceAnswerHelpfulToggleSnapshot = window.buildStudentServiceAnswerHelpfulToggleSnapshot = buildStudentServiceAnswerHelpfulToggleSnapshot;
     __kiuSsApi.renderStudentServiceQuestionHelpfulButtonMarkup = renderStudentServiceQuestionHelpfulButtonMarkup;
     __kiuSsApi.updateStudentServiceQuestionHelpfulButton = updateStudentServiceQuestionHelpfulButton;
     __kiuSsApi.triggerStudentServiceHelpfulAnimation = triggerStudentServiceHelpfulAnimation;
@@ -1757,7 +1977,7 @@
     __kiuSsApi.renderStudentServiceQuestionDetail = renderStudentServiceQuestionDetail;
     __kiuSsApi.submitStudentServiceQuestion = window.submitStudentServiceQuestion = submitStudentServiceQuestion;
     __kiuSsApi.submitStudentServiceQuestionAnswer = window.submitStudentServiceQuestionAnswer = submitStudentServiceQuestionAnswer;
-    __kiuSsApi.setStudentServiceQuestionOwnerResolution = setStudentServiceQuestionOwnerResolution;
+    __kiuSsApi.setStudentServiceQuestionOwnerResolution = window.setStudentServiceQuestionOwnerResolution = setStudentServiceQuestionOwnerResolution;
     __kiuSsApi.setStudentServiceQuestionFeedback = window.setStudentServiceQuestionFeedback = setStudentServiceQuestionFeedback;
     __kiuSsApi.setStudentServiceAnswerFeedback = window.setStudentServiceAnswerFeedback = setStudentServiceAnswerFeedback;
     __kiuSsApi.deleteStudentServiceQuestion = deleteStudentServiceQuestion;

@@ -42,9 +42,9 @@
         const setStudentServiceMarkup = __dep('setStudentServiceMarkup');
         const ssEscape = __dep('ssEscape', { optional: true });
 
-        const STUDENT_SERVICE_QA_THREAD_URL = 'assets/js/pages/student-service-qa-thread-runtime.js?v=20260729-ssmerge1';
-        const STUDENT_SERVICE_QA_STAFF_URL = 'assets/js/pages/student-service-qa-staff-runtime.js?v=20260729-ssmerge1';
-        const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260729-ssmerge1';
+        const STUDENT_SERVICE_QA_THREAD_URL = 'assets/js/pages/student-service-qa-thread-runtime.js?v=20260803-sshelp5';
+        const STUDENT_SERVICE_QA_STAFF_URL = 'assets/js/pages/student-service-qa-staff-runtime.js?v=20260803-sshelp5';
+        const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260803-sshelp5';
         const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260728-sssvc4';
         const STUDENT_SERVICE_FILTERS_MODULE_URL = 'assets/js/pages/student-service-filters.js?v=20260730-ssfilter1';
         const STUDENT_SERVICE_ATTACHMENTS_MODULE_URL = 'assets/js/pages/student-service-attachments.js?v=20260729-sspanel1';

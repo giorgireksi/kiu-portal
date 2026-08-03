@@ -124,6 +124,12 @@ describe('admin orders route regressions.test', () => {
         expect(workspace).toContain('orders-admin-sent-item lux-soft-chrome home-hover-chip');
         expect(workspace).toContain('lux-secondary-btn home-hover-chip" data-admin-orders-edit-recipient-filters');
         expect(workspace).toContain('orders-recipient-row lux-soft-chrome home-hover-chip');
+        expect(fouc).toMatch(
+            /#admin-orders-create-overlay[\s\S]*?\.orders-recipient-row\.home-hover-chip[\s\S]*?contain:\s*none/
+        );
+        expect(bare).toMatch(
+            /\.orders-recipient-list-scroll[\s\S]*?align-content:\s*start[\s\S]*?grid-auto-rows:\s*max-content/
+        );
         expect(bare).toContain('.orders-admin-workspace-section.lux-soft-chrome.home-hover-chip');
         expect(bare).not.toMatch(/\.orders-admin-sent-item:hover[\s\S]{0,120}lux-soft-chrome-chip-shadow/);
         expect(workspace).toContain('orders-inbox-layout-filters');

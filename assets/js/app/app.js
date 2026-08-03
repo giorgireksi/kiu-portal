@@ -775,7 +775,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
             'assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1',
             'assets/js/shared/social-lite-content-runtime.js?v=20260726-socfix38',
             'assets/js/shared/social-lite-invite-runtime.js?v=20260720-w18',
-            'assets/js/shared/social-runtime-lite.js?v=20260726-socpaint14'
+            'assets/js/shared/social-runtime-lite.js?v=flashoff1'
         ],
         [
             'assets/js/pages/social-mobile.js?v=20260624-event-edit2',

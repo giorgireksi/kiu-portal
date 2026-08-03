@@ -261,6 +261,13 @@ function isLuxPickerInteractionTarget(target, panel) {
     return false;
 }
 
+function isLuxUtilityInteractionTarget(target) {
+    if (!target) return false;
+    if (target.closest?.('.lux-utility-panel.is-open, .lux-utility-panel.is-closing')) return true;
+    if (target.closest?.('.lux-utility-wrap')) return true;
+    return false;
+}
+
 const pickerScrollTargetCache = new Map();
 
 function clearPickerScrollTargetCache() {
@@ -1243,6 +1250,7 @@ function resumeLuxuryPickerObservers() {
             finalizeTopbarPopoverClose,
             isPickerScrollExempt,
             isLuxPickerInteractionTarget,
+            isLuxUtilityInteractionTarget,
             clearPickerScrollTargetCache,
             collectPickerScrollTargets,
             clearLuxPickerPanelListeners,

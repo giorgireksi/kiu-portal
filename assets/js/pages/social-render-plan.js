@@ -10,6 +10,9 @@
         const WORKSPACE_DIALOG_KEEP_CENTER = hooks.WORKSPACE_DIALOG_KEEP_CENTER instanceof Set
             ? hooks.WORKSPACE_DIALOG_KEEP_CENTER
             : new Set();
+        const OVERLAY_DIALOG_PRESERVE_SCROLL = hooks.OVERLAY_DIALOG_PRESERVE_SCROLL instanceof Set
+            ? hooks.OVERLAY_DIALOG_PRESERVE_SCROLL
+            : new Set();
 
         const fullPlan = {
             flash: true,
@@ -100,7 +103,8 @@
                 storyComposer: false
             };
             if (reason !== 'dialog-close' && activeDialog() && ['projects', 'groups', 'pages', 'events', 'lost-and-found', 'workspace', 'photography'].includes(activePanel)) {
-                if (!WORKSPACE_DIALOG_KEEP_CENTER.has(text(activeDialog()?.type || ''))) {
+                if (!WORKSPACE_DIALOG_KEEP_CENTER.has(text(activeDialog()?.type || ''))
+                    && !OVERLAY_DIALOG_PRESERVE_SCROLL.has(text(activeDialog()?.type || ''))) {
                     plan.center = true;
                 }
             }
@@ -108,7 +112,11 @@
                 plan.center = true;
             }
             if (reason === 'dialog-close' && ['projects', 'workspace', 'photography'].includes(activePanel)) {
-                plan.center = true;
+                const closingType = text(runtime?.ui?.closingDialogType || '');
+                if (!WORKSPACE_DIALOG_KEEP_CENTER.has(closingType)
+                    && !OVERLAY_DIALOG_PRESERVE_SCROLL.has(closingType)) {
+                    plan.center = true;
+                }
             }
             return plan;
         }

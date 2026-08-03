@@ -392,6 +392,174 @@ html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-p
     filter: none;
   }
 }
+.lux-utility-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 12px;
+  border-bottom: 1px solid var(--lux-soft-chrome-border-accent, var(--lux-panel-host-border));
+}
+.lux-utility-head > div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.lux-utility-head strong {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+.lux-utility-head span {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+.lux-utility-head .lux-ghost-btn {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.lux-utility-panel .lux-utility-category-filters.lux-tab-strip--segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  margin-top: 12px;
+}
+.lux-utility-panel .lux-utility-category-filters .lux-tab-btn {
+  min-height: 34px;
+  padding: 6px 6px;
+  font-size: 11px;
+}
+.lux-utility-panel .lux-utility-category-filters .lux-tab-btn span:not(.lux-tab-badge) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.lux-light-mode .lux-utility-panel .lux-utility-category-filters.lux-tab-strip--segmented .lux-tab-btn:not(.is-active):not([aria-pressed="true"]):not([aria-selected="true"]),
+html.lux-light-mode body .lux-utility-panel .lux-utility-category-filters.lux-tab-strip--segmented .lux-tab-btn:not(.is-active):not([aria-pressed="true"]):not([aria-selected="true"]) {
+  color: color-mix(in srgb, var(--lux-text) 72%, transparent);
+}
+.lux-utility-list {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  max-height: min(360px, 45vh);
+  overflow: auto;
+  align-content: start;
+  grid-auto-rows: max-content;
+}
+.lux-utility-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  contain: none;
+  overflow: visible;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.lux-utility-item:hover,
+.lux-utility-item:focus-visible {
+  border-color: color-mix(in srgb, var(--lux-soft-chrome-border-accent) 50%, rgba(var(--lux-accent-rgb), 0.5));
+  box-shadow:
+    inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.75),
+    var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  outline: none;
+}
+.lux-utility-item-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--lux-btn-well-soft);
+  border: 1px solid var(--lux-btn-border-solid, rgba(var(--lux-accent-rgb), 0.22));
+  box-shadow: var(--lux-btn-frame-shadow);
+  color: var(--lux-accent-2);
+  font-size: 14px;
+}
+.lux-utility-item-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.lux-utility-item-copy strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--lux-text);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.lux-utility-item-copy span {
+  display: block;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+.lux-utility-item em {
+  flex: 0 0 auto;
+  align-self: center;
+  min-width: 0;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.35;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  text-align: right;
+  white-space: nowrap;
+}
+.lux-utility-item em:empty {
+  display: none;
+}
+.lux-utility-empty {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px dashed var(--lux-soft-chrome-border-accent, var(--lux-border));
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+  text-align: center;
+  contain: none;
+  overflow: visible;
+}
+.lux-utility-empty strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+.lux-utility-empty span {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
 .lux-hero { min-height: 240px; padding: 26px; }
 /* Outer glass host SSOT — denser desk panel tokens (redesign via lux-tokens). */
 body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]:not(.lux-glass-dialog-card)):not(.modal-content[data-lux-transparency-exempt="1"]) {
@@ -457,55 +625,33 @@ body.lux-route-home #page-home #lux-home-shell :is(
   box-shadow: var(--lux-soft-chrome-chip-shadow-halo);
 }
 
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-header-row {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-weeklist-container {
   background: var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
-  border-bottom: 2px solid var(--sch-grid-border, var(--lux-border));
 }
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-day-col.is-today {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-weeklist-day.is-today {
   background:
     radial-gradient(circle at top center, color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 16%, transparent), transparent 40%),
     var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
   box-shadow: inset 0 -3px 0 color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 42%, transparent);
 }
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) :is(.sch-time-col, .sch-time-labels) {
-  background: var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
-  border-right: 1px solid var(--sch-grid-chrome-border, var(--lux-border));
-}
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-day-col {
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-weeklist-day {
   border-right: 1px solid var(--sch-grid-chrome-border, var(--lux-border));
   color: var(--lux-text);
 }
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-time-slot {
-  border-bottom: 0;
-  border-top-color: var(--sch-grid-border, var(--lux-border));
-}
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-lane {
-  border-right: 0;
-}
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-slot-bg {
-  border-bottom: 0;
-  background: var(--sch-grid-lane-bg, var(--lux-panel-surface-soft, transparent));
-}
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-slot-bg:hover {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 6%, transparent), transparent),
-    var(--sch-grid-lane-bg, var(--lux-panel-surface-soft, transparent));
-}
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event {
   --sch-event-rgb: var(--lux-accent-rgb);
-  position: absolute;
-  inset: var(--sch-event-top) 12px auto 12px;
-  min-height: 42px;
-  height: var(--sch-event-height);
-  padding: 14px 16px 16px;
-  border-radius: 18px;
+  position: relative;
+  min-height: 0;
+  height: auto;
+  padding: 12px 14px;
+  border-radius: 14px;
   border: 1px solid color-mix(in srgb, rgba(var(--sch-event-rgb), 1) 28%, transparent);
   background-color: var(--lux-panel-fill);
   background-image: var(--lux-panel-surface);
   box-shadow: var(--lux-elev-2);
   color: var(--lux-text);
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
   -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
 }
@@ -523,8 +669,8 @@ body.lux-route-home #page-home #lux-home-shell :is(
   border-style: dashed;
 }
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-title {
-  padding-right: 72px;
-  font-size: 15px;
+  padding-right: 44px;
+  font-size: 16px;
   font-weight: 800;
   line-height: 1.3;
   white-space: nowrap;
@@ -532,13 +678,56 @@ body.lux-route-home #page-home #lux-home-shell :is(
   text-overflow: ellipsis;
 }
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-meta {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--lux-text-muted);
-  margin-top: 6px;
+  margin-top: 7px;
+  padding-right: 44px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-actions {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, rgba(var(--sch-event-rgb, var(--lux-accent-rgb)), 1) 28%, transparent);
+  background: color-mix(in srgb, rgba(var(--sch-event-rgb, var(--lux-accent-rgb)), 1) 12%, var(--lux-panel-surface-soft, var(--lux-panel-fill)));
+  color: var(--lux-text);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-action:hover,
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-action:focus-visible {
+  border-color: color-mix(in srgb, rgba(var(--sch-event-rgb, var(--lux-accent-rgb)), 1) 48%, transparent);
+  background: color-mix(in srgb, rgba(var(--sch-event-rgb, var(--lux-accent-rgb)), 1) 20%, var(--lux-panel-surface-soft, var(--lux-panel-fill)));
+  color: var(--lux-text);
+  outline: none;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-action--delete:hover,
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-action--delete:focus-visible {
+  border-color: color-mix(in srgb, #f87171 50%, transparent);
+  background: color-mix(in srgb, #f87171 18%, var(--lux-panel-surface-soft, var(--lux-panel-fill)));
+  color: #fecaca;
 }
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-draft {
   position: absolute;
@@ -591,7 +780,7 @@ body.lux-route-admin-scheduler #page-admin-scheduler .palette-card:focus-visible
     0 0 0 3px color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, transparent) !important;
 }
 
-body.lux-route-admin-scheduler .sch-modal-head-accent {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent {
   background: linear-gradient(
     135deg,
     color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 88%, #1a1208),
@@ -619,7 +808,7 @@ body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverl
 ) {
   color: rgba(255, 248, 239, 0.82);
 }
-body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent .sch-modal-mode-chip {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent .sch-modal-mode-chip {
   background: rgba(255, 255, 255, 0.16);
   color: #fff8ef;
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -636,17 +825,13 @@ body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverl
 ):hover {
   color: #fff8ef;
 }
-body.lux-route-admin-scheduler .sch-modal-subtitle,
-body.lux-route-admin-scheduler .sch-modal-week,
-body.lux-route-admin-scheduler .quiz-modal-subtitle {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.sch-modal-subtitle, .sch-modal-week, .quiz-modal-subtitle) {
   color: var(--lux-text-muted);
 }
-body.lux-route-admin-scheduler .quiz-modal-close,
-body.lux-route-admin-scheduler .sch-modal-close-muted {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.quiz-modal-close, .sch-modal-close-muted) {
   color: var(--lux-text-soft);
 }
-body.lux-route-admin-scheduler .quiz-modal-close:hover,
-body.lux-route-admin-scheduler .sch-modal-close-muted:hover {
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.quiz-modal-close, .sch-modal-close-muted):hover {
   color: var(--lux-text);
 }
 body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item.home-hover-chip {
@@ -681,20 +866,17 @@ body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delet
   border-color: var(--lux-btn-danger-border, #dc2626);
   background: var(--lux-panel-cta-danger-hover, var(--lux-panel-cta-danger));
 }
-body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-droplist-panel:not(.is-open):not(.is-closing),
 body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-field > .lux-droplist-panel:not(.is-open):not(.is-closing) {
   display: none !important;
 }
-body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-picker-label,
-body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn .lux-picker-caption,
 body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-field > .lux-picker-label,
 body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-btn .lux-picker-caption {
   display: none;
 }
-body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay) .lux-picker-btn i {
+body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-btn i {
   transition: transform var(--lux-droplist-anim-duration, 180ms) var(--lux-droplist-anim-ease, ease);
 }
-body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay) .lux-picker-btn.is-active i {
+body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-btn.is-active i {
   transform: rotate(180deg);
 }
 
@@ -1536,6 +1718,15 @@ body.lux-route-study-card #study-card-assessment-window .study-card-gradebook-ov
   border-radius: 22px;
 }
 
+body.lux-route-study-card #study-card-assessment-window .study-card-gradebook-overlay .gb-weight-card.lux-soft-chrome.home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
+body.lux-route-study-card #study-card-assessment-window .study-card-gradebook-overlay .gb-modern-card-head {
+  overflow: visible;
+}
+
 body.lux-route-study-card #study-card-assessment-window :is(
   .lux-status-pill.home-hover-chip,
   .gb-status-badge.lux-status-pill
@@ -1705,7 +1896,7 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-autos
 }
 
 /* Gradebook category history portal: matte inners (layout → lux-page-bare-lite). */
-body.lux-route-lms #gradebook-category-history-modal :is(
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal :is(
   .gb-category-history-card.lux-soft-chrome,
   .gb-category-history-comment.lux-soft-chrome,
   .gb-score-history-row.lux-soft-chrome,
@@ -1721,20 +1912,60 @@ body.lux-route-lms #gradebook-category-history-modal :is(
   background-clip: padding-box;
 }
 
-body.lux-route-lms #gradebook-category-history-modal .gb-score-history-row.lux-soft-chrome {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-score-history-row.lux-soft-chrome {
   border-radius: 12px;
 }
 
-body.lux-route-lms #gradebook-category-history-modal .gb-category-history-comment.lux-soft-chrome {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-comment.lux-soft-chrome {
   border-radius: 14px;
 }
 
-body.lux-route-lms #gradebook-category-history-modal .gb-category-history-empty.lux-empty-state {
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-category-history-empty.lux-empty-state {
   border-style: dashed;
 }
 
-body.lux-route-lms #gradebook-category-history-modal .gb-score-history-row.lux-soft-chrome.is-current,
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #gradebook-category-history-modal .gb-score-history-row.lux-soft-chrome.is-current,
 body.lux-route-lms #page-lms-inner [data-lux-glass-root="1"] .gb-score-history-row.lux-soft-chrome.is-current {
+  border-color: rgba(var(--lux-accent-rgb), 0.34);
+  box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.14);
+}
+
+/* Gradebook evaluation history portal: matte inners (layout → lux-page-bare-lite). */
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal :is(
+  .gb-modal-category-card.lux-soft-chrome,
+  .gb-modal-history-card.lux-soft-chrome,
+  .gb-staff-create-card.lux-soft-chrome,
+  .gb-modal-section.lux-soft-chrome,
+  .gb-score-history-row.lux-soft-chrome
+) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modal-category-card.lux-soft-chrome {
+  border-radius: 18px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modal-history-card.lux-soft-chrome {
+  border-radius: 18px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-staff-create-card.lux-soft-chrome,
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-modal-section.lux-soft-chrome {
+  border-radius: 18px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-score-history-row.lux-soft-chrome {
+  border-radius: 12px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) #student-evaluation-history-modal .gb-score-history-row.lux-soft-chrome.is-current {
   border-color: rgba(var(--lux-accent-rgb), 0.34);
   box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb), 0.14);
 }
@@ -2001,7 +2232,7 @@ body.lux-route-library #page-library .library-catalog-filters-panel.home-hover-c
 }
 
 /* Admin scheduler modals: matte inners on frosted .sch-modal shell (motion → global .home-hover-chip SSOT). */
-:is(#page-admin-scheduler, #schModalOverlay, #schPresetManagerOverlay) :is(
+:is(#page-admin-scheduler, #schPresetManagerOverlay) :is(
   .sch-form-section.home-hover-chip,
   .sch-conflict-alert.home-hover-chip,
   .sch-modal-mode-chip.home-hover-chip,
@@ -2017,7 +2248,7 @@ body.lux-route-library #page-library .library-catalog-filters-panel.home-hover-c
   background-clip: padding-box;
 }
 
-:is(#page-admin-scheduler, #schModalOverlay, #schPresetManagerOverlay) :is(
+:is(#page-admin-scheduler, #schPresetManagerOverlay) :is(
   .sch-form-section.home-hover-chip,
   .sch-preset-manage-item.home-hover-chip
 ) {
@@ -2025,7 +2256,7 @@ body.lux-route-library #page-library .library-catalog-filters-panel.home-hover-c
   overflow: visible;
 }
 
-:is(#schModalOverlay, #schPresetManagerOverlay) .sch-modal-mode-chip.home-hover-chip {
+#schPresetManagerOverlay .sch-modal-mode-chip.home-hover-chip {
   color: var(--lux-accent-2);
   border-radius: 999px;
 }
@@ -2621,6 +2852,18 @@ body.lux-unified-shell #page-student-service .student-service-lane-choice-card {
   overflow: visible;
 }
 
+:is(
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-create-overlay, #admin-orders-root)
+) .orders-recipient-row.home-hover-chip {
+  contain: none;
+  overflow: visible;
+}
+
+.lux-utility-panel :is(.lux-utility-item.home-hover-chip, .lux-utility-empty.home-hover-chip) {
+  contain: none;
+  overflow: visible;
+}
+
 body.lux-route-orders #page-orders.lux-page-shell,
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root.lux-page-shell {
   background: transparent !important;
@@ -3118,6 +3361,11 @@ body.lux-route-social :is(
 
 body.lux-route-social :is(
   .social-photo-feed-card,
+  .social-photo-content-stage,
+  .social-pin-section,
+  .social-pin-section-list,
+  .social-neo-survey-listings,
+  .social-neo-lf-listings,
   .social-neo-group-card,
   .social-neo-directory-item,
   .social-neo-entity-card,
@@ -3146,6 +3394,7 @@ body.lux-route-social :is(
   .social-neo-research-hero-stats,
   .social-neo-research-catalog,
   .social-neo-research-toolbar,
+  .social-neo-research-card,
   .social-neo-surveys-hero,
   .social-neo-surveys-hero-stats,
   .social-neo-surveys-hero-grid,
@@ -3335,6 +3584,10 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
     .social-neo-surveys-hero-grid,
     .social-neo-surveys-hero-toolbar,
     .social-neo-survey-card,
+    .social-neo-research-card,
+    .social-photo-feed-card,
+    .social-neo-event-feature,
+    .social-portfolio-card,
     .social-neo-surveys-take-shell,
     .social-neo-survey-take-hero,
     .social-neo-survey-take-card,
@@ -3383,6 +3636,10 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
       .social-neo-surveys-hero-grid,
       .social-neo-surveys-hero-toolbar,
       .social-neo-survey-card,
+      .social-neo-research-card,
+      .social-photo-feed-card,
+      .social-neo-event-feature,
+      .social-portfolio-card,
       .social-neo-surveys-take-shell,
       .social-neo-survey-take-hero,
       .social-neo-survey-take-card,

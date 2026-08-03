@@ -494,14 +494,21 @@ function getUserPerformanceSummary(user) {
         });
         return fallback;
     })();
-    const assignedSections = Object.values(KIU_STATE.availableGroups || {}).flat().filter(group => {
-        const profKey = typeof normalizePersonNameKey === 'function'
-            ? normalizePersonNameKey(group.prof)
-            : String(group.prof || '').trim().toLowerCase();
-        const taKey = typeof normalizePersonNameKey === 'function'
-            ? normalizePersonNameKey(group.ta)
-            : String(group.ta || '').trim().toLowerCase();
-        return identityKeys.has(profKey) || identityKeys.has(taKey);
+    const assignedSections = [];
+    Object.entries(KIU_STATE.availableGroups || {}).forEach(([courseId, courseGroups]) => {
+        (courseGroups || []).forEach((group) => {
+            if (typeof isUserAssignedToTeachingGroup === 'function') {
+                if (isUserAssignedToTeachingGroup(user, group, courseId)) assignedSections.push(group);
+                return;
+            }
+            const profKey = typeof normalizePersonNameKey === 'function'
+                ? normalizePersonNameKey(group.prof)
+                : String(group.prof || '').trim().toLowerCase();
+            const taKey = typeof normalizePersonNameKey === 'function'
+                ? normalizePersonNameKey(group.ta)
+                : String(group.ta || '').trim().toLowerCase();
+            if (identityKeys.has(profKey) || identityKeys.has(taKey)) assignedSections.push(group);
+        });
     });
     const totalHours = assignedSections.reduce((sum, group) => {
         const durMatch = String(group.duration || '').match(/\d+/);
@@ -769,6 +776,16 @@ function createPortalSystemNotification(input = {}) {
         routeData: input.routeData || null
     };
     KIU_STATE.portalNotifications.unshift(notification);
+    if (typeof window.showPortalLiveAlert === 'function') {
+        window.showPortalLiveAlert({
+            id: notification.id,
+            title: notification.title,
+            text: notification.text,
+            type: notification.type,
+            source,
+            force: true
+        });
+    }
     if (typeof window.renderPortalNotificationChrome === 'function') {
         if (!window.__portalNotificationRenderQueued) {
             window.__portalNotificationRenderQueued = true;
