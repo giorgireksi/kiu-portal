@@ -172,7 +172,7 @@
     const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
     const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260801-portfolioresume3';
     const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260801-socialfaculty3';
-    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260802-portfolio-viewer1';
+    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260805-health-scroll2';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
     const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260801-socialfaculty3';

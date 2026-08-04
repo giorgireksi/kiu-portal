@@ -827,7 +827,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         ],
         [
             'assets/js/pages/social-page-survey-runtime.js?v=20260726-socstack47',
-            'assets/js/pages/social-page-feed-runtime.js?v=20260726-socfix25',
+            'assets/js/pages/social-page-feed-runtime.js?v=20260805-health-scroll2',
             'assets/js/pages/social-page-shell-runtime.js?v=20260726-socfix25',
             `assets/js/pages/social-page-interactions-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`
         ],

@@ -149,7 +149,7 @@ describe('social-workspace-portfolio-ui', () => {
         expect(runtime).toContain("openDialog('portfolio-viewer'");
         expect(runtime).toContain('openPortfolioViewerForUser');
 
-        expect(page).toContain('social-workspace-events.js?v=20260802-portfolio-viewer1');
+        expect(page).toContain('social-workspace-events.js?v=20260805-health-scroll2');
         expect(page).toContain('social-workspace-portfolio-ui.js?v=20260802-pincss1');
     });
 });

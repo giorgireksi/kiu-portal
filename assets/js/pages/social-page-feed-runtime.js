@@ -617,13 +617,14 @@
         }
         function getProjectHealthDialogCard() {
             return document.querySelector(
-                '.social-project-health-anchor .lux-glass-dialog-card--project-health-fs, '
+                '.social-project-health-page, '
+                + '.social-project-health-anchor .lux-glass-dialog-card--project-health-fs, '
                 + '.lux-glass-dialog-card--project-health-fs, '
                 + '.lux-glass-dialog-card--project-health'
             );
         }
         /** Patch only My plan card — avoid full Health remount/flicker. */
-        function patchProjectHealthPlanCard(runtime = state()) {
+        function patchProjectHealthPlanCard(runtime = state(), options = {}) {
             const root = getProjectHealthDialogCard();
             const live = root?.querySelector('.sph-card--plan');
             if (!live) return false;
@@ -635,6 +636,27 @@
             const next = wrap.firstElementChild;
             if (!next) return false;
             live.replaceWith(next);
+            const scrollState = options.scrollState;
+            const restoreScroll = () => {
+                if (!scrollState) return;
+                const page = document.querySelector('.social-project-health-page');
+                const body = page?.querySelector('.social-page-surface-body');
+                if (page && Number.isFinite(scrollState.pageTop)) page.scrollTop = scrollState.pageTop;
+                if (body && Number.isFinite(scrollState.bodyTop)) body.scrollTop = scrollState.bodyTop;
+                if (Number.isFinite(scrollState.windowX) && Number.isFinite(scrollState.windowY)) {
+                    window.scrollTo?.(scrollState.windowX, scrollState.windowY);
+                }
+            };
+            restoreScroll();
+            if (options.focusWindow) {
+                const focusTarget = Array.from(next.querySelectorAll('[data-action="project-health-plan-window"]'))
+                    .find((node) => text(node.getAttribute('data-window') || '') === text(options.focusWindow));
+                if (focusTarget) {
+                    try { focusTarget.focus({ preventScroll: true }); } catch (error) { focusTarget.focus(); }
+                }
+            }
+            restoreScroll();
+            window.requestAnimationFrame?.(restoreScroll);
             return true;
         }
         function taskMatchesPlanPickDueFilter(task, dueFilter, nowMs) {

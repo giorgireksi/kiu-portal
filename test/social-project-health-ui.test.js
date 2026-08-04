@@ -28,6 +28,22 @@ describe('social-project-health-ui', () => {
         expect(bare).toContain('.social-project-health-page .sph-brow .sph-blab');
         expect(bare).toContain('.social-project-health-page .sph-fact');
         expect(bare).toContain('.social-project-health-page .sph-dep > span:last-child');
+        expect(bare).toContain('.social-page-surface-body');
+        expect(bare).toContain('max-width: 100%;');
+        expect(bare).toContain('box-sizing: border-box;');
+        expect(bare).toContain('padding: 14px 16px;');
+        expect(bare).toContain('@media (max-width: 1400px)');
+        expect(bare).toContain('.social-project-health-page .sph-why .lux-card-head');
+        expect(bare).toContain('.social-project-health-page .sph-week-item');
+        expect(bare).toContain('.social-project-health-page .sph-week-copy strong');
+        expect(bare).toContain('.social-project-health-page .sph-card--plan');
+        expect(bare).toContain('.social-project-health-page .sph-plan-tabs');
+        expect(bare).toContain('.social-project-health-page .sph-plan-add');
+        expect(bare).toContain('.social-project-health-page :is(.sph-week-list, .sph-fix-list, .sph-team)');
+        expect(bare).toContain('.social-project-health-page .sph-why.lux-card');
+        expect(bare).toContain('.social-project-health-page .social-page-surface-body > *');
+        expect(bare).not.toContain('body.lux-route-social .sph-plan-tab.is-active');
+        expect(bare).not.toContain('body.lux-route-social .sph-plan-tab:hover:not(.is-active)');
         expect(block).not.toContain('--sn-');
     });
 
@@ -110,6 +126,13 @@ describe('social-project-health-ui', () => {
         expect(bare).toContain('.social-project-risk-page .social-page-surface-body');
     });
 
+    it('Health plan patch targets the page surface and preserves focus scroll', () => {
+        const feed = readSource('assets/js/pages/social-page-feed-runtime.js');
+        expect(feed).toContain('.social-project-health-page, ');
+        expect(feed).toContain('focus({ preventScroll: true })');
+        expect(feed).toContain('window.requestAnimationFrame?.(restoreScroll)');
+    });
+
     it('page surfaces remain interactive in the graph child slot', () => {
         const modals = readSource('assets/css/lux-modals.css');
         expect(modals).toContain('#social-neo-overlay-portal :is(.social-page-surface, .social-project-task-graph-stack)');
@@ -139,6 +162,7 @@ describe('social-project-health-ui', () => {
         expect(dialogs).toContain('lux-studio-body');
         expect(dialogs).toContain('spr-risk-card lux-studio-section');
         expect(dialogs).toContain('sph-card lux-card lux-soft-chrome sph-card--readiness');
+        expect(dialogs).toContain('lux-mode-btn sph-plan-tab');
         expect(dialogs).toContain('sph-verdict sph-verdict--rich sph-verdict--fs lux-studio-section lux-soft-chrome');
         expect(dialogs).toContain('sph-why lux-card lux-soft-chrome');
         expect(dialogs).toContain('sph-card-head lux-card-head');

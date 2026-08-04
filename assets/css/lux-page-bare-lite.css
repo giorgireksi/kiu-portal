@@ -30373,6 +30373,9 @@ body.lux-route-social #social-neo-overlay-portal .social-page-surface-body {
     flex: 1 1 auto;
     min-width: 0;
     min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     overflow: auto;
     padding: 18px max(18px, env(safe-area-inset-right, 0px)) 24px max(18px, env(safe-area-inset-left, 0px));
 }
@@ -30414,6 +30417,13 @@ body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .soci
     display: flex;
     flex-direction: column;
     gap: 14px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .social-page-surface-body > * {
+    flex: 0 0 auto;
+    min-height: auto;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board {
     display: grid;
@@ -30526,13 +30536,31 @@ body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card.lux-card,
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why.lux-card {
     gap: 13px;
+    padding: 14px 16px;
+    box-sizing: border-box;
     min-width: 0;
     min-height: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card--plan {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why.lux-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-height: fit-content;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card-head.lux-card-head {
     display: flex;
     align-items: center;
     gap: 9px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-width: 0;
     flex-wrap: wrap;
 }
@@ -30544,6 +30572,95 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card-head.lux-card-head > :is(.sph-auto, button) {
     flex: 0 0 auto;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why .lux-card-head {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why .lux-card-head > strong {
+    flex: 1 1 150px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why .lux-card-head > span {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-left: auto;
+    overflow-wrap: anywhere;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why ul,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-coach-lead,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-week-list {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why li,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-week-copy,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-week-copy strong,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-week-copy em {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why li {
+    max-width: 100%;
+    line-height: 1.45;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-week-item,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-week-ic {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-week-item {
+    min-width: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-tabs,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-add,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-add-hint,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-add > :is(button, a),
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card--plan .sph-empty {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-tabs {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-tab {
+    flex: 1 1 0;
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-add {
+    width: 100%;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-add > button {
+    box-sizing: border-box;
+    max-width: 100%;
+    white-space: normal;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-add-hint,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-coach-lead,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card--plan .sph-empty {
+    overflow-wrap: anywhere;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page :is(.sph-week-list, .sph-fix-list, .sph-team) {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-readiness-checks {
     display: grid;
@@ -30610,11 +30727,23 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
     align-items: start;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-width: 0;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board .sph-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-width: 0;
     min-height: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board .sph-card--progress,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board .sph-card--budget,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board .sph-card--risks,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board .sph-card--team {
+    grid-column: span 1;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board .sph-card--schedule {
     grid-column: span 2;
@@ -30626,6 +30755,9 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     gap: 10px 14px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-width: 0;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-ring-row,
@@ -30633,6 +30765,7 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-profile,
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-facts,
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-dep {
+    max-width: 100%;
     min-width: 0;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-statrow {
@@ -30737,7 +30870,7 @@ body.lux-route-social #social-neo-overlay-portal .social-page-surface .lux-glass
     padding: 12px max(18px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
     border-top: 1px solid var(--lux-border);
 }
-@media (max-width: 1100px) {
+@media (max-width: 1400px) {
     body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -33803,38 +33936,6 @@ body.lux-route-social .sph-plan-count {
     color: var(--lux-accent, #7dd3fc);
 }
 body.lux-route-social .sph-card-head .sph-auto + .sph-plan-count { margin-left: 8px; }
-body.lux-route-social .sph-plan-tabs {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 4px;
-    border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(8, 12, 20, 0.35);
-    width: fit-content;
-    max-width: 100%;
-}
-body.lux-route-social .sph-plan-tab {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    color: var(--lux-text-muted, #cbd5e1);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 650;
-    padding: 7px 12px;
-    border-radius: 9px;
-    cursor: pointer;
-}
-body.lux-route-social .sph-plan-tab.is-active {
-    background: rgba(var(--lux-accent-rgb), 0.16);
-    color: var(--lux-text, #f8fafc);
-    box-shadow: 0 0 0 1px rgba(var(--lux-accent-rgb), 0.35);
-}
-body.lux-route-social .sph-plan-tab:hover:not(.is-active) {
-    color: var(--lux-text, #f8fafc);
-    background: rgba(148, 163, 184, 0.1);
-}
 body.lux-route-social .sph-plan-add {
     display: flex;
     flex-wrap: wrap;

@@ -123,6 +123,48 @@ describe('social-workspace-events', () => {
         expect(api.handleSocialWorkspaceClick('post-react', { getAttribute: () => '' })).toBe(false);
     });
 
+    it('keeps Health plan interactions from jumping the panel', () => {
+        const patchProjectHealthPlanCard = vi.fn(() => true);
+        const trigger = {
+            getAttribute: (name) => name === 'data-window' ? 'months' : '',
+            closest: () => null
+        };
+        ({ api } = loadEvents({ patchProjectHealthPlanCard }));
+
+        api.handleSocialWorkspaceClick('project-health-plan-window', trigger);
+        expect(patchProjectHealthPlanCard).toHaveBeenCalledWith(
+            runtime,
+            expect.objectContaining({
+                focusWindow: 'months',
+                scrollState: expect.objectContaining({
+                    pageTop: 0,
+                    bodyTop: 0
+                })
+            })
+        );
+    });
+
+    it('preserves Health position when opening the plan picker', () => {
+        const openDialog = vi.fn();
+        const trigger = {
+            getAttribute: (name) => ({
+                'data-project-id': 'p1',
+                'data-window': 'weeks'
+            }[name] || ''),
+            closest: () => null
+        };
+        ({ api } = loadEvents({
+            openDialog,
+            normalizeProjectPlanHorizon: (value) => value
+        }));
+
+        api.handleSocialWorkspaceClick('project-health-plan-pick-open', trigger);
+        expect(openDialog).toHaveBeenCalledWith('project-health-plan-pick', {
+            projectId: 'p1',
+            horizon: 'weeks'
+        });
+    });
+
     it('opens task graph when stack anchor is stale instead of restoring', () => {
         const restorePreviousDialog = vi.fn();
         const openDialog = vi.fn();

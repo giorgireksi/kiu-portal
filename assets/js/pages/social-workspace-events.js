@@ -149,6 +149,31 @@
             writeDeskSavedViews
         } = deps;
 
+        function captureProjectHealthScroll(trigger) {
+            const page = trigger?.closest?.('.social-project-health-page')
+                || (typeof document?.querySelector === 'function'
+                    ? document.querySelector('.social-project-health-page')
+                    : null);
+            const body = page?.querySelector?.('.social-page-surface-body') || null;
+            return {
+                page,
+                body,
+                pageTop: Number(page?.scrollTop || 0),
+                bodyTop: Number(body?.scrollTop || 0),
+                windowX: Number(window.scrollX || 0),
+                windowY: Number(window.scrollY || 0)
+            };
+        }
+
+        function restoreProjectHealthScroll(snapshot) {
+            if (!snapshot) return;
+            if (snapshot.page && Number.isFinite(snapshot.pageTop)) snapshot.page.scrollTop = snapshot.pageTop;
+            if (snapshot.body && Number.isFinite(snapshot.bodyTop)) snapshot.body.scrollTop = snapshot.bodyTop;
+            if (Number.isFinite(snapshot.windowX) && Number.isFinite(snapshot.windowY)) {
+                window.scrollTo?.(snapshot.windowX, snapshot.windowY);
+            }
+        }
+
         function handleSocialWorkspaceClick(action, trigger) {
             if (!isSocialWorkspaceClickAction(action)) return false;
             const PANEL_KEY = 'KIU_SOCIAL_ACTIVE_PANEL';
@@ -1349,12 +1374,20 @@
                 });
             }
             if (action === 'project-health-plan-window') {
+                const scrollState = captureProjectHealthScroll(trigger);
                 state().ui.projectHealthPlanWindow = normalizeProjectPlanHorizon(trigger.getAttribute('data-window'));
-                if (patchProjectHealthPlanCard(state())) return;
-                return renderDialogOnlyNow();
+                if (patchProjectHealthPlanCard(state(), {
+                    focusWindow: trigger.getAttribute('data-window'),
+                    scrollState
+                })) return;
+                const result = renderDialogOnlyNow();
+                restoreProjectHealthScroll(scrollState);
+                window.requestAnimationFrame?.(() => restoreProjectHealthScroll(scrollState));
+                return result;
             }
             if (action === 'project-health-plan-pick-open') {
                 const runtime = state();
+                const scrollState = captureProjectHealthScroll(trigger);
                 const projectId = text(trigger.getAttribute('data-project-id') || runtime.ui?.activeProjectId || '');
                 const horizon = normalizeProjectPlanHorizon(
                     trigger.getAttribute('data-window') || runtime.ui?.projectHealthPlanWindow || 'weeks'
@@ -1365,7 +1398,10 @@
                 runtime.ui.projectHealthPlanPickStatus = 'open';
                 runtime.ui.projectHealthPlanPickHidePlanned = true;
                 runtime.ui.projectHealthPlanPickSelectedIds = [];
-                return openDialog('project-health-plan-pick', { projectId, horizon });
+                const result = openDialog('project-health-plan-pick', { projectId, horizon });
+                restoreProjectHealthScroll(scrollState);
+                window.requestAnimationFrame?.(() => restoreProjectHealthScroll(scrollState));
+                return result;
             }
             if (action === 'project-health-plan-pick-browse') {
                 const runtime = state();
