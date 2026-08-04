@@ -56,6 +56,13 @@ describe('programs route regressions.test', () => {
         expect(js).toContain('lux-soft-chrome');
         expect(js).toContain('lux-module-option lux-program-module-option lux-soft-chrome home-hover-chip');
         expect(js).toContain('lux-subject-row lux-program-subject-card home-hover-chip');
+        expect(js).toContain('lux-subject-row__secondary');
+        expect(js).toContain('lux-subject-row__ects');
+        expect(js).toContain('lux-subject-row__prerequisite');
+        expect(js).toContain('does not have');
+        expect(js).toMatch(/lux-program-column-ects">ECTS/);
+        expect(js).toMatch(/lux-program-column-prerequisite">Prerequisite/);
+        expect(js).toMatch(/lux-subject-row__secondary[\s\S]*lux-subject-row__chips/);
     });
 
     it('shared layout primitives define curriculum text roles', () => {
@@ -64,6 +71,14 @@ describe('programs route regressions.test', () => {
         expect(primitives).toContain('.lux-subject-row__title');
         expect(primitives).toContain('.lux-empty-state__title');
         expect(primitives).toContain('.lux-stat em');
+    });
+
+    it('keeps ECTS and prerequisite columns visually separated', () => {
+        const css = readSource('assets/css/lux-page-bare-lite.css');
+        expect(css).toContain('grid-template-columns: 72px minmax(220px, 1.2fr) 88px minmax(180px, 0.9fr) minmax(170px, 0.8fr) 118px;');
+        expect(css).toContain('column-gap: 18px;');
+        expect(css).toContain('min-width: max(100%, 990px);');
+        expect(css).toContain('padding-inline-start: 8px;');
     });
 
     it('fouc-ht demotes nested programs surfaces inside glass host', () => {

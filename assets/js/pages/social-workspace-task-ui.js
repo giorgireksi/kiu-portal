@@ -56,11 +56,30 @@
             const priority = text(task?.priority || 'medium').toLowerCase() || 'medium';
             const taskTitle = text(task?.title || 'Task') || 'Task';
             const backdropClass = text(options.backdropClass || '');
-            const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
-            return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Remove task">
-                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact social-neo-delete-confirm lux-glass-dialog-card--project-task-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel" data-form="dialog-project-task-delete" data-action="noop" data-lux-transparency-exempt="1">
-                    ${neoHead('Remove task', 'This permanently deletes the task from the project board.', { icon: 'fas fa-trash', headClass: 'lux-studio-head' })}
-                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-delete lux-studio-body">
+            const pageSurface = options.pageSurface === true;
+            const surfaceOpen = pageSurface
+                ? '<section class="social-page-surface social-project-task-delete-page" data-social-page-surface="project-task-delete" data-action="noop" aria-label="Remove task">'
+                : `<div class="${['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ')}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Remove task">`;
+            const formClass = pageSurface
+                ? 'social-page-surface-content social-neo-delete-confirm'
+                : 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--compact social-neo-delete-confirm lux-glass-dialog-card--project-task-delete lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel';
+            const headMarkup = pageSurface
+                ? `<header class="social-page-surface-head"><div class="social-page-surface-heading"><strong class="social-page-surface-title"><i class="fas fa-trash" aria-hidden="true"></i> Remove task</strong><span>This permanently deletes the task from the project board.</span></div><button class="lux-ghost-btn" type="button" data-action="dialog-close" aria-label="Back to task map"><i class="fas fa-arrow-left"></i> Back</button></header>`
+                : neoHead('Remove task', 'This permanently deletes the task from the project board.', { icon: 'fas fa-trash', headClass: 'lux-studio-head' });
+            const bodyClass = pageSurface
+                ? 'social-page-surface-body'
+                : 'lux-glass-dialog-body lux-glass-dialog-body--project-task-delete lux-studio-body';
+            const actionMarkup = pageSurface
+                ? '<footer class="social-page-surface-footer"><button class="lux-secondary-btn" type="button" data-action="dialog-close">Back</button><button class="lux-primary-btn lux-btn-danger" type="submit"><i class="fas fa-trash"></i> Remove task</button></footer>'
+                : neoActions({
+                    actionsClass: 'social-neo-delete-confirm-actions',
+                    submitLabel: 'Remove task',
+                    submitTone: 'danger'
+                });
+            return `${surfaceOpen}
+                <form class="${formClass}" data-form="dialog-project-task-delete" data-action="noop" data-lux-transparency-exempt="1">
+                    ${headMarkup}
+                    <div class="${bodyClass}">
                         <section class="lux-studio-section social-neo-delete-confirm-preview">
                             <strong class="lux-glass-dialog-preview-title">${escape(taskTitle)}</strong>
                             <div class="social-neo-muted social-neo-muted-mt-6">${escape(statusLabel)} · ${escape(priority)}</div>
@@ -71,17 +90,13 @@
                             <span class="lux-glass-dialog-checkbox-copy">I understand this task will be permanently removed.</span>
                         </label>
                     </div>
-                    ${neoActions({
-                        actionsClass: 'social-neo-delete-confirm-actions',
-                        submitLabel: 'Remove task',
-                        submitTone: 'danger'
-                    })}
+                    ${actionMarkup}
                     <input type="hidden" name="projectId" value="${escape(text(project.id))}">
                     <input type="hidden" name="taskId" value="${escape(text(task.id))}">
                 </form>
-            </div>`;
+            ${pageSurface ? '</section>' : '</div>'}`;
         }
-        function renderProjectTaskCreateDialog(runtime, dialog) {
+        function renderProjectTaskCreateDialog(runtime, dialog, options = {}) {
             const project = resolveActiveSocialProject(runtime, dialog?.projectId);
             if (!project || !project.viewerCanContribute) return '';
             const memberSummaries = Array.isArray(project.memberSummaries) ? project.memberSummaries : [];
@@ -97,15 +112,35 @@
             const submitLabel = isEdit ? 'Save changes' : 'Create task';
             const submitIcon = isEdit ? 'fa-check' : 'fa-plus';
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, isEdit ? 'project-task-edit' : 'project-task-create');
-            const backdropClasses = ['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ');
-            return `<div class="${backdropClasses}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${isEdit ? 'Edit task' : 'Create task'}">
-                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-create lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel" data-form="${escape(formKind)}" data-project-id="${escape(text(project.id))}" ${isEdit ? `data-task-id="${escape(text(dialog?.taskId))}"` : ''} data-budget-currency="${escape(text(project?.budgetCurrency || '') || 'USD')}" data-action="noop" data-lux-transparency-exempt="1">
-                    ${neoHead(
-                        isEdit ? 'Edit task' : 'Create task',
-                        isEdit ? 'Update work, assignment, or checklist.' : 'Add work to the board, assign a teammate, and place it in the right column.',
-                        { icon: isEdit ? 'fas fa-pen' : 'fas fa-list-check', headClass: 'lux-studio-head' }
-                    )}
-                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-create lux-studio-body">
+            const pageSurface = options.pageSurface === true;
+            const surfaceOpen = pageSurface
+                ? `<section class="social-page-surface social-project-task-form-page" data-social-page-surface="project-task-${isEdit ? 'edit' : 'create'}" data-action="noop" aria-label="${isEdit ? 'Edit task' : 'Create task'}">`
+                : `<div class="${['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ')}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${isEdit ? 'Edit task' : 'Create task'}">`;
+            const formClass = pageSurface
+                ? 'social-page-surface-content'
+                : 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-create lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel';
+            const headMarkup = pageSurface
+                ? `<header class="social-page-surface-head"><div class="social-page-surface-heading"><strong class="social-page-surface-title"><i class="fas ${isEdit ? 'fa-pen' : 'fa-list-check'}" aria-hidden="true"></i> ${isEdit ? 'Edit task' : 'Create task'}</strong><span>${isEdit ? 'Update work, assignment, or checklist.' : 'Add work to the board, assign a teammate, and place it in the right column.'}</span></div><button class="lux-ghost-btn" type="button" data-action="dialog-close" aria-label="Back to task map"><i class="fas fa-arrow-left"></i> Back</button></header>`
+                : neoHead(
+                    isEdit ? 'Edit task' : 'Create task',
+                    isEdit ? 'Update work, assignment, or checklist.' : 'Add work to the board, assign a teammate, and place it in the right column.',
+                    { icon: isEdit ? 'fas fa-pen' : 'fas fa-list-check', headClass: 'lux-studio-head' }
+                );
+            const bodyClass = pageSurface
+                ? 'social-page-surface-body'
+                : 'lux-glass-dialog-body lux-glass-dialog-body--project-task-create lux-studio-body';
+            const actionMarkup = pageSurface
+                ? `<footer class="social-page-surface-footer"><button class="lux-secondary-btn" type="button" data-action="dialog-close">Back</button>${isEdit ? `<button class="lux-primary-btn lux-btn-danger lux-secondary-btn" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(dialog?.taskId))}"><i class="fas fa-trash"></i> Remove task</button>` : ''}${isEdit ? '' : '<button class="lux-secondary-btn" type="submit" data-submit-mode="create-another"><i class="fas fa-plus"></i> Create &amp; add another</button>'}<button class="lux-primary-btn" type="submit"><i class="fas ${submitIcon}"></i> ${escape(submitLabel)}</button></footer>`
+                : `<div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        ${isEdit ? `<button class="lux-primary-btn lux-btn-danger lux-secondary-btn" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(dialog?.taskId))}"><i class="fas fa-trash"></i> Remove task</button>` : ''}
+                        ${isEdit ? '' : `<button class="lux-secondary-btn lux-glass-dialog-submit-btn" type="submit" data-submit-mode="create-another"><i class="fas fa-plus"></i> Create &amp; add another</button>`}
+                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit"><i class="fas ${submitIcon}"></i> ${escape(submitLabel)}</button>
+                    </div>`;
+            return `${surfaceOpen}
+                <form class="${formClass}" data-form="${escape(formKind)}" data-project-id="${escape(text(project.id))}" ${isEdit ? `data-task-id="${escape(text(dialog?.taskId))}"` : ''} data-budget-currency="${escape(text(project?.budgetCurrency || '') || 'USD')}" data-action="noop" data-lux-transparency-exempt="1">
+                    ${headMarkup}
+                    <div class="${bodyClass}">
                         ${renderProjectTaskFormFields(runtime, {
                             mode: 'modal',
                             isEdit,
@@ -115,14 +150,9 @@
                             memberSummaries
                         })}
                     </div>
-                    <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
-                        <button class="lux-secondary-btn lux-glass-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        ${isEdit ? `<button class="lux-primary-btn lux-btn-danger lux-secondary-btn" type="button" data-action="project-task-delete-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(dialog?.taskId))}"><i class="fas fa-trash"></i> Remove task</button>` : ''}
-                        ${isEdit ? '' : `<button class="lux-secondary-btn lux-glass-dialog-submit-btn" type="submit" data-submit-mode="create-another"><i class="fas fa-plus"></i> Create &amp; add another</button>`}
-                        <button class="lux-primary-btn lux-glass-dialog-submit-btn" type="submit"><i class="fas ${submitIcon}"></i> ${escape(submitLabel)}</button>
-                    </div>
+                    ${actionMarkup}
                 </form>
-            </div>`;
+            ${pageSurface ? '</section>' : '</div>'}`;
         }
 
         function renderProjectTaskFormFields(runtime, options = {}) {

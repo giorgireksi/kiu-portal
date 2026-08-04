@@ -74,7 +74,7 @@ describe('social-survey-results-dialog (shared shell CSS)', () => {
 
     it('social.html cache-busts survey take shell CSS', () => {
         const html = readSource('social.html');
-        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260801-surveytake1/);
-        expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260801-surveytake1/);
+        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260805-graph-page-shell1/);
+        expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260805-health-cards1/);
     });
 });

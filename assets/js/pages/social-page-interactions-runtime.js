@@ -758,11 +758,12 @@ const entityLinkIcon = window.entityLinkIcon || (window.KiuSocialEntityModel || 
 const resolveEntityLinkMeta = window.resolveEntityLinkMeta || (window.KiuSocialEntityModel || {}).resolveEntityLinkMeta;
 
 function renderSectionCommandCenter(activePanel, activeConfig, runtime) {
-    // Faculty browse lives in each section hero; command region stays empty.
-    void activePanel;
+    // Faculty browse lives in each section hero; pagination is the shared command.
     void activeConfig;
     void runtime;
-    return '';
+    return typeof window.KiuSocialPagination?.renderModeControl === 'function'
+        ? window.KiuSocialPagination.renderModeControl(activePanel)
+        : '';
 }
 function renderSocialFlashStatus(runtime) {
     const pinWarning = runtime.ui?.pinApiUnavailable ? `
@@ -914,6 +915,9 @@ function renderSocialPageNow(reason = 'manual') {
             }
         }
         const activePanel = text(runtime.ui?.activePanel || 'feed') || 'feed';
+        if (typeof window.KiuSocialPagination?.syncPanel === 'function') {
+            window.KiuSocialPagination.syncPanel(activePanel);
+        }
         const activeConfig = (getSocialPanelConfig(activePanel, runtime)[activePanel]) || getSocialPanelConfig('feed', runtime).feed;
         const user = currentUser() || {};
         const shell = ensureSocialShell(host);
@@ -972,6 +976,9 @@ function renderSocialPageNow(reason = 'manual') {
         }
         if (renderPlan.center) {
             setSocialRegionMarkup(shell.center, renderActivePanelMarkup(activePanel));
+            if (typeof window.KiuSocialPagination?.decorate === 'function') {
+                window.KiuSocialPagination.decorate(shell.center, activePanel);
+            }
             /* Immediately anchor scroll to prevent visible jump between
                innerHTML and the full restoreInteractionState call below. */
             if (!socialScrollLockActive()) {

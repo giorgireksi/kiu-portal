@@ -18,14 +18,24 @@ describe('social-project-health-ui', () => {
         expect(block).toContain('.sph-pick-split');
         expect(block).toContain('.sph-card--readiness');
         expect(block).toContain('.sph-card--plan');
+        expect(bare).toContain('.social-page-form-actions');
+        expect(bare).toContain('.social-page-field');
+        expect(bare).toContain('.sph-readiness-row');
+        expect(bare).toContain('.social-project-health-page .sph-hygiene');
+        expect(bare).toContain('.social-project-health-page .sph-board');
+        expect(bare).toContain('.social-project-health-page .sph-verdict');
+        expect(bare).toContain('.social-project-health-page .sph-card-head.lux-card-head');
+        expect(bare).toContain('.social-project-health-page .sph-brow .sph-blab');
+        expect(bare).toContain('.social-project-health-page .sph-fact');
+        expect(bare).toContain('.social-project-health-page .sph-dep > span:last-child');
         expect(block).not.toContain('--sn-');
     });
 
-    it('bare-lite hardens health child popup stacking', () => {
+    it('bare-lite defines health page-surface geometry', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
-        expect(bare).toContain('.social-project-health-child-slot');
-        expect(bare).toMatch(/social-project-health-child-slot[\s\S]{0,400}z-index:\s*10102/);
-        expect(bare).toContain('.lux-glass-dialog-backdrop--project-health-fs');
+        expect(bare).toContain('.social-page-surface');
+        expect(bare).toContain('.social-project-health-page');
+        expect(bare).toContain('.social-project-risk-page');
     });
 
     it('bare-lite blocks graph clicks when stacked child is open', () => {
@@ -37,9 +47,6 @@ describe('social-project-health-ui', () => {
         expect(stackBlock).toContain('pointer-events: none !important');
         expect(stackBlock).toContain('[data-project-task-graph-stage]');
         expect(stackBlock).not.toContain('.social-project-task-graph-anchor *');
-        expect(stackBlock).toContain('.social-project-task-graph-immersive-topbar');
-        expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-topbar');
-        expect(stackBlock).toMatch(/social-project-task-graph-stack--child-open[\s\S]{0,400}\.social-project-task-graph-immersive-topbar[\s\S]{0,180}pointer-events:\s*none\s*!important/);
         expect(stackBlock).toContain('.social-project-task-graph-stack--child-open');
         expect(stackBlock).toContain('.social-project-task-graph-child-slot[hidden]');
         expect(stackBlock).not.toMatch(/\.social-project-task-graph-child-slot:has\(> \.lux-glass-dialog-backdrop\)[\s\S]{0,260}top:\s*var\(--ptg-chrome-top/);
@@ -95,43 +102,35 @@ describe('social-project-health-ui', () => {
         expect(stackBlock).toContain('opacity: 0.55');
     });
 
-    it('lux-modals keeps stacked health compact above graph parent', () => {
+    it('page surfaces keep health content in normal page flow', () => {
         const modals = readSource('assets/css/lux-modals.css');
-        expect(modals).toMatch(
-            /\.lux-glass-dialog-backdrop--stacked-child \.lux-glass-dialog-card--project-health-fs[\s\S]{0,200}min\(860px/
-        );
-        expect(modals).toContain('.lux-glass-dialog-backdrop--project-health-fs:not(.lux-glass-dialog-backdrop--stacked-child)');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(modals).toContain('.social-page-surface');
+        expect(bare).toContain('.social-project-health-page .social-page-surface-body');
+        expect(bare).toContain('.social-project-risk-page .social-page-surface-body');
     });
 
-    it('lux-modals overrides warmglass for graph child-slot stacked backdrops', () => {
+    it('page surfaces remain interactive in the graph child slot', () => {
         const modals = readSource('assets/css/lux-modals.css');
-        expect(modals).toContain('.social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child:has(> .lux-glass-dialog-card)');
-        expect(modals).toMatch(/social-project-task-graph-child-slot[\s\S]{0,700}--lux-panel-veil-dark/);
-        expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,500}rgba\(0, 0, 0, 0\.45\)/);
-        expect(modals).not.toMatch(/social-project-task-graph-child-slot[\s\S]{0,900}var\(--lux-warmglass-overlay-light\)/);
+        expect(modals).toContain('#social-neo-overlay-portal :is(.social-page-surface, .social-project-task-graph-stack)');
     });
 
-    it('lux-modals uses near-opaque studio shells in task-map child slot', () => {
+    it('page CSS defines fullscreen health and plan-picker shells', () => {
         const modals = readSource('assets/css/lux-modals.css');
-        expect(modals).toMatch(
-            /social-project-task-graph-child-slot[\s\S]{0,500}color-mix\(in srgb, var\(--lux-studio-dialog-bg[\s\S]{0,40}97%, transparent\)/
-        );
-    });
-
-    it('lux-modals defines fullscreen health and plan-picker shells', () => {
-        const modals = readSource('assets/css/lux-modals.css');
-        expect(modals).toContain('.lux-glass-dialog-card--project-health-fs');
-        expect(modals).toContain('.lux-glass-dialog-backdrop--project-health-fs');
-        expect(modals).toContain('.lux-glass-dialog-card--health-plan-pick');
-        expect(modals).toContain('.lux-glass-dialog-body--health-plan-pick');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(modals).toContain('.social-page-surface');
+        expect(bare).toContain('.social-project-health-page');
+        expect(bare).toContain('.social-project-health-plan-page');
         expect(modals).toContain('.sph-board');
     });
 
-    it('dialogs JS emits lux health fullscreen classes', () => {
+    it('dialogs JS emits graph-family page surfaces', () => {
         const dialogs = readSource('assets/js/pages/social-workspace-dialogs.js');
-        expect(dialogs).toContain('lux-glass-dialog-backdrop--project-health-fs');
-        expect(dialogs).toContain('lux-glass-dialog-card--project-health-fs');
-        expect(dialogs).toContain('lux-glass-dialog-card--health-plan-pick');
+        expect(dialogs).toContain('social-page-surface social-project-health-page');
+        expect(dialogs).toContain('social-page-surface social-project-risk-page');
+        expect(dialogs).toContain('social-project-health-plan-page');
+        expect(dialogs).toMatch(/social-page-surface social-project-health-page[\s\S]{0,180}aria-label="Project health"/);
+        expect(dialogs).toMatch(/social-page-surface social-project-risk-page[\s\S]{0,180}aria-label="Risk register"/);
     });
 
     it('dialogs JS uses studio panel shell and studio body on health and risk', () => {
@@ -139,8 +138,25 @@ describe('social-project-health-ui', () => {
         expect(dialogs).toContain('lux-studio-panel');
         expect(dialogs).toContain('lux-studio-body');
         expect(dialogs).toContain('spr-risk-card lux-studio-section');
-        expect(dialogs).toContain('sph-card lux-studio-section');
-        expect(dialogs).toContain('sph-hygiene-chip lux-control-btn');
+        expect(dialogs).toContain('sph-card lux-card lux-soft-chrome sph-card--readiness');
+        expect(dialogs).toContain('sph-verdict sph-verdict--rich sph-verdict--fs lux-studio-section lux-soft-chrome');
+        expect(dialogs).toContain('sph-why lux-card lux-soft-chrome');
+        expect(dialogs).toContain('sph-card-head lux-card-head');
+        expect(dialogs).toContain('sph-card-head-note');
+        expect(dialogs).toContain('sph-readiness-checks');
+        expect(dialogs).toContain('sph-readiness-row lux-soft-chrome');
+        expect(dialogs).toContain('sph-readiness-label');
+        expect(dialogs).toContain('sph-readiness-value');
+        expect(dialogs).toContain('sph-readiness-hint');
+        expect(dialogs.match(/sph-card lux-card lux-soft-chrome/g)).toHaveLength(9);
+        expect(dialogs).not.toContain('lux-glass-dialog-compact-section');
+        expect(dialogs).not.toContain('lux-glass-dialog-compact-stat');
+        expect(dialogs).toContain('social-page-form-actions');
+        expect(dialogs).toContain('social-page-field');
+        expect(dialogs).toContain('social-project-risk-page-head lux-soft-chrome');
+        expect(dialogs).toContain('social-page-surface-head sph-fs-topbar lux-soft-chrome');
+        expect(dialogs).not.toContain('<div class="sph-board" data-lux-transparency-exempt="1">');
+        expect(dialogs).toContain('sph-hygiene-chip home-hover-chip lux-control-btn');
         expect(dialogs).toContain('sph-week-item lux-control-btn');
         expect(dialogs).toContain('lux-mode-btn sph-plan-tab');
         expect(dialogs).toContain('sph-pick-row lux-control-btn');
@@ -152,18 +168,26 @@ describe('social-project-health-ui', () => {
         expect(dialogs).toContain('spr-group-toggle lux-control-btn');
         expect(dialogs).toContain('lux-studio-panel spt-detail-dialog');
         expect(dialogs).toContain('spt-detail-section lux-studio-section');
-        expect(dialogs).toContain('spt-detail-dep-chip lux-control-btn');
+        expect(dialogs).toContain('spt-detail-dep-chip home-hover-chip lux-control-btn');
+        const modals = readSource('assets/css/lux-modals.css');
+        expect(modals).toContain('.lux-glass-dialog-compact-section');
+        expect(modals).toContain('gap: 10px;');
+        expect(modals).toContain('padding: 12px 14px;');
+        expect(modals).toContain('border-radius: 14px;');
+        expect(modals).toContain('.lux-glass-dialog-compact-stat-stack');
+        expect(modals).toContain('.lux-glass-dialog-compact-stat');
+        expect(readSource('social.html')).toContain('lux-modals.css?v=20260804-graph-pages1');
         expect(dialogs).not.toContain('lux-glass-dialog-group-section sph-fs-hero-section');
         expect(dialogs).not.toContain('lux-soft-chrome lux-glass-dialog-panel-section');
     });
 
-    it('graph render JS uses studio shell on history and schedule-help stacked dialogs', () => {
+    it('graph render JS uses page surfaces on history and schedule-help pages', () => {
         const graph = readSource('assets/js/pages/social-workspace-graph-render.js');
-        expect(graph).toContain('sptg-history-dialog lux-studio-panel');
-        expect(graph).toContain('sptg-schedule-help-dialog lux-studio-panel');
-        expect(graph).toContain('sptg-history-list lux-studio-body');
-        expect(graph).toContain('sptg-schedule-help-list lux-studio-body');
-        expect(graph).toContain("headClass: 'lux-studio-head'");
+        expect(graph).toContain('social-project-task-graph-history-page sptg-history-dialog');
+        expect(graph).toContain('social-project-task-graph-schedule-page sptg-schedule-help-dialog');
+        expect(graph).toContain('social-page-surface-body sptg-history-list');
+        expect(graph).toContain('social-page-surface-body sptg-schedule-help-list');
+        expect(graph).not.toContain('role="dialog"');
         expect(graph).toContain('sptg-history-row lux-control-btn');
         expect(graph).toContain('sptg-schedule-help-row lux-control-btn');
         expect(graph).not.toContain('sptg-history-row lux-soft-chrome');

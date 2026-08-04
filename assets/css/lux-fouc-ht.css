@@ -498,7 +498,7 @@ html.lux-light-mode body .lux-utility-panel .lux-utility-category-filters.lux-ta
   border: 1px solid var(--lux-btn-border-solid, rgba(var(--lux-accent-rgb), 0.22));
   box-shadow: var(--lux-btn-frame-shadow);
   color: var(--lux-accent-2);
-  font-size: 14px;
+  font-size: 13px;
 }
 .lux-utility-item-copy {
   display: grid;
@@ -668,14 +668,217 @@ body.lux-route-home #page-home #lux-home-shell :is(
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .sch-event.is-draft {
   border-style: dashed;
 }
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-title {
-  padding-right: 44px;
-  font-size: 16px;
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details {
+  display: block;
+  min-width: 0;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--lux-panel-border-soft, var(--lux-border));
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .schedule-session-card > .lms-session-details:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-detail-row {
+  display: block;
+  min-width: 0;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-detail-label {
+  display: inline;
+  color: var(--lux-text-muted);
+  font-size: 10px;
   font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  margin-right: 4px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.7fr) minmax(0, 0.65fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: 8px 14px;
+  min-width: 0;
+  margin-bottom: 7px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid color-mix(in srgb, var(--lux-accent, #78b4c8) 32%, var(--lux-panel-border-soft, var(--lux-border)));
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  color: var(--lux-text);
+  line-height: 1.2;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--course {
+  align-items: center;
+  text-align: center;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--type {
+  align-items: center;
+  text-align: center;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--duration {
+  align-items: flex-end;
+  text-align: right;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-label {
+  display: inline-flex;
+  align-items: center;
+  color: var(--lux-text-muted);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-label i {
+  margin-right: 4px;
+  color: var(--lux-text-muted);
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-value {
+  min-width: 0;
+  color: var(--lux-text);
+  font-size: 11px;
+  font-weight: 750;
   line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--course .lms-session-summary-value {
+  font-size: 12px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--type .lms-session-summary-value {
+  padding: 3px 8px;
+  border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-accent, #78b4c8) 10%, transparent);
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item i,
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-detail-label i {
+  color: var(--lux-text-muted);
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-detail-label i {
+  margin-right: 4px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-detail-grid .lms-session-detail-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 10px;
+  text-align: center;
+  border-right: 2px solid color-mix(in srgb, var(--lux-accent, #78b4c8) 28%, var(--lux-panel-border-soft, var(--lux-border)));
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-detail-grid .lms-session-detail-row:last-child {
+  border-right: 0;
+}
+@media (max-width: 520px) {
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--course {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--type {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-summary-item--duration {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    gap: 4px;
+  }
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--session .lms-session-detail-grid .lms-session-detail-row {
+    border-right: 0;
+  }
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  min-width: 0;
+  margin-bottom: 6px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary-item {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--lux-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary-item strong {
+  color: var(--lux-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-label {
+  font-size: 12px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-value {
+  font-size: 13px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-row--course {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 6px;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 4px 16px;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-grid .lms-session-detail-row {
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 100%;
+}
+@media (max-width: 520px) {
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    gap: 4px;
+  }
+  :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-grid .lms-session-detail-row {
+    width: auto;
+  }
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-detail-value {
+  display: inline;
+  min-width: 0;
+  color: var(--lux-text);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-meta {
   font-size: 13px;
@@ -683,9 +886,10 @@ body.lux-route-home #page-home #lux-home-shell :is(
   color: var(--lux-text-muted);
   margin-top: 7px;
   padding-right: 44px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
 }
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .ev-actions {
   position: absolute;
@@ -1297,12 +1501,17 @@ body.lux-unified-shell.lux-route-exams #admin-exams-root [data-lux-glass-root="1
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) :is(
   .social-project-task-graph-card.lux-soft-chrome,
   .social-project-task-graph-group.lux-soft-chrome,
-  .social-project-task-graph-immersive-topbar.lux-soft-chrome,
   .social-project-task-graph-immersive-footer.lux-soft-chrome,
-  .social-project-task-graph-detail-rail.lux-soft-chrome,
-  .social-project-task-graph-rail-overview-section.lux-soft-chrome,
-  .social-project-task-graph-inspector-section-card.lux-soft-chrome,
-  .social-project-task-graph-schedule-stat.lux-soft-chrome,
+  .social-page-surface-head.lux-soft-chrome,
+  .sph-verdict.lux-soft-chrome,
+  .sph-why.lux-soft-chrome,
+  .sph-card.lux-soft-chrome,
+  .sph-readiness-row.lux-soft-chrome,
+  .sph-chip.lux-soft-chrome,
+  .spr-rail.lux-soft-chrome,
+  .spr-main.lux-soft-chrome,
+  .spr-risk-card.lux-soft-chrome,
+  .spr-compose.lux-soft-chrome,
   .social-project-task-graph-health-metric.lux-soft-chrome,
   .sptg-context-menu.lux-soft-chrome,
   .social-project-detail-hero-rich.lux-soft-chrome
@@ -1317,10 +1526,23 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) :is(
   background-clip: padding-box;
 }
 
-body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) :is(
-  .social-project-task-graph-immersive-topbar.lux-soft-chrome,
-  .social-project-task-graph-immersive-footer.lux-soft-chrome
-) {
+/* Task-map detail rail uses the normal page card paint system. */
+body.lux-route-social :is(
+  .social-project-task-graph-detail-rail.lux-card.lux-soft-chrome,
+  .social-project-task-graph-inspector-scroll .lux-card.lux-soft-chrome,
+  .social-project-task-graph-inspector-section-card.lux-card.lux-soft-chrome
+):not([data-lux-glass-root="1"]) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-immersive-footer.lux-soft-chrome {
   border-radius: 0;
 }
 
@@ -1365,7 +1587,6 @@ body.lux-route-timetable .lux-timetable-page :is(
   .lux-timetable-session-card,
   .schedule-session-card,
   .page-hero-badge.home-hover-chip,
-  .lux-timetable-hero-badge.home-hover-chip,
   .schedule-chip,
   .lux-timetable-chip
 ),
@@ -1375,6 +1596,7 @@ body.lux-route-registration #page-registration :is(
   .lux-timetable-hero-focus,
   .lux-timetable-hero-focus .lux-focus-panel__chip.home-hover-chip,
   .lux-timetable-hero-focus .lux-hero-signal.home-hover-chip,
+  .registration-summary-panel,
   .registration-insight-card,
   .registration-command-band,
   .registration-footer-bar,
@@ -1399,10 +1621,6 @@ body.lux-route-registration #page-registration .lux-card:not([data-lux-glass-roo
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
-}
-
-body.lux-route-timetable .lux-timetable-page :is(.page-hero-badge.home-hover-chip, .lux-timetable-hero-badge.home-hover-chip) {
-  border-radius: 999px;
 }
 
 body.lux-route-registration #page-registration .page-hero-badge.home-hover-chip {
@@ -3603,7 +3821,8 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
     .social-project-hub-attention,
     .social-project-hub-rail-card,
     .social-project-hub-contribution-stat,
-    .social-project-hub-cta-tile
+    .social-project-hub-cta-tile,
+    .social-page-surface-head
   ).home-hover-chip:hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));

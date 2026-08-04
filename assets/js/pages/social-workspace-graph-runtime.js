@@ -153,14 +153,14 @@
         function graphStackAnchorHasFullscreenMap(anchor) {
             if (!anchor) return false;
             return Boolean(anchor.querySelector?.(
-                '.lux-glass-dialog-backdrop--project-task-graph, .lux-glass-dialog-card--project-task-graph-fullscreen'
+                '[data-social-page-surface="project-task-graph"], .lux-glass-dialog-backdrop--project-task-graph, .lux-glass-dialog-card--project-task-graph-fullscreen'
             ));
         }
 
         function projectTaskGraphChildSlotHasPopup(childSlot) {
             if (!childSlot) return false;
             return Boolean(childSlot.querySelector(
-                ':scope > .lux-glass-dialog-backdrop, :scope > .social-project-health-stack .lux-glass-dialog-backdrop'
+                ':scope > [data-social-page-surface], :scope > .lux-glass-dialog-backdrop, :scope > .social-project-health-stack [data-social-page-surface], :scope > .social-project-health-stack .lux-glass-dialog-backdrop'
             ));
         }
 
@@ -210,7 +210,7 @@
             const activeKind = text(activeDialog()?.type || '');
             const anchor = dialogRegion.querySelector('[data-project-task-graph-anchor="1"]');
             const childSlot = dialogRegion.querySelector('[data-project-task-graph-child-slot="1"]');
-            const loneGraph = dialogRegion.querySelector(':scope > .lux-glass-dialog-backdrop--project-task-graph');
+            const loneGraph = dialogRegion.querySelector(':scope > [data-social-page-surface="project-task-graph"], :scope > .lux-glass-dialog-backdrop--project-task-graph');
             const hasStack = dialogRegion.querySelector(':scope > .social-project-task-graph-stack');
 
             if (activeKind === 'project-task-graph') {

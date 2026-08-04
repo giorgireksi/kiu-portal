@@ -43,7 +43,36 @@
             'social-neo-story-viewer-region',
             'social-neo-story-composer-region'
         ];
-        const SOCIAL_OVERLAY_SURFACE_SELECTOR = '.lux-glass-dialog-backdrop, .social-neo-story-viewer, .social-neo-story-composer';
+        const SOCIAL_GRAPH_PAGE_ROOT_DIALOGS = new Set([
+            'project-task-graph',
+            'project-task-graph-history',
+            'project-task-graph-schedule-help',
+            'project-health',
+            'project-risk',
+            'project-health-plan-pick'
+        ]);
+        const SOCIAL_GRAPH_PAGE_STACKED_DIALOGS = new Set([
+            'project-task-detail',
+            'project-task-edit',
+            'project-task-create',
+            'project-task-delete',
+            'project-settings'
+        ]);
+        const SOCIAL_OVERLAY_SURFACE_SELECTOR = '[data-social-page-surface], .lux-glass-dialog-backdrop, .social-neo-story-viewer, .social-neo-story-composer';
+
+        function isSocialGraphPageDialog(type = text(activeDialog()?.type || '')) {
+            const kind = text(type);
+            if (SOCIAL_GRAPH_PAGE_ROOT_DIALOGS.has(kind)) return true;
+            if (!SOCIAL_GRAPH_PAGE_STACKED_DIALOGS.has(kind)) return false;
+            const runtime = state();
+            let parent = runtime?.ui?.previousDialog || null;
+            while (parent) {
+                if (text(parent.type) === 'project-health') return true;
+                parent = parent.__restorePrevious || null;
+            }
+            if (text(runtime?.ui?.projectTaskGraphStackAnchor?.type) === 'project-task-graph') return true;
+            return isProjectTaskGraphStackActive(runtime);
+        }
 
         function socialOverlayPortalHasContent() {
             return SOCIAL_OVERLAY_REGION_IDS.some((regionId) => {
@@ -104,7 +133,7 @@
             const runtime = state();
             if (!runtime?.ui) return;
 
-            const hasDialogSurface = Boolean(document.getElementById('lux-glass-dialog-region')?.querySelector('.lux-glass-dialog-backdrop'));
+            const hasDialogSurface = Boolean(document.getElementById('lux-glass-dialog-region')?.querySelector('[data-social-page-surface], .lux-glass-dialog-backdrop'));
             const hasStoryViewer = Boolean(document.getElementById('social-neo-story-viewer-region')?.querySelector('.social-neo-story-viewer'));
             const hasStoryComposer = Boolean(document.getElementById('social-neo-story-composer-region')?.querySelector('.social-neo-story-composer'));
 
@@ -252,6 +281,11 @@
         }
 
         function syncSocialOverlayLock() {
+            const pageOpen = isSocialGraphPageDialog();
+            if (pageOpen) {
+                if (socialOverlayLockArtifactsPresent()) clearSocialOverlayLockArtifacts();
+                return;
+            }
             const stateOpen = Boolean(activeDialog())
                 || (typeof isPortalStoryViewerOpen === 'function' && isPortalStoryViewerOpen())
                 || (typeof isPortalStoryComposerOpen === 'function' && isPortalStoryComposerOpen());
@@ -302,6 +336,7 @@
         }
 
         function focusSocialDialog() {
+            if (isSocialGraphPageDialog()) return;
             const dialogRegion = document.getElementById('lux-glass-dialog-region');
             if (!dialogRegion) return;
             // Prefer the top-most overlay card (health child, then graph child, then any).
@@ -371,6 +406,7 @@
         }
 
         function shouldUseDialogOnlyRender(type, activePanel) {
+            if (isSocialGraphPageDialog(type)) return true;
             if (overlayDialogPreservesScroll(type)) return true;
             return workspaceDialogKeepsCenter(type)
                 && ['projects', 'workspace', 'photography'].includes(activePanel);

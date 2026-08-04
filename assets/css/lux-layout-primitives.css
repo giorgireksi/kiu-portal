@@ -284,9 +284,8 @@
   color: var(--lux-accent, var(--lux-text));
 }
 
-/* Hero meta pills (timetable + registration; matte paint in lux-fouc-ht per route). */
-.page-hero-badge.lux-pill,
-.lux-timetable-hero-badge {
+/* Hero meta pills (matte paint in lux-fouc-ht per route). */
+.page-hero-badge.lux-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -300,8 +299,7 @@
   white-space: nowrap;
 }
 
-.page-hero-badge.lux-pill i,
-.lux-timetable-hero-badge i {
+.page-hero-badge.lux-pill i {
   flex: 0 0 auto;
   font-size: 11px;
   opacity: 0.85;

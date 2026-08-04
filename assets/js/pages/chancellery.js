@@ -594,14 +594,6 @@ function switchChancelleryTab(tab) {
     }
 }
 
-function showChancelleryCompose() {
-    ensureChancelleryUiState().selectedCaseId = '';
-    closeChancelleryCaseModal();
-    if (!syncChancelleryWorkspaceRegion()) {
-        renderChancelleryPage();
-    }
-}
-
 function bindChancelleryForwardModalDelegates() {
     if (document.documentElement.dataset.chancelleryForwardModalBound === '1') return;
     document.documentElement.dataset.chancelleryForwardModalBound = '1';
@@ -655,10 +647,6 @@ function bindChancelleryDelegates(root) {
         if (!actionTrigger) return;
         event.preventDefault();
         const action = String(actionTrigger.getAttribute('data-chancellery-action') || '').trim();
-        if (action === 'show-compose') {
-            showChancelleryCompose();
-            return;
-        }
         if (action === 'submit-request') {
             submitRequest();
             return;
@@ -1614,7 +1602,7 @@ function renderChancelleryDateFilterInputs(uiState) {
     `;
 }
 
-function renderChancelleryCommandBar({ role, uiState, count, showCompose = false }) {
+function renderChancelleryCommandBar({ role, uiState, count }) {
     const filters = uiState.filters || {};
     const isAdmin = role === USER_ROLES.ADMIN;
     const routingFilter = uiState.routingFilter || 'all';
@@ -1628,11 +1616,6 @@ function renderChancelleryCommandBar({ role, uiState, count, showCompose = false
         ` : '';
     return `
         <div class="filter-shell lux-chancellery-command-bar home-hover-chip" data-lux-visual-skip="1">
-            ${showCompose ? `
-                <button type="button" class="lux-primary-btn" data-chancellery-action="show-compose">
-                    <i class="fas fa-plus"></i> New appeal
-                </button>
-            ` : ''}
             ${isAdmin ? `
                 <button type="button" class="lux-secondary-btn home-hover-chip" data-chancellery-action="edit-document" title="Controls the student appeal form for this faculty">
                     <i class="fas fa-file-pen"></i> Edit appeal document
@@ -2133,8 +2116,7 @@ function resolveChancelleryRegionMarkup(context) {
         commandMarkup = renderChancelleryCommandBar({
             role,
             uiState,
-            count: filteredRequests.length,
-            showCompose: true
+            count: filteredRequests.length
         });
         contentMarkup = renderChancelleryStudentAppealsPanel(requests, selectedRequest);
     } else if (isStaff) {

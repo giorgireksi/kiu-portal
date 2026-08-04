@@ -86,7 +86,7 @@ describe('lux-focus-panel portal contract', () => {
 
     it('dual-writes lux-focus-panel on pilot and phase-3 hero asides', () => {
         // Bare-shell era: LMS/TT keep focus class aliases without lux-focus-panel sheet/class dual-write
-        expect(readSource('timetable.html')).toContain('lux-timetable-hero-focus lux-hero-side');
+  expect(readSource('timetable.html')).toContain('lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side');
         expect(readSource('lms.html')).toContain('lms-hero-focus lux-hero-side');
         expect(readSource('assets/js/features/home-dashboard/widget-render.js')).toContain(
             'lms-hero-focus lux-hero-side lux-focus-panel'
@@ -95,7 +95,7 @@ describe('lux-focus-panel portal contract', () => {
         expect(readSource('assets/js/pages/chancellery.js')).toContain('lux-chancellery-hero-side lux-timetable-hero-focus lux-focus-panel');
         expect(readSource('assets/js/pages/study-card-page.js')).toContain('lux-hero-side lux-focus-panel');
         // student-service hero focus dual-write deferred to Phase 4 (workspace redesign removed aside)
-        expect(readSource('registration.html')).toContain('lux-hero-side registration-hero-aside lux-focus-panel');
+        expect(readSource('registration.html')).toContain('registration-summary-panel home-hover-chip');
     });
 
     it('keeps engine soft treatment for focus panels', () => {

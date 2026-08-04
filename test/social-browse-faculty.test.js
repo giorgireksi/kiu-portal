@@ -29,7 +29,7 @@ describe('social global browse faculty', () => {
         expect(shell).toContain("'messages'");
         expect(shell).toContain("'alerts'");
         expect(shell).toContain("'profile'");
-        expect(interactions).toMatch(/function renderSectionCommandCenter[\s\S]*?return '';/);
+        expect(interactions).toContain('window.KiuSocialPagination.renderModeControl(activePanel)');
         expect(interactions).not.toMatch(/function renderSectionCommandCenter[\s\S]*?renderSocialBrowseFacultyCommand/);
         expect(events).toContain('select[name="socialBrowseFaculty"]');
         expect(events).toContain("runtime.ui.socialBrowseFaculty = next");

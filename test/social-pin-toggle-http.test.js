@@ -57,7 +57,7 @@ describe('social-pin-toggle-http', () => {
         const html = readSource('social.html');
         expect(html).toContain('social-page-boot-runtime.js?v=20260802-pinfix4');
         expect(html).toContain('social-pin-model.js?v=20260802-pinfix4');
-        expect(html).toContain('social-page-events.js?v=20260802-pinfix4');
+        expect(html).toContain('social-page-events.js?v=20260804-pagesize1');
         expect(html).toContain('social-lite-content-runtime.js?v=20260802-pinfix4');
     });
 });

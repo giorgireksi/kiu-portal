@@ -29,31 +29,44 @@ describe('registration route regressions', () => {
         expect(html).not.toMatch(/registration-workspace[\s\S]*data-lux-glass-root="1"/);
     });
 
-    it('loads shared layout primitives and regshare1 cache', () => {
+    it('loads shared layout primitives and compact summary cache', () => {
         const html = readSource('registration.html');
-        expect(html).toContain('regws1');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260804-divider1');
+        expect(html).toContain('registration-student-route.js?v=20260804-summarybalanced1');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('lux-fouc-ht.css');
     });
 
     it('uses shared shell classes and home-hover-chip on matte inners', () => {
         const html = readSource('registration.html');
-        expect(html).toContain('page-hero lux-hero lux-timetable-hero registration-hero-shell');
+        expect(html).not.toContain('page-hero lux-hero lux-timetable-hero registration-hero-shell');
         expect(html).toMatch(/registration-studio-shell[\s\S]*data-lux-glass-root="1"/);
-        expect(html).toContain('lux-section-kicker lux-page-kicker');
+        expect(html).not.toContain('lux-section-kicker lux-page-kicker');
+        expect(html).not.toContain('registration-hero-copy');
+        expect(html).not.toContain('registration-hero-meta');
+        expect(html).not.toContain('registration-hero-status');
+        expect(html).not.toContain('registration-hero-semester');
+        expect(html).not.toContain('registration-hero-faculty');
+        expect(html).not.toContain('registration-hero-ects"');
         expect(html).not.toContain('lux-summary-surface--hero');
         expect(html).not.toContain('wave2-chip');
         expect(html).not.toContain('lux-soft-chrome');
-        expect(html).toMatch(/registration-hero-aside[\s\S]*home-hover-chip/);
-        expect(html).toContain('page-hero-badge lux-pill home-hover-chip');
-        expect(html).toContain('lux-focus-panel__chip lux-timetable-focus-time home-hover-chip');
+        expect(html).toContain('registration-summary-panel home-hover-chip');
+        expect(html).toContain('registration-summary-term-field');
+        expect(html).toContain('registration-summary-status-line');
+        expect(html).not.toContain('page-hero-badge lux-pill home-hover-chip');
+        expect(html).toContain('id="timetable-hero-focus-time"');
         expect(html).toContain('lux-hero-signal home-hover-chip');
-        expect(html).toMatch(/registration-studio-deck[\s\S]*registration-metrics-band[\s\S]*reg-tabs/);
-        expect(html).toContain('registration-insight-card home-hover-chip');
-        expect(html).toContain('data-reg-metric="hold"');
-        expect(html).not.toContain('registration-summary-card');
+        expect(html).toMatch(/registration-studio-deck[\s\S]*registration-metrics-band[\s\S]*registration-summary-panel[\s\S]*reg-tabs/);
+        expect(html).toContain('registration-summary-grid');
+        expect(html).toContain('registration-summary-facts');
+        expect(html).not.toContain('registration-hero-ects-card');
+        expect(html).not.toContain('registration-hero-selected-card');
+        expect(html).not.toContain('data-reg-metric="hold"');
+        expect(html).not.toContain('data-reg-metric="next-step"');
+        expect(html).not.toContain('registration-summary-focus');
         expect(html).not.toContain('lux-timetable-command registration-command-band');
-        expect(html).toContain('registration-command-band home-hover-chip');
+        expect(html).not.toContain('registration-command-band home-hover-chip');
         expect(html).toContain('registration-footer-bar registration-footer-bar-shell registration-progress-shell home-hover-chip');
         expect(html).toContain('lux-card-meta registration-insight-label');
         expect(html).toContain('lux-card-title registration-workspace-title');
@@ -81,6 +94,22 @@ describe('registration route regressions', () => {
         expect(regBlock).toContain('.registration-module-list-card');
         expect(regBlock).toContain('body.lux-route-registration .registration-studio-shell');
         expect(regBlock).toContain('.registration-studio-shell > .registration-studio-deck');
+        expect(regBlock).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
+        expect(regBlock).toContain('grid-template-columns: repeat(3, minmax(0, 1fr));');
+        expect(regBlock).toContain('font-size: 18px;');
+        expect(regBlock).toContain('font-size: 12px;');
+        expect(regBlock).toContain('font-size: 13px;');
+        expect(regBlock).toContain('font-size: 14px;');
+        expect(regBlock).toContain('align-items: start;');
+        expect(regBlock).toContain('align-self: start;');
+        expect(regBlock).toContain('min-height: 0;');
+        expect(regBlock).toContain('body.lux-route-registration .registration-summary-panel');
+        expect(regBlock).toContain('body.lux-route-registration .registration-summary-grid');
+        expect(regBlock).toContain('body.lux-route-registration .registration-summary-facts');
+        expect(regBlock).toContain('border-bottom: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);');
+        expect(regBlock).toContain('border-inline-start: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);');
+        expect(regBlock).toContain('border-top: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);');
+        expect(regBlock).toContain('grid-template-columns: 1fr;');
         expect(regBlock).toContain('body.lux-route-registration .reg-tabs');
         expect(regBlock).not.toMatch(/body\.lux-route-registration \.reg-tab\s*\{[^}]*background:\s*transparent/);
         expect(regBlock).toMatch(/body\.lux-route-registration \.reg-tab\.active\s*\{[^}]*linear-gradient\(135deg, var\(--lux-accent\)/);
@@ -93,7 +122,7 @@ describe('registration route regressions', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toContain('body.lux-route-registration #page-registration');
         expect(fouc).toContain('body.lux-route-registration .registration-studio-shell[data-lux-glass-root="1"]');
-        expect(fouc).toMatch(/body\.lux-route-registration #page-registration :is\([\s\S]*\.registration-insight-card/);
+        expect(fouc).toMatch(/body\.lux-route-registration #page-registration :is\([\s\S]*\.registration-summary-panel/);
         expect(fouc).toMatch(/body\.lux-route-registration #page-registration :is\([\s\S]*\.registration-command-band/);
         expect(fouc).toMatch(/body\.lux-route-registration #page-registration \.lux-card:not\(\[data-lux-glass-root="1"\]\)/);
         expect(fouc).toMatch(/:is\(\.page-hero, \[data-lux-glass-root="1"\]\):not\(\.home-hover-chip\)[\s\S]*transition:\s*none/);

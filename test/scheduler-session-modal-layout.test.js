@@ -107,8 +107,8 @@ describe('scheduler session modal layout regressions', () => {
         expect(fouc).not.toContain('#schModalOverlay');
         expect(fouc).toContain('#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent');
         expect(html).toContain('lux-modals.css?v=20260803-schapply5');
-        expect(html).toContain('lux-page-bare-lite.css?v=20260803-weeklist2');
-        expect(html).toContain('lux-fouc-ht.css?v=20260803-weeklist1');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260804-commandmerge1');
+        expect(html).toContain('lux-fouc-ht.css?v=20260804-heroerase1');
     });
 
     it('uses shared CTA picker chrome from lux-controls, not session soft-field overrides', () => {

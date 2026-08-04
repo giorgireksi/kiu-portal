@@ -105,6 +105,12 @@
             const action = text(trigger.getAttribute('data-action'));
             if (!action) return;
             if (action === 'noop') return;
+            if (action === 'social-pagination-mode' || action === 'social-pagination-page') {
+                event.__kiuSocialHandled = true;
+                event.preventDefault();
+                window.KiuSocialPagination?.handleAction(action, trigger);
+                return;
+            }
             if (trigger.matches('input[type="file"]')) return;
             const draggedNode = trigger.classList?.contains('social-project-task-graph-node-g')
                 ? trigger
@@ -419,6 +425,12 @@
                 runtime.ui.projectDiscoverFaculty = next === 'all' ? 'all' : next;
                 runtime.ui.researchFaculty = next === 'all' ? '' : next;
                 renderSocialPageNow('social-browse-faculty');
+                return;
+            }
+
+            if (target.matches?.('[data-action="social-pagination-page-size"]')) {
+                event.__kiuSocialChangeHandled = true;
+                window.KiuSocialPagination?.handleAction('social-pagination-page-size', target);
                 return;
             }
 

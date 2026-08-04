@@ -879,21 +879,25 @@
                 }).join('')
                 : `<div class="social-neo-empty sptg-history-empty">No saves yet. Click <strong>Save</strong> on the map to create one.</div>`;
             return `
-                <div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Map save history">
-                    <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass sptg-history-dialog lux-studio-panel" data-action="noop" data-lux-transparency-exempt="1">
-                        ${neoHead('Map save history', `${text(project?.name || 'Project')} · up to ${PROJECT_TASK_GRAPH_CHECKPOINT_MAX} saves`, { icon: 'fas fa-clock-rotate-left', headClass: 'lux-studio-head' })}
-                        <div class="lux-glass-dialog-body sptg-history-list lux-studio-body">
-                            ${rows}
+                <section class="social-page-surface social-project-task-graph-history-page sptg-history-dialog" data-social-page-surface="project-task-graph-history" data-action="noop" aria-label="Map save history">
+                    <header class="social-page-surface-head">
+                        <div class="social-page-surface-heading">
+                            <strong><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Map save history</strong>
+                            <span>${escape(text(project?.name || 'Project'))} · up to ${PROJECT_TASK_GRAPH_CHECKPOINT_MAX} saves</span>
                         </div>
-                        ${neoActions({
-                            cancelLabel: 'Close',
-                            submitLabel: 'Save now',
-                            submitIcon: 'fas fa-floppy-disk',
-                            submitType: 'button',
-                            submitAttrs: `data-action="project-task-graph-save" data-project-id="${escape(projectId)}"`
-                        })}
+                        <button class="lux-ghost-btn" type="button" data-action="dialog-close" aria-label="Back to task map"><i class="fas fa-arrow-left"></i> Back</button>
+                    </header>
+                    <div class="social-page-surface-body sptg-history-list">
+                        ${rows}
                     </div>
-                </div>
+                    ${neoActions({
+                        cancelLabel: 'Back to task map',
+                        submitLabel: 'Save now',
+                        submitIcon: 'fas fa-floppy-disk',
+                        submitType: 'button',
+                        submitAttrs: `data-action="project-task-graph-save" data-project-id="${escape(projectId)}"`
+                    })}
+                </section>
             `;
         }
 
@@ -918,20 +922,24 @@
                 </div>
             `).join('');
             return `
-                <div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Schedule terms">
-                    <div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card lux-glass-dialog-card--social-glass sptg-schedule-help-dialog lux-studio-panel" data-action="noop" data-lux-transparency-exempt="1">
-                        ${neoHead('Schedule terms', `${text(project?.name || 'Project')} · critical path method (CPM)`, { icon: 'fas fa-circle-question', headClass: 'lux-studio-head' })}
-                        <div class="lux-glass-dialog-body sptg-schedule-help-list lux-studio-body" data-lux-transparency-exempt="1">
-                            ${rows}
+                <section class="social-page-surface social-project-task-graph-schedule-page sptg-schedule-help-dialog" data-social-page-surface="project-task-graph-schedule-help" data-action="noop" aria-label="Schedule terms">
+                    <header class="social-page-surface-head">
+                        <div class="social-page-surface-heading">
+                            <strong><i class="fas fa-circle-question" aria-hidden="true"></i> Schedule terms</strong>
+                            <span>${escape(text(project?.name || 'Project'))} · critical path method (CPM)</span>
                         </div>
-                        ${neoActions({
-                            hideCancel: true,
-                            submitLabel: 'Got it',
-                            submitType: 'button',
-                            submitAttrs: 'data-action="dialog-close"'
-                        })}
+                        <button class="lux-ghost-btn" type="button" data-action="dialog-close" aria-label="Back to task map"><i class="fas fa-arrow-left"></i> Back</button>
+                    </header>
+                    <div class="social-page-surface-body sptg-schedule-help-list">
+                        ${rows}
                     </div>
-                </div>
+                    ${neoActions({
+                        hideCancel: true,
+                        submitLabel: 'Back to task map',
+                        submitType: 'button',
+                        submitAttrs: 'data-action="dialog-close"'
+                    })}
+                </section>
             `;
         }
 
@@ -1044,12 +1052,12 @@
             if (!taskCount) {
                 if (!scope.mineOnly) return '';
                 return `
-                <section class="lux-glass-dialog-group-section social-project-task-graph-rail-overview-section lux-soft-chrome home-hover-chip">
-                    <div class="lux-glass-dialog-group-section-head">
-                        <strong>Schedule</strong>
-                        <span>Your tasks only</span>
+                <section class="lux-card social-project-task-graph-rail-overview-section lux-soft-chrome">
+                    <div class="lux-card-head social-project-task-graph-rail-overview-head">
+                        <strong class="lux-card-title">Schedule</strong>
+                        <span class="lux-card-meta">Your tasks only</span>
                     </div>
-                    <p class="social-project-task-graph-schedule-empty-hint social-neo-muted">No open tasks assigned to you — turn off Only mine for the full project schedule.</p>
+                    <p class="social-project-task-graph-schedule-empty-hint social-neo-muted lux-card-copy">No open tasks assigned to you — turn off Only mine for the full project schedule.</p>
                 </section>`;
             }
             const scopeLabel = scope.mineOnly ? 'Your tasks only' : 'ES / EF · float · critical path';
@@ -1062,29 +1070,29 @@
                     ? 'tasks on the critical path of your filtered map'
                     : 'any delay here delays the whole project');
             return `
-                <section class="lux-glass-dialog-group-section social-project-task-graph-rail-overview-section lux-soft-chrome home-hover-chip">
-                    <div class="lux-glass-dialog-group-section-head">
-                        <strong>Schedule</strong>
-                        <span>${escape(scopeLabel)}</span>
+                <section class="lux-card social-project-task-graph-rail-overview-section lux-soft-chrome">
+                    <div class="lux-card-head social-project-task-graph-rail-overview-head">
+                        <strong class="lux-card-title">Schedule</strong>
+                        <span class="lux-card-meta">${escape(scopeLabel)}</span>
                     </div>
-                    <div class="social-project-task-graph-schedule-overview" data-lux-transparency-exempt="1">
-                        <div class="social-project-task-graph-schedule-stat lux-soft-chrome home-hover-chip">
-                            <span class="social-project-task-graph-schedule-stat-label">Shortest finish</span>
-                            <span class="social-project-task-graph-schedule-stat-value">${escape(formatProjectScheduleHours(totalDuration))}</span>
-                            <span class="social-project-task-graph-schedule-stat-hint">${escape(finishHint)}</span>
+                    <div class="social-project-task-graph-schedule-overview lux-card-body" data-lux-transparency-exempt="1">
+                        <div class="social-project-task-graph-schedule-stat lux-stat">
+                            <span class="social-project-task-graph-schedule-stat-label">${escape('Shortest finish')}</span>
+                            <strong class="social-project-task-graph-schedule-stat-value">${escape(formatProjectScheduleHours(totalDuration))}</strong>
+                            <em class="social-project-task-graph-schedule-stat-hint">${escape(finishHint)}</em>
                         </div>
-                        ${plannedFinishDate ? `<div class="social-project-task-graph-schedule-stat lux-soft-chrome home-hover-chip">
+                        ${plannedFinishDate ? `<div class="social-project-task-graph-schedule-stat lux-stat">
                             <span class="social-project-task-graph-schedule-stat-label">Planned finish</span>
-                            <span class="social-project-task-graph-schedule-stat-value">${escape(plannedFinishDate)}</span>
-                            <span class="social-project-task-graph-schedule-stat-hint">from project start date + shortest finish (no weekends)</span>
+                            <strong class="social-project-task-graph-schedule-stat-value">${escape(plannedFinishDate)}</strong>
+                            <em class="social-project-task-graph-schedule-stat-hint">from project start date + shortest finish (no weekends)</em>
                         </div>` : ''}
-                        <div class="social-project-task-graph-schedule-stat lux-soft-chrome home-hover-chip">
+                        <div class="social-project-task-graph-schedule-stat lux-stat">
                             <span class="social-project-task-graph-schedule-stat-label">Critical path</span>
-                            <span class="social-project-task-graph-schedule-stat-value is-critical">${escape(String(criticalCount))} task${criticalCount === 1 ? '' : 's'}</span>
-                            <span class="social-project-task-graph-schedule-stat-hint">${criticalHint}</span>
+                            <strong class="social-project-task-graph-schedule-stat-value is-critical">${escape(String(criticalCount))} task${criticalCount === 1 ? '' : 's'}</strong>
+                            <em class="social-project-task-graph-schedule-stat-hint">${criticalHint}</em>
                         </div>
                         ${totalDuration <= 0 && noEstOpen > 0
-                            ? `<p class="social-project-task-graph-schedule-empty-hint social-neo-muted">${escape(String(noEstOpen))} open task${noEstOpen === 1 ? '' : 's'} lack estimates — add O/M/P or duration to unlock critical path.</p>`
+                            ? `<p class="social-project-task-graph-schedule-empty-hint social-neo-muted lux-card-copy">${escape(String(noEstOpen))} open task${noEstOpen === 1 ? '' : 's'} lack estimates — add O/M/P or duration to unlock critical path.</p>`
                             : ''}
                     </div>
                 </section>
@@ -1142,10 +1150,10 @@
             return `
                 <div class="social-project-task-graph-detail-rail-empty" data-lux-transparency-exempt="1">
                     ${renderProjectTaskGraphRailOverview(project, runtime, tasks)}
-                    <section class="lux-glass-dialog-group-section social-project-task-graph-inspector-section-card lux-soft-chrome home-hover-chip">
-                        <div class="lux-glass-dialog-group-section-head">
-                            <strong>Select a task</strong>
-                            <span>Click any card on the map to review status, people, links, and quick actions.</span>
+                    <section class="lux-card social-project-task-graph-inspector-section-card lux-soft-chrome">
+                        <div class="lux-card-head">
+                            <strong class="lux-card-title">Select a task</strong>
+                            <span class="lux-card-meta">Click any card on the map to review status, people, links, and quick actions.</span>
                         </div>
                     </section>
                 </div>
@@ -1177,15 +1185,15 @@
                 ? memberIds.map((tid) => {
                     const task = taskById.get(tid);
                     const title = text(task?.title || tid);
-                    return `<span class="social-project-task-graph-group-member-chip home-hover-chip" title="${escape(title)}">${escape(title)}</span>`;
+                    return `<span class="social-project-task-graph-group-member-chip" title="${escape(title)}">${escape(title)}</span>`;
                 }).join('')
                 : '<span class="social-neo-muted">No members yet. Drag task cards onto the package on the map (order port wires do not add members).</span>';
             const linkSummary = getProjectTaskGraphGroupLinkSummary(group, project);
             const orderInChips = linkSummary.predTitles.length
-                ? linkSummary.predTitles.map((title) => `<span class="social-project-task-graph-group-member-chip home-hover-chip is-order" title="Order predecessor">${escape(title)}</span>`).join('')
+                ? linkSummary.predTitles.map((title) => `<span class="social-project-task-graph-group-member-chip is-order" title="Order predecessor">${escape(title)}</span>`).join('')
                 : '<span class="social-neo-muted">None</span>';
             const orderOutChips = linkSummary.succTitles.length
-                ? linkSummary.succTitles.map((title) => `<span class="social-project-task-graph-group-member-chip home-hover-chip is-order" title="Order successor">${escape(title)}</span>`).join('')
+                ? linkSummary.succTitles.map((title) => `<span class="social-project-task-graph-group-member-chip is-order" title="Order successor">${escape(title)}</span>`).join('')
                 : '<span class="social-neo-muted">None</span>';
             const description = text(group?.description || '');
             const formBody = canContribute ? `
@@ -1200,7 +1208,7 @@
                             <textarea class="social-neo-input social-project-task-graph-group-notes" id="sptg-group-desc-${escape(groupId)}" name="groupDescription" rows="3" maxlength="2000" placeholder="Optional package notes">${escape(description)}</textarea>
                         </form>
             ` : `
-                        <div class="social-project-task-graph-inspector-body">
+                        <div class="social-project-task-graph-inspector-body lux-card lux-soft-chrome">
                             <span class="social-project-task-graph-inspector-label">Assigned to</span>
                             <p class="social-project-task-graph-inspector-description${assigneeId ? '' : ' is-empty'}">${assigneeId ? escape(displayName(accountById(assigneeId) || { id: assigneeId })) : 'Unassigned'}</p>
                             <span class="social-project-task-graph-inspector-label">Notes</span>
@@ -1230,7 +1238,7 @@
                     </div>
                     <div class="social-project-task-graph-inspector-scroll">
                         ${renderProjectTaskGraphRailOverview(project, runtime, Array.isArray(project?.tasks) ? project.tasks : [])}
-                        <div class="social-project-task-graph-inspector-props" aria-label="Package properties">
+                        <div class="social-project-task-graph-inspector-props lux-card-meta" aria-label="Package properties">
                             <span class="social-project-task-graph-inspector-prop">Package</span>
                             <span class="social-project-task-graph-inspector-prop-sep" aria-hidden="true">·</span>
                             <span class="social-project-task-graph-inspector-prop">${escape(String(roll.count))} member${roll.count === 1 ? '' : 's'}</span>
@@ -1247,7 +1255,7 @@
                             ${linkSummary.orderCount ? `<span class="social-project-task-graph-inspector-prop-sep" aria-hidden="true">·</span><span class="social-project-task-graph-inspector-prop">${linkSummary.orderCount} order link${linkSummary.orderCount === 1 ? '' : 's'}</span>` : ''}
                         </div>
                         ${formBody}
-                        <div class="social-project-task-graph-inspector-body">
+                        <div class="social-project-task-graph-inspector-body lux-card lux-soft-chrome">
                             <span class="social-project-task-graph-inspector-label">Members (drag onto package)</span>
                             <div class="social-project-task-graph-group-member-list">${memberChips}</div>
                             <span class="social-project-task-graph-inspector-label">Order in (port wires)</span>
@@ -1290,14 +1298,14 @@
                 })
                 : null;
             const scheduleStrip = inspectorDisp ? `
-                        <div class="social-project-task-graph-inspector-schedule-block">
-                            <div class="social-project-task-graph-inspector-schedule-head">
-                                <strong>Schedule</strong>
+                        <div class="social-project-task-graph-inspector-schedule-block lux-card lux-soft-chrome">
+                            <div class="social-project-task-graph-inspector-schedule-head lux-card-head">
+                                <strong class="lux-card-title">Schedule</strong>
                                 <button type="button" class="lux-secondary-btn social-project-task-graph-schedule-help-btn" data-action="project-task-graph-schedule-help" data-project-id="${escape(text(project.id))}" title="What do these schedule terms mean?" aria-label="Schedule terms help">
                                     <i class="fas fa-circle-question" aria-hidden="true"></i>
                                 </button>
                             </div>
-                            <div class="social-project-task-graph-inspector-schedule social-project-task-graph-inspector-schedule--full" aria-label="Schedule">
+                            <div class="social-project-task-graph-inspector-schedule social-project-task-graph-inspector-schedule--full lux-card-body" aria-label="Schedule">
                                 <div class="social-project-task-graph-inspector-schedule-cell">
                                     <span title="PERT / estimate">Duration</span>
                                     <strong title="PERT / estimate">${escape(inspectorDisp.durationLabel)}</strong>
@@ -1345,7 +1353,7 @@
                     </div>
                     <div class="social-project-task-graph-inspector-scroll">
                         ${renderProjectTaskGraphRailOverview(project, runtime, tasks)}
-                        <div class="social-project-task-graph-inspector-props" aria-label="Task properties">
+                        <div class="social-project-task-graph-inspector-props lux-card-meta" aria-label="Task properties">
                             <span class="social-project-task-graph-inspector-prop" data-status="${escape(statusId)}">${escape(column.label)}</span>
                             <span class="social-project-task-graph-inspector-prop-sep" aria-hidden="true">·</span>
                             <span class="social-project-task-graph-inspector-prop">${escape(priorityDisplay)}</span>
@@ -1362,7 +1370,7 @@
                                 <span>${escape(String(checklistDone))}/${escape(String(checklistTotal))}</span>
                             </div>
                         ` : ''}
-                        <div class="social-project-task-graph-inspector-body">
+                        <div class="social-project-task-graph-inspector-body lux-card lux-soft-chrome">
                             <span class="social-project-task-graph-inspector-label">Description</span>
                             <p class="social-project-task-graph-inspector-description${description ? '' : ' is-empty'}">${description ? escape(description) : 'No description yet.'}</p>
                             <button class="social-project-task-graph-inspector-text-link" type="button" data-action="project-task-detail-open" data-project-id="${escape(text(project.id))}" data-task-id="${escape(text(task.id))}">View full details <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
@@ -1547,9 +1555,9 @@
                     ? 'No open tasks assigned to you. Turn off Only mine to see the full map.'
                     : 'No tasks yet. Add a task to populate the map.'}</div>`;
             const railContent = renderProjectTaskGraphDetailRailContent(project, runtime, projectTasks);
-            const detailRailMarkup = `<aside class="social-project-task-graph-detail-rail lux-soft-chrome${railContent.empty ? ' is-empty' : ''}" data-lux-transparency-exempt="1">${railContent.markup}</aside>`;
+            const detailRailMarkup = `<aside class="lux-card social-project-task-graph-detail-rail lux-soft-chrome${railContent.empty ? ' is-empty' : ''}" data-lux-transparency-exempt="1">${railContent.markup}</aside>`;
             const modeToolbar = canContribute && linkFromId ? `
-                <div class="social-project-tab-row social-project-task-graph-mode-toolbar" data-lux-transparency-exempt="1" role="group" aria-label="Link actions">
+                <div class="social-page-toolbar-group social-project-task-graph-mode-toolbar" role="group" aria-label="Link actions">
                     <button class="lux-secondary-btn" type="button" data-action="project-task-graph-link-cancel"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             ` : '';
@@ -1563,9 +1571,9 @@
                 ? `${graphCheckpoints.length} save${graphCheckpoints.length === 1 ? '' : 's'} — open history`
                 : 'Open save history';
             const groupFocusPills = mapGroups.length ? `
-                <label class="social-project-task-graph-group-focus" title="Focus a package (portrait mode)">
+                <label class="social-page-toolbar-field social-project-task-graph-group-focus" title="Focus a package (portrait mode)">
                     <i class="fas fa-layer-group" aria-hidden="true"></i>
-                    <select class="social-neo-select social-project-task-graph-group-select" name="projectTaskGraphFocusGroup" data-lux-picker aria-label="Focus package">
+                    <select class="lux-control social-project-task-graph-group-select" name="projectTaskGraphFocusGroup" data-lux-picker aria-label="Focus package">
                         <option value="" ${!focusGroupId ? 'selected' : ''}>All packages</option>
                         ${mapGroups.map((group) => {
                             const gid = text(group?.id);
@@ -1578,40 +1586,39 @@
             ` : '';
             const showCritical = projectTaskGraphShowCritical(runtime);
             const checkpointBtns = canContribute ? `
-                                    <div class="social-project-tab-row social-project-task-graph-checkpoint-controls" data-lux-transparency-exempt="1">
+                                    <div class="social-page-toolbar-group social-project-task-graph-checkpoint-controls">
                                         <button class="lux-primary-btn social-project-task-graph-save-btn" type="button" data-action="project-task-graph-save" data-project-id="${escape(text(project.id))}" title="${escape(saveTitle)}"><i class="fas fa-floppy-disk" aria-hidden="true"></i> Save</button>
-                                        <button class="lux-secondary-btn social-project-task-graph-history-btn" type="button" data-action="project-task-graph-history-open" data-project-id="${escape(text(project.id))}" title="${escape(historyTitle)}"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> History${graphCheckpoints.length ? ` <span class="social-neo-pill home-hover-chip">${escape(String(graphCheckpoints.length))}</span>` : ''}</button>
+                                        <button class="lux-secondary-btn social-project-task-graph-history-btn" type="button" data-action="project-task-graph-history-open" data-project-id="${escape(text(project.id))}" title="${escape(historyTitle)}"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> History${graphCheckpoints.length ? ` <span class="lux-status-pill">${escape(String(graphCheckpoints.length))}</span>` : ''}</button>
                                     </div>
             ` : '';
             const criticalToggleBtn = `
                                     <button class="lux-secondary-btn social-project-task-graph-critical-toggle${showCritical ? ' is-active' : ''}" type="button" data-action="project-task-graph-toggle-critical" title="${showCritical ? 'Hide critical path emphasis on the map' : 'Highlight critical path on the map'}" aria-pressed="${showCritical ? 'true' : 'false'}"><i class="fas fa-route" aria-hidden="true"></i> Critical path</button>
             `;
             return `
-                <div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--project-task-graph" data-action="noop" role="presentation">
-                    <div class="lux-glass-dialog-card lux-glass-dialog-card--project-task-graph-fullscreen" data-action="noop" data-lux-transparency-exempt="1" role="dialog" aria-modal="true" aria-label="Task map">
+                <main class="social-page-surface social-project-task-graph-page" data-social-page-surface="project-task-graph" data-action="noop" aria-label="Task map">
                         <div class="social-project-task-graph-immersive">
-                            <header class="social-project-task-graph-immersive-topbar lux-soft-chrome">
-                                <div class="social-project-task-graph-immersive-title">
-                                    <strong><i class="fas fa-diagram-project" aria-hidden="true"></i> Task map</strong>
-                                    <span>${escape(text(project.name || 'Project'))}</span>
+                            <header class="social-page-surface-head social-project-task-graph-page-head lux-soft-chrome home-hover-chip">
+                                <div class="social-page-surface-heading social-project-task-graph-immersive-title">
+                                    <strong class="social-page-surface-title"><i class="fas fa-diagram-project" aria-hidden="true"></i> Task map</strong>
+                                    <span class="social-page-surface-subtitle">${escape(text(project.name || 'Project'))}</span>
                                 </div>
-                                <div class="social-project-task-graph-immersive-actions">
+                                <div class="social-page-surface-actions social-project-task-graph-immersive-actions social-project-task-graph-page-actions">
                                     ${modeToolbar}
                                     ${groupFocusPills}
                                     ${checkpointBtns}
-                                    <div class="social-project-tab-row social-project-task-graph-schedule-controls" data-lux-transparency-exempt="1">
+                                    <div class="social-page-toolbar-group social-project-task-graph-schedule-controls">
                                         ${criticalToggleBtn}
                                     </div>
-                                    <div class="social-project-tab-row social-project-task-graph-nav-controls" data-lux-transparency-exempt="1">
+                                    <div class="social-page-toolbar-group social-project-task-graph-nav-controls">
                                         ${renderProjectWorkspaceNavButtons(project, { buttonClass: 'lux-secondary-btn' })}
                                     </div>
-                                    <div class="social-project-tab-row social-project-task-graph-zoom-controls" data-lux-transparency-exempt="1">
+                                    <div class="social-page-toolbar-group social-project-task-graph-zoom-controls">
                                         <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fas fa-minus"></i></button>
-                                        <span class="social-project-task-graph-zoom-label">${escape(String(Math.round(zoom * 100)))}%</span>
+                                        <span class="social-page-toolbar-zoom-label social-project-task-graph-zoom-label">${escape(String(Math.round(zoom * 100)))}%</span>
                                         <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fas fa-plus"></i></button>
                                         <button class="lux-secondary-btn social-project-task-graph-zoom-btn social-project-task-graph-reset-view-btn" type="button" data-action="project-task-graph-reset-view" title="Reset view — fit all tasks"><i class="fas fa-expand"></i> Reset view</button>
                                     </div>
-                                    <button class="lux-ghost-btn lux-glass-dialog-close-btn" type="button" data-action="dialog-close" aria-label="Close task map"><i class="fas fa-times"></i></button>
+                                    <button class="lux-ghost-btn" type="button" data-action="dialog-close" aria-label="Back to workspace"><i class="fas fa-arrow-left"></i> Back to workspace</button>
                                 </div>
                             </header>
                             <div class="social-project-task-graph-immersive-body">
@@ -1639,8 +1646,7 @@
                                 </div>
                             </footer>
                         </div>
-                    </div>
-                </div>
+                </main>
             `;
         }
 

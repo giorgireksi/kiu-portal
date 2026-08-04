@@ -38,6 +38,95 @@ function ensureAdminToolsPage() {
         return typeof getEffectiveRole === 'function' && getEffectiveRole() === 'admin';
     }
 
+    function getAdminToolsProgramFaculty() {
+        const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '';
+        return String(faculty || 'ECON').trim().toUpperCase() || 'ECON';
+    }
+
+    function getAdminToolsProgramBucket(faculty = getAdminToolsProgramFaculty()) {
+        if (typeof KIU_STATE === 'undefined' || !KIU_STATE || typeof KIU_STATE !== 'object') return null;
+        KIU_STATE.adminProgramStructures = KIU_STATE.adminProgramStructures && typeof KIU_STATE.adminProgramStructures === 'object'
+            ? KIU_STATE.adminProgramStructures
+            : {};
+        const bucket = KIU_STATE.adminProgramStructures[faculty] = KIU_STATE.adminProgramStructures[faculty] || {};
+        return bucket;
+    }
+
+    function getAdminToolsProgramSubjects(faculty = getAdminToolsProgramFaculty()) {
+        const bucket = getAdminToolsProgramBucket(faculty);
+        const subjects = [];
+        const profileSubjects = typeof KIU_STATE !== 'undefined'
+            ? KIU_STATE?.facultyProfiles?.[faculty]?.curriculum
+            : [];
+        if (Array.isArray(profileSubjects)) subjects.push(...profileSubjects);
+        ['prog', 'free', 'conc', 'minor'].forEach((track) => {
+            (Array.isArray(bucket?.[track]) ? bucket[track] : []).forEach((module) => {
+                if (Array.isArray(module?.subModules)) subjects.push(...module.subModules);
+            });
+        });
+        return subjects;
+    }
+
+    function getAdminToolsHighestSemester(faculty = getAdminToolsProgramFaculty()) {
+        return getAdminToolsProgramSubjects(faculty).reduce((highest, subject) => {
+            const values = Array.isArray(subject?.semesters) ? subject.semesters : [subject?.semester];
+            return Math.max(highest, ...values.map((value) => parseInt(String(value || ''), 10) || 0));
+        }, 0);
+    }
+
+    function getAdminToolsProgramSemesterCount(faculty = getAdminToolsProgramFaculty()) {
+        const configured = parseInt(String(getAdminToolsProgramBucket(faculty)?.programSemesterCount || ''), 10);
+        if (Number.isFinite(configured) && configured > 0) return Math.min(configured, 12);
+        return Math.max(1, Math.min(getAdminToolsHighestSemester(faculty) || 1, 12));
+    }
+
+    function getAdminToolsSemesterHelpText(count) {
+        const value = Number(count) || 1;
+        return `${value} semester column${value === 1 ? '' : 's'} ${value === 1 ? 'is' : 'are'} shown to students.`;
+    }
+
+    function renderAdminToolsSemesterOptions(select, selectedValue) {
+        if (!select) return;
+        const selected = String(selectedValue || '');
+        select.innerHTML = Array.from({ length: 12 }, (_, index) => {
+            const value = index + 1;
+            const roman = typeof formatSemesterRoman === 'function' ? formatSemesterRoman(value) : value;
+            return `<option value="${value}">${roman} (${value} semester${value === 1 ? '' : 's'})</option>`;
+        }).join('');
+        select.value = selected && Number(select.value) === Number(selected)
+            ? selected
+            : String(getAdminToolsProgramSemesterCount());
+    }
+
+    function syncAdminToolsProgramSemesterControl(faculty = getAdminToolsProgramFaculty()) {
+        const select = document.getElementById('admin-program-semester-count');
+        if (!select) return;
+        const count = getAdminToolsProgramSemesterCount(faculty);
+        renderAdminToolsSemesterOptions(select, String(count));
+        const help = document.getElementById('admin-program-semester-count-help');
+        if (help) help.textContent = getAdminToolsSemesterHelpText(count);
+        if (select.dataset.bound === '1') return;
+        select.addEventListener('change', () => {
+            const next = Math.max(1, Math.min(parseInt(select.value, 10) || count, 12));
+            const highest = getAdminToolsHighestSemester(faculty);
+            if (next < highest) {
+                select.value = String(count);
+                if (help) help.textContent = `Move subjects from Semester ${highest} before reducing the program count.`;
+                return;
+            }
+            const bucket = getAdminToolsProgramBucket(faculty);
+            if (!bucket) return;
+            bucket.programSemesterCount = next;
+            if (typeof saveState === 'function') saveState();
+            if (help) help.textContent = getAdminToolsSemesterHelpText(next);
+            window.dispatchEvent(new CustomEvent('kiu-program-semester-config-changed', {
+                detail: { faculty, semesterCount: next }
+            }));
+            if (typeof renderCurriculumTable === 'function') renderCurriculumTable();
+        });
+        select.dataset.bound = '1';
+    }
+
     renderLuxuryAdminToolsPage = function renderLuxuryAdminToolsPage() {
         const shell = ensureAdminToolsPage();
         if (!shell) return;
@@ -72,6 +161,11 @@ function ensureAdminToolsPage() {
                                 <i class="fas fa-search"></i>
                                 <input class="lux-control" id="admin-curriculum-search" name="admin_curriculum_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search subject code, title, prerequisite..." value="" data-curriculum-search="1">
                             </div>
+                            <label class="lux-program-field lux-admin-curriculum-semester-count-wrap">
+                                <span>Program semesters</span>
+                                <select class="lux-control" id="admin-program-semester-count" data-program-semester-count="1" aria-describedby="admin-program-semester-count-help"></select>
+                                <small id="admin-program-semester-count-help" class="lux-admin-curriculum-semester-count-help">Controls the semester columns shown to students.</small>
+                            </label>
                         </div>
 
                         <div class="lux-admin-curriculum-ops-panel">
@@ -321,6 +415,7 @@ function ensureAdminToolsPage() {
             (typeof getAdminRegistrationFaculty === 'function' ? getAdminRegistrationFaculty() : getCurrentFaculty()),
             'ECON'
         );
+        syncAdminToolsProgramSemesterControl(currentFaculty);
         if (typeof bindFacultyRegistrationCmsData === 'function') {
             bindFacultyRegistrationCmsData(currentFaculty);
         }
@@ -358,6 +453,7 @@ function ensureAdminToolsPage() {
         } else if (typeof ensurePortalRegistrationRuntimeLoaded === 'function') {
             ensurePortalRegistrationRuntimeLoaded().then((loaded) => {
                 if (!loaded) return;
+                syncAdminToolsProgramSemesterControl(currentFaculty);
                 if (typeof ensureCurriculumSemesterPickerInitialized === 'function') {
                     ensureCurriculumSemesterPickerInitialized();
                 }

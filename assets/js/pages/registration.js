@@ -827,47 +827,50 @@ function syncRegistrationWorkspaceSummary() {
     const currentSchedule = Array.isArray(KIU_STATE.studentSchedulesByStudent?.[currentUser.id]) ? KIU_STATE.studentSchedulesByStudent[currentUser.id] : [];
     const selectedCount = currentSchedule.length;
     const faculty = currentUser.facultyCode || currentUser.faculty || getCurrentFaculty();
-    const facultyName = typeof getFacultyLabel === 'function'
-        ? getFacultyLabel(faculty)
-        : String(faculty || '');
     const semester = String(getCurrentStudentSemesterNumber(currentUser) || 1);
     const totalEcts = getStudentCompletedEctsThisSemester(currentUser.id, faculty);
     const limit = KIU_STATE.probationStatus?.[currentUser.id] ? 24 : 36;
     const remaining = Math.max(limit - totalEcts, 0);
-    const holdActive = Boolean(KIU_STATE.probationStatus?.[currentUser.id]);
     const registrationOpen = Boolean(KIU_STATE.registrationOpen);
-    const nextStep = selectedCount === 0
-        ? 'Choose a program module'
-        : registrationOpen
-            ? 'Review selected sections'
-            : 'Registration is locked';
+    const holdActive = Boolean(KIU_STATE.probationStatus?.[currentUser.id]);
     const statusText = registrationOpen ? 'Registration open' : 'Registration closed';
-    const loadText = `${selectedCount} selected`;
-    const ectsText = `${totalEcts} / ${limit} ECTS`;
     const holdText = holdActive ? 'Review hold' : 'Clear';
-    const sectionText = `${selectedCount} section${selectedCount === 1 ? '' : 's'}`;
+    const loadText = `${selectedCount} selected sections`;
     const academicYearLabel = typeof getCurrentAcademicYearLabel === 'function' ? getCurrentAcademicYearLabel() : '2025 / 2026';
     const termText = `${academicYearLabel} / Semester ${semester}`;
 
     const updates = {
-        'registration-hero-status': statusText,
-        'registration-hero-semester': termText,
-        'registration-hero-faculty': facultyName,
-        'registration-hero-ects': ectsText,
         'registration-hero-load': loadText,
-        'registration-hero-hold': holdText,
-        'registration-hero-selected': sectionText,
-        'registration-next-step': nextStep,
-        'registration-hero-hold-card': holdText,
-        'registration-hero-ects-card': `${totalEcts} / ${limit}`,
-        'registration-hero-selected-card': String(selectedCount),
-        'registration-hero-next-step-card': nextStep
+        'registration-summary-status': statusText,
+        'registration-ects-remaining': `${remaining} ECTS remaining`,
+        'timetable-hero-focus-time': `${totalEcts} / ${limit} ECTS`
     };
 
     Object.entries(updates).forEach(([id, value]) => {
         const el = document.getElementById(id);
         if (el) el.textContent = value;
     });
+
+    const factsEl = document.getElementById('timetable-hero-focus-facts');
+    if (factsEl) {
+        factsEl.innerHTML = `
+            <li><i class="fas fa-exclamation-triangle"></i> <span>Hold: ${holdText}</span></li>
+            <li><i class="fas fa-award"></i> <span>Limit: ${limit} ECTS max</span></li>
+        `;
+    }
+
+    const metaEl = document.getElementById('timetable-hero-focus-meta');
+    if (metaEl) {
+        metaEl.innerHTML = `<span class="lux-hero-signal home-hover-chip"><i class="fas ${holdActive ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${holdActive ? 'Hold Active' : 'Ready to Register'}</span>`;
+    }
+
+    const progressEl = document.getElementById('registration-ects-progress');
+    if (progressEl) {
+        const ratio = limit > 0 ? Math.min(Math.max(totalEcts / limit, 0), 1) : 0;
+        progressEl.style.setProperty('--registration-progress', `${ratio * 100}%`);
+        progressEl.setAttribute('aria-valuemax', String(limit));
+        progressEl.setAttribute('aria-valuenow', String(totalEcts));
+    }
 
     const termSelect = document.getElementById('registration-term-select');
     if (termSelect && termSelect.options.length) {
@@ -1503,6 +1506,9 @@ function renderCurriculumModuleRailRegion(context) {
 }
 
 function renderCurriculumSubjectPanelRegion(context) {
+    const semesterList = typeof getProgramSemesterList === 'function'
+        ? getProgramSemesterList(context.faculty, context.selectedModuleSubjectsAll || context.moduleSubjects)
+        : [1];
     return `
         <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--subject-panel lux-program-subject-panel curriculum-library-panel curriculum-library-panel--detail">
             ${context.selectedModule ? `
@@ -1518,13 +1524,23 @@ function renderCurriculumSubjectPanelRegion(context) {
                         <button type="button" class="lux-primary-btn curriculum-library-btn curriculum-library-btn--primary" data-curriculum-focus-builder="1"><i class="fas fa-plus"></i> Add Subject</button>
                     </div>
                 </div>
-                <div class="lux-program-column-head lux-program-detail-columns" aria-hidden="true">
-                    <div class="lux-program-column-code">Code</div>
-                    <div class="lux-program-column-subject">Subject title / requirements</div>
-                    <div class="lux-program-column-ects">ECTS / actions</div>
-                </div>
-                <div class="lux-program-subject-list lux-program-detail-list curriculum-library-row-list" id="curriculum-subject-row-list" aria-label="Module subjects">
-                    ${renderCurriculumLibraryModuleRows(context.selectedModule, context.moduleSubjects, context.faculty, context.searchQuery ? 'search' : context.semesterFilter)}
+                <div class="lux-program-semester-table-scroll">
+                    <div class="lux-program-column-head lux-program-detail-columns" aria-hidden="true">
+                        <div class="lux-program-column-code">Code</div>
+                        <div class="lux-program-column-subject">Subject title / requirements</div>
+                        <div class="lux-program-column-ects">ECTS</div>
+                        <div class="lux-program-column-prerequisite">Prerequisite</div>
+                        <div class="lux-program-column-semesters">
+                            <span>Semester distribution</span>
+                            <span class="lux-program-semester-head" style="--program-semester-count:${semesterList.length}">
+                                ${typeof renderSemesterDistributionHeader === 'function' ? renderSemesterDistributionHeader(semesterList) : ''}
+                            </span>
+                        </div>
+                        <div class="lux-program-column-status">Actions</div>
+                    </div>
+                    <div class="lux-program-subject-list lux-program-detail-list curriculum-library-row-list" id="curriculum-subject-row-list" aria-label="Module subjects">
+                        ${renderCurriculumLibraryModuleRows(context.selectedModule, context.moduleSubjects, context.faculty, context.searchQuery ? 'search' : context.semesterFilter, semesterList)}
+                    </div>
                 </div>
             ` : `
                 <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--panel curriculum-library-empty-state">
@@ -1539,7 +1555,7 @@ function renderCurriculumSubjectPanelRegion(context) {
     `;
 }
 
-function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFilter) {
+function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFilter, semesterList = null) {
     if (!module || !subjects.length) {
         const emptyText = semesterFilter === 'search'
             ? 'No subjects match the current search query.'
@@ -1555,6 +1571,9 @@ function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFi
         `;
     }
 
+    const resolvedSemesterList = Array.isArray(semesterList) && semesterList.length
+        ? semesterList
+        : (typeof getProgramSemesterList === 'function' ? getProgramSemesterList(faculty, subjects) : [1]);
     return subjects.map((subject, index) => {
         const prerequisite = subject.cond && subject.cond !== 'None' ? subject.cond : 'None';
         const antiReq = subject.antireq && subject.antireq !== 'None' ? subject.antireq : '';
@@ -1563,12 +1582,9 @@ function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFi
         const facultyLabel = typeof getFacultyLabel === 'function'
             ? getFacultyLabel(subject.faculty || faculty)
             : String(subject.faculty || faculty || '');
-        const semesterChips = semesters.length
-            ? semesters.map((semester) => `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(semester))}</span>`).join('')
-            : '<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill is-muted">No semester</span>';
         const subtitle = formatCurriculumSubjectSubtitle(subject);
         return `
-            <article class="lux-subject-row lux-program-subject-card ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
+            <article class="lux-subject-row lux-program-subject-card ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}" style="--program-semester-count:${resolvedSemesterList.length}">
                 <div class="lux-subject-row__code">
                     <div>${escapeHtml(subject.id)}</div>
                     <div class="lux-subject-row__meta">#${index + 1}</div>
@@ -1578,13 +1594,19 @@ function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFi
                     <div class="lux-subject-row__secondary">
                         ${subtitle ? `<div class="lux-subject-row__meta">${escapeHtml(subtitle)}</div>` : ''}
                         <div class="lux-subject-row__meta">${escapeHtml(facultyLabel)}</div>
-                        <div class="lux-subject-row__chips">
-                            ${semesterChips}
-                            <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
-                        </div>
-                        <div class="lux-subject-row__detail" title="${escapeHtml(prerequisite)}"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
-                        ${antiReq ? `<div class="lux-subject-row__detail is-soft" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
                     </div>
+                </div>
+                <div class="lux-subject-row__ects" aria-label="${escapeHtml(String(subject.ects || 0))} ECTS">
+                    <strong class="lux-subject-row__ects-value">${escapeHtml(String(subject.ects || 0))}</strong>
+                </div>
+                <div class="lux-subject-row__prerequisite ${hasPrerequisite ? 'has-prerequisite' : 'is-empty'}">
+                    <span class="lux-subject-row__prerequisite-value" title="${hasPrerequisite ? escapeHtml(prerequisite) : 'does not have'}">${hasPrerequisite ? escapeHtml(prerequisite) : 'does not have'}</span>
+                    ${antiReq ? `<span class="lux-subject-row__prerequisite-secondary" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</span>` : ''}
+                </div>
+                <div class="lux-subject-row__semesters" aria-label="Semester distribution">
+                    ${typeof renderSemesterDistributionCells === 'function'
+                        ? renderSemesterDistributionCells(resolvedSemesterList, normalizeSubjectSemesters(subject))
+                        : ''}
                 </div>
                 <div class="lux-subject-row__stats">
                     <span class="lux-program-requirement ${hasPrerequisite ? 'is-locked' : 'is-open'}">

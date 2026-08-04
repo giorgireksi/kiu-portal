@@ -583,6 +583,119 @@ function normalizeScheduleSurfaceItem(item, weekStart) {
     };
 }
 
+function formatLmsSessionDuration(durationMinutes) {
+    const minutes = Number(durationMinutes);
+    if (!Number.isFinite(minutes) || minutes <= 0) return 'Duration TBD';
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    const parts = [];
+    if (hours) parts.push(`${hours} ${hours === 1 ? 'Hour' : 'Hours'}`);
+    if (remainder) parts.push(`${remainder} ${remainder === 1 ? 'Minute' : 'Minutes'}`);
+    return parts.join(' ') || 'Duration TBD';
+}
+
+function getLmsSessionInstructor(item) {
+    const candidates = [item.prof, item.ta]
+        .map(value => String(value || '').trim())
+        .filter(Boolean);
+    return candidates.find(value => value.toLowerCase() !== 'tbd') || candidates[0] || 'TBD';
+}
+
+function getLmsSessionCourseName(item) {
+    const courseId = String(item.courseId || item.subjectId || item.courseCode || '').trim();
+    const keyOf = (value) => typeof canonicalCourseKey === 'function'
+        ? canonicalCourseKey(value)
+        : String(value || '').trim().toLowerCase();
+    const courseKey = keyOf(courseId);
+    const groupKeys = new Set([
+        item.groupId,
+        item.groupLabel,
+        item.groupName,
+        item.name,
+        item.id
+    ].map(keyOf).filter(Boolean));
+    const facultyCode = item.facultyCode
+        || item.faculty
+        || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '');
+    const domain = typeof getDomain === 'function' ? getDomain() : {};
+    const records = [];
+    const addRecords = (entries) => {
+        if (Array.isArray(entries)) records.push(...entries);
+        else if (entries && typeof entries === 'object') records.push(...Object.values(entries));
+    };
+
+    addRecords(domain.subjectsById);
+    addRecords(KIU_STATE?.curriculum);
+    if (typeof getActiveCurriculum === 'function') addRecords(getActiveCurriculum(facultyCode));
+    addRecords(KIU_STATE?.facultyProfiles?.[facultyCode]?.curriculum);
+
+    const subject = records.find((entry) => keyOf(
+        entry?.id || entry?.courseId || entry?.subjectId || entry?.code
+    ) === courseKey);
+    const subjectName = subject?.name || subject?.title || subject?.courseName || subject?.subjectName;
+    if (subjectName && !groupKeys.has(keyOf(subjectName)) && keyOf(subjectName) !== courseKey) {
+        return String(subjectName).trim();
+    }
+
+    const fallbackName = [item.courseName, item.subjectName, item.subjectTitle]
+        .map(value => String(value || '').trim())
+        .find(value => value && !groupKeys.has(keyOf(value)) && keyOf(value) !== courseKey);
+    return fallbackName || courseId || 'Course TBD';
+}
+
+function renderLmsSessionDetails(item, options = {}) {
+    const surface = options.surface === 'timetable' ? 'timetable' : 'session';
+    const audience = String(item.roomLabel || item.room || '').trim();
+    const group = String(item.groupLabel || item.groupId || item.name || item.id || '').trim();
+    const hours = `${item.startTime || 'TBD'} - ${item.endTime || 'TBD'}`;
+    const course = getLmsSessionCourseName(item);
+    const professor = getLmsSessionInstructor(item);
+    const room = !audience || audience === 'TBD' ? 'Room TBD' : audience;
+    const type = item.sessionTypeLabel || 'Lecture';
+    const duration = formatLmsSessionDuration(item.durationMinutes);
+    const comment = group || 'TBD';
+    const summaryItem = (label, value, icon, modifier = '') => `
+        <span class="lms-session-summary-item${modifier ? ` ${modifier}` : ''}">
+            <span class="lms-session-summary-label"><i class="${icon}" aria-hidden="true"></i>${escapeHtml(label)}</span>
+            <span class="lms-session-summary-value">${escapeHtml(value)}</span>
+        </span>
+    `;
+    const row = (label, value, icon, modifier = '') => `
+        <div class="lms-session-detail-row${modifier ? ` ${modifier}` : ''}">
+            <span class="lms-session-detail-label"><i class="${icon}" aria-hidden="true"></i>${escapeHtml(label)}</span>
+            <span class="lms-session-detail-value">${escapeHtml(value)}</span>
+        </div>
+    `;
+    if (surface === 'timetable') {
+        return `<div class="lms-session-details lms-session-details--timetable">
+            <div class="lms-session-summary">
+                <span class="lms-session-summary-item"><i class="far fa-clock" aria-hidden="true"></i><strong>Hours:</strong> ${escapeHtml(hours)}</span>
+                <span class="lms-session-summary-item"><i class="fas fa-tag" aria-hidden="true"></i><strong>Type:</strong> ${escapeHtml(type)}</span>
+                <span class="lms-session-summary-item"><i class="fas fa-hourglass-half" aria-hidden="true"></i><strong>Duration:</strong> ${escapeHtml(duration)}</span>
+            </div>
+            ${row('Educational course:', course, 'fas fa-book-open', 'lms-session-detail-row--course')}
+            <div class="lms-session-detail-grid">
+                ${row('Professor:', professor, 'fas fa-user')}
+                ${row('Audience:', room, 'fas fa-location-dot')}
+                ${row('Comment:', comment, 'far fa-comment')}
+            </div>
+        </div>`;
+    }
+    return `<div class="lms-session-details lms-session-details--session">
+        <div class="lms-session-summary">
+            ${summaryItem('Hours:', hours, 'far fa-clock', 'lms-session-summary-item--hours')}
+            ${summaryItem('Educational course:', course, 'fas fa-book-open', 'lms-session-summary-item--course')}
+            ${summaryItem('Type:', type, 'fas fa-tag', 'lms-session-summary-item--type')}
+            ${summaryItem('Duration:', duration, 'fas fa-hourglass-half', 'lms-session-summary-item--duration')}
+        </div>
+        <div class="lms-session-detail-grid">
+            ${row('Professor:', professor, 'fas fa-user')}
+            ${row('Audience:', room, 'fas fa-location-dot')}
+            ${row('Comment:', comment, 'far fa-comment')}
+        </div>
+    </div>`;
+}
+
 function getScheduleOverview(items) {
     const normalizedItems = (items || []).map(item => normalizeScheduleSurfaceItem(item, getCurrentWeekStartISO()));
     const uniqueDays = new Set(normalizedItems.map(item => item.dayLabel).filter(Boolean));
@@ -598,9 +711,6 @@ function getTimetableRoleNarrative(role = getCurrentUser()?.role) {
     switch (role) {
         case USER_ROLES.PROFESSOR:
             return {
-                kicker: 'Faculty schedule',
-                title: 'Teaching Timetable',
-                copy: 'Review this week\'s classes, rooms, and teaching load in one clear academic schedule.',
                 commandNote: 'Current week, role-aware filters, and teaching sessions',
                 focusDefaultLabel: 'Teaching focus',
                 stageCopy: 'Use session cards for quick scanning or the timetable grid for room and time planning.',
@@ -608,9 +718,6 @@ function getTimetableRoleNarrative(role = getCurrentUser()?.role) {
             };
         case USER_ROLES.TA:
             return {
-                kicker: 'Assistant schedule',
-                title: 'Section Timetable',
-                copy: 'Follow labs, seminars, and support sessions with clear room, time, and instructor context.',
                 commandNote: 'Current week, section support, and assigned sessions',
                 focusDefaultLabel: 'Support focus',
                 stageCopy: 'Use session cards for quick scanning or the timetable grid for room and time planning.',
@@ -618,9 +725,6 @@ function getTimetableRoleNarrative(role = getCurrentUser()?.role) {
             };
         case USER_ROLES.ADMIN:
             return {
-                kicker: 'Academic operations',
-                title: 'University Timetable',
-                copy: 'Review the official weekly schedule by semester and faculty with a clear operations view.',
                 commandNote: 'Faculty, semester, and current-week controls',
                 focusDefaultLabel: 'Operational focus',
                 stageCopy: 'Audit class load, room usage, and weekly structure from one controlled timetable surface.',
@@ -628,9 +732,6 @@ function getTimetableRoleNarrative(role = getCurrentUser()?.role) {
             };
         default:
             return {
-                kicker: 'Student timetable',
-                title: 'Weekly Schedule',
-                copy: 'See this week\'s classes, rooms, instructors, and academic rhythm in a simple timetable.',
                 commandNote: 'Current week, semester scope, and class details',
                 focusDefaultLabel: 'Weekly focus',
                 stageCopy: 'Use session cards for quick scanning or the timetable grid for a full weekly view.',
@@ -787,13 +888,9 @@ function syncTimetableNarrative(weekStart, items, options = {}) {
     const narrative = getTimetableRoleNarrative(role);
     const insight = getTimetableInsightModel(weekStart, items || []);
 
-    setNodeHtml('timetable-page-kicker', `<i class="fas fa-calendar-week"></i> ${escapeHtml(narrative.kicker)}`);
-    setNodeContent('timetable-page-title', narrative.title);
-    setNodeContent('timetable-page-copy', narrative.copy);
     setNodeContent('timetable-command-note', narrative.commandNote);
     setNodeContent('timetable-stage-copy', narrative.stageCopy);
     setNodeContent('timetable-stage-status', narrative.stageStatus);
-    setNodeHtml('timetable-hero-sem-badge', `<i class="fas fa-graduation-cap"></i> Semester ${targetSemester}`);
 
     setNodeContent('timetable-insight-scope', `Semester ${targetSemester} - ${roleLabel}`);
     setNodeContent('timetable-insight-scope-copy', `${formatWeekRangeLabel(weekStart)} in ${view === 'timetable' ? 'grid' : 'session'} mode.`);
@@ -892,44 +989,30 @@ function renderScheduleSessionDaySection(section, entry, dayItems, facultyAction
                     const marker = item.sessionMarker || null;
                     const markerMeta = marker ? getScheduleSessionMarkerTypeMeta(marker.type) : null;
                     const markerClass = marker ? ` has-session-marker marker-${scheduleMarkerClassToken(marker.type)}` : '';
-                    const focusTitle = formatTimetableHeroFocusTitle(item);
-                    const groupLabel = String(item.groupLabel || '').trim();
-                    const groupSubtitle = groupLabel
-                        && focusTitle !== groupLabel
-                        && focusTitle !== `Group ${groupLabel}`
-                        ? `Group ${groupLabel}`
-                        : '';
+                    const hasPanelHeader = Boolean(item.roleBadge || marker || facultyActionsEnabled);
                     return `
                     <article class="schedule-session-card lux-timetable-session-card home-hover-chip${markerClass}">
-                        <div class="schedule-session-card-header lux-timetable-session-card-header">
-                            <div class="schedule-session-identity lux-timetable-session-identity">
-                                <div class="schedule-session-code-row lux-timetable-session-code-row">
-                                    <span class="schedule-session-code lux-timetable-session-code">${escapeHtml(item.courseCode)}</span>
-                                    ${item.roleBadge ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip role">${escapeHtml(item.roleBadge)}</span>` : ''}
-                                    <span class="schedule-session-pill lux-timetable-session-pill home-hover-chip type">${escapeHtml(item.sessionTypeLabel)}</span>
-                                    ${marker ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip important"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(markerMeta.label)}</span>` : ''}
+                        ${hasPanelHeader ? `
+                            <div class="schedule-session-card-header lux-timetable-session-card-header">
+                                <div class="schedule-session-identity lux-timetable-session-identity">
+                                    <span class="lms-session-panel-kicker">Session details</span>
+                                    ${(item.roleBadge || marker) ? `
+                                        <div class="schedule-session-context-row lux-timetable-session-context-row">
+                                            ${item.roleBadge ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip role">${escapeHtml(item.roleBadge)}</span>` : ''}
+                                            ${marker ? `<span class="schedule-session-pill lux-timetable-session-pill home-hover-chip important"><i class="fas ${escapeHtml(markerMeta.icon)}"></i> ${escapeHtml(markerMeta.label)}</span>` : ''}
+                                        </div>
+                                    ` : ''}
                                 </div>
-                                <div class="schedule-session-meta-row lux-timetable-session-meta-row">
-                                    <span><i class="fas fa-location-dot"></i> ${escapeHtml(item.roomLabel)}</span>
-                                    <span><i class="fas fa-building"></i> ${escapeHtml(item.facultyName)}</span>
-                                    <span><i class="fas fa-user"></i> ${escapeHtml(item.prof || item.ta || 'Instructor TBA')}</span>
-                                </div>
-                            </div>
-                            <div class="schedule-session-focus lux-timetable-session-focus">
-                                <div class="schedule-session-focus-line lux-timetable-session-focus-line">
-                                    <h3 class="schedule-session-title lux-timetable-session-title">${escapeHtml(focusTitle)}</h3>
-                                    ${groupSubtitle ? `<span class="schedule-session-subtitle lux-timetable-session-subtitle">${escapeHtml(groupSubtitle)}</span>` : ''}
-                                </div>
-                            </div>
-                            <div class="schedule-session-rail lux-timetable-session-rail">
-                                <span class="schedule-session-time lux-timetable-session-time"><i class="far fa-clock"></i> ${escapeHtml(item.startTime)} - ${escapeHtml(item.endTime)}</span>
                                 ${facultyActionsEnabled ? `
-                                    <button class="lux-secondary-btn schedule-session-action lux-timetable-session-action" data-schedule-open-lms="1" data-schedule-course-code="${escapeHtml(item.courseCode)}" data-schedule-session-key="${escapeHtml(item.id || item.groupId || item.groupLabel)}">
-                                        <i class="fas fa-book-reader"></i> Open in LMS
-                                    </button>
+                                    <div class="schedule-session-rail lux-timetable-session-rail">
+                                        <button class="lux-secondary-btn schedule-session-action lux-timetable-session-action" data-schedule-open-lms="1" data-schedule-course-code="${escapeHtml(item.courseCode)}" data-schedule-session-key="${escapeHtml(item.id || item.groupId || item.groupLabel)}">
+                                            <i class="fas fa-book-reader"></i> Open in LMS
+                                        </button>
+                                    </div>
                                 ` : ''}
                             </div>
-                        </div>
+                        ` : ''}
+                        ${renderLmsSessionDetails(item, { surface: 'session' })}
                         ${marker ? `
                             <div class="schedule-session-marker-banner">
                                 <i class="fas ${escapeHtml(markerMeta.icon)}"></i>
@@ -1116,14 +1199,8 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
         const metaLabel = `${entry.shortDate}${isToday ? ' · Today' : ''}`;
         let cardsHtml = '';
         column.forEach(item => {
-            const durMin = parseInt(String(item.durationMinutes || item.duration || '110').match(/\d+/)?.[0] || '110', 10);
             const facultyCode = normalizeFacultyCode(item.facultyCode || item.faculty || deriveFacultyFromSubjectId(item.courseId));
             const toneAttr = buildScheduleToneDataAttribute(facultyCode);
-            const subjectLabel = escapeHtml(item.courseCode || item.courseId || 'Subject');
-            const groupLabel = escapeHtml(item.groupLabel || item.name || item.id || item.groupId || '');
-            const professorLabel = escapeHtml(item.prof || item.ta || 'Instructor TBA');
-            const roomLabel = escapeHtml(item.roomLabel || item.room || 'Room TBA');
-            const sessionTypeLabel = escapeHtml(item.sessionTypeLabel || (getStudentSectionTypeLabel ? getStudentSectionTypeLabel(item.sessionType || 'lecture') : 'Lecture'));
             const marker = item.sessionMarker || null;
             const markerMeta = marker ? getScheduleSessionMarkerTypeMeta(marker.type) : null;
             const markerClass = marker ? ` has-session-marker marker-${scheduleMarkerClassToken(marker.type)}` : '';
@@ -1138,11 +1215,7 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
 
             cardsHtml += `<div class="sch-event weeklist-item sch-weeklist-item${markerClass}" ${toneAttr}>
                 ${extraBadge}
-                <div class="ev-title">${escapeHtml(item.subjectTitle || item.courseName || item.courseCode || item.courseId || 'Session')} <span class="ev-title-meta">(${subjectLabel}${groupLabel ? ` · ${groupLabel}` : ''})</span></div>
-                <div class="ev-meta"><i class="fas fa-tag"></i> ${sessionTypeLabel}</div>
-                <div class="ev-meta"><i class="far fa-clock"></i> ${escapeHtml(item.startTime)} - ${escapeHtml(item.endTime)} · ${durMin} min</div>
-                <div class="ev-meta"><i class="fas fa-location-dot"></i> ${roomLabel}</div>
-                <div class="ev-meta"><i class="fas fa-user"></i> ${professorLabel}</div>
+                ${renderLmsSessionDetails(item, { surface: 'timetable' })}
                 ${markerNote}
             </div>`;
         });

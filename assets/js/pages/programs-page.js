@@ -18,7 +18,7 @@
                 : fallback);
     }
 
-    function renderStudentCurriculumLibraryModuleRows(subjects, faculty, semesterFilter) {
+    function renderStudentCurriculumLibraryModuleRows(subjects, faculty, semesterFilter, semesterList = [1]) {
         if (!subjects.length) {
             const emptyText = semesterFilter === 'search'
                 ? 'No subjects match the current search query.'
@@ -42,23 +42,33 @@
             const language = String(subject.language || subject.teachingLanguage || '').trim();
             const hasPrerequisite = prerequisite !== 'None';
             return `
-                <article class="lux-subject-row lux-program-subject-card home-hover-chip ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
+                <article class="lux-subject-row lux-program-subject-card home-hover-chip ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}" style="--program-semester-count:${semesterList.length}">
                     <div class="lux-subject-row__code">
                         <div>${escapeHtml(subject.id)}</div>
                         <div class="lux-subject-row__meta">#${index + 1}</div>
                     </div>
                     <div class="lux-subject-row__body">
                         <div class="lux-subject-row__title">${escapeHtml(subject.name || 'Untitled Subject')}</div>
-                        <div class="lux-subject-row__meta">${escapeHtml(getFacultyLabel(subject.faculty || faculty))}</div>
-                        <div class="lux-subject-row__chips">
-                            <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(subject.semester || '-'))}</span>
-                            <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
-                            ${subjectType ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(subjectType)}</span>` : ''}
-                            ${contactHours ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(contactHours)}</span>` : ''}
-                            ${language ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(language)}</span>` : ''}
+                        <div class="lux-subject-row__secondary">
+                            <div class="lux-subject-row__meta">${escapeHtml(getFacultyLabel(subject.faculty || faculty))}</div>
+                            <div class="lux-subject-row__chips">
+                                ${subjectType ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(subjectType)}</span>` : ''}
+                                ${contactHours ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(contactHours)}</span>` : ''}
+                                ${language ? `<span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(language)}</span>` : ''}
+                            </div>
                         </div>
-                        <div class="lux-subject-row__detail" title="${escapeHtml(prerequisite)}"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
-                        ${antiReq ? `<div class="lux-subject-row__detail is-soft" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
+                    </div>
+                    <div class="lux-subject-row__ects" aria-label="${escapeHtml(String(subject.ects || 0))} ECTS">
+                        <strong class="lux-subject-row__ects-value">${escapeHtml(String(subject.ects || 0))}</strong>
+                    </div>
+                    <div class="lux-subject-row__prerequisite ${hasPrerequisite ? 'has-prerequisite' : 'is-empty'}">
+                        <span class="lux-subject-row__prerequisite-value" title="${hasPrerequisite ? escapeHtml(prerequisite) : 'does not have'}">${hasPrerequisite ? escapeHtml(prerequisite) : 'does not have'}</span>
+                        ${antiReq ? `<span class="lux-subject-row__prerequisite-secondary" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</span>` : ''}
+                    </div>
+                    <div class="lux-subject-row__semesters" aria-label="Semester distribution">
+                        ${typeof renderSemesterDistributionCells === 'function'
+                            ? renderSemesterDistributionCells(semesterList, typeof normalizeSubjectSemesters === 'function' ? normalizeSubjectSemesters(subject) : subject.semester)
+                            : ''}
                     </div>
                     <div class="lux-subject-row__stats">
                         <span class="lux-program-requirement ${hasPrerequisite ? 'is-locked' : 'is-open'}">
@@ -230,6 +240,9 @@
     }
 
     function renderProgramsSubjectPanelRegion(context) {
+        const semesterList = typeof getProgramSemesterList === 'function'
+            ? getProgramSemesterList(context.programFaculty, context.allProgramSubjects)
+            : [1];
         return `
             <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--subject-panel lux-program-subject-panel">
                 ${context.selectedModule ? `
@@ -237,13 +250,23 @@
                         <div class="lux-section-title lux-program-module-title">${escapeHtml(context.selectedModule.name)}</div>
                         <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(context.searchLabel)}</span>
                     </div>
-                    <div class="lux-program-column-head lux-program-detail-columns" aria-hidden="true">
-                        <div class="lux-program-column-code">Code</div>
-                        <div class="lux-program-column-subject">Subject title / requirements</div>
-                        <div class="lux-program-column-ects">ECTS / semester</div>
-                    </div>
-                    <div class="lux-program-subject-list lux-program-detail-list">
-                        ${renderStudentCurriculumLibraryModuleRows(context.moduleSubjects, context.programFaculty, context.searchQuery ? 'search' : context.semesterFilter)}
+                    <div class="lux-program-semester-table-scroll">
+                        <div class="lux-program-column-head lux-program-detail-columns" aria-hidden="true">
+                            <div class="lux-program-column-code">Code</div>
+                            <div class="lux-program-column-subject">Subject title / requirements</div>
+                            <div class="lux-program-column-ects">ECTS</div>
+                            <div class="lux-program-column-prerequisite">Prerequisite</div>
+                            <div class="lux-program-column-semesters">
+                                <span>Semester distribution</span>
+                                <span class="lux-program-semester-head" style="--program-semester-count:${semesterList.length}">
+                                    ${typeof renderSemesterDistributionHeader === 'function' ? renderSemesterDistributionHeader(semesterList) : ''}
+                                </span>
+                            </div>
+                            <div class="lux-program-column-status">Status</div>
+                        </div>
+                        <div class="lux-program-subject-list lux-program-detail-list">
+                            ${renderStudentCurriculumLibraryModuleRows(context.moduleSubjects, context.programFaculty, context.searchQuery ? 'search' : context.semesterFilter, semesterList)}
+                        </div>
                     </div>
                 ` : `
                     <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--panel">

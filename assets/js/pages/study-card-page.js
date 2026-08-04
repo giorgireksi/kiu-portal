@@ -479,12 +479,12 @@ function renderStudyCardTermsRegion(context) {
                 <table class="kiu-table study-card-semester-table lux-modern-table">
                     <thead>
                         <tr>
-                            <th class="study-card-heading lms-route-field-label study-card-heading--left">Subject</th>
-                            <th class="study-card-heading lms-route-field-label study-card-heading--left">Professor</th>
-                            <th class="study-card-heading lms-route-field-label">ECTS</th>
-                            <th class="study-card-heading lms-route-field-label">Score</th>
-                            <th class="study-card-heading lms-route-field-label">Letter Grade</th>
-                            <th class="study-card-heading lms-route-field-label study-card-heading--right">Assessment</th>
+                            <th scope="col" class="study-card-heading lms-route-field-label study-card-heading--left">Subject</th>
+                            <th scope="col" class="study-card-heading lms-route-field-label study-card-heading--left">Professor</th>
+                            <th scope="col" class="study-card-heading lms-route-field-label">ECTS</th>
+                            <th scope="col" class="study-card-heading lms-route-field-label">Score</th>
+                            <th scope="col" class="study-card-heading lms-route-field-label">Letter Grade</th>
+                            <th scope="col" class="study-card-heading lms-route-field-label study-card-heading--right">Assessment</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>

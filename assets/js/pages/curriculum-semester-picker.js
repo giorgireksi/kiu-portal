@@ -75,13 +75,29 @@
             : 'One semester — each selection replaces the current choice.';
     }
 
+    function getSemesterLimit() {
+        if (typeof window.getConfiguredProgramSemesterCount === 'function') {
+            return window.getConfiguredProgramSemesterCount() || MAX_SEMESTER;
+        }
+        return MAX_SEMESTER;
+    }
+
+    function hasConfiguredSemesterLimit() {
+        return typeof window.getConfiguredProgramSemesterCount === 'function'
+            && window.getConfiguredProgramSemesterCount() > 0;
+    }
+
     function getScrollOptions() {
         const options = [];
-        for (let semester = 1; semester <= MAX_SEMESTER; semester += 1) {
+        const semesterLimit = getSemesterLimit();
+        for (let semester = 1; semester <= semesterLimit; semester += 1) {
             options.push(semester);
         }
         customSemesters.forEach((semester) => {
-            if (semester > MAX_SEMESTER && !options.includes(semester)) {
+            const allowed = hasConfiguredSemesterLimit()
+                ? semester <= semesterLimit
+                : semester > MAX_SEMESTER;
+            if (allowed && !options.includes(semester)) {
                 options.push(semester);
             }
         });
@@ -89,9 +105,14 @@
     }
 
     function promptCustomSemester() {
-        const entered = prompt('Enter a semester number:', String(MAX_SEMESTER + 1));
+        const semesterLimit = getSemesterLimit();
+        const entered = prompt('Enter a semester number:', String(semesterLimit + 1));
         const parsed = parseInt(String(entered || '').trim(), 10);
         if (!Number.isFinite(parsed) || parsed < 1) return null;
+        if (hasConfiguredSemesterLimit() && parsed > semesterLimit) {
+            alert(`This program is configured for ${semesterLimit} semester${semesterLimit === 1 ? '' : 's'}.`);
+            return null;
+        }
         if (parsed > MAX_SEMESTER && !customSemesters.includes(parsed)) {
             customSemesters.push(parsed);
             customSemesters.sort((left, right) => left - right);

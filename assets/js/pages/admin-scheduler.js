@@ -1620,22 +1620,113 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         return dayCol;
     }
 
-    function buildSchedulerEventMeta(iconClass, content) {
-        const meta = document.createElement('div');
-        meta.className = 'ev-meta';
+    function formatSchedulerLmsDuration(value) {
+        const minutes = parseInt(String(value || '').match(/\d+/)?.[0] || '0', 10);
+        if (!minutes) return 'Duration TBD';
+        const hours = Math.floor(minutes / 60);
+        const remainder = minutes % 60;
+        const parts = [];
+        if (hours) parts.push(`${hours} ${hours === 1 ? 'Hour' : 'Hours'}`);
+        if (remainder) parts.push(`${remainder} ${remainder === 1 ? 'Minute' : 'Minutes'}`);
+        return parts.join(' ') || 'Duration TBD';
+    }
 
-        const icon = document.createElement('i');
-        icon.className = iconClass;
-        meta.appendChild(icon);
-        meta.appendChild(document.createTextNode(' '));
+    function getSchedulerEventCourseName(courseId) {
+        const keyOf = (value) => typeof canonicalCourseKey === 'function'
+            ? canonicalCourseKey(value)
+            : String(value || '').trim().toLowerCase();
+        const targetKey = keyOf(courseId);
+        const domain = typeof getDomain === 'function' ? getDomain() : {};
+        const records = [];
+        const addRecords = (entries) => {
+            if (Array.isArray(entries)) records.push(...entries);
+            else if (entries && typeof entries === 'object') records.push(...Object.values(entries));
+        };
+        addRecords(domain.subjectsById);
+        addRecords(typeof KIU_STATE !== 'undefined' ? KIU_STATE.curriculum : []);
+        addRecords(typeof getActiveCurriculum === 'function'
+            ? getActiveCurriculum(typeof deriveFaculty === 'function' ? deriveFaculty(courseId) : '')
+            : []);
+        addRecords(typeof getSchedulerPaletteSubjects === 'function'
+            ? getSchedulerPaletteSubjects({ ignoreSearch: true })
+            : []);
+        const subject = records.find((entry) => keyOf(
+            entry?.id || entry?.courseId || entry?.subjectId || entry?.code
+        ) === targetKey);
+        return subject?.name || subject?.courseName || subject?.subjectName || courseId || 'Course TBD';
+    }
 
-        if (content instanceof Node) {
-            meta.appendChild(content);
-        } else {
-            meta.appendChild(document.createTextNode(String(content || '')));
+    function getSchedulerEventTypeLabel(session) {
+        const rawType = String(session.sessionType || session.type || 'lecture').trim().toLowerCase();
+        if (typeof getStudentSectionTypeLabel === 'function') {
+            return getStudentSectionTypeLabel(rawType || 'lecture');
         }
+        return rawType === 'seminar' ? 'Seminar' : 'Lecture';
+    }
 
-        return meta;
+    function buildSchedulerEventDetails(session) {
+        const details = document.createElement('div');
+        details.className = 'lms-session-details lms-session-details--session';
+        const time = `${session.time || '09:00'}${session.endTime ? ` - ${session.endTime}` : ''}`;
+        const instructorCandidates = [session.prof, session.ta]
+            .map((value) => String(value || '').trim())
+            .filter(Boolean);
+        const professor = instructorCandidates.find((value) => value.toLowerCase() !== 'tbd')
+            || instructorCandidates[0]
+            || 'TBD';
+        const audience = session.room && session.room !== 'TBD' ? session.room : 'Room TBD';
+        const buildRow = (label, value, iconClass, modifier = '') => {
+            const row = document.createElement('div');
+            row.className = `lms-session-detail-row${modifier ? ` ${modifier}` : ''}`;
+            const labelNode = document.createElement('span');
+            labelNode.className = 'lms-session-detail-label';
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+            icon.setAttribute('aria-hidden', 'true');
+            labelNode.appendChild(icon);
+            labelNode.appendChild(document.createTextNode(label));
+            const valueNode = document.createElement('span');
+            valueNode.className = 'lms-session-detail-value';
+            valueNode.textContent = String(value || 'TBD');
+            row.append(labelNode, valueNode);
+            return row;
+        };
+        const buildSummaryItem = (iconClass, label, value, modifier = '') => {
+            const item = document.createElement('span');
+            item.className = `lms-session-summary-item${modifier ? ` ${modifier}` : ''}`;
+            const labelNode = document.createElement('span');
+            labelNode.className = 'lms-session-summary-label';
+            const icon = document.createElement('i');
+            icon.className = iconClass;
+            icon.setAttribute('aria-hidden', 'true');
+            labelNode.textContent = label;
+            labelNode.prepend(icon);
+            const valueNode = document.createElement('span');
+            valueNode.className = 'lms-session-summary-value';
+            valueNode.textContent = String(value || 'TBD');
+            item.append(labelNode, valueNode);
+            return item;
+        };
+
+        const summary = document.createElement('div');
+        summary.className = 'lms-session-summary';
+        summary.append(
+            buildSummaryItem('far fa-clock', 'Hours:', time, 'lms-session-summary-item--hours'),
+            buildSummaryItem('fas fa-book-open', 'Educational course:', getSchedulerEventCourseName(session.courseId), 'lms-session-summary-item--course'),
+            buildSummaryItem('fas fa-tag', 'Type:', getSchedulerEventTypeLabel(session), 'lms-session-summary-item--type'),
+            buildSummaryItem('fas fa-hourglass-half', 'Duration:', formatSchedulerLmsDuration(session.duration), 'lms-session-summary-item--duration')
+        );
+        details.appendChild(summary);
+
+        const detailGrid = document.createElement('div');
+        detailGrid.className = 'lms-session-detail-grid';
+        detailGrid.append(
+            buildRow('Professor:', professor, 'fas fa-user'),
+            buildRow('Audience:', audience, 'fas fa-location-dot'),
+            buildRow('Comment:', session.name || session.id || 'TBD', 'far fa-comment')
+        );
+        details.appendChild(detailGrid);
+        return details;
     }
 
     function buildSchedulerEventAction(action, courseId, groupId, iconClass) {
@@ -1693,44 +1784,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             card.appendChild(badge);
         }
 
-        const title = document.createElement('div');
-        title.className = 'ev-title';
-        title.textContent = session.courseId;
-
-        const titleMeta = document.createElement('span');
-        titleMeta.className = 'ev-title-meta';
-        titleMeta.textContent = `(${session.id})`;
-        title.appendChild(document.createTextNode(' '));
-        title.appendChild(titleMeta);
-        card.appendChild(title);
-
-        const timeLabel = `${session.time || '09:00'}${session.endTime ? ` - ${session.endTime}` : ''}`;
-        card.appendChild(buildSchedulerEventMeta('far fa-clock', timeLabel));
-
-        const professorContent = session.prof === 'TBD'
-            ? (() => {
-                const missing = document.createElement('span');
-                missing.className = 'ev-value is-missing';
-                missing.textContent = 'No Professor';
-                return missing;
-            })()
-            : session.prof;
-        card.appendChild(buildSchedulerEventMeta('fas fa-user-circle', professorContent));
-
-        const roomWrapper = document.createElement('span');
-        if (session.room === 'TBD') {
-            const missingRoom = document.createElement('span');
-            missingRoom.className = 'ev-value is-missing';
-            missingRoom.textContent = 'No Room';
-            roomWrapper.appendChild(missingRoom);
-        } else {
-            roomWrapper.appendChild(document.createTextNode(session.room));
-        }
-        const duration = document.createElement('span');
-        duration.className = 'ev-duration';
-        duration.textContent = ` · ${session.duration}`;
-        roomWrapper.appendChild(duration);
-        card.appendChild(buildSchedulerEventMeta('fas fa-map-marker-alt', roomWrapper));
+        card.appendChild(buildSchedulerEventDetails(session));
 
         const actions = document.createElement('div');
         actions.className = 'ev-actions';

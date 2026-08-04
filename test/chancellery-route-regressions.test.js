@@ -110,6 +110,14 @@ describe('chancellery route regressions', () => {
         expect(primitives).toContain('.lux-check-row');
     });
 
+    it('removes the non-functional new appeal command button', () => {
+        const js = readSource('assets/js/pages/chancellery.js');
+        expect(js).not.toContain('data-chancellery-action="show-compose"');
+        expect(js).not.toContain('showChancelleryCompose');
+        expect(js).not.toContain('showCompose');
+        expect(js).toContain('data-chancellery-action="open-appeal-document"');
+    });
+
     it('bare-lite chancellery block is layout-only', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         const chanBlock = bare.split('/* ── Chancellery route')[1]?.split('/* ── Staff / students hub')[0] || '';

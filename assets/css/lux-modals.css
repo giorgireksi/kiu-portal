@@ -926,6 +926,9 @@
 .social-neo-overlay-portal :is(.lux-glass-dialog-backdrop, .social-neo-story-viewer, .social-neo-story-composer) {
   pointer-events: auto;
 }
+#social-neo-overlay-portal :is(.social-page-surface, .social-project-task-graph-stack) {
+  pointer-events: auto;
+}
 .lux-glass-dialog-backdrop {
   position: fixed;
   inset: 0;
@@ -4176,6 +4179,84 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   gap: 12px;
   padding: 14px 16px;
   border-radius: 16px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 3px 9px;
+  margin-bottom: 2px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-section-head > * {
+  margin-left: 0;
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-section-head > :is(strong, h3) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lux-text);
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-section-head > :is(strong, h3)::before {
+  content: "";
+  width: 4px;
+  height: 14px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  background: var(--lux-accent);
+  box-shadow: var(--lux-focus-shadow);
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-section-head > span:not(.sph-auto):not(.sph-readiness-pct):not(.sph-plan-count) {
+  grid-column: 1 / -1;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--lux-text-muted);
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-stat-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 9px 11px;
+  border-radius: 10px;
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-stat-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lux-text-muted);
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-stat-value {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--lux-text);
+  font-variant-numeric: tabular-nums;
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-stat-value.is-critical {
+  color: var(--lux-accent);
+}
+#social-neo-overlay-portal .lux-glass-dialog-compact-stat-hint {
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--lux-text-muted);
 }
 #social-neo-overlay-portal :is(
   .lux-glass-dialog-group-section-head,

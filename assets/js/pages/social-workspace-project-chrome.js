@@ -214,7 +214,7 @@
                 </section>
             `;
         }
-        function renderProjectSettingsDialog(runtime, dialog) {
+        function renderProjectSettingsDialog(runtime, dialog, options = {}) {
             const project = resolveActiveSocialProject(runtime, dialog?.projectId);
             if (!project || !project.isManager) return '';
             const ctx = buildProjectCreateInviteContext(runtime);
@@ -236,10 +236,26 @@
             const showcaseId = controlId('project-settings-showcase');
             const scheduleStartId = controlId('project-settings-schedule-start');
             const scheduleStartValue = toDateTimeLocalValue(project.scheduleStartAt || '');
-            return `<div class="lux-glass-dialog-backdrop" data-action="dialog-close">
-                <form class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-create lux-glass-dialog-card lux-glass-dialog-card--social-glass" data-form="project-settings" data-project-id="${escape(text(project.id))}" data-action="noop" data-lux-transparency-exempt="1">
-                    ${neoHead('Workspace settings', 'Tune status, visibility, advisor, and team size for this project.', { icon: 'fas fa-sliders' })}
-                    <div class="lux-glass-dialog-body lux-glass-dialog-body--project-task-create">
+            const pageSurface = options.pageSurface === true;
+            const surfaceOpen = pageSurface
+                ? '<section class="social-page-surface social-project-settings-page" data-social-page-surface="project-settings" data-action="noop" aria-label="Workspace settings">'
+                : '<div class="lux-glass-dialog-backdrop" data-action="dialog-close">';
+            const formClass = pageSurface
+                ? 'social-page-surface-content'
+                : 'lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-create lux-glass-dialog-card lux-glass-dialog-card--social-glass';
+            const headMarkup = pageSurface
+                ? '<header class="social-page-surface-head"><div class="social-page-surface-heading"><strong class="social-page-surface-title"><i class="fas fa-sliders" aria-hidden="true"></i> Workspace settings</strong><span>Tune status, visibility, advisor, and team size for this project.</span></div><button class="lux-ghost-btn" type="button" data-action="dialog-close" aria-label="Back to task map"><i class="fas fa-arrow-left"></i> Back</button></header>'
+                : neoHead('Workspace settings', 'Tune status, visibility, advisor, and team size for this project.', { icon: 'fas fa-sliders' });
+            const bodyClass = pageSurface
+                ? 'social-page-surface-body'
+                : 'lux-glass-dialog-body lux-glass-dialog-body--project-task-create';
+            const actionMarkup = pageSurface
+                ? '<footer class="social-page-surface-footer"><button class="lux-secondary-btn" type="button" data-action="dialog-close">Back</button><button class="lux-primary-btn" type="submit"><i class="fas fa-check"></i> Save settings</button></footer>'
+                : neoActions({ cancelLabel: 'Cancel', submitLabel: 'Save settings', submitIcon: 'fas fa-check' });
+            return `${surfaceOpen}
+                <form class="${formClass}" data-form="project-settings" data-project-id="${escape(text(project.id))}" data-action="noop" data-lux-transparency-exempt="1">
+                    ${headMarkup}
+                    <div class="${bodyClass}">
                         <div class="social-neo-form-grid social-neo-form-grid-2">
                             ${neoField('Project name', `<input class="social-neo-input lux-control" id="${escape(nameId)}" type="text" name="projectName" value="${escape(text(project.name || project.title || ''))}" required>`, { forId: nameId })}
                             <label class="lux-glass-dialog-field" for="${escape(statusId)}">
@@ -277,9 +293,9 @@
                         ${neoField('External links', `<textarea class="social-neo-textarea lux-control" id="${escape(linksId)}" rows="3" name="projectExternalLinks" placeholder="One URL per line">${escape(externalLinksText)}</textarea>`, { forId: linksId })}
                         ${neoField('Showcase summary', `<textarea class="social-neo-textarea lux-control" id="${escape(showcaseId)}" rows="2" name="projectShowcaseSummary" placeholder="Short blurb used when this workspace is showcased.">${escape(text(project.showcaseSummary || ''))}</textarea>`, { forId: showcaseId })}
                     </div>
-                    ${neoActions({ cancelLabel: 'Cancel', submitLabel: 'Save settings', submitIcon: 'fas fa-check' })}
+                    ${actionMarkup}
                 </form>
-            </div>`;
+            ${pageSurface ? '</section>' : '</div>'}`;
         }
         function renderProjectCreateDialog(runtime) {
             const ctx = buildProjectCreateInviteContext(runtime);

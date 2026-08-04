@@ -291,6 +291,7 @@
         'project-task-edit',
         'project-task-create',
         'project-task-delete',
+        'project-settings',
         'project-health',
         'project-risk',
         'project-task-graph-history',

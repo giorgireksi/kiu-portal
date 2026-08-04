@@ -79,14 +79,19 @@ describe('index widget wave 1 regressions', () => {
   it('keeps registration widgets aligned to consolidated studio panel', () => {
     const source = readSource('registration.html');
 
-    expect(source).toContain('registration-hero-shell');
-    expect(source).toContain('class="lux-timetable-hero-main lux-hero-main registration-hero-copy"');
-    expect(source).toMatch(/registration-hero-aside[\s\S]*home-hover-chip/);
-    expect(source).toContain('registration-command-band');
+    expect(source).not.toContain('registration-hero-shell');
+    expect(source).not.toContain('class="lux-timetable-hero-main lux-hero-main registration-hero-copy"');
+    expect(source).not.toContain('registration-hero-meta');
+    expect(source).not.toContain('registration-hero-status');
+    expect(source).not.toContain('registration-hero-semester');
+    expect(source).not.toContain('registration-hero-faculty');
+    expect(source).not.toContain('registration-hero-ects"');
+    expect(source).toContain('registration-summary-panel home-hover-chip');
+    expect(source).toContain('registration-summary-grid');
     expect(source).toContain('registration-metrics-band lux-strip-grid lux-strip-grid--adaptive');
     expect(source).toContain('registration-studio-shell');
     expect(source).toContain('registration-studio-deck');
-    expect(source).toContain('registration-insight-card home-hover-chip');
+    expect(source).toContain('registration-summary-facts');
     expect(source).not.toContain('lux-soft-chrome');
     expect(source).not.toContain('registration-hero-focus-grid');
     expect(source).not.toContain('registration-mini-metric');

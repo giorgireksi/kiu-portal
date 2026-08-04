@@ -124,9 +124,6 @@ function syncRegistrationWorkspaceSummary() {
     const currentSchedule = Array.isArray(KIU_STATE.studentSchedulesByStudent?.[currentUser.id]) ? KIU_STATE.studentSchedulesByStudent[currentUser.id] : [];
     const selectedCount = currentSchedule.length;
     const faculty = currentUser.facultyCode || currentUser.faculty || getCurrentFaculty();
-    const facultyName = typeof getFacultyLabel === 'function'
-        ? getFacultyLabel(faculty)
-        : String(faculty || '');
     const semester = String(getCurrentStudentSemesterNumber(currentUser) || 1);
     const totalEcts = typeof getStudentCompletedEctsThisSemester === 'function'
         ? getStudentCompletedEctsThisSemester(currentUser.id, faculty)
@@ -134,32 +131,19 @@ function syncRegistrationWorkspaceSummary() {
     const limit = KIU_STATE.probationStatus?.[currentUser.id] ? 24 : 36;
     const holdActive = Boolean(KIU_STATE.probationStatus?.[currentUser.id]);
     const registrationOpen = Boolean(KIU_STATE.registrationOpen);
-    const nextStep = selectedCount === 0
-        ? 'Choose a program module'
-        : registrationOpen
-            ? 'Review selected sections'
-            : 'Registration is locked';
     const statusText = registrationOpen ? 'Registration open' : 'Registration closed';
-    const loadText = `${selectedCount} selected`;
+    const loadText = `${selectedCount} selected sections`;
     const ectsText = `${totalEcts} / ${limit} ECTS`;
+    const remainingText = `${Math.max(limit - totalEcts, 0)} ECTS remaining`;
     const holdText = holdActive ? 'Review hold' : 'Clear';
-    const sectionText = `${selectedCount} section${selectedCount === 1 ? '' : 's'}`;
     const academicYearLabel = typeof getCurrentAcademicYearLabel === 'function' ? getCurrentAcademicYearLabel() : '2025 / 2026';
     const termText = `${academicYearLabel} · Semester ${semester}`;
 
     const updates = {
-        'registration-hero-status': statusText,
-        'registration-hero-semester': termText,
-        'registration-hero-faculty': facultyName,
-        'registration-hero-ects': ectsText,
         'registration-hero-load': loadText,
-        'registration-next-step': nextStep,
-        'registration-hero-hold-card': holdText,
-        'registration-hero-ects-card': `${totalEcts} / ${limit}`,
-        'registration-hero-selected-card': String(selectedCount),
-        'registration-hero-next-step-card': nextStep,
-        'timetable-hero-focus-time': ectsText,
-        'timetable-hero-focus-title': loadText
+        'registration-summary-status': statusText,
+        'registration-ects-remaining': remainingText,
+        'timetable-hero-focus-time': ectsText
     };
 
     Object.entries(updates).forEach(([id, value]) => {
@@ -170,7 +154,6 @@ function syncRegistrationWorkspaceSummary() {
     const factsEl = document.getElementById('timetable-hero-focus-facts');
     if (factsEl) {
         factsEl.innerHTML = `
-            <li><i class="fas fa-circle-notch"></i> <span>Status: ${statusText}</span></li>
             <li><i class="fas fa-exclamation-triangle"></i> <span>Hold: ${holdText}</span></li>
             <li><i class="fas fa-award"></i> <span>Limit: ${limit} ECTS max</span></li>
         `;
@@ -179,6 +162,14 @@ function syncRegistrationWorkspaceSummary() {
     const metaEl = document.getElementById('timetable-hero-focus-meta');
     if (metaEl) {
         metaEl.innerHTML = `<span class="lux-hero-signal home-hover-chip"><i class="fas ${holdActive ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${holdActive ? 'Hold Active' : 'Ready to Register'}</span>`;
+    }
+
+    const progressEl = document.getElementById('registration-ects-progress');
+    if (progressEl) {
+        const ratio = limit > 0 ? Math.min(Math.max(totalEcts / limit, 0), 1) : 0;
+        progressEl.style.setProperty('--registration-progress', `${ratio * 100}%`);
+        progressEl.setAttribute('aria-valuemax', String(limit));
+        progressEl.setAttribute('aria-valuenow', String(totalEcts));
     }
 
     const termSelect = document.getElementById('registration-term-select');

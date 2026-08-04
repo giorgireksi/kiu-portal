@@ -264,6 +264,7 @@
             return SOCIAL_TOPBAR_SKIPPED_PANELS.has(text(panel || ''));
         }
         function isSocialCommandSkippedPanel(panel) {
+            if (window.KiuSocialPagination?.renderModeControl) return false;
             return SOCIAL_COMMAND_SKIPPED_PANELS.has(text(panel || ''));
         }
         function centerCanScroll(center, shell) {

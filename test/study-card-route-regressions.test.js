@@ -49,6 +49,11 @@ describe('study card route regressions.test', () => {
         expect(studyCardJs).toContain('study-card-term-row lux-soft-chrome home-hover-chip');
         expect(studyCardJs).toContain('study-card-term-header lux-soft-chrome home-hover-chip');
         expect(studyCardJs).toContain('lms-route-field-label study-card-heading');
+        expect(studyCardJs).toContain('scope="col" class="study-card-heading');
+        expect(bare).toContain('body.lux-route-study-card .study-card-semester-table > thead {\n    display: table-header-group;');
+        expect(bare).toContain('body.lux-route-study-card .study-card-semester-table > thead > tr {\n    display: table-row;');
+        expect(bare).toContain('body.lux-route-study-card .study-card-semester-table > thead > tr > th {\n    display: table-cell;');
+        expect(bare).toContain('body.lux-route-study-card .study-card-semester-table > thead {\n        display: none !important;');
         expect(studyCardJs).toContain('assessmentWindowCache[assessmentCacheKey] = subject');
         expect(studyCardJs).toContain('lux-empty-state__title lms-route-empty-title');
         expect(studyCardJs).toContain('resolveStudyCardScheduleRefs');

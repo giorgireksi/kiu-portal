@@ -164,9 +164,13 @@ describe('social-workspace-dialogs', () => {
         expect(html).toContain('Task one');
     });
 
-    it('renders risk dialog shell for active project', () => {
+    it('renders risk page surface for active project', () => {
         const html = api.renderProjectRiskDialog(runtime, { type: 'project-risk', projectId: 'p1' });
-        expect(html).toContain('lux-glass-dialog');
+        expect(html).toContain('social-page-surface social-project-risk-page');
+        expect(html).toContain('social-project-risk-page-head lux-soft-chrome');
+        expect(html).toContain('social-page-form-actions');
+        expect(html).not.toContain('lux-glass-dialog');
+        expect(html).not.toContain('role="dialog"');
         expect(html).toContain('data-project-id');
     });
 

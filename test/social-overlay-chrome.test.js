@@ -149,6 +149,14 @@ describe('social-overlay-chrome', () => {
         expect(renders).toContain('dialog-close');
     });
 
+    it('keeps graph-family pages scrollable without popup body locking', () => {
+        api.openDialog('project-task-graph', { projectId: 'p1' });
+        expect(renders).toContain('dialog-only');
+        expect(runtime.ui.socialDialog.type).toBe('project-task-graph');
+        expect(sandbox.document.body.dataset.socialOverlayLocked).toBeUndefined();
+        expect(sandbox.document.body.classList.contains('social-overlay-open')).toBe(false);
+    });
+
     it('uses dialog-only render for post-comments open and close', () => {
         const preservedTypes = new Set(['post-comments', 'photography-comments', 'comment-delete', 'comment-report']);
         const preserved = loadOverlayChrome({
@@ -248,7 +256,7 @@ describe('social-overlay-chrome', () => {
         api.closeDialog();
         expect(runtime.ui.socialDialog).toBe(null);
         expect(runtime.ui.projectTaskGraphStackAnchor).toBe(null);
-        expect(renders).toContain('dialog-close');
+        expect(renders).toContain('dialog-only');
     });
 
     it('clears graph stack anchor when fully closing overlay above graph', () => {
@@ -312,7 +320,7 @@ describe('social-overlay-chrome', () => {
         expect(unlock?.[0] || '').toMatch(/centerScroller\.scrollTop = centerScrollY[\s\S]*clearSocialOverlayLockArtifacts\(\)/);
         expect(unlock?.[0] || '').not.toMatch(/clearSocialOverlayLockArtifacts\(\)[\s\S]*scrollSocialCenterTo\(centerScrollY/);
         expect(readFileSync(join(process.cwd(), 'social.html'), 'utf8'))
-            .toContain('social-overlay-chrome.js?v=20260802-dialogscroll3');
+            .toContain('social-overlay-chrome.js?v=20260804-graph-pages1');
     });
 
     it('does not call scrollSocialCenterTo on desktop overlay unlock', () => {

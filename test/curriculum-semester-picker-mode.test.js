@@ -57,4 +57,29 @@ describe('curriculum semester picker mode', () => {
         expect(css).toContain('.lux-semester-mode-segment__btn[aria-pressed="true"]');
         expect(css).toContain('.lux-picker-btn--compact');
     });
+
+    it('uses the configured program semester count for shared curriculum rails', () => {
+        const bundle = readSource('assets/js/features/index-admin-tools.bundle-source.js');
+        const runtime = readSource('assets/js/pages/registration-semester-runtime.js');
+        const programs = readSource('assets/js/pages/programs-page.js');
+        const registration = readSource('assets/js/pages/registration.js');
+
+        expect(bundle).toContain('id="admin-program-semester-count"');
+        expect(bundle).toContain('programSemesterCount');
+        expect(bundle).toContain('kiu-program-semester-config-changed');
+        expect(runtime).toContain('function getProgramSemesterCount(faculty, subjects = [])');
+        expect(runtime).toContain('function getProgramSemesterList(faculty, subjects = [])');
+        expect(runtime).toContain('function renderSemesterDistributionCells(semesterList, assignedSemesters = [])');
+        expect(runtime).toContain('getConfiguredProgramSemesterCount');
+        expect(programs).toContain('renderSemesterDistributionHeader(semesterList)');
+        expect(programs).toContain('renderSemesterDistributionCells(semesterList');
+        expect(programs).toContain('lux-subject-row__ects');
+        expect(programs).toContain('lux-subject-row__prerequisite');
+        expect(programs).toContain('does not have');
+        expect(registration).toContain('renderSemesterDistributionHeader(semesterList)');
+        expect(registration).toContain('renderSemesterDistributionCells(resolvedSemesterList');
+        expect(registration).toContain('lux-subject-row__ects');
+        expect(registration).toContain('lux-subject-row__prerequisite');
+        expect(registration).toContain('does not have');
+    });
 });

@@ -67,10 +67,10 @@ describe('index widget wave 2 regressions', () => {
     expect(adminLibraryHtml).toContain('class="alib-panel alib-panel--entry lux-soft-chrome"');
     expect(adminLibraryHtml).toContain('class="lux-strip-card admin-library-catalog-card lux-soft-chrome"');
     expect(adminLibraryHtml).not.toContain('admin-library-hero-summary');
-    expect(timetableHtml).toContain('class="lux-timetable-hero-main lux-hero-main"');
-    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-hero-side"');
+    expect(timetableHtml).not.toContain('class="lux-timetable-hero-main lux-hero-main"');
+    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side"');
     expect(timetableHtml).not.toContain('class="lux-card lux-timetable-insight lux-timetable-next-compact"');
-    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-hero-side"');
+    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side"');
   });
 
   it('keeps the LMS hero summary cluster aligned to index hero-side and strip-card classes', () => {

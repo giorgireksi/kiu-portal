@@ -65,13 +65,6 @@ body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-event {
   -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
 }
 body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-event:hover { transform: translateY(-1px); box-shadow: var(--lux-elev-3); }
-.ev-title {
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .ev-meta {
   font-size: 9px;
   opacity: 0.8;

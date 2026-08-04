@@ -75,40 +75,227 @@
 }
 .schedule-session-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   gap: 10px;
   padding: 12px;
+}
+.schedule-session-grid > .schedule-session-card {
+  align-self: start;
+  min-width: 0;
+}
+.schedule-session-grid:has(> .schedule-session-card:first-child):not(:has(> .schedule-session-card:nth-child(2)))::after {
+  content: '';
+  align-self: stretch;
+  min-width: 0;
+  border: 1px dashed var(--lux-panel-border-soft, var(--lux-border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lux-panel-surface-soft, transparent) 42%, transparent);
 }
 .schedule-session-card {
   border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
   border-radius: 14px;
   background: var(--lux-panel-surface, var(--lux-panel-surface-soft));
-  padding: 12px 14px;
+  padding: 10px 12px;
   box-shadow: var(--lux-elev-2);
 }
 .schedule-session-card-header {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 4px 12px;
+}
+.lms-session-details {
+  display: block;
+  min-width: 0;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--lux-panel-border-soft, var(--lux-border));
+}
+.schedule-session-card > .lms-session-details:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.lms-session-detail-row {
+  display: block;
+  min-width: 0;
+}
+.lms-session-detail-label {
+  display: inline;
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  margin-right: 4px;
+}
+.lms-session-detail-value {
+  display: inline;
+  min-width: 0;
+  color: var(--lux-text);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.lms-session-details--session .lms-session-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.7fr) minmax(0, 0.65fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: 8px 14px;
+  min-width: 0;
+  margin-bottom: 7px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid color-mix(in srgb, var(--lux-accent, #78b4c8) 32%, var(--lux-panel-border-soft, var(--lux-border)));
+}
+.lms-session-details--session .lms-session-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  color: var(--lux-text);
+  line-height: 1.2;
+}
+.lms-session-details--session .lms-session-summary-item--course {
+  align-items: center;
+  text-align: center;
+}
+.lms-session-details--session .lms-session-summary-item--type {
+  align-items: center;
+  text-align: center;
+}
+.lms-session-details--session .lms-session-summary-item--duration {
+  align-items: flex-end;
+  text-align: right;
+}
+.lms-session-details--session .lms-session-summary-label {
+  display: inline-flex;
+  align-items: center;
+  color: var(--lux-text-muted);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lms-session-details--session .lms-session-summary-label i {
+  margin-right: 4px;
+  color: var(--lux-text-muted);
+}
+.lms-session-details--session .lms-session-summary-value {
+  min-width: 0;
+  color: var(--lux-text);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.lms-session-details--session .lms-session-summary-item--course .lms-session-summary-value {
+  font-size: 12px;
+}
+.lms-session-details--session .lms-session-summary-item--type .lms-session-summary-value {
+  padding: 3px 8px;
+  border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-accent, #78b4c8) 10%, transparent);
+}
+.lms-session-details--session .lms-session-summary-item i,
+.lms-session-detail-label i {
+  color: var(--lux-text-muted);
+}
+.lms-session-detail-label i {
+  margin-right: 4px;
+}
+.lms-session-details--session .lms-session-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+}
+.lms-session-details--session .lms-session-detail-grid .lms-session-detail-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 10px;
+  text-align: center;
+  border-right: 2px solid color-mix(in srgb, var(--lux-accent, #78b4c8) 28%, var(--lux-panel-border-soft, var(--lux-border)));
+}
+.lms-session-details--session .lms-session-detail-grid .lms-session-detail-row:last-child {
+  border-right: 0;
+}
+.lms-session-details--timetable .lms-session-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  min-width: 0;
+  margin-bottom: 6px;
+}
+.lms-session-details--timetable .lms-session-summary-item {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--lux-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.lms-session-details--timetable .lms-session-summary-item strong {
+  color: var(--lux-text-muted);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lms-session-details--timetable .lms-session-detail-label {
+  font-size: 12px;
+}
+.lms-session-details--timetable .lms-session-detail-value {
+  font-size: 13px;
+}
+.lms-session-details--timetable .lms-session-detail-row--course {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 6px;
+}
+.lms-session-details--timetable .lms-session-detail-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 4px 16px;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+}
+.lms-session-details--timetable .lms-session-detail-grid .lms-session-detail-row {
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 100%;
+}
+@media (max-width: 520px) {
+  .lms-session-details--timetable .lms-session-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    gap: 4px;
+  }
+  .lms-session-details--timetable .lms-session-detail-grid .lms-session-detail-row {
+    width: auto;
+  }
 }
 .schedule-session-identity {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 0;
-}
-.schedule-session-focus {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.schedule-session-focus-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 6px;
   min-width: 0;
 }
 .schedule-session-rail {
@@ -131,13 +318,12 @@
   font-size: 13px;
   font-weight: 700;
 }
-.schedule-session-code-row {
+.schedule-session-context-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
 }
-.schedule-session-code { font-size: 14px; font-weight: 800; color: var(--lux-text); }
 .schedule-session-pill {
   display: inline-flex;
   align-items: center;
@@ -149,35 +335,6 @@
 .schedule-session-pill.role {
   background: rgba(var(--lux-accent-rgb), 0.16);
   color: var(--lux-accent, var(--lux-text));
-}
-.schedule-session-pill.type {
-  background: rgba(var(--lux-accent-rgb), 0.12);
-  color: var(--lux-text);
-}
-.schedule-session-title {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.3;
-  color: var(--lux-text);
-}
-.schedule-session-subtitle {
-  color: var(--lux-text-muted);
-  font-size: 11px;
-  font-weight: 600;
-}
-.schedule-session-subtitle::before {
-  content: "·";
-  margin-right: 6px;
-  color: var(--lux-text-soft, var(--lux-text-muted));
-}
-.schedule-session-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  margin-top: 0;
-  color: var(--lux-text);
-  font-size: 11px;
-  font-weight: 600;
 }
 .schedule-session-action {
   white-space: nowrap;
@@ -199,14 +356,40 @@
     grid-template-columns: 1fr;
   }
   .schedule-session-rail {
+    grid-column: 1;
     justify-content: flex-start;
   }
   .schedule-week-nav { width: 100%; justify-content: space-between; }
   .schedule-week-label { min-width: 0; flex: 1; }
 }
 @media (max-width: 640px) {
-  .schedule-view-switcher, .schedule-overview-row, .schedule-session-meta-row { width: 100%; }
+  .schedule-view-switcher, .schedule-overview-row { width: 100%; }
   .schedule-view-switcher { justify-content: stretch; }
   .schedule-view-switcher-btn { flex: 1; min-width: 0; }
   .schedule-session-grid { grid-template-columns: 1fr; }
+  .schedule-session-grid::after { display: none; }
+}
+@media (max-width: 520px) {
+  .lms-session-details--session .lms-session-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lms-session-details--session .lms-session-summary-item--course {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .lms-session-details--session .lms-session-summary-item--type {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .lms-session-details--session .lms-session-summary-item--duration {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .lms-session-details--session .lms-session-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .lms-session-details--session .lms-session-detail-grid .lms-session-detail-row {
+    border-right: 0;
+  }
 }

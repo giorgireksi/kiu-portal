@@ -29,6 +29,67 @@ function normalizeSubjectSemesters(subject) {
     return normalizeSemesterList(subject.semester);
 }
 
+function getProgramSemesterCount(faculty, subjects = []) {
+    const normalizedFaculty = String(faculty || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '') || '').trim().toUpperCase();
+    const bucket = typeof KIU_STATE !== 'undefined'
+        ? KIU_STATE?.adminProgramStructures?.[normalizedFaculty]
+        : null;
+    const configured = toRegistrationPositiveInt(bucket?.programSemesterCount, 0);
+    if (configured > 0) return Math.min(configured, MAX_SEMESTER_DROPDOWN);
+    const highestAssigned = (Array.isArray(subjects) ? subjects : []).reduce((highest, subject) => (
+        Math.max(highest, ...normalizeSubjectSemesters(subject))
+    ), 0);
+    return Math.max(1, Math.min(highestAssigned || 1, MAX_SEMESTER_DROPDOWN));
+}
+
+function getProgramSemesterList(faculty, subjects = []) {
+    return Array.from({ length: getProgramSemesterCount(faculty, subjects) }, (_, index) => index + 1);
+}
+
+function getConfiguredProgramSemesterCount(faculty) {
+    const normalizedFaculty = String(faculty || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '') || '').trim().toUpperCase();
+    const configured = toRegistrationPositiveInt(
+        typeof KIU_STATE !== 'undefined' ? KIU_STATE?.adminProgramStructures?.[normalizedFaculty]?.programSemesterCount : 0,
+        0
+    );
+    return configured > 0 ? Math.min(configured, MAX_SEMESTER_DROPDOWN) : 0;
+}
+
+function formatSemesterRoman(value) {
+    const number = toRegistrationPositiveInt(value, 0);
+    const numerals = [
+        [10, 'X'],
+        [9, 'IX'],
+        [5, 'V'],
+        [4, 'IV'],
+        [1, 'I']
+    ];
+    let remaining = number;
+    let result = '';
+    numerals.forEach(([unit, symbol]) => {
+        while (remaining >= unit) {
+            result += symbol;
+            remaining -= unit;
+        }
+    });
+    return result || String(number || '?');
+}
+
+function renderSemesterDistributionCells(semesterList, assignedSemesters = []) {
+    const assigned = new Set(normalizeSemesterList(assignedSemesters));
+    return (Array.isArray(semesterList) ? semesterList : []).map((semester) => {
+        const active = assigned.has(semester);
+        const label = `Semester ${semester}`;
+        return `<span class="lux-program-semester-cell${active ? ' is-active' : ''}" aria-label="${label}" title="${label}"><i class="fas fa-check" aria-hidden="true"></i></span>`;
+    }).join('');
+}
+
+function renderSemesterDistributionHeader(semesterList) {
+    return (Array.isArray(semesterList) ? semesterList : []).map((semester) => (
+        `<span class="lux-program-semester-head-cell">${formatSemesterRoman(semester)}</span>`
+    )).join('');
+}
+
 function subjectMatchesSemesterFilter(subject, filter) {
     if (!filter || filter === 'all') return true;
     const target = toRegistrationPositiveInt(filter, 0);
@@ -110,13 +171,18 @@ function populateSemesterSelectOptions(control, config = {}) {
     const numberPrefix = config.numberPrefix || 'Semester';
     const previousValue = String(selectEl.value || selectEl.dataset.previousSemesterValue || (includeAll ? 'all' : '1'));
     const customValue = parseInt(selectEl.dataset.customSemesterValue || '', 10);
-    const customLabel = Number.isFinite(customValue) && customValue > MAX_SEMESTER_DROPDOWN
+    const semesterLimit = config.programScoped
+        ? (getConfiguredProgramSemesterCount(config.faculty) || MAX_SEMESTER_DROPDOWN)
+        : MAX_SEMESTER_DROPDOWN;
+    const customLabel = Number.isFinite(customValue)
+        && (!config.programScoped || !getConfiguredProgramSemesterCount(config.faculty) || customValue <= semesterLimit)
+        && customValue > semesterLimit
         ? `${numberPrefix} ${customValue}`
         : null;
 
     const options = [];
     if (includeAll) options.push({ value: 'all', label: 'All Semesters' });
-    for (let semester = 1; semester <= MAX_SEMESTER_DROPDOWN; semester += 1) {
+    for (let semester = 1; semester <= semesterLimit; semester += 1) {
         options.push({ value: String(semester), label: `${numberPrefix} ${semester}` });
     }
     if (customLabel) {
@@ -148,6 +214,10 @@ function populateSemesterSelectOptions(control, config = {}) {
                 return;
             }
 
+            if (config.programScoped && parsed > semesterLimit) {
+                selectEl.value = fallbackValue;
+                return;
+            }
             if (parsed > MAX_SEMESTER_DROPDOWN) {
                 selectEl.dataset.customSemesterValue = String(parsed);
             } else {
@@ -184,7 +254,7 @@ function getSemesterParityDescription(semesterValue) {
 }
 
 const SEMESTER_DROPDOWN_CONFIGS = [
-    { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem' },
+    { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem', programScoped: true },
     { id: 'admin-active-semester', includeCustom: true, numberPrefix: 'Semester' },
     { id: 'admin-tt-semester', includeCustom: true, numberPrefix: 'Sem' },
     { id: 'admin-generate-semester', includeCustom: true, numberPrefix: 'Sem' },
@@ -317,6 +387,12 @@ function clearConditionSelection() {
         const api = {
             normalizeSemesterList,
             normalizeSubjectSemesters,
+            getProgramSemesterCount,
+            getProgramSemesterList,
+            getConfiguredProgramSemesterCount,
+            formatSemesterRoman,
+            renderSemesterDistributionCells,
+            renderSemesterDistributionHeader,
             subjectMatchesSemesterFilter,
             formatSubjectSemestersLabel,
             formatCurriculumSubjectDisplayName,

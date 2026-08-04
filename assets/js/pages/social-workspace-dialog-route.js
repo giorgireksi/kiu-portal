@@ -133,14 +133,16 @@
             const dialog = activeDialog();
             const normalizedKind = text(kind || dialog?.type);
             if (!dialog || !normalizedKind) return '';
+            const pageSurface = shouldWrapGraphStackChild(runtime, normalizedKind)
+                || shouldRenderProjectHealthStack(runtime, normalizedKind);
             if (normalizedKind === 'project-task-create' || normalizedKind === 'project-task-edit') {
-                return renderProjectTaskCreateDialog(runtime, dialog);
+                return renderProjectTaskCreateDialog(runtime, dialog, { pageSurface });
             }
             if (normalizedKind === 'project-task-detail') {
                 const project = resolveActiveSocialProject(runtime, dialog?.projectId);
                 const taskId = text(dialog?.taskId || '');
                 if (!project || !taskId) return '';
-                return renderProjectTaskDetailModal(runtime, project, taskId);
+                return renderProjectTaskDetailModal(runtime, project, taskId, { pageSurface });
             }
             if (normalizedKind === 'project-task-delete') {
                 const project = resolveActiveSocialProject(runtime, dialog?.projectId);
@@ -149,8 +151,12 @@
                 const task = (Array.isArray(project.tasks) ? project.tasks : []).find((entry) => text(entry?.id) === taskId) || null;
                 if (!task) return '';
                 return renderProjectTaskDeleteConfirmDialog(project, task, {
-                    backdropClass: projectTaskGraphStackedBackdropClass(runtime, normalizedKind)
+                    backdropClass: projectTaskGraphStackedBackdropClass(runtime, normalizedKind),
+                    pageSurface
                 });
+            }
+            if (normalizedKind === 'project-settings') {
+                return renderProjectSettingsDialog(runtime, dialog, { pageSurface });
             }
             if (normalizedKind === 'project-health') {
                 return renderProjectHealthDialog(runtime, dialog);
@@ -175,10 +181,14 @@
                 return renderProjectCreateDialog(state());
             }
             if (kind === 'project-task-create') {
-                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskCreateDialog(runtime, dialog));
+                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskCreateDialog(runtime, dialog, {
+                    pageSurface: shouldWrapGraphStackChild(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)
+                }));
             }
             if (kind === 'project-task-edit') {
-                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskCreateDialog(runtime, dialog));
+                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskCreateDialog(runtime, dialog, {
+                    pageSurface: shouldWrapGraphStackChild(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)
+                }));
             }
             if (kind === 'project-task-graph') {
                 return wrapProjectTaskGraphStack(
@@ -213,7 +223,9 @@
                 const project = resolveActiveSocialProject(runtime, dialog?.projectId);
                 const taskId = text(dialog?.taskId || '');
                 if (!project || !taskId) return '';
-                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskDetailModal(runtime, project, taskId));
+                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectTaskDetailModal(runtime, project, taskId, {
+                    pageSurface: shouldWrapGraphStackChild(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)
+                }));
             }
             if (kind === 'project-task-delete') {
                 const project = resolveActiveSocialProject(runtime, dialog?.projectId);
@@ -222,12 +234,15 @@
                 const task = (Array.isArray(project.tasks) ? project.tasks : []).find((entry) => text(entry?.id) === taskId) || null;
                 if (!task) return '';
                 const child = renderProjectTaskDeleteConfirmDialog(project, task, {
-                    backdropClass: projectTaskGraphStackedBackdropClass(runtime, kind)
+                    backdropClass: projectTaskGraphStackedBackdropClass(runtime, kind),
+                    pageSurface: shouldWrapGraphStackChild(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)
                 });
                 return maybeWrapStackedProjectDialog(runtime, kind, child);
             }
             if (kind === 'project-settings') {
-                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectSettingsDialog(runtime, dialog));
+                return maybeWrapStackedProjectDialog(runtime, kind, renderProjectSettingsDialog(runtime, dialog, {
+                    pageSurface: shouldWrapGraphStackChild(runtime, kind) || shouldRenderProjectHealthStack(runtime, kind)
+                }));
             }
             if (kind === 'project-health') {
                 const child = renderProjectHealthDialog(runtime, dialog);
