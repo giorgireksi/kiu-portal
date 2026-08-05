@@ -464,7 +464,7 @@ html.lux-light-mode body .lux-utility-panel .lux-utility-category-filters.lux-ta
   border: 1px solid var(--lux-soft-chrome-border-accent);
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
   background-image: var(--lux-soft-chrome-surface);
-  box-shadow: var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+  box-shadow: var(--lux-soft-chrome-surface-shadow);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;

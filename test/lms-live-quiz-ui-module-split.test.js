@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -11,7 +20,7 @@ describe('LMS live quiz UI module split', () => {
     it('moves LMS live quiz UI/render helpers out of lms.js and into the dedicated module', () => {
         const lmsHtml = readSource('lms.html');
         const lmsSource = readSource('assets/js/pages/lms.js');
-        const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const liveQuizUiSource = readLmsLiveQuizUiChain();
         expect(lmsHtml).not.toContain('assets/js/pages/lms-live-quiz-ui-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         expect(classroomSource).toContain('assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260728-livepatch1');
@@ -49,10 +58,10 @@ describe('LMS live quiz UI module split', () => {
         expect(liveQuizUiSource).toContain('class="lms-live-stage is-waiting lms-live-stage-wait-shell"');
         expect(liveQuizUiSource).toContain('class="lms-live-question-text lms-live-stage-wait-title"');
         expect(liveQuizUiSource).toContain('class="lms-live-copy lms-live-copy-auto-center lms-live-stage-wait-copy"');
-        expect(liveQuizUiSource).toContain('class="lms-live-card lms-live-sync-card is-error"');
+        expect(liveQuizUiSource).toContain('lms-live-sync-card is-error');
         expect(liveQuizUiSource).toContain('class="lms-live-label is-danger"');
         expect(liveQuizUiSource).toContain('class="lms-live-copy lms-route-copy-mt-6 is-danger"');
-        expect(liveQuizUiSource).toContain('class="lms-live-card lms-live-sync-card is-syncing"');
+        expect(liveQuizUiSource).toContain('lms-live-sync-card is-syncing');
         expect(liveQuizUiSource).toContain('class="lms-live-label lms-live-label--left lms-live-label-mb-7"');
         expect(liveQuizUiSource).toContain('class="lms-live-panel lms-live-queue-panel"');
         expect(liveQuizUiSource).toContain('class="lms-route-card-head lms-route-card-head-mb-14 lms-live-queue-head"');
@@ -60,8 +69,8 @@ describe('LMS live quiz UI module split', () => {
         expect(liveQuizUiSource).toContain('class="lms-route-card-title lms-live-card-title-mt-5 lms-live-queue-title"');
         expect(liveQuizUiSource).toContain('class="lms-live-actions lms-live-queue-actions"');
         expect(liveQuizUiSource).toContain('class="lms-live-question-list lms-live-queue-list"');
-        expect(liveQuizUiSource).toContain('class="lms-live-card lms-live-queue-empty-card"');
-        expect(liveQuizUiSource).toContain('class="lms-live-copy lms-live-queue-empty-copy"');
+        expect(liveQuizUiSource).toContain('lms-live-queue-empty-card');
+        expect(liveQuizUiSource).toContain('lms-live-queue-empty-copy');
         expect(liveQuizUiSource).not.toContain('style="width:${escapeHtml(String(item.percent))}%;"');
         expect(liveQuizUiSource).not.toContain('style="margin-top:2px; font-size:11px;"');
         expect(liveQuizUiSource).not.toContain('style="width:min(720px,100%); margin:0 auto;"');

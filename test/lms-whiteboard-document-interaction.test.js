@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -37,7 +38,7 @@ describe('LMS whiteboard document interaction ux8', () => {
     });
 
     it('exposes shell drag and document stroke helpers from runtime', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const sessionRuntime = readSource('assets/js/pages/lms-whiteboard-session-runtime.js');
         const chromeRuntime = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
         const model = readSource('assets/js/pages/lms-whiteboard-model.js');
@@ -84,7 +85,7 @@ describe('LMS whiteboard document interaction ux8', () => {
     });
 
     it('skips document children on main canvas and converts inline editor coords', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const paintRuntime = readSource('assets/js/pages/lms-whiteboard-paint-runtime.js');
 
         expect(paintRuntime).toContain('if (element.parentDocumentId) return;');
@@ -126,7 +127,7 @@ describe('LMS whiteboard document interaction ux8', () => {
     });
 
     it('supports resize zones, hover cursors, and document child resize', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const model = readSource('assets/js/pages/lms-whiteboard-model.js');
         const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
 
@@ -148,7 +149,7 @@ describe('LMS whiteboard document interaction ux8', () => {
     });
 
     it('defers heavy document repaint during layout-only reposition', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
         const pointerRuntime = readSource('assets/js/pages/lms-whiteboard-pointer-runtime.js');
         const paintRuntime = readSource('assets/js/pages/lms-whiteboard-paint-runtime.js');
@@ -173,7 +174,7 @@ describe('LMS whiteboard document interaction ux8', () => {
     });
 
     it('locks document resize aspect using badge-aware shell resize', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function getLmsWhiteboardDocumentBadgeHeight');
         expect(runtime).toContain('function applyLmsWhiteboardDocumentShellResize');
@@ -197,7 +198,7 @@ describe('LMS whiteboard document interaction ux8', () => {
     });
 
     it('supports text drag-to-size placement and resize editor sync', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const pointerRuntime = readSource('assets/js/pages/lms-whiteboard-pointer-runtime.js');
         const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
 

@@ -20,7 +20,7 @@ describe('left nav active regressions', () => {
   it('includes explicit left-nav targets for profile and faculty gradebook pages', () => {
     const source = readSource('assets/js/features/index-luxury.js');
 
-    expect(source).toContain("['profile-view', 'Profile', 'fas fa-user-circle']");
+    expect(source).toContain("'profile-view': 'Profile'");
     expect(source).toContain("['faculty-gradebook', 'Gradebook', 'fas fa-chart-bar']");
   });
 

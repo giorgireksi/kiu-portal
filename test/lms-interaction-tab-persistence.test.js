@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsInteractionSource, readLmsInteractionShellRuntime } from './helpers/lms-interaction-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -9,21 +10,21 @@ function readSource(relativePath) {
 
 describe('LMS interaction tab persistence', () => {
     it('skips cache-only restore for interaction and exposes cache invalidation', () => {
-        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const shellSource = readLmsInteractionShellRuntime();
+        const classroomSource = readLmsInteractionSource();
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
 
         expect(shellSource).toContain("tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && tab !== 'quiz' && tab !== 'monitoring' && LMS_TAB_RENDER_CACHE[cacheKey]");
         expect(shellSource).toContain("tab === 'live-quiz' || tab === 'interaction'");
         expect(shellSource).toContain('function invalidateLmsInteractionTabCache');
         expect(shellSource).toContain('function syncLmsInteractionTabCacheFromDom');
-        expect(classroomSource).toContain('window.invalidateLmsInteractionTabCache = invalidateLmsInteractionTabCache');
+        expect(classroomSource).toContain('function invalidateLmsInteractionTabCache');
         expect(runtimeSource).toContain('invalidateLmsInteractionTabCache');
     });
 
     it('strips interaction bound flags before tab cache sync', () => {
-        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const shellSource = readLmsInteractionShellRuntime();
+        const classroomSource = readLmsInteractionSource();
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
 
         expect(runtimeSource).toContain('function stripLmsInteractionBoundFlags');
@@ -34,7 +35,7 @@ describe('LMS interaction tab persistence', () => {
 
     it('binds interaction events once on the content area via delegation', () => {
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
-        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
+        const shellSource = readLmsInteractionShellRuntime();
 
         expect(runtimeSource).toContain('function bindLmsInteractionDelegatedEvents');
         expect(runtimeSource).toContain('contentArea.dataset.lmsInteractionDelegatedBound');

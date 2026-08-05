@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -10,7 +11,7 @@ function readSource(relativePath) {
 describe('LMS whiteboard fullscreen and pan', () => {
     it('exposes immersive fullscreen helpers', () => {
         const chrome = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(chrome).toContain('function syncLmsWhiteboardFocusChrome');
         expect(chrome).toContain('function toggleLmsWhiteboardFullscreen');
@@ -97,9 +98,8 @@ describe('LMS whiteboard fullscreen and pan', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(html).toContain('lmquiz1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260728-wbpan1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260719-wbchrome1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260729-wbdocresize4');
     });
 });

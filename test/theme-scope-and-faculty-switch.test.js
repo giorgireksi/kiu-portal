@@ -23,7 +23,8 @@ function readRegisteredHomeChunk() {
 
 describe('faculty switch and scoped visual settings', () => {
   it('sends forced faculty switches back to the role home dashboard', () => {
-    const utilities = readSource('assets/js/shared/utilities.js');
+    const utilities = readSource('assets/js/shared/utilities.js')
+      + readSource('assets/js/shared/lux-transparency.js');
 
     expect(utilities).toContain("localStorage.setItem('KIU_FORCE_HOME_ON_FACULTY_SWITCH', '1')");
     expect(utilities).toContain("resolvePortalRouteUrl('home', activeRole)");
@@ -33,7 +34,8 @@ describe('faculty switch and scoped visual settings', () => {
 
   it('uses role-and-faculty scoped visual settings instead of global theme fallbacks', () => {
     const homeLuxury = readRegisteredHomeChunk();
-    const luxury = readSource('assets/js/features/index-luxury.js');
+    const luxury = readSource('assets/js/features/luxury-index-runtime.js')
+      + readSource('assets/js/features/luxury-atmosphere-runtime.js');
     const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
 
     expect(luxury).toContain('function ensureLuxuryHomeDashboardBundle(options = {}) {');
@@ -75,7 +77,8 @@ describe('faculty switch and scoped visual settings', () => {
     expect(atmosphere).toContain('function setGlowStrength');
     expect(atmosphere).toContain('kiuLuxuryGlowStrength');
     expect(atmosphere).toContain('setDashboardVisuals({ glowStrength: nextPercent })');
-    expect(atmosphere).toContain('if (options?.live) return nextPercent;');
+    expect(atmosphere).toContain('if (options?.live) {');
+    expect(atmosphere).toContain('return nextPercent;');
     expect(atmosphere).toContain('glowScale = pct / 50');
     expect(transparencyModel).toContain('resolveGlowTokenConfig');
     expect(tokens).toContain('var(--lux-panel-glow, 0.22)');
@@ -83,8 +86,12 @@ describe('faculty switch and scoped visual settings', () => {
   });
 
   it('lets the resolved visual palette own the shell background colors', () => {
-    const utilities = readSource('assets/js/shared/utilities.js');
-    const luxury = readSource('assets/js/features/index-luxury.js');
+    const utilities = readSource('assets/js/shared/utilities.js')
+      + readSource('assets/js/shared/lux-transparency.js');
+    const luxury = readSource('assets/js/features/index-luxury.js')
+      + readSource('assets/js/features/luxury-index-sync-runtime.js')
+      + readSource('assets/js/features/luxury-transparency-model-runtime.js')
+      + readSource('assets/js/features/luxury-palette-runtime.js');
     const tokens = readSource('assets/css/lux-tokens.css');
     const index = readSource('index.html');
 
@@ -102,7 +109,7 @@ describe('faculty switch and scoped visual settings', () => {
     expect(luxury).toContain("styleEl.media = 'all';");
     expect(luxury).toContain("styleEl.textContent = ':root{}';");
     expect(luxury).not.toContain("document.getElementById('lux-high-trans-primer')?.remove();");
-    expect(luxury).toContain('window.__kiuApplyResolvedPalette = typeof applyResolvedPalette === \'function\'');
+    expect(luxury).toContain('window.__kiuApplyResolvedPalette = applyResolvedPalette;');
     expect(luxury).toContain("window.getDashboardVisuals = typeof getDashboardVisuals === 'function'");
     expect(luxury).toContain("window.setDashboardVisuals = typeof setDashboardVisuals === 'function'");
     expect(luxury).toContain("window.applyPaletteKey = typeof applyPaletteKey === 'function'");
@@ -130,8 +137,8 @@ describe('faculty switch and scoped visual settings', () => {
     expect(utilities).not.toContain("document.documentElement.style.setProperty('--lux-transparency-alpha', surfaceFillAmount.toFixed(3));");
     expect(utilities).toContain("root.style.setProperty('--kiu-shell-gradient', shellGradient);");
     expect(utilities).toContain("root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);");
-    expect(index).toContain('assets/js/features/index-luxury.js?v=20260609-lightmode-restore1');
-    expect(index).toContain('assets/js/features/index-home-dashboard.js?v=20260517-homejssplit1');
-    expect(index).toContain('assets/js/shared/utilities.js?v=20260609-lightmode-restore1');
+    expect(index).toContain('assets/js/features/index-luxury.js?v=20260730-echancellery1');
+    expect(index).toContain('assets/js/features/index-home-dashboard.js?v=20260725-panelrevert1');
+    expect(index).toContain('assets/js/shared/utilities.js?v=20260725-portalmodal1');
   });
 });

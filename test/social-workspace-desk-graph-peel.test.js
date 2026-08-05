@@ -19,8 +19,10 @@ function loadGraphModel() {
     };
     sandbox.window.window = sandbox.window;
     sandbox.globalThis = sandbox;
-    const source = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-graph-model.js'), 'utf8');
-    vm.runInNewContext(source, sandbox);
+    const deskSource = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-graph-desk-model.js'), 'utf8');
+    const graphSource = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace-graph-model.js'), 'utf8');
+    vm.runInNewContext(deskSource, sandbox);
+    vm.runInNewContext(graphSource, sandbox);
     return sandbox.window;
 }
 

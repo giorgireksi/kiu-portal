@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('personal whiteboard per-viewer viewport', () => {
     it('stores camera per userId+resourceKey and never syncs personal collab viewport', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const collab = readSource('assets/js/pages/lms-whiteboard-collab-runtime.js');
 
         expect(runtime).toContain('function saveLmsWhiteboardLocalViewport');

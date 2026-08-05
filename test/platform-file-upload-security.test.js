@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, readFileSync, rmSync, unlinkSync } from 'fs';
+import { mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { createRequire } from 'module';
@@ -220,5 +220,23 @@ describe('platform file upload security', () => {
         expect(routeSource).not.toContain('ownerUserId: request.body?.ownerUserId');
         expect(routeSource).toContain('await store.flushPendingWrites()');
         expect(routeSource).toContain("sendError(response, 403, 'You are not allowed to access this file.');");
+    });
+
+    it('does not serve a registry path outside the upload directory', () => {
+        const uploadsDir = makeTempDir();
+        const outsideDir = makeTempDir();
+        const outsidePath = join(outsideDir, 'not-an-upload.txt');
+        writeFileSync(outsidePath, 'private host data');
+        const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 4096 });
+        store.state.files['poisoned-file'] = {
+            id: 'poisoned-file',
+            name: 'not-an-upload.txt',
+            type: 'text/plain',
+            path: outsidePath,
+            ownerUserId: 'student-1',
+            uploadedBy: 'student-1'
+        };
+
+        expect(store.getFile('poisoned-file').path).toBe('');
     });
 });

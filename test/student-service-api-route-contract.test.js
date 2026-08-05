@@ -57,4 +57,4 @@ describe('student service API route contract', () => {
         expect(missing).toEqual([]);
     });
 
-    
+});

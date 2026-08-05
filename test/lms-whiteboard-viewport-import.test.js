@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -9,7 +10,7 @@ function readSource(relativePath) {
 
 describe('LMS whiteboard viewport import', () => {
     it('exposes viewport bounds and import box helpers', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function getLmsWhiteboardVisibleWorldBounds');
         expect(runtime).toContain('function computeLmsWhiteboardImportBox');
@@ -20,7 +21,7 @@ describe('LMS whiteboard viewport import', () => {
     });
 
     it('routes all importable files through stored document upload', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const routerBlock = runtime.match(/function importLmsWhiteboardFileAtPoint[\s\S]*?(?=\nfunction )/)?.[0] || '';
 
         expect(routerBlock).toContain('isLmsWhiteboardImportableFile(file)');

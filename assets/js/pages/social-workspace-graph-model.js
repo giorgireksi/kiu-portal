@@ -777,12 +777,27 @@
 
     /* Desk/forest/rollup: social-workspace-graph-desk-model.js (loaded first). */
     const __graphDeskPeer = () => window.KiuSocialWorkspaceGraphDeskModel || {};
-    const orderDeskTasksByDependency = (...a) => window.orderDeskTasksByDependency?.(...a) ?? __graphDeskPeer().orderDeskTasksByDependency?.(...a) ?? [];
-    const buildDeskTaskForest = (...a) => window.buildDeskTaskForest?.(...a) ?? __graphDeskPeer().buildDeskTaskForest?.(...a) ?? [];
-    const projectTaskGraphWouldCycle = (...a) => window.projectTaskGraphWouldCycle?.(...a) ?? __graphDeskPeer().projectTaskGraphWouldCycle?.(...a) ?? false;
-    const collectProjectTaskGraphGroupDescendantTaskIds = (...a) => window.collectProjectTaskGraphGroupDescendantTaskIds?.(...a) ?? __graphDeskPeer().collectProjectTaskGraphGroupDescendantTaskIds?.(...a) ?? [];
-    const collectProjectTaskGraphGroupAbsorbedTaskIds = (...a) => window.collectProjectTaskGraphGroupAbsorbedTaskIds?.(...a) ?? __graphDeskPeer().collectProjectTaskGraphGroupAbsorbedTaskIds?.(...a) ?? [];
-    const computeProjectTaskGraphGroupRollup = (...a) => window.computeProjectTaskGraphGroupRollup?.(...a) ?? __graphDeskPeer().computeProjectTaskGraphGroupRollup?.(...a) ?? null;
+    const orderDeskTasksByDependency = (...a) => (window.orderDeskTasksByDependency && window.orderDeskTasksByDependency !== orderDeskTasksByDependency
+        ? window.orderDeskTasksByDependency(...a)
+        : __graphDeskPeer().orderDeskTasksByDependency?.(...a)) ?? [];
+    const buildDeskTaskForest = (...a) => (window.buildDeskTaskForest && window.buildDeskTaskForest !== buildDeskTaskForest
+        ? window.buildDeskTaskForest(...a)
+        : __graphDeskPeer().buildDeskTaskForest?.(...a)) ?? [];
+    const projectTaskGraphWouldCycle = (...a) => (window.projectTaskGraphWouldCycle && window.projectTaskGraphWouldCycle !== projectTaskGraphWouldCycle
+        ? window.projectTaskGraphWouldCycle(...a)
+        : __graphDeskPeer().projectTaskGraphWouldCycle?.(...a)) ?? false;
+    const collectProjectTaskGraphGroupDescendantTaskIds = (...a) => (window.collectProjectTaskGraphGroupDescendantTaskIds
+        && window.collectProjectTaskGraphGroupDescendantTaskIds !== collectProjectTaskGraphGroupDescendantTaskIds
+        ? window.collectProjectTaskGraphGroupDescendantTaskIds(...a)
+        : __graphDeskPeer().collectProjectTaskGraphGroupDescendantTaskIds?.(...a)) ?? [];
+    const collectProjectTaskGraphGroupAbsorbedTaskIds = (...a) => (window.collectProjectTaskGraphGroupAbsorbedTaskIds
+        && window.collectProjectTaskGraphGroupAbsorbedTaskIds !== collectProjectTaskGraphGroupAbsorbedTaskIds
+        ? window.collectProjectTaskGraphGroupAbsorbedTaskIds(...a)
+        : __graphDeskPeer().collectProjectTaskGraphGroupAbsorbedTaskIds?.(...a)) ?? [];
+    const computeProjectTaskGraphGroupRollup = (...a) => (window.computeProjectTaskGraphGroupRollup
+        && window.computeProjectTaskGraphGroupRollup !== computeProjectTaskGraphGroupRollup
+        ? window.computeProjectTaskGraphGroupRollup(...a)
+        : __graphDeskPeer().computeProjectTaskGraphGroupRollup?.(...a)) ?? null;
 
     function scoreProjectTaskGraphDockPair(fromPos, toPos, sideFrom, sideTo, meta = {}) {
         const fromDocks = getProjectTaskGraphDocks(fromPos);
@@ -1721,4 +1736,5 @@
     };
 
     window.KiuSocialWorkspaceGraphModel = api;
+    Object.assign(window, api);
 })();

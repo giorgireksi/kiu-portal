@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { socialModuleUrlToken } from './helpers/social-page-source.js';
 
 describe('social-surveys-regressions (bare-shell era)', () => {
     it('social domain paint CSS removed; behavior tests deferred to JS modules', () => {
@@ -15,7 +16,7 @@ describe('social-surveys-regressions (bare-shell era)', () => {
         expect(surveys).toContain("text(runtime.ui?.surveyTakingId || '')");
         expect(surveys).toContain('return renderTakeSurvey(survey)');
         expect(surveys).toContain("data-action=\"survey-take-open\"");
-        expect(page).toContain('social-surveys.js?v=20260802-survey-desc-rail1');
+        expect(page).toContain(socialModuleUrlToken('social-surveys.js'));
     });
 
     it('uses scroll rails for survey card descriptions', () => {
@@ -40,8 +41,8 @@ describe('social-surveys-regressions (bare-shell era)', () => {
         expect(renderCardBlock).not.toMatch(/<div class="social-neo-muted social-neo-survey-card-desc">\$\{escape\(text\(survey\.description\)\)\}<\/div>/);
         expect(bare).toMatch(/\.social-neo-survey-card-desc-viewport\s*\{[\s\S]{0,300}max-height:\s*calc\(1\.45em \* 6 \+ 16px\)/);
         expect(bare).toMatch(/\.social-neo-survey-card-desc-rail\.is-scrollable[\s\S]{0,400}min-height:\s*calc\(1\.45em \* 6 \+ 16px \+ 12px\)/);
-        expect(page).toContain('social-surveys.js?v=20260802-survey-desc-rail1');
+        expect(page).toContain(socialModuleUrlToken('social-surveys.js'));
         expect(shellRuntime).toContain('[data-survey-desc-rail]');
-        expect(interactions).toMatch(/activePanel === 'surveys'\)[\s\S]{0,80}syncEventDescScrollRails/);
+        expect(interactions).toMatch(/activePanel === 'surveys'[\s\S]{0,200}syncEventDescScrollRails/);
     });
 });

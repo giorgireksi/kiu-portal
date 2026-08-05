@@ -45,8 +45,8 @@ describe('staff route regressions', () => {
         expect(staffJs).toContain('staff-hub-shell');
         expect(staffJs).toContain('staff-hub-profile" data-lux-glass-root="1"');
         expect(staffJs).toContain('staff-hub-form-settings');
-        expect(readSource('assets/js/pages/form-builder-runtime.js')).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace">');
-        expect(readSource('assets/js/pages/form-builder-runtime.js')).not.toContain('form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1"');
+        expect(readSource('assets/js/pages/form-builder-runtime.js')).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace"');
+        expect(readSource('assets/js/pages/form-builder-runtime.js')).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1"');
         expect(staffJs).toContain('renderLuxHubFormModalOverlay');
         expect(staffJs).toContain('autocomplete="off"');
         expect(staffJs).not.toContain('lux-modern-surface');

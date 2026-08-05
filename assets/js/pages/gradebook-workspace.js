@@ -1,5 +1,5 @@
 /* READABILITY: Gradebook workspace UI — component manager, score editors, roster shell, student view.
- * Sections: Bag | Components(peel) | Editors | Roster | StudentView
+ * Sections: Bag | Components | Editors | Roster | StudentView
  * See docs/human-maintainability.md (H2). */
 // --- READABILITY: Components ---
 /* Gradebook workspace UI: component manager, score/comment editors, roster shell, student view.

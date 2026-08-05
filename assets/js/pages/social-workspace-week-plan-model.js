@@ -172,4 +172,5 @@
     };
 
     window.KiuSocialWorkspaceWeekPlanModel = api;
+    Object.assign(window, api);
 })();

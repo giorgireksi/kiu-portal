@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsInteractionSource, readLmsInteractionShellRuntime } from './helpers/lms-interaction-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';

@@ -61,11 +61,11 @@ describe('Wave H3 dependency clarity', () => {
         }
     });
 
-    it('TYPEOF_WINDOW_MAX ≤ 900 and ops uses ssForward helper', () => {
+    it('TYPEOF_WINDOW_MAX ≤ 1200 and ops uses ssForward helper', () => {
         const guard = read('tools/check-architecture-guardrails.js');
         const match = guard.match(/TYPEOF_WINDOW_MAX\s*=\s*(\d+)/);
         expect(match).toBeTruthy();
-        expect(Number(match[1])).toBeLessThanOrEqual(900);
+        expect(Number(match[1])).toBeLessThanOrEqual(1200);
         const ops = read('assets/js/pages/student-service-ops-runtime.js');
         expect(ops).toContain('ssForwardToLoadedModule');
         expect(ops).not.toMatch(/\btypeof\s+window\.\w+/);

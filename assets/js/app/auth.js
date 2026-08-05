@@ -1595,12 +1595,13 @@ function syncAuthenticatedSessionState() {
     localStorage.setItem('KIU_FACULTY_CONTEXT', normalizedFaculty);
 }
 
-async function authActivate(id, newPassword) {
+async function authActivate(id, activationToken, newPassword) {
     try {
         const payload = await kiuPortalFetch('/api/auth/activate', {
             method: 'POST',
             body: JSON.stringify({
                 id,
+                activationToken,
                 password: newPassword
             })
         });

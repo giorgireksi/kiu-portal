@@ -9,9 +9,10 @@ function read(p) {
 describe('bare topbar horizontal layout', () => {
     it('lux-shell defines topbar main/actions/spacer row flex', () => {
         const css = read('assets/css/lux-shell.css');
-        expect(css).toContain('#lux-topbar .lux-topbar-main');
-        expect(css).toContain('#lux-topbar .lux-topbar-actions');
-        expect(css).toContain('#lux-topbar .lux-topbar-spacer');
+        expect(css).toContain('#lux-topbar');
+        expect(css).toContain('.lux-topbar-main');
+        expect(css).toContain('.lux-topbar-actions');
+        expect(css).toContain('.lux-topbar-spacer');
         expect(css).toMatch(/\.lux-topbar-main\s*\{[^}]*flex-direction:\s*row/s);
         expect(css).toMatch(/\.lux-topbar-actions\s*\{[^}]*flex-direction:\s*row/s);
         expect(css).toMatch(/\.lux-topbar-spacer\s*\{[^}]*flex:\s*1/s);

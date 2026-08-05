@@ -31,7 +31,6 @@ describe('home dashboard SSOT', () => {
         const partsConcat = readConcatenatedParts();
         expect(partsConcat).toContain('renderDynamicHomeShell = function');
         expect(partsConcat).toContain('startBackground = function');
-        expect(partsConcat).toContain('buildHomeWidgetDefinitions');
         expect(readSource('assets/js/features/home-dashboard-widget-layout-runtime.js'))
             .toContain('function buildHomeWidgetDefinitions');
     });

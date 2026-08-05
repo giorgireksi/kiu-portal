@@ -159,6 +159,7 @@ function createEmptyPlatformState(storageDriver = 'postgres') {
         notifications: {},
         notificationPreferences: {},
         pushSubscriptions: {},
+        mobilePushTokens: {},
         integrations: {
             systems: {},
             syncRuns: [],

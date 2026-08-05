@@ -212,9 +212,9 @@
       "id": "student-service",
       "html": "student-service.html",
       "eagerHubs": [
+        "assets/js/pages/student-service-bootstrap-runtime.js",
         "assets/js/pages/student-service-modules-runtime.js",
         "assets/js/pages/student-service-ops-runtime.js",
-        "assets/js/pages/student-service-bootstrap-runtime.js",
         "assets/js/pages/student-service.js"
       ],
       "lazyChains": [

@@ -64,10 +64,10 @@ function isStoredFileOwnedByActor(fileRecord = null, actorUserId = '') {
     const uploadedBy = String(fileRecord.uploadedBy || '').trim();
     if (ownerUserId) return ownerUserId === normalizedActorUserId;
     if (uploadedBy) return uploadedBy === normalizedActorUserId;
-    return true;
+    return false;
 }
 
-async function createFileFromUpload(payload = {}) {
+function createFileFromUploadSync(payload = {}) {
     const parsed = parseDataUrl(payload.dataUrl);
     if (!parsed) return null;
     const isBackgroundGallery = String(payload.scope || '').trim() === 'background-gallery';
@@ -75,7 +75,6 @@ async function createFileFromUpload(payload = {}) {
         ? this.maxBackgroundGalleryUploadBytes
         : this.maxFileUploadBytes;
     if (parsed.buffer.length > maxBytes) return null;
-    const id = normalizeStoredFileId(payload.id || makeId('file'));
     const ext = (() => {
         const name = String(payload.name || 'download.bin').trim();
         const match = name.match(/(\.[a-z0-9]+)$/i);
@@ -83,11 +82,28 @@ async function createFileFromUpload(payload = {}) {
     })();
     const uploadsDir = path.resolve(this.uploadsDir);
     fs.mkdirSync(uploadsDir, { recursive: true });
-    const filePath = path.resolve(uploadsDir, `${id}${ext}`);
-    if (filePath !== uploadsDir && !filePath.startsWith(`${uploadsDir}${path.sep}`)) {
+    const requestedId = normalizeStoredFileId(payload.id || '');
+    let id = '';
+    let filePath = '';
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+        const candidateId = attempt === 0 && requestedId
+            ? requestedId
+            : normalizeStoredFileId(makeId('file'));
+        const candidatePath = path.resolve(uploadsDir, `${candidateId}${ext}`);
+        if (candidatePath === uploadsDir || !candidatePath.startsWith(`${uploadsDir}${path.sep}`)) continue;
+        if (this.state.files?.[candidateId] || fs.existsSync(candidatePath)) continue;
+        try {
+            fs.writeFileSync(candidatePath, parsed.buffer, { flag: 'wx' });
+            id = candidateId;
+            filePath = candidatePath;
+            break;
+        } catch (error) {
+            if (error?.code !== 'EEXIST') throw error;
+        }
+    }
+    if (!id || !filePath) {
         return null;
     }
-    fs.writeFileSync(filePath, parsed.buffer);
     const ownerUserId = String(payload.ownerUserId || payload.uploadedBy || '').trim();
     const mimeType = sanitizeStoredFileMimeType(payload.type || parsed.mimeType || 'application/octet-stream');
     const previewDataUrl = mimeType.startsWith('image/') && parsed.buffer.length <= 200 * 1024
@@ -108,8 +124,14 @@ async function createFileFromUpload(payload = {}) {
         updatedAt: nowIso()
     };
     this.state.files[id] = record;
-    await this.save();
     return clone(record);
+}
+
+async function createFileFromUpload(payload = {}) {
+    const record = createFileFromUploadSync.call(this, payload);
+    if (!record) return null;
+    await this.save();
+    return record;
 }
 
 function extensionForStoredFile(fileRecord = {}) {
@@ -226,11 +248,15 @@ async function adoptUploadFileFromDisk(fileId = '', options = {}) {
 function resolveStoredFileDiskPath(fileRecord = null) {
     if (!fileRecord || typeof fileRecord !== 'object') return '';
     const recorded = String(fileRecord.path || '').trim();
-    if (recorded && fs.existsSync(recorded)) return recorded;
-
     const id = String(fileRecord.id || '').trim();
     const uploadsDir = this.uploadsDir ? path.resolve(this.uploadsDir) : '';
-    if (!uploadsDir || !id) return recorded;
+    if (!uploadsDir) return '';
+    const isInsideUploads = (candidate) => {
+        const resolved = path.resolve(candidate);
+        return resolved !== uploadsDir && resolved.startsWith(`${uploadsDir}${path.sep}`);
+    };
+    if (recorded && isInsideUploads(recorded) && fs.existsSync(recorded)) return path.resolve(recorded);
+    if (!id) return '';
 
     const ext = extensionForStoredFile(fileRecord);
     const candidates = [
@@ -250,13 +276,24 @@ function resolveStoredFileDiskPath(fileRecord = null) {
             if (candidate.startsWith(`${uploadsDir}${path.sep}`) && fs.existsSync(candidate)) return candidate;
         }
     } catch (error) {}
-    return recorded;
+    return '';
 }
 
 function healStoredFileRecord(fileRecord = null) {
     if (!fileRecord || typeof fileRecord !== 'object') return null;
     const resolvedPath = resolveStoredFileDiskPath.call(this, fileRecord);
-    if (!resolvedPath) return clone(fileRecord);
+    if (!resolvedPath) {
+        if (!String(fileRecord.path || '').trim()) return clone(fileRecord);
+        const cleared = {
+            ...fileRecord,
+            path: '',
+            updatedAt: nowIso()
+        };
+        if (this.state?.files && fileRecord.id) {
+            this.state.files[String(fileRecord.id)] = cleared;
+        }
+        return clone(cleared);
+    }
     if (String(fileRecord.path || '').trim() === resolvedPath) return clone(fileRecord);
     const next = {
         ...fileRecord,
@@ -449,7 +486,7 @@ function normalizeMessageAttachment(file, senderId) {
         });
     }
     if (file.dataUrl) {
-        const stored = createFileFromUpload.call(this, {
+        const stored = createFileFromUploadSync.call(this, {
             name: file.name || 'attachment.bin',
             type: file.type || 'application/octet-stream',
             dataUrl: file.dataUrl,
@@ -457,6 +494,8 @@ function normalizeMessageAttachment(file, senderId) {
             scope: String(file.scope || 'messenger').trim() || 'messenger'
         });
         if (!stored) return null;
+        const savePromise = this.save();
+        if (savePromise && typeof savePromise.catch === 'function') savePromise.catch(() => {});
         return enrichStoredFileReference.call(this, {
             id: String(file.id || makeId('file_ref')).trim(),
             name: stored.name,

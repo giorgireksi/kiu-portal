@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsInteractionSource, readLmsInteractionShellRuntime } from './helpers/lms-interaction-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -30,7 +31,7 @@ describe('LMS interaction direct messages', () => {
     });
 
     it('adds an announcements and messages mode switch to the interaction section', () => {
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const classroomSource = readLmsInteractionSource();
 
         expect(classroomSource).toContain('renderLmsInteractionModeSwitch(mode)');
         expect(classroomSource).toContain('renderLmsInteractionBodyMarkup(resourceKey, mode)');

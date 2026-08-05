@@ -2,6 +2,11 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import vm from 'vm';
+import { readSocialPageChain, readSocialPageJs, readSocialHtml } from './helpers/social-page-source.js';
+
+function readSource(relativePath) {
+    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+}
 
 function loadFingerprintModel(extra = {}) {
     const sandbox = {
@@ -72,8 +77,9 @@ describe('social-fingerprint-model', () => {
     });
 
     it('is wired before social-page and peeled from it', () => {
-        const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
-        const html = readFileSync(join(process.cwd(), 'social.html'), 'utf8');
+        const page = readSocialPageJs();
+        const chain = readSocialPageChain();
+        const html = readSocialHtml();
         for (const name of [
             'collectCommentReactionFingerprint',
             'buildFeedFingerprint',
@@ -81,11 +87,12 @@ describe('social-fingerprint-model', () => {
             'buildPagesFingerprint'
         ]) {
             expect(page).not.toMatch(new RegExp(`function\\s+${name}\\s*\\(`));
-            expect(page).toMatch(new RegExp(`const ${name} = window\\.${name}`));
+            expect(chain).toMatch(new RegExp(`const ${name} = window\\.${name}`));
         }
-        expect(page).toMatch(/const buildSocialRenderSignature = window\.buildSocialRenderSignature/);
+        expect(chain).toMatch(/const buildSocialRenderSignature = window\.buildSocialRenderSignature/);
         expect(page).not.toMatch(/function\s+buildSocialRenderSignature\s*\(/);
-        expect(page).toMatch(/const isSocialForceRenderReason = window\.isSocialForceRenderReason/);
+        expect(chain).toMatch(/isSocialForceRenderReason/);
+        expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('function isSocialForceRenderReason(reason)');
         expect(page).not.toMatch(/const forceRender = \/\^/);
         expect(html).toContain('social-fingerprint-model.js');
         expect(html.indexOf('social-fingerprint-model.js')).toBeLessThan(html.indexOf('social-page.js'));

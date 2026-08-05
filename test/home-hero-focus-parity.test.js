@@ -68,7 +68,12 @@ describe('home hero focus LMS parity', () => {
         expect(homeCss).not.toContain('lms-hero-v2');
         expect(homeCss).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
         expect(homeCss).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-stat\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);
-        expect(homeCss).not.toContain('.lux-timetable-hero-focus');
+        const homeOnlyCss = [
+            'assets/css/index-home-layout.css',
+            'assets/css/index-home-widgets.css',
+            'assets/css/index-home-role.css',
+        ].map(readSource).join('\n');
+        expect(homeOnlyCss).not.toContain('.lux-timetable-hero-focus');
         // Structure/rail/chips live in shared primitive (not triplicated on home)
         expect(focusCss).toContain('.lms-hero-focus.lux-hero-side::before');
         expect(focusCss).toContain('.lms-hero-focus-chip');

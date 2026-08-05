@@ -343,6 +343,9 @@ function createExamPortalSession(payload = {}) {
     const email = normalizeEmail(payload.email || '');
     const studentId = String(payload.studentId || '').trim();
     if (!email || !studentId) return { error: 'Email and student id are required.', status: 400 };
+    if (String(payload.authenticatedUserId || '').trim() !== studentId) {
+        return { error: 'An authenticated student portal session is required.', status: 401 };
+    }
     const account = this.getAccountByEmail(email);
     if (!account || String(account.id || '').trim() !== studentId) {
         return { error: 'The email and student id do not match an exam account.', status: 404 };
@@ -505,6 +508,74 @@ function ensureProtectedQuizAttemptRecord(quiz, student = {}) {
             : (Array.isArray(existing.auditTrail) ? existing.auditTrail : [])
     };
     return quiz.attempts[studentId];
+}
+
+function redactProtectedQuizForStudent(quiz, studentId = '') {
+    const normalizedStudentId = String(studentId || '').trim();
+    const safeQuiz = clone(quiz || {}) || {};
+    safeQuiz.questions = Array.isArray(safeQuiz.questions)
+        ? safeQuiz.questions.map(question => {
+            const safeQuestion = { ...(question || {}) };
+            delete safeQuestion.correctOption;
+            delete safeQuestion.expectedAnswer;
+            delete safeQuestion.correctAnswer;
+            return safeQuestion;
+        })
+        : [];
+    safeQuiz.attempts = normalizedStudentId && safeQuiz.attempts?.[normalizedStudentId]
+        ? { [normalizedStudentId]: clone(safeQuiz.attempts[normalizedStudentId]) }
+        : {};
+    if (safeQuiz.attempts[normalizedStudentId]) {
+        delete safeQuiz.attempts[normalizedStudentId].clientSessionToken;
+    }
+    return safeQuiz;
+}
+
+function redactProtectedAttemptForStudent(attempt = null) {
+    const safeAttempt = clone(attempt || null);
+    if (safeAttempt && typeof safeAttempt === 'object') {
+        delete safeAttempt.clientSessionToken;
+    }
+    return safeAttempt;
+}
+
+function calculateProtectedQuizResult(quiz = {}, submittedAnswers = {}) {
+    const questions = Array.isArray(quiz.questions) ? quiz.questions : [];
+    const answers = submittedAnswers && typeof submittedAnswers === 'object' ? submittedAnswers : {};
+    const normalizedAnswers = {};
+    const questionResults = [];
+    let correctCount = 0;
+    Object.entries(answers).forEach(([questionId, submitted]) => {
+        const question = questions.find(item => String(item?.id || '').trim() === String(questionId || '').trim());
+        if (!question) return;
+        const selectedOption = submitted && typeof submitted === 'object'
+            ? submitted.selectedOption
+            : submitted;
+        const correct = Number(selectedOption) === Number(question.correctOption);
+        normalizedAnswers[question.id] = {
+            selectedOption: Number.isFinite(Number(selectedOption)) ? Number(selectedOption) : null
+        };
+        questionResults.push({
+            questionId: question.id,
+            selectedOption: normalizedAnswers[question.id].selectedOption,
+            correct
+        });
+        if (correct) correctCount += 1;
+    });
+    const score = questions.length
+        ? Math.round((correctCount / questions.length) * 10000) / 100
+        : 0;
+    return {
+        answers: normalizedAnswers,
+        questionResults,
+        score,
+        responseSummary: {
+            answeredCount: questionResults.length,
+            correctCount,
+            totalQuestions: questions.length,
+            score
+        }
+    };
 }
 
 function buildProtectedQuizClientUrl(courseId, quizId) {
@@ -677,8 +748,8 @@ function getProtectedClientAttempt(courseId, quizId, clientSessionToken) {
     record.quiz.updatedAt = nowIso();
     this.save();
     return {
-        quiz: clone(record.quiz),
-        attempt: clone(attempt),
+        quiz: redactProtectedQuizForStudent(record.quiz, session.studentId),
+        attempt: redactProtectedAttemptForStudent(attempt),
         session: clone(session)
     };
 }
@@ -740,7 +811,7 @@ function createProtectedQuizLaunchTicket(payload = {}) {
         ticket: launch.ticket,
         launchUrl: `anticheat://launch?ticket=${encodeURIComponent(launch.ticket)}&backendUrl=${encodeURIComponent(this.backendUrl)}`,
         expiresAt: launch.expiresAt,
-        quiz: clone(record.quiz)
+        quiz: redactProtectedQuizForStudent(record.quiz, studentId)
     };
 }
 
@@ -826,8 +897,8 @@ function redeemProtectedQuizLaunch(payload = {}) {
             id: launch.studentId,
             name: launch.studentName
         },
-        quiz: clone(record.quiz),
-        attempt: clone(attempt)
+        quiz: redactProtectedQuizForStudent(record.quiz, launch.studentId),
+        attempt: redactProtectedAttemptForStudent(attempt)
     };
 }
 
@@ -861,20 +932,24 @@ function heartbeatProtectedQuiz(payload = {}) {
     record.lmsCourse.updatedAt = nowIso();
     this.save();
     return {
-        quiz: clone(record.quiz),
-        attempt: clone(attempt)
+        quiz: redactProtectedQuizForStudent(record.quiz, current.session.studentId),
+        attempt: redactProtectedAttemptForStudent(attempt)
     };
 }
 
 function recordProtectedQuizEvent(payload = {}) {
     const courseId = String(payload.courseId || payload.resourceKey || '').trim();
     const quizId = String(payload.quizId || '').trim();
-    const studentId = String(payload.studentId || '').trim();
     const clientSessionToken = String(payload.clientSessionToken || '').trim();
     const record = findProtectedQuizRecord.call(this, courseId, quizId);
     if (!record?.quiz) return null;
-    const session = clientSessionToken ? this.state.protectedClientSessions[clientSessionToken] : null;
-    const resolvedStudentId = studentId || String(session?.studentId || '').trim();
+    const session = getProtectedClientSession.call(this, clientSessionToken, { touch: false });
+    if (
+        !session
+        || String(session.courseId || '').trim() !== courseId
+        || String(session.quizId || '').trim() !== quizId
+    ) return null;
+    const resolvedStudentId = String(session.studentId || '').trim();
     if (!resolvedStudentId) return null;
     const attempt = ensureProtectedQuizAttemptRecord(record.quiz, {
         studentId: resolvedStudentId,
@@ -891,7 +966,7 @@ function recordProtectedQuizEvent(payload = {}) {
         id: String(payload.id || makeId('pq_evt')).trim(),
         type: eventType,
         note: String(details.reason || details.note || payload.note || '').trim() || eventType,
-        createdAt: String(payload.timestamp || nowIso()).trim(),
+        createdAt: nowIso(),
         details
     };
     attempt.auditTrail = Array.isArray(attempt.auditTrail) ? attempt.auditTrail : [];
@@ -911,41 +986,18 @@ function recordProtectedQuizEvent(payload = {}) {
     if (['app_closed', 'disconnect', 'focus_loss'].includes(eventType)) {
         attempt.antiCheatConnected = false;
     }
-    if (payload.status) attempt.status = String(payload.status).trim();
-    if (payload.autoScoreRaw !== undefined && payload.autoScoreRaw !== null) {
-        attempt.autoScoreRaw = safeNumber(payload.autoScoreRaw, attempt.autoScoreRaw || 0);
-    }
-    if (payload.manualScoreRaw !== undefined && payload.manualScoreRaw !== null) {
-        attempt.manualScoreRaw = safeNumber(payload.manualScoreRaw, attempt.manualScoreRaw || 0);
-    }
-    if (payload.finalScoreRaw === null) {
-        attempt.finalScoreRaw = null;
-    } else if (payload.finalScoreRaw !== undefined) {
-        attempt.finalScoreRaw = safeNumber(payload.finalScoreRaw, 0);
-    }
-    if (payload.gradebookScore === null) {
-        attempt.gradebookScore = null;
-    } else if (payload.gradebookScore !== undefined) {
-        attempt.gradebookScore = safeNumber(payload.gradebookScore, 0);
-    }
-    if (payload.answers && typeof payload.answers === 'object') {
-        attempt.answers = clone(payload.answers);
-    }
-    if (Array.isArray(payload.questionResults)) {
-        attempt.questionResults = clone(payload.questionResults);
-    }
-    if (payload.responseSummary && typeof payload.responseSummary === 'object') {
-        attempt.responseSummary = clone(payload.responseSummary);
-    }
-    if (typeof payload.requiresManualReview === 'boolean') {
-        attempt.requiresManualReview = payload.requiresManualReview === true;
-    }
     if (eventType === 'submitted') {
-        attempt.submittedAt = String(payload.submittedAt || attempt.submittedAt || event.createdAt).trim();
-    }
-    if (String(attempt.status || '').trim() === 'graded') {
-        attempt.gradedAt = String(payload.gradedAt || attempt.gradedAt || event.createdAt).trim();
-        attempt.reviewedBy = String(payload.reviewedBy || attempt.reviewedBy || '').trim();
+        const result = calculateProtectedQuizResult(record.quiz, payload.answers);
+        attempt.answers = result.answers;
+        attempt.questionResults = result.questionResults;
+        attempt.responseSummary = result.responseSummary;
+        attempt.autoScoreRaw = result.score;
+        if (!attempt.reviewedBy) {
+            attempt.finalScoreRaw = result.score;
+            attempt.gradebookScore = result.score;
+        }
+        attempt.status = 'submitted';
+        attempt.submittedAt = event.createdAt;
     }
     if (details.submitReason) attempt.submitReason = String(details.submitReason).trim();
     if (session) {
@@ -957,7 +1009,7 @@ function recordProtectedQuizEvent(payload = {}) {
     this.save();
     return {
         event: clone(event),
-        attempt: clone(attempt)
+        attempt: redactProtectedAttemptForStudent(attempt)
     };
 }
 

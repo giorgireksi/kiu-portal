@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -9,7 +10,7 @@ function readSource(relativePath) {
 
 describe('LMS whiteboard wave 4 classroom features', () => {
     it('removes template and activity runtimes from the shell', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const html = readSource('lms.html');
 
         expect(html).not.toContain('lms-whiteboard-activity-runtime.js');
@@ -29,7 +30,7 @@ describe('LMS whiteboard wave 4 classroom features', () => {
     });
 
     it('adds mobile bottom dock without frames sidebar', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const bare = readSource('assets/css/lux-page-bare-lite.css');
 
         expect(bare).toContain('@media (max-width: 768px)');
@@ -42,6 +43,6 @@ describe('LMS whiteboard wave 4 classroom features', () => {
         const html = readSource('lms.html');
 
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
     });
 });

@@ -43,7 +43,11 @@ describe('platform session security', () => {
         const first = store.createSessionForAccount('student-1', { identityProvider: 'portal' }).session.token;
         const second = store.createSessionForAccount('student-1', { identityProvider: 'portal' }).session.token;
 
-        store.activateAccount('student-1', 'NewPassword!123');
+        store.state.accounts['student-1'].activationRequired = true;
+        store.state.accounts['student-1'].accountStatus = 'pending-activation';
+        store.ensureCredential('student-1').activationRequired = true;
+        const activation = store.issueActivationToken('student-1');
+        store.activateAccount('student-1', 'NewPassword!123', activation.token);
         expect(store.state.sessions[first].active).toBe(false);
         expect(store.state.sessions[second].active).toBe(false);
         expect(store.state.sessions[first].revocationReason).toBe('credential-reset');

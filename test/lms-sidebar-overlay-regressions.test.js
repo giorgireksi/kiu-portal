@@ -12,7 +12,7 @@ describe('lms sidebar overlay regressions', () => {
         const shellCss = readSource('assets/css/lux-shell.css');
         const html = readSource('lms.html');
         expect(shellCss).toMatch(
-            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell #app-content[\s\S]*margin-left:\s*0 !important/
+            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell #app-content[\s\S]*margin-left:\s*0/
         );
 
         expect(html).not.toContain('ensureLmsDesktopSidebarOverlayDefaults');

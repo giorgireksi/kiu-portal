@@ -32,17 +32,19 @@ describe('sync cross-role audit — native roles', () => {
         const storeSource = readSource('backend/platform/store.js');
 
         expect(apiSource).toContain('async function bootstrapPortalBackendState');
-        expect(apiSource).toContain("kiuPortalFetch('/api/bootstrap')");
+        expect(apiSource).toContain("kiuPortalFetch('/api/bootstrap',");
         expect(apiSource).toContain('applyPortalBootstrapState');
         expect(apiSource).toContain('hydratePortalUsersFromAccounts(bootstrapAccounts');
         expect(authSource).toContain('function hydratePortalUsersFromAccounts');
         expect(storeSource).toContain('session.impersonatedRole');
         expect(storeSource).toContain('createApplicationBootstrap');
-        expect(storeSource).toContain('accounts: Object.values(this.state.accounts)');
+        expect(storeSource).toContain('accounts:');
+        expect(storeSource).toContain('sanitizeAccountForClient');
     });
 
     it('runs luxury shell sync using effective role for layout branches', () => {
-        const luxurySource = readSource('assets/js/features/index-luxury.js');
+        const luxurySource = readSource('assets/js/features/index-luxury.js')
+            + readSource('assets/js/features/luxury-index-sync-runtime.js');
         const stateSource = readSource('assets/js/app/state.js');
 
         expect(luxurySource).toContain('function syncAll()');

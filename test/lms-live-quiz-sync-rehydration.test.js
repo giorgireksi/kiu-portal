@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +17,7 @@ function readSource(relativePath) {
 
 describe('LMS live quiz sync rehydration', () => {
     it('reloads live workspaces from the server instead of trusting cached loadedFromBackend', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(workspaceSource).toContain('function shouldReloadLmsLiveQuizFromBackend');
         expect(workspaceSource).toContain('hasLmsLiveQuizLiveSession(canonicalKey)');
@@ -19,7 +28,7 @@ describe('LMS live quiz sync rehydration', () => {
     });
 
     it('recomputes participant scores from stored answers after merge or normalize', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(workspaceSource).toContain('function rehydrateLmsLiveSessionParticipants');
         expect(workspaceSource).toContain('calculateLmsLiveAnswerScore(');
@@ -28,7 +37,8 @@ describe('LMS live quiz sync rehydration', () => {
 
     it('keeps live quiz workspaces out of local persistence', () => {
         const stateSource = readSource('assets/js/app/state.js');
-        const apiSource = readSource('assets/js/app/api.js');
+        const apiSource = readSource('assets/js/app/api.js')
+            + readSource('assets/js/app/api-portal-persist-runtime.js');
 
         expect(stateSource).toContain('delete KIU_STATE.lmsLiveQuizzes');
         expect(stateSource).toContain('delete persisted.lmsLiveQuizzes');
@@ -36,7 +46,7 @@ describe('LMS live quiz sync rehydration', () => {
     });
 
     it('prefers the live session for staff views over draft activeSessionId', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(workspaceSource).toContain('function getLmsLiveStaffLiveSession');
         expect(workspaceSource).toContain('function getLmsLiveStaffEditingSession');
@@ -44,8 +54,8 @@ describe('LMS live quiz sync rehydration', () => {
     });
 
     it('counts staff-visible answers with the shared show-version helper', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(workspaceSource).toContain('function hasLmsLiveAnswerForQuestion');
         expect(workspaceSource).toContain('hasLmsLiveAnswerForQuestion(answer, currentQuestion)');

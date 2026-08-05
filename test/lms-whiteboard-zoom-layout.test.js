@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -23,7 +24,7 @@ describe('LMS whiteboard zoom layout', () => {
 
     it('pins zoom above the canvas with stage reset and panel overflow exception', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const session = readSource('assets/js/pages/lms-whiteboard-session-runtime.js');
         const chrome = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
         const shellRuntime = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
@@ -92,10 +93,9 @@ describe('LMS whiteboard zoom layout', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(html).toContain('lmquiz1');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260719-wbchrome1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260729-wbdocresize4');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-personal-dashboard-runtime.js?v=20260731-pdsavename1');
         expect(html).not.toContain('assets/js/pages/lms-personal-dashboard-runtime.js');
     });

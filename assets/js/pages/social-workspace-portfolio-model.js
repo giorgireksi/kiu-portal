@@ -242,4 +242,5 @@
     };
 
     window.KiuSocialWorkspacePortfolioModel = api;
+    Object.assign(window, api);
 })();

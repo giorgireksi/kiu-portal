@@ -130,8 +130,10 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
             const targetPage = getFallbackRoutePageFromTrigger(trigger);
             if (!targetPage) return;
             const beforeHref = window.location.href;
+            const beforeNavigationIntent = Number(window.__kiuNavigationIntentSequence || 0);
             window.setTimeout(() => {
                 if (window.location.href !== beforeHref) return;
+                if (Number(window.__kiuNavigationIntentSequence || 0) !== beforeNavigationIntent) return;
                 performFallbackRouteNavigation(targetPage);
             }, 0);
         }, true);
@@ -1593,7 +1595,7 @@ enforceSingleRuntimeEntrypoint();
 
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
-    const PORTAL_CACHE_RESET_VERSION = '20260723-adaptive1';
+    const PORTAL_CACHE_RESET_VERSION = '20260805-switchperf3-debug';
 
     async function clearPortalSiteCaches(force = false) {
         try {

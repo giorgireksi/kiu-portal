@@ -37,19 +37,13 @@ describe('index widget wave 1 regressions', () => {
   });
 
   it('keeps student-service aligned to index hero-side workflow chrome', () => {
-    const source = readSource('assets/js/pages/student-service.js');
+    const source = readSource('assets/js/pages/student-service-page-runtime.js');
 
-    expect(source).toContain('class="admin-hero student-service-hero lux-hero-stage"');
-    expect(source).toContain('class="student-service-hero-main lux-hero-main"');
-    expect(source).toMatch(/class="student-service-hero-aside lux-hero-side(?: lux-focus-panel)?"/);
-    expect(source).toContain('lux-focus-panel');
-    expect(source).toContain('student-service-hero-aside-grid');
-    expect(source).toContain('lux-hero-signal-list');
-    expect(source).toContain('student-service-hero-aside-stat');
-    expect(source).toContain('lux-hero-signal');
-    expect(source).toContain('student-service-workflow-section');
-    expect(source).not.toContain('student-service-summary-grid');
-    expect(source).not.toContain('student-service-summary-card');
+    expect(source).toContain('data-student-service-page-shell="1"');
+    expect(source).toContain('data-student-service-page-hero="1"');
+    expect(source).toContain('data-student-service-page-workflow="1"');
+    expect(source).toContain('student-service-canvas');
+    expect(source).toContain('buildStudentServiceChromeSignature');
   });
 
   it('keeps news feed post cards in tile grid with editorial detail modal', () => {

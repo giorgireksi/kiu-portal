@@ -37,6 +37,8 @@ describe('social domain export contract', () => {
             const source = readSource(`assets/js/pages/${file}`)
                 + (file === 'social-workspace.js'
                     ? readSource('assets/js/pages/social-workspace-events.js')
+                        + readSource('assets/js/pages/social-workspace-events-input-runtime.js')
+                        + readSource('assets/js/pages/social-workspace-events-submit-runtime.js')
                         + readSource('assets/js/pages/social-workspace-week-plan-model.js')
                     : '');
             const required = [
@@ -59,7 +61,8 @@ describe('social domain export contract', () => {
                         `${file} should export window.${name}`
                     ).toContain(`window.${name}`);
                 } else {
-                    expect(source, `${file} should export window.${name}`).toContain(`window.${name}`);
+                    expect(source, `${file} should expose ${name} through its module API`)
+                        .toMatch(new RegExp(`window\\.${name}|__kiu\\w+Expose`));
                 }
             }
             expect(source, `${file} should set MODULE_LOADED`).toMatch(/__KIU_SOCIAL_\w+_MODULE_LOADED/);
@@ -67,7 +70,8 @@ describe('social domain export contract', () => {
     });
 
     it('routes domain events through routeSocialDomain on the shell page', () => {
-        const page = readSource('assets/js/pages/social-page.js');
+        const page = readSource('assets/js/pages/social-page.js')
+            + readSource('assets/js/pages/social-page-boot-runtime.js');
         const shellNav = readSource('assets/js/pages/social-shell-nav.js');
         const pageEvents = readSource('assets/js/pages/social-page-events.js');
         expect(shellNav).toContain('function routeSocialDomain(');

@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -13,8 +22,8 @@ function extractFunctionBody(source, functionName) {
 
 describe('LMS live quiz clock refresh throttling', () => {
     it('avoids forced structural staff refresh during routine sync and clock ticks', () => {
-        const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
-        const liveQuizWorkspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const liveQuizUiSource = readLmsLiveQuizUiChain();
+        const liveQuizWorkspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         const refreshStaffBlock = liveQuizUiSource.match(/function refreshStaffLmsLiveQuizUi\([\s\S]*?\n\}/)?.[0] || '';
         expect(refreshStaffBlock).not.toContain('forceStructuralRender: true');
@@ -26,7 +35,7 @@ describe('LMS live quiz clock refresh throttling', () => {
     });
 
     it('splits timer and volatile refresh paths in the UI runtime', () => {
-        const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const liveQuizUiSource = readLmsLiveQuizUiChain();
 
         expect(liveQuizUiSource).toContain('function patchLmsLiveQuizTimerUi(resourceKey)');
         expect(liveQuizUiSource).toContain('function updateLmsLiveQuizVolatileUi(resourceKey)');
@@ -48,9 +57,10 @@ describe('LMS live quiz clock refresh throttling', () => {
     });
 
     it('uses volatile-only refresh for participant merges and answer submit callbacks', () => {
-        const liveQuizWorkspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const liveQuizWorkspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
-        expect(liveQuizWorkspaceSource).toContain('const LMS_LIVE_LOCAL_SYNC_ECHO_MS = 1500;');
+        expect(liveQuizWorkspaceSource).toContain('LMS_LIVE_LOCAL_SYNC_ECHO_MS');
+        expect(liveQuizWorkspaceSource).toContain('__KIU_LMS_WORKSPACE_SYNC_TIMING__');
         expect(liveQuizWorkspaceSource).not.toContain('forceStructuralRender: options.forceRender === true || shouldMergeParticipantsOnly');
         expect(liveQuizWorkspaceSource).not.toContain("invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true, forceStructuralRender: true })");
         expect(liveQuizWorkspaceSource).toContain('staffControlsLiveQuestion');

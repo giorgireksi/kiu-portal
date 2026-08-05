@@ -72,6 +72,7 @@ const KIU_DELETED_STAFF_REGISTRY_KEY = 'KIU_DELETED_STAFF_REGISTRY';
 const KIU_DISPLAY_TEXT_REPAIR_VERSION = 2;
 let kiuDeletedStaffRegistryCache = null;
 let kiuCanonicalStateInProgress = false;
+let kiuCanonicalStateReady = false;
 
 function shouldRepairDisplayText(raw) {
     const input = String(raw || '');
@@ -263,6 +264,7 @@ function getRegistrationCmsPersistFootprint(state = KIU_STATE) {
 }
 
 function saveState() {
+    kiuCanonicalStateReady = false;
     const uiScrollSnapshot = captureUiScrollSnapshot();
     ensureCanonicalState();
     const registrationCmsFootprintBefore = getRegistrationCmsPersistFootprint(KIU_STATE);
@@ -883,6 +885,7 @@ function syncLegacyStudentStateForCurrentUser() {
 }
 
 function ensureCanonicalState() {
+    if (kiuCanonicalStateReady) return;
     if (kiuCanonicalStateInProgress) return;
     kiuCanonicalStateInProgress = true;
     try {
@@ -1087,7 +1090,12 @@ function ensureCanonicalState() {
     syncLegacyStudentStateForCurrentUser();
     } finally {
         kiuCanonicalStateInProgress = false;
+        kiuCanonicalStateReady = true;
     }
+}
+
+function invalidateCanonicalState() {
+    kiuCanonicalStateReady = false;
 }
 
 function getDomain() {
@@ -1503,4 +1511,5 @@ __kiuStateExpose({
     getCurrentUser,
     getCurrentUserId,
     getEffectiveUserRole,
+    invalidateCanonicalState,
 });

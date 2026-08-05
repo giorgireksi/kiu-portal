@@ -25,7 +25,7 @@ describe('navigation model regressions', () => {
         expect(navigation).toContain("if (PORTAL_STANDALONE_ROUTE_IDS.has(normalizedPageId)) return 'standalone';");
         expect(navigation).toContain("return 'spa-section';");
         expect(navigation).toContain("return 'standalone';");
-        expect(navigation).toContain('window.getPortalRouteMode = getPortalRouteMode;');
+        expect(navigation).toContain('getPortalRouteMode,');
     });
 
     it('primes lazy SPA sections before deferred runtimes finish loading', () => {

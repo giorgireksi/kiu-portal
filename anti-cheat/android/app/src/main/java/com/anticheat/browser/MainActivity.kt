@@ -1,6 +1,8 @@
 package com.anticheat.browser
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -90,7 +92,8 @@ private fun normalizeUrl(value: String, fallback: String): String {
     return try {
         val parsed = URL(candidate)
         when (parsed.protocol.lowercase()) {
-            "http", "https" -> candidate
+            "https" -> candidate
+            "http" -> if (BuildConfig.DEBUG || parsed.host.lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")) candidate else fallback.trim().removeSuffix("/")
             else -> fallback.trim().removeSuffix("/")
         }
     } catch (_: Exception) {
@@ -263,7 +266,7 @@ private data class AppConfig(
         examPortalUrl = normalizeUrl(examPortalUrl.ifBlank { "${normalizeUrl(appUrl, DEFAULT_APP_URL)}/exam-portal.html" }, DEFAULT_EXAM_PORTAL_URL),
         reportingUrl = normalizeUrl(reportingUrl, ""),
         heartbeatUrl = normalizeUrl(heartbeatUrl, ""),
-        allowedDomains = normalizeAllowedDomains(allowedDomains)
+        allowedDomains = normalizeAllowedDomains(allowedDomains + listOf(appUrl, backendUrl, quizUrl, examPortalUrl))
     )
 
     fun mergedWith(override: AppConfig): AppConfig = copy(
@@ -866,16 +869,35 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun isApprovedConfigUrl(value: String): Boolean {
+        return try {
+            val url = URL(value.trim())
+            val protocol = url.protocol.lowercase()
+            val localHttp = protocol == "http" && url.host.lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")
+            if (!url.toURI().userInfo.isNullOrBlank()) return false
+            (protocol == "https" || (BuildConfig.DEBUG && localHttp) || localHttp)
+                && isProtectedModeHostAllowed(url.host, appConfig.allowedDomains)
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     private fun applyIntentOverrides(uri: Uri?) {
         if (uri == null || uri.scheme != "anticheat") return
+        val appUrl = uri.getQueryParameter("appUrl").orEmpty().trim()
+        val backendUrl = uri.getQueryParameter("backendUrl").orEmpty().trim()
+        val quizUrl = uri.getQueryParameter("quizUrl").orEmpty().trim()
+        val examPortalUrl = uri.getQueryParameter("examPortalUrl").orEmpty().trim()
+        val reportingUrl = uri.getQueryParameter("reportingUrl").orEmpty().trim()
+        val heartbeatUrl = uri.getQueryParameter("heartbeatUrl").orEmpty().trim()
         val override = AppConfig(
-            appUrl = uri.getQueryParameter("appUrl").orEmpty().trim(),
-            backendUrl = uri.getQueryParameter("backendUrl").orEmpty().trim(),
-            quizUrl = uri.getQueryParameter("quizUrl").orEmpty().trim(),
-            examPortalUrl = uri.getQueryParameter("examPortalUrl").orEmpty().trim(),
-            reportingUrl = uri.getQueryParameter("reportingUrl").orEmpty().trim(),
-            heartbeatUrl = uri.getQueryParameter("heartbeatUrl").orEmpty().trim(),
-            allowedDomains = uri.getQueryParameters("allowedDomains").flatMap { raw -> raw.split(',') }
+            appUrl = appUrl.takeIf { isApprovedConfigUrl(it) }.orEmpty(),
+            backendUrl = backendUrl.takeIf { isApprovedConfigUrl(it) }.orEmpty(),
+            quizUrl = quizUrl.takeIf { isApprovedConfigUrl(it) }.orEmpty(),
+            examPortalUrl = examPortalUrl.takeIf { isApprovedConfigUrl(it) }.orEmpty(),
+            reportingUrl = reportingUrl.takeIf { isApprovedConfigUrl(it) }.orEmpty(),
+            heartbeatUrl = heartbeatUrl.takeIf { isApprovedConfigUrl(it) }.orEmpty(),
+            allowedDomains = emptyList()
         )
         val hasOverride = listOf(
             override.appUrl,
@@ -901,9 +923,15 @@ class MainActivity : AppCompatActivity() {
                 savePendingLaunch(
                     PendingLaunch(
                         ticket = ticket,
-                        backendUrl = normalizeUrl(uri.getQueryParameter("backendUrl").orEmpty(), appConfig.backendUrl),
-                        appUrl = normalizeUrl(uri.getQueryParameter("appUrl").orEmpty(), appConfig.appUrl),
-                        quizUrl = normalizeUrl(uri.getQueryParameter("quizUrl").orEmpty(), appConfig.quizUrl),
+                            backendUrl = uri.getQueryParameter("backendUrl").orEmpty().trim()
+                                .takeIf { isApprovedConfigUrl(it) }
+                                ?: appConfig.backendUrl,
+                            appUrl = uri.getQueryParameter("appUrl").orEmpty().trim()
+                                .takeIf { isApprovedConfigUrl(it) }
+                                ?: appConfig.appUrl,
+                            quizUrl = uri.getQueryParameter("quizUrl").orEmpty().trim()
+                                .takeIf { isApprovedConfigUrl(it) }
+                                ?: appConfig.quizUrl,
                         source = uri.getQueryParameter("source").orEmpty(),
                         platform = uri.getQueryParameter("platform").orEmpty()
                     )
@@ -1028,6 +1056,15 @@ class MainActivity : AppCompatActivity() {
             }
             return true
         }
+        val localHttp = scheme == "http" && url.host.orEmpty().lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")
+        if (scheme != "https" && !(BuildConfig.DEBUG && localHttp) && !localHttp) {
+            showStatus("Secure HTTPS navigation is required.", Tone.WARNING)
+            return true
+        }
+        if (!isProtectedModeHostAllowed(url.host.orEmpty(), getProtectedAllowedDomains())) {
+            showStatus("Navigation outside the university LMS is blocked.", Tone.WARNING)
+            return true
+        }
         if (protectedLaunch != null && activeWebMode == WebMode.PROTECTED && protectedLaunch?.policy?.navigationProtection == true) {
             val host = url.host.orEmpty().lowercase()
             val allowed = getProtectedAllowedDomains().let { domains ->
@@ -1053,9 +1090,15 @@ class MainActivity : AppCompatActivity() {
                 savePendingLaunch(
                     PendingLaunch(
                         ticket = ticket,
-                        backendUrl = normalizeUrl(uri.getQueryParameter("backendUrl").orEmpty(), appConfig.backendUrl),
-                        appUrl = normalizeUrl(uri.getQueryParameter("appUrl").orEmpty(), appConfig.appUrl),
-                        quizUrl = normalizeUrl(uri.getQueryParameter("quizUrl").orEmpty(), appConfig.quizUrl),
+                        backendUrl = uri.getQueryParameter("backendUrl").orEmpty().trim()
+                            .takeIf { isApprovedConfigUrl(it) }
+                            ?: appConfig.backendUrl,
+                        appUrl = uri.getQueryParameter("appUrl").orEmpty().trim()
+                            .takeIf { isApprovedConfigUrl(it) }
+                            ?: appConfig.appUrl,
+                        quizUrl = uri.getQueryParameter("quizUrl").orEmpty().trim()
+                            .takeIf { isApprovedConfigUrl(it) }
+                            ?: appConfig.quizUrl,
                         source = uri.getQueryParameter("source").orEmpty(),
                         platform = uri.getQueryParameter("platform").orEmpty()
                     )
@@ -1239,6 +1282,7 @@ class MainActivity : AppCompatActivity() {
     private fun performLogout() {
         val token = portalSession?.token ?: prefs.getString(KEY_PORTAL_SESSION_TOKEN, "").orEmpty()
         if (token.isNotBlank()) {
+            KiuMobilePushRegistration.unregister(this)
             val request = Request.Builder()
                 .url("${appConfig.backendUrl.removeSuffix("/")}/api/portal/session/logout")
                 .post("{}".toRequestBody("application/json".toMediaType()))
@@ -1382,6 +1426,11 @@ class MainActivity : AppCompatActivity() {
         val launch = pendingLaunch ?: loadPendingLaunch() ?: return false
         val session = portalSession ?: return false
         if (session.token.isBlank()) return false
+        if (!isApprovedConfigUrl(launch.backendUrl)) {
+            showStatus("Protected launch backend is not approved.", Tone.DANGER)
+            savePendingLaunch(null)
+            return false
+        }
         showStatus("Redeeming protected launch ticket...", Tone.INFO)
         val body = JSONObject().apply { put("ticket", launch.ticket) }.toString().toRequestBody("application/json".toMediaType())
         val request = Request.Builder()
@@ -1618,6 +1667,7 @@ class MainActivity : AppCompatActivity() {
         val url = launch.heartbeatUrl.ifBlank {
             "${appConfig.backendUrl.removeSuffix("/")}/api/protected-quizzes/${launch.quizId}/heartbeat?courseId=${encodeURIComponent(launch.courseId)}"
         }
+        if (!isApprovedConfigUrl(url)) return
         val request = Request.Builder()
             .url(url)
             .post(body)
@@ -1635,6 +1685,7 @@ class MainActivity : AppCompatActivity() {
         val url = launch.reportingUrl.ifBlank {
             "${appConfig.backendUrl.removeSuffix("/")}/api/protected-quizzes/${launch.quizId}/events?courseId=${encodeURIComponent(launch.courseId)}"
         }
+        if (!isApprovedConfigUrl(url)) return
         val body = JSONObject().apply {
             put("courseId", launch.courseId)
             put("quizId", launch.quizId)
@@ -2099,6 +2150,12 @@ class MainActivity : AppCompatActivity() {
                 .putString(KEY_PORTAL_SESSION_JSON, session.toPrefsJson())
                 .putString(KEY_PORTAL_SESSION_TOKEN, session.token)
                 .apply()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 4101)
+            }
+            KiuMobilePushRegistration.refresh(this)
         } catch (_: Exception) {}
     }
 
@@ -2318,7 +2375,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun getProtectedAllowedDomains(): List<String> {
         val launch = protectedLaunch ?: return normalizeAllowedDomains(appConfig.allowedDomains)
-        return normalizeAllowedDomains(appConfig.allowedDomains + launch.allowedDomains)
+        val configured = normalizeAllowedDomains(appConfig.allowedDomains)
+        return configured + normalizeAllowedDomains(launch.allowedDomains)
+            .filter { requested -> configured.any { base -> requested == base || requested.endsWith(".$base") } }
+            .distinct()
     }
 
     private fun canUseStudentActions(session: PortalSessionState): Boolean {
@@ -2336,10 +2396,11 @@ class MainActivity : AppCompatActivity() {
         if (normalized.isBlank()) return ""
         return try {
             val url = URL(normalized)
-            when (url.protocol.lowercase()) {
-                "http", "https" -> normalized.removeSuffix("/")
-                else -> ""
-            }
+            val protocol = url.protocol.lowercase()
+            if (!url.toURI().userInfo.isNullOrBlank()) return ""
+            if (protocol != "https" && !(protocol == "http" && (BuildConfig.DEBUG || url.host.lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")))) return ""
+            if (!isProtectedModeHostAllowed(url.host, getProtectedAllowedDomains())) return ""
+            normalized.removeSuffix("/")
         } catch (_: Exception) {
             ""
         }

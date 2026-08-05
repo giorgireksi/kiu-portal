@@ -85,7 +85,8 @@ describe('exams route regressions.test', () => {
         expect(admin).toContain('ex2-rq-column lux-soft-chrome');
         expect(admin).toContain('lux-primary-btn');
         expect(admin).toContain('lux-control lms-route-textarea');
-        const consoleJs = readSource('assets/js/pages/exams-console.js');
+        const consoleJs = readSource('assets/js/pages/exams-console.js')
+            + readSource('assets/js/pages/exams-console-workspace-runtime.js');
         expect(consoleJs).toContain('lux-control lms-route-input ex2-modal-search');
         expect(consoleJs).toContain('lux-secondary-btn" data-exam-action="share-with-staff"');
         expect(consoleJs).toContain('lux-ghost-btn lux-icon-btn ex2-modal-close');
@@ -102,7 +103,8 @@ describe('exams route regressions.test', () => {
         expect(attempts).toContain('ex2-activity-metric lux-soft-chrome');
         const workspace = readSource('assets/js/pages/exams-console-workspace-runtime.js');
         expect(workspace).not.toContain('lux-modern-surface');
-        expect(readSource('assets/js/pages/exams-console.js')).toContain('ex2-stat-chip lux-soft-chrome');
+        expect(readSource('assets/js/pages/exams-console.js') + readSource('assets/js/pages/exams-console-workspace-runtime.js'))
+            .toContain('ex2-stat-chip home-hover-chip lux-soft-chrome');
         const shell = readSource('assets/css/lux-shell.css');
         expect(shell).toContain('body.lux-page-bare .lux-page-shell');
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');

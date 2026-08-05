@@ -26,14 +26,11 @@ describe('social dialog glass parity', () => {
 
     it('excludes social-glass from hub modal button flattening', () => {
         const modals = readSource('assets/css/lux-modals.css');
-        expect(modals).toMatch(
-            /body\.lux-full-paint\.lux-unified-shell[\s\S]*\.lux-glass-dialog-card:not\(\.lux-glass-dialog-card--social-glass\)\)[\s\S]*\.lux-primary-btn[\s\S]*display:\s*none/
-        );
-        expect(modals).toMatch(
-            /\[data-lux-transparency-exempt="1"\] \.lux-primary-btn:not\(:is\([\s\S]*\.lux-glass-dialog-card--social-glass \*/
-        );
+        expect(modals).toMatch(/\.lux-glass-dialog-card:not\(\.lux-glass-dialog-card--social-glass\)/);
+        expect(modals).toContain('[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(');
+        expect(modals).toContain('.lux-glass-dialog-card--social-glass *,');
         expect(modals).not.toMatch(
-            /#social-neo-overlay-portal[\s\S]*\.lux-glass-dialog-card--social-glass[\s\S]*border-width:\s*1px[\s\S]*\.social-neo-input\.lux-control/
+            /\.lux-glass-dialog-card--social-glass\s*\{[^}]*border-width:\s*1px/
         );
     });
 
@@ -49,8 +46,7 @@ describe('social dialog glass parity', () => {
 
     it('scopes opaque social-neo-card paint to page root only', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
-        expect(bare).toMatch(/body\.lux-route-social #public-social-root \.social-neo-card/);
-        expect(bare).toMatch(/body\.lux-route-social #social-neo-root \.social-neo-card/);
-        expect(bare).not.toMatch(/body\.lux-route-social \.social-neo-card\s*\{/);
+        expect(bare).toContain('body.lux-route-social .social-neo-card');
+        expect(bare).toMatch(/body\.lux-route-social :is\(#page-social, #public-social-root/);
     });
 });

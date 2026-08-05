@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsInteractionSource, readLmsInteractionShellRuntime } from './helpers/lms-interaction-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -12,7 +13,7 @@ describe('LMS interaction panel polish', () => {
     });
 
     it('syncs interaction panel chrome from measured LMS header chrome', () => {
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const classroomSource = readLmsInteractionSource();
         const syncBlock = classroomSource.match(/function syncLmsWorkspaceChromeOffset[\s\S]*?(?=\nfunction )/)?.[0] || '';
         const renderBlock = classroomSource.match(/function renderLmsInteractionSection[\s\S]*?(?=\nfunction )/)?.[0] || '';
         const switchBlock = classroomSource.match(/function switchLMSTab[\s\S]*?(?=\nfunction )/)?.[0] || '';
@@ -22,8 +23,9 @@ describe('LMS interaction panel polish', () => {
         expect(syncBlock).toContain('--lms-interaction-panel-chrome');
         expect(renderBlock).toMatch(/syncLms(?:Workspace|Interaction)ChromeOffset\(contentArea\)/);
         expect(switchBlock).toContain('syncLmsWorkspaceChromeOffset(contentArea)');
-        expect(classroomSource).toContain('window.syncLmsWorkspaceChromeOffset = syncLmsWorkspaceChromeOffset');
-        expect(classroomSource).toContain('window.syncLmsInteractionChromeOffset = syncLmsInteractionChromeOffset');
+        expect(classroomSource).toContain('function syncLmsWorkspaceChromeOffset');
+        expect(classroomSource).toContain('syncLmsWorkspaceChromeOffset,');
+        expect(classroomSource).toContain('function syncLmsInteractionChromeOffset');
     });
 
     it('styles compact interaction panel with inbox sections and hidden empty draft', () => {
@@ -38,6 +40,6 @@ describe('LMS interaction panel polish', () => {
         expectLmsRouteCssLinks(html);
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-interaction-messages-runtime.js?v=20260714-lmspro2')
         expect(html).not.toContain('assets/js/pages/lms-interaction-messages-runtime.js');
-        expect(html).toContain('assets/js/pages/lms-classroom-tabs-runtime.js?v=20260715-lms-lazy7');
+        expect(html).toContain('assets/js/pages/lms-classroom-tabs-runtime.js?v=20260805-switchperf2');
     });
 });

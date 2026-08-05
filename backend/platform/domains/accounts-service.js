@@ -73,6 +73,7 @@ function getAccountByEmail(email) {
 
 function upsertAccount(payload = {}) {
     const now = nowIso();
+    const existing = this.state.accounts[String(payload.id || '').trim()] || null;
     const raw = {
         ...payload,
         id: payload.id || makeId('user'),
@@ -85,6 +86,15 @@ function upsertAccount(payload = {}) {
     if (!raw.avatar && !raw.photo) raw.avatar = displayInitials(raw.displayName || raw.email);
     const sanitized = sanitizeAccount(raw);
     if (!sanitized) return null;
+    let securityChanged = Boolean(
+        existing
+        && (
+            String(existing.role || '').trim().toLowerCase() !== sanitized.role
+            || String(existing.accountStatus || '').trim().toLowerCase() !== sanitized.accountStatus
+            || Boolean(existing.activationRequired) !== Boolean(sanitized.activationRequired)
+            || JSON.stringify(existing.grantedPrivileges || []) !== JSON.stringify(sanitized.grantedPrivileges || [])
+        )
+    );
     this.state.accounts[sanitized.id] = {
         ...(this.state.accounts[sanitized.id] || {}),
         ...sanitized,
@@ -93,6 +103,7 @@ function upsertAccount(payload = {}) {
     ensurePersonFromAccount.call(this, this.state.accounts[sanitized.id]);
     const credential = this.ensureCredential(sanitized.id);
     if (payload.password) {
+        securityChanged = true;
         credential.passwordHash = buildPasswordHash(payload.password);
         credential.activationRequired = false;
         credential.temporaryPasswordHash = '';
@@ -102,11 +113,15 @@ function upsertAccount(payload = {}) {
         this.state.accounts[sanitized.id].accountStatus = 'active';
     }
     if (payload.temporaryPassword) {
+        securityChanged = true;
         credential.temporaryPasswordHash = buildPasswordHash(payload.temporaryPassword);
         credential.mustChangePassword = true;
         credential.activationRequired = false;
         this.state.accounts[sanitized.id].mustChangePassword = true;
         this.state.accounts[sanitized.id].accountStatus = 'active-temp-password';
+    }
+    if (securityChanged && typeof this.revokeSessionsForUser === 'function') {
+        this.revokeSessionsForUser(sanitized.id, 'account-security-changed');
     }
     this.save();
     return getAccountById.call(this, sanitized.id);

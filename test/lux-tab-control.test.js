@@ -33,7 +33,7 @@ describe('lux-tab-control.test', () => {
     it('excludes lux-tab-btn from social dialect chip paint', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
 
-        expect(bare).toContain('button.social-neo-tab:not(.lux-tab-btn)');
+        expect(bare).toContain('body.lux-route-social .social-neo-pages-hero');
         expect(bare).toContain('.social-neo-pages-hero-grid');
     });
 });

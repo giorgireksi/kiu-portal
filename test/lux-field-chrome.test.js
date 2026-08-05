@@ -85,7 +85,7 @@ describe('lux field CTA chrome', () => {
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toMatch(/#admin-curriculum-search[\s\S]*?padding-left:\s*36px/);
         expect(bare).toMatch(
-            /\.lux-admin-curriculum-search-wrap > i\s*\{[\s\S]*?bottom:\s*calc\(var\(--lux-primary-btn-min-height/
+            /\.lux-admin-curriculum-search-wrap > i\s*\{[\s\S]*?bottom:\s*calc\(var\(--lux-field-min-height/
         );
     });
 });

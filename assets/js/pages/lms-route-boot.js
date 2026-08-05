@@ -1,4 +1,80 @@
 (function () {
+    const LMS_STANDALONE_VIEW_STATE_KEY = 'KIU_LMS_STANDALONE_VIEW_STATE';
+    const LMS_STANDALONE_VIEW_TABS = new Set([
+        'sessions', 'interaction', 'attendance', 'materials', 'concepts', 'workspace',
+        'live-quiz', 'whiteboard', 'members', 'quiz', 'monitoring', 'gradebook', 'calls'
+    ]);
+
+    function clearLmsStandaloneViewState() {
+        try {
+            sessionStorage.removeItem(LMS_STANDALONE_VIEW_STATE_KEY);
+        } catch (_error) {}
+    }
+
+    function persistLmsStandaloneViewState(overrides = {}) {
+        const courseKey = String(
+            overrides.courseKey !== undefined ? overrides.courseKey : (window.currentCourseId || '')
+        ).trim();
+        if (!courseKey) {
+            clearLmsStandaloneViewState();
+            return;
+        }
+        const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.dataset?.lmsTab;
+        const tab = String(overrides.tab !== undefined ? overrides.tab : (activeTab || 'sessions')).trim().toLowerCase();
+        const sectionType = String(
+            overrides.sectionType !== undefined
+                ? overrides.sectionType
+                : (typeof window.getCurrentLmsSectionType === 'function' ? window.getCurrentLmsSectionType() : 'lecture')
+        ).trim().toLowerCase() || 'lecture';
+        try {
+            sessionStorage.setItem(LMS_STANDALONE_VIEW_STATE_KEY, JSON.stringify({
+                courseKey,
+                title: String(
+                    overrides.title !== undefined
+                        ? overrides.title
+                        : (document.getElementById('lms-course-title')?.innerText || courseKey)
+                ).trim() || courseKey,
+                tab: LMS_STANDALONE_VIEW_TABS.has(tab) ? tab : 'sessions',
+                sectionType
+            }));
+        } catch (_error) {}
+    }
+
+    async function restoreLmsStandaloneViewState() {
+        let state = null;
+        try {
+            state = JSON.parse(sessionStorage.getItem(LMS_STANDALONE_VIEW_STATE_KEY) || 'null');
+        } catch (_error) {
+            clearLmsStandaloneViewState();
+            return false;
+        }
+        const courseKey = String(state?.courseKey || '').trim();
+        if (!courseKey || typeof window.openLMSCourse !== 'function') return false;
+        window.openLMSCourse(courseKey, String(state.title || courseKey));
+        if (
+            state.sectionType
+            && typeof window.setLmsActiveSection === 'function'
+            && typeof window.getCurrentLmsSectionType === 'function'
+            && window.getCurrentLmsSectionType() !== state.sectionType
+        ) {
+            window.setLmsActiveSection(state.sectionType);
+        }
+        const tab = LMS_STANDALONE_VIEW_TABS.has(String(state.tab || '').trim().toLowerCase())
+            ? String(state.tab).trim().toLowerCase()
+            : 'sessions';
+        if (tab !== 'sessions' && typeof window.ensureLmsExtendedRuntimeForTab === 'function') {
+            await window.ensureLmsExtendedRuntimeForTab(tab);
+        }
+        if (tab !== 'sessions' && typeof window.switchLMSTab === 'function') {
+            window.switchLMSTab(tab, { force: true });
+        }
+        return true;
+    }
+
+    window.persistLmsStandaloneViewState = persistLmsStandaloneViewState;
+    window.clearLmsStandaloneViewState = clearLmsStandaloneViewState;
+    window.restoreLmsStandaloneViewState = restoreLmsStandaloneViewState;
+
     function safeHtml(value) {
         if (typeof escapeHtml === 'function') return escapeHtml(String(value == null ? '' : value));
         return String(value == null ? '' : value)
@@ -405,6 +481,14 @@
     function bindLmsDelegatedActions() {
         if (document.body?.dataset.lmsDelegatedActionsBound === '1') return;
         if (document.body) document.body.dataset.lmsDelegatedActionsBound = '1';
+        const warmLmsTabRuntime = (event) => {
+            const tabButton = event.target?.closest?.('[data-lms-tab]');
+            if (!tabButton || typeof window.preloadLmsRuntimeForTab !== 'function') return;
+            window.preloadLmsRuntimeForTab(tabButton.dataset.lmsTab);
+        };
+        document.addEventListener('pointerover', warmLmsTabRuntime, { passive: true });
+        document.addEventListener('focusin', warmLmsTabRuntime, { passive: true });
+        document.addEventListener('touchstart', warmLmsTabRuntime, { passive: true });
         document.addEventListener('click', async (event) => {
             const semesterButton = event.target.closest?.('[data-lms-semester]');
             if (semesterButton) {
@@ -471,6 +555,18 @@
                 return;
             }
         });
+    }
+    function scheduleLmsTabRuntimePrefetch() {
+        if (typeof window.prefetchLmsRuntimeForTab !== 'function') return;
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (connection?.saveData || ['slow-2g', '2g'].includes(String(connection?.effectiveType || '').toLowerCase())) return;
+        const run = () => {
+            window.prefetchLmsRuntimeForTab('materials');
+            if (window.innerWidth > 1024) window.prefetchLmsRuntimeForTab('quiz');
+        };
+        if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(run, { timeout: 2500 });
+        }
     }
     function ensureLmsRouteVisualState() {
         const body = document.body;
@@ -575,7 +671,7 @@
         if (options.refreshActiveTab === true && isLmsCourseWorkspaceVisibleStandalone()) {
             const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.dataset?.lmsTab || 'sessions';
             if (typeof window.switchLMSTab === 'function') {
-                window.switchLMSTab(activeTab, { force: true });
+                window.switchLMSTab(activeTab, { force: options.forceActiveTab === true });
             }
         }
         scheduleLmsVisualShellSync();
@@ -585,7 +681,8 @@
         refreshStandaloneLmsShellContext({
             refreshSubjectDeck: options.refreshSubjectDeck !== false,
             forceSubjectDeck: options.forceSubjectDeck === true,
-            refreshActiveTab: options.refreshActiveRoute === true || options.refreshActiveTab === true
+            refreshActiveTab: options.refreshActiveRoute === true || options.refreshActiveTab === true,
+            forceActiveTab: options.forceActiveTab === true
         });
     };
     window.refreshStandaloneDesktopShellChrome = function refreshStandaloneDesktopShellChrome() {
@@ -601,15 +698,25 @@
             markPortalShellReady();
         }
     }
+    function scheduleLmsParticleBackgroundInit() {
+        const init = () => {
+            if (typeof window.__kiuInitLuxuryParticleBackground === 'function') {
+                window.__kiuInitLuxuryParticleBackground();
+            }
+        };
+        if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(init, { timeout: 1800 });
+        } else if (typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(init);
+        }
+    }
     function initLmsPage() {
         ensureLmsRouteVisualState();
-        if (typeof window.__kiuInitLuxuryParticleBackground === 'function') {
-            window.__kiuInitLuxuryParticleBackground();
-        }
         if (typeof bindStandaloneGradebookShell === 'function') {
             bindStandaloneGradebookShell();
         }
         bindLmsDelegatedActions();
+        scheduleLmsTabRuntimePrefetch();
         if (typeof bindLmsPersonalDashboardChromeButton === 'function') bindLmsPersonalDashboardChromeButton();
         preloadLmsQuizRuntimeIfNeeded();
         preloadLmsCallsRuntimeIfNeeded();
@@ -617,12 +724,16 @@
             try {
                 const restored = typeof window.restoreLmsReturnContextIfPresent === 'function'
                     && await window.restoreLmsReturnContextIfPresent();
-                if (!restored) {
+                const restoredStandalone = !restored
+                    && typeof window.restoreLmsStandaloneViewState === 'function'
+                    && await window.restoreLmsStandaloneViewState();
+                if (!restored && !restoredStandalone) {
                     renderLmsSubjectDeck();
                 }
                 scheduleLmsVisualShellSync();
             } finally {
                 revealLmsShellIfLoading();
+                scheduleLmsParticleBackgroundInit();
             }
         };
         if (typeof scheduleRouteContentRender === 'function') {

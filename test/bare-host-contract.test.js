@@ -83,7 +83,7 @@ describe('bare host contract', () => {
         expect(readSource('library.html')).toMatch(/library-catalog-workspace[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('personal-data.html')).toMatch(/personal-data-shell[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('assets/js/pages/student-service-page-runtime.js')).toMatch(/student-service-shell[\s\S]*data-lux-glass-root="1"/);
-        expect(readSource('lms.html')).toMatch(/lms-route-workspace-chrome[\s\S]*data-lux-glass-root="1"/);
+        expect(readSource('lms.html')).toMatch(/(?:lms-route-workspace-chrome[\s\S]*data-lux-glass-root="1"|data-lux-glass-root="1"[\s\S]*lms-route-workspace-chrome)/);
         expect(readSource('timetable.html')).toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('registration.html')).toMatch(/registration-studio-shell[\s\S]*data-lux-glass-root="1"/);
         expect(readSource('study-card.html')).toMatch(/study-card-command-deck[\s\S]*data-lux-glass-root="1"/);

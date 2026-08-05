@@ -504,6 +504,7 @@ function cleanupLmsInjectedEnhancementBlocks(contentArea = document.getElementBy
 
 let lmsTabRenderSequence = 0;
 const LMS_TAB_RENDER_CACHE = Object.create(null);
+const LMS_TAB_RENDER_CACHE_TTL_MS = 15000;
 
 function buildLmsTabRenderCacheKey(tab, courseKey, sectionType) {
     const role = typeof getEffectiveUserRole === 'function'
@@ -516,6 +517,25 @@ function clearLmsTabRenderCache() {
     Object.keys(LMS_TAB_RENDER_CACHE).forEach((key) => {
         delete LMS_TAB_RENDER_CACHE[key];
     });
+}
+
+function setLmsTabRenderCache(cacheKey, markup) {
+    if (!cacheKey || !String(markup || '').trim()) return;
+    LMS_TAB_RENDER_CACHE[cacheKey] = {
+        markup: String(markup),
+        cachedAt: Date.now()
+    };
+}
+
+function getLmsTabRenderCache(cacheKey) {
+    const entry = LMS_TAB_RENDER_CACHE[cacheKey];
+    if (!entry) return '';
+    if (typeof entry === 'string') return entry;
+    if (Date.now() - Number(entry.cachedAt || 0) > LMS_TAB_RENDER_CACHE_TTL_MS) {
+        delete LMS_TAB_RENDER_CACHE[cacheKey];
+        return '';
+    }
+    return String(entry.markup || '');
 }
 
 function invalidateLmsLiveQuizTabCache(resourceKey = '') {
@@ -611,7 +631,7 @@ function syncLmsTabRenderCacheFromDom(tab, courseKey, sectionType) {
         stripLmsInteractionBoundFlags(contentArea);
     }
     const cacheKey = buildLmsTabRenderCacheKey(tab, courseKey, sectionType);
-    LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
+    setLmsTabRenderCache(cacheKey, contentArea.innerHTML);
 }
 
 function enhanceLmsTabExperience(tab, courseId = currentCourseId) {
@@ -649,7 +669,16 @@ function syncAllLmsRouteTabHoverChips() {
     document.querySelectorAll('#page-lms-inner [data-lms-tab]').forEach(syncLmsRouteTabHoverChip);
 }
 
+function markLmsTabSwitchPhase(tab, phase) {
+    if (typeof window.markPortalNavigationPhase !== 'function') return;
+    window.markPortalNavigationPhase(`lms-tab:${String(tab || '').trim().toLowerCase()}`, phase);
+}
+
 function switchLMSTab(tab, options = {}) {
+    const tabTimingKey = `lms-tab:${String(tab || '').trim().toLowerCase()}`;
+    if (typeof window.markPortalNavigationIntent === 'function') {
+        window.markPortalNavigationIntent(tabTimingKey);
+    }
     const forceRender = options.force === true;
     const contentAreaBeforeSwitch = document.getElementById('lms-content-area');
     const leavingLiveQuiz = contentAreaBeforeSwitch?.dataset?.activeLmsTab === 'live-quiz' && tab !== 'live-quiz';
@@ -694,7 +723,11 @@ function switchLMSTab(tab, options = {}) {
     const effectiveRole = getEffectiveUserRole();
     if (tab === 'monitoring' && ![USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(effectiveRole)) {
         alert('Only professors, teaching assistants, and admins can open this tab.');
+        markLmsTabSwitchPhase(tab, 'content-ready');
         return;
+    }
+    if (typeof window.persistLmsStandaloneViewState === 'function') {
+        window.persistLmsStandaloneViewState({ tab });
     }
     if (tab !== 'quiz') {
         currentLmsQuizCourseKey = '';
@@ -746,6 +779,7 @@ function switchLMSTab(tab, options = {}) {
             }
         }
         if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
+        markLmsTabSwitchPhase(tab, 'content-ready');
         return;
     }
 
@@ -774,6 +808,7 @@ function switchLMSTab(tab, options = {}) {
             }
             syncLmsWorkspaceChromeOffset(contentArea);
             if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
+            markLmsTabSwitchPhase(tab, 'content-ready');
         };
 
         const runtimeReady = typeof isLmsGradebookRuntimeReady === 'function'
@@ -818,6 +853,7 @@ function switchLMSTab(tab, options = {}) {
         }
 
         finishGradebookTab();
+        markLmsTabSwitchPhase(tab, 'content-ready');
         return;
     }
     prepareLmsContentAreaForTab(tab, contentArea);
@@ -827,11 +863,16 @@ function switchLMSTab(tab, options = {}) {
         if (forceRender) {
             delete LMS_TAB_RENDER_CACHE[cacheKey];
         }
-        if (!forceRender && tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && tab !== 'quiz' && tab !== 'monitoring' && LMS_TAB_RENDER_CACHE[cacheKey]) {
-            contentArea.innerHTML = LMS_TAB_RENDER_CACHE[cacheKey];
+        const cacheOnlyTabEligible = tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && tab !== 'quiz' && tab !== 'monitoring' && LMS_TAB_RENDER_CACHE[cacheKey];
+        const cachedMarkup = !forceRender && cacheOnlyTabEligible
+            ? getLmsTabRenderCache(cacheKey)
+            : '';
+        if (cachedMarkup) {
+            contentArea.innerHTML = cachedMarkup;
             enhanceLmsTabExperience(tab, tabCourseKey || currentCourseId);
             syncLmsWorkspaceChromeOffset(contentArea);
             if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
+            markLmsTabSwitchPhase(tab, 'content-ready');
             return;
         }
         if (tab === 'live-quiz' || tab === 'interaction' || tab === 'whiteboard' || tab === 'quiz' || tab === 'monitoring') {
@@ -992,6 +1033,7 @@ function switchLMSTab(tab, options = {}) {
                 if (contentArea) {
                     contentArea.innerHTML = '<div class="lms-live-copy is-danger">Quiz tools failed to load. Refresh the page.</div>';
                 }
+                markLmsTabSwitchPhase(tab, 'content-ready');
                 return;
             }
             quizRuntimeEnsure()
@@ -1014,12 +1056,13 @@ function switchLMSTab(tab, options = {}) {
                         }
                         window.renderLmsQuizSection(tabCourseKey);
                         if (contentArea && !contentArea.querySelector('[data-lms-tab-loading]')) {
-                            LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
+                            setLmsTabRenderCache(cacheKey, contentArea.innerHTML);
                             contentArea.dataset.activeLmsSectionType = activeSectionType;
                         }
                         enhanceLmsTabExperience('quiz', tabCourseKey || currentCourseId);
                         syncLmsWorkspaceChromeOffset(contentArea);
                         if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
+                        markLmsTabSwitchPhase(tab, 'content-ready');
                         return;
                     }
                     switchLMSTab('quiz', { force: true });
@@ -1057,6 +1100,7 @@ function switchLMSTab(tab, options = {}) {
                 if (contentArea) {
                     contentArea.innerHTML = '<div class="lms-live-copy is-danger">Monitoring tools failed to load. Refresh the page.</div>';
                 }
+                markLmsTabSwitchPhase(tab, 'content-ready');
                 return;
             }
             quizRuntimeEnsure()
@@ -1094,7 +1138,7 @@ function switchLMSTab(tab, options = {}) {
             stripLmsInteractionBoundFlags(contentArea);
         }
         if (!contentArea.querySelector('[data-lms-tab-loading]')) {
-            LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
+            setLmsTabRenderCache(cacheKey, contentArea.innerHTML);
         }
         contentArea.dataset.activeLmsSectionType = activeSectionType;
     }
@@ -1107,6 +1151,7 @@ function switchLMSTab(tab, options = {}) {
         }
     }
     if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
+    markLmsTabSwitchPhase(tab, 'content-ready');
 }
 
 
@@ -1127,6 +1172,8 @@ function switchLMSTab(tab, options = {}) {
             cleanupLmsInjectedEnhancementBlocks,
             buildLmsTabRenderCacheKey,
             clearLmsTabRenderCache,
+            setLmsTabRenderCache,
+            getLmsTabRenderCache,
             invalidateLmsLiveQuizTabCache,
             invalidateLmsWhiteboardTabCache,
             invalidateLmsInteractionTabCache,

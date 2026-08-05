@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource, readLmsWhiteboardSessionRuntime } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -18,7 +19,7 @@ describe('lms whiteboard history fix', () => {
 
     it('uses pre-gesture force push and single-entry undo guard', () => {
         const history = readSource('assets/js/pages/lms-whiteboard-history-runtime.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const undoBlock = history.match(/function undoLmsWhiteboardHistory[\s\S]*?^}/m)?.[0] || '';
         const gestureBlock = runtime.match(/function recordLmsWhiteboardHistoryGesture[\s\S]*?^}/m)?.[0] || '';
 
@@ -31,13 +32,14 @@ describe('lms whiteboard history fix', () => {
     it('restores history with repaint helper and deferred sync refresh', () => {
         const history = readSource('assets/js/pages/lms-whiteboard-history-runtime.js');
         const restoreBlock = history.match(/function restoreLmsWhiteboardHistoryState[\s\S]*?^}/m)?.[0] || '';
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const session = readLmsWhiteboardSessionRuntime();
+        const runtime = readLmsWhiteboardSource();
 
         expect(restoreBlock).toContain('deferUiRefresh: true');
         expect(restoreBlock).toContain('repaintLmsWhiteboardAfterHistoryChange(key)');
         expect(restoreBlock).not.toContain('refreshLmsWhiteboardUi');
-        expect(runtime).toContain('function repaintLmsWhiteboardAfterHistoryChange');
-        expect(runtime).toContain('window.repaintLmsWhiteboardAfterHistoryChange = repaintLmsWhiteboardAfterHistoryChange');
+        expect(session).toContain('function repaintLmsWhiteboardAfterHistoryChange');
+        expect(session).toContain('repaintLmsWhiteboardAfterHistoryChange');
     });
 
     it('threads deferUiRefresh through backend save queue', () => {
@@ -57,7 +59,7 @@ describe('lms whiteboard history fix', () => {
     });
 
     it('stops propagation on stage action and shell handlers', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('lmsWhiteboardStageActionsBound');
         expect(runtime).toContain('.lms-whiteboard-stage-actions');

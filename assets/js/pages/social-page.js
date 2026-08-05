@@ -1,3 +1,11 @@
+/* READABILITY: social page hub: route state, rendering coordination, and lazy domain wiring. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* FINDABILITY: social shell / domain dispatch — see docs/findability-index.md#social-shell */
 /* Rebuilt social workspace page.
  * Keeps rendering thin and delegates state/network work to social-runtime-lite.js.

@@ -21,7 +21,8 @@ describe('input autocomplete guard', () => {
     });
 
     it('boots from utilities initPalette and SPA navigate rescan', () => {
-        const utilities = readSource('assets/js/shared/utilities.js');
+    const utilities = readSource('assets/js/shared/utilities.js')
+        + readSource('assets/js/shared/input-autocomplete-guard.js');
         const luxury = readSource('assets/js/features/index-luxury.js');
 
         expect(utilities).toContain('setupInputAutocompleteGuard');

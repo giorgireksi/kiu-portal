@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('LMS whiteboard shell binding ux9', () => {
     it('resolves active shell in content area or fullscreen body', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function getActiveLmsWhiteboardShell');
         expect(runtime).toContain('function getLmsWhiteboardShells');
@@ -20,7 +21,7 @@ describe('LMS whiteboard shell binding ux9', () => {
     });
 
     it('uses active shell for refresh and fullscreen toggle', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('const shell = getActiveLmsWhiteboardShell(resourceKey)');
         expect(runtime).toContain('getActiveLmsWhiteboardShell(LMS_WHITEBOARD_UI.boundKey)');

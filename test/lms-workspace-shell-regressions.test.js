@@ -49,7 +49,7 @@ describe('LMS workspace shell regressions (phases 0–2)', () => {
     it('bumps workspace shell cache bust tokens in lms.html', () => {
         const html = readSource('lms.html');
         expectLmsRouteCssLinks(html);
-        expect(html).toContain('assets/js/pages/lms-classroom-tabs-shell-runtime.js?v=20260728-lmgroup1');
+        expect(html).toContain('assets/js/pages/lms-classroom-tabs-shell-runtime.js?v=20260805-switchperf2');
         expect(html).not.toContain('data-lms-pro-hero');
     });
 });

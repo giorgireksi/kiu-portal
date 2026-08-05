@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { readSocialHtml, socialModuleUrlToken } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -58,12 +59,12 @@ describe('social-group-detail-dialog (shared shell CSS)', () => {
     });
 
     it('social.html cache-busts group-detail CSS and scripts', () => {
-        const html = readSource('social.html');
+        const html = readSocialHtml();
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toMatch(/lux-modals\.css\?v=20260730-groupdetail1/);
-        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260730-groupdetail1/);
-        expect(html).toMatch(/social-page-feed-runtime\.js\?v=20260730-groupdetail1/);
-        expect(html).toMatch(/social-page\.js\?v=20260730-groupdetail1/);
-        expect(page).toContain('social-groups.js?v=20260730-groupdetail1');
+        expect(html).toMatch(/lux-modals\.css\?v=/);
+        expect(html).toMatch(/lux-fouc-ht\.css\?v=/);
+        expect(html).toMatch(/social-page-feed-runtime\.js\?v=/);
+        expect(html).toMatch(/social-page\.js\?v=/);
+        expect(page).toContain(socialModuleUrlToken('social-groups.js'));
     });
 });

@@ -14,21 +14,21 @@ const SHELL_TOPBAR_ALIAS_BLOCK = `--lux-shell-topbar-surface-soft:`;
 
 describe('route-owned shell topbar regressions', () => {
   it('defines shared shell topbar primitive and scopes legacy nonhome glass away from lux-route pages', () => {
-    const luxuryCss = readSource('assets/css/lux-shell.css') + readSource('assets/css/lux-fouc-ht.css') + readSource('assets/css/lux-controls.css') + readHomeDashboardCss();
+    const luxuryCss = readSource('assets/css/lux-shell.css');
 
-    expect(luxuryCss).toContain('/* Route-owned shell topbar — uses --lux-shell-topbar-* aliases on body.lux-route-* */');
-    expect(luxuryCss).toContain('body.lux-nonhome-page[class*="lux-route-"]:not(.lux-route-home) #lux-topbar .lux-topbar-shell');
-    expect(luxuryCss).toContain('background: var(--lux-shell-topbar-surface-soft) !important');
-    expect(luxuryCss).toContain('body:not(.lux-light-mode):not([class*="lux-route-"]) #lux-topbar .lux-topbar-shell');
-    expect(luxuryCss).not.toContain(':not(.lux-route-registration) #lux-topbar');
+    expect(luxuryCss).toContain('/* ── §3 shared paint: TOPBAR SOFT-CHROME SSOT');
+    expect(luxuryCss).toContain('body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-shell');
+    expect(luxuryCss).toContain('background-image: var(--lux-soft-chrome-surface');
+    expect(luxuryCss).toContain('backdrop-filter: none');
+    expect(luxuryCss).toContain('body.lux-page-bare #lux-topbar .lux-topbar-shell');
   });
 
   it('skips transparency inline paint for shell topbar on route pages', () => {
-    const utilitiesSource = readSource('assets/js/shared/utilities.js');
+    const transparencySource = readSource('assets/js/shared/lux-transparency.js');
 
-    expect(utilitiesSource).toContain('function shouldKeepShellTopbarFadeCssBackground(el)');
-    expect(utilitiesSource).toContain("className.startsWith('lux-route-') && className !== 'lux-route-home'");
-    expect(utilitiesSource).toContain('if (shouldKeepShellTopbarFadeCssBackground(el))');
+    expect(transparencySource).toContain('const isTopbarSoftChromeSurface = (');
+    expect(transparencySource).toContain("el.id === 'lux-topbar'");
+    expect(transparencySource).toContain("el.classList.contains('lux-topbar-shell')");
   });
 
   it('keeps LMS shell topbar aliases in archived route skins (hard-clean)', () => {

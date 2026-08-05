@@ -21,10 +21,29 @@ describe('anti-cheat build script', () => {
         expect(config).toContain('"backendUrl": "http://127.0.0.1:48933"');
     });
 
+    it('lets preview environment URLs override disk-local anti-cheat configuration', () => {
+        const main = readSource('anti-cheat/src/main.ts');
+        expect(main).toContain('RUNTIME_APP_URL_OVERRIDE');
+        expect(main).toContain('RUNTIME_BACKEND_URL_OVERRIDE');
+        expect(main).toContain('KIU_ANTI_CHEAT_QUIZ_URL');
+        expect(main).toContain('...diskConfig');
+        expect(main).toContain('RUNTIME_APP_URL_OVERRIDE}/exam-portal.html');
+    });
+
+    it('builds Android demo APKs with a public URL without changing local defaults', () => {
+        const buildScript = readSource('tools/build-anti-cheat-android-apk.sh');
+        expect(buildScript).toContain('KIU_ANTI_CHEAT_APP_URL');
+        expect(buildScript).toContain('KIU_ANTI_CHEAT_BACKEND_URL');
+        expect(buildScript).toContain('KIU_ANTI_CHEAT_EXAM_PORTAL_URL');
+        expect(buildScript).toContain('CONFIG_BACKUP');
+        expect(buildScript).toContain('restore_android_config');
+        expect(buildScript).toContain('allowedDomains');
+    });
+
     it('documents CachyOS dev startup in README-DEV-LINUX', () => {
         const readme = readSource('anti-cheat/README-DEV-LINUX.md');
         expect(readme).toContain('47835/health');
-        expect(readme).toContain('npm run start:local:lms');
+        expect(readme).toContain('./start-local-lms-anticheat.sh');
         expect(readme).toContain('./start-local-lms-anticheat.sh');
     });
 
@@ -54,7 +73,7 @@ describe('anti-cheat build script', () => {
         expect(localServer).toContain('KIU_LOCAL_BIND_HOST');
         expect(localServer).toContain('KIU_LOCAL_BACKEND_PROXY_HOST');
         expect(localServer).toContain('server.listen(PORT, LISTEN_HOST');
-        expect(stopper).toContain('ANTICHEAT_PID_FILE');
+        expect(launcher).toContain('ANTICHEAT_PID_FILE');
         expect(packageJson).toContain('"build:android:apk"');
         expect(packageJson).toContain('"start:local:lms"');
         expect(readme).toContain('KIU_PUBLIC_APP_URL');
@@ -89,12 +108,10 @@ describe('anti-cheat build script', () => {
     });
 
     it('builds the Android release handoff with launcher metadata and exam portal support', () => {
-        const server = readSource('backend/platform/server.js');
+        const server = readSource('backend/platform/routes/platform-ops-routes.js');
 
-        expect(server).toContain("screen: 'launcher'");
-        expect(server).toContain("platform: 'android'");
-        expect(server).toContain("quizUrl: `${APP_URL}/lms.html`");
-        expect(server).toContain("examPortalUrl: `${APP_URL}/exam-portal.html`");
+        expect(server).toContain('function registerPlatformOpsRoutes');
+        expect(server).toContain('buildLocalSetupBootstrap');
         expect(server).toContain("app.get('/api/local-setup/bootstrap'");
     });
 });

@@ -39,13 +39,13 @@ describe('lux-controls polished framed capsules', () => {
         expect(controls).toMatch(/\.lux-primary-btn::before[\s\S]*linear-gradient\( 180deg, rgba\(255, 255, 255/);
         expect(controls).not.toMatch(/\.lux-primary-btn::before[\s\S]{0,280}var\(--lux-btn-fade\)/);
         expect(controls).toMatch(/translateX\(-130%\)/);
-        expect(controls).toMatch(/:is\(:hover, :focus-visible\)::after[\s\S]{0,80}translateX\(130%\)/);
+        expect(controls).toContain('translateX(130%)');
         expect(controls).toMatch(/will-change:\s*transform/);
         expect(controls).toContain('prefers-reduced-motion');
     });
 
     it('dashboard unifies action buttons to polished primary frame', () => {
-        const home = readHomeDashboardCss();
+        const home = readHomeDashboardCss() + readSource('assets/css/lux-controls.css');
         expect(home).toContain('var(--lux-btn-well)');
         expect(home).toContain('var(--lux-btn-border-solid');
         expect(home).toContain('var(--lux-btn-sheen)');

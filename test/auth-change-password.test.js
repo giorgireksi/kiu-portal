@@ -13,7 +13,9 @@ function buildStore() {
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z'
     };
-    store.activateAccount('student-1', 'oldpass12');
+    store.ensureCredential('student-1');
+    const activation = store.issueActivationToken('student-1');
+    store.activateAccount('student-1', 'oldpass12', activation.token);
     return store;
 }
 

@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);

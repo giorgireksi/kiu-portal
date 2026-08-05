@@ -8,7 +8,7 @@ function readSource(relativePath) {
 
 describe('navigate shell sync skip', () => {
     it('skips syncAll when navigate returns navigationSkipped', () => {
-        const indexLuxury = readSource('assets/js/features/index-luxury.js');
+        const indexLuxury = readSource('assets/js/features/luxury-index-sync-runtime.js');
 
         expect(indexLuxury).toContain('function queueShellSync(args, result) {');
         expect(indexLuxury).toContain('if (result?.navigationSkipped) return;');

@@ -10,7 +10,7 @@ function readSource(relativePath) {
 }
 
 function loadFacultySessionTypeHelpers() {
-    const facultySource = readSource('assets/js/shared/faculty.js');
+    const facultySource = readSource('assets/js/shared/faculty-schedule-runtime.js');
     const vm = require('vm');
     const context = {
         console,
@@ -105,7 +105,7 @@ describe('schedule group session type classification', () => {
     });
 
     it('checks TA-only assignment before trusting stored lecture labels', () => {
-        const facultySource = readSource('assets/js/shared/faculty.js');
+        const facultySource = readSource('assets/js/shared/faculty-schedule-runtime.js');
         const normalizeFn = facultySource.match(
             /function normalizeScheduleGroup\(subjectId, group\) \{[\s\S]*?\n\}/
         )?.[0] || '';

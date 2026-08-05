@@ -67,6 +67,7 @@ describe('backend platform domain contracts', () => {
             'getSession',
             'isImpersonationPersonaEligible',
             'isPortalImpersonationRole',
+            'issueActivationToken',
             'linkMicrosoftIdentityToAccount',
             'logoutSession',
             'requestPasswordReset',
@@ -271,11 +272,14 @@ describe('backend platform domain contracts', () => {
             'upsertSocialState'
         ]);
         expect(Object.keys(filesService).sort()).toEqual([
+            'adoptUploadFileFromDisk',
             'canActorAccessStoredFile',
             'createFileFromUpload',
+            'enrichStoredFileReference',
             'getFile',
             'healAllStoredFilePaths',
             'healStoredFileRecord',
+            'listUnindexedBackgroundGalleryDiskFileIds',
             'normalizeMessageAttachment',
             'objectContainsStoredFileReference',
             'resolveStoredFileDiskPath'

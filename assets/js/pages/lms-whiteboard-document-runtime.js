@@ -1,3 +1,11 @@
+/* READABILITY: LMS whiteboard document runtime: document embeds, viewers, and import helpers. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* LMS whiteboard live document embed layer (PDF/DOCX/XLSX/images). */
 
 const LMS_WHITEBOARD_DOC_HTML_CACHE = {};
@@ -331,6 +339,54 @@ async function ensureLmsWhiteboardSheetJs() {
     return window.XLSX;
 }
 
+function sanitizeLmsWhiteboardPreviewHtml(value = '') {
+    const template = document.createElement('template');
+    template.innerHTML = String(value || '');
+    const allowedTags = new Set([
+        'A', 'B', 'BLOCKQUOTE', 'BR', 'CODE', 'EM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+        'HR', 'I', 'IMG', 'LI', 'OL', 'P', 'PRE', 'S', 'SPAN', 'STRONG', 'TABLE', 'TBODY',
+        'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'U', 'UL'
+    ]);
+    template.content.querySelectorAll('script,style,iframe,object,embed,form,link,meta,svg,math').forEach((node) => node.remove());
+    template.content.querySelectorAll('*').forEach((node) => {
+        if (!allowedTags.has(node.tagName)) {
+            node.replaceWith(...Array.from(node.childNodes));
+            return;
+        }
+        Array.from(node.attributes).forEach((attribute) => {
+            const name = attribute.name.toLowerCase();
+            const raw = attribute.value.trim();
+            if (name.startsWith('on') || name === 'style' || name === 'srcset') {
+                node.removeAttribute(attribute.name);
+                return;
+            }
+            if (name === 'href') {
+                try {
+                    const url = new URL(raw, window.location.origin);
+                    if (!['http:', 'https:', 'mailto:'].includes(url.protocol)) node.removeAttribute(attribute.name);
+                } catch (error) {
+                    node.removeAttribute(attribute.name);
+                }
+                return;
+            }
+            if (name === 'src') {
+                const isSafeDataImage = raw.startsWith('data:image/');
+                try {
+                    const url = new URL(raw, window.location.origin);
+                    if (!isSafeDataImage && !['http:', 'https:'].includes(url.protocol)) node.removeAttribute(attribute.name);
+                } catch (error) {
+                    node.removeAttribute(attribute.name);
+                }
+            }
+        });
+        if (node.tagName === 'A') {
+            node.setAttribute('rel', 'noopener noreferrer');
+            node.setAttribute('target', '_blank');
+        }
+    });
+    return template.innerHTML;
+}
+
 async function fetchLmsWhiteboardStoredFileBuffer(element = {}) {
     const blob = await resolveLmsWhiteboardFileBlob(element);
     if (!blob) throw new Error('Document unavailable.');
@@ -343,7 +399,7 @@ async function buildLmsWhiteboardDocxPreviewHtml(element = {}) {
     const buffer = await fetchLmsWhiteboardStoredFileBuffer(element);
     const mammoth = await ensureLmsWhiteboardMammoth();
     const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
-    const html = result.value || '<p>Empty document</p>';
+    const html = sanitizeLmsWhiteboardPreviewHtml(result.value || '<p>Empty document</p>');
     LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey] = html;
     return html;
 }
@@ -356,7 +412,7 @@ async function buildLmsWhiteboardSpreadsheetPreviewHtml(element = {}) {
     const workbook = XLSX.read(buffer, { type: 'array' });
     const sheetName = workbook.SheetNames?.[0];
     const sheet = sheetName ? workbook.Sheets[sheetName] : null;
-    const table = sheet ? XLSX.utils.sheet_to_html(sheet) : '<p>Empty spreadsheet</p>';
+    const table = sanitizeLmsWhiteboardPreviewHtml(sheet ? XLSX.utils.sheet_to_html(sheet) : '<p>Empty spreadsheet</p>');
     LMS_WHITEBOARD_DOC_HTML_CACHE[cacheKey] = table;
     return table;
 }

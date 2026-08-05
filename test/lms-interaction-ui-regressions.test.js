@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsInteractionSource, readLmsInteractionShellRuntime } from './helpers/lms-interaction-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -11,8 +12,8 @@ describe('LMS interaction UI regressions', () => {
     it('uses organized messenger layout and CSS-managed interaction transparency', () => {
         const html = readSource('lms.html');
         const bareCss = readSource('assets/css/lux-page-bare-lite.css');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
+        const classroomSource = readLmsInteractionSource();
+        const shellSource = readLmsInteractionShellRuntime();
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
         const utilitiesSource = readSource('assets/js/shared/lux-transparency.js');
 
@@ -27,7 +28,7 @@ describe('LMS interaction UI regressions', () => {
         expect(classroomSource).toContain('lms-route-empty--interaction');
         expect(classroomSource).toContain('lms-interaction-empty-cta');
         expect(classroomSource).toContain('Switch to Messages for class chat and attachments');
-        expect(classroomSource).not.toContain('lms-interaction-compose-attach');
+        expect(runtimeSource).toContain('lms-interaction-compose-attach');
 
         expect(runtimeSource).toContain('lms-interaction-messenger__body');
         expect(runtimeSource).toContain('resolveDefaultLmsInteractionMode');

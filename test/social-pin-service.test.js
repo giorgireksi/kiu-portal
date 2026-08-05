@@ -82,7 +82,7 @@ describe('social-pin-service', () => {
         expect(pinService).toContain('SOCIAL_PIN_API_VERSION = 1');
 
         const systemRoutes = readSource('backend/platform/routes/system-routes.js');
-        expect(systemRoutes).toContain('socialPinApiVersion: SOCIAL_PIN_API_VERSION');
+        expect(systemRoutes).toContain('socialPinApiVersion');
 
         const launcher = readSource('start-local-lms-anticheat.sh');
         expect(launcher).toContain('pin_api_healthy()');

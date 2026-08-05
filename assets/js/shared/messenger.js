@@ -1608,23 +1608,23 @@ function getCurrentFacultyScheduleItems() {
 }
 function queueFacultyLmsSession(courseId, groupId) {
     if (!courseId || !groupId) return;
-    localStorage.setItem('KIU_PENDING_LMS_GROUP', JSON.stringify({ courseId, groupId }));
+    sessionStorage.setItem('KIU_PENDING_LMS_GROUP', JSON.stringify({ courseId, groupId }));
     navigate('lms');
 }
 function consumePendingLmsGroupOpen(items = null) {
-    const raw = localStorage.getItem('KIU_PENDING_LMS_GROUP');
+    const raw = sessionStorage.getItem('KIU_PENDING_LMS_GROUP');
     if (!raw) return;
     let pending = null;
     try {
         pending = JSON.parse(raw);
     } catch (error) {
-        localStorage.removeItem('KIU_PENDING_LMS_GROUP');
+        sessionStorage.removeItem('KIU_PENDING_LMS_GROUP');
         return;
     }
     const list = Array.isArray(items) ? items : [];
     const match = list.find(item => item.courseId === pending?.courseId && item.groupId === pending?.groupId);
     if (!match) return;
-    localStorage.removeItem('KIU_PENDING_LMS_GROUP');
+    sessionStorage.removeItem('KIU_PENDING_LMS_GROUP');
     openLMSCourse(`${match.courseId}::${match.groupId}`, `${match.subjectName} | ${match.groupName || match.groupId}`);
 }
 function buildFacultyScheduleCardHtml(item, compact = false) {

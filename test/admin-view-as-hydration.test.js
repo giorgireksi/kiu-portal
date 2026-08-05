@@ -43,18 +43,20 @@ describe('admin view-as hydration', () => {
     });
 
     it('shows missing-persona hints in the luxury role picker for admins', () => {
-        const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
+        const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js')
+            + readSource('assets/js/features/luxury-shell-topbar-runtime.js');
         expect(chromeSource).toContain('function roleSwitcherHasPersona(roleKey');
         expect(chromeSource).toContain('hasImpersonationPersonaForRole');
         expect(chromeSource).toContain('create in Staff');
         expect(chromeSource).toContain("resolvePortalRouteUrl('staff', 'admin')");
     });
 
-    it('renders a view-as banner with exit control while impersonating', () => {
-        const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
+    it('clears stale view-as banner chrome in the unified shell', () => {
+        const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js')
+            + readSource('assets/js/features/luxury-shell-topbar-runtime.js');
         expect(chromeSource).toContain('function syncViewAsBanner()');
         expect(chromeSource).toContain('lux-view-as-banner');
-        expect(chromeSource).toContain('fastRedirectRoleSwitch(USER_ROLES.ADMIN)');
+        expect(chromeSource).toContain("document.body.classList.remove('lux-view-as-active')");
         expect(chromeSource).toMatch(/syncTopbar[\s\S]*syncViewAsBanner/);
     });
 

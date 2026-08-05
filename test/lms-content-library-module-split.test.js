@@ -81,8 +81,9 @@ describe('LMS content library module split', () => {
         expect(contentSource).toContain('class="lms-route-card lms-route-panel-compact lms-concept-guidance-card"');
         expect(contentSource).toContain('class="lms-route-card lms-route-panel-compact lms-concept-card"');
         expect(contentSource).toContain('class="lms-route-card-head lms-concept-card-head"');
-        expect(contentSource).toContain('class="lms-route-pill lms-concept-review-pill ${getLmsConceptReviewPillClass(concept.reviewStatus)}"');
-        expect(contentSource).toContain('class="lms-route-pill is-positive"');
+        expect(contentSource).toContain('lms-concept-review-pill');
+        expect(contentSource).toContain('getLmsConceptReviewPillClass(concept.reviewStatus)');
+        expect(contentSource).toContain("is-positive");
         expect(contentSource).toContain('class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger"');
         expect(contentSource).toContain('class="lms-route-copy lms-route-copy-mt-14 lms-route-copy-prewrap"');
         expect(contentSource).toContain('renderLmsStoredFileAttachmentShell(concept.file');

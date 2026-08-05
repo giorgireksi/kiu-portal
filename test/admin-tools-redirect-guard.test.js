@@ -8,7 +8,8 @@ function readSource(relativePath) {
 
 describe('admin-tools redirect guard', () => {
     it('does not forceReload faculty picker on standalone admin workspace', () => {
-        const chrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const chrome = readSource('assets/js/features/luxury-shell-chrome.js')
+            + readSource('assets/js/features/luxury-shell-topbar-runtime.js');
         expect(chrome).toContain('switchFacultyTheme(optionButton.dataset.facultyOption, { refreshDependentViews: true })');
         expect(chrome).not.toMatch(/switchFacultyTheme\([^)]*forceReload:\s*true/);
     });
@@ -65,9 +66,12 @@ describe('admin-tools redirect guard', () => {
     });
 
     it('throttles heavy luxury sync on admin-tools route', () => {
-        const luxury = readSource('assets/js/features/index-luxury.js');
+        const luxury = readSource('assets/js/features/index-luxury.js')
+            + readSource('assets/js/features/luxury-index-sync-runtime.js');
         expect(luxury).toContain('lux-route-admin-tools');
         expect(luxury).toContain('__luxAdminToolsSyncAllAt');
-        expect(luxury).toMatch(/if \(!onAdminToolsRoute && !onLmsRoute\) \{\s*\n\s*queueLegacyVisualRefresh/);
+        expect(luxury).toContain('!onAdminToolsRoute');
+        expect(luxury).toContain('!onLmsRoute');
+        expect(luxury).toContain('queueLegacyVisualRefresh');
     });
 });

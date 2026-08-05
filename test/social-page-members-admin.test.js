@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { socialModuleUrlToken } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -38,7 +39,7 @@ describe('social page members admin management', () => {
         expect(fingerprint).toContain('page-admin-promote-wizard-next');
         expect(fingerprint).toContain('page-admins-updated');
         expect(router).toContain('page-admin-promote');
-        expect(page).toContain('social-pages.js?v=20260802-page-admin-promote3');
+        expect(page).toContain(socialModuleUrlToken('social-pages.js'));
     });
 
     it('requires a 3-step verification wizard before promoting page admins', () => {

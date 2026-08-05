@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -9,7 +10,7 @@ function readSource(relativePath) {
 describe('LMS whiteboard wave 3b features', () => {
     it('adds undo/redo history stack', () => {
         const history = readSource('assets/js/pages/lms-whiteboard-history-runtime.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(history).toContain('function pushLmsWhiteboardHistoryState');
         expect(history).toContain('function undoLmsWhiteboardHistory');
@@ -19,7 +20,7 @@ describe('LMS whiteboard wave 3b features', () => {
     });
 
     it('supports multi-select with shift-click', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('selectedIds');
         expect(runtime).toContain('function setLmsWhiteboardSelection');
@@ -28,7 +29,7 @@ describe('LMS whiteboard wave 3b features', () => {
     });
 
     it('supports drag marquee multi-select and group move', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain("mode: 'marquee'");
         expect(runtime).toContain('function findLmsWhiteboardElementsInMarquee');
@@ -39,7 +40,7 @@ describe('LMS whiteboard wave 3b features', () => {
 
     it('renders minimap navigation overlay', () => {
         const minimap = readSource('assets/js/pages/lms-whiteboard-minimap-runtime.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(minimap).toContain('function paintLmsWhiteboardMinimap');
         expect(runtime).toContain('lms-whiteboard-minimap');
@@ -54,7 +55,7 @@ describe('LMS whiteboard wave 3b features', () => {
         expect(service).toContain('LMS_WHITEBOARD_REMOVED_ELEMENT_TYPES');
         expect(runtime).not.toContain("['frame', 'fa-object-group', 'Frame']");
         expect(runtime).toContain('function importLmsWhiteboardImageFile');
-        expect(runtime).toContain("if (element.type === 'image')");
+        expect(runtime).toMatch(/element\.type === 'image'/);
         expect(runtime).not.toContain("if (element.type === 'frame')");
     });
 

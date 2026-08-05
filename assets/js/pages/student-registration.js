@@ -1,3 +1,11 @@
+/* READABILITY: student registration runtime: course selection and registration actions. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* FINDABILITY: student registration hub — see docs/findability-index.md#reg-student */
 /* Dedicated student registration logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 

@@ -214,7 +214,8 @@ describe('social-workspace-graph-model', () => {
             );
             for (const name of GEOMETRY_NAMES) {
                 expect(workspace).not.toMatch(new RegExp(`function\\s+${name}\\s*\\(`));
-                expect(workspace).toMatch(new RegExp(`const ${name} = window\\.${name}`));
+                expect(workspace).toContain(name);
+                expect(workspace).toMatch(/__swGraphBatch|KiuSocialWorkspaceGraphModel/);
             }
         });
     });
@@ -285,7 +286,8 @@ describe('social-workspace-graph-model', () => {
             );
             for (const name of DEP_NAMES) {
                 expect(workspace).not.toMatch(new RegExp(`function\\s+${name}\\s*\\(`));
-                expect(workspace).toMatch(new RegExp(`const ${name} = window\\.${name}`));
+                expect(workspace).toContain(name);
+                expect(workspace).toMatch(/__swGraphBatch|KiuSocialWorkspaceGraphModel/);
             }
         });
     });

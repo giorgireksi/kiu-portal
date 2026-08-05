@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsInteractionSource, readLmsInteractionShellRuntime } from './helpers/lms-interaction-source.js';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -46,7 +47,7 @@ describe('LMS interaction message sync', () => {
 
     it('refreshes LMS interaction UI when messenger events arrive', () => {
         const runtimeSource = readSource('assets/js/pages/lms-interaction-messages-runtime.js');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const classroomSource = readLmsInteractionSource();
 
         expect(runtimeSource).toContain('function refreshLmsInteractionMessagesIfActive');
         expect(runtimeSource).toContain("contentArea.dataset.activeLmsTab !== 'interaction'");

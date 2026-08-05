@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardMainRuntime } from './helpers/lms-whiteboard-source.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('lms-whiteboard-pointer-runtime peel', () => {
     it('owns pointer bind/handlers outside the main runtime', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardMainRuntime();
         const pointer = readSource('assets/js/pages/lms-whiteboard-pointer-runtime.js');
         expect(runtime).not.toMatch(/^function onLmsWhiteboardPointerDown\b/m);
         expect(runtime).not.toMatch(/^function bindLmsWhiteboardStagePointerHandlers\b/m);

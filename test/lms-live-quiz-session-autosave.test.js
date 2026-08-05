@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -13,7 +22,7 @@ function extractFunctionBody(source, functionName) {
 
 describe('LMS live quiz session auto-save', () => {
     it('removes Save details and wires title/topic inputs for auto-save', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).not.toContain('Save details');
         expect(uiSource).toContain("data-lms-input=\"updateLmsLiveSessionField(${lmsInlineArg(resourceKey)}, 'title', this.value)\"");
@@ -21,7 +30,7 @@ describe('LMS live quiz session auto-save', () => {
     });
 
     it('persists session fields on input with debounced workspace sync', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const updateBlock = extractFunctionBody(uiSource, 'updateLmsLiveSessionField');
 
         expect(updateBlock).toContain("['title', 'topic'].includes(normalizedField)");
@@ -30,7 +39,7 @@ describe('LMS live quiz session auto-save', () => {
     });
 
     it('flushes DOM session details before switching or creating sessions', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         const switchBlock = extractFunctionBody(uiSource, 'setLmsLiveActiveSession');
         const createBlock = extractFunctionBody(uiSource, 'createLmsLiveSession');
@@ -42,7 +51,7 @@ describe('LMS live quiz session auto-save', () => {
     });
 
     it('keeps title and topic on the per-session model instead of draft snapshots', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const captureBlock = extractFunctionBody(uiSource, 'captureLmsLiveQuizDraftFields');
         const restoreBlock = extractFunctionBody(uiSource, 'restoreLmsLiveQuizDraftFields');
 
@@ -53,7 +62,7 @@ describe('LMS live quiz session auto-save', () => {
     });
 
     it('exports auto-save handlers for delegated LMS input events', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('updateLmsLiveSessionField,');
         expect(uiSource).toContain('function syncLmsLiveSessionDetailsFromDom');

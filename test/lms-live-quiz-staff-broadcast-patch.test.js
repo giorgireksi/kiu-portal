@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -8,8 +17,8 @@ function readSource(relativePath) {
 
 describe('LMS live quiz staff broadcast regional patching', () => {
     it('splits layout and broadcast fingerprints so control clicks avoid full paint', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(workspaceSource).toContain('function getLmsLiveQuizLayoutFingerprint(resourceKey)');
         expect(workspaceSource).toContain('function getLmsLiveQuizBroadcastSignature(resourceKey)');
@@ -30,7 +39,7 @@ describe('LMS live quiz staff broadcast regional patching', () => {
     });
 
     it('routes staff sync through broadcast patch hints instead of full structural paint', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('const LMS_LIVE_BROADCAST_PATCH_HINTS = {');
 
@@ -46,7 +55,7 @@ describe('LMS live quiz staff broadcast regional patching', () => {
     });
 
     it('patches broadcast regions in place for staff control state changes', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('function updateLmsLiveQuizBroadcastUi(resourceKey, hints = {})');
         expect(uiSource).toContain('function renderLmsLiveBroadcastQuestionCardInner(');
@@ -66,7 +75,7 @@ describe('LMS live quiz staff broadcast regional patching', () => {
     });
 
     it('keeps staff control handlers on deferred sync path', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         [
             'pauseLmsLiveQuestion',
@@ -82,7 +91,7 @@ describe('LMS live quiz staff broadcast regional patching', () => {
     });
 
     it('routes podium reveal and dismiss through broadcast patch hints', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain("'podium-reveal': { includeResults: true }");
         expect(uiSource).toContain("'podium-dismiss': {}");

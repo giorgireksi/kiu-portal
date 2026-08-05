@@ -7,6 +7,8 @@ user=__TURN_USERNAME__:__TURN_CREDENTIAL__
 
 realm=__TURN_REALM__
 server-name=__TURN_SERVER_NAME__
+cert=__TURN_CERT_FILE__
+pkey=__TURN_KEY_FILE__
 
 listening-ip=0.0.0.0
 external-ip=__TURN_EXTERNAL_IP__

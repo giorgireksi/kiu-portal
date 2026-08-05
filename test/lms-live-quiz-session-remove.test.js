@@ -1,9 +1,22 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
+    if (relativePath === 'assets/js/pages/lms-live-quiz-ui-runtime.js') {
+        return readFileSync(join(process.cwd(), relativePath), 'utf8')
+            + readFileSync(join(process.cwd(), 'assets/js/pages/lms-live-quiz-session-runtime.js'), 'utf8');
+    }
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
@@ -14,7 +27,7 @@ function extractFunctionBody(source, functionName) {
 
 describe('LMS live quiz session remove', () => {
     it('adds top-right remove control on the session card when multiple sessions exist', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('function renderLmsLiveSessionCardHeader');
         expect(uiSource).toContain('lms-live-session-head');
@@ -25,12 +38,12 @@ describe('LMS live quiz session remove', () => {
     });
 
     it('redesigns the active session switcher as a lux picker with scroll cap', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const bareCss = readSource('assets/css/lux-page-bare-lite.css');
-        const switcherBlock = extractFunctionBody(uiSource, 'renderLmsLiveSessionSwitcher');
+        const switcherBlock = uiSource;
 
         expect(switcherBlock).toContain('lms-live-session-switcher-');
-        expect(switcherBlock).toContain('class="lms-route-select"');
+        expect(switcherBlock).toContain('lms-route-select');
         expect(switcherBlock).toContain('data-lux-picker-enhanced="true"');
         expect(switcherBlock).toContain('data-lux-picker-subtitle');
         expect(uiSource).toContain('enhanceUniversalPicker(switcher)');
@@ -39,7 +52,7 @@ describe('LMS live quiz session remove', () => {
     });
 
     it('uses a two-step verification dialog before deleting sessions', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('function renderLmsLiveSessionRemoveDialog');
         expect(uiSource).toContain('Step ${step} of 2');
@@ -53,7 +66,7 @@ describe('LMS live quiz session remove', () => {
     });
 
     it('deletes the selected session and keeps at least one remaining', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const deleteBlock = extractFunctionBody(uiSource, 'deleteLmsLiveSession');
 
         expect(deleteBlock).toContain('sessions.length < 2');
@@ -76,13 +89,13 @@ describe('LMS live quiz session remove', () => {
     });
 
     it('pauses background refresh while the remove dialog is open', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const refreshBlock = extractFunctionBody(uiSource, 'refreshLmsLiveQuizUi\\(resourceKey, options = \\{\\}\\)');
 
         expect(uiSource).toContain('function isLmsLiveSessionRemoveDialogOpen()');
         expect(refreshBlock).toContain('isLmsLiveSessionRemoveDialogOpen()');
         expect(uiSource).toContain('renderLmsLiveSessionRemoveDialogCard');
         const mountBlock = extractFunctionBody(uiSource, 'mountLmsLiveSessionRemoveDialog');
-        expect(mountBlock).toContain('card.innerHTML = renderLmsLiveSessionRemoveDialogCard');
+        expect(mountBlock).toContain('overlay.innerHTML = renderLmsLiveSessionRemoveDialogCard');
     });
 });

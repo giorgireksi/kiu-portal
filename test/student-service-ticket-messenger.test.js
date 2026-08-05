@@ -33,6 +33,8 @@ describe('student service ticket messenger regressions', () => {
 
     it('wires fullscreen ticket thread modal lifecycle in student-service.js', () => {
         const source = readSource('assets/js/pages/student-service.js')
+            + readSource('assets/js/pages/student-service-ops-runtime.js')
+            + readSource('assets/js/pages/student-service-events.js')
             + readSource('assets/js/pages/student-service-tickets.js');
         const serviceSource = readSource('assets/js/pages/student-service-service.js');
 
@@ -68,6 +70,7 @@ describe('student service ticket messenger regressions', () => {
 
     it('scrolls every visible ticket chat log after replies and modal mounts', () => {
         const source = readSource('assets/js/pages/student-service.js')
+            + readSource('assets/js/pages/student-service-ops-runtime.js')
             + readSource('assets/js/pages/student-service-tickets.js');
 
         expect(source).toContain('function scrollStudentServiceTicketChatLog(');

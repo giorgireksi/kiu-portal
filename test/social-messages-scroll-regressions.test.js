@@ -18,8 +18,9 @@ describe('social-messages-scroll-regressions.test (bare-shell era)', () => {
 
         expect(css).toMatch(/social-neo-scroll-lock[\s\S]*\[data-panel="messages"\][\s\S]*#social-neo-center-region[\s\S]*overflow:\s*hidden/);
         expect(css).toMatch(/social-neo-scroll-lock[\s\S]*\[data-panel="messages"\][\s\S]*#social-neo-center-region > \.social-neo-messages[\s\S]*flex:\s*1 1 0%/);
-        expect(css).toMatch(/social-neo-scroll-lock[\s\S]*\[data-panel="messages"\][\s\S]*:is\([\s\S]*\.social-neo-chat-items[\s\S]*\.social-neo-messages__thread-scroll[\s\S]*overflow-y:\s*auto[\s\S]*min-height:\s*0/);
-        expect(css).toMatch(/social-neo-scroll-lock[\s\S]*\[data-panel="messages"\][\s\S]*:is\([\s\S]*\.social-neo-messages__inbox[\s\S]*\.social-neo-chat-list[\s\S]*overflow:\s*hidden/);
+        expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-chat-items[\s\S]*overflow-y:\s*auto/);
+        expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__thread-scroll[\s\S]*overflow-y:\s*auto/);
+        expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__inbox[\s\S]*\.social-neo-chat-list[\s\S]*overflow:\s*hidden/);
         expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__thread-shell[\s\S]*flex-direction:\s*column/);
         expect(css).toMatch(/\[data-panel="messages"\][\s\S]*\.social-neo-messages__thread-scroll[\s\S]*overflow-y:\s*auto/);
         expect(css).toMatch(/\.social-neo-messages\.is-group-rail-open[\s\S]*grid-template-columns:\s*minmax\(300px, 340px\) minmax\(0, 1fr\)/);

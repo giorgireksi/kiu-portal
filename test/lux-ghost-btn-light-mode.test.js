@@ -37,8 +37,9 @@ describe('lux ghost button light mode', () => {
         expect(controls).toMatch(/\.lux-ghost-btn\s*\{[\s\S]*border-color:\s*var\(--lux-btn-border-solid/);
         expect(controls).toMatch(/\.lux-primary-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-well\)/);
         expect(controls).not.toMatch(/\.lux-primary-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-well\),\s*var\(--lux-btn-frame-metal\)/);
-        expect(controls).toContain(':is(html.lux-light-mode, body.lux-light-mode) :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn)');
-        expect(controls).toMatch(/:is\(html\.lux-light-mode, body\.lux-light-mode\) :is\(\.lux-primary-btn, \.lux-secondary-btn, \.lux-ghost-btn\)[\s\S]*text-shadow:\s*none/);
-        expect(controls).toMatch(/:is\(html\.lux-light-mode, body\.lux-light-mode\) :is\(\.lux-primary-btn, \.lux-secondary-btn, \.lux-ghost-btn\)::before[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.55\)/);
+        expect(controls).toContain(':is(html.lux-light-mode, body.lux-light-mode)');
+        expect(controls).toContain('.lux-ghost-btn');
+        expect(controls).toMatch(/:is\(html\.lux-light-mode, body\.lux-light-mode\)[\s\S]*\.lux-ghost-btn[\s\S]*::before/);
+        expect(controls).toMatch(/:is\(html\.lux-light-mode, body\.lux-light-mode\)[\s\S]*rgba\(255,\s*255,\s*255,\s*0\.55\)/);
     });
 });

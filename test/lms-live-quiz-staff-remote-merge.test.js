@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -119,7 +128,7 @@ describe('LMS live quiz staff remote merge guards', () => {
     });
 
     it('preserves local queue structure when remote echo is stale during structural sync', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(workspaceSource).toContain('const LMS_LIVE_QUEUE_STRUCTURAL_REASONS = new Set([');
         expect(workspaceSource).toContain("'session-deleted'");

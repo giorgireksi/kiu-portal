@@ -134,10 +134,10 @@ describe('social project actuals + baseline', () => {
 
     it('exposes dedicated baseline route and runtime client', () => {
         const routes = readSource('backend/platform/routes/social-routes.js');
-        const runtime = readSource('assets/js/shared/social-runtime-lite.js');
+        const runtime = readSource('assets/js/shared/social-lite-content-runtime.js');
         expect(routes).toContain("app.post('/api/social/projects/:id/baseline'");
         expect(runtime).toContain('/baseline');
-        expect(runtime).toContain('setPortalSocialProjectBaseline');
+        expect(readSource('assets/js/shared/social-runtime-lite.js')).toContain('setPortalSocialProjectBaseline');
     });
 });
 

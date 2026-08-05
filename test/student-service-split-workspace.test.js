@@ -10,6 +10,7 @@ function ssvcHubAndQa() {
     // Concat peels so source regressions still see symbols after hub extraction.
     return [
         'assets/js/pages/student-service-qa.js',
+        'assets/js/pages/student-service-model.js',
         'assets/js/pages/student-service.js',
         'assets/js/pages/student-service-page-runtime.js',
         'assets/js/pages/student-service-inbox-runtime.js',
@@ -67,29 +68,20 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain('function renderStudentServiceCommandBar(');
         expect(source).toContain('function renderStudentServiceChooserHeader(');
         expect(source).toContain('data-student-service-command-bar="true"');
-        expect(source).toContain('student-service-hero-action-cluster');
-        expect(source).toContain('student-service-hero-action--primary');
-        expect(source).toContain('student-service-hero-action--secondary');
-        expect(source).toContain('student-service-hero-shell');
-        expect(source).toContain('student-service-hero-main-shell');
-        expect(source).toContain('student-service-hero-kicker');
-        expect(source).toContain('student-service-hero-title');
-        expect(source).toContain('student-service-hero-copy');
-        expect(source).toContain('student-service-hero-aside-shell');
-        expect(source).toContain('student-service-hero-meta');
-        expect(source).toContain('student-service-hero-badge--role');
-        expect(source).toContain('student-service-hero-badge--lane');
-        expect(source).toContain('student-service-hero-badge--knowledge');
-        expect(source).toContain('student-service-hero-aside-head');
-        expect(source).toContain('student-service-hero-aside-stat-label');
-        expect(source).toContain('student-service-hero-aside-stat-value');
+        expect(source).toContain('student-service-lane-chooser');
+        expect(source).toContain('student-service-lane-choice-grid');
+        expect(source).toContain('student-service-lane-choice-card--service');
+        expect(source).toContain('student-service-lane-choice-card--qa');
+        expect(source).toContain('student-service-lane-choice-kicker');
+        expect(source).toContain('student-service-lane-choice-title');
+        expect(source).toContain('student-service-lane-choice-copy');
+        expect(source).toContain('student-service-lane-choice-stats');
+        expect(source).toContain('student-service-lane-choice-cta');
         expect(source).not.toContain('student-service-summary-section');
         expect(source).not.toContain('student-service-summary-card--signal-a');
         expect(source).not.toContain('renderStudentServiceSummaryMarkup');
         expect(source).not.toContain('data-student-service-page-summary');
-        expect(source).toContain('student-service-workflow-section');
-        expect(source).toContain('student-service-workflow-step-title');
-        expect(source).toContain('student-service-workflow-step-description');
+        expect(source).toContain('student-service-zone-chooser');
         expect(source).toContain('student-service-qa-composer-prompt-title');
         expect(source).toContain('student-service-qa-composer-prompt-copy');
         expect(source).toContain('student-service-qa-compose-form');
@@ -168,7 +160,7 @@ describe('Student Service split workspace regressions', () => {
         expect(source).not.toContain('style="font-size:32px; margin-bottom:16px; display:block;"');
         expect(source).not.toContain('style="--student-service-status-bg:');
         expect(source).not.toContain('class="page-hero-badge admin-chip"');
-        expect(source).toContain('class="admin-hero student-service-hero lux-hero-stage"');
+        expect(source).toContain('student-service-lane-chooser');
         expect(source).not.toContain('class="page-hero-title admin-hero-title"');
         expect(source).not.toContain('class="page-hero-copy admin-hero-subtitle"');
         expect(source).not.toContain('class="admin-hero-actions student-service-hero-actions student-service-hero-action-cluster"');
@@ -192,7 +184,7 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).toContain('assets/css/lux-page-bare-lite.css');
         expectRetiredCss('student-service-route.css');
         expect(studentServiceHtml).toContain('assets/js/shared/lux-scroll-rail.js?v=20260608-scrollrail2');
-        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2');
+        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260805-switchperf2');
         expect(studentServiceHtml).toContain('assets/js/shared/student-service-api-paths.js?v=20260626-ssvc-inbox-filters');
         expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260728-ssrender6');
         expect(studentServiceHtml).toContain('student-service-bootstrap-runtime.js?v=20260729-ssmerge1');
@@ -254,6 +246,7 @@ describe('Student Service split workspace regressions', () => {
         const qaModule = readAsset('assets/js/pages/student-service-qa.js');
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
         const combined = `${source}\n${qaModule}\n${serviceModule}`;
+        const withFilters = source + readAsset('assets/js/pages/student-service-filters.js');
 
         expect(source).toContain('function bindStudentServiceDelegatedInteractions()');
         expect(source).toContain('function handleStudentServiceRootClick(');
@@ -261,7 +254,7 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain("const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260803-sshelp5';");
         expect(source).toContain("const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260728-sssvc4';");
         expect(source).toContain('function bindStudentServiceRealtimeRefreshListener(');
-        expect(source).toContain('window.buildStudentServiceArticleFingerprint = buildStudentServiceArticleFingerprint;');
+        expect(source).toContain('buildStudentServiceArticleFingerprint');
         expect(serviceModule).toContain('buildStudentServiceGuidanceBrowserContext');
         expect(serviceModule).toContain('data-student-service-open-guidance-modal="true"');
         expect(source).toContain('function canShowStudentServiceArticleEditorActions(');
@@ -271,28 +264,27 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain('function buildStudentServiceArticleFingerprint(');
         expect(source).toContain('scheduleKiuRealtimeBootstrap()');
         expect(source).toContain('await syncStudentServiceWorkspaceBackendSession();');
-        expect(source).toContain('function getStudentServicePublicInboxFilterLayout(');
-        expect(source + readAsset('assets/js/pages/student-service-filters.js')).toContain('function getStudentServicePublishedInboxFilterLayout(');
-        expect(source).toContain('function publishStudentServiceInboxFilterLayoutFromEffective(');
-        expect(source).toContain("const STUDENT_SERVICE_PUBLISHED_FILTER_LAYOUT_KEY = 'KIU_STUDENT_SERVICE_PUBLISHED_FILTER_LAYOUT'");
-        expect(source).toContain('async function persistStudentServiceSharedInboxFilterLayout(');
-        expect(source).toContain('maybeSyncStudentServicePersonalInboxFilterLayoutToTeam');
+        expect(withFilters).toContain('function getStudentServicePublishedInboxFilterLayout(');
+        expect(withFilters).toContain('function publishStudentServiceInboxFilterLayoutFromEffective(');
+        expect(withFilters).toContain("const STUDENT_SERVICE_PUBLISHED_FILTER_LAYOUT_KEY = 'KIU_STUDENT_SERVICE_PUBLISHED_FILTER_LAYOUT'");
+        expect(withFilters).toContain('async function persistStudentServiceSharedInboxFilterLayout(');
+        expect(withFilters).toContain('maybeSyncStudentServicePersonalInboxFilterLayoutToTeam');
         expect(source).not.toContain('if (studentServiceInboxFilterLayoutHasDropdowns(sharedLayout)) return;');
-        expect(source).toContain('window.getStudentServicePublishedInboxFilterLayout = getStudentServicePublishedInboxFilterLayout;');
-        expect(source).toContain('window.invalidateStudentServiceRenderSignature = invalidateStudentServiceRenderSignature;');
+        expect(withFilters).toContain('window.getStudentServicePublishedInboxFilterLayout = getStudentServicePublishedInboxFilterLayout;');
+        expect(source).toContain('invalidateStudentServiceRenderSignature,');
         expect(source + readAsset('assets/js/pages/student-service-filters.js')).toContain('function pruneStudentServiceCustomTicketFilters(');
         expect(source).toContain('function invalidateStudentServiceRenderSignature(');
-        expect(source).toContain('publishStudentServiceInboxFilterLayout(normalized);');
-        expect(source).toContain('pruneStudentServiceCustomTicketFilters(normalized);');
+        expect(withFilters).toContain('publishStudentServiceInboxFilterLayout(normalized);');
+        expect(withFilters).toContain('pruneStudentServiceCustomTicketFilters(normalized);');
         expect(serviceModule).toContain('getStudentServicePublishedInboxFilterLayout()');
         expect(serviceModule).toContain('layout: publishedLayout');
         expect(serviceModule).toContain('window.enhanceUniversalPickers(shell.request)');
         expect(serviceModule).toContain('window.renderStudentServiceInboxFiltersMarkup');
-        expect(serviceModule).toContain('window.getStudentServiceFilteredStaffTickets');
+        expect(serviceModule).toContain('getStudentServiceFilteredStaffTickets(');
         expect(serviceModule).not.toContain('data-student-service-ticket-filter-field="ticketSearch"');
         expect(source + readAsset('assets/js/pages/student-service-filters.js')).toContain('function renderStudentServiceInboxDropdownFiltersMarkup(');
-        expect(source).toContain('function buildStudentServiceTicketIntakeFromInboxFilters(');
-        expect(source).toContain('window.renderStudentServiceInboxDropdownFiltersMarkup = renderStudentServiceInboxDropdownFiltersMarkup;');
+        expect(withFilters).toContain('function buildStudentServiceTicketIntakeFromInboxFilters(');
+        expect(withFilters).toContain('__kiuSsApi.renderStudentServiceInboxDropdownFiltersMarkup = renderStudentServiceInboxDropdownFiltersMarkup;');
         expect(serviceModule).toContain('student-service-request-filters');
         expect(serviceModule).not.toContain('Auto-filled context');
         expect(serviceModule).not.toContain('student-service-request-meta');
@@ -315,7 +307,8 @@ describe('Student Service split workspace regressions', () => {
         expect(combined).toContain('data-student-service-question-filter-input="qaSearch"');
         expect(combined).toContain('data-student-service-open-question=');
         expect(combined).toContain('data-student-service-panel-switch=');
-        expect(combined).toContain('data-student-service-ticket-filter-input=');
+        expect(combined + readAsset('assets/js/pages/student-service-filters.js'))
+            .toContain('data-student-service-ticket-filter-input=');
         expect(combined).toContain('data-student-service-save-article=');
         expect(serviceModule).not.toContain('id="student-service-article-topic"');
         expect(serviceModule).not.toContain('data-lux-picker-label="Topic"');
@@ -355,7 +348,8 @@ describe('student-service button cascade guardrails', () => {
 
     it('student-service.js keeps Q&A search-only without dimension filter pills', () => {
         const source = ssvcHubAndQa();
-        const qaModule = readAsset('assets/js/pages/student-service-qa.js');
+        const qaModule = readAsset('assets/js/pages/student-service-qa.js')
+            + readAsset('assets/js/pages/student-service-qa-thread-runtime.js');
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
         const combined = `${source}\n${qaModule}\n${serviceModule}`;
 
@@ -417,10 +411,11 @@ describe('lane switcher render recovery', () => {
     });
 
     it('lane bodies replace shell children when switching between QA and service modules', () => {
-        const qaModule = readAsset('assets/js/pages/student-service-qa.js');
+        const qaModule = readAsset('assets/js/pages/student-service-qa.js')
+            + readAsset('assets/js/pages/student-service-qa-thread-runtime.js');
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
 
-        expect(qaModule).toContain('container.replaceChildren(range.createContextualFragment(');
+        expect(qaModule).toContain('body.replaceChildren(range.createContextualFragment(');
         expect(qaModule).toContain('data-student-service-student-qa-shell="1"');
         expect(serviceModule).toContain('container.replaceChildren(range.createContextualFragment(');
         expect(serviceModule).toContain('data-student-service-student-hub-shell="1"');
@@ -437,8 +432,8 @@ describe('lane switcher render recovery', () => {
         expect(studentServiceJs).toContain('{ debounce: event.target.type === \'search\' }');
         expect(serviceModule).toContain('data-lux-transparency-exempt="1"');
         expect(serviceModule).toContain('data-student-service-draft-ticket-field="message"');
-        expect(serviceModule).toContain('>${ssEscape(draft.message)}</textarea>');
-        expect(serviceModule).toContain('`student-service-student-hub:request:${selectedArea.id}:${JSON.stringify(ui.customTicketFilters || {})}:${JSON.stringify(publishedLayout?.filters || [])}`');
+        expect(serviceModule).toContain('${ssEscape(safeDraft.message)}</textarea>');
+        expect(serviceModule).toContain('`student-service-student-hub:request:${selectedArea.id}:');
         expect(serviceModule).not.toContain('${draft.title || \'\'');
         expect(serviceModule).not.toContain('${draft.message || \'\'');
     });
@@ -455,7 +450,7 @@ describe('student service bootstrap and module recovery guardrails', () => {
         expect(source).toContain('data-student-service-retry-bootstrap="1"');
         expect(source).toContain('STUDENT_SERVICE_RUNTIME.bootstrapErrorMessage');
         expect(source).toContain('STUDENT_SERVICE_RUNTIME.loadFailed ? renderStudentServiceBootstrapErrorBanner() : \'\'');
-        expect(source).toContain("const retryBootstrapButton = event.target.closest('[data-student-service-retry-bootstrap]');");
+        expect(source).toContain("const retryBootstrapButton = studentServiceEventEl(event, '[data-student-service-retry-bootstrap]');");
     });
 
     it('recovers service module load failures with retry controls', () => {
@@ -469,7 +464,7 @@ describe('student service bootstrap and module recovery guardrails', () => {
         expect(source).toContain('.catch(() => handleStudentServiceServiceModuleLoadFailure(container, \'student\'))');
         expect(source).toContain('.catch(() => handleStudentServiceServiceModuleLoadFailure(container, \'responder\'))');
         expect(source).toContain('.catch(() => handleStudentServiceServiceModuleLoadFailure(container, \'service\'))');
-        expect(source).toContain("const retryServiceModuleButton = event.target.closest('[data-student-service-retry-service-module]');");
+        expect(source).toContain("const retryServiceModuleButton = studentServiceEventEl(event, '[data-student-service-retry-service-module]');");
     });
 
     it('routes internal notes and handoff writes through manifest API paths', () => {
@@ -531,10 +526,10 @@ describe('Q&A hub interaction render guardrails', () => {
         expect(source).toContain('function scheduleStudentServiceModuleRerenderIfNeeded()');
         expect(source).toContain('function renderStudentServiceQaModuleLoadError(');
         expect(source).toContain('data-student-service-retry-qa-module');
-        expect(source).toContain("actionType: 'composer'");
+        expect(source).toContain('STUDENT_SERVICE_STUDENT_QA_HUB_STUB');
         expect(source).toContain('function captureStudentServiceLazyModuleStubs()');
         expect(source).toContain('STUDENT_SERVICE_STUDENT_QA_HUB_STUB');
-        expect(source).toContain('window.renderStudentServiceStudentQaHub !== STUDENT_SERVICE_STUDENT_QA_HUB_STUB');
+        expect(source).toContain('window.renderStudentServiceStudentQaHub !== studentQaHubStub');
         expect(source).toContain('window.__studentServiceStaffQaFeedGuard = STUDENT_SERVICE_STAFF_QA_FEED_STUB');
         expect(serviceModule).toContain('window.__studentServiceStaffQaFeedGuard');
         expect(qaModule).toContain('typeof window.renderStudentServiceStudentQaHub === \'function\'');

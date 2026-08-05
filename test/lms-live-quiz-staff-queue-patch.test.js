@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -13,7 +22,7 @@ function extractFunctionBody(source, functionName) {
 
 describe('LMS live quiz staff queue regional patching', () => {
     it('splits queue signature from shell layout fingerprint', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(workspaceSource).toContain('function getLmsLiveQuizQueueSignature(resourceKey)');
         expect(workspaceSource).toContain('function storeLmsLiveQuizQueueSignature(resourceKey');
@@ -27,7 +36,7 @@ describe('LMS live quiz staff queue regional patching', () => {
     });
 
     it('routes queue mutations through immediate sync and smart refresh', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('function syncStaffLmsLiveQuizQueueChange(resourceKey, reason');
         expect(uiSource).toContain('const LMS_LIVE_QUEUE_PATCH_HINTS = {');
@@ -52,7 +61,7 @@ describe('LMS live quiz staff queue regional patching', () => {
     });
 
     it('patches queue region in place for staff queue edits', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('function updateLmsLiveQuizQueueUi(resourceKey, hints = {})');
         expect(uiSource).toContain("patchLmsLiveQuizRegion(contentArea, 'queue', renderLmsLiveStaffQueueMarkup(");
@@ -63,7 +72,7 @@ describe('LMS live quiz staff queue regional patching', () => {
     });
 
     it('routes refresh when shell is stable but queue signature changes', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const refreshBlock = extractFunctionBody(uiSource, 'refreshLmsLiveQuizUi\\(resourceKey, options = \\{\\}\\)');
 
         expect(refreshBlock).toContain('getLmsLiveQuizQueueSignature');
@@ -75,14 +84,14 @@ describe('LMS live quiz staff queue regional patching', () => {
     });
 
     it('keeps presentation toggle on structural render path', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const presentBlock = extractFunctionBody(uiSource, 'toggleLmsLivePresentationMode\\(resourceKey\\)');
         expect(presentBlock).toContain('renderLmsLiveQuizSection(resourceKey)');
     });
 
     it('uses live-first queue session and verifies delete removal', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(workspaceSource).toContain('function getLmsLiveStaffQueueSession(resourceKey)');
         expect(workspaceSource).toMatch(/getLmsLiveStaffLiveSession[\s\S]*return liveSession[\s\S]*getLmsLiveStaffEditingSession/);

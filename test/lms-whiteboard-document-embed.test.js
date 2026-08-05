@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -20,8 +21,8 @@ describe('LMS whiteboard document embed', () => {
 
     it('loads document runtime before main whiteboard runtime', () => {
         const html = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        const docIndex = html.indexOf('lms-whiteboard-document-runtime.js?v=20260729-wbdocresize6');
-        const mainIndex = html.indexOf('lms-whiteboard-runtime.js?v=20260729-wbdocresize6');
+        const docIndex = html.indexOf('lms-whiteboard-document-runtime.js?v=20260729-wbdocmode5');
+        const mainIndex = html.indexOf('lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
 
         expect(docIndex).toBeGreaterThan(-1);
         expect(mainIndex).toBeGreaterThan(docIndex);
@@ -29,7 +30,7 @@ describe('LMS whiteboard document embed', () => {
 
     it('accepts pdf, word, excel, and image uploads in the file input', () => {
         const sessionRuntime = readSource('assets/js/pages/lms-whiteboard-session-runtime.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const docRuntime = readSource('assets/js/pages/lms-whiteboard-document-runtime.js');
 
         expect(sessionRuntime).toContain('accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv');

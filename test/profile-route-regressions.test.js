@@ -19,7 +19,7 @@ describe('profile route regressions', () => {
 
     it('keeps left-nav and account menus on personal-data instead of profile-view', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
-        const shell = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shell = readSource('assets/js/features/luxury-shell-picker-runtime.js');
         const appJs = readSource('assets/js/app/app.js');
 
         expect(luxury).not.toContain("['profile-view', 'Profile', 'fas fa-user-circle']");

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { readSocialPageChain } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('social visual shell sync regressions', () => {
     it('runs full transparency sync on social boot and shell reveal', () => {
-        const page = readSource('assets/js/pages/social-page.js');
+        const page = readSocialPageChain();
         const feed = readSource('assets/js/pages/social-page-feed-runtime.js');
         const shell = readSource('assets/js/pages/social-page-shell-runtime.js');
 
@@ -20,10 +21,10 @@ describe('social visual shell sync regressions', () => {
     });
 
     it('registers merged hero shells in transparency observer selectors', () => {
-        const utilities = readSource('assets/js/shared/utilities.js');
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
 
-        expect(utilities).toContain("'.social-neo-community-hero'");
-        expect(utilities).toContain("'.social-neo-workspace-hero'");
-        expect(utilities).toContain("'.social-neo-feed-header-card'");
+        expect(transparency).toContain("'.social-neo-community-hero'");
+        expect(transparency).toContain("'.social-neo-workspace-nav-btn'");
+        expect(transparency).toContain("'.social-neo-feed-hero-tab'");
     });
 });

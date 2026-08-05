@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { socialModuleUrlToken } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -80,7 +81,7 @@ describe('social-photography-regressions (bare-shell era)', () => {
         expect(router).toContain("kind === 'photography-delete'");
         const page = readSource('assets/js/pages/social-page.js');
         expect(page).toMatch(/deletePortalSocialPost/);
-        expect(page).toContain('social-photography.js?v=20260802-modulepins1');
+        expect(page).toContain(socialModuleUrlToken('social-photography.js'));
     });
 
     it('photography explore feed uses centered scroll column with square media tiles', () => {
@@ -119,7 +120,7 @@ describe('social-photography-regressions (bare-shell era)', () => {
         expect(photo).toContain('resolvePhotographyUploadFacultyCode(state(), form)');
         expect(photo).toContain('resolvePhotographyUploadFacultyCode(live, form)');
         expect(chrome).toMatch(/function socialDefaultCreateFaculty\(runtime\)[\s\S]{0,400}socialBrowseFacultyCodes\(\)\[0\]/);
-        expect(page).toContain('social-photography.js?v=20260802-modulepins1');
+        expect(page).toContain(socialModuleUrlToken('social-photography.js'));
     });
 
     it('photography edit uses author-only guard, metadata dialog, and update hook', () => {

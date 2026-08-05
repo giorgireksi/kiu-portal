@@ -216,6 +216,9 @@ function setLmsActiveSection(sectionType) {
     if (!normalized) return;
     if (currentLmsSectionType === normalized) return;
     currentLmsSectionType = normalized;
+    if (typeof window.persistLmsStandaloneViewState === 'function') {
+        window.persistLmsStandaloneViewState({ sectionType: normalized });
+    }
     syncLmsSectionSwitchPresentation();
     if (typeof handleLmsPersonalDashboardSectionSwitch === 'function') handleLmsPersonalDashboardSectionSwitch();
     const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.id?.replace(/^tab-/, '') || 'interaction';

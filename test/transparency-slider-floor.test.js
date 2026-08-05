@@ -8,12 +8,12 @@ function readSource(relativePath) {
 
 describe('transparency slider floor', () => {
     it('maps slider 0% to former 1% fill ratio via shared helper', () => {
-        const utilitiesSource = readSource('assets/js/shared/utilities.js');
-        const luxurySource = readSource('assets/js/features/index-luxury.js');
+        const utilitiesSource = readSource('assets/js/shared/lux-transparency.js');
+        const luxurySource = readSource('assets/js/shared/lux-transparency.js');
         const html = readSource('index.html');
 
-        expect(html).toContain('assets/js/shared/utilities.js?v=20260609-lightmode-restore1');
-        expect(html).toContain('assets/js/features/index-luxury.js?v=20260609-lightmode-restore1');
+        expect(html).toContain('assets/js/shared/utilities.js?v=20260725-portalmodal1');
+        expect(html).toContain('assets/js/features/index-luxury.js?v=20260730-echancellery1');
 
         expect(utilitiesSource).toContain('function mapLuxuryTransparencyFillRatio(value)');
         expect(utilitiesSource).toContain('return (percentage + 1) / 101');

@@ -35,7 +35,7 @@ describe('student academic profile runtime', () => {
 
         expect(html).toContain('assets/js/shared/student-academic-helpers.js?v=20260705-student-academic13');
         expect(html).toContain('assets/js/pages/student-academic-runtime.js?v=20260729-acadoverview1');
-        expect(html).toContain('assets/js/pages/students-command-center.js?v=20260726-frostedpopup1');
+        expect(html).toContain('assets/js/pages/students-command-center.js?v=20260731-hubrecords2');
         expect(runtime).toContain('hydrateStudentAcademicRecord');
         expect(runtime).toContain('toggleMobilityTransferPanel');
     });

@@ -8,9 +8,15 @@ function readSource(relativePath) {
 
 describe('luxury shell chrome split', () => {
     it('moves shell chrome owners out of index-luxury and into the dedicated shell runtime', () => {
-        const luxury = readSource('assets/js/features/index-luxury.js');
+        const luxury = readSource('assets/js/features/index-luxury.js')
+            + readSource('assets/js/features/luxury-index-runtime.js');
         const indexRuntime = readSource('assets/js/features/luxury-index-runtime.js');
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = [
+            'assets/js/features/luxury-shell-chrome.js',
+            'assets/js/features/luxury-shell-topbar-runtime.js',
+            'assets/js/features/luxury-shell-picker-runtime.js',
+            'assets/js/features/luxury-shell-studio-runtime.js',
+        ].map(readSource).join('\n');
         const indexHtml = readSource('index.html');
 
         expect(indexHtml).toMatch(/assets\/js\/features\/luxury-shell-chrome\.js(\?v=[^"']+)?/);
@@ -41,7 +47,7 @@ describe('luxury shell chrome split', () => {
         expect(luxury).not.toContain('getMessengerSnapshot,\n        buildHomeModel');
         expect(luxury).toContain('toggleSidebar');
         expect(luxury).toContain("window.toggleSidebar = typeof toggleSidebar === 'function' ? toggleSidebar : window.toggleSidebar;");
-        expect(luxury).toContain("if (typeof window.buildHomeWidgetDefinitions !== 'function') {");
+        expect(luxury).toContain("if (typeof exports?.buildHomeWidgetDefinitions === 'function') {");
         expect(indexRuntime).toContain("buildHomeWidgetDefinitions: typeof buildHomeWidgetDefinitions === 'function' ? buildHomeWidgetDefinitions : null");
         expect(indexRuntime).toContain('window.buildHomeWidgetDefinitions = exports.buildHomeWidgetDefinitions;');
         expect(luxury).not.toContain('function renderNav() {');

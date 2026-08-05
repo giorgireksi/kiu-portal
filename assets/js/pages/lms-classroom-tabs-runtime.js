@@ -1,3 +1,11 @@
+/* READABILITY: LMS classroom tabs runtime: lazy module manifests and tab orchestration. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* FINDABILITY: LMS classroom tabs / lazy modules — see docs/findability-index.md#lms-tabs */
 /* LMS classroom tabs — Wave 25 KiuLmsClassroomTabs */
 window.KiuLmsClassroomTabs=window.KiuLmsClassroomTabs||{};const __kiuLmsTabsApi=window.KiuLmsClassroomTabs;window.__kiuLmsTabsApi=__kiuLmsTabsApi;
@@ -157,10 +165,62 @@ function loadLmsScriptOnce(url) {
     });
 }
 
+function preloadLmsRuntimeScripts(urls = [], relation = 'preload') {
+    if (typeof document === 'undefined' || !Array.isArray(urls)) return;
+    const existingSources = new Set(
+        Array.from(document.querySelectorAll('script[src], link[href]'))
+            .map((node) => node.src || node.href)
+            .filter(Boolean)
+    );
+    urls.forEach((url) => {
+        const absoluteUrl = new URL(url, window.location.href).href;
+        if (existingSources.has(absoluteUrl)) return;
+        const isModule = /\/(?:lms-quiz-model|lms-whiteboard-model)\.js(?:\?|$)/.test(absoluteUrl);
+        const hint = document.createElement('link');
+        hint.rel = relation === 'preload' && isModule ? 'modulepreload' : relation;
+        if (!isModule) hint.as = 'script';
+        hint.href = absoluteUrl;
+        hint.dataset.kiuLmsRuntimePreload = '1';
+        document.head.appendChild(hint);
+        existingSources.add(absoluteUrl);
+    });
+}
+
+function getLmsRuntimeUrlsForTab(tab) {
+    const normalized = String(tab || '').trim().toLowerCase();
+    const moduleUrls = {
+        gradebook: LMS_GRADEBOOK_MODULE_URLS,
+        'live-quiz': LMS_LIVE_QUIZ_MODULE_URLS,
+        whiteboard: LMS_WHITEBOARD_MODULE_URLS,
+        quiz: LMS_QUIZ_MODULE_URLS,
+        calls: LMS_CALLS_MODULE_URLS,
+        interaction: LMS_INTERACTION_MODULE_URLS,
+        materials: LMS_CONTENT_MODULE_URLS,
+        concepts: LMS_CONTENT_MODULE_URLS,
+        workspace: LMS_CONTENT_MODULE_URLS
+    };
+    return moduleUrls[normalized] || [];
+}
+
+function preloadLmsRuntimeForTab(tab) {
+    const urls = getLmsRuntimeUrlsForTab(tab);
+    preloadLmsRuntimeScripts(urls);
+    return urls.length > 0;
+}
+
+function prefetchLmsRuntimeForTab(tab) {
+    const urls = getLmsRuntimeUrlsForTab(tab);
+    preloadLmsRuntimeScripts(urls, 'prefetch');
+    return urls.length > 0;
+}
+
 function ensureLmsRuntimeModules(key, urls, isReady, label) {
     if (typeof isReady === 'function' && isReady()) return Promise.resolve(true);
     if (lmsRuntimeEnsurePromises[key]) return lmsRuntimeEnsurePromises[key];
 
+    // Preload every file together, then execute them in dependency order below.
+    // This removes the network waterfall without racing classic-script exports.
+    preloadLmsRuntimeScripts(urls);
     lmsRuntimeEnsurePromises[key] = urls
         .reduce((chain, url) => chain.then(() => loadLmsScriptOnce(url)), Promise.resolve())
         .then(() => {
@@ -284,17 +344,21 @@ __kiuLmsTabsExpose({
     ensureLmsContentRuntime,
     isLmsPersonalDashboardRuntimeReady,
     ensureLmsPersonalDashboardRuntime,
+    preloadLmsRuntimeForTab,
+    prefetchLmsRuntimeForTab,
 });
 if (typeof window.syncLmsPersonalDashboardChromeButton !== 'function') {
     window['syncLmsPersonalDashboardChromeButton'] = syncLmsPersonalDashboardChromeButtonLite;
 }
 
 function closeLMSGroups() {
+    if (typeof window.clearLmsStandaloneViewState === 'function') window.clearLmsStandaloneViewState();
     setLmsPageSectionShown(document.getElementById('page-lms-groups'), false);
     setLmsPageSectionShown(document.getElementById('page-lms'), true);
 }
 
 function backToLMSGroups() {
+    if (typeof window.clearLmsStandaloneViewState === 'function') window.clearLmsStandaloneViewState();
     if (typeof closeLmsPersonalDashboard === 'function') closeLmsPersonalDashboard();
     if (typeof syncLmsPersonalDashboardChromeButton === 'function') syncLmsPersonalDashboardChromeButton();
     setLmsPageSectionShown(document.getElementById('page-lms-inner'), false);

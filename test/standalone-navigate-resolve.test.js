@@ -14,15 +14,15 @@ describe('standalone navigate resolve', () => {
         expect(navigation).toContain("if (normalizedPageId === 'calendar') return 'timetable';");
         expect(navigation).toContain("return 'faculty-gradebook';");
         expect(navigation).toContain('resolveAliasPageId(pageId, role)');
-        expect(navigation).toContain('function assignStandalonePortalRoute(pageId, role = getEffectiveUserRole())');
+        expect(navigation).toContain('function assignStandalonePortalRoute(pageId, role = getEffectiveUserRole(), options = {})');
     });
 
     it('hard-navigates standalone hosts through resolvePortalRouteUrl before SPA logic', () => {
         const navigation = readSource('assets/js/features/navigation.js');
 
-        expect(navigation).toMatch(
-            /if \(!isIndexPortalShell\(\)\) \{[\s\S]*?assignStandalonePortalRoute\(pageId, effectiveRole\);[\s\S]*?return;/
-        );
+        expect(navigation).toContain('if (!isIndexPortalShell()) {');
+        expect(navigation).toContain('assignStandalonePortalRoute(');
+        expect(navigation).toContain('return;');
     });
 
     it('allows gradebook alias in access checks for teaching roles', () => {
@@ -35,7 +35,8 @@ describe('standalone navigate resolve', () => {
 
 describe('gradebook staff return context', () => {
     it('persists and restores staff session around student portal preview', () => {
-        const gradebook = readSource('assets/js/pages/gradebook.js');
+        const gradebook = readSource('assets/js/pages/gradebook-workspace.js')
+            + readSource('assets/js/pages/gradebook-staff.js');
 
         expect(gradebook).toContain("const KIU_GRADEBOOK_STAFF_RETURN_KEY = 'KIU_GRADEBOOK_STAFF_RETURN';");
         expect(gradebook).toContain('function persistGradebookStaffReturnContext()');

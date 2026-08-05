@@ -38,6 +38,12 @@ function bootShellChromeRuntime() {
     return 1;
   };
   dom.window.getLuxurySharedConfig = () => ({});
+  dom.window.escapeHtml = (value) => String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
   dom.window.closeStudio = () => {};
   dom.window.closePickerPanels = () => {};
   dom.window.toggleSidebar = vi.fn();

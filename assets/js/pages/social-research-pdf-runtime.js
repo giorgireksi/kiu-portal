@@ -265,6 +265,54 @@
         return mammothLoading;
     }
 
+    function sanitizeResearchDocumentHtml(value = '') {
+        const template = document.createElement('template');
+        template.innerHTML = String(value || '');
+        const allowedTags = new Set([
+            'A', 'B', 'BLOCKQUOTE', 'BR', 'CODE', 'EM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+            'HR', 'I', 'IMG', 'LI', 'OL', 'P', 'PRE', 'S', 'SPAN', 'STRONG', 'TABLE', 'TBODY',
+            'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'U', 'UL'
+        ]);
+        template.content.querySelectorAll('script,style,iframe,object,embed,form,link,meta,svg,math').forEach((node) => node.remove());
+        template.content.querySelectorAll('*').forEach((node) => {
+            if (!allowedTags.has(node.tagName)) {
+                node.replaceWith(...Array.from(node.childNodes));
+                return;
+            }
+            Array.from(node.attributes).forEach((attribute) => {
+                const name = attribute.name.toLowerCase();
+                const raw = attribute.value.trim();
+                if (name.startsWith('on') || name === 'style' || name === 'srcset') {
+                    node.removeAttribute(attribute.name);
+                    return;
+                }
+                if (name === 'href') {
+                    try {
+                        const url = new URL(raw, window.location.origin);
+                        if (!['http:', 'https:', 'mailto:'].includes(url.protocol)) node.removeAttribute(attribute.name);
+                    } catch (error) {
+                        node.removeAttribute(attribute.name);
+                    }
+                    return;
+                }
+                if (name === 'src') {
+                    const isSafeDataImage = raw.startsWith('data:image/');
+                    try {
+                        const url = new URL(raw, window.location.origin);
+                        if (!isSafeDataImage && !['http:', 'https:'].includes(url.protocol)) node.removeAttribute(attribute.name);
+                    } catch (error) {
+                        node.removeAttribute(attribute.name);
+                    }
+                }
+            });
+            if (node.tagName === 'A') {
+                node.setAttribute('rel', 'noopener noreferrer');
+                node.setAttribute('target', '_blank');
+            }
+        });
+        return template.innerHTML;
+    }
+
     async function ensureJsZip() {
         if (window.JSZip) return window.JSZip;
         if (!jsZipLoading) {
@@ -630,7 +678,8 @@
         if (token !== paintToken) return;
         clearPdfDocCache();
         activeSlideCount = 0;
-        host.innerHTML = `<div class="social-neo-research-doc-view lux-scrollbar">${result.value || '<p class="lux-panel-copy">Empty document.</p>'}</div>`;
+        const safeHtml = sanitizeResearchDocumentHtml(result.value || '<p class="lux-panel-copy">Empty document.</p>');
+        host.innerHTML = `<div class="social-neo-research-doc-view lux-scrollbar">${safeHtml}</div>`;
     }
 
     async function renderViewer(options = {}) {

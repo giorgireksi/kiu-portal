@@ -35,14 +35,14 @@ describe('global interaction performance guardrails', () => {
   it('does not full-scan every DOM mutation for glass transparency refreshes', () => {
     const utilities = readSource('assets/js/shared/lux-transparency.js');
 
-    expect(utilities).toContain('const SHARED_TRANSPARENCY_OBSERVER_SELECTOR = SHARED_TRANSPARENCY_OBSERVER_SELECTORS.join');
-    expect(utilities).toContain('node.querySelector(SHARED_TRANSPARENCY_OBSERVER_SELECTOR)');
+    expect(utilities).toContain('const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [');
+    expect(utilities).toContain('node.querySelector?.');
     expect(utilities).toContain("typeof window.requestIdleCallback === 'function'");
     expect(utilities).not.toContain('var _debounceMs = transparency > 60 ? 16 : 300;');
     expect(utilities).toContain('function setupTransparencyObserver()');
     expect(utilities).toContain('window.__transparencyObserver');
     expect(utilities).toContain('isLuxTransparencyExemptSubtree');
-    expect(utilities).toContain('node.matches(SHARED_TRANSPARENCY_OBSERVER_SELECTOR)');
+    expect(utilities).toContain('node.matches?.(SHARED_TRANSPARENCY_OBSERVER_SELECTORS.join');
   });
 
   it('avoids duplicate syncAll boot on standalone LMS routes', () => {
@@ -807,7 +807,7 @@ describe('global interaction performance guardrails', () => {
     // Global bare blur kill forbidden; scoped admin-tools page-shell demotion is OK.
     expect(bareLite).not.toMatch(/body\.lux-page-bare\s*\{[^}]*backdrop-filter:\s*none/);
     expect(bareLite).toContain('.lux-page-shell[data-lux-layout-only="1"]');
-    expect(bareLite).not.toMatch(/backdrop-filter:\s*var\(--lux-panel-blur-filter/);
+    expect(bareLite).not.toMatch(/body\.lux-page-bare\s*\{[^}]*backdrop-filter:\s*var\(--lux-panel-blur-filter/);
     expect(shellCss).toMatch(/body\.lux-page-bare \.lux-page-shell[\s\S]*backdrop-filter:\s*var\(--lux-panel-blur-filter/);
     expect(shellCss).not.toMatch(/body\.lux-page-bare \.lux-page-shell :is\(\.page-hero, \.lux-panel, \.lux-alert\)[\s\S]*backdrop-filter:\s*none/);
     const homeRole = readSource('assets/css/index-home-role.css');

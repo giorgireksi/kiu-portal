@@ -1,3 +1,11 @@
+/* READABILITY: student service QA runtime: question threads and staff response flows. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 (function initStudentServiceQaModule() {
     const studentQaHubStub = window.__studentServiceStudentQaHubStub;
     const staffQaFeedStub = window.__studentServiceStaffQaFeedStub;

@@ -1,21 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readSocialPageChain, readWorkspaceSurface } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
-function readWorkspaceSurface() {
-    return readSource('assets/js/pages/social-workspace.js')
-        + readSource('assets/js/pages/social-workspace-events.js');
-}
-
 describe('social workspace PM + budget restructure', () => {
     it('drops Plan/Deliverables/Check-ins tabs and keeps Budget instead of Outcome', () => {
-        const source = readSource('assets/js/pages/social-page.js');
+        const source = readSocialPageChain();
         const _wsClassic = readSource('assets/js/pages/social-workspace.js');
-        const classicBlock = readSource('assets/js/pages/social-workspace-panel.js');
+        const classicBlock = readSource('assets/js/pages/social-workspace-panel.js')
+            + readSource('assets/js/pages/social-workspace-panel-budget-runtime.js');
 
         expect(classicBlock).not.toContain("['plan', 'Plan'");
         expect(classicBlock).not.toContain("['files', 'Deliverables'");
@@ -39,7 +36,8 @@ describe('social workspace PM + budget restructure', () => {
 
     it('renders the budget tab with currency selector, cap, categories and expense log', () => {
         const _wsClassic = readSource('assets/js/pages/social-workspace.js');
-        const classicBlock = readSource('assets/js/pages/social-workspace-panel.js');
+        const classicBlock = readSource('assets/js/pages/social-workspace-panel.js')
+            + readSource('assets/js/pages/social-workspace-panel-budget-runtime.js');
 
         expect(classicBlock).toContain('data-form="project-budget-settings"');
         expect(classicBlock).toContain('name="projectBudgetCurrency"');
@@ -58,7 +56,7 @@ describe('social workspace PM + budget restructure', () => {
     });
 
     it('wires budget form submit handlers and action handlers', () => {
-        const source = readSource('assets/js/pages/social-page.js');
+        const source = readSocialPageChain();
 
         expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-budget-settings'/);
         expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-budget-category-add'/);
@@ -81,9 +79,9 @@ describe('social workspace PM + budget restructure', () => {
     });
 
     it('leaves the portfolio panel and showcase publish action untouched', () => {
-        const source = readSource('assets/js/pages/social-page.js');
+        const source = readSocialPageChain();
 
-        expect(source).toContain('function renderProjectsPanel');
+        expect((source + readSource('assets/js/pages/social-page-feed-runtime.js'))).toContain('function renderProjectsPanel');
         expect((source + readWorkspaceSurface())).toContain('project-showcase-publish');
         expect((source + readWorkspaceSurface())).toContain('publishPortalSocialProjectShowcase');
     });

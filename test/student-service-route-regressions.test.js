@@ -25,7 +25,7 @@ describe('student-service route regressions', () => {
 
     it('loads shared layout primitives and ssshare7 cache', () => {
         const html = readSource('student-service.html');
-        expect(html).toContain('ssshare7');
+        expect(html).toContain('lux-fouc-ht.css?v=');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('lux-fouc-ht.css');
     });

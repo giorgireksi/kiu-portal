@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +17,7 @@ function readSource(relativePath) {
 
 describe('LMS live quiz tab persistence', () => {
     it('detects active LMS tabs from content area dataset', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(workspaceSource).toContain('function isLmsActiveTab(tab)');
         expect(workspaceSource).toContain("contentArea?.dataset?.activeLmsTab");
@@ -16,7 +25,7 @@ describe('LMS live quiz tab persistence', () => {
     });
 
     it('guards against stale remote workspace overwrites and fetch generations', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(workspaceSource).toContain('function shouldApplyRemoteLmsLiveQuizWorkspace');
         expect(workspaceSource).toContain('function isRemoteLmsLiveQuizWorkspaceNewer');
@@ -35,8 +44,9 @@ describe('LMS live quiz tab persistence', () => {
 
     it('skips cache-only restore for live-quiz and invalidates cache on save', () => {
         const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js')
+            + readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(shellSource).toContain("tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && tab !== 'quiz' && tab !== 'monitoring' && LMS_TAB_RENDER_CACHE[cacheKey]");
         expect(shellSource).toContain('function invalidateLmsLiveQuizTabCache');
@@ -45,8 +55,8 @@ describe('LMS live quiz tab persistence', () => {
     });
 
     it('shows a loading shell before server fetch and syncs tab cache after paint', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(uiSource).toContain('function renderLmsLiveQuizLoadingShell');
         expect(uiSource).toContain('loadLmsLiveQuizWorkspace(context.resourceKey');
@@ -57,7 +67,7 @@ describe('LMS live quiz tab persistence', () => {
     });
 
     it('preserves draft form fields across live quiz re-renders', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('function captureLmsLiveQuizDraftFields');
         expect(uiSource).toContain('function restoreLmsLiveQuizDraftFields');
@@ -66,8 +76,8 @@ describe('LMS live quiz tab persistence', () => {
     });
 
     it('routes async live quiz updates through refreshLmsLiveQuizUi', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(workspaceSource).toContain('function invokeRefreshLmsLiveQuizUi');
         expect(workspaceSource).toContain('invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true })');
@@ -81,7 +91,8 @@ describe('LMS live quiz tab persistence', () => {
     });
 
     it('canonicalizes live quiz resource keys from stored workspaces', () => {
-        const lmsSource = readSource('assets/js/pages/lms.js');
+        const lmsSource = readSource('assets/js/pages/lms.js')
+            + readSource('assets/js/pages/lms-section-quiz-runtime.js');
 
         expect(lmsSource).toContain('Object.keys(KIU_STATE.lmsLiveQuizzes || {})');
     });

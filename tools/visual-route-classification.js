@@ -15,7 +15,7 @@ const routeVisualClassification = {
     'faculty-schedule.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
     'gradebook.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
     'index.html': { category: 'standard-shell', dedicatedCss: ['assets/css/index-home-layout.css', 'assets/css/index-home-widgets.css', 'assets/css/index-home-role.css'], mobileShell: 'index-shared' },
-    'library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
+    'library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-layout-primitives.css', 'assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
     'lms.html': {
         category: 'standard-shell',
         dedicatedCss: ['assets/css/lux-page-bare-lite.css'],
@@ -30,10 +30,10 @@ const routeVisualClassification = {
     'programs.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
     'protected-launch.html': { category: 'excluded-route', dedicatedCss: ['assets/css/protected-launch-route.css'], mobileShell: 'none' },
     'registration.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
-    'social.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'social-shared' },
+    'social.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css', 'assets/css/lux-studio.css'], mobileShell: 'social-shared' },
     'staff.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
     'students-admin.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
-    'student-service.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
+    'student-service.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-layout-primitives.css', 'assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
     'study-card.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
     'timetable.html': {
         category: 'standard-shell',

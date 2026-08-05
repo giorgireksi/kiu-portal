@@ -1,14 +1,26 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
+    if (relativePath === 'assets/js/pages/lms-whiteboard-runtime.js') {
+        return [
+            'lms-whiteboard-runtime.js',
+            'lms-whiteboard-model.js',
+            'lms-whiteboard-chrome-runtime.js',
+            'lms-whiteboard-session-runtime.js',
+            'lms-whiteboard-selection-runtime.js',
+            'lms-whiteboard-workspace-runtime.js'
+        ].map((file) => readFileSync(join(process.cwd(), 'assets/js/pages', file), 'utf8')).join('\n');
+    }
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
 describe('LMS whiteboard wave 2 collaboration', () => {
     it('exposes student ops sync and signal api helpers', () => {
-        const api = readSource('assets/js/app/api.js');
+        const api = readSource('assets/js/app/api.js')
+            + readSource('assets/js/app/api-lms-portal-runtime.js');
         const workspace = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
 
         expect(api).toContain('async function submitLmsWhiteboardOps');
@@ -52,14 +64,14 @@ describe('LMS whiteboard wave 2 collaboration', () => {
     });
 
     it('avoids redundant realtime bootstrap on whiteboard render', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function renderLmsWhiteboardSection');
         expect(runtime).not.toContain('bootstrapKiuRealtimeBridge()');
     });
 
     it('scopes eraser to author unless staff and passes element ops', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('!== actorId');
         expect(runtime).toContain("op: { type: 'remove'");
@@ -78,6 +90,6 @@ describe('LMS whiteboard wave 2 collaboration', () => {
 
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-collab-runtime.js?v=20260708-wb-shapes-v4');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
     });
 });

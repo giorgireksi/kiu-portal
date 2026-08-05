@@ -23,6 +23,12 @@ describe('portal studentGrades staff persistence', () => {
     it('persists studentGrades when the actor is professor or ta', () => {
         for (const effectiveRole of ['professor', 'ta']) {
             const store = new PlatformStore();
+            store.state.sections['section-1'] = {
+                id: 'section-1',
+                courseId: 'COURSE-1',
+                professorId: `${effectiveRole}-1`,
+                taIds: [`${effectiveRole}-1`]
+            };
             store.state.portal.state = {
                 studentGrades: clone(EXISTING_GRADES),
                 gradebookWeights: { 'COURSE-1': { midterm: 40, final: 60 } }

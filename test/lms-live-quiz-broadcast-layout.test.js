@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -9,7 +18,7 @@ function readSource(relativePath) {
 
 describe('LMS live quiz broadcast layout', () => {
     it('patches status-rail steps without nesting duplicate region wrappers', () => {
-        const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const liveQuizUiSource = readLmsLiveQuizUiChain();
 
         expect(liveQuizUiSource).toContain('function renderLmsLiveStatusRailSteps(question = null)');
         expect(liveQuizUiSource).toContain("patchLmsLiveQuizRegion(contentArea, 'status-rail', renderLmsLiveStatusRailSteps(currentQuestion));");
@@ -18,7 +27,7 @@ describe('LMS live quiz broadcast layout', () => {
     });
 
     it('uses the redesigned staff broadcast zones and grouped control deck', () => {
-        const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const liveQuizUiSource = readLmsLiveQuizUiChain();
         expect(liveQuizUiSource).toContain('function renderLmsLiveBroadcastHeader(');
         expect(liveQuizUiSource).toContain('function renderLmsLiveBroadcastQuestionCard(');
         expect(liveQuizUiSource).toContain('function renderLmsLiveBroadcastControlDeck(');
@@ -31,7 +40,7 @@ describe('LMS live quiz broadcast layout', () => {
     });
 
     it('keeps presentation-mode results in the stage and uses state-aware timer classes', () => {
-        const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const liveQuizUiSource = readLmsLiveQuizUiChain();
         expect(liveQuizUiSource).toContain('function renderLmsLiveBroadcastResultsCard(');
         expect(liveQuizUiSource).toContain('presentationMode: Boolean(workspace.ui.presentationMode)');
         expect(liveQuizUiSource).toContain('data-lms-live-region="broadcast-results"');

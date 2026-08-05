@@ -148,9 +148,9 @@ describe('demo data cleanup', () => {
         expect(storeSource).toContain('resetPlatformState');
     });
 
-    it('bumps manual testing cleanup to version 7', () => {
+    it('bumps manual testing cleanup to version 8', () => {
         const appSource = readFileSync(join(process.cwd(), 'assets/js/app/app.js'), 'utf8');
-        expect(appSource).toContain('MANUAL_TESTING_STATE_VERSION = 7');
-        expect(appSource).toContain("REAL_TESTING_CLEANUP_FLAG = 'KIU_REAL_TESTING_CLEANUP_V7'");
+        expect(appSource).toContain('MANUAL_TESTING_STATE_VERSION = 8');
+        expect(appSource).toContain("REAL_TESTING_CLEANUP_FLAG = 'KIU_REAL_TESTING_CLEANUP_V8'");
     });
 });

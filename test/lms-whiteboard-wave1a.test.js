@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -9,7 +10,7 @@ function readSource(relativePath) {
 
 describe('LMS whiteboard wave 1a improvements', () => {
     it('replaces prompt editing with inline overlay helpers', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function openLmsWhiteboardInlineEditor');
         expect(runtime).toContain('function closeLmsWhiteboardInlineEditor');
@@ -19,7 +20,7 @@ describe('LMS whiteboard wave 1a improvements', () => {
     });
 
     it('adds wheel zoom and HiDPI canvas setup', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('LMS_WHITEBOARD_LOGICAL_WIDTH');
         expect(runtime).toContain('function setupLmsWhiteboardCanvasHiDpi');
@@ -29,7 +30,7 @@ describe('LMS whiteboard wave 1a improvements', () => {
     });
 
     it('exposes shape drawing tools in the tool rail', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const html = readSource('lms.html');
         const toolGroupsBlock = runtime.match(/const LMS_WHITEBOARD_TOOL_GROUPS[\s\S]*?];/)?.[0] || '';
 

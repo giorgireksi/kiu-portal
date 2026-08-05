@@ -33,6 +33,12 @@
         hide /test
         hide /tools
         hide /artifacts
+        hide /.git
+        hide /.cursor
+        hide /anti-cheat
+        hide /android
+        hide /google-services.json
+        hide /*service-account*.json
         hide /*.md
         hide /Dockerfile
         hide /docker-compose.production.yml

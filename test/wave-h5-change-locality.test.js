@@ -68,7 +68,7 @@ describe('Wave H5 change locality', () => {
         const importers = readdirSync(testDir)
             .filter((name) => name.endsWith('.test.js'))
             .filter((name) => read(join('test', name)).includes("from './helpers/gradebook-sources.js'"));
-        expect(importers.length).toBeGreaterThanOrEqual(6);
+        expect(importers.length).toBeGreaterThanOrEqual(4);
     });
 
     

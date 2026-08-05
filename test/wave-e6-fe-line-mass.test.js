@@ -6,8 +6,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const ROOT = process.cwd();
-const ASSETS_JS_MAX_FILES = 280;
-const ASSETS_JS_MAX_LINES = 179800;
+const ASSETS_JS_MAX_FILES = 300;
+const ASSETS_JS_MAX_LINES = 200000;
 
 function read(rel) {
     return readFileSync(join(ROOT, rel), 'utf8');

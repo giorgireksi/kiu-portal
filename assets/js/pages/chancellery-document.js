@@ -1,3 +1,11 @@
+/* READABILITY: chancellery document runtime: document workflow and editor interactions. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 const CHANCELLERY_DOCUMENT_VERSION = 3;
 const CHANCELLERY_PAGE_WIDTH = 794;
 const CHANCELLERY_PAGE_HEIGHT = 1123;

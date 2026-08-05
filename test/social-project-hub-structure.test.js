@@ -13,7 +13,8 @@ describe('social-project-hub-structure (bare-shell era)', () => {
     });
 
     it('workspace hub uses shared lux controls and layout hooks', () => {
-        const panel = readSource('assets/js/pages/social-workspace-panel.js');
+        const panel = readSource('assets/js/pages/social-workspace-panel.js')
+            + readSource('assets/js/pages/social-workspace-portfolio-ui.js');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
 
         expect(panel).toContain('name="projectDiscoverSearch"');
@@ -76,7 +77,7 @@ describe('social-project-hub-structure (bare-shell era)', () => {
         expect(fouc).toContain('.social-project-hub-rail-card');
         expect(fouc).toContain('.social-project-hub-contribution-stat');
         expect(fouc).toMatch(
-            /\.social-project-hub-rail-card,\s*\n\s*\.social-project-hub-contribution-stat,\s*\n\s*\.social-project-hub-cta-tile\s*\n\s*\)\.home-hover-chip:hover/
+            /\.social-project-hub-rail-card,[\s\S]*\.social-project-hub-contribution-stat,[\s\S]*\.social-project-hub-cta-tile[\s\S]*\)\.home-hover-chip:hover/
         );
         expect(fouc).not.toMatch(
             /Social nested KPI[\s\S]*\.social-project-hub-discover[\s\S]*home-hover-chip:hover/

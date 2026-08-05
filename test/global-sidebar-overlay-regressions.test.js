@@ -28,4 +28,4 @@ describe('global sidebar overlay regressions', () => {
         );
     });
 
-    
+});

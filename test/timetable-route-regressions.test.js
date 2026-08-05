@@ -42,7 +42,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('lux-page-bare-lite.css');
         expect(html).toContain('assets/js/shared/utilities.js?v=');
         expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260804-heroerase2');
-        expect(html).toContain('assets/js/features/navigation.js?v=20260605-ttboot1');
+        expect(html).toContain('assets/js/features/navigation.js?v=20260805-switchperf2');
         expect(html).not.toContain('assets/js/pages/planner.js');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');
@@ -273,7 +273,7 @@ describe('timetable route regressions', () => {
         const html = readSource('timetable.html');
         const runtime = readSource('assets/js/pages/timetable-runtime.js');
         expect(html).toContain('data-lux-layout-only="1"');
-        expect(html).not.toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
+        expect(html).toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
         expect(runtime).toContain("shell.dataset.luxGlassRoot = '1'");
     });
 

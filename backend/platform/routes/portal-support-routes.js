@@ -4,6 +4,7 @@ function registerPortalSupportRoutes(app, deps = {}) {
         appOrigin,
         allowedCorsOrigins,
         broadcastAll,
+        buildSelfServiceAccountPayload,
         getActorUserId,
         getSessionAccount,
         getSessionRole,
@@ -187,11 +188,9 @@ function registerPortalSupportRoutes(app, deps = {}) {
             sendError(response, 403, 'You can only update your own account.');
             return;
         }
-        const account = store.upsertAccount(actualAdmin ? payload : {
-            id: actorUserId,
-            email: actorEmail,
-            ...(payload || {})
-        });
+        const account = store.upsertAccount(actualAdmin
+            ? payload
+            : buildSelfServiceAccountPayload(payload, sessionAccount));
         if (!account) {
             sendError(response, 400, 'Invalid account payload.');
             return;
@@ -282,6 +281,31 @@ function registerPortalSupportRoutes(app, deps = {}) {
         if (!sessionAccount) return;
         const store = getStore();
         const removed = store.removePushSubscription(getActorUserId(sessionAccount), request.body?.endpoint || '');
+        response.json({ ok: true, removed: Boolean(removed) });
+    });
+
+    app.post('/api/mobile/push/register', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const token = store.upsertMobilePushToken(getActorUserId(sessionAccount), request.body?.token, {
+            platform: request.body?.platform || 'android',
+            appVersion: request.body?.appVersion || '',
+            deviceModel: request.body?.deviceModel || '',
+            userAgent: request.headers['user-agent'] || ''
+        });
+        if (!token) {
+            sendError(response, 400, 'Invalid mobile push token.');
+            return;
+        }
+        response.json({ ok: true, token: { id: token.id, platform: token.platform, updatedAt: token.updatedAt } });
+    });
+
+    app.post('/api/mobile/push/unregister', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const removed = store.removeMobilePushToken(getActorUserId(sessionAccount), request.body?.token);
         response.json({ ok: true, removed: Boolean(removed) });
     });
 }

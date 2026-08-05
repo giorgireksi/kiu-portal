@@ -7,8 +7,10 @@ function readSource(relativePath) {
 }
 
 describe('admin-library route class guard', () => {
-    const luxurySource = readSource('assets/js/features/index-luxury.js');
-    const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
+    const luxurySource = readSource('assets/js/features/index-luxury.js')
+        + readSource('assets/js/features/luxury-index-sync-runtime.js');
+    const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js')
+        + readSource('assets/js/features/luxury-shell-topbar-runtime.js');
     const html = readSource('admin-library.html');
 
     it('resolves admin-library entry to admin-library route token', () => {
@@ -28,7 +30,7 @@ describe('admin-library route class guard', () => {
         const adminJs = readSource('assets/js/pages/admin-library.js');
 
         expect(html).toContain('bootAdminLibraryPage');
-        expect(html).toContain('assets/js/pages/admin-library.js?v=20260714-libcleanup1');
+        expect(html).toContain('assets/js/pages/admin-library.js?v=20260731-sectionsopen1');
         expect(adminJs).toContain('ensureAdminLibraryRouteVisualState');
         expect(adminJs).toContain("body.classList.add('lux-route-admin-library')");
         expect(adminJs).toContain("body.classList.remove('lux-route-library')");

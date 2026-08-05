@@ -98,9 +98,6 @@
             const runtime = window.STUDENT_SERVICE_RUNTIME || {};
             if (!runtime.pendingQuestionHelpfulIds) runtime.pendingQuestionHelpfulIds = new Set();
             if (runtime.pendingQuestionHelpfulIds.has(normalizedQuestionId)) {
-                // #region agent log
-                fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'B',location:'student-service-qa-staff-runtime.js:questionFeedback:pending',message:'question helpful blocked by pending',data:{questionId:normalizedQuestionId,pendingSize:runtime.pendingQuestionHelpfulIds.size},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 return;
             }
             let questionBefore = getStudentServiceQuestionRecordById(normalizedQuestionId);
@@ -112,9 +109,6 @@
                 }
             }
             if (!questionBefore) {
-                // #region agent log
-                fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'E',location:'student-service-qa-staff-runtime.js:questionFeedback:noRecord',message:'question helpful missing record',data:{questionId:normalizedQuestionId},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 if (triggerButton) flashStudentServiceActionButton(triggerButton, 'error');
                 alert('Question record is not available. Refresh and try again.');
                 return;
@@ -130,9 +124,6 @@
                 ? ariaPressed === 'true'
                 : isStudentServiceQuestionHelpfulVoted(questionBefore, actorId);
             const expectedVoted = !wasHelpful;
-            // #region agent log
-            fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'A',location:'student-service-qa-staff-runtime.js:questionFeedback:before',message:'question helpful click intent',data:{questionId:normalizedQuestionId,actorId,wasHelpful,expectedVoted,ariaPressed,storeViewerVote:questionBefore.viewerVote||'',storeViewerHelpfulVote:Boolean(questionBefore.viewerHelpfulVote),helpfulCount:Number(questionBefore.helpfulCount||0),voteCount:(questionBefore.helpfulVotes||[]).length,actorInVotes:(questionBefore.helpfulVotes||[]).some((e)=>String(e?.userId||'')===actorId),ariaDriven:Boolean(triggerButton)},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
             const optimisticQuestion = buildStudentServiceQuestionHelpfulToggleSnapshot(
                 questionBefore,
                 actorId,
@@ -167,9 +158,6 @@
                         questionFromPayload = reconcileStudentServiceQuestionViewerHelpful(fromStore, actorId);
                     }
                 }
-                // #region agent log
-                fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'C',location:'student-service-qa-staff-runtime.js:questionFeedback:after',message:'question helpful post result',data:{questionId:normalizedQuestionId,expectedVoted,payloadVoted,forceReconcile:false,hasPayloadQuestion:Boolean(payload?.question),finalVoted:isStudentServiceQuestionHelpfulVoted(questionFromPayload,actorId),finalCount:Number(questionFromPayload.helpfulCount||0),finalAria:triggerButton?.getAttribute?.('aria-pressed')||null},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 runStudentServiceScrollPreserved(() => {
                     patchStudentServiceQuestionHelpfulUi(normalizedQuestionId, {
                         triggerButton,
@@ -179,9 +167,6 @@
                     return true;
                 });
             } catch (error) {
-                // #region agent log
-                fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'E',location:'student-service-qa-staff-runtime.js:questionFeedback:error',message:'question helpful post failed',data:{questionId:normalizedQuestionId,error:String(error?.message||error||'')},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 console.error('Student Service feedback failed.', error);
                 if (questionBefore) mergeStudentServiceQuestionSnapshot(questionBefore);
                 if (triggerButton && questionBefore) {
@@ -204,9 +189,6 @@
             const runtime = window.STUDENT_SERVICE_RUNTIME || {};
             if (!runtime.pendingAnswerHelpfulIds) runtime.pendingAnswerHelpfulIds = new Set();
             if (runtime.pendingAnswerHelpfulIds.has(normalizedAnswerId)) {
-                // #region agent log
-                fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'B',location:'student-service-qa-staff-runtime.js:answerFeedback:pending',message:'answer helpful blocked by pending',data:{questionId:normalizedQuestionId,answerId:normalizedAnswerId,pendingSize:runtime.pendingAnswerHelpfulIds.size},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 return;
             }
             const questionBefore = getStudentServiceQuestionRecordById(normalizedQuestionId);
@@ -223,9 +205,6 @@
                 ? ariaPressed === 'true'
                 : isStudentServiceAnswerHelpfulVoted(answerBefore, actorId);
             const expectedVoted = !wasHelpful;
-            // #region agent log
-            fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'A',location:'student-service-qa-staff-runtime.js:answerFeedback:before',message:'answer helpful click intent',data:{questionId:normalizedQuestionId,answerId:normalizedAnswerId,actorId,wasHelpful,expectedVoted,ariaPressed,storeViewerHelpfulVote:Boolean(answerBefore.viewerHelpfulVote),helpfulCount:Number(answerBefore.helpfulCount||0),voteCount:(answerBefore.helpfulVotes||[]).length,actorInVotes:(answerBefore.helpfulVotes||[]).some((e)=>String(e?.userId||'')===actorId),postHelpful:!wasHelpful,ariaDriven:Boolean(triggerButton)},timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
             const optimisticAnswer = buildStudentServiceAnswerHelpfulToggleSnapshot(
                 answerBefore,
                 actorId,
@@ -269,9 +248,6 @@
                     const fromAnswer = findStudentServiceAnswerRecord(fromStore, normalizedAnswerId);
                     if (fromAnswer) answerFromPayload = fromAnswer;
                 }
-                // #region agent log
-                fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'C',location:'student-service-qa-staff-runtime.js:answerFeedback:after',message:'answer helpful post result',data:{questionId:normalizedQuestionId,answerId:normalizedAnswerId,expectedVoted,payloadVoted,forceReconcile:false,hasPayloadQuestion:Boolean(payload?.question),finalVoted:isStudentServiceAnswerHelpfulVoted(answerFromPayload,actorId),finalCount:Number(answerFromPayload.helpfulCount||0),finalAria:triggerButton?.getAttribute?.('aria-pressed')||null},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 runStudentServiceScrollPreserved(() => {
                     patchStudentServiceAnswerHelpfulBtn(normalizedQuestionId, normalizedAnswerId, {
                         triggerButton,
@@ -281,9 +257,6 @@
                     return true;
                 });
             } catch (error) {
-                // #region agent log
-                fetch('http://127.0.0.1:7711/ingest/f2047d9d-2016-4ba2-818b-bced76e002bb',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'657d82'},body:JSON.stringify({sessionId:'657d82',runId:'post-fix',hypothesisId:'E',location:'student-service-qa-staff-runtime.js:answerFeedback:error',message:'answer helpful post failed',data:{questionId:normalizedQuestionId,answerId:normalizedAnswerId,error:String(error?.message||error||'')},timestamp:Date.now()})}).catch(()=>{});
-                // #endregion
                 console.error('Student Service answer feedback failed.', error);
                 if (questionBefore) mergeStudentServiceQuestionSnapshot(questionBefore);
                 if (triggerButton && answerBefore) {

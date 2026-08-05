@@ -206,10 +206,10 @@ describe('LMS personal dashboard staff share', () => {
     });
 
     it('wires members modal dashboard section and staff monitor overlay', () => {
-        const whiteboardRuntime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const whiteboardRuntime = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
         const runtime = readSource('assets/js/pages/lms-personal-dashboard-runtime.js');
         const workspaceRuntime = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
-        const api = readSource('assets/js/app/api.js');
+        const api = readSource('assets/js/app/api-lms-portal-runtime.js');
         const routes = readSource('backend/platform/routes/lms-personal-dashboard-routes.js');
         expect(whiteboardRuntime).toContain('lms-whiteboard-members-section--dashboards');
         expect(whiteboardRuntime).toContain('open-student-workspace');
@@ -309,8 +309,8 @@ describe('LMS personal dashboard staff share', () => {
     it('wires peer share UI and collaborator edit parity hooks', () => {
         const runtime = readSource('assets/js/pages/lms-personal-dashboard-runtime.js');
         const workspaceRuntime = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
-        const whiteboardRuntime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
-        const api = readSource('assets/js/app/api.js');
+        const whiteboardRuntime = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
+        const api = readSource('assets/js/app/api-lms-portal-runtime.js');
         const routes = readSource('backend/platform/routes/lms-personal-dashboard-routes.js');
 
         expect(runtime).toContain('set-peer-share');

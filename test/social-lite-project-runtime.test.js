@@ -8,9 +8,9 @@ function readSource(relativePath) {
 
 describe('social-lite-project-runtime peel', () => {
     it('owns project membership/tasks/budget/risk helpers via factory', () => {
-        const main = readSource('assets/js/shared/social-runtime-lite.js');
+        const main = readSource('assets/js/shared/social-lite-content-runtime.js');
         const peel = readSource('assets/js/shared/social-lite-project-runtime.js');
-        expect(main).toContain('__kiuCreateSocialLiteProjectApi');
+        expect(main).toContain('window.__kiuCreateSocialLiteProjectApi');
         expect(main).not.toMatch(/^\s*async function inviteProjectMember\b/m);
         expect(main).not.toMatch(/^\s*async function createProjectTask\b/m);
         expect(main).not.toMatch(/^\s*async function publishProjectShowcase\b/m);
@@ -27,6 +27,6 @@ describe('social-lite-project-runtime peel', () => {
         expect(html.indexOf('social-lite-project-runtime.js'))
             .toBeLessThan(html.indexOf('social-runtime-lite.js'));
         expect(app.indexOf('social-lite-project-runtime.js'))
-            .toBeLessThan(app.indexOf("['assets/js/shared/social-runtime-lite.js"));
+            .toBeLessThan(app.indexOf('social-runtime-lite.js'));
     });
 });

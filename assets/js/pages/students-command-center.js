@@ -30,6 +30,7 @@
     const VIEW_ROLES = ['admin', 'faculty', 'viewer'];
     const STUDENT_TYPE_ID = 'student';
 
+    // --- READABILITY: Roster ---
     function getStudentsState() {
         if (!window.__studentsCommandState) {
             window.__studentsCommandState = {

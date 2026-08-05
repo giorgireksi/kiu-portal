@@ -8,9 +8,18 @@ function readAsset(relativePath) {
         return readFileSync(full, 'utf8');
     }
 
+function readStudentServiceRuntime() {
+    return [
+        'assets/js/pages/student-service.js',
+        'assets/js/pages/student-service-chrome.js',
+        'assets/js/pages/student-service-inbox-runtime.js',
+        'assets/js/pages/student-service-page-runtime.js',
+    ].map(readAsset).join('\n');
+}
+
 describe('student-service render performance guardrails', () => {
     it('splits chrome and body render signatures for incremental updates', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = readStudentServiceRuntime();
 
         expect(source).toContain('function buildStudentServiceChromeSignature(');
         expect(source).toContain('function buildStudentServiceBodySignature(');
@@ -25,22 +34,22 @@ describe('student-service render performance guardrails', () => {
     });
 
     it('memoizes student-service store normalization behind a revision gate', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = readStudentServiceRuntime();
 
         expect(source).toContain('storesRevision: 0');
         expect(source).toContain('storesNormalizedRevision: -1');
         expect(source).toContain('function invalidateStudentServiceStores()');
         expect(source).toContain('STUDENT_SERVICE_RUNTIME.storesNormalizedRevision === STUDENT_SERVICE_RUNTIME.storesRevision');
-        expect(source).toContain('invalidateStudentServiceStores();');
+        expect(source).toContain('invalidateStudentServiceStores,');
     });
 
     it('primes lazy service and Q&A modules without blocking the first render', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = readStudentServiceRuntime();
 
         // Standalone entry preloads from the hub; SPA app.js no longer hosts SSVC runtime.
         expect(source).toContain('function preloadStudentServiceWorkspaceModules()');
         expect(source).toContain('preloadStudentServiceWorkspaceModules();');
-        expect(source).toContain('window.preloadStudentServiceWorkspaceModules = preloadStudentServiceWorkspaceModules;');
+        expect(source).toContain('preloadStudentServiceWorkspaceModules,');
         expect(readAsset('assets/js/app/app.js')).not.toContain('ensurePortalStudentServiceRuntimeLoaded');
     });
 
@@ -61,7 +70,8 @@ describe('student-service render performance guardrails', () => {
 
     it('dedupes SPA navigate transparency refresh in favor of syncAfterNavigate', () => {
         const navigation = readAsset('assets/js/features/navigation.js');
-        const luxury = readAsset('assets/js/features/index-luxury.js');
+        const luxury = readAsset('assets/js/features/index-luxury.js')
+            + readAsset('assets/js/features/luxury-index-sync-runtime.js');
 
         expect(navigation).not.toMatch(
             /if \(pageId === 'student-service'[\s\S]*?updateTransparency\(parseInt\(_savedTrans\)\)/
@@ -71,10 +81,10 @@ describe('student-service render performance guardrails', () => {
     });
 
     it('keeps student-service repeated surfaces on CSS-managed backdrop paths', () => {
-        const utilities = readAsset('assets/js/shared/utilities.js');
+        const utilities = readAsset('assets/js/features/luxury-index-runtime.js');
 
-        expect(utilities).toContain("el.classList.contains('student-service-lane-card')");
-        expect(utilities).toContain("el.classList.contains('student-service-ticket-card')");
+        expect(utilities).toContain("'.student-service-lane-card'");
+        expect(utilities).toContain("'.student-service-ticket-card'");
         expect(utilities).not.toContain('isStudentServiceLargeSurface');
         expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
         expect(existsSync(join(process.cwd(), 'assets/css/student-service-route.css'))).toBe(false);

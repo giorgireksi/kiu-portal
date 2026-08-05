@@ -22,7 +22,9 @@ describe('scheduler and LMS regressions', () => {
 
   it('normalizes LMS quiz builder drafts and preserves quiz security toggles on save', () => {
     const lmsSource = readSource('assets/js/pages/lms.js');
-    const quizWorkspaceSource = readSource('assets/js/pages/lms-quiz-workspace-runtime.js');
+    const quizWorkspaceSource = readSource('assets/js/pages/lms-quiz-workspace-runtime.js')
+      + readSource('assets/js/pages/lms-quiz-workspace-session-runtime.js')
+      + readSource('assets/js/pages/lms-quiz-model.js');
     const contentLibrarySource = readSource('assets/js/pages/lms-content-library-runtime.js');
     const weekStoreSource = readSource('assets/js/pages/lms-week-store-runtime.js');
     const lmsHtml = readSource('lms.html');
@@ -53,15 +55,18 @@ describe('scheduler and LMS regressions', () => {
   });
 
   it('keeps LMS interactions delegated instead of emitting inline event attributes', () => {
-    const lmsSource = readSource('assets/js/pages/lms.js');
-    const classroomTabsSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+    const lmsSource = readSource('assets/js/pages/lms.js')
+      + readSource('assets/js/pages/lms-section-quiz-runtime.js');
+    const classroomTabsSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js')
+      + readSource('assets/js/pages/lms-classroom-tabs-panel-runtime.js')
+      + readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
 
     expect(lmsSource).toContain("bindDelegatedEvent('click', 'data-lms-click')");
     expect(lmsSource).toContain("bindDelegatedEvent('change', 'data-lms-change')");
     expect(lmsSource).toContain("bindDelegatedEvent('input', 'data-lms-input')");
     expect(lmsSource).toContain('<div id="gradebook-spreadsheet-view" class="lms-route-stack" hidden>');
     expect(lmsSource).toContain('<div id="gradebook-student-view" class="lms-route-stack lms-route-stack-mb-16" hidden></div>');
-    expect(lmsSource).toContain('class="lms-route-panel lms-route-panel-compact lms-week-accordion-panel${isOpen ? \'\' : \' is-collapsed\'}"');
+    expect(lmsSource).toContain('class="lms-route-panel lms-route-panel-compact lms-week-accordion-panel home-hover-chip${isOpen ? \'\' : \' is-collapsed\'}"');
     expect(lmsSource).toContain('class="lms-week-accordion-body"${isOpen ? \'\' : \' hidden\'}>');
     expect(classroomTabsSource).toContain('function setLmsPageSectionShown(section, shown) {');
     expect(classroomTabsSource).toContain("setLmsPageSectionShown(document.getElementById('page-lms'), false);");

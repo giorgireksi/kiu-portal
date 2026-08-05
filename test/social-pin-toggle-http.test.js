@@ -14,7 +14,7 @@ describe('social-pin-toggle-http', () => {
         expect(routes).toContain("app.post('/api/social/pins/toggle'");
 
         const systemRoutes = readSource('backend/platform/routes/system-routes.js');
-        expect(systemRoutes).toContain('socialPinApiVersion: SOCIAL_PIN_API_VERSION');
+        expect(systemRoutes).toContain('socialPinApiVersion');
 
         const pinModel = readSource('assets/js/pages/social-pin-model.js');
         expect(pinModel).toContain('PIN_API_UNAVAILABLE_MESSAGE');

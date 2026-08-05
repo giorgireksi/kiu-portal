@@ -109,8 +109,8 @@ describe('social-workspace-health-model', () => {
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
         expect(page).toContain('social-workspace-health-model.js');
         expect(page).toContain('SOCIAL_WORKSPACE_HEALTH_MODEL_URL');
-        expect(workspace).toContain('buildProjectHealthModel');
-        expect(workspace).toContain('KiuSocialWorkspaceHealthModel');
+        expect(workspace).toContain('buildProjectHealthPlanPickModel');
+        expect(workspace).toContain('__wsDialogsApi');
     });
 
     it('exports buildProjectHealthPlanPickModel and filters packages', () => {
@@ -160,8 +160,8 @@ describe('social-workspace-health-model', () => {
 
     it('keeps plan-pick model body out of social-workspace.js', () => {
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
-        expect(workspace).toMatch(/function\s+buildProjectHealthPlanPickModel\s*\(/);
-        expect(workspace).toContain('KiuSocialWorkspaceHealthModel');
+        expect(readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8')).toContain('KiuSocialWorkspaceHealthModel');
+        expect(workspace).not.toMatch(/function\s+buildProjectHealthPlanPickModel\s*\(/);
         expect(workspace).not.toMatch(/projectHealthPlanPickHidePlanned !== false/);
         expect(workspace).not.toMatch(/Package counts from eligible set/);
     });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { socialModuleUrlToken } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -30,6 +31,6 @@ describe('social-event-cover-image', () => {
     it('social-page wires optimizeEventCoverFile into events hooks', () => {
         const page = readSource('assets/js/pages/social-page.js');
         expect(page).toContain('readFileAsDataUrl, optimizeEventCoverFile,');
-        expect(page).toContain('social-events.js?v=20260802-event-desc-rail2');
+        expect(page).toContain(socialModuleUrlToken('social-events.js'));
     });
 });

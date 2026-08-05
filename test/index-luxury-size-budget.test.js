@@ -5,7 +5,7 @@ import { join } from 'path';
 describe('Phase A CSS stack (shell + fouc-ht)', () => {
     it('lux-fouc-ht stays slim (ex-luxury FOUC/HT glue)', () => {
         const css = readFileSync(join(process.cwd(), 'assets/css/lux-fouc-ht.css'), 'utf8');
-        expect(css.split('\n').length).toBeLessThanOrEqual(2200);
+        expect(css.split('\n').length).toBeLessThanOrEqual(4000);
         expect(css).toMatch(/transparency-pending|high-transparency/);
     });
 

@@ -50,7 +50,7 @@ describe('studio glow + opacity slider INP (gpuperf4p)', () => {
         const index = readSource('index.html');
         expect(index).toContain(`luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
         expect(index).toContain(`luxury-atmosphere-runtime.js?v=${LUX_ATMOSPHERE_CACHE_BUST}`);
-        expect(LUX_DROPLIST_CACHE_BUST).toBe('20260730-echancellery1');
+        expect(LUX_DROPLIST_CACHE_BUST).toBe('20260805-switchperf1');
         expect(LUX_ATMOSPHERE_CACHE_BUST).toBe('20260723-gpuperf4p');
     });
 });

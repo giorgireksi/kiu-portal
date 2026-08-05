@@ -139,7 +139,8 @@ describe('LMS personal dashboard regressions', () => {
     });
 
     it('exposes unified history API and autosave hooks on the frontend', () => {
-        const api = readSource('assets/js/app/api.js');
+        const api = readSource('assets/js/app/api.js')
+            + readSource('assets/js/app/api-lms-portal-runtime.js');
         const runtime = readSource('assets/js/pages/lms-personal-dashboard-runtime.js');
         const workspaceRuntime = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
         const lms = readSource('assets/js/pages/lms.js');

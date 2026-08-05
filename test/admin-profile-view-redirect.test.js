@@ -17,7 +17,8 @@ describe('admin profile-view redirect', () => {
     });
 
     it('guards profile-view.html bootstrap for admin impersonation', () => {
-        const profileView = readSource('profile-view.html');
+        const profileView = readSource('profile-view.html')
+            + readSource('assets/js/pages/profile-view-page.js');
 
         expect(profileView).toContain('isAdminImpersonationMode()');
         expect(profileView).toContain("appendPortalViewQuery('personal-data.html', role)");

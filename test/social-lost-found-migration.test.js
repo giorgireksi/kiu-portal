@@ -25,9 +25,8 @@ describe('social lost-found migration', () => {
         expect(normalized.title).toBe('Wallet');
         expect(normalized).toHaveProperty('expiresAt');
         expect(normalized).not.toHaveProperty('kind');
-        expect(normalized).not.toHaveProperty('facultyCode');
+        expect(normalized.facultyCode).toBe('ECON');
         expect(normalized).not.toHaveProperty('kind');
-        expect(normalized).not.toHaveProperty('facultyCode');
     });
 
     it('maps resolved and found-kind listings to found status', () => {

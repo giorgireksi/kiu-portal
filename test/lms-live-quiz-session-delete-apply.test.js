@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -63,7 +72,7 @@ function preserveLocalLmsLiveQuizSessionList(localWorkspace = {}, remoteWorkspac
 
 describe('LMS live quiz session delete apply', () => {
     it('keeps production helper wired into applyLmsLiveQuizWorkspace', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
         const applyBlock = workspaceSource.match(/function applyLmsLiveQuizWorkspace\([\s\S]*?\n\}/)?.[0] || '';
 
         expect(workspaceSource).toContain('function preserveLocalLmsLiveQuizSessionList');

@@ -4,7 +4,7 @@
 
 Goal: make `assets/js` maintainable enough for university IT without a full SPA rewrite.
 
-**Engineering band queue (criteria 13–22):** [`docs/engineering-band-queue.md`](engineering-band-queue.md) — **E1–E6 ✅** (queued criteria all ≥8).
+**Engineering band queue (criteria 13–22):** [`docs/engineering-band-queue.md`](engineering-band-queue.md) — **E1–E6 ✅** (queued criteria all ≥8). E2 ✅ shared-hub isolation, E3 ✅ typeof-probe hygiene, E4 ✅ god-file peels, and E5 ✅ ESM ratchet are complete.
 
 **Current baseline (2026-07-20):** **277** files · **~179.3k** lines · multi-page script tags · bare `window.*` gated ≤**900** · **≥10 ESM modules** (E5) · dead `assets/js/portfolio/` removed (E6).
 

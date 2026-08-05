@@ -4,6 +4,8 @@ function registerAuthMaintenanceRoutes(app, deps = {}) {
         getSessionToken,
         getStore,
         isPortalImpersonationRole = () => false,
+        activationRateLimitMax,
+        activationRateLimitWindowMs,
         loginRateLimitMax,
         loginRateLimitWindowMs,
         requireActualSessionRole,
@@ -62,8 +64,15 @@ function registerAuthMaintenanceRoutes(app, deps = {}) {
     });
 
     app.post('/api/auth/activate', (request, response) => {
+        if (!enforceRateLimit(request, response, 'auth-activate', activationRateLimitMax, activationRateLimitWindowMs)) {
+            return;
+        }
         const store = getStore();
-        const account = store.activateAccount(request.body?.id, request.body?.password);
+        const account = store.activateAccount(
+            request.body?.id,
+            request.body?.password,
+            request.body?.activationToken || request.body?.token
+        );
         if (!account) {
             sendError(response, 400, 'Activation could not be completed.');
             return;
@@ -97,6 +106,9 @@ function registerAuthMaintenanceRoutes(app, deps = {}) {
     });
 
     app.post('/api/auth/reset-password', (request, response) => {
+        if (!enforceRateLimit(request, response, 'auth-reset-complete', resetRateLimitMax, resetRateLimitWindowMs)) {
+            return;
+        }
         const store = getStore();
         const account = store.resetPassword(request.body?.token, request.body?.password);
         if (!account) {

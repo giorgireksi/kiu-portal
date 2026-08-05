@@ -1,4 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime
+} from './helpers/lms-live-quiz-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -9,28 +14,29 @@ function readSource(relativePath) {
 
 describe('LMS live quiz access alignment', () => {
     it('gates staff manage UI on course scope instead of role alone', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const accessSource = readLmsLiveQuizAccessRuntime();
+        const uiSource = readLmsLiveQuizUiChain();
 
-        expect(workspaceSource).toContain('function canAccessLmsLiveQuizScope(resourceKey = currentCourseId)');
+        expect(accessSource).toContain('function canAccessLmsLiveQuizScope(resourceKey = currentCourseId)');
         expect(uiSource).toContain('canAccessLmsLiveQuizScope(canonicalKey || resourceKey)');
         expect(uiSource).toContain('if (workspace?.ui?.accessDenied) {');
         expect(uiSource).not.toMatch(/canManageLmsLiveQuiz[\s\S]*if \(\[USER_ROLES\.ADMIN, USER_ROLES\.PROFESSOR, USER_ROLES\.TA\]\.includes\(role\)\) return true;/);
     });
 
     it('skips backend sync and clears dirty state when access is denied', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const accessSource = readLmsLiveQuizAccessRuntime();
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
-        expect(workspaceSource).toContain('function shouldSyncLmsLiveQuizWorkspace(resourceKey = currentCourseId)');
+        expect(accessSource).toContain('function shouldSyncLmsLiveQuizWorkspace(resourceKey = currentCourseId)');
         expect(workspaceSource).toContain('if (!shouldSyncLmsLiveQuizWorkspace(canonicalKey)) return Promise.resolve(null);');
-        expect(workspaceSource).toContain('if (workspace.ui?.accessDenied) {');
-        expect(workspaceSource).toContain('workspace.ui.syncError = \'\';');
-        expect(workspaceSource).toContain('function markLmsLiveQuizAccessDenied(canonicalKey, message');
-        expect(workspaceSource).toContain('workspace.ui.dirty = false;');
-        expect(workspaceSource).toContain('markLmsLiveQuizAccessDenied(');
-        expect(classroomSource).toContain('shouldSyncLmsLiveQuizWorkspace(flushKey)');
+        expect(accessSource).toContain('if (workspace.ui?.accessDenied) {');
+        expect(accessSource).toContain('workspace.ui.syncError = \'\';');
+        expect(accessSource).toContain('function markLmsLiveQuizAccessDenied(canonicalKey, message');
+        expect(accessSource).toContain('workspace.ui.dirty = false;');
+        expect(accessSource).toContain('markLmsLiveQuizAccessDenied(');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js')).toContain('shouldSyncLmsLiveQuizWorkspace(flushKey)');
         expect(workspaceSource).toContain('function getLmsLiveStaffSessionForQuestion(resourceKey, questionId)');
         expect(uiSource).toContain('getLmsLiveStaffSessionForQuestion(resourceKey, questionId)');
     });
@@ -45,14 +51,14 @@ describe('LMS live quiz access alignment', () => {
     });
 
     it('allows scoped staff to manage live quiz regardless of lecture/workshop section gate', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         expect(uiSource).toContain('canManageLmsClassSection(parsed.sectionType || getCurrentLmsSectionType())');
         expect(uiSource).toContain('return hasScopeAccess');
     });
 
     it('hydrates student participants and uses strict roster for live quiz', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
+        const uiSource = readLmsLiveQuizUiChain();
         const lmsSource = readSource('assets/js/pages/lms.js');
 
         expect(workspaceSource).toContain('function ensureLmsLiveStudentParticipant(resourceKey, session = null)');
@@ -63,13 +69,14 @@ describe('LMS live quiz access alignment', () => {
     });
 
     it('skips duplicate live-quiz tab enhancement chrome', () => {
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        expect(classroomSource).toContain("tab === 'quiz' || tab === 'live-quiz'");
+        const shellSource = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
+        expect(shellSource).toContain("tab === 'live-quiz' || tab === 'interaction'");
+        expect(shellSource).toContain("tab === 'quiz'");
     });
 
     it('allows students with portal schedules when formal enrollments are missing', () => {
         const serverSource = readSource('backend/platform/server.js');
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         expect(serverSource).toContain('function isStudentViaLmsLiveQuizPortalSchedule(studentId = \'\', courseId = \'\', groupId = \'\')');
         expect(serverSource).toContain('studentSchedulesByStudent');
@@ -79,8 +86,8 @@ describe('LMS live quiz access alignment', () => {
     });
 
     it('adds staff UX availability, timer honesty, impersonation prep, and broader staff scope', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
         const lmsHtml = readSource('lms.html');
 
         expect(uiSource).toContain('function getLmsLiveStaffActionAvailability(question = null, session = null)');
@@ -94,17 +101,17 @@ describe('LMS live quiz access alignment', () => {
         expect(uiSource).toContain('markLmsLiveQuestionActivated(session.questions[nextIndex])');
         expect(uiSource).toContain('Confirm your LMS group enrollment');
         expect(workspaceSource).toContain('function mergeLmsLiveStaffQuestionOverrides(localWorkspace = {}, remoteWorkspace = {})');
-        expect(workspaceSource).toContain('function isStaffForLmsLiveQuizPortalSections(resourceKey = \'\', userId = \'\', role = \'\')');
-        expect(workspaceSource).toContain('function isStaffViaLmsLiveQuizTeachingTeam(resourceKey = \'\', userId = \'\', role = \'\')');
-        expect(workspaceSource).toContain('isAssignedViaLmsLiveQuizGroupRoster(courseId, null, userId, role)');
+        expect(readLmsLiveQuizAccessRuntime()).toContain('function isStaffForLmsLiveQuizPortalSections(resourceKey = \'\', userId = \'\', role = \'\')');
+        expect(readLmsLiveQuizAccessRuntime()).toContain('function isStaffViaLmsLiveQuizTeachingTeam(resourceKey = \'\', userId = \'\', role = \'\')');
+        expect(readLmsLiveQuizAccessRuntime()).toContain('isAssignedViaLmsLiveQuizGroupRoster(courseId, null, userId, role)');
         expect(workspaceSource).toContain('(terminal || !activatedAt)');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('livequiz-timerfix1');
-        expect(lmsHtml).not.toContain('livequiz-timerfix1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('20260728-livepatch1');
+        expect(lmsHtml).not.toContain('20260728-livepatch1');
     });
 
     it('resolves admin view-as persona on backend when impersonatedUserId is missing', () => {
         const serverSource = readSource('backend/platform/server.js');
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(serverSource).toContain('function resolveImpersonatedActorUserId(sessionAccount)');
         expect(serverSource).toContain('admin-testing-');

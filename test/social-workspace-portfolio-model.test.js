@@ -128,19 +128,21 @@ describe('social-workspace-portfolio-model', () => {
             'portfolioFieldValue'
         ]) {
             expect(workspace).not.toMatch(new RegExp(`function\\s+${name}\\s*\\(`));
-            expect(workspace).toMatch(new RegExp(`const ${name} = window\\.${name}`));
+            expect(workspace).toContain(name);
         }
-        expect(workspace).toMatch(/function\s+portfolioEntriesForViewer\s*\(/);
-        expect(workspace).toMatch(/function\s+portfolioDraftExists\s*\(/);
-        expect(workspace).toMatch(/function\s+portfolioReadDateRange\s*\(/);
-        expect(workspace).toMatch(/function\s+portfolioCollectDocumentFromUi\s*\(/);
+        expect(workspace).toContain('KiuSocialWorkspacePortfolioModel');
+        expect(workspace).not.toMatch(/function\s+portfolioEntriesForViewer\s*\(/);
+        expect(workspace).not.toMatch(/function\s+portfolioDraftExists\s*\(/);
+        expect(workspace).not.toMatch(/function\s+portfolioReadDateRange\s*\(/);
+        expect(workspace).not.toMatch(/function\s+portfolioCollectDocumentFromUi\s*\(/);
     });
 
     it('loads portfolio model before workspace in ensureSocialWorkspaceModule', () => {
         const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
         const portfolioIdx = page.indexOf('SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL');
         const graphIdx = page.indexOf('SOCIAL_WORKSPACE_GRAPH_MODEL_URL');
-        const workspaceLoad = page.indexOf('SOCIAL_WORKSPACE_MODULE_URL)');
+        const ensureStart = page.indexOf('function ensureSocialWorkspaceModule');
+        const workspaceLoad = page.indexOf('SOCIAL_WORKSPACE_MODULE_URL', ensureStart);
         expect(portfolioIdx).toBeGreaterThan(-1);
         expect(page).toMatch(/social-workspace-portfolio-model\.js/);
         expect(portfolioIdx).toBeGreaterThan(graphIdx);

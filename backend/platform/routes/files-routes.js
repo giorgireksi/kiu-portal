@@ -60,13 +60,20 @@ function registerFileRoutes(app, deps = {}) {
         const mimeType = String(file.type || 'application/octet-stream').trim() || 'application/octet-stream';
         response.setHeader('Content-Type', mimeType);
         response.setHeader('Content-Length', fs.statSync(file.path).size);
+        response.setHeader('X-Content-Type-Options', 'nosniff');
         const queryInline = String(request.query?.inline || '').trim() === '1'
             || String(request.query?.view || '').trim() === '1'
             || String(request.query?.view || '').trim().toLowerCase() === 'inline';
         const isImage = mimeType.toLowerCase().startsWith('image/');
         const inline = queryInline || isImage;
-        const safeName = encodeURIComponent(String(file.name || 'download.bin').replace(/"/g, ''));
-        response.setHeader('Content-Disposition', `${inline ? 'inline' : 'attachment'}; filename="${safeName}"`);
+        const safeName = String(file.name || 'download.bin')
+            .replace(/[\r\n"]/g, '_')
+            .replace(/[^\x20-\x7E]/g, '_')
+            .slice(0, 180) || 'download.bin';
+        response.setHeader(
+            'Content-Disposition',
+            `${inline ? 'inline' : 'attachment'}; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`
+        );
         response.setHeader('Cache-Control', 'private, max-age=3600');
         fs.createReadStream(file.path).pipe(response);
     });

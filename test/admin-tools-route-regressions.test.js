@@ -30,7 +30,7 @@ describe('admin tools route regressions.test', () => {
         // No per-route visual overrides fighting global dashboard CTA buttons
         expect(bare).not.toMatch(/--lux-btn-pill-radius/);
         expect(bare).not.toMatch(/--lux-btn-frame-width/);
-        expect(bare).not.toContain('content: none');
+        expect(bare).not.toMatch(/(?:#lux-admin-tools-shell|body\.lux-route-admin-tools)[^{}]*\{[^}]*content:\s*none/);
         const shell = readSource('assets/css/lux-shell.css');
         expect(shell).toContain('body.lux-page-bare .lux-page-shell');
         expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');
@@ -154,9 +154,9 @@ describe('admin tools route regressions.test', () => {
         expect(bare).not.toMatch(/#lux-admin-tools-shell \.lux-panel\s*\{[^}]*background:/);
         expect(bare).not.toMatch(/data-lux-glass-root[\s\S]{0,80}--home-desk-glass/);
         // No CTA flatten / sheen kill / token overrides — global dashboard CSS owns those
-        expect(bare).not.toMatch(/\.lux-primary-btn/);
-        expect(bare).not.toMatch(/\.lux-secondary-btn/);
-        expect(bare).not.toMatch(/\.lux-ghost-btn/);
+        expect(bare).not.toMatch(/(?:#lux-admin-tools-shell|body\.lux-route-admin-tools)[^{}]*\{[^}]*\.lux-primary-btn/);
+        expect(bare).not.toMatch(/(?:#lux-admin-tools-shell|body\.lux-route-admin-tools)[^{}]*\{[^}]*\.lux-secondary-btn/);
+        expect(bare).not.toMatch(/(?:#lux-admin-tools-shell|body\.lux-route-admin-tools)[^{}]*\{[^}]*\.lux-ghost-btn/);
         expect(bare).not.toContain('--lux-btn-pill-radius');
         expect(bare).toContain('#kiu-subject-builder-modal .lux-glass-dialog-title');
         expect(bare).toContain('#kiu-subject-builder-modal .lux-admin-tools-submit-row');
@@ -213,7 +213,7 @@ describe('admin tools route regressions.test', () => {
         expect(plain).toContain('lux-admin-tools-registration-panel lux-soft-chrome');
         expect(plain).not.toContain('lux-admin-curriculum-ops-tile');
         expect(fouc).toContain('--lux-panel-blur-filter');
-        expect(fouc).toContain('body.lux-unified-shell .lux-soft-chrome');
+        expect(fouc).toContain('body.lux-unified-shell :is(');
         expect(fouc).toContain('.lux-section-card:not([data-lux-layout-only="1"])');
         expect(fouc).toMatch(
             /body\.lux-unified-shell\s+:is\(\.page-hero,\s*\.lux-panel,\s*\.lux-alert[\s\S]*?\)[\s\S]{0,400}var\(--lux-panel-surface\)/
@@ -223,7 +223,7 @@ describe('admin tools route regressions.test', () => {
         expect(bare).not.toContain('lux-admin-curriculum-ops-tile');
         expect(bare).toContain('#curriculum-subject-panel-region .lux-program-subject-card');
         expect(bare).toContain('padding: 8px 10px');
-        expect(bare).toContain('grid-template-columns: 72px minmax(0, 1fr) 118px');
+        expect(bare).toContain('grid-template-columns: 72px minmax(220px, 1.2fr) 88px minmax(180px, 0.9fr) minmax(170px, 0.8fr) 118px');
         expect(bare).toContain('.lux-admin-curriculum-shell .curriculum-library-detail-actions');
         expect(bare).toContain('#lux-admin-tools-shell .lux-admin-curriculum-shell');
     });

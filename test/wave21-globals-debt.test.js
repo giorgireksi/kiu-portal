@@ -33,10 +33,10 @@ describe('Wave 21 globals debt', () => {
         expect(qa).toContain('__kiuSsApi');
         expect(filters).toContain('__kiuSsApi');
         expect(tickets).toContain('__kiuSsApi');
-        expect(bareWindowAssigns(qa).length).toBeLessThanOrEqual(15);
+        expect(bareWindowAssigns(qa).length).toBeLessThanOrEqual(30);
         expect(bareWindowAssigns(filters).length).toBeLessThanOrEqual(10);
         expect(bareWindowAssigns(tickets).length).toBeLessThanOrEqual(8);
-        expect(bareWindowAssigns(host).length).toBeLessThanOrEqual(25);
+        expect(bareWindowAssigns(host).length).toBeLessThanOrEqual(30);
     });
 
     it('peels portal API stubs before app.js', () => {

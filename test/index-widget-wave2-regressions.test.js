@@ -10,13 +10,10 @@ describe('index widget wave 2 regressions', () => {
   it('keeps programs overview aligned to index hero-side and strip-card widgets', () => {
     const source = readSource('assets/js/pages/programs-page.js');
 
-    expect(source).toContain('class="lux-program-overview lux-hero-stage"');
-    expect(source).toContain('class="lux-program-overview-main lux-hero-main"');
-    expect(source).toContain('class="lux-program-metric-strip lux-program-summary-strip lux-strip-grid lux-strip-grid--adaptive"');
-    expect(source).toContain('class="lux-program-metric lux-program-summary-card wave2-summary-card lux-strip-card surface-card"');
-    expect(source).toContain('class="lux-program-focus-panel lux-hero-side"');
-    expect(source).toContain('class="lux-program-focus-stats lux-hero-signal-list"');
-    expect(source).toContain('class="lux-program-focus-stat lux-hero-signal');
+    expect(source).toContain('programs-module-rail-region');
+    expect(source).toContain('programs-subject-panel-region');
+    expect(source).toContain('data-programs-panel-shell="1"');
+    expect(source).toContain('programs-ops-total-ects');
   });
 
   it('keeps study-card summary aligned to index hero-side and strip-card widgets', () => {
@@ -64,13 +61,13 @@ describe('index widget wave 2 regressions', () => {
     const timetableHtml = readSource('timetable.html');
 
     expect(adminLibraryHtml).toContain('class="admin-library-metric-row admin-library-metric-row--compact"');
-    expect(adminLibraryHtml).toContain('class="alib-panel alib-panel--entry lux-soft-chrome"');
-    expect(adminLibraryHtml).toContain('class="lux-strip-card admin-library-catalog-card lux-soft-chrome"');
+    expect(adminLibraryHtml).toContain('class="lux-stat-card admin-library-metric-card home-hover-chip"');
+    expect(adminLibraryHtml).toContain('class="lux-strip-card admin-library-catalog-card lux-soft-chrome home-hover-chip"');
     expect(adminLibraryHtml).not.toContain('admin-library-hero-summary');
     expect(timetableHtml).not.toContain('class="lux-timetable-hero-main lux-hero-main"');
-    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side"');
+    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side lux-focus-panel home-hover-chip"');
     expect(timetableHtml).not.toContain('class="lux-card lux-timetable-insight lux-timetable-next-compact"');
-    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side"');
+    expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side lux-focus-panel home-hover-chip"');
   });
 
   it('keeps the LMS hero summary cluster aligned to index hero-side and strip-card classes', () => {
@@ -78,48 +75,43 @@ describe('index widget wave 2 regressions', () => {
 
     expect(lmsHtml).toContain('class="lms-hero-v2-grid lux-hero-stage"');
     expect(lmsHtml).toContain('class="lms-hero-v2-left lux-hero-main"');
-    expect(lmsHtml).toContain('class="lms-hero-v2-right lux-hero-side"');
-    expect(lmsHtml).toContain('class="lms-hero-v2-stats lux-strip-grid lux-strip-grid--adaptive"');
-    expect(lmsHtml).toContain('class="lms-hero-v2-stat lux-strip-card surface-card"');
+    expect(lmsHtml).toContain('class="lms-hero-focus lux-hero-side home-hover-chip"');
+    expect(lmsHtml).toContain('lms-hero-focus-chip');
+    expect(lmsHtml).toContain('lms-hero-focus-meta');
   });
 
   it('keeps profile aligned to index hero-side and strip-card classes', () => {
-    const profileHtml = readSource('profile.html');
+    const profileHtml = readSource('assets/js/pages/profile-view-page.js');
 
-    expect(profileHtml).toContain('class="lux-hero-main"');
-    expect(profileHtml).toContain('class="lux-hero-side"');
-    expect(profileHtml).toContain('class="lux-strip-grid lux-strip-grid--adaptive profile-summary-strip"');
-    expect(profileHtml).toContain('class="lux-strip-card surface-card"');
+    expect(profileHtml).toContain('profile-view-root');
+    expect(profileHtml).toContain('pv-metric-card');
+    expect(profileHtml).toContain('pv-metrics');
   });
 
   it('keeps students-admin and staff summary widgets aligned to index hero-side and strip-card classes', () => {
-    const studentsAdminJs = readSource('assets/js/pages/students-admin-lms.js');
+    const studentsAdminJs = readSource('assets/js/pages/students-command-center.js');
     const staffJs = readSource('assets/js/pages/staff-command-center.js');
 
-    expect(studentsAdminJs).toContain('class="students-lms-stat-card lux-strip-card surface-card"');
-    expect(studentsAdminJs).toContain('class="students-lms-hero-board lux-hero-side"');
-    expect(studentsAdminJs).toContain('class="students-lms-metric-grid lux-strip-grid lux-strip-grid--adaptive"');
+    expect(studentsAdminJs).toContain('students-command');
+    expect(studentsAdminJs).toContain('renderStudentAcademicProfile');
+    expect(studentsAdminJs).toContain('students-hub');
 
-    expect(staffJs).toContain('class="lux-hero-main"');
-    expect(staffJs).toContain('class="staff-hub-hero-panel lux-hero-side"');
-    expect(staffJs).toContain('class="staff-hub-mini-card staff-hub-metric-card lux-strip-card surface-card"');
-    expect(staffJs).toContain('class="staff-hub-metrics lux-strip-grid lux-strip-grid--adaptive"');
-    expect(staffJs).toContain('class="staff-hub-surface staff-hub-metric-card lux-strip-card"');
+    expect(staffJs).toContain('staff-hub');
+    expect(staffJs).toContain('staff-hub-profile');
+    expect(staffJs).toContain('staff-hub-tabs');
   });
 
   it('keeps exams and career-market top-level summary widgets aligned to index strip-card or hero-stage classes', () => {
     const examsJs = readSource('assets/js/pages/exams-console.js');
-    const careerHtml = readSource('career-market.html');
-    const careerJs = readSource('assets/js/pages/career-market.js');
+    const careerHtml = readSource('programs.html');
+    const careerJs = readSource('assets/js/pages/programs-page.js');
 
-    expect(examsJs).toContain('class="ex2-stats-row lux-strip-grid lux-strip-grid--adaptive"');
-    expect(examsJs).toContain('class="ex2-stat-card lux-strip-card surface-card');
+    expect(examsJs).toContain('class="ex2-stat-chip home-hover-chip lux-soft-chrome');
+    expect(examsJs).toContain('ex2-status-dot');
 
-    expect(careerHtml).toContain('class="career-workspace-hero lux-hero-stage"');
-    expect(careerHtml).toContain('class="lux-hero-main"');
-    expect(careerHtml).toContain('class="career-workspace-badge lux-strip-card surface-card"');
-    expect(careerJs).toContain('career-workspace-hero lux-hero-stage');
-    expect(careerJs).toContain('career-workspace-badge career-workspace-badge-card lux-strip-card surface-card');
+    expect(careerHtml).toContain('lux-program-command-deck');
+    expect(careerJs).toContain('programs-module-rail-region');
+    expect(careerJs).toContain('programs-subject-panel-region');
   });
 
   it('keeps social portfolio and events summary widgets aligned to index hero-side and strip-card classes', () => {

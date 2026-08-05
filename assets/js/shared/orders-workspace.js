@@ -1,3 +1,11 @@
+/* READABILITY: orders workspace runtime: order state, filters, and administration helpers. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* Orders workspace logic. Shared primitives live in orders-runtime-core.js. */
 
 function ensureAdminOrdersUiState(faculty = getCurrentFaculty()) {

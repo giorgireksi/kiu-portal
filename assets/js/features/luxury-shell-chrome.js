@@ -1,3 +1,11 @@
+/* READABILITY: shell chrome runtime: shared navigation, picker, and topbar bindings. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 
 
 function getLuxurySharedConfig() {
@@ -156,6 +164,10 @@ function pageTarget(pageId) {
 function prefetchPortalRoute(pageId) {
     const normalizedPageId = String(pageId || '').trim().toLowerCase();
     if (!normalizedPageId || typeof window.resolvePortalRouteUrl !== 'function') return;
+    if (typeof window.prefetchStandalonePortalRoute === 'function') {
+        void window.prefetchStandalonePortalRoute(normalizedPageId);
+        return;
+    }
     const role = typeof getEffectiveUserRole === 'function'
         ? getEffectiveUserRole()
         : (typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student');

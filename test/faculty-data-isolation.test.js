@@ -8,7 +8,8 @@ function readSource(relativePath) {
 
 describe('faculty data isolation guardrails', () => {
   it('scopes student registration track choices and section picking by faculty', () => {
-    const studentRegistration = readSource('assets/js/pages/student-registration.js');
+    const studentRegistration = readSource('assets/js/pages/student-registration-choice-runtime.js')
+        + readSource('assets/js/pages/student-registration.js');
     const state = readSource('assets/js/app/state.js');
 
     expect(studentRegistration).toContain('function getStudentRegistrationScopeKey');
@@ -36,8 +37,9 @@ describe('faculty data isolation guardrails', () => {
   });
 
   it('prevents scheduler and roster updates from matching same course/group ids across faculties', () => {
-    const faculty = readSource('assets/js/shared/faculty.js');
-    const messenger = readSource('assets/js/shared/messenger.js');
+    const faculty = readSource('assets/js/shared/faculty.js')
+        + readSource('assets/js/shared/orders-workspace.js');
+    const messenger = readSource('assets/js/shared/messenger-gradebook-runtime.js');
     const state = readSource('assets/js/app/state.js');
 
     expect(faculty).toContain('function doesScheduledEntryBelongToGroupFaculty');
@@ -53,7 +55,8 @@ describe('faculty data isolation guardrails', () => {
   it('keeps people directories scoped to the active faculty unless all faculties is explicit', () => {
     const app = readSource('assets/js/app/app.js');
     const messenger = readSource('assets/js/shared/messenger.js');
-    const faculty = readSource('assets/js/shared/faculty.js');
+    const faculty = readSource('assets/js/shared/faculty.js')
+        + readSource('assets/js/shared/orders-workspace.js');
     const state = readSource('assets/js/app/state.js');
     const homeModel = readSource('assets/js/features/luxury-home-model.js');
 
@@ -61,12 +64,13 @@ describe('faculty data isolation guardrails', () => {
     expect(app).toContain("function getAllStaff(type = 'professors', facultyFilter = getCurrentFaculty())");
     expect(app).toContain('function getAllStudents(facultyFilter = getCurrentFaculty())');
     expect(app).toContain("if (normalizedFilter !== 'all' && normalizedFaculty !== normalizedFilter) return;");
-    expect(app).toContain('window.getAllStaff = getAllStaff;');
-    expect(app).toContain('window.getAllStudents = getAllStudents;');
+    expect(app).toContain('__kiuAppExpose({');
+    expect(app).toContain('getAllStaff,');
+    expect(app).toContain('getAllStudents,');
     expect(messenger).not.toContain('function normalizePeopleFacultyFilter(facultyFilter = getCurrentFaculty())');
     expect(messenger).not.toContain("function getAllStaff(type = 'professors', facultyFilter = getCurrentFaculty())");
     expect(messenger).not.toContain('function getAllStudents(facultyFilter = getCurrentFaculty())');
-    expect(faculty).toContain('return getAllStudents(getCurrentFaculty()).map(student => ({');
+    expect(faculty).toContain('const students = getAllStudents(normalizedFaculty).map(student => ({');
     expect(state).toContain('usersByFacultyRole');
     expect(homeModel).toContain("getAllStaff('professors', facultyCode)");
   });

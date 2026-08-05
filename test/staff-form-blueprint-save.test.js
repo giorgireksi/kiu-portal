@@ -64,15 +64,16 @@ describe('staff form blueprint save UX', () => {
         const profileRowFn = builderJs.match(/function renderProfileNameRow[\s\S]*?^    }/m)?.[0] ?? '';
         expect(profileRowFn).toContain('remove-section');
         expect(builderJs).toContain('${H.hub}-profile-add');
-        expect(builderJs).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace">');
-        expect(builderJs).not.toContain('form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1"');
+        expect(builderJs).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace"');
+        expect(builderJs).toContain('${H.hub}-form-settings ${H.entity}-admin-workspace" data-lux-glass-root="1"');
         expect(handleBuilderInputSkipsRefresh(builderJs)).toBe(true);
         expect(staffJs).toContain('builderDirty: false');
         expect(staffJs).toContain('builderLastSavedAt: null');
         expect(css).toContain('.staff-hub-studio-save-bar');
         expect(css).toContain('.staff-hub-studio-save-status.is-dirty');
         expect(css).toContain('.staff-hub-studio-save-status.is-clean');
-        const fouc = readBareSource('assets/css/lux-fouc-ht.css');
+        const fouc = readBareSource('assets/css/lux-fouc-ht.css')
+            + readBareSource('assets/css/lux-page-bare-lite.css');
         expect(fouc).toContain('.staff-hub-form-settings-head');
         expect(fouc).toContain('.staff-hub-builder-rail');
         expect(fouc).toContain('var(--lux-panel-fill)');

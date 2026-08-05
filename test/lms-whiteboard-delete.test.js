@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('LMS whiteboard delete', () => {
     it('deletes only the selected element ids', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const deleteBlock = runtime.match(/function deleteLmsWhiteboardSelection[\s\S]*?(?=\nfunction )/)?.[0] || '';
 
         expect(deleteBlock).toContain('const removedIds = selectedIds.slice();');
@@ -17,7 +18,7 @@ describe('LMS whiteboard delete', () => {
     });
 
     it('binds keyboard delete shortcuts on the whiteboard shell', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const deleteBlock = runtime.match(/function deleteLmsWhiteboardSelection[\s\S]*?(?=\nfunction )/)?.[0] || '';
         const keyboardBlock = runtime.match(/function handleLmsWhiteboardKeyboardShortcut[\s\S]*?(?=\nfunction )/)?.[0] || '';
 
@@ -32,6 +33,6 @@ describe('LMS whiteboard delete', () => {
 
     it('bumps delete cache token in lms.html', () => {
         const html = readSource('lms.html');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
     });
 });

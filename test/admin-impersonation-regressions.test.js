@@ -23,7 +23,8 @@ describe('admin impersonation regressions', () => {
   });
 
   it('uses resolved standalone routes during shell sync instead of only active-page sections', () => {
-    const shellSource = readSource('assets/js/features/index-luxury.js');
+    const shellSource = readSource('assets/js/features/index-luxury.js')
+      + readSource('assets/js/features/luxury-index-sync-runtime.js');
     expect(shellSource).toContain('function syncLayout()');
     expect(shellSource).toContain('function syncAll()');
     expect(shellSource).toContain('const activePageId = getActivePageId();');

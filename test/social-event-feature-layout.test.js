@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { socialModuleUrlToken, readSocialHtml } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     const full = join(process.cwd(), relativePath);
@@ -50,7 +51,7 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(events).toContain("trigger.closest('.social-neo-time-group')");
         expect(events).not.toMatch(/event-time-group-toggle[\s\S]{0,80}event\.preventDefault\(\)/);
 
-        expect(page).toContain('social-events.js?v=20260802-event-desc-rail2');
+        expect(page).toContain(socialModuleUrlToken('social-events.js'));
         expect(page).toContain('respondPortalSocialEventRsvp: window.respondPortalSocialEventRsvp');
         expect(page).toContain('createPortalSocialEvent: window.createPortalSocialEvent');
         expect(page).toContain('typeof window.handleSocialEventsClick === \'function\'');
@@ -97,7 +98,7 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(bare).toMatch(/\.social-neo-event-feature-desc-rail[\s\S]{0,1200}:not\(\.is-scrollable\)[\s\S]{0,200}min-height:\s*0/);
         expect(bare).toMatch(/\.is-scrollable \.lux-scroll-rail__controls:not\(\[hidden\]\)\s*\{[\s\S]{0,120}display:\s*flex/);
         expect(readSource('assets/js/shared/lux-scroll-rail.js')).toMatch(/observer\.observe\(list\);[\s\S]{0,120}firstElementChild/);
-        expect(page).toContain('social-events.js?v=20260802-event-desc-rail2');
+        expect(page).toContain(socialModuleUrlToken('social-events.js'));
     });
 
     it('event shells use global home-hover-chip for lift motion', () => {
@@ -231,10 +232,10 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(fouc).toContain('.social-neo-composer-cta-card');
         expect(fouc).toContain('.social-neo-post-card');
         expect(bare).toMatch(/\.social-neo-feed-header-card\s*\{[^}]*overflow:\s*visible/);
-        expect(page).toContain('social-feed.js?v=20260801-socialfaculty3');
-        expect(html).toContain('lux-fouc-ht.css?v=20260801-portfoliocompact1');
-        expect(html).toContain('lux-page-bare-lite.css?v=20260801-socialeventscompact1');
-        expect(html).toContain('social-page.js?v=20260801-socialfaculty3');
+        expect(page).toContain(socialModuleUrlToken('social-feed.js'));
+        expect(html).toContain('lux-fouc-ht.css?v=');
+        expect(html).toContain('lux-page-bare-lite.css?v=');
+        expect(html).toContain('social-page.js?v=');
     });
 
     it('portfolio discover filter shell uses global home-hover-chip for lift motion', () => {
@@ -251,7 +252,7 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(fouc).toContain('.social-portfolio-tag-row');
         expect(bare).toMatch(/\.social-neo-portfolio-hero-discover\s*\{[^}]*overflow:\s*visible/);
         expect(bare).not.toMatch(/\.social-neo-portfolio-hero-discover\s*\{[^}]*background-color:\s*var\(--social-chip-fill\)/);
-        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260801-portfolioresume1');
+        expect(page).toContain(socialModuleUrlToken('social-workspace-portfolio-ui.js'));
     });
 
     it('portfolio feed grows with the page (no hub scroll-list cap)', () => {
@@ -275,7 +276,7 @@ describe('social-event-feature-layout.test (bare-shell era)', () => {
         expect(bare).toContain('.social-neo-community-panel--portfolio.is-merged');
         expect(bare).toMatch(/\.social-neo-community-panel--portfolio\.is-merged[\s\S]{0,200}overflow:\s*visible/);
         expect(bare).toMatch(/\.social-portfolio-card\s*\{[\s\S]{0,80}padding:\s*8px 10px/);
-        expect(bare).toMatch(/\.social-portfolio-body h3\s*\{[\s\S]{0,80}font-size:\s*14px/);
+        expect(bare).toMatch(/\.social-portfolio-card-title\s*\{[\s\S]{0,80}font-size:\s*14px/);
         expect(bare).toMatch(/\.social-portfolio-actions :is\(\.lux-primary-btn, \.lux-secondary-btn\)\s*\{[\s\S]{0,80}min-height:\s*28px/);
         expect(bare).not.toMatch(/\.social-portfolio-actions\s*\{[\s\S]{0,200}z-index:\s*1/);
         expect(portfolioUi).toContain('social-portfolio-actions');

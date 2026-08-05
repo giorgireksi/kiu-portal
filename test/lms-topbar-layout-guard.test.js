@@ -9,7 +9,9 @@ function readSource(relativePath) {
 describe('lms topbar layout guard', () => {
     const luxurySource = readSource('assets/js/features/index-luxury.js');
     const runtimeSource = readSource('assets/js/features/luxury-index-runtime.js');
-    const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
+    const chromeSource = readSource('assets/js/features/luxury-shell-picker-runtime.js');
+    const topbarSource = readSource('assets/js/features/luxury-shell-topbar-runtime.js');
+    const routeBootSource = readSource('assets/js/pages/lms-route-boot.js');
     const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
     const lmsHtml = readSource('lms.html');
 
@@ -25,8 +27,8 @@ describe('lms topbar layout guard', () => {
 
     it('skips legacy visual refresh on LMS route during shell sync', () => {
         expect(luxurySource).toContain('function isLuxRouteWorkspace(pageId = getActivePageId(), entryId = getActiveEntryPageId())');
-        expect(luxurySource).toMatch(/if \(!onAdminToolsRoute && !onLmsRoute\) \{\s*\n\s*queueLegacyVisualRefresh/);
-        expect(luxurySource).toMatch(/if \(!isLuxRouteWorkspace\(\)\) \{\s*\n\s*queueLegacyVisualRefresh/);
+        expect(luxurySource).toMatch(/if \(!onStandaloneLms && !onStandaloneAdminOrders[\s\S]*queueLegacyVisualRefresh/);
+        expect(luxurySource).toContain('queueLegacyVisualRefresh(document.querySelector');
     });
 
     it('skips legacy visual decoration inside LMS workspace nodes', () => {
@@ -39,13 +41,14 @@ describe('lms topbar layout guard', () => {
     });
 
     it('re-stabilizes LMS route class after topbar sync', () => {
-        expect(chromeSource).toContain('window.ensureLmsRouteVisualState');
-        expect(lmsHtml).toContain('window.ensureLmsRouteVisualState = ensureLmsRouteVisualState');
-        expect(lmsHtml).toContain("className !== 'lux-route-lms'");
+        expect(topbarSource).toContain('window.ensureLmsRouteVisualState');
+        expect(routeBootSource).toContain('window.ensureLmsRouteVisualState = ensureLmsRouteVisualState');
+        expect(routeBootSource).toContain("className !== 'lux-route-lms'");
     });
 
     it('re-syncs LMS visual shell after opening group list', () => {
         expect(classroomSource).toContain('scheduleLmsVisualShellSync');
-        expect(classroomSource).toMatch(/updateLmsBulkSelectionCount\(\);\s*\n\s*if \(typeof scheduleLmsVisualShellSync === 'function'\) scheduleLmsVisualShellSync\(\);/);
+        expect(classroomSource).toContain('updateLmsBulkSelectionCount();');
+        expect(classroomSource).toContain('scheduleLmsVisualShellSync();');
     });
 });

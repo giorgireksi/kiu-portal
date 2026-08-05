@@ -6,7 +6,26 @@ import { readHomeDashboardCss } from './helpers/bare-shell-css.js';
 function readSource(relativePath) {
     const full = join(process.cwd(), relativePath);
     if (!existsSync(full)) return '';
-    return readFileSync(full, 'utf8');
+    const source = readFileSync(full, 'utf8');
+    if (relativePath === 'assets/js/features/index-luxury.js') {
+        return [
+            relativePath,
+            'assets/js/features/luxury-atmosphere-runtime.js',
+            'assets/js/features/luxury-palette-runtime.js',
+            'assets/js/features/luxury-transparency-model-runtime.js',
+            'assets/js/features/luxury-index-runtime.js',
+            'assets/js/features/luxury-index-sync-runtime.js',
+        ].map((file) => readFileSync(join(process.cwd(), file), 'utf8')).join('\n');
+    }
+    if (relativePath === 'assets/js/features/luxury-shell-chrome.js') {
+        return [
+            'assets/js/features/luxury-shell-studio-runtime.js',
+            relativePath,
+            'assets/js/features/luxury-shell-picker-runtime.js',
+            'assets/js/features/luxury-shell-topbar-runtime.js',
+        ].map((file) => readFileSync(join(process.cwd(), file), 'utf8')).join('\n');
+    }
+    return source;
 }
 
 describe('particle background route integration', () => {
@@ -300,7 +319,7 @@ describe('particle background route integration', () => {
         expect(shellChrome).toContain('data-fog-profile-apply');
         expect(shellChrome).toContain('data-fog-profile-edit');
         expect(shellChrome).toContain('data-fog-profile-delete');
-        expect(shellChrome).toContain("FOG_PARAMS_TEMPLATE_VERSION = '6'");
+        expect(shellChrome).toContain("FOG_PARAMS_TEMPLATE_VERSION = '7'");
         expect(shellChrome).toContain('lux-fog-profile-index');
         expect(shellChrome).toContain('data-fog-profile-drag-handle');
         expect(shellChrome).toContain('data-lux-skip-modern-button="true"');
@@ -363,7 +382,7 @@ describe('particle background route integration', () => {
         expect(shellChrome).toContain('id="lux-static-bg-white"');
         expect(shellChrome).toContain('data-static-bg-fill');
         expect(shellChrome).toContain('setStaticBackgroundFill');
-        expect(shellChrome).toContain('norings1');
+        expect(readSource('index.html')).toContain('luxury-shell-chrome.js?v=20260805-switchperf1');
         expect(foucCss).toContain('data-lux-static-background="dark"');
         expect(foucCss).toContain('data-lux-static-background="white"');
         expect(foucCss).toContain('not(.lux-light-mode)[data-lux-background-animation="off"][data-lux-static-background="colored"]');
@@ -460,7 +479,8 @@ describe('particle background route integration', () => {
         expect(shellChrome).toContain("glowStrengthSlider.addEventListener('change'");
         expect(shellChrome).toContain('window.setGlowStrength(value, true)');
         expect(shellChrome).toContain('lux-glow-strength-value');
-        expect(atmosphere).toContain('if (options?.live) return nextPercent;');
+        expect(atmosphere).toContain('if (options?.live) {');
+        expect(atmosphere).toContain('return nextPercent;');
         expect(transparencyModel).toContain('resolveGlowTokenConfig');
         expect(tokens).toContain('var(--lux-panel-glow, 0.22)');
         expect(tokens).toContain('calc(var(--lux-panel-glow, 0.22) * 0.90)');

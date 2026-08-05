@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createRequire } from 'module';
@@ -12,7 +21,7 @@ function readSource(relativePath) {
 
 describe('LMS live quiz session create', () => {
     it('exposes New session via dataset resource key and immediate render', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         expect(uiSource).toContain('data-lms-resource-key="${escapeHtml(resourceKey)}"');
         expect(uiSource).toContain('data-lms-click="createLmsLiveSession(this.dataset.lmsResourceKey)"');
         expect(uiSource).toContain('renderLmsLiveQuizSection(canonicalKey, { preserveDraft: false, skipLoad: true });');
@@ -57,13 +66,13 @@ describe('LMS live quiz session create', () => {
     });
 
     it('ends any live session before creating a new draft session', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         expect(uiSource).toContain('function createLmsLiveSession(resourceKey)');
         expect(uiSource).toMatch(/createLmsLiveSession[\s\S]*?item\.status = 'ended'/);
     });
 
     it('pins activeSessionId to the live session when remote workspace is applied', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
         expect(workspaceSource).toContain('if (liveSession) {');
         expect(workspaceSource).toContain('preservedUi.activeSessionId = liveSession.id;');
     });

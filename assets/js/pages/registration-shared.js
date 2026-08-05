@@ -1,3 +1,11 @@
+/* READABILITY: registration shared runtime: form controls and registration flow helpers. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* Wave bag: Wave 26 registration-shared */
 window.KiuRegistrationShared = window.KiuRegistrationShared || {};
 const __kiuRegSharedApi = window.KiuRegistrationShared;

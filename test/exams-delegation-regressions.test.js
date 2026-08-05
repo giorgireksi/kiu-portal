@@ -18,7 +18,8 @@ describe('exams delegation regressions', () => {
     });
 
     it('keeps the exams console and lazy companion modules on delegated actions and field handlers', () => {
-        const baseSource = readSource('assets/js/pages/exams-console.js');
+        const baseSource = readSource('assets/js/pages/exams-console.js')
+            + readSource('assets/js/pages/exams-console-workspace-runtime.js');
         const builderSource = readSource('assets/js/pages/exams-console-builder.js');
         const adminSource = readSource('assets/js/pages/exams-console-admin.js');
         const attemptsSource = readSource('assets/js/pages/exams-console-attempts.js');
@@ -31,40 +32,39 @@ describe('exams delegation regressions', () => {
         expect(builderSource).toContain('data-exam-call="saveAndSubmitExamTemplate"');
         expect(builderSource).toContain('data-exam-input-call="syncExamTemplateField"');
         expect(builderSource).toContain('class="ex2-field ex2-field--compact ex2-field--points"');
-        expect(builderSource).toContain('class="ex2-field-label-11">Points</span>');
-        expect(builderSource).toContain('class="ex2-input ex2-input--points"');
+        expect(builderSource).toContain('class="ex2-field-label-11 lms-route-field-label">Points</span>');
+        expect(builderSource).toContain('class="lux-control lms-route-input ex2-input--points"');
         expect(builderSource).toContain('class="ex2-field ex2-field--compact ex2-field--options"');
-        expect(builderSource).toContain('class="ex2-input ex2-input--options"');
-        expect(builderSource).toContain('class="ex2-question-card-title ex2-question-card-title--builder"');
-        expect(builderSource).toContain('class="ex2-status ex2-question-card-status is-neutral"');
-        expect(builderSource).toContain('class="ex2-meta ex2-question-card-meta"');
-        expect(builderSource).toContain('class="ex2-field-label">Question text</span>');
-        expect(builderSource).toContain('class="ex2-field-label">Correct option</span>');
-        expect(builderSource).toContain('class="ex2-field-label">Options</span>');
+        expect(builderSource).toContain('class="lux-control lms-route-input ex2-input--options"');
+        expect(builderSource).toContain('ex2-question-card-title--builder');
+        expect(builderSource).toContain('ex2-question-card-status is-neutral');
+        expect(builderSource).toContain('ex2-question-card-meta');
+        expect(builderSource).toContain('Question text</span>');
+        expect(builderSource).toContain('Correct option</span>');
+        expect(builderSource).toContain('Options</span>');
         expect(builderSource).toContain('class="ex2-option-index">');
         expect(builderSource).toContain('class="ex2-list-copy-truncate"');
         expect(builderSource).toContain('class="ex2-list-item ex2-list-item--compact"');
         expect(builderSource).toContain('class="ex2-list-item-head"');
         expect(builderSource).toContain('class="ex2-list-item-title"');
         expect(builderSource).toContain('class="ex2-list-item-meta"');
-        expect(builderSource).toContain('class="ex2-field-label">Exam title</span>');
-        expect(builderSource).toContain('class="ex2-field-label">Subject</span>');
-        expect(builderSource).toContain('class="ex2-field-label">Number of variants</span>');
-        expect(builderSource).toContain('class="ex2-field-label">Questions per variant</span>');
-        expect(builderSource).toContain('class="ex2-qnav-label">Question</label>');
-        expect(builderSource).toContain('class="ex2-qnav-count">of ${total}</span>');
-        expect(builderSource).toContain('class="ex2-empty ex2-builder-empty"');
-        expect(builderSource).toContain('class="ex2-builder-empty-copy"');
+        expect(builderSource).toContain('Exam title</span>');
+        expect(builderSource).toContain('Subject</span>');
+        expect(builderSource).toContain('Number of variants</span>');
+        expect(builderSource).toContain('Questions per variant</span>');
+        expect(builderSource).toContain('class="ex2-qnav-label">Question</span>');
+        expect(builderSource).toContain('class="ex2-qnav-count lms-route-meta-12">of ${total}</span>');
+        expect(builderSource).toContain('ex2-empty ex2-builder-empty');
+        expect(builderSource).toContain('ex2-builder-empty-copy');
         expect(builderSource).toContain('class="ex2-warning ex2-builder-warning"');
         expect(builderSource).toContain('class="ex2-builder-warning-copy"');
         expect(builderSource).toContain('class="step-num ex2-progress-step-num"');
         expect(builderSource).toContain('class="step-label ex2-progress-step-label"');
         expect(builderSource).toContain('class="ex2-panel-head ex2-panel-head--flush"');
-        expect(builderSource).toContain('class="ex2-builder-section-title"');
-        expect(builderSource).toContain('class="ex2-builder-section-copy"');
+        expect(builderSource).toContain('ex2-builder-section-title');
+        expect(builderSource).toContain('ex2-builder-section-copy');
         expect(builderSource).toContain('class="ex2-form-grid ex2-form-grid--mt-12"');
         expect(builderSource).toContain('class="ex2-inline-actions ex2-inline-actions--mt-14 ex2-inline-actions--gap-10"');
-        expect(builderSource).toContain('class="ex2-inline-actions ex2-inline-actions--mt-8"');
         expect(builderSource).toContain('class="ex2-review-copy"');
         expect(builderSource).toContain('class="ex2-review-card-title"');
         expect(builderSource).toContain('ex2-review-card-meta');
@@ -77,9 +77,9 @@ describe('exams delegation regressions', () => {
         expect(builderSource).toContain('class="ex2-review-summary-card"');
         expect(builderSource).toContain('class="ex2-review-summary-value"');
         expect(builderSource).toContain('class="ex2-review-summary-label"');
-        expect(builderSource).toContain('class="ex2-builder-title"');
+        expect(builderSource).toContain('ex2-builder-title');
         expect(builderSource).toContain('class="ex2-builder-step-body lux-soft-chrome ex2-panel--animated"');
-        expect(builderSource).toContain('class="ex2-builder-summary-strip"');
+        expect(builderSource).toContain('ex2-builder-summary-strip');
         expect(builderSource).toContain('class="ex2-summary-chip-label"');
         expect(builderSource).toContain('class="ex2-summary-chip-value"');
         expect(builderSource).toContain('ex2-builder-summary-share');
@@ -103,7 +103,7 @@ describe('exams delegation regressions', () => {
         expect(adminSource).toContain('function setExamSplitStudentCount(value)');
         expect(adminSource).toContain('data-exam-call="saveExamSchedule"');
         expect(adminSource).toContain('data-exam-change-call="updateExamScheduleField"');
-        expect(adminSource).toContain('class="ex2-field-label">Feedback for the Professor/TA (required)</span>');
+        expect(adminSource).toContain('Feedback for the Professor/TA (required)</span>');
         expect(adminSource).toContain('class="ex2-cohort-check-label">');
         expect(adminSource).toContain('class="ex2-mini-list-item">');
         expect(adminSource).toContain('class="ex2-mini-list-item ex2-mini-list-item--muted"');
@@ -115,16 +115,16 @@ describe('exams delegation regressions', () => {
         expect(adminSource).toContain('class="ex2-collision-item ex2-collision-item--overflow"');
         expect(adminSource).toContain('class="ex2-form-grid ex2-form-grid--mt-8"');
         expect(adminSource).toContain('class="ex2-btn is-secondary ex2-btn--mt-10"');
-        expect(adminSource).toContain('class="ex2-panel-title"');
-        expect(adminSource).toContain('class="ex2-panel-copy"');
-        expect(adminSource).toContain('class="ex2-empty-state ex2-schedule-groups-empty"');
-        expect(adminSource).toContain('class="ex2-empty-state ex2-schedule-sessions-empty"');
+        expect(adminSource).toContain('class="lux-panel-title"');
+        expect(adminSource).toContain('class="lux-panel-copy"');
+        expect(adminSource).toContain('ex2-empty-state lux-soft-chrome ex2-schedule-groups-empty');
+        expect(adminSource).toContain('ex2-empty-state lux-soft-chrome ex2-schedule-sessions-empty');
         expect(adminSource).toContain('class="ex2-empty-state-copy"');
-        expect(adminSource).toContain('class="ex2-status ex2-session-published-pill is-approved ex2-status--ml-6"');
+        expect(adminSource).toContain('ex2-session-published-pill home-hover-chip is-approved');
         expect(adminSource).toContain('class="ex2-meta ex2-cohort-card-meta"');
         expect(adminSource).toContain('class="ex2-card-copy ex2-cohort-card-copy"');
         expect(adminSource).toContain('class="ex2-rq-board"');
-        expect(adminSource).toContain('class="ex2-rq-card"');
+        expect(adminSource).toContain('ex2-rq-card lux-soft-chrome');
         expect(adminSource).toContain('class="ex2-rq-column-head"');
         expect(adminSource).toContain('class="ex2-rq-summary-chips"');
         expect(adminSource).toContain('class="ex2-rq-card-author"');
@@ -134,20 +134,20 @@ describe('exams delegation regressions', () => {
         expect(adminSource).toContain('class="ex2-rq-toolbar"');
         expect(adminSource).toContain('class="ex2-rq-column-count');
         expect(adminSource).toContain('class="ex2-rq-avatar"');
-        expect(adminSource).toContain('class="ex2-status ex2-session-status-chip is-');
-        expect(adminSource).toContain('class="ex2-status ex2-session-published-pill is-approved ex2-status--ml-6"');
+        expect(adminSource).toContain('ex2-session-status-chip home-hover-chip is-');
+        expect(adminSource).toContain('ex2-session-published-pill home-hover-chip is-approved');
         expect(adminSource).toContain('class="ex2-session-head-main"');
         expect(adminSource).toContain('class="ex2-session-card-title"');
         expect(adminSource).toContain('class="ex2-meta ex2-session-card-meta"');
         expect(adminSource).toContain('class="ex2-card-copy ex2-session-card-copy"');
         expect(adminSource).toContain('class="ex2-inline-actions ex2-session-action-row"');
-        expect(adminSource).toContain('class="ex2-session-stat-card"');
-        expect(adminSource).toContain('class="ex2-session-stat-value"');
-        expect(adminSource).toContain('class="ex2-session-stat-label"');
+        expect(adminSource).toContain('ex2-session-stat-card lux-soft-chrome');
+        expect(adminSource).toContain('ex2-session-stat-value');
+        expect(adminSource).toContain('ex2-session-stat-label');
         expect(adminSource).toContain('class="ex2-rq-card-actions"');
         expect(adminSource).toContain('class="ex2-divider ex2-divider--20"');
         expect(adminSource).toContain('class="ex2-summary-title"');
-        expect(adminSource).toContain('class="ex2-session-summary-card"');
+        expect(adminSource).toContain('ex2-session-summary-card lux-soft-chrome');
         expect(adminSource).toContain('class="ex2-session-summary-value"');
         expect(adminSource).toContain('class="ex2-session-summary-label"');
         expect(adminSource).toContain('class="ex2-digital-pin"');
@@ -169,9 +169,9 @@ describe('exams delegation regressions', () => {
         expect(adminSource).not.toContain('style="margin-top:16px;padding:14px;border-radius:14px;border:1px solid var(--lux-border);text-align:center;"');
         expect(attemptsSource).toContain('data-exam-call="runExamStudentAction"');
         expect(attemptsSource).toContain('data-exam-input-call="updateExamManualGradeDraft"');
-        expect(attemptsSource).toContain('class="ex2-panel-title"');
-        expect(attemptsSource).toContain('class="ex2-panel-copy"');
-        expect(attemptsSource).toContain('class="ex2-empty-copy"');
+        expect(attemptsSource).toContain('class="lux-panel-title"');
+        expect(attemptsSource).toContain('class="lux-panel-copy"');
+        expect(attemptsSource).toContain('class="ex2-empty-state-copy"');
         expect(attemptsSource).toContain('class="ex2-select-card-title"');
         expect(attemptsSource).toContain('class="ex2-select-card-copy"');
         expect(attemptsSource).toContain('class="ex2-select-card-state"');
@@ -185,9 +185,9 @@ describe('exams delegation regressions', () => {
         expect(attemptsSource).toContain('class="ex2-btn is-primary ex2-manual-score-save"');
         expect(attemptsSource).toContain('class="ex2-inline-actions ex2-manual-grade-actions"');
         expect(attemptsSource).toContain('class="ex2-btn is-primary ex2-manual-grade-save"');
-        expect(attemptsSource).toContain('class="ex2-activity-metric"');
-        expect(attemptsSource).toContain('class="ex2-activity-metric-value"');
-        expect(attemptsSource).toContain('class="ex2-activity-metric-label"');
+        expect(attemptsSource).toContain('ex2-activity-metric lux-soft-chrome');
+        expect(attemptsSource).toContain('ex2-activity-metric-value');
+        expect(attemptsSource).toContain('ex2-activity-metric-label');
         expect(attemptsSource).toContain('class="ex2-results-meta-item"');
         expect(attemptsSource).toContain('class="ex2-response-summary-copy"');
 
@@ -293,7 +293,8 @@ describe('exams delegation regressions', () => {
     });
 
     it('patches exam regions without full root wipe on builder field changes', () => {
-        const baseSource = readSource('assets/js/pages/exams-console.js');
+        const baseSource = readSource('assets/js/pages/exams-console.js')
+            + readSource('assets/js/pages/exams-console-workspace-runtime.js');
         const builderSource = readSource('assets/js/pages/exams-console-builder.js');
 
         expect(baseSource).toContain('function setExamRegionMarkup');
@@ -307,10 +308,12 @@ describe('exams delegation regressions', () => {
         expect(builderSource).toContain('data-exam-region="builder-summary"');
         expect(builderSource).toContain('data-exam-region="builder-step"');
 
-        const updateFieldBlock = baseSource.match(/window\.updateExamTemplateField\s*=\s*function[\s\S]*?^\s*\};/m);
+        const updateStart = baseSource.indexOf('function updateExamTemplateField');
+        const updateEnd = baseSource.indexOf('function syncExamTemplateField', updateStart);
+        const updateFieldBlock = baseSource.slice(updateStart, updateEnd);
         expect(updateFieldBlock).toBeTruthy();
-        expect(updateFieldBlock[0]).not.toContain('renderConsole');
-        expect(updateFieldBlock[0]).toContain('patchExamBuilderSummary');
+        expect(updateFieldBlock).toContain('patchExamBuilderSummary');
+        expect(updateFieldBlock).not.toContain('renderConsole');
 
 
 
@@ -354,7 +357,8 @@ describe('exams delegation regressions', () => {
 
     it('enables searchable lux picker on exam subject select', () => {
         const builderSource = readSource('assets/js/pages/exams-console-builder.js');
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js')
+            + readSource('assets/js/features/luxury-shell-picker-runtime.js');
         const controlsCss = readSource('assets/css/lux-controls.css');
 
         expect(builderSource).toContain('id="exam-template-subject"');

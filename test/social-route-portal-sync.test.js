@@ -9,8 +9,10 @@ function readSource(relativePath) {
 describe('social route portal sync guardrails', () => {
     it('skips portal state sync on standalone social.html', () => {
         const api = readSource('assets/js/app/api.js');
+        const portalRuntime = readSource('assets/js/app/api-lms-portal-runtime.js');
 
-        expect(api).toContain('function isStandaloneSocialRoute(pathname = window.location.pathname)');
+        expect(portalRuntime).toContain('function isStandaloneSocialRoute(pathname = window.location.pathname)');
+        expect(api).toContain('const isStandaloneSocialRoute = window.isStandaloneSocialRoute');
         expect(api).toMatch(/function queuePortalStateSync[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return;/);
         expect(api).toMatch(/async function persistPortalStateToBackend[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return null;/);
         expect(api).toMatch(/function sendPortalStateKeepalive\(\) \{[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return;/);
@@ -18,9 +20,9 @@ describe('social route portal sync guardrails', () => {
     });
 
     it('keeps socialHub out of portal backend persist payload', () => {
-        const api = readSource('assets/js/app/api.js');
+        const persist = readSource('assets/js/app/api-portal-persist-runtime.js');
 
-        expect(api).toContain('delete snapshot.socialHub;');
+        expect(persist).toContain('delete snapshot.socialHub;');
     });
 
     it('uses a longer timeout for portal state persistence', () => {

@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import vm from 'vm';
+import { readSocialPageChain, readSocialPageJs, readSocialHtml, readSocialPageSource } from './helpers/social-page-source.js';
 
 function loadPageEvents() {
     const runtime = { ui: { socialDialog: null, workspaceNavOpen: false, shellDrawerOpen: false } };
@@ -9,7 +10,8 @@ function loadPageEvents() {
         window: {},
         document: {
             activeElement: null,
-            querySelectorAll: () => []
+            querySelectorAll: () => [],
+            getElementById: () => null
         },
         String,
         Boolean,
@@ -90,13 +92,14 @@ describe('social-page-events', () => {
         expect(typeof api.handleInput).toBe('function');
         expect(typeof api.handleChange).toBe('function');
 
-        const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
-        const html = readFileSync(join(process.cwd(), 'social.html'), 'utf8');
+        const page = readSocialPageJs();
+        const chain = readSocialPageSource();
+        const html = readSocialHtml();
         expect(page).not.toMatch(/async\s+function\s+handleClick\s*\(/);
         expect(page).not.toMatch(/async\s+function\s+handleSubmit\s*\(/);
         expect(page).not.toMatch(/function\s+handleInput\s*\(/);
         expect(page).not.toMatch(/function\s+handleChange\s*\(/);
-        expect(page).toContain('createKiuSocialPageEventsApi');
+        expect(chain).toContain('createKiuSocialPageEventsApi');
         expect(html).toContain('social-page-events.js');
         expect(html).toContain('social-page-events.js?v=20260804-pagesize1');
         expect(html.indexOf('social-shell-nav.js')).toBeLessThan(html.indexOf('social-page-events.js'));
@@ -118,6 +121,7 @@ describe('social-page-events', () => {
         };
         const result = await api.handleClick(event);
         expect(result).toBe('shell-feed');
+        expect(calls.some((c) => c.value === 'panel-feed')).toBe(false);
         expect(event.__kiuSocialHandled).toBe(true);
     });
 

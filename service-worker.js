@@ -1,5 +1,17 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260727-socshell13';
+const CACHE_NAME = 'kiu-portal-shell-v20260805-switchperf2';
 const CACHE_PREFIX = 'kiu-portal-shell-';
+const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
+const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
+
+function normalizeNotificationTarget(value) {
+  try {
+    const target = new URL(String(value || '/index.html'), self.location.origin);
+    if (target.origin !== self.location.origin) return '/index.html';
+    return `${target.pathname}${target.search}${target.hash}` || '/index.html';
+  } catch (error) {
+    return '/index.html';
+  }
+}
 const SHELL_ASSETS = [
   '/',
   '/index.html',
@@ -30,7 +42,7 @@ async function deleteLegacyPortalCaches() {
   const keys = await caches.keys();
   await Promise.all(
     keys
-      .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+      .filter((key) => key.startsWith(CACHE_PREFIX) && ![CACHE_NAME, ROUTE_PREFETCH_CACHE_NAME].includes(key))
       .map((key) => caches.delete(key))
   );
 }
@@ -108,6 +120,10 @@ function isNavigationRequest(request) {
   return request.mode === 'navigate' || request.destination === 'document';
 }
 
+function isRoutePrefetchRequest(request) {
+  return String(request.headers.get(ROUTE_PREFETCH_HEADER) || '').trim() === '1';
+}
+
 function isStaticAssetRequest(url, request) {
   if (url.pathname.startsWith('/assets/')) return true;
   return ['script', 'style', 'font', 'image'].includes(request.destination);
@@ -154,6 +170,12 @@ async function handleSocialRuntimeScriptRequest(request, event) {
 }
 
 async function handleNavigationRequest(request) {
+  const prefetchCache = await caches.open(ROUTE_PREFETCH_CACHE_NAME);
+  const prefetched = await prefetchCache.match(request);
+  if (prefetched) {
+    await prefetchCache.delete(request);
+    return prefetched;
+  }
   try {
     const networkResponse = await fetch(request);
     return await cacheResponse(request, networkResponse);
@@ -163,6 +185,24 @@ async function handleNavigationRequest(request) {
     const shell = await caches.match('/index.html');
     if (shell) return shell;
     return buildOfflineNavigationResponse();
+  }
+}
+
+async function handleRoutePrefetchRequest(request) {
+  try {
+    const networkResponse = await fetch(new Request(request, {
+      headers: new Headers(request.headers)
+    }));
+    if (networkResponse?.ok) {
+      const cache = await caches.open(ROUTE_PREFETCH_CACHE_NAME);
+      await cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    return new Response('', {
+      status: 503,
+      headers: { 'Cache-Control': 'no-store' }
+    });
   }
 }
 
@@ -213,6 +253,10 @@ self.addEventListener('fetch', event => {
     );
     return;
   }
+  if (isRoutePrefetchRequest(request)) {
+    event.respondWith(handleRoutePrefetchRequest(request));
+    return;
+  }
   if (isNavigationRequest(request)) {
     event.respondWith(handleNavigationRequest(request));
     return;
@@ -249,7 +293,7 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('notificationclick', event => {
     event.notification.close();
-    const targetUrl = event.notification?.data?.url || '/index.html';
+    const targetUrl = normalizeNotificationTarget(event.notification?.data?.url);
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
       const existing = clients.find(client => 'focus' in client);
@@ -284,7 +328,7 @@ self.addEventListener('push', event => {
     tag: String(payload.tag || 'kiu-update'),
     icon: String(payload.icon || 'favicon.ico'),
     data: {
-      url: String(payload.url || '/index.html')
+      url: normalizeNotificationTarget(payload.url)
     }
   };
   event.waitUntil(self.registration.showNotification(title, options));

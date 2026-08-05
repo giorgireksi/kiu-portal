@@ -8,7 +8,12 @@ function readSource(relativePath) {
 
 describe('registration legacy delegation regressions', () => {
     it('keeps the converted chancellery, program, provisioning, and subject-picking surfaces on delegated hooks', () => {
-        const source = readSource('assets/js/pages/registration.js');
+        const source = [
+            'assets/js/pages/registration.js',
+            'assets/js/pages/registration-semester-runtime.js',
+            'assets/js/pages/registration-shared.js',
+            'programs.html',
+        ].map(readSource).join('\n');
 
         expect(source).toContain('function bindRegistrationLegacyDelegates()');
         expect(source).toContain('data-reg-chanc-select-case');
@@ -19,10 +24,10 @@ describe('registration legacy delegation regressions', () => {
         expect(source).toContain('data-condition-action="remove"');
         expect(source).toContain('data-antireq-action="toggle"');
         expect(source).toContain('data-antireq-action="clear"');
-        expect(source).toContain('data-student-program-semester-filter');
-        expect(source).toContain('data-student-program-search');
-        expect(source).toContain('data-student-program-clear-search');
-        expect(source).toContain('data-student-program-module-select');
+        expect(source).toContain('data-programs-semester-filter');
+        expect(source).toContain('data-programs-search');
+        expect(source).toContain('data-programs-clear-search');
+        expect(source).toContain('data-programs-faculty');
         expect(source).toContain("action === 'add-subject'");
         expect(source).toContain("action === 'remove-subject'");
         expect(source).toContain("action === 'open-profile'");

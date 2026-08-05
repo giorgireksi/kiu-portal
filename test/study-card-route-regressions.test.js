@@ -64,7 +64,7 @@ describe('study card route regressions.test', () => {
         const fouc = readSource('assets/css/lux-fouc-ht.css');
         expect(fouc).toContain('body.lux-route-study-card #page-study-card');
         expect(fouc).toMatch(/body\.lux-route-study-card #page-study-card[\s\S]*\.study-card-summary-chip-row \.lux-status-pill\.home-hover-chip/);
-        expect(fouc).toMatch(/\[data-lux-glass-root="1"\]:not\(\.home-hover-chip\)[\s\S]*transition:\s*none/);
+        expect(fouc).toContain('body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]:not(.lux-glass-dialog-card))');
         expect(fouc).not.toContain('.study-card-summary-main.home-hover-chip:has(.study-card-summary-chip-row .home-hover-chip:hover)');
         expect(fouc).not.toContain('.study-card-summary-focus.home-hover-chip:has(.lux-hero-signal.home-hover-chip:hover)');
         expect(fouc).toMatch(/\.study-card-summary-focus\.lux-focus-panel[\s\S]*overflow:\s*visible/);

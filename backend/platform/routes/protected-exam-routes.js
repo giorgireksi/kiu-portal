@@ -3,6 +3,7 @@ function registerProtectedExamRoutes(app, deps = {}) {
         enforceRateLimit,
         examPortalAuthRateLimitMax,
         examPortalAuthRateLimitWindowMs,
+        getActorUserId,
         getSessionRole,
         getStore,
         requireAntiCheatBrowserRequest,
@@ -14,10 +15,15 @@ function registerProtectedExamRoutes(app, deps = {}) {
     } = deps;
 
     app.post('/api/exam-portal/auth', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
         if (!requireAntiCheatBrowserRequest(request, response)) return;
         if (!enforceRateLimit(request, response, 'exam-portal-auth', examPortalAuthRateLimitMax, examPortalAuthRateLimitWindowMs)) return;
         const store = getStore();
-        const result = store.createExamPortalSession(request.body || {});
+        const result = store.createExamPortalSession({
+            ...(request.body || {}),
+            authenticatedUserId: getActorUserId(sessionAccount)
+        });
         if (!result || result?.error) {
             sendError(response, result?.status || 400, result?.error || 'Exam portal sign-in failed.');
             return;

@@ -20,7 +20,8 @@ describe('portal bootstrap account isolation', () => {
     });
 
     it('scopes student-keyed portal merge to the active user id', () => {
-        const apiSource = readSource('assets/js/app/api.js');
+        const apiSource = readSource('assets/js/app/api.js')
+            + readSource('assets/js/app/api-portal-persist-runtime.js');
         const vm = require('vm');
         const context = { console };
         vm.createContext(context);
@@ -44,7 +45,8 @@ describe('portal bootstrap account isolation', () => {
     });
 
     it('blocks local bootstrap merge when portal owner account changes', () => {
-        const apiSource = readSource('assets/js/app/api.js');
+        const apiSource = readSource('assets/js/app/api.js')
+            + readSource('assets/js/app/api-portal-persist-runtime.js');
         const vm = require('vm');
         const context = { console };
         vm.createContext(context);
@@ -59,10 +61,13 @@ describe('portal bootstrap account isolation', () => {
     });
 
     it('flushes admin workspace before role identity changes', () => {
-        const utilities = readSource('assets/js/shared/utilities.js');
-        expect(utilities).toContain('function flushAdminWorkspaceBeforeRoleIdentityChange');
-        expect(utilities).toMatch(/fastRedirectRoleSwitch[\s\S]*?flushAdminWorkspaceBeforeRoleIdentityChange[\s\S]*?setActiveSessionUserByRole/);
-        expect(utilities).toMatch(/persistAdminImpersonationRoleState[\s\S]*?skipFlush[\s\S]*?reconcileAdminRegistrationCmsAfterIdentityChange/);
+        const utilities = readSource('assets/js/shared/utilities.js')
+            + readSource('assets/js/pages/admin-registration-boot-runtime.js');
+        expect(utilities).toContain('function flushAdminToolsWorkspaceBeforeIdentityChange');
+        expect(utilities).toMatch(/fastRedirectRoleSwitch[\s\S]*?setActiveSessionUserByRole/);
+        expect(utilities).toContain('flushAdminToolsWorkspaceBeforeIdentityChange');
+        expect(readSource('assets/js/app/api.js'))
+            .toMatch(/applyPortalBootstrapState[\s\S]*?reconcileAdminRegistrationCmsAfterIdentityChange/);
     });
 
     it('stamps portal owner account id and omits auth from saveState cache', () => {

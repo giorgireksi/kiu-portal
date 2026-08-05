@@ -50,7 +50,7 @@ describe('login route regressions', () => {
         expect(runtimeSource).toContain('async function beginMicrosoftPortalLogin(returnTo = window.location.href) {');
         expect(runtimeSource).toContain('async function completeMicrosoftPortalLoginFromUrl() {');
         expect(runtimeSource).toContain('async function authLogin(email, password) {');
-        expect(runtimeSource).toContain('async function authActivate(id, newPassword) {');
+        expect(runtimeSource).toContain('async function authActivate(id, activationToken, newPassword) {');
         expect(runtimeSource).toContain('const defaultTarget = getLoginRoleDefaultTarget(microsoftResult.account?.role || \'student\');');
         expect(runtimeSource).toContain('const existingSession = await restoreExistingPortalSession();');
         expect(runtimeSource).toContain("const action = actionNode.dataset.loginAction || '';");

@@ -2,19 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readSocialPageSource, readWorkspaceSurface } from './helpers/social-page-source.js';
 
 const require = createRequire(import.meta.url);
 const { PlatformStore } = require('../backend/platform/store.js');
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
-}
-
-function readWorkspaceSurface() {
-    return readSource('assets/js/pages/social-workspace.js')
-        + readSource('assets/js/pages/social-workspace-events.js')
-        + readSource('assets/js/pages/social-workspace-project-chrome.js')
-        + readSource('assets/js/pages/social-workspace-dialog-route.js');
 }
 
 function seedAccount(store, id, role = 'student') {
@@ -29,7 +23,7 @@ function seedAccount(store, id, role = 'student') {
 
 describe('social project workspace settings dialog', () => {
     it('renders a manager-gated settings dialog and open action with PM fields', () => {
-        const source = readSource('assets/js/pages/social-page.js');
+        const source = readSocialPageSource();
 
         const workspaceModule = readSource('assets/js/pages/social-workspace.js');
         const projectChrome = readSource('assets/js/pages/social-workspace-project-chrome.js');
@@ -54,7 +48,7 @@ describe('social project workspace settings dialog', () => {
     });
 
     it('forwards advisor, team size, and showcase summary through the settings submit', () => {
-        const source = readSource('assets/js/pages/social-page.js');
+        const source = readSocialPageSource();
         expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-settings'[\s\S]*?advisorUserId: text\(form\.projectAdvisorUserId/);
         expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-settings'[\s\S]*?recommendedTeamSize: Number\(form\.projectRecommendedTeamSize/);
         expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-settings'[\s\S]*?minTeamSize: Number\(form\.projectMinTeamSize/);

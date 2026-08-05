@@ -17,4 +17,4 @@ describe('lux topbar overlap regressions', () => {
         expect(tokens).toContain(`--lux-chrome-bottom: var(--lux-chrome-bottom-fallback)`);
     });
 
-    
+});

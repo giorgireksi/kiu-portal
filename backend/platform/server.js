@@ -29,6 +29,9 @@ const { registerChancelleryRoutes } = require('./routes/chancellery-routes');
 const { registerSystemRoutes } = require('./routes/system-routes');
 const { PlatformStore } = require('./store');
 const { isPortalImpersonationRole } = require('./domains/auth-session-service');
+const { sendFirebaseNotification } = require('./domains/firebase-push-service');
+const { SOCIAL_PIN_API_VERSION } = require('./domains/social-pin-service');
+const { STUDENT_SERVICE_API_MANIFEST_VERSION } = require('./contracts/student-service-api-contract');
 const lmsLiveQuizService = require('./domains/lms-live-quiz-service');
 const { asArray, uniqueStrings } = require('./utils');
 
@@ -72,6 +75,8 @@ const CURRENT_ENVIRONMENT = String(process.env.KIU_ENVIRONMENT || process.env.NO
 const IS_PRODUCTION_ENVIRONMENT = ['production', 'prod'].includes(CURRENT_ENVIRONMENT);
 const LOGIN_RATE_LIMIT_WINDOW_MS = Number(process.env.KIU_AUTH_RATE_LIMIT_WINDOW_MS || 10 * 60 * 1000);
 const LOGIN_RATE_LIMIT_MAX = Number(process.env.KIU_AUTH_RATE_LIMIT_MAX || 20);
+const ACTIVATION_RATE_LIMIT_WINDOW_MS = Number(process.env.KIU_ACTIVATION_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+const ACTIVATION_RATE_LIMIT_MAX = Number(process.env.KIU_ACTIVATION_RATE_LIMIT_MAX || 5);
 const RESET_RATE_LIMIT_WINDOW_MS = Number(process.env.KIU_RESET_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
 const RESET_RATE_LIMIT_MAX = Number(process.env.KIU_RESET_RATE_LIMIT_MAX || 10);
 const SSE_MAX_CONNECTIONS_PER_USER = Math.max(1, Number(process.env.KIU_SSE_MAX_CONNECTIONS_PER_USER || 4));
@@ -282,7 +287,12 @@ const inMemoryRateLimits = new Map();
 
 const app = express();
 app.disable('x-powered-by');
-app.set('trust proxy', Number(process.env.KIU_TRUST_PROXY_HOPS || 1));
+app.set(
+    'trust proxy',
+    Number.isFinite(Number(process.env.KIU_TRUST_PROXY_HOPS))
+        ? Number(process.env.KIU_TRUST_PROXY_HOPS)
+        : (IS_PRODUCTION_ENVIRONMENT ? 1 : 0)
+);
 // Gallery uploads arrive as data URLs, which are roughly one third larger than
 // the original file. This allows a 100 MB gallery asset without changing the
 // ordinary per-file upload cap.
@@ -324,7 +334,9 @@ registerSystemRoutes(app, {
     resolveRequestedDownloadPlatform,
     sendAntiCheatDownloadFile,
     sendError,
-    requireSessionAccount
+    requireSessionAccount,
+    socialPinApiVersion: SOCIAL_PIN_API_VERSION,
+    studentServiceApiManifestVersion: STUDENT_SERVICE_API_MANIFEST_VERSION
 });
 
 const sseClients = new Map();
@@ -2222,7 +2234,7 @@ async function buildGraphSendAttachments(rawAttachments = [], actorUserId = '') 
         const file = store.getFile(storageKey);
         const ownerUserId = String(file?.ownerUserId || '').trim();
         const uploadedBy = String(file?.uploadedBy || '').trim();
-        if ((ownerUserId || uploadedBy) && ownerUserId !== actorUserId && uploadedBy !== actorUserId) continue;
+        if (!file || (!ownerUserId && !uploadedBy) || (ownerUserId !== actorUserId && uploadedBy !== actorUserId)) continue;
         if (!file?.path || !fs.existsSync(file.path)) continue;
         const contentBytes = fs.readFileSync(file.path).toString('base64');
         attachments.push({
@@ -2488,6 +2500,7 @@ registerPortalSupportRoutes(app, {
     appOrigin: APP_ORIGIN,
     allowedCorsOrigins: ALLOWED_CORS_ORIGINS,
     broadcastAll,
+    buildSelfServiceAccountPayload,
     getActorUserId,
     getSessionAccount,
     getSessionRole,
@@ -2648,6 +2661,8 @@ registerAuthRoutes(app, {
 });
 
 registerAuthMaintenanceRoutes(app, {
+    activationRateLimitMax: ACTIVATION_RATE_LIMIT_MAX,
+    activationRateLimitWindowMs: ACTIVATION_RATE_LIMIT_WINDOW_MS,
     enforceRateLimit,
     getSessionToken,
     getStore: () => store,
@@ -2736,6 +2751,7 @@ registerProtectedExamRoutes(app, {
     enforceRateLimit,
     examPortalAuthRateLimitMax: EXAM_PORTAL_AUTH_RATE_LIMIT_MAX,
     examPortalAuthRateLimitWindowMs: EXAM_PORTAL_AUTH_RATE_LIMIT_WINDOW_MS,
+    getActorUserId,
     getSessionRole,
     getStore: () => store,
     requireAntiCheatBrowserRequest,
@@ -2795,6 +2811,12 @@ async function startServer() {
                 const notification = originalCreateNotification(payload);
                 if (notification?.recipientUserId) {
                     sendWebPushNotification(notification.recipientUserId, notification).catch(() => null);
+                    sendFirebaseNotification(
+                        notification.recipientUserId,
+                        notification,
+                        store,
+                        buildPortalPageUrl
+                    ).catch(() => null);
                     pushEvent([notification.recipientUserId], {
                         type: 'notification:created',
                         notification: {

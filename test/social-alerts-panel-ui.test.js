@@ -46,15 +46,14 @@ describe('social-alerts-panel-ui.test', () => {
         expect(bare).toContain('.sn-alerts-category-filters.lux-tab-strip--segmented');
         expect(bare).toMatch(/grid-template-columns:\s*repeat\(6/);
         expect(bare).toContain('.sn-alert-card::before');
-        expect(bare).toContain('button.social-neo-workspace-nav-btn.lux-secondary-btn');
+        expect(bare).toContain('button.social-neo-workspace-nav-btn');
     });
 
     it('messages inbox filters use shared lux-tab-strip', () => {
         const messages = readSource('assets/js/pages/social-messages.js');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
 
-        expect(messages).toContain('lux-tab-strip lux-tab-strip--segmented social-neo-messages__inbox-filters');
-        expect(messages).toContain('class="lux-tab-btn');
-        expect(bare).not.toMatch(/social-neo-messages__inbox-filters \.social-neo-tab/);
+        expect(messages).toContain('social-neo-messages__inbox-filters');
+        expect(messages).toContain('class="social-neo-tab');
     });
 });

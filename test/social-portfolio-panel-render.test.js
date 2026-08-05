@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { socialModuleUrlToken } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -92,8 +93,8 @@ describe('social portfolio panel render regressions', () => {
         expect(bare).toMatch(/\.social-portfolio-card-title-viewport\s*\{[\s\S]{0,300}max-height:\s*calc\(1\.2em \* 6 \+ 16px\)/);
         expect(bare).toMatch(/\.social-portfolio-card-summary-viewport\s*\{[\s\S]{0,300}max-height:\s*calc\(1\.35em \* 6 \+ 16px\)/);
         expect(bare).toMatch(/\.social-portfolio-card-title-rail\.is-scrollable[\s\S]{0,400}min-height:\s*calc\(1\.2em \* 6 \+ 16px \+ 12px\)/);
-        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260802-portfolio-rail1');
+        expect(page).toContain(socialModuleUrlToken('social-workspace-portfolio-ui.js'));
         expect(shellRuntime).toContain('[data-portfolio-title-rail], [data-portfolio-summary-rail]');
-        expect(interactions).toMatch(/activePanel === 'projects'\)[\s\S]{0,80}syncEventDescScrollRails/);
+        expect(interactions).toMatch(/activePanel === 'projects'[\s\S]{0,200}syncEventDescScrollRails/);
     });
 });

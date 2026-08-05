@@ -84,7 +84,8 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(bare).toContain('.gb-letter-badge');
         expect(bare).toContain('.gb-lms-staff-stat-grid .lux-strip-card');
         const gradebookHistoryUi = read('assets/js/pages/gradebook-history-ui-runtime.js');
-        expect(gradebookHistoryUi).toContain('gb-empty-state lms-route-copy');
+        expect(gradebookHistoryUi).toContain('gb-empty-state');
+        expect(gradebookHistoryUi).toMatch(/lux-empty-state|lms-route-copy|lux-panel-copy/);
         const gradebookModel = read('assets/js/pages/gradebook-model.js');
         expect(gradebookModel).toContain('gb-scheme-table lux-modern-table');
         expect(gradebookModel).toContain('lms-route-field-label gb-scheme-label');

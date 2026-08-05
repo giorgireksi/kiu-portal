@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest';
+import { readLmsWhiteboardMainRuntime } from './helpers/lms-whiteboard-source.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
@@ -72,7 +73,7 @@ describe('lms-whiteboard-model', () => {
 
     it('ESM leaf + bridge in lazy MODULE_URLS before whiteboard runtime', () => {
         const tabs = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardMainRuntime();
         const mod = readSource('assets/js/pages/lms-whiteboard-model.js');
         expect(mod).toContain('export function installLmsWhiteboardModel');
         expect(tabs).toContain('lms-whiteboard-model.js');

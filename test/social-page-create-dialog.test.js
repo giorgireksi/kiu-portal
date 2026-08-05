@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { socialModuleUrlToken } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -36,7 +37,7 @@ describe('social-page-create-dialog.test (bare-shell era)', () => {
         expect(pages).toMatch(/action === 'page-wizard-next'[\s\S]{0,500}validatePageWizardStep\(step, runtime\)/);
         expect(pages).toMatch(/pageWizardStep = 3[\s\S]{0,120}page-create-validate/);
         expect(pages).toContain('Add a short description or about section on step 3.');
-        expect(page).toContain('social-pages.js?v=20260802-page-card-rail2');
+        expect(page).toContain(socialModuleUrlToken('social-pages.js'));
         expect(runtime).toContain('facultyCode: text(input.facultyCode || input.faculty || \'\')');
     });
 
@@ -86,7 +87,7 @@ describe('social-page-create-dialog.test (bare-shell era)', () => {
         expect(bare).toMatch(/\.lux-scroll-rail__controls\s*\{[\s\S]{0,120}display:\s*none/);
         expect(bare).toMatch(/\.is-scrollable \.lux-scroll-rail__controls:not\(\[hidden\]\)\s*\{[\s\S]{0,120}display:\s*flex/);
         expect(bare).toMatch(/\.social-neo-page-card-about-rail \.social-neo-page-card-about-text\s*\{[\s\S]{0,300}-webkit-line-clamp:\s*unset/);
-        expect(page).toContain('social-pages.js?v=20260802-page-card-rail2');
+        expect(page).toContain(socialModuleUrlToken('social-pages.js'));
         expect(interactions).toMatch(/activePanel === 'pages'[\s\S]{0,120}syncEventDescScrollRails/);
     });
 });

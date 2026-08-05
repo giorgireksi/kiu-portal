@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { expectLmsRouteCssLinks } from './helpers/lms-route-css.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -9,7 +10,7 @@ function readSource(relativePath) {
 
 describe('LMS whiteboard fullscreen parity', () => {
     it('command bar includes the full tool set and stroke control', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const commandBarBlock = runtime.match(/function renderLmsWhiteboardCommandBar[\s\S]*?(?=\nfunction )/)?.[0] || '';
         const toolGroupsBlock = runtime.match(/const LMS_WHITEBOARD_TOOL_GROUPS[\s\S]*?];/)?.[0] || '';
 
@@ -32,7 +33,7 @@ describe('LMS whiteboard fullscreen parity', () => {
     });
 
     it('exposes collab pill entry points without template modals', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const collab = readSource('assets/js/pages/lms-whiteboard-collab-runtime.js');
 
         expect(runtime).not.toContain('function openLmsWhiteboardTemplatesModal');
@@ -47,7 +48,7 @@ describe('LMS whiteboard fullscreen parity', () => {
     });
 
     it('keeps fullscreen toggle on button without keyboard shortcuts', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).not.toContain('function onLmsWhiteboardKeyDown');
         expect(runtime).toContain('data-lms-whiteboard-action="toggle-fullscreen"');
@@ -61,6 +62,6 @@ describe('LMS whiteboard fullscreen parity', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
     });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { readSocialHtml, socialModuleUrlToken } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -41,10 +42,10 @@ describe('social-page-profile-shell (shared shell CSS)', () => {
     });
 
     it('cache-busts pages module and fouc for profile shell', () => {
-        const html = readSource('social.html');
+        const html = readSocialHtml();
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260730-pageprofile1/);
-        expect(html).toMatch(/social-page\.js\?v=20260730-pageprofile1/);
-        expect(page).toContain('social-pages.js?v=20260730-pageprofile1');
+        expect(html).toMatch(/lux-fouc-ht\.css\?v=/);
+        expect(html).toMatch(/social-page\.js\?v=/);
+        expect(page).toContain(socialModuleUrlToken('social-pages.js'));
     });
 });

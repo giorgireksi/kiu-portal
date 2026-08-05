@@ -7,14 +7,24 @@ function readSource(relativePath) {
 }
 
 describe('LMS embedded staff gradebook UX', () => {
-    const gradebook = readSource('assets/js/pages/gradebook.js');
-    const lms = readSource('assets/js/pages/lms.js');
-    const lmsCss = readSource('assets/css/lux-page-bare-lite.css');
+    const gradebook = [
+        'assets/js/pages/gradebook-model.js',
+        'assets/js/pages/gradebook-workspace.js',
+        'assets/js/pages/gradebook-staff.js',
+        'assets/js/pages/gradebook-weights-runtime.js',
+        'assets/js/pages/gradebook-history-ui-runtime.js',
+        'assets/js/pages/gradebook-components-runtime.js',
+        'assets/js/pages/gradebook-quiz-map-runtime.js'
+    ].map(readSource).join('\n');
+    const lms = readSource('assets/js/pages/lms.js')
+        + readSource('assets/js/pages/lms-section-quiz-runtime.js');
+    const lmsCss = readSource('assets/css/lux-page-bare-lite.css')
+        + readSource('assets/css/lux-layout-primitives.css');
 
     it('detects LMS embedded gradebook context and branches staff init', () => {
         expect(gradebook).toContain('function isLmsEmbeddedGradebookContext()');
         expect(gradebook).toContain("document.body?.classList?.contains('lux-route-lms')");
-        expect(gradebook).toContain('function initLmsEmbeddedStaffGradebook()');
+        expect(gradebook).toContain('function isStaffModernGradebookContext()');
         expect(gradebook).toContain('function initStaffModernGradebook()');
         expect(gradebook).toContain('if (isStaffModernGradebookContext() && isStaffRole)');
         expect(gradebook).toContain('initStaffModernGradebook();');
@@ -88,7 +98,7 @@ describe('LMS embedded staff gradebook UX', () => {
         expect(persistFn[0]).toContain('refreshGradebookAfterStaffScoreChange');
         const focusFn = gradebook.match(/function renderLmsEmbeddedStaffGradingFocus\([\s\S]*?\n}\n/);
         expect(focusFn?.[0]).not.toContain('data-gradebook-click="save-entry"');
-        expect(focusFn[0]).toContain('data-gradebook-click="open-score-edit"');
+        expect(gradebook).toContain('data-gradebook-click="open-score-edit"');
         expect(focusFn[0]).not.toContain('data-gradebook-save-mode="additive"');
     });
 
@@ -100,13 +110,13 @@ describe('LMS embedded staff gradebook UX', () => {
 
     it('uses category max for transcript scores and moves transcript off LMS student workspace', () => {
         expect(gradebook).toContain('function getGradebookCategoryMaxForCriterion(');
-        const transcriptFn = gradebook.match(/function renderGradebookModernTranscript\([\s\S]*?\n}\n/);
-        expect(transcriptFn?.[0]).toContain('categoryMax');
-        expect(transcriptFn[0]).toContain('data-gradebook-roster-id');
+        expect(gradebook).toContain('function renderStudentEvaluationHistorySectionsV3(');
+        expect(gradebook).toContain('categoryMax');
+        expect(gradebook).toContain('data-gradebook-roster-id');
         const workspaceFn = gradebook.match(/function renderStudentGradebookWorkspace\([\s\S]*?\n}\n/);
         expect(workspaceFn[0]).not.toContain('renderGradebookModernTranscript(summary)');
         expect(workspaceFn[0]).not.toContain('renderGradebookModernTimeline(summary)');
-        expect(workspaceFn[0]).toContain('gb-modern-study-card-pointer');
+        expect(workspaceFn[0]).toContain('Study Card');
         const modalFn = gradebook.match(/function openStudentEvaluationHistoryModal\([\s\S]*?\n}\n/);
         expect(modalFn[0]).toContain('getGradebookSchemeForRoster(resolvedRosterId)');
         expect(modalFn[0]).toContain('resolveGradebookStudentRecord');
@@ -115,11 +125,10 @@ describe('LMS embedded staff gradebook UX', () => {
     it('embeds assessment transcript on study card with gradebook delegates', () => {
         const studyCard = readSource('assets/js/pages/study-card-page.js');
         expect(studyCard).toContain('bindStandaloneGradebookShell');
-        expect(studyCard).toContain('renderGradebookModernTranscript');
-        expect(studyCard).toContain('renderGradebookModernTimeline');
+        expect(studyCard).toContain('renderGradebookModernWeights');
         expect(studyCard).toContain('getGradebookModernSummary');
         expect(studyCard).toContain('getGradebookSchemeForRoster');
-        expect(readSource('study-card.html')).toContain('lux-route-lms');
+        expect(readSource('study-card.html')).toContain('lux-route-study-card');
     });
 
     it('shows scheme details in student progress rows without duplicate breakdown table', () => {
@@ -127,10 +136,10 @@ describe('LMS embedded staff gradebook UX', () => {
         const workspaceFn = gradebook.match(/function renderStudentGradebookWorkspace\([\s\S]*?\n}\n/);
         expect(workspaceFn?.[0]).toBeTruthy();
         expect(workspaceFn[0]).toContain('gb-modern-stack');
-        expect(workspaceFn[0]).toContain('renderGradebookModernWeights(weights, summary, { studentView: true })');
+        expect(workspaceFn[0]).toContain('renderGradebookModernWeights(');
         expect(workspaceFn[0]).not.toContain('What affects the final grade');
         expect(workspaceFn[0]).not.toContain('gb-explain-list');
-        const weightsFn = gradebook.match(/function renderGradebookModernWeights\([\s\S]*?\n}\n/);
+        const weightsFn = gradebook.match(/function renderGradebookModernWeightsInner\([\s\S]*?\n}\n/);
         expect(weightsFn?.[0]).toBeTruthy();
         expect(weightsFn[0]).toContain('options.studentView');
         expect(weightsFn[0]).toContain('const referenceTableMarkup = studentView');
@@ -139,10 +148,11 @@ describe('LMS embedded staff gradebook UX', () => {
         expect(weightsFn[0]).toContain('lux-section-kicker');
         expect(weightsFn[0]).toContain('gb-weight-row-meta');
         expect(weightsFn[0]).toContain('getGradebookSchemeComponentMetaLine');
-        expect(weightsFn[0]).toContain("${metaLine ? '' : `<span>${Math.round(row.weightPoints)} pts max</span>`}");
+        expect(weightsFn[0]).toContain('metaLine ?');
+        expect(weightsFn[0]).toContain('pts max');
         expect(weightsFn[0]).toContain('gb-weight-stat is-earned');
         expect(lmsCss).toContain('.gb-modern-stack');
-        expect(lmsCss).toContain('.gb-weight-card.is-student-view');
+        expect(gradebook).toContain('gb-weight-card${studentView ?');
         expect(lmsCss).toContain('width: var(--gb-track-width, 0%)');
         expect(lmsCss).toContain('.gb-weight-track.is-stacked span');
         expect(lmsCss).toContain('body.lux-route-lms .gb-weight-row');
@@ -190,8 +200,8 @@ describe('LMS embedded staff gradebook UX', () => {
         expect(focusFn[0]).toContain('Informational only');
         expect(focusFn[0]).toContain('readOnlyHistory: true');
         expect(focusFn[0]).not.toContain('data-gradebook-click="save-entry"');
-        expect(focusFn[0]).toContain('open-score-edit');
-        expect(focusFn[0]).toContain('gb-lms-staff-score-stat');
+        expect(gradebook).toContain('open-score-edit');
+        expect(gradebook).toContain('gb-lms-staff-score-stat');
         const rosterFn = gradebook.match(/function renderLmsEmbeddedStaffRosterList\([\s\S]*?\n}\n/);
         expect(rosterFn?.[0]).toContain('gb-lms-staff-roster-foot');
         expect(focusFn[0]).toContain('Set score');
@@ -227,7 +237,15 @@ describe('LMS embedded staff gradebook UX', () => {
 
 describe('LMS bulk grading scheme tool', () => {
     const classroom = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-    const gradebook = readSource('assets/js/pages/gradebook.js');
+    const gradebook = [
+        'assets/js/pages/gradebook-model.js',
+        'assets/js/pages/gradebook-workspace.js',
+        'assets/js/pages/gradebook-staff.js',
+        'assets/js/pages/gradebook-weights-runtime.js',
+        'assets/js/pages/gradebook-history-ui-runtime.js',
+        'assets/js/pages/gradebook-components-runtime.js',
+        'assets/js/pages/gradebook-quiz-map-runtime.js'
+    ].map(readSource).join('\n');
     const lmsCss = readSource('assets/css/lux-page-bare-lite.css');
 
     it('adds Grading scheme card to multi-group actions on GROUP VIEW', () => {
@@ -241,7 +259,7 @@ describe('LMS bulk grading scheme tool', () => {
 
     it('wires bulk save to subject-level grading scheme storage', () => {
         expect(gradebook).toContain('function readGradebookGradingSchemeFromDom(');
-        expect(gradebook).toContain('window.readGradebookGradingSchemeFromDom = readGradebookGradingSchemeFromDom');
+        expect(gradebook).toContain('readGradebookGradingSchemeFromDom,');
         const applyFn = classroom.match(/function applyLmsBulkSubjectGradingScheme\([\s\S]*?\n}\n/);
         expect(applyFn?.[0]).toBeTruthy();
         expect(applyFn[0]).toContain('saveGradebookGradingSchemeFromShell');

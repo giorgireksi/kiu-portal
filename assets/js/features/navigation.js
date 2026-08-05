@@ -1,3 +1,11 @@
+/* READABILITY: navigation runtime: portal route transitions and shell synchronization. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* Wave bag: Wave 26 navigation */
 window.KiuNavigation = window.KiuNavigation || {};
 const __kiuNavApi = window.KiuNavigation;
@@ -19,6 +27,109 @@ let _domCache = {
     lastPageId: null, // Track last page to skip redundant renders
     lastRenderedPages: new Set() // Track which pages have been rendered
 };
+
+const PORTAL_NAVIGATION_TIMING_KEY = 'KIU_PORTAL_NAVIGATION_TIMING';
+const portalNavigationTimings = new Map();
+let portalNavigationSequence = 0;
+
+function getPortalNavigationTimingPageId(pageId = '') {
+    return String(pageId || '').trim().toLowerCase() || 'home';
+}
+
+function markPortalNavigationPhase(pageId, phase) {
+    const normalizedPageId = getPortalNavigationTimingPageId(pageId);
+    const timing = portalNavigationTimings.get(normalizedPageId);
+    if (!timing || typeof performance === 'undefined' || typeof performance.mark !== 'function') return;
+    const markName = `${timing.prefix}:${phase}`;
+    try {
+        performance.mark(markName);
+        if (phase === 'shell-ready' || phase === 'content-ready') {
+            const measureName = `${timing.prefix}:intent-to-${phase}`;
+            performance.measure(measureName, `${timing.prefix}:intent`, markName);
+        }
+    } catch (_error) {}
+    timing.lastPhase = phase;
+    if (phase === 'content-ready') {
+        const previousTiming = window.__KIU_LAST_NAVIGATION_TIMING;
+        window.__KIU_LAST_NAVIGATION_TIMING = {
+            pageId: normalizedPageId,
+            id: timing.id,
+            lastPhase: phase,
+            ...(previousTiming?.id === timing.id ? { durationMs: previousTiming.durationMs } : {}),
+            completedAt: Date.now()
+        };
+        portalNavigationTimings.delete(normalizedPageId);
+    }
+}
+
+function markPortalNavigationIntent(pageId) {
+    const normalizedPageId = getPortalNavigationTimingPageId(pageId);
+    const timing = {
+        id: ++portalNavigationSequence,
+        prefix: `kiu:navigation:${portalNavigationSequence}`,
+        pageId: normalizedPageId,
+        startedAt: Date.now()
+    };
+    portalNavigationTimings.set(normalizedPageId, timing);
+    if (typeof performance !== 'undefined' && typeof performance.mark === 'function') {
+        try { performance.mark(`${timing.prefix}:intent`); } catch (_error) {}
+    }
+    return timing.id;
+}
+
+function markPortalNavigationStart(pageId) {
+    const normalizedPageId = getPortalNavigationTimingPageId(pageId);
+    if (!portalNavigationTimings.has(normalizedPageId)) markPortalNavigationIntent(normalizedPageId);
+    const timing = portalNavigationTimings.get(normalizedPageId);
+    markPortalNavigationPhase(normalizedPageId, 'start');
+    try {
+        sessionStorage.setItem(PORTAL_NAVIGATION_TIMING_KEY, JSON.stringify({
+            pageId: normalizedPageId,
+            id: timing.id,
+            startedAt: timing.startedAt
+        }));
+    } catch (_error) {}
+    return timing.id;
+}
+
+function markPortalNavigationIntentForCurrentPage() {
+    const pageId = getStandaloneEntryPageId?.() || getActivePageId?.() || 'home';
+    const timing = (() => {
+        try {
+            return JSON.parse(sessionStorage.getItem(PORTAL_NAVIGATION_TIMING_KEY) || 'null');
+        } catch (_error) {
+            return null;
+        }
+    })();
+    if (!timing || getPortalNavigationTimingPageId(timing.pageId) !== getPortalNavigationTimingPageId(pageId)) return;
+    const normalizedPageId = getPortalNavigationTimingPageId(pageId);
+    const restoredTiming = {
+        id: timing.id,
+        prefix: `kiu:navigation:${timing.id}`,
+        pageId: normalizedPageId,
+        startedAt: timing.startedAt
+    };
+    portalNavigationTimings.set(normalizedPageId, restoredTiming);
+    if (typeof performance !== 'undefined' && typeof performance.mark === 'function') {
+        try { performance.mark(`${restoredTiming.prefix}:intent`); } catch (_error) {}
+    }
+    markPortalNavigationPhase(normalizedPageId, 'shell-ready');
+    const durationMs = Math.max(0, Date.now() - Number(timing.startedAt || Date.now()));
+    window.__KIU_LAST_NAVIGATION_TIMING = {
+        pageId: normalizedPageId,
+        id: timing.id,
+        durationMs,
+        completedAt: Date.now()
+    };
+    try { sessionStorage.removeItem(PORTAL_NAVIGATION_TIMING_KEY); } catch (_error) {}
+}
+
+__kiuNavExpose({
+    markPortalNavigationIntent,
+    markPortalNavigationStart,
+    markPortalNavigationPhase,
+    markPortalNavigationIntentForCurrentPage,
+});
 
 function invalidateDomCache() {
     _domCache.pageSections = null;
@@ -451,11 +562,162 @@ function assignStandalonePortalRoute(pageId, role = getEffectiveUserRole(), opti
     const targetUrl = resolveWorkspacePortalNavUrl(pageId, role);
     cleanupStaleSocialRouteState(pageId);
     persistNavigationAuthSnapshot();
+    markPortalNavigationStart(pageId);
     window.location.assign(targetUrl);
 }
 
 __kiuNavExpose({
     resolveWorkspacePortalNavUrl,
+});
+
+const portalRoutePrefetchState = {
+    pending: new Map(),
+    warmed: new Set(),
+    assetHints: new Set(),
+    installed: false
+};
+const PORTAL_ROUTE_PREFETCH_ASSET_LIMIT = 12;
+
+function canPrefetchPortalRoute() {
+    if (typeof navigator === 'undefined' || navigator.onLine === false) return false;
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection?.saveData) return false;
+    return !['slow-2g', '2g'].includes(String(connection?.effectiveType || '').toLowerCase());
+}
+
+function getPortalNavigationTargetFromElement(element) {
+    const trigger = element?.closest?.(
+        '[data-nav-target],[data-route-page],[data-page],[data-registration-nav],'
+        + '[data-student-service-navigate],[data-personal-data-nav-target],[data-admin-focus],'
+        + '[data-nav-orders],[data-nav-social],[data-nav-exams],[onclick*="navigate("]'
+    );
+    if (!trigger) return '';
+    const explicitTarget = String(
+        trigger.getAttribute('data-nav-target')
+        || trigger.getAttribute('data-route-page')
+        || trigger.getAttribute('data-page')
+        || trigger.getAttribute('data-registration-nav')
+        || trigger.getAttribute('data-student-service-navigate')
+        || trigger.getAttribute('data-personal-data-nav-target')
+        || ''
+    ).trim();
+    if (explicitTarget) return explicitTarget;
+    if (trigger.hasAttribute('data-admin-focus')) return 'admin-tools';
+    if (trigger.hasAttribute('data-nav-orders')) return 'orders';
+    if (trigger.hasAttribute('data-nav-social')) return 'social';
+    if (trigger.hasAttribute('data-nav-exams')) return 'exams';
+    const onclick = String(trigger.getAttribute('onclick') || '');
+    return onclick.match(/navigate\(['"]([^'"]+)['"]\)/)?.[1] || '';
+}
+
+function addPortalRouteAssetHints(documentText, targetUrl, pageId = '') {
+    if (typeof DOMParser !== 'function') return;
+    const parsed = new DOMParser().parseFromString(documentText, 'text/html');
+    const pageToken = String(pageId || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const candidates = Array.from(parsed.querySelectorAll('script[src], link[rel~="stylesheet"][href]'))
+        .map((node, index) => {
+            const source = node.getAttribute('src') || node.getAttribute('href') || '';
+            const isStylesheet = node.matches('link[rel~="stylesheet"]');
+            const normalizedSource = source.toLowerCase();
+            const isSharedCritical = isStylesheet
+                ? /(?:lux-tokens|lux-page-bare-lite|lux-fouc|lux-controls|mobile-shell)/.test(normalizedSource)
+                : /(?:app\/(?:app|state|api|auth)|features\/(?:navigation|luxury-shell-chrome))\.js/.test(normalizedSource);
+            const isRouteEntry = !isStylesheet && pageToken
+                && new RegExp(`(?:^|/)${pageToken}(?:-page)?\\.js(?:\\?|$)`).test(normalizedSource);
+            return { node, source, index, priority: isSharedCritical ? 0 : (isRouteEntry ? 1 : 2) };
+        })
+        .sort((left, right) => left.priority - right.priority || left.index - right.index)
+        .slice(0, PORTAL_ROUTE_PREFETCH_ASSET_LIMIT);
+    candidates.forEach(({ node, source }) => {
+        if (!source || !/(?:^|\/)assets\//.test(source)) return;
+        let assetUrl;
+        try {
+            assetUrl = new URL(source, targetUrl);
+        } catch (_error) {
+            return;
+        }
+        if (assetUrl.origin !== window.location.origin || portalRoutePrefetchState.assetHints.has(assetUrl.href)) return;
+        portalRoutePrefetchState.assetHints.add(assetUrl.href);
+        const hint = document.createElement('link');
+        hint.rel = 'prefetch';
+        hint.as = node.matches('link[rel~="stylesheet"]') ? 'style' : 'script';
+        hint.href = assetUrl.href;
+        hint.dataset.kiuRoutePrefetch = '1';
+        document.head.appendChild(hint);
+    });
+}
+
+function prefetchStandalonePortalRoute(pageId, role = getEffectiveUserRole()) {
+    const normalizedPageId = resolveAliasPageId(pageId, role);
+    if (!normalizedPageId || !canPrefetchPortalRoute()) return Promise.resolve(false);
+    if (!_allowedPagesCache || _allowedPagesCacheRole !== role) {
+        _allowedPagesCache = getAllowedPagesForRole(role);
+        _allowedPagesCacheRole = role;
+    }
+    if (!_allowedPagesCache.has(pageId) && !_allowedPagesCache.has(normalizedPageId)) {
+        return Promise.resolve(false);
+    }
+    const targetUrl = resolveWorkspacePortalNavUrl(normalizedPageId, role);
+    let resolvedTarget;
+    try {
+        resolvedTarget = new URL(targetUrl, window.location.href);
+    } catch (_error) {
+        return Promise.resolve(false);
+    }
+    if (resolvedTarget.origin !== window.location.origin || resolvedTarget.href === window.location.href) {
+        return Promise.resolve(false);
+    }
+    const key = resolvedTarget.href;
+    if (portalRoutePrefetchState.warmed.has(key)) return Promise.resolve(true);
+    if (portalRoutePrefetchState.pending.has(key)) return portalRoutePrefetchState.pending.get(key);
+    const request = fetch(key, {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'X-KIU-Route-Prefetch': '1' }
+    })
+        .then(async (response) => {
+            if (!response.ok) return false;
+            const text = await response.text();
+            addPortalRouteAssetHints(text, resolvedTarget.href, normalizedPageId);
+            portalRoutePrefetchState.warmed.add(key);
+            return true;
+        })
+        .catch(() => false)
+        .finally(() => portalRoutePrefetchState.pending.delete(key));
+    portalRoutePrefetchState.pending.set(key, request);
+    return request;
+}
+
+function schedulePortalRoutePrefetch(pageId) {
+    const normalizedPageId = String(pageId || '').trim().toLowerCase();
+    if (!normalizedPageId || portalRoutePrefetchState.pending.has(normalizedPageId)) return;
+    portalRoutePrefetchState.pending.set(
+        normalizedPageId,
+        window.setTimeout(() => {
+            portalRoutePrefetchState.pending.delete(normalizedPageId);
+            void prefetchStandalonePortalRoute(normalizedPageId);
+        }, 80)
+    );
+}
+
+function installPortalRoutePrefetch() {
+    if (portalRoutePrefetchState.installed || typeof document === 'undefined') return;
+    portalRoutePrefetchState.installed = true;
+    const handleIntent = (event) => {
+        if (event.type === 'pointerover' && event.relatedTarget?.closest?.('[data-nav-target],[data-route-page],[data-page]')) return;
+        const pageId = getPortalNavigationTargetFromElement(event.target);
+        if (pageId) schedulePortalRoutePrefetch(pageId);
+    };
+    document.addEventListener('pointerover', handleIntent, { passive: true });
+    document.addEventListener('focusin', handleIntent, { passive: true });
+    document.addEventListener('touchstart', handleIntent, { passive: true });
+}
+
+__kiuNavExpose({
+    canPrefetchPortalRoute,
+    getPortalNavigationTargetFromElement,
+    prefetchStandalonePortalRoute,
+    installPortalRoutePrefetch,
 });
 
 __kiuNavExpose({
@@ -698,6 +960,7 @@ function isPortalStartupDependencyReady() {
 }
 
 function markPortalShellReady() {
+    markPortalNavigationIntentForCurrentPage();
     document.documentElement.classList.add('kiu-shell-ready');
     document.documentElement.classList.remove('kiu-shell-loading');
     if (document.body) {
@@ -774,15 +1037,19 @@ function scheduleRouteContentRender(renderFn) {
     const run = () => {
         if (hasRun) return;
         hasRun = true;
+        const activePageId = getStandaloneEntryPageId?.() || getActivePageId?.() || 'home';
         try {
             const result = renderFn();
             if (result && typeof result.then === 'function') {
                 result.catch((error) => {
                     console.warn('Route content render failed.', error);
-                });
+                }).finally(() => markPortalNavigationPhase(activePageId, 'content-ready'));
+            } else {
+                markPortalNavigationPhase(activePageId, 'content-ready');
             }
         } catch (error) {
             console.warn('Route content render failed.', error);
+            markPortalNavigationPhase(activePageId, 'content-ready');
         }
     };
     if (getStandaloneEntryPageId() === 'library') {
@@ -1564,6 +1831,8 @@ function persistNavigationAuthSnapshot() {
 
 // --- NAVIGATION CONTROLLER ---
 function navigate(pageId, skipRuntimeBootstrap = false) {
+    window.__kiuNavigationIntentSequence = Number(window.__kiuNavigationIntentSequence || 0) + 1;
+    markPortalNavigationIntent(pageId);
     const profileMenu = document.getElementById('profileMenu');
     if(profileMenu) profileMenu.classList.remove('show');
     if (typeof clearTemporarySocialNavGlow === 'function') clearTemporarySocialNavGlow();
@@ -1633,6 +1902,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
 
     if (isSamePageNavigation(pageId) || isSamePageNavigation(resolvedPageId)) {
         window.scrollTo(0, 0);
+        markPortalNavigationPhase(pageId, 'content-ready');
         return { navigationSkipped: true };
     }
 
@@ -1736,6 +2006,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
 
             if (found) {
                 window.scrollTo(0,0);
+                markPortalNavigationPhase(pageId, 'content-ready');
                 return; // Stay on page
             }
         }
@@ -1752,3 +2023,8 @@ window.__mobileNavHooked = false;
 try {
     window.dispatchEvent(new Event('kiu:navigate-runtime-ready'));
 } catch (error) {}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', installPortalRoutePrefetch, { once: true });
+} else {
+    installPortalRoutePrefetch();
+}

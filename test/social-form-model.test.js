@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { readSocialPageChain, readSocialPageJs, readSocialHtml } from './helpers/social-page-source.js';
 import {
     socialFormModelApi,
     installSocialFormModel
@@ -112,17 +113,18 @@ describe('social-form-model', () => {
     it('ESM leaf + classic bridge wired before social-page', () => {
         const model = readSource('assets/js/pages/social-form-model.js');
         const bridge = readSource('assets/js/pages/social-form-model-bridge.js');
-        const page = readSource('assets/js/pages/social-page.js');
-        const html = readSource('social.html');
+        const page = readSocialPageChain();
+        const pageJs = readSocialPageJs();
+        const html = readSocialHtml();
         expect(model).toContain('export function installSocialFormModel');
         expect(model).not.toMatch(/^\(function\s+initSocialFormModel/m);
         expect(model).not.toContain('WORKSPACE_DIALOG_KEEP_CENTER');
         expect(model).not.toContain('let bound = false');
         expect(bridge).toContain('KiuSocialFormModel');
-        expect(page).toContain('WORKSPACE_DIALOG_KEEP_CENTER');
-        expect(page).toContain('let bound = false');
-        expect(page).toContain('KiuSocialFormModel');
-        expect(page).not.toMatch(/function parseDependsOnFromForm\s*\(/);
+        expect(pageJs).toContain('WORKSPACE_DIALOG_KEEP_CENTER');
+        expect(pageJs).toContain('socialEventBinding.bound = false');
+        expect(pageJs).toContain('KiuSocialFormModel');
+        expect(pageJs).not.toMatch(/function parseDependsOnFromForm\s*\(/);
         for (const name of [
             'toDateTimeLocalValue',
             'fromDateTimeLocalValue',
@@ -133,7 +135,7 @@ describe('social-form-model', () => {
             'parseSurveyScopeValue',
             'syncSurveyDraftFromForm'
         ]) {
-            expect(page).not.toMatch(new RegExp(`function\\s+${name}\\s*\\(`));
+            expect(pageJs).not.toMatch(new RegExp(`function\\s+${name}\\s*\\(`));
             expect(page).toMatch(new RegExp(`const ${name} = window\\.${name}`));
         }
         expect(html).toMatch(/<script\s+type="module"\s+src="assets\/js\/pages\/social-form-model\.js/);

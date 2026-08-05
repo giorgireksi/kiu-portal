@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardMainRuntime } from './helpers/lms-whiteboard-source.js';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -26,7 +27,7 @@ describe('lms-whiteboard-chrome-runtime peel', () => {
     });
 
     it('keeps runtime under 2000 and chrome under 1300', () => {
-        const runtimeLines = readSource('assets/js/pages/lms-whiteboard-runtime.js').split('\n').length;
+        const runtimeLines = readLmsWhiteboardMainRuntime().split('\n').length;
         const chromeLines = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js').split('\n').length;
         expect(runtimeLines).toBeLessThanOrEqual(2000);
         expect(chromeLines).toBeLessThanOrEqual(1300);

@@ -11,10 +11,12 @@ describe('production hardening regressions', () => {
         const dockerfile = readSource('Dockerfile');
         const compose = readSource('docker-compose.production.yml');
 
-        expect(dockerfile).toContain('apk add --no-cache su-exec');
-        expect(dockerfile).toContain("exec su-exec node sh -c 'node backend/platform/server.js'");
-        expect(compose).toContain("exec su-exec node sh -c 'node tools/migrate-postgres.js && exec node backend/platform/server.js'");
+        expect(dockerfile).toContain('\nUSER node\n');
+        expect(dockerfile).not.toContain('su-exec');
+        expect(dockerfile).toContain('node tools/migrate-postgres.js && exec node backend/platform/server.js');
+        expect(compose).toContain('node tools/migrate-postgres.js && exec node backend/platform/server.js');
         expect(compose).toContain('read_only: true');
+        expect(compose).toContain('cap_drop:\n      - ALL');
         expect(compose).toContain('no-new-privileges:true');
     });
 
@@ -28,6 +30,24 @@ describe('production hardening regressions', () => {
         expect(caddyfile).toContain('hide /backend');
         expect(caddyfile).toContain('hide /docs');
         expect(caddyfile).toContain('hide /tools');
+        expect(caddyfile).toContain('hide /.git');
+        expect(caddyfile).toContain('hide /anti-cheat');
         expect(caddyfile).toContain('hide /package.json');
+    });
+
+    it('keeps local static serving bounded and adds browser isolation headers', () => {
+        const server = readSource('tools/local_dev_server.js');
+
+        expect(server).toContain("if (!['GET', 'HEAD'].includes(String(request.method || '').toUpperCase())");
+        expect(server).toContain("'X-Content-Type-Options': 'nosniff'");
+        expect(server).toContain("'X-Frame-Options': 'SAMEORIGIN'");
+    });
+
+    it('rejects weak production credentials in readiness gates', () => {
+        const checker = readSource('tools/check-production-readiness.js');
+
+        expect(checker).toContain('hasStrongSecret');
+        expect(checker).toContain('KIU_ADMIN_PASSWORD');
+        expect(checker).toContain('KIU_FIREBASE_SERVICE_ACCOUNT_FILE or JSON');
     });
 });

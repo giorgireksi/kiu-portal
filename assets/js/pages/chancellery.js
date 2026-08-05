@@ -1,3 +1,11 @@
+/* READABILITY: chancellery runtime: case dashboard and administrative workflows. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* Chancellery page logic extracted from registration.js for the standalone chancellery route. */
 
 const CHANCELLERY_REQUEST_KIND_META = {

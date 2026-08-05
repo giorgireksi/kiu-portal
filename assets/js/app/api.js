@@ -1225,6 +1225,9 @@ function applyPortalBootstrapState(remoteState, options = {}) {
 
     delete nextState.studentServiceArticles;
     KIU_STATE = nextState;
+    if (typeof window !== 'undefined' && typeof window.invalidateCanonicalState === 'function') {
+        window.invalidateCanonicalState();
+    }
     if (KIU_STATE && typeof KIU_STATE === 'object') {
         KIU_STATE.lmsLiveQuizzes = KIU_STATE.lmsLiveQuizzes && typeof KIU_STATE.lmsLiveQuizzes === 'object'
             ? KIU_STATE.lmsLiveQuizzes
@@ -1242,12 +1245,6 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         }
     } catch (error) {}
 
-    try {
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(buildPortalPersistableState(KIU_STATE)));
-    } catch (error) {
-        console.warn('Could not cache portal bootstrap state.', error);
-    }
-
     if (typeof ensureCanonicalState === 'function') {
         ensureCanonicalState();
         if (currentUser?.role === USER_ROLES.ADMIN && effectiveRole && effectiveRole !== USER_ROLES.ADMIN && typeof setActiveSessionUserByRole === 'function') {
@@ -1257,6 +1254,12 @@ function applyPortalBootstrapState(remoteState, options = {}) {
             localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(buildPortalPersistableState(KIU_STATE)));
         } catch (error) {
             console.warn('Could not refresh cached portal bootstrap state.', error);
+        }
+    } else {
+        try {
+            localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(buildPortalPersistableState(KIU_STATE)));
+        } catch (error) {
+            console.warn('Could not cache portal bootstrap state.', error);
         }
     }
     if (document.getElementById('admin-library-catalog-tabs')) {
@@ -1454,8 +1457,9 @@ async function bootstrapPortalBackendState(force = false) {
             }
             return null;
         }
-        await fetchPortalPlatformConfig(force).catch(() => null);
+        const platformConfigPromise = fetchPortalPlatformConfig(force).catch(() => null);
         const payload = await kiuPortalFetch('/api/bootstrap', { timeoutMs: 15000 });
+        await platformConfigPromise;
         if (token && (!payload?.session || !payload?.account)) {
             handleKiuUnauthorizedSession({
                 redirect: true,

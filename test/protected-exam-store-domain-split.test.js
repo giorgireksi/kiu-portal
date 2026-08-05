@@ -88,7 +88,11 @@ describe('protected exam store domain split', () => {
         });
 
         expect(session?.protectedQuizId).toBeTruthy();
-        const portalLogin = store.createExamPortalSession({ email: 'student1@example.com', studentId: 'student-1' });
+        const portalLogin = store.createExamPortalSession({
+            email: 'student1@example.com',
+            studentId: 'student-1',
+            authenticatedUserId: 'student-1'
+        });
         expect(portalLogin?.token).toBeTruthy();
         expect(portalLogin?.sessions).toHaveLength(1);
 

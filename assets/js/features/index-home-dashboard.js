@@ -1,3 +1,4 @@
+/* FINDABILITY: index home dashboard chunk registration; loaded by index.html and luxury shell runtime. */
 (function registerLuxuryHomeDashboardChunk() {
     if (typeof window.__kiuRegisterLuxuryHomeChunkUrl === 'function') {
         window.__kiuRegisterLuxuryHomeChunkUrl('assets/js/features/index-home-dashboard.plain.js?v=20260725-panelrevert1');

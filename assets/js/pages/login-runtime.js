@@ -332,12 +332,13 @@ async function authLogin(email, password) {
     }
 }
 
-async function authActivate(id, newPassword) {
+async function authActivate(id, activationToken, newPassword) {
     try {
         const payload = await kiuPortalFetch('/api/auth/activate', {
             method: 'POST',
             body: JSON.stringify({
                 id,
+                activationToken,
                 password: newPassword
             })
         });
@@ -499,10 +500,11 @@ async function handleLogin() {
 
 async function handleActivate() {
     const id = document.getElementById('act-id').value.trim();
+    const activationToken = document.getElementById('act-token').value.trim();
     const password = document.getElementById('act-password').value;
     const runActivate = typeof window.authActivate === 'function' ? window.authActivate : authActivate;
     const runAuthLogin = typeof window.authLogin === 'function' ? window.authLogin : authLogin;
-    if (!id || !password) {
+    if (!id || !activationToken || !password) {
         showError('Please fill in all fields.');
         return;
     }
@@ -511,7 +513,7 @@ async function handleActivate() {
         return;
     }
 
-    const result = await runActivate(id, password);
+    const result = await runActivate(id, activationToken, password);
     if (result?.success) {
         const user = result.user || {};
         const loginResult = await runAuthLogin(user.email, password);

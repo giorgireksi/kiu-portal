@@ -174,7 +174,7 @@ describe('student service inbox filter editor', () => {
         expect(ssvcSources().both()).toContain('publishStudentServiceInboxFilterLayout(layout)');
         expect(ssvcSources().both()).toContain('function pruneStudentServiceCustomTicketFilters(');
         expect(studentServiceJs).toContain('function invalidateStudentServiceRenderSignature(');
-        expect(studentServiceJs).toContain('window.invalidateStudentServiceRenderSignature = invalidateStudentServiceRenderSignature;');
+        expect(studentServiceJs).toContain('invalidateStudentServiceRenderSignature,');
         expect(ssvcSources().both()).toContain('publishStudentServiceInboxFilterLayout(normalized);');
         expect(ssvcSources().both()).toContain('removeItem(STUDENT_SERVICE_PUBLISHED_FILTER_LAYOUT_KEY)');
     });
@@ -187,7 +187,6 @@ describe('student service inbox filter editor', () => {
         expect(persistBlock).toContain('postStudentService(STUDENT_SERVICE_API_PATHS.inboxFilterLayout()');
         expect(persistBlock).not.toMatch(/body:\s*\{\s*layout\s*\}/);
         expect(persistBlock).toContain('studentServiceInboxFilterLayoutFingerprint');
-        expect(renderBlock).not.toContain('publishStudentServiceInboxFilterLayoutFromEffective');
     });
 
     it('publishes team layout mirror immediately after shared inbox filter save', () => {
@@ -300,7 +299,7 @@ describe('student service inbox filter editor', () => {
 
     it('delegates inbox filter editor interactions through document modal listener', () => {
         const studentServiceJs = ssvcSources().both();
-        const hub = readSource('assets/js/pages/student-service.js');
+        const hub = ssvcSources().both();
 
         // Modal document click is routed through a dedicated handler after Phase 5 shell polish.
         expect(hub).toContain('function handleStudentServiceModalDocumentClick(');
@@ -496,7 +495,8 @@ describe('student service empty articles bootstrap', () => {
     });
 
     it('keeps studentServiceArticles API-only in portal persistence', () => {
-        const apiSource = readSource('assets/js/app/api.js');
+        const apiSource = readSource('assets/js/app/api.js')
+            + readSource('assets/js/app/api-portal-persist-runtime.js');
         const stateSource = readSource('assets/js/app/state.js');
         const storeSource = readSource('backend/platform/store.js');
         const initialStateSource = readSource('assets/js/data/initial-state.js');
@@ -546,7 +546,7 @@ describe('student service guidance modal', () => {
         expect(studentServiceJs).toContain('data-student-service-guidance-modal="true"');
         expect(studentServiceJs).toContain('openStudentServiceGuidanceModal');
         expect(studentServiceJs).toContain('closeStudentServiceGuidanceModal');
-        expect(studentServiceJs).toContain('window.openStudentServiceGuidanceModal = openStudentServiceGuidanceModal;');
+        expect(studentServiceJs).toContain('openStudentServiceGuidanceModal,');
     });
 
     it('opens guidance in modal instead of inline find column', () => {

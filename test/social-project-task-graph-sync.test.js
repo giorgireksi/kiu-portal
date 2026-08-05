@@ -152,11 +152,12 @@ describe('social project task graph sync', () => {
 
     it('exposes dedicated task-graph route and runtime client', () => {
         const routes = readSource('backend/platform/routes/social-routes.js');
-        const runtime = readSource('assets/js/shared/social-runtime-lite.js');
-        const page = readSource('assets/js/pages/social-page.js');
+        const runtime = readSource('assets/js/shared/social-lite-content-runtime.js');
+        const page = readSource('assets/js/pages/social-page.js')
+            + readSource('assets/js/pages/social-workspace-stubs.js');
         expect(routes).toContain("app.post('/api/social/projects/:id/task-graph'");
-        expect(runtime).toContain('updatePortalSocialProjectTaskGraph');
         expect(runtime).toContain('/task-graph');
+        expect(readSource('assets/js/shared/social-runtime-lite.js')).toContain('updatePortalSocialProjectTaskGraph');
         expect(page).toContain("'queueProjectTaskGraphSync'");
         expect(page).toContain('createSocialWorkspaceStub');
         expect(page).toMatch(/setProjectTaskGraphPositions[\s\S]*?queueProjectTaskGraphSync/);

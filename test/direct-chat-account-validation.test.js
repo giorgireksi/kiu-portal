@@ -21,12 +21,10 @@ describe('direct chat account validation', () => {
     });
 
     it('documents the open-directory direct-message policy in the social UI', () => {
-        const socialPage = readSource('assets/js/pages/social-page.js');
+        const socialPage = readSource('assets/js/pages/social-page.js')
+            + readSource('assets/js/pages/social-workspace-portfolio-ui.js');
 
-        expect(socialPage).toContain('data-action="directory-message"');
-        expect(socialPage).toContain("action === 'directory-message' || action === 'message-start'");
-        expect(socialPage).toContain('data-action="message-start"');
-        expect(socialPage).toContain('Message');
-        expect(socialPage).toContain('Add friend');
+        expect(socialPage).toContain('data-action="portfolio-contact"');
+        expect(socialPage).toContain('Message creator');
     });
 });

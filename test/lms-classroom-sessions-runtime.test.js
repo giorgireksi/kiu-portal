@@ -25,7 +25,7 @@ describe('lms-classroom-sessions-runtime peel', () => {
         const tabs = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         expect(html.indexOf('lms-classroom-sessions-runtime.js'))
             .toBeLessThan(html.indexOf('lms-classroom-tabs-runtime.js'));
-        expect(tabs).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1');
+        expect(tabs).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
         expect(tabs).toContain('assets/js/pages/lms-whiteboard-chrome-runtime.js?v=20260728-wbchrome2');
     });
 });

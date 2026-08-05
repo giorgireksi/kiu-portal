@@ -19,6 +19,9 @@ let proctorInfo: any = null;
 const TEST_SETTINGS_PATH = path.join(app.getPath('userData'), 'anti-cheat-test-settings.json');
 const DESKTOP_SESSION_PATH = path.join(app.getPath('userData'), 'anti-cheat-desktop-session.json');
 const LOGIN_PREFS_PATH = path.join(app.getPath('userData'), 'anti-cheat-login-prefs.json');
+const RUNTIME_APP_URL_OVERRIDE = String(process.env.KIU_PUBLIC_APP_URL || process.env.KIU_ANTI_CHEAT_APP_URL || '').trim().replace(/\/$/, '');
+const RUNTIME_BACKEND_URL_OVERRIDE = String(process.env.KIU_PUBLIC_BACKEND_URL || process.env.KIU_ANTI_CHEAT_BACKEND_URL || '').trim().replace(/\/$/, '');
+const RUNTIME_QUIZ_URL_OVERRIDE = String(process.env.KIU_ANTI_CHEAT_QUIZ_URL || '').trim().replace(/\/$/, '');
 const DEFAULT_DESKTOP_APP_URL = String(process.env.KIU_PUBLIC_APP_URL || process.env.KIU_ANTI_CHEAT_APP_URL || 'http://127.0.0.1:8876').replace(/\/$/, '');
 const DEFAULT_BACKEND_URL = String(process.env.KIU_PUBLIC_BACKEND_URL || process.env.KIU_ANTI_CHEAT_BACKEND_URL || 'http://127.0.0.1:48933').replace(/\/$/, '');
 const ALLOW_LOCAL_DEV_HOSTS = !app.isPackaged || /^(development|dev)$/i.test(String(process.env.KIU_ENVIRONMENT || process.env.NODE_ENV || '').trim());
@@ -34,6 +37,21 @@ function isPlaceholderUrl(value: any) {
   return normalized.includes('university-lms.com')
     || normalized.includes('lms.youruniversity.edu')
     || normalized.includes('quiz-api.youruniversity.edu');
+}
+
+function isAllowedProtectedBackendUrl(value: any) {
+  try {
+    const target = new URL(String(value || '').trim());
+    const backend = new URL(String(config?.backendUrl || '').trim());
+    if (target.username || target.password || backend.username || backend.password) return false;
+    const localTarget = ['127.0.0.1', 'localhost'].includes(target.hostname.toLowerCase());
+    if (localTarget && ALLOW_LOCAL_DEV_HOSTS && target.protocol === 'http:') return true;
+    if (target.origin !== backend.origin) return false;
+    if (target.protocol === 'https:') return true;
+    return ALLOW_LOCAL_DEV_HOSTS && ['127.0.0.1', 'localhost'].includes(target.hostname.toLowerCase());
+  } catch (error) {
+    return false;
+  }
 }
 
 function extractHost(value: any) {
@@ -63,7 +81,9 @@ function isAllowedDesktopBridgeTarget(targetUrl: any) {
   if (value.startsWith('anticheat://')) return true;
   try {
     const parsed = new URL(value);
-    if (!/^https?:$/i.test(parsed.protocol)) return false;
+    if (parsed.username || parsed.password) return false;
+    if (parsed.protocol.toLowerCase() === 'http:' && !(ALLOW_LOCAL_DEV_HOSTS && ['127.0.0.1', 'localhost'].includes(parsed.hostname.trim().toLowerCase()))) return false;
+    if (parsed.protocol.toLowerCase() !== 'https:' && parsed.protocol.toLowerCase() !== 'http:') return false;
     const host = parsed.hostname.trim().toLowerCase();
     if (!host) return false;
     if (host === '127.0.0.1' || host === 'localhost') return true;
@@ -78,7 +98,9 @@ function isAllowedDesktopBridgeBackendUrl(targetUrl: any) {
   if (!value) return false;
   try {
     const parsed = new URL(value);
-    if (!/^https?:$/i.test(parsed.protocol)) return false;
+    if (parsed.username || parsed.password) return false;
+    if (parsed.protocol.toLowerCase() === 'http:' && !(ALLOW_LOCAL_DEV_HOSTS && ['127.0.0.1', 'localhost'].includes(parsed.hostname.trim().toLowerCase()))) return false;
+    if (parsed.protocol.toLowerCase() !== 'https:' && parsed.protocol.toLowerCase() !== 'http:') return false;
     const host = parsed.hostname.trim().toLowerCase();
     if (!host) return false;
     if (host === '127.0.0.1' || host === 'localhost') return true;
@@ -1149,11 +1171,12 @@ function normalizeLaunchUrl(rawUrl: any) {
   const fallbackUrl = getDefaultDesktopTestUrl();
   const candidate = String(rawUrl || '').trim();
   if (!candidate) return fallbackUrl;
-  if (/^https?:\/\//i.test(candidate) || /^file:\/\//i.test(candidate) || /^about:/i.test(candidate)) {
+  if (/^https?:\/\//i.test(candidate) && isAllowedDesktopBridgeTarget(candidate)) {
     return candidate;
   }
   if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(candidate)) {
-    return `https://${candidate}`;
+    const normalized = `https://${candidate}`;
+    return isAllowedDesktopBridgeTarget(normalized) ? normalized : fallbackUrl;
   }
   return fallbackUrl;
 }
@@ -1266,12 +1289,15 @@ function persistTestSettings() {
 }
 
 // Default launcher settings (can be modified by staff roles)
+let config: any;
+
 let testSettings = normalizeTestSettings({
   ...DEFAULT_TEST_SETTINGS,
-  ...loadPersistedTestSettings()
+  ...loadPersistedTestSettings(),
+  ...(RUNTIME_QUIZ_URL_OVERRIDE || RUNTIME_APP_URL_OVERRIDE
+    ? { launchUrl: RUNTIME_QUIZ_URL_OVERRIDE || `${RUNTIME_APP_URL_OVERRIDE}/exam-portal.html` }
+    : {})
 });
-
-let config: any;
 
 config = normalizeRuntimeConfig({
   quizUrl: getDefaultDesktopTestUrl(),
@@ -1295,7 +1321,19 @@ try {
   const configPath = path.join(__dirname, 'config.json');
   if (fs.existsSync(configPath)) {
     const diskConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    config = normalizeRuntimeConfig({ ...config, ...diskConfig });
+    config = normalizeRuntimeConfig({
+      ...config,
+      ...diskConfig,
+      ...(RUNTIME_APP_URL_OVERRIDE
+        ? {
+            appUrl: RUNTIME_APP_URL_OVERRIDE,
+            quizUrl: RUNTIME_QUIZ_URL_OVERRIDE || `${RUNTIME_APP_URL_OVERRIDE}/exam-portal.html`
+          }
+        : {}),
+      ...(RUNTIME_BACKEND_URL_OVERRIDE
+        ? { backendUrl: RUNTIME_BACKEND_URL_OVERRIDE }
+        : {})
+    });
   }
 } catch (err) {}
 
@@ -1509,8 +1547,16 @@ async function redeemLaunchTicket(ticket: string) {
   activeProtectedCourseId = String(payload.quiz?.courseId || payload.quiz?.groupKey || '').trim();
   activeProtectedQuizId = String(payload.quiz?.id || '').trim();
   if (payload.studentIdentity?.name) studentIdentity = payload.studentIdentity.name;
-  if (payload.reportingUrl) config.reportingUrl = String(payload.reportingUrl).trim();
-  if (payload.quizSessionUrl) config.quizUrl = String(payload.quizSessionUrl).trim();
+  const reportingUrl = String(payload.reportingUrl || '').trim();
+  const quizSessionUrl = String(payload.quizSessionUrl || '').trim();
+  if (reportingUrl && !isAllowedProtectedBackendUrl(reportingUrl)) {
+    throw new Error('The protected reporting URL is not an approved backend origin.');
+  }
+  if (quizSessionUrl && !isAllowedDesktopBridgeTarget(quizSessionUrl)) {
+    throw new Error('The protected quiz URL is not an approved application origin.');
+  }
+  if (reportingUrl) config.reportingUrl = reportingUrl;
+  if (quizSessionUrl) config.quizUrl = quizSessionUrl;
   activePolicy = normalizeAntiCheatPolicy(payload.antiCheatPolicy, {
     allowedDomains: Array.isArray(payload.allowedDomains) ? payload.allowedDomains : []
   });
@@ -1533,6 +1579,9 @@ async function handleOpenUrl(url: string) {
     const parsed = new URL(url);
     const backendUrl = String(parsed.searchParams.get('backendUrl') || '').trim();
     let createdMainWindow = false;
+    if (backendUrl && !isAllowedProtectedBackendUrl(`${backendUrl}/health`)) {
+      throw new Error('The anti-cheat backend URL is not an approved origin.');
+    }
     if (backendUrl) {
       config.backendUrl = backendUrl.replace(/\/$/, '');
     }
@@ -1575,6 +1624,9 @@ async function handleOpenUrl(url: string) {
       return;
     } else {
       const targetUrl = url.replace('anticheat://', 'https://');
+      if (!isAllowedDesktopBridgeTarget(targetUrl)) {
+        throw new Error('The requested anti-cheat page is not an approved application origin.');
+      }
       config.quizUrl = targetUrl;
     }
     if (mainWindow && config.quizUrl && !createdMainWindow) {
@@ -1589,7 +1641,8 @@ async function handleOpenUrl(url: string) {
 async function reportToLMS(eventType: string, details: any = {}) {
   if (!config.reportingUrl || config.reportingUrl.includes('university-lms.com')) return;
   try {
-    const cookies = await session.defaultSession.cookies.get({});
+    const targetUrl = eventType === 'heartbeat' && activeHeartbeatUrl ? activeHeartbeatUrl : config.reportingUrl;
+    if (!isAllowedProtectedBackendUrl(targetUrl)) return;
     const payload = {
       student: studentIdentity,
       studentId: studentIdentity?.id || '',
@@ -1599,10 +1652,8 @@ async function reportToLMS(eventType: string, details: any = {}) {
       timestamp: new Date().toISOString(),
       event: eventType,
       status: details?.status || '',
-      details: details,
-      sessionCookies: cookies.map(c => `${c.name}=${c.value}`).join('; ')
+      details: details
     };
-    const targetUrl = eventType === 'heartbeat' && activeHeartbeatUrl ? activeHeartbeatUrl : config.reportingUrl;
     await axios.post(targetUrl, payload, { timeout: 1500 }).catch(() => {});
   } catch (err) {}
 }
@@ -1764,7 +1815,7 @@ function createMainWindow() {
 
   if (!requestHeaderHookRegistered) {
     session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-      if (activeClientSessionToken) {
+      if (activeClientSessionToken && isAllowedProtectedBackendUrl(details.url)) {
         details.requestHeaders['X-Protected-Client-Session'] = activeClientSessionToken;
         details.requestHeaders['Authorization'] = `Bearer ${activeClientSessionToken}`;
       }

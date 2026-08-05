@@ -11,7 +11,8 @@ const {
 
 describe('portal state persistence safety', () => {
     it('posts the full sanitized portal persistable snapshot to the backend', () => {
-        const source = readFileSync(join(process.cwd(), 'assets/js/app/api.js'), 'utf8');
+        const source = readFileSync(join(process.cwd(), 'assets/js/app/api.js'), 'utf8')
+            + readFileSync(join(process.cwd(), 'assets/js/app/api-portal-persist-runtime.js'), 'utf8');
 
         expect(source).toContain('function buildPortalBackendPersistableState');
         expect(source).toContain("'homeDashboardPreferencesByUser'");

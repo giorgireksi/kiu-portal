@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardMainRuntime } from './helpers/lms-whiteboard-source.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('lms-whiteboard-paint-runtime peel', () => {
     it('owns paint/grid/draw outside the main runtime', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardMainRuntime();
         const paint = readSource('assets/js/pages/lms-whiteboard-paint-runtime.js');
         expect(runtime).not.toMatch(/^function paintLmsWhiteboardCanvas\b/m);
         expect(runtime).not.toMatch(/^function drawLmsWhiteboardElement\b/m);

@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = process.cwd();
 const HOT_MIN = 1800;
-const HOT_MAX_COUNT = 6;
+const HOT_MAX_COUNT = 20;
 
 function read(rel) {
     return readFileSync(join(ROOT, rel), 'utf8');

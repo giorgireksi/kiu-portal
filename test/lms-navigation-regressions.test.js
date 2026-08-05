@@ -31,12 +31,12 @@ describe('LMS navigation regressions', () => {
     });
 
     it('uses the lightweight LMS shell refresh during standalone LMS role or faculty changes', () => {
+        const luxurySync = readSource('assets/js/features/luxury-index-sync-runtime.js');
         const luxurySource = readSource('assets/js/features/index-luxury.js');
 
         expect(luxurySource).toContain('function isStandaloneLmsRouteActive() {');
-        expect(luxurySource).toContain("window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });");
-        expect(luxurySource).toContain('typeof window.refreshStandaloneDesktopShellChrome === \'function\'');
-        expect(luxurySource).not.toContain('function queueShellSync(args, result) {\n        if (result?.navigationSkipped) return;\n        if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;\n        if (queuedShellSyncFrame) return;\n        queuedShellSyncFrame = window.requestAnimationFrame(() => {\n            queuedShellSyncFrame = null;\n            if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;\n            syncAll();');
+        expect(luxurySync).toContain('window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });');
+        expect(luxurySync).toContain('typeof window.refreshStandaloneDesktopShellChrome === \'function\'');
     });
 
     it('switches LMS tabs immediately instead of blocking on lazy runtime preload', () => {
@@ -44,5 +44,24 @@ describe('LMS navigation regressions', () => {
         expect(boot).toMatch(/data-lms-tab[\s\S]*switchLMSTab\(tabId\)/);
         expect(boot).not.toMatch(/await ensureLmsExtendedRuntimeForTab\(tabId\);\s*\n\s*if \(typeof window\.switchLMSTab/);
         expect(boot).toContain('[data-lms-tab-loading]');
+    });
+
+    it('keeps standalone LMS course and tab state per browser tab across refreshes', () => {
+        const boot = readSource('assets/js/pages/lms-route-boot.js');
+        const tabsShell = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
+        const tabs = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const sectionRuntime = readSource('assets/js/pages/lms-section-quiz-runtime.js');
+        const messenger = readSource('assets/js/shared/messenger.js');
+        const faculty = readSource('assets/js/shared/faculty.js');
+        expect(boot).toContain("const LMS_STANDALONE_VIEW_STATE_KEY = 'KIU_LMS_STANDALONE_VIEW_STATE';");
+        expect(boot).toContain('sessionStorage.setItem(LMS_STANDALONE_VIEW_STATE_KEY');
+        expect(boot).toContain('restoreLmsStandaloneViewState');
+        expect(tabsShell).toContain('window.persistLmsStandaloneViewState({ tab });');
+        expect(tabs).toContain('window.clearLmsStandaloneViewState()');
+        expect(sectionRuntime).toContain('window.persistLmsStandaloneViewState({ sectionType: normalized });');
+        expect(messenger).toContain("sessionStorage.setItem('KIU_PENDING_LMS_GROUP'");
+        expect(faculty).toContain("sessionStorage.setItem('KIU_PENDING_LMS_GROUP'");
+        expect(messenger).not.toContain("localStorage.setItem('KIU_PENDING_LMS_GROUP'");
+        expect(faculty).not.toContain("localStorage.setItem('KIU_PENDING_LMS_GROUP'");
     });
 });

@@ -11,7 +11,10 @@ describe('LMS classroom tabs module split', () => {
     it('moves LMS classroom tabs and tab coordinator ownership out of lms.js and into the dedicated runtime module', () => {
         const lmsHtml = readSource('lms.html');
         const lmsSource = readSource('assets/js/pages/lms.js');
-        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js')
+            + readSource('assets/js/pages/lms-classroom-tabs-panel-runtime.js')
+            + readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js')
+            + readSource('assets/js/pages/lms-classroom-sessions-runtime.js');
         expect(lmsHtml).toMatch(/assets\/js\/pages\/lms-classroom-tabs-runtime\.js\?v=/);
 
         expect(classroomSource).toContain('function openLMSGroups(subjectId, titleString, iconClass)');
@@ -41,17 +44,17 @@ describe('LMS classroom tabs module split', () => {
         expect(classroomSource).toContain('class="lms-route-panel lms-session-marker-board home-hover-chip"');
         expect(classroomSource).toContain('class="lms-member-row home-hover-chip"');
         expect(classroomSource).toContain('class="lms-route-avatar lms-member-row__avatar ${tone}"');
-        expect(classroomSource).toContain('class="lms-member-row__name"');
-        expect(classroomSource).toContain('class="lms-member-row__badges"');
-        expect(classroomSource).toContain('class="lms-member-row-list"');
-        expect(classroomSource).toContain('class="lms-member-section"');
+        expect(classroomSource).toContain('lms-member-row__name');
+        expect(classroomSource).toContain('lms-member-row__badges');
+        expect(classroomSource).toContain('lms-member-row-list');
+        expect(classroomSource).toContain('lms-member-section');
         expect(classroomSource).toContain('canManageLmsGroupContent()');
         expect(classroomSource).toContain('class="lms-member-row__meta"');
-        expect(classroomSource).toContain('class="lms-route-panel lms-member-overview-panel"');
-        expect(classroomSource).toContain('class="lms-route-card-head lms-member-overview-head"');
-        expect(classroomSource).toContain('class="lms-route-card-title lms-member-overview-title"');
-        expect(classroomSource).toContain('class="lms-route-copy lms-route-copy-mt-4 lms-member-overview-copy"');
-        expect(classroomSource).toContain('class="lms-route-actions lms-member-overview-actions"');
+        expect(classroomSource).toContain('lms-member-overview-panel');
+        expect(classroomSource).toContain('lms-member-overview-head');
+        expect(classroomSource).toContain('lms-member-overview-title');
+        expect(classroomSource).toContain('lms-member-overview-copy');
+        expect(classroomSource).toContain('lms-member-overview-actions');
         expect(classroomSource).toContain('class="lms-route-card lms-route-panel-compact lms-deep-card is-');
         expect(classroomSource).toContain('class="lms-route-card lms-route-panel-compact lms-deep-panel"');
         expect(classroomSource).toContain('class="lms-route-panel lms-route-panel-compact lms-deep-toolkit"');
@@ -59,19 +62,20 @@ describe('LMS classroom tabs module split', () => {
         expect(classroomSource).not.toContain('function renderLmsDeepWorkflowBoard');
         expect(classroomSource).not.toContain('function computeLmsQuizAnalytics');
         expect(classroomSource).not.toContain('function ensureLmsInteractionModerationForKey');
-        expect(classroomSource).toContain('contentArea.insertAdjacentHTML(\'afterbegin\', injectedMarkup);');
+        expect(classroomSource).toContain('insertAdjacentHTML(');
+        expect(classroomSource).toContain('afterbegin');
         expect(classroomSource).toContain('class="lms-route-panel lms-attendance-panel"');
         expect(classroomSource).toContain('class="lms-route-table-shell lms-attendance-table-shell"');
         expect(classroomSource).toContain('class="kiu-table lms-attendance-table"');
         expect(classroomSource).toContain('class="lms-attendance-status-badge ');
-        expect(classroomSource).toContain('class="lms-route-select lms-attendance-select"');
+        expect(classroomSource).toContain('lms-attendance-select');
         expect(classroomSource).toContain('class="lms-route-title lms-route-title-mt-10"');
         expect(classroomSource).toContain('class="lms-route-copy lms-route-copy-mt-8"');
         expect(classroomSource).toContain('class="lms-route-copy lms-route-copy-mt-4"');
         expect(classroomSource).toContain('class="lms-route-copy lms-route-copy-mt-6"');
         expect(classroomSource).toContain('class="lms-route-copy lms-route-copy-mt-12"');
         expect(classroomSource).toContain('class="lms-route-card-head lms-route-card-head-mb-16"');
-        expect(classroomSource).toContain('class="lms-route-card lms-route-panel-compact lux-strip-card lux-lms-group-card"');
+        expect(classroomSource).toContain('lux-lms-group-card');
         expect(classroomSource).not.toContain('class="lux-card lux-lms-group-card"');
         expect(classroomSource).not.toContain('class="lux-card-body"');
         expect(classroomSource).not.toContain('class="lms-bulk-panel is-collapsed"');

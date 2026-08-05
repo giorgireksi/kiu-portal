@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -27,7 +36,7 @@ describe('LMS live quiz podium reveal', () => {
     });
 
     it('normalizes podium session fields and tracks them in broadcast signature', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
 
         const normalizeBlock = extractFunctionBody(workspaceSource, 'normalizeLmsLiveSession');
         expect(normalizeBlock).toContain('showPodium: session.showPodium === true');
@@ -39,7 +48,7 @@ describe('LMS live quiz podium reveal', () => {
     });
 
     it('preserves local podium overrides during remote merge', () => {
-        const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const workspaceSource = readLmsLiveQuizWorkspaceRuntime();
         const mergeBlock = extractFunctionBody(workspaceSource, 'mergeLmsLiveStaffQuestionOverrides');
 
         expect(mergeBlock).toContain('if (localSession.showPodium != null) remoteSession.showPodium = localSession.showPodium');
@@ -47,7 +56,7 @@ describe('LMS live quiz podium reveal', () => {
     });
 
     it('guards podium reveal until the session ends', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
         const guardBlock = extractFunctionBody(uiSource, 'canRevealLmsLiveQuizPodium');
 
         expect(guardBlock).toContain("String(session.status || '').toLowerCase() === 'ended'");
@@ -61,7 +70,7 @@ describe('LMS live quiz podium reveal', () => {
     });
 
     it('routes reveal and dismiss through broadcast sync and overlay hooks', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         const revealBlock = extractFunctionBody(uiSource, 'revealLmsLiveQuizPodium');
         expect(revealBlock).toContain('canRevealLmsLiveQuizPodium(session)');
@@ -83,7 +92,7 @@ describe('LMS live quiz podium reveal', () => {
     });
 
     it('finalizes podium overlay once per refresh instead of patching inline', () => {
-        const uiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const uiSource = readLmsLiveQuizUiChain();
 
         expect(uiSource).toContain('function finalizeLmsLivePodiumOverlay(resourceKey)');
         expect(uiSource).toMatch(/paintLmsLiveQuizSectionContent[\s\S]*finalizeLmsLivePodiumOverlay/);

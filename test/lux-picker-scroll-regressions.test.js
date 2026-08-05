@@ -105,7 +105,7 @@ describe('lux picker scroll regressions', () => {
         expect(libraryCatalogView).toContain('function syncCatalogFilterPickers(root)');
         expect(libraryCatalogView).toContain('enhanceUniversalPicker');
         expect(libraryCatalogView).not.toContain('function renderPickerPanel');
-        expect(adminLibrary).toContain('data-lux-picker-label="Topic"');
-        expect(libraryHtml).toContain('data-lux-picker-label="Topic"');
+        expect(adminLibrary).toContain('lux-picker-label">Subject (Topic)');
+        expect(libraryHtml).toContain('lux-picker-label">Search');
     });
 });

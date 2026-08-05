@@ -1,4 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import {
+    readLmsLiveQuizSource,
+    readLmsLiveQuizUiChain,
+    readLmsLiveQuizAccessRuntime,
+    readLmsLiveQuizWorkspaceRuntime,
+    readLmsLiveQuizSessionRuntime,
+    readLmsLiveQuizUiStaffRuntime,
+    readLmsLiveQuizMainUiRuntime
+} from './helpers/lms-live-quiz-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -10,8 +19,8 @@ describe('LMS live quiz workspace module split', () => {
     it('moves LMS live quiz workspace/state helpers out of lms.js and into the dedicated module', () => {
         const lmsHtml = readSource('lms.html');
         const lmsSource = readSource('assets/js/pages/lms.js');
-        const liveQuizWorkspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
-        const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const liveQuizWorkspaceSource = readLmsLiveQuizWorkspaceRuntime();
+        const liveQuizUiSource = readLmsLiveQuizUiChain();
 
         expect(lmsHtml).not.toContain('assets/js/pages/lms-live-quiz-workspace-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');

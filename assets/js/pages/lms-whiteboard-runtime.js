@@ -1,3 +1,11 @@
+/* READABILITY: LMS whiteboard runtime: canvas state, shapes, and main board behavior. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* LMS whiteboard UI + canvas runtime. */
 
 let LMS_WHITEBOARD_LOGICAL_WIDTH = 1200;

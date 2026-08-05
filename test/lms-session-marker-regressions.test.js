@@ -73,7 +73,7 @@ describe('lms session marker regressions', () => {
         expect(runtimeSource).toContain('lms-session-marker-card home-hover-chip is-${escapeHtml(status)}');
         expect(runtimeSource).toContain('lms-route-pill lux-pill home-hover-chip');
         expect(runtimeSource).toContain('lms-session-marker-type-chip home-hover-chip');
-        expect(sessionsRuntimeSource).toContain('lms-session-marker-slot-badge marker-${lmsSessionMarkerClassToken');
+        expect(sessionsRuntimeSource).toContain('lms-session-marker-slot-badge home-hover-chip marker-${lmsSessionMarkerClassToken');
         expect(runtimeSource).toContain('class="lms-session-marker-type-chip');
         expect(runtimeSource).not.toContain('lms-session-marker-type-chip marker-${lmsSessionMarkerClassToken(type)}');
     });

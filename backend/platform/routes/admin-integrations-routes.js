@@ -31,6 +31,35 @@ function registerAdminIntegrationsRoutes(app, deps = {}) {
         response.json({ ok: true, account });
     });
 
+    app.post('/api/admin/accounts/:id/activation-token', (request, response) => {
+        const sessionAccount = requireActualSessionRole(request, response, new Set(['admin']));
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.issueActivationToken(request.params.id, {
+            ttlMs: request.body?.ttlMs
+        });
+        if (!result || result?.error) {
+            sendError(response, result?.status || 400, result?.error || 'Activation token could not be issued.');
+            return;
+        }
+        addRouteAuditEvent(request, sessionAccount, {
+            eventDomain: 'auth',
+            eventType: 'activation-token-issued',
+            entityType: 'account',
+            entityId: String(request.params.id || '').trim(),
+            afterState: {
+                accountId: String(request.params.id || '').trim(),
+                expiresAt: result.expiresAt
+            }
+        });
+        response.json({
+            ok: true,
+            activationToken: result.token,
+            expiresAt: result.expiresAt,
+            account: result.account
+        });
+    });
+
     app.post('/api/admin/accounts/:id/privileges', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;

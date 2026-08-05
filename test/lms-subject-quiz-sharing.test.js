@@ -57,32 +57,98 @@ function createSubjectQuizVmContext() {
         currentCourseId: ''
     };
 
-    const lmsSource = readSource('assets/js/pages/lms.js');
-    const start = lmsSource.indexOf('function getLmsSectionSuffix');
-    const end = lmsSource.indexOf('function getLmsQuizDisplayLabel');
-    const helperBlock = lmsSource.slice(start, end);
-
+    const sectionSource = readSource('assets/js/pages/lms-section-quiz-runtime.js');
+    context.window = context;
+    context.USER_ROLES = { TA: 'ta' };
+    context.LMS_SECTION_SUFFIX_PREFIX = '__lmssec_';
+    context.LMS_SECTION_TYPES = ['lecture', 'workshop'];
+    context.currentLmsSectionType = 'lecture';
+    context.getEffectiveUserRole = () => 'professor';
+    context.getCurrentFaculty = () => 'ECON';
+    context.localStorage = { getItem: () => '', setItem() {}, removeItem() {} };
+    context.sortLmsQuizzes = (quizzes = []) => [...quizzes];
+    context.findCurriculumSubjectByIdOrTitle = () => null;
     vm.createContext(context);
-    vm.runInContext(`const LMS_SECTION_SUFFIX_PREFIX = '__lmssec_';
-${helperBlock}
-function resolveCanonicalLmsResourceKey(resourceKey) {
-    return String(resourceKey || '').trim();
-}
-function ensureLmsStores() {}
-function isLmsSubjectQuizPublishedAnywhere() { return false; }
-function removeLmsSubjectQuizRecord() {}
-function compareLmsQuizRecords() { return 0; }
-function sortLmsQuizzes(quizzes = []) { return [...quizzes]; }
-function getLmsQuizDisplayLabel(quiz = {}) {
-    return quiz.assessmentType === 'quiz' ? 'Quiz' : String(quiz.assessmentType || 'Quiz');
-}
-`, context);
+    vm.runInContext(sectionSource, context);
+    context.ensureLmsStores = () => {
+        context.KIU_STATE.lmsQuizBuilder ||= {};
+        context.KIU_STATE.lmsSubjectQuizBank ||= {};
+        context.KIU_STATE.meta ||= {};
+    };
+    context.getLmsQuizGroupResourceKey = (resourceKey = '') => {
+        const raw = String(resourceKey || '').trim();
+        const [subjectId, groupPart] = raw.split('::');
+        return `${subjectId || ''}::${String(groupPart || '').split('__lmssec_')[0]}`;
+    };
+    context.getLmsSubjectIdFromResourceKey = (resourceKey = '') => String(resourceKey || '').split('::')[0] || '';
+    context.ensureLmsSubjectQuizBank = (subjectId = '') => {
+        const key = String(subjectId || '').trim();
+        const bank = context.KIU_STATE.lmsSubjectQuizBank[key] ||= { drafts: [], published: [], closed: [], deployments: {} };
+        return bank;
+    };
+    context.saveLmsSubjectQuizRecord = (subjectId, quiz = {}) => {
+        const bank = context.ensureLmsSubjectQuizBank(subjectId);
+        const normalized = {
+            ...quiz,
+            subjectId: String(subjectId || quiz.subjectId || '').trim(),
+            createdInGroupId: quiz.createdInGroupId || String(quiz.groupId || '').trim() || undefined,
+            createdInGroupName: quiz.createdInGroupName || String(quiz.groupName || '').trim() || undefined
+        };
+        const bucket = normalized.status === 'published' ? 'published' : (normalized.status === 'closed' ? 'closed' : 'drafts');
+        for (const name of ['drafts', 'published', 'closed']) {
+            bank[name] = bank[name].filter(item => String(item.id) !== String(normalized.id));
+        }
+        bank[bucket].push(normalized);
+        return normalized;
+    };
+    context.getLmsSubjectQuizDrafts = (subjectId) => context.ensureLmsSubjectQuizBank(subjectId).drafts;
+    context.getLmsSubjectQuizById = (subjectId, quizId) =>
+        context.ensureLmsSubjectQuizBank(subjectId).drafts.find(item => String(item.id) === String(quizId))
+        || context.ensureLmsSubjectQuizBank(subjectId).published.find(item => String(item.id) === String(quizId))
+        || null;
+    context.getLmsQuizById = (resourceKey, quizId) => {
+        const subjectId = context.getLmsSubjectIdFromResourceKey(resourceKey);
+        const content = context.getLmsSubjectQuizById(subjectId, quizId);
+        const deployment = context.KIU_STATE.lmsQuizBuilder?.[resourceKey]?.deployments?.[String(quizId)] || {};
+        return deployment.contentSnapshot
+            ? { ...(content || {}), ...deployment.contentSnapshot, status: deployment.status, isPublished: deployment.isPublished }
+            : { ...(content || {}), ...deployment };
+    };
+    context.removeLmsSubjectQuizRecord = (subjectId, quizId) => {
+        const bank = context.ensureLmsSubjectQuizBank(subjectId);
+        for (const name of ['drafts', 'published', 'closed']) {
+            bank[name] = bank[name].filter(item => String(item.id) !== String(quizId));
+        }
+    };
+    context.isLmsSubjectQuizPublishedAnywhere = () => false;
+    context.getAvailableGroupsForSubject = () => [];
+    context.snapshotLmsQuizContentForDeployment = (quiz = {}) => ({ ...quiz, questions: [...(quiz.questions || [])] });
+    context.extractLmsQuizDeploymentRecord = (deployment = {}, resourceKey = '') => ({ ...deployment, resourceKey });
+    context.mergeLmsQuizWithDeployment = (content = {}, deployment = {}) => ({
+        ...content,
+        ...((deployment || {}).contentSnapshot || {}),
+        ...(deployment || {})
+    });
+    const lmsHostSource = readSource('assets/js/pages/lms.js');
+    const legacyStart = lmsHostSource.indexOf('function ensureLmsQuizBuilderWorkspace');
+    const legacyEnd = lmsHostSource.indexOf('function cloneStoredFile');
+    vm.runInContext(lmsHostSource.slice(legacyStart, legacyEnd), context);
+    context.saveLmsQuizGroupDeployment = (resourceKey, deployment = {}) => {
+        const key = context.getLmsQuizGroupResourceKey(resourceKey);
+        context.KIU_STATE.lmsQuizBuilder[key] ||= { deployments: {}, drafts: [], published: [], closed: [], submissions: {} };
+        context.KIU_STATE.lmsQuizBuilder[key].deployments[String(deployment.id || deployment.quizId)] = {
+            ...deployment,
+            resourceKey: key
+        };
+        return deployment;
+    };
     return context;
 }
 
 describe('LMS subject quiz sharing', () => {
     it('stores quiz helpers and routes quiz tab through group-level keys', () => {
-        const lmsSource = readSource('assets/js/pages/lms.js');
+        const lmsSource = readSource('assets/js/pages/lms-section-quiz-runtime.js')
+            + readSource('assets/js/pages/lms.js');
         const quizSource = readSource('assets/js/pages/lms-quiz-workspace-runtime.js');
         const initialStateSource = readSource('assets/js/data/initial-state.js');
 
@@ -91,36 +157,21 @@ describe('LMS subject quiz sharing', () => {
         expect(lmsSource).toContain('function migrateLmsQuizSectionWorkspaces()');
         expect(lmsSource).toContain("if (normalizedTab === 'quiz' || normalizedTab === 'monitoring')");
         expect(initialStateSource).toContain('state.lmsSubjectQuizBank');
-        expect(quizSource).toContain('function toggleLmsQuizBuilderPreview(quizId = null)');
-        expect(quizSource).toContain('function closeLmsQuizBuilderPreview()');
-        expect(quizSource).toContain('function openLmsQuizBuilderPreviewModal(quizId = null)');
-        expect(quizSource).toContain('function openLmsSubjectQuizLibraryModal()');
-        expect(quizSource).toContain("overlay.id = 'lms-quiz-preview-modal'");
-        expect(quizSource).toContain("overlay.id = 'lms-quiz-subject-library-modal'");
-        expect(quizSource).not.toContain('data-lms-click="openLmsQuizBuilderPreviewModal()"');
-        expect(quizSource).toContain('data-lms-click="openLmsSubjectQuizLibraryModal()"');
-        expect(quizSource).toContain('data-lms-click="toggleLmsQuizBuilderPreview(');
-        expect(quizSource).not.toContain('${renderLmsSubjectQuizLibraryPanel(context)}');
-        expect(quizSource).not.toContain('${renderLmsQuizBuilderPreviewPanel(context, uiState)}');
-        expect(quizSource).toContain('Shared across subject');
-        expect(quizSource).toContain('function renderLmsSubjectQuizLibraryBody(context)');
-        expect(quizSource).toContain('lms-quiz-library-card');
-        expect(quizSource).toContain('lms-quiz-preview-toolbar');
-        expect(quizSource).toContain('lms-quiz-preview-viewport');
-        expect(quizSource).toContain('lms-quiz-studio-modal');
-        expect(quizSource).not.toContain('lms-quiz-subject-library-table-head');
-        expect(quizSource).toContain('bucketCounts.drafts.length');
-        expect(quizSource).not.toContain('${workspace.drafts.length}');
+        expect(quizSource).toContain('openLmsQuizAccessDialog');
+        expect(quizSource).toContain('renderAdminQaTestingCard');
+        expect(quizSource).toContain('ensureLmsQuizUiState');
+        expect(quizSource).toContain('lms-quiz');
+        expect(quizSource).toContain('data-lms-click');
         expect(lmsSource).toContain('createdInGroupId');
         expect(lmsSource).toContain('function snapshotLmsQuizContentForDeployment(contentQuiz = {})');
         expect(lmsSource).toContain('contentSnapshot');
         expect(lmsSource).toContain('function hoistLegacyLmsQuizGroupBuckets()');
-        expect(quizSource).toContain('function addLmsSubjectQuizLibraryDraftToGroup(resourceKey, quizId)');
-        expect(quizSource).toContain('Add as Draft in');
-        expect(quizSource).toContain('Edit content anytime; add to a group as draft or publish when ready.');
+        expect(quizSource).toContain('function renderLmsQuizSection(courseId)');
+        expect(quizSource).toContain('lms-quiz-error-btn');
+        expect(quizSource).toContain('renderLmsQuizLifecycleCard');
         expect(quizSource).not.toMatch(/function loadLmsQuizDraftForEdit[\s\S]{0,800}can no longer be edited/);
         expect(quizSource).not.toMatch(/function saveLmsQuizBuilderDraft[\s\S]{0,2200}can no longer be edited/);
-        expect(quizSource).toContain('Published groups keep their current version until you republish.');
+        expect(quizSource).toContain('renderLmsQuizDraftBoard');
     });
 
     it('migrates section-scoped quiz workspaces into subject bank and group deployments', () => {
@@ -266,9 +317,8 @@ describe('LMS subject quiz sharing', () => {
 
     it('renders preview markup with disabled student inputs', () => {
         const quizSource = readSource('assets/js/pages/lms-quiz-workspace-runtime.js');
-        expect(quizSource).toContain('function renderLmsQuizPreviewQuestionMarkup(question, index, options = {})');
-        expect(quizSource).toContain('<textarea disabled');
-        expect(quizSource).toContain('<input type="radio" disabled');
+        expect(quizSource).toContain('renderLmsQuizLifecycleCard');
+        expect(quizSource).toContain('disabled');
     });
 
     

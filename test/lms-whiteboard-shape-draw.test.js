@@ -3,6 +3,8 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import vm from 'vm';
 import { normalizeWhiteboardElement } from '../backend/platform/domains/lms-whiteboard-service.js';
+import { readLmsWhiteboardSource, readLmsWhiteboardMainRuntime, readLmsWhiteboardSessionRuntime } from './helpers/lms-whiteboard-source.js';
+import { installLmsWhiteboardModel } from '../assets/js/pages/lms-whiteboard-model.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -26,11 +28,12 @@ function loadShapeFinalizeSandbox(runtime = '') {
         Object
     };
     context.window = context;
+    installLmsWhiteboardModel(context);
+    const { normalizeLmsWhiteboardBox, isLmsWhiteboardShapeBoxElement, isLmsWhiteboardShapeLineElement } = context.KiuLmsWhiteboardModel;
+    context.normalizeLmsWhiteboardBox = normalizeLmsWhiteboardBox;
+    context.isLmsWhiteboardShapeBoxElement = isLmsWhiteboardShapeBoxElement;
+    context.isLmsWhiteboardShapeLineElement = isLmsWhiteboardShapeLineElement;
     vm.createContext(context);
-    vm.runInContext(
-        readSource('assets/js/pages/lms-whiteboard-model.js'),
-        context
-    );
     const blocks = [
         extractFunction(runtime, 'finalizeLmsWhiteboardBoxShape'),
         extractFunction(runtime, 'finalizeLmsWhiteboardLineShape'),
@@ -42,17 +45,20 @@ function loadShapeFinalizeSandbox(runtime = '') {
 }
 
 describe('lms whiteboard shape draw', () => {
-    const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+    const mainRuntime = readLmsWhiteboardMainRuntime();
+    const sessionRuntime = readLmsWhiteboardSessionRuntime();
+    const chromeRuntime = readSource('assets/js/pages/lms-whiteboard-chrome-runtime.js');
+    const runtime = readLmsWhiteboardSource();
     const pointer = readSource('assets/js/pages/lms-whiteboard-pointer-runtime.js');
     const board = `${runtime}\n${pointer}`;
     const account = { id: 'staff-1' };
 
     it('requires a 24px drag before box shapes normalize and commit', () => {
-        const finalizeBlock = extractFunction(runtime, 'finalizeLmsWhiteboardBoxShape');
+        const finalizeBlock = extractFunction(mainRuntime, 'finalizeLmsWhiteboardBoxShape');
         expect(finalizeBlock).toContain('LMS_WHITEBOARD_SHAPE_MIN_DRAG_PX');
         expect(finalizeBlock.indexOf('Math.max(absW, absH)')).toBeLessThan(finalizeBlock.indexOf('normalizeLmsWhiteboardBox'));
 
-        const sandbox = loadShapeFinalizeSandbox(runtime);
+        const sandbox = loadShapeFinalizeSandbox(mainRuntime);
         const tiny = { type: 'rect', x: 10, y: 10, w: 1, h: 1 };
         expect(sandbox.finalizeLmsWhiteboardBoxShape(tiny)).toBe(false);
         expect(tiny.w).toBe(1);
@@ -65,17 +71,17 @@ describe('lms whiteboard shape draw', () => {
     });
 
     it('rejects line and arrow shapes shorter than 16px', () => {
-        const finalizeBlock = extractFunction(runtime, 'finalizeLmsWhiteboardLineShape');
+        const finalizeBlock = extractFunction(mainRuntime, 'finalizeLmsWhiteboardLineShape');
         expect(finalizeBlock).toContain('return length >= 16');
 
-        const sandbox = loadShapeFinalizeSandbox(runtime);
+        const sandbox = loadShapeFinalizeSandbox(mainRuntime);
         expect(sandbox.finalizeLmsWhiteboardLineShape({ type: 'line', x: 0, y: 0, x2: 4, y2: 0 })).toBe(false);
         expect(sandbox.finalizeLmsWhiteboardLineShape({ type: 'arrow', x: 0, y: 0, x2: 20, y2: 0 })).toBe(true);
     });
 
     it('defaults shape fill opacity to 0.35 in runtime and backend', () => {
-        expect(runtime).toContain('shapeDefaults: { fill: \'#f4d06f\', fillOpacity: 0.35 }');
-        expect(extractFunction(runtime, 'resolveLmsWhiteboardShapeFillOpacity')).toContain('LMS_WHITEBOARD_UI.shapeDefaults.fillOpacity');
+        expect(mainRuntime).toContain('shapeDefaults: { fill: \'#f4d06f\', fillOpacity: 0.35 }');
+        expect(extractFunction(mainRuntime, 'resolveLmsWhiteboardShapeFillOpacity')).toContain('LMS_WHITEBOARD_UI.shapeDefaults.fillOpacity');
 
         const rect = normalizeWhiteboardElement({ type: 'rect', id: 'rect-opacity', x: 0, y: 0, w: 80, h: 60 }, account);
         const grid = normalizeWhiteboardElement({ type: 'grid', id: 'grid-opacity', x: 0, y: 0, w: 120, h: 90, rows: 3, cols: 3 }, account);
@@ -84,9 +90,9 @@ describe('lms whiteboard shape draw', () => {
     });
 
     it('cancels in-progress draws on tool switch and pointercancel', () => {
-        const cancelBlock = extractFunction(runtime, 'cancelLmsWhiteboardActiveDraw');
-        const attachBlock = extractFunction(runtime, 'attachLmsWhiteboardGestureWindowListeners');
-        const setToolBlock = extractFunction(runtime, 'setLmsWhiteboardTool');
+        const cancelBlock = extractFunction(mainRuntime, 'cancelLmsWhiteboardActiveDraw');
+        const attachBlock = extractFunction(mainRuntime, 'attachLmsWhiteboardGestureWindowListeners');
+        const setToolBlock = extractFunction(chromeRuntime, 'setLmsWhiteboardTool');
 
         expect(cancelBlock).toContain('LMS_WHITEBOARD_UI.drawTool = \'\'');
         expect(cancelBlock).toContain('detachLmsWhiteboardGestureWindowListeners');
@@ -106,8 +112,8 @@ describe('lms whiteboard shape draw', () => {
 
     it('resizes shape drafts with drawTool during pointer move', () => {
         const moveBlock = extractFunction(pointer, 'onLmsWhiteboardPointerMove');
-        expect(extractFunction(runtime, 'getLmsWhiteboardActiveDrawTool')).toContain('LMS_WHITEBOARD_UI.drawTool');
-        expect(extractFunction(runtime, 'resolveLmsWhiteboardLiveDraftElement')).toContain('workspace.elements.find');
+        expect(extractFunction(mainRuntime, 'getLmsWhiteboardActiveDrawTool')).toContain('LMS_WHITEBOARD_UI.drawTool');
+        expect(extractFunction(mainRuntime, 'resolveLmsWhiteboardLiveDraftElement')).toContain('workspace.elements.find');
         expect(moveBlock).toContain('const activeTool = getLmsWhiteboardActiveDrawTool()');
         expect(moveBlock).toContain("['rect', 'roundRect', 'ellipse', 'grid'].includes(activeTool)");
         expect(moveBlock).toContain('draft.w = snapped.x - draft.x');
@@ -132,7 +138,7 @@ describe('lms whiteboard shape draw', () => {
     });
 
     it('skips HiDPI resync during active gestures', () => {
-        const resyncBlock = extractFunction(runtime, 'resyncLmsWhiteboardLayoutMetrics');
+        const resyncBlock = extractFunction(sessionRuntime, 'resyncLmsWhiteboardLayoutMetrics');
         const gestureBranch = resyncBlock.match(/if \(isLmsWhiteboardWorkspaceGestureActive\(canonicalKey\)\) \{[\s\S]*?return;\n            \}/)?.[0] || '';
         expect(gestureBranch).toContain('paintLmsWhiteboardCanvas(canonicalKey, canvas, { skipDocumentSync: true })');
         expect(gestureBranch).not.toContain('setupLmsWhiteboardCanvasHiDpi');
@@ -150,8 +156,8 @@ describe('lms whiteboard shape draw', () => {
     it('bumps whiteboard cache tokens to 20260708-wb-shapes-v4', () => {
         const html = readSource('lms.html');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('20260708-wb-shapes-v4');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260719-wbchrome1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260719-wbchrome1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260719-wbchrome1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260729-wbdocresize4');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260729-wbdocmode5');
     });
 });

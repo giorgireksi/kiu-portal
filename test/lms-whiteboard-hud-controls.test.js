@@ -1,15 +1,26 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
+    if (relativePath === 'assets/js/pages/lms-whiteboard-runtime.js') {
+        return [
+            'lms-whiteboard-runtime.js',
+            'lms-whiteboard-model.js',
+            'lms-whiteboard-chrome-runtime.js',
+            'lms-whiteboard-session-runtime.js',
+            'lms-whiteboard-selection-runtime.js',
+            'lms-whiteboard-workspace-runtime.js'
+        ].map((file) => readFileSync(join(process.cwd(), 'assets/js/pages', file), 'utf8')).join('\n');
+    }
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
 describe('LMS whiteboard HUD controls ux12', () => {
     it('prefers fullscreen-mounted and visible shells for binding', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function getLmsWhiteboardShells');
         expect(runtime).toContain('function isLmsWhiteboardShellVisible');
@@ -22,7 +33,7 @@ describe('LMS whiteboard HUD controls ux12', () => {
     });
 
     it('binds zoom controls directly on the active shell', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const hudBlock = runtime.match(/function bindLmsWhiteboardHudControls[\s\S]*?(?=\nfunction )/)?.[0] || '';
         const actionBlock = runtime.match(/function runLmsWhiteboardHudAction[\s\S]*?(?=\nfunction )/)?.[0] || '';
 
@@ -39,7 +50,7 @@ describe('LMS whiteboard HUD controls ux12', () => {
     });
 
     it('keeps uniform canvas scaling on resize', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const metricsBlock = runtime.match(/function getLmsWhiteboardCanvasMetrics[\s\S]*?(?=\nfunction )/)?.[0] || '';
 
         expect(runtime).toContain("['hand', 'fa-hand', 'Hand']");
@@ -50,7 +61,7 @@ describe('LMS whiteboard HUD controls ux12', () => {
     });
 
     it('clears stale bound guards on duplicate shells', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const bindBlock = runtime.match(/function bindLmsWhiteboardSection[\s\S]*?(?=\nfunction )/)?.[0] || '';
 
         expect(bindBlock).toContain('getLmsWhiteboardShells(resourceKey).forEach');
@@ -74,6 +85,6 @@ describe('LMS whiteboard HUD controls ux12', () => {
         const html = readSource('lms.html');
 
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260710-personal-dashboard-share1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
     });
 });

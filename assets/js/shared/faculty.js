@@ -942,7 +942,7 @@ function openPortalNotificationItem(notificationKey) {
         rememberSocialPortalContext();
         navigate('social');
     } else if (item.routePage === 'lms' && item.routeData?.courseId && item.routeData?.groupId) {
-        localStorage.setItem('KIU_PENDING_LMS_GROUP', JSON.stringify({
+        sessionStorage.setItem('KIU_PENDING_LMS_GROUP', JSON.stringify({
             courseId: item.routeData.courseId,
             groupId: item.routeData.groupId
         }));

@@ -143,7 +143,7 @@ describe('background gallery feature', () => {
         expect(shellChrome).toContain('id="lux-bg-gallery-open-images"');
         expect(shellChrome).toContain('id="lux-bg-gallery-open-videos"');
         expect(shellChrome).not.toContain('id="lux-bg-gallery-curated-grid"');
-        expect(shellChrome).toContain('norings1');
+        expect(readSource('index.html')).toContain('luxury-shell-chrome.js?v=20260805-switchperf1');
         expect(studio).toContain('openBackgroundGalleryPopup');
         expect(studio).toContain('closeBackgroundGalleryPopup');
         expect(studio).toContain('Saved to My backgrounds');
@@ -193,7 +193,7 @@ describe('background gallery feature', () => {
         const studio = readSource('assets/js/features/luxury-background-gallery-studio.js');
         const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
 
-        expect(studioCss).toContain(':is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop)');
+        expect(studioCss).toContain(':is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal)');
         expect(studioCss).toContain('.lux-bg-gallery-tabs');
         expect(studioCss).toContain('minmax(140px, 1fr)');
         expect(studio).toContain('data-gallery-tab="curated"');

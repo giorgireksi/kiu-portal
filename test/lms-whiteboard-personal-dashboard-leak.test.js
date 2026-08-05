@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -31,14 +32,14 @@ describe('LMS whiteboard personal dashboard leak regressions', () => {
     });
 
     it('avoids class shell fallback for closed personal keys', () => {
-        const whiteboardRuntime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const whiteboardRuntime = readLmsWhiteboardSource();
 
         expect(whiteboardRuntime).toMatch(/getActiveLmsWhiteboardShell[\s\S]*keyIsPersonal[\s\S]*return null/);
         expect(whiteboardRuntime).toMatch(/updateLmsWhiteboardVolatileUi[\s\S]*isLmsPersonalBoardKey\(context\.resourceKey\)[\s\S]*return false/);
     });
 
     it('aligns banner pills and tools with canEdit', () => {
-        const whiteboardRuntime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const whiteboardRuntime = readLmsWhiteboardSource();
 
         expect(whiteboardRuntime).toMatch(/function renderLmsWhiteboardStatusPills\(workspace[\s\S]*canEdit/);
         expect(whiteboardRuntime).toContain('instructor has not enabled drawing for you');

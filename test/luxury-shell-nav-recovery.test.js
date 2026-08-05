@@ -6,12 +6,20 @@ function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
+function readShellChrome() {
+    return [
+        'assets/js/features/luxury-shell-chrome.js',
+        'assets/js/features/luxury-shell-topbar-runtime.js',
+        'assets/js/features/luxury-shell-picker-runtime.js',
+    ].map(readSource).join('\n');
+}
+
 describe('luxury shell nav recovery', () => {
     it('exposes recoverIndexPortalShell for index portal shell recovery', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
 
         expect(luxury).toContain('function recoverIndexPortalShell(options = {})');
-        expect(luxury).toContain('window.recoverIndexPortalShell = recoverIndexPortalShell');
+        expect(luxury).toContain('recoverIndexPortalShell,');
         expect(luxury).toMatch(/function recoverIndexPortalShell[\s\S]*rehydrateIndexPortalEntry/);
         expect(luxury).toMatch(/pageshow[\s\S]*rehydrateIndexPortalEntry/);
     });
@@ -27,7 +35,7 @@ describe('luxury shell nav recovery', () => {
 
     it('clears stale nav signatures and retries render when lux-nav is empty', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readShellChrome();
 
         expect(luxury).toContain('function isLuxNavEmpty()');
         expect(luxury).toContain("navRoot.dataset.renderSignature = ''");
@@ -40,7 +48,7 @@ describe('luxury shell nav recovery', () => {
     });
 
     it('uses effective user role for navigation rendering', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readShellChrome();
 
         expect(shellChrome).toMatch(
             /function renderNav\(\) \{[\s\S]*getEffectiveUserRole[\s\S]*getEffectiveRole/
@@ -57,7 +65,7 @@ describe('luxury shell nav recovery', () => {
 
     it('includes Orders in student Support nav (desktop + fallback + mobile)', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readShellChrome();
         const indexMobile = readSource('assets/js/pages/index-mobile-shell.js');
         const socialMobile = readSource('assets/js/pages/social-mobile.js');
         const ordersHtml = readSource('orders.html');
@@ -86,7 +94,7 @@ describe('luxury shell nav recovery', () => {
 
     it('includes E-Chancellery in admin Systems nav (desktop + fallback + mobile)', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readShellChrome();
         const indexMobile = readSource('assets/js/pages/index-mobile-shell.js');
         const socialMobile = readSource('assets/js/pages/social-mobile.js');
         const adminOrdersHtml = readSource('admin-orders.html');
@@ -118,7 +126,7 @@ describe('luxury shell nav recovery', () => {
     });
 
     it('keeps view-as banner disabled (cleanup-only, no paint CSS)', () => {
-        const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
+        const chromeSource = readShellChrome();
         const droplist = readSource('assets/css/lux-droplist.css');
         const controls = readSource('assets/css/lux-controls.css');
 
@@ -133,13 +141,13 @@ describe('luxury shell nav recovery', () => {
     });
 
     it('keeps the VIEW picker in sync and avoids the Portal View placeholder', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readShellChrome();
         const luxury = readSource('assets/js/features/index-luxury.js');
 
         expect(shellChrome).toContain('const DEFAULT_ROLE_LABELS');
         expect(shellChrome).toContain('function resolveRolePickerLabel(role)');
         expect(shellChrome).toContain('function seedRolePickerLabel()');
-        expect(shellChrome).toContain('window.populateRoleSwitcher = populateRoleSwitcher');
+        expect(shellChrome).toContain('populateRoleSwitcher,');
         expect(shellChrome).toMatch(/function syncTopbar\(\) \{[\s\S]*populateRoleSwitcher\(\)/);
         expect(shellChrome).not.toContain("|| 'Portal View'");
         expect(luxury).not.toContain('>Portal View<');

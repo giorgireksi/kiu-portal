@@ -1125,6 +1125,7 @@
         `;
     }
 
+    // --- READABILITY: Preview ---
     function getStudioPreviewSections(typeId) {
         return getSchemaSections(typeId).filter((section) => (section.fields || []).length);
     }

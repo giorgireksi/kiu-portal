@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readSocialPageChain } from './helpers/social-page-source.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('social overlay dialog dedupe', () => {
     it('normalizes dialog region and removes dead inline dialog render path', () => {
-        const page = readSource('assets/js/pages/social-page.js');
+        const page = readSocialPageChain();
         const overlay = readSource('assets/js/pages/social-overlay-chrome.js');
 
         expect(overlay).toContain('function normalizeSocialOverlayDialogRegion()');

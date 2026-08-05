@@ -30,7 +30,7 @@ describe('legacy visual purge', () => {
         const modals = readSource('assets/css/lux-modals.css');
         expect(modals).toContain('.lux-glass-dialog-card');
         expect(modals).not.toMatch(/body:not\(\.lux-route-social\)/);
-        expect(modals).not.toMatch(/\.social-neo-dialog-/);
+        expect(modals).not.toMatch(/\.social-neo-dialog-(?!comment-stats)/);
     });
 
     it('forbids legacy popup button classes in portal popup JS', () => {
@@ -41,7 +41,7 @@ describe('legacy visual purge', () => {
                 file: file.replace(`${process.cwd()}/`, ''),
                 source: readFileSync(file, 'utf8')
             }))
-            .filter(({ source }) => /kiu-btn-|social-neo-btn-/.test(source))
+            .filter(({ source }) => /kiu-btn-/.test(source))
             .map(({ file }) => file);
 
         expect(offenders).toEqual([]);
@@ -54,7 +54,7 @@ describe('legacy visual purge', () => {
                 file: file.replace(`${process.cwd()}/`, ''),
                 source: readFileSync(file, 'utf8')
             }))
-            .filter(({ source }) => /social-neo-dialog-/.test(source))
+            .filter(({ source }) => /social-neo-dialog-(?!comment-stats)/.test(source))
             .map(({ file }) => file);
 
         expect(offenders).toEqual([]);
@@ -81,9 +81,9 @@ describe('legacy visual purge', () => {
 
     it('lays out registration structured modals as fixed warmglass overlays', () => {
         const modals = readSource('assets/css/lux-modals.css');
-        expect(modals).toMatch(/\.registration-structured-modal-backdrop[\s\S]*?position:\s*fixed/);
-        expect(modals).toMatch(/\.registration-structured-modal-backdrop[\s\S]*?z-index:\s*2600/);
-        expect(modals).toMatch(/\.registration-structured-modal-backdrop\[hidden\]:not\(\.is-open\)/);
+        expect(modals).toMatch(/:is\([^)]*\.registration-structured-modal-backdrop[^)]*\)[\s\S]*?position:\s*fixed/);
+        expect(modals).toMatch(/:is\([^)]*\.registration-structured-modal-backdrop[^)]*\)[\s\S]*?z-index:\s*2600/);
+        expect(modals).toMatch(/:is\([^)]*\.registration-structured-modal-backdrop[^)]*\)\[hidden\]:not\(\.is-open\)/);
         expect(modals).toContain('.lux-glass-dialog-body');
         expect(modals).toContain('.lux-glass-dialog-actions');
         expect(modals).toMatch(/\.admin-reg-course-modal-overlay[\s\S]*?position:\s*fixed/);

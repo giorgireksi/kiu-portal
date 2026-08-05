@@ -38,7 +38,8 @@ describe('app navigation fallback regressions', () => {
     const source = readSource('assets/js/features/navigation.js');
 
     expect(source).toContain('window.__kiuCoreNavigate = navigate;');
-    expect(source).toContain('window.navigate = navigate;');
+    expect(source).toContain('__kiuNavExpose');
+    expect(source).toContain('navigate');
     expect(source).toContain('window.__mobileNavHooked = false;');
     expect(source).toContain("window.dispatchEvent(new Event('kiu:navigate-runtime-ready'));");
   });

@@ -42,18 +42,19 @@ describe('social-workspace-schedule-model', () => {
     it('loads once and exports namespace + window helpers', () => {
         expect(win.__KIU_SOCIAL_WORKSPACE_SCHEDULE_MODEL_LOADED).toBe(true);
         expect(win.KiuSocialWorkspaceScheduleModel).toBeTruthy();
-        expect(typeof win.computePertExpected).toBe('function');
-        expect(typeof win.formatProjectScheduleHours).toBe('function');
+        const model = win.KiuSocialWorkspaceScheduleModel;
+        expect(typeof model.computePertExpected).toBe('function');
+        expect(typeof model.formatProjectScheduleHours).toBe('function');
         const again = loadScheduleModel();
         // second load in fresh context still sets flag; same context would no-op
         expect(again.KiuSocialWorkspaceScheduleModel).toBeTruthy();
     });
 
     it('computes PERT expected hours (O+4M+P)/6', () => {
-        expect(win.computePertExpected(2, 4, 8)).toBe(4.3);
-        expect(win.computePertExpected(1, 2, 5)).toBe(2.3);
-        expect(win.taskHasPert({ timeOptimistic: 2, timeMostLikely: 4, timePessimistic: 8 })).toBe(true);
-        expect(win.taskHasPert({ timeOptimistic: 0, timeMostLikely: 4, timePessimistic: 8 })).toBe(false);
+        expect(win.KiuSocialWorkspaceScheduleModel.computePertExpected(2, 4, 8)).toBe(4.3);
+        expect(win.KiuSocialWorkspaceScheduleModel.computePertExpected(1, 2, 5)).toBe(2.3);
+        expect(win.KiuSocialWorkspaceScheduleModel.taskHasPert({ timeOptimistic: 2, timeMostLikely: 4, timePessimistic: 8 })).toBe(true);
+        expect(win.KiuSocialWorkspaceScheduleModel.taskHasPert({ timeOptimistic: 0, timeMostLikely: 4, timePessimistic: 8 })).toBe(false);
     });
 
     it('resolves duration from PERT and converts day units to hours', () => {
@@ -64,23 +65,23 @@ describe('social-workspace-schedule-model', () => {
             timeUnit: 'd',
             status: 'todo'
         };
-        expect(win.resolveTaskScheduleEstimate(task).source).toBe('pert');
-        expect(win.taskDurationHours(task)).toBe(16); // 2d * 8h
-        expect(win.taskScheduleRemainingHours({ ...task, status: 'done' })).toBe(0);
+        expect(win.KiuSocialWorkspaceScheduleModel.resolveTaskScheduleEstimate(task).source).toBe('pert');
+        expect(win.KiuSocialWorkspaceScheduleModel.taskDurationHours(task)).toBe(16); // 2d * 8h
+        expect(win.KiuSocialWorkspaceScheduleModel.taskScheduleRemainingHours({ ...task, status: 'done' })).toBe(0);
     });
 
     it('formats schedule hours and float labels', () => {
-        expect(win.formatProjectScheduleHours(0)).toBe('0h');
-        expect(win.formatProjectScheduleHours(4)).toBe('4h');
-        expect(win.formatProjectScheduleHours(8)).toBe('1d');
-        expect(win.formatProjectScheduleFloat(4)).toBe('4h');
-        expect(win.formatProjectScheduleFloat(16)).toMatch(/16h/);
-        expect(win.formatProjectScheduleFloat(16)).toMatch(/2d/);
+        expect(win.KiuSocialWorkspaceScheduleModel.formatProjectScheduleHours(0)).toBe('0h');
+        expect(win.KiuSocialWorkspaceScheduleModel.formatProjectScheduleHours(4)).toBe('4h');
+        expect(win.KiuSocialWorkspaceScheduleModel.formatProjectScheduleHours(8)).toBe('1d');
+        expect(win.KiuSocialWorkspaceScheduleModel.formatProjectScheduleFloat(4)).toBe('4h');
+        expect(win.KiuSocialWorkspaceScheduleModel.formatProjectScheduleFloat(16)).toMatch(/16h/);
+        expect(win.KiuSocialWorkspaceScheduleModel.formatProjectScheduleFloat(16)).toMatch(/2d/);
     });
 
     it('computes CPM project end hours from task estimates and dependsOn', () => {
-        expect(typeof win.computeProjectSchedule).toBe('function');
-        const schedule = win.computeProjectSchedule({
+        expect(typeof win.KiuSocialWorkspaceScheduleModel.computeProjectSchedule).toBe('function');
+        const schedule = win.KiuSocialWorkspaceScheduleModel.computeProjectSchedule({
             id: 'p1',
             tasks: [
                 { id: 'a', title: 'A', status: 'todo', timeEstimate: 4, timeUnit: 'h' },

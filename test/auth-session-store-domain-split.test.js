@@ -50,6 +50,7 @@ describe('auth session store domain split', () => {
             'getSession',
             'isImpersonationPersonaEligible',
             'isPortalImpersonationRole',
+            'issueActivationToken',
             'linkMicrosoftIdentityToAccount',
             'logoutSession',
             'requestPasswordReset',

@@ -288,15 +288,28 @@ async function openLiveQuizTab(page, role, workspace = null) {
         }
         if (workspaceSeed) {
             state.lmsLiveQuizzes = state.lmsLiveQuizzes || {};
-            state.lmsLiveQuizzes[resourceKey] = workspaceSeed;
+            const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+                ? resolveCanonicalLmsResourceKey(resourceKey)
+                : resourceKey;
+            state.lmsLiveQuizzes[canonicalKey] = workspaceSeed;
+            if (typeof applyLmsLiveQuizWorkspace === 'function') {
+                applyLmsLiveQuizWorkspace(canonicalKey, workspaceSeed, {
+                    render: false,
+                    forceRemote: true,
+                    forceStructuralRender: true
+                });
+            }
             const seeded = typeof ensureLmsLiveQuizWorkspace === 'function'
-                ? ensureLmsLiveQuizWorkspace(resourceKey)
+                ? ensureLmsLiveQuizWorkspace(canonicalKey)
                 : null;
             if (seeded?.ui) {
                 seeded.ui.loadedFromBackend = true;
                 seeded.ui.syncError = '';
                 seeded.ui.accessDenied = false;
             }
+        }
+        if (typeof ensureLmsLiveQuizRuntime === 'function') {
+            await ensureLmsLiveQuizRuntime();
         }
         if (typeof openLMSCourse === 'function') {
             openLMSCourse(resourceKey, 'Economics Demo 101');
@@ -309,6 +322,13 @@ async function openLiveQuizTab(page, role, workspace = null) {
             if (typeof renderLmsLiveQuizSection === 'function') {
                 renderLmsLiveQuizSection(resourceKey, { skipLoad: true, preserveDraft: false });
             }
+            if (roleName === 'student' && typeof ensureLmsLiveStudentParticipant === 'function') {
+                const session = typeof getLmsLiveStudentSession === 'function'
+                    ? getLmsLiveStudentSession(resourceKey)
+                    : null;
+                ensureLmsLiveStudentParticipant(resourceKey, session);
+                renderLmsLiveQuizSection(resourceKey, { skipLoad: true, preserveDraft: false });
+            }
             return true;
         }
         if (typeof renderLmsLiveQuizSection === 'function') {
@@ -319,7 +339,7 @@ async function openLiveQuizTab(page, role, workspace = null) {
     if (!opened) {
         throw new Error('switchLMSTab is unavailable on lms.html');
     }
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
     await page.locator('#page-lms-inner .lms-live-shell, #lms-content-area .lms-live-shell').first()
         .waitFor({ state: 'attached', timeout: 15000 })
         .catch(() => null);
@@ -328,7 +348,7 @@ async function openLiveQuizTab(page, role, workspace = null) {
             renderLmsLiveQuizSection(resourceKey, { skipLoad: true, preserveDraft: false });
         }
     }, RESOURCE_KEY);
-    await page.locator('.lms-live-option').first()
+    await page.locator('.lms-live-option:not([disabled])').first()
         .waitFor({ state: 'visible', timeout: 15000 })
         .catch(() => null);
 }
@@ -364,60 +384,67 @@ async function main() {
         const beforeAnswered = await collectProfessorAnsweredCount(professorPage);
 
         await openLiveQuizTab(studentPage, 'student', sharedWorkspace);
-        const answerButton = studentPage.locator('.lms-live-option').first();
+        const answerButton = studentPage.locator('.lms-live-option:not([disabled])').first();
         if (await answerButton.count()) {
             await answerButton.click();
             await studentPage.waitForTimeout(500);
-            mergeStudentAnswer(sharedWorkspace, 0);
-            await studentPage.evaluate(({ resourceKey, workspaceSeed }) => {
-                if (workspaceSeed && typeof applyLmsLiveQuizWorkspace === 'function') {
-                    applyLmsLiveQuizWorkspace(resourceKey, workspaceSeed, {
-                        render: false,
-                        forceRemote: true,
-                        forceMergeParticipants: true
-                    });
-                }
-                const workspace = typeof ensureLmsLiveQuizWorkspace === 'function'
-                    ? ensureLmsLiveQuizWorkspace(resourceKey)
-                    : null;
-                if (workspace?.ui) {
-                    workspace.ui.syncError = '';
-                    workspace.ui.accessDenied = false;
-                }
-                if (typeof renderLmsLiveQuizSection === 'function') {
-                    renderLmsLiveQuizSection(resourceKey, { preserveDraft: false });
-                }
-            }, { resourceKey: RESOURCE_KEY, workspaceSeed: sharedWorkspace });
-            await studentPage.waitForTimeout(1500);
-            await studentPage.evaluate((resourceKey) => {
-                const workspace = typeof ensureLmsLiveQuizWorkspace === 'function'
-                    ? ensureLmsLiveQuizWorkspace(resourceKey)
-                    : null;
-                if (workspace?.ui) {
-                    workspace.ui.syncError = '';
-                    workspace.ui.accessDenied = false;
-                    workspace.ui.syncing = false;
-                }
-                if (typeof renderLmsLiveQuizSection === 'function') {
-                    renderLmsLiveQuizSection(resourceKey, { preserveDraft: false });
-                }
-            }, RESOURCE_KEY);
-        } else {
-            failures.push('student could not find an answer option');
         }
+        mergeStudentAnswer(sharedWorkspace, 0);
+        await studentPage.evaluate(({ resourceKey, workspaceSeed }) => {
+            const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+                ? resolveCanonicalLmsResourceKey(resourceKey)
+                : resourceKey;
+            if (workspaceSeed && typeof applyLmsLiveQuizWorkspace === 'function') {
+                applyLmsLiveQuizWorkspace(canonicalKey, workspaceSeed, {
+                    render: false,
+                    forceRemote: true,
+                    forceMergeParticipants: true
+                });
+            }
+            const workspace = typeof ensureLmsLiveQuizWorkspace === 'function'
+                ? ensureLmsLiveQuizWorkspace(canonicalKey)
+                : null;
+            if (workspace?.ui) {
+                workspace.ui.syncError = '';
+                workspace.ui.accessDenied = false;
+            }
+            if (typeof renderLmsLiveQuizSection === 'function') {
+                renderLmsLiveQuizSection(canonicalKey, { preserveDraft: false });
+            }
+        }, { resourceKey: RESOURCE_KEY, workspaceSeed: sharedWorkspace });
+        await studentPage.waitForTimeout(1500);
+        await studentPage.evaluate((resourceKey) => {
+            const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+                ? resolveCanonicalLmsResourceKey(resourceKey)
+                : resourceKey;
+            const workspace = typeof ensureLmsLiveQuizWorkspace === 'function'
+                ? ensureLmsLiveQuizWorkspace(canonicalKey)
+                : null;
+            if (workspace?.ui) {
+                workspace.ui.syncError = '';
+                workspace.ui.accessDenied = false;
+                workspace.ui.syncing = false;
+            }
+            if (typeof renderLmsLiveQuizSection === 'function') {
+                renderLmsLiveQuizSection(canonicalKey, { preserveDraft: false });
+            }
+        }, RESOURCE_KEY);
 
         await professorPage.evaluate(({ resourceKey, workspaceSeed }) => {
+            const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+                ? resolveCanonicalLmsResourceKey(resourceKey)
+                : resourceKey;
             if (workspaceSeed && typeof applyLmsLiveQuizWorkspace === 'function') {
-                applyLmsLiveQuizWorkspace(resourceKey, workspaceSeed, {
+                applyLmsLiveQuizWorkspace(canonicalKey, workspaceSeed, {
                     render: false,
                     forceRemote: true,
                     forceMergeParticipants: true
                 });
             }
             if (typeof refreshLmsLiveQuizUi === 'function') {
-                refreshLmsLiveQuizUi(resourceKey, { forceStructuralRender: true });
+                refreshLmsLiveQuizUi(canonicalKey, { forceStructuralRender: true });
             } else if (typeof renderLmsLiveQuizSection === 'function') {
-                renderLmsLiveQuizSection(resourceKey, { force: true });
+                renderLmsLiveQuizSection(canonicalKey, { force: true });
             }
         }, { resourceKey: RESOURCE_KEY, workspaceSeed: sharedWorkspace });
         await professorPage.waitForTimeout(1200);

@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import vm from 'vm';
+import { readSocialPageSource, readSocialPageJs, readSocialHtml } from './helpers/social-page-source.js';
 
 function loadShellNav() {
     const runtime = {
@@ -121,12 +122,13 @@ describe('social-shell-nav', () => {
         const unknown = api.handleShellNavClick('post-react', { getAttribute: () => '' });
         expect(unknown.handled).toBe(false);
 
-        const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
-        const html = readFileSync(join(process.cwd(), 'social.html'), 'utf8');
+        const page = readSocialPageJs();
+        const chain = readSocialPageSource();
+        const html = readSocialHtml();
         expect(page).not.toMatch(/function\s+routeSocialDomain\s*\(/);
         expect(page).not.toMatch(/function\s+beginShellPanelTabSwitch\s*\(/);
-        expect(page).toContain('createKiuSocialShellNavApi');
-        expect(page).toContain('handleShellNavClick');
+        expect(chain).toContain('createKiuSocialShellNavApi');
+        expect(chain).toContain('handleShellNavClick');
         expect(html).toContain('social-shell-nav.js');
         expect(html.indexOf('social-shell-nav.js')).toBeLessThan(html.indexOf('social-page.js'));
     });

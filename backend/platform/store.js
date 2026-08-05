@@ -102,6 +102,7 @@ const {
     getRawAccountByEmail,
     getRawAccountByMicrosoftOid,
     getSession,
+    issueActivationToken,
     linkMicrosoftIdentityToAccount,
     logoutSession,
     requestPasswordReset,
@@ -332,6 +333,11 @@ const {
     upsertPushSubscription
 } = require('./domains/notifications-service');
 const {
+    listMobilePushTokens,
+    removeMobilePushToken,
+    upsertMobilePushToken
+} = require('./domains/mobile-push-service');
+const {
     ensureBackgroundGalleryState,
     getBackgroundGalleryCatalog,
     getBackgroundGalleryUserItems,
@@ -492,6 +498,8 @@ function pickClientOwnedPortalState(source = {}) {
 }
 
 function mergeUserHomeDashboardPreferences(existingEntry = {}, incomingEntry = {}) {
+    if (Array.isArray(incomingEntry)) return clone(incomingEntry);
+    if (Array.isArray(existingEntry)) return clone(incomingEntry);
     return { ...clone(existingEntry), ...clone(incomingEntry) };
 }
 
@@ -511,6 +519,31 @@ function mergeKeyedPortalStateMap(existingMap = {}, incomingMap = {}, actorUserI
     if (incoming[actorId] !== undefined) {
         merged[actorId] = mergeUserHomeDashboardPreferences(existing[actorId], incoming[actorId]);
     }
+    return merged;
+}
+
+function mergeScopedStudentGrades(existingMap = {}, incomingMap = {}, canWriteRoster = () => false) {
+    const existing = existingMap && typeof existingMap === 'object' ? existingMap : {};
+    const incoming = incomingMap && typeof incomingMap === 'object' ? incomingMap : {};
+    const merged = clone(existing);
+    Object.entries(incoming).forEach(([rosterKey, roster]) => {
+        if (Array.isArray(roster)) {
+            if (canWriteRoster(rosterKey)) merged[rosterKey] = clone(roster);
+            return;
+        }
+        if (!roster || typeof roster !== 'object') return;
+        const existingEntry = existing[rosterKey] && typeof existing[rosterKey] === 'object'
+            ? existing[rosterKey]
+            : {};
+        const nextEntry = clone(existingEntry);
+        let changed = false;
+        Object.entries(roster).forEach(([courseId, grade]) => {
+            if (!canWriteRoster(courseId)) return;
+            nextEntry[courseId] = clone(grade);
+            changed = true;
+        });
+        if (changed) merged[rosterKey] = nextEntry;
+    });
     return merged;
 }
 
@@ -537,7 +570,11 @@ function mergeIncomingPortalState(existingState = {}, incomingState = {}, option
         }
 
         if (STAFF_WRITABLE_PORTAL_STATE_KEYS.has(key)) {
-            if (canWriteStaffPortalKeys) merged[key] = clone(value);
+            if (canWriteStaffPortalKeys) {
+                merged[key] = allowGlobalWrite || effectiveRole === 'admin'
+                    ? clone(value)
+                    : mergeScopedStudentGrades(existing[key], value, options.canWriteStudentGradesRoster);
+            }
             return;
         }
 
@@ -1033,6 +1070,7 @@ class PlatformStore {
         state.notifications = state.notifications && typeof state.notifications === 'object' ? state.notifications : {};
         state.notificationPreferences = state.notificationPreferences && typeof state.notificationPreferences === 'object' ? state.notificationPreferences : {};
         state.pushSubscriptions = state.pushSubscriptions && typeof state.pushSubscriptions === 'object' ? state.pushSubscriptions : {};
+        state.mobilePushTokens = state.mobilePushTokens && typeof state.mobilePushTokens === 'object' ? state.mobilePushTokens : {};
         // Drop reserved legacy buckets if present on older snapshots
         if (state.serviceRequests) delete state.serviceRequests;
         if (state.docs) delete state.docs;
@@ -2706,8 +2744,12 @@ class PlatformStore {
         return upsertAccount.call(this, payload);
     }
 
-    activateAccount(userId, newPassword) {
-        return activateAccount.call(this, userId, newPassword);
+    activateAccount(userId, newPassword, activationToken) {
+        return activateAccount.call(this, userId, newPassword, activationToken);
+    }
+
+    issueActivationToken(userId, options = {}) {
+        return issueActivationToken.call(this, userId, options);
     }
 
     requestPasswordReset(email) {
@@ -2776,6 +2818,18 @@ class PlatformStore {
 
     removePushSubscription(userId = '', endpoint = '') {
         return removePushSubscription.call(this, userId, endpoint);
+    }
+
+    upsertMobilePushToken(userId, token, metadata = {}) {
+        return upsertMobilePushToken.call(this, userId, token, metadata);
+    }
+
+    listMobilePushTokens(userId = '') {
+        return listMobilePushTokens.call(this, userId);
+    }
+
+    removeMobilePushToken(userId, token) {
+        return removeMobilePushToken.call(this, userId, token);
     }
 
     normalizeNewsSectionKey(value = '') {
@@ -4047,22 +4101,87 @@ class PlatformStore {
         return canActorAccessStoredFile.call(this, fileId, actorUserId, actorRole);
     }
 
-    createPortalBootstrap() {
+    createPortalBootstrap(options = {}) {
+        const viewerUserId = String(options.viewerUserId || '').trim();
+        const effectiveRole = String(options.effectiveRole || '').trim().toLowerCase();
+        const actualRole = String(options.actualRole || effectiveRole || '').trim().toLowerCase();
+        const unscopedAdmin = actualRole === 'admin' && effectiveRole === 'admin';
         const portalState = clone(this.state.portal.state || {});
         delete portalState.studentServiceArticles;
-        portalState.lmsLiveQuizzes = Object.entries(this.state.portal.liveQuizWorkspaces || {}).reduce((accumulator, [key, workspace]) => {
+        const liveQuizWorkspaces = Object.entries(this.state.portal.liveQuizWorkspaces || {}).reduce((accumulator, [key, workspace]) => {
+            const courseId = String(key || '').split('::')[0].trim();
+            const canView = !viewerUserId
+                || unscopedAdmin
+                || (['professor', 'ta'].includes(effectiveRole)
+                    && this.canAccessGradebookCourse(courseId, viewerUserId, effectiveRole, 'read'))
+                || (effectiveRole === 'student'
+                    && this.getStudentEnrollmentsByCourse(courseId)
+                        .some(enrollment => String(enrollment?.studentId || '').trim() === viewerUserId));
+            if (!canView) return accumulator;
             const normalized = clone(workspace || {}) || {};
             if (normalized && typeof normalized === 'object') {
                 delete normalized.ui;
+                if (viewerUserId && !unscopedAdmin && effectiveRole === 'student') {
+                    normalized.sessions = Array.isArray(normalized.sessions)
+                        ? normalized.sessions.map(session => ({
+                            ...session,
+                            questions: Array.isArray(session?.questions)
+                                ? session.questions.map(question => {
+                                    const safeQuestion = { ...question };
+                                    delete safeQuestion.correctOption;
+                                    delete safeQuestion.expectedAnswer;
+                                    return safeQuestion;
+                                })
+                                : [],
+                            participants: session?.participants && typeof session.participants === 'object'
+                                ? Object.fromEntries(
+                                    Object.entries(session.participants)
+                                        .filter(([participantId]) => String(participantId || '').trim() === viewerUserId)
+                                )
+                                : {}
+                        }))
+                        : [];
+                }
             }
             accumulator[key] = normalized;
             return accumulator;
         }, {});
+        portalState.lmsLiveQuizzes = liveQuizWorkspaces;
+        if (viewerUserId && !unscopedAdmin) {
+            [
+                ...PORTAL_GLOBAL_ADMIN_ONLY_KEYS,
+                'studentGrades'
+            ].forEach(key => delete portalState[key]);
+            PORTAL_STUDENT_KEYED_STATE_KEYS.forEach((key) => {
+                if (!portalState[key] || typeof portalState[key] !== 'object') return;
+                portalState[key] = Object.prototype.hasOwnProperty.call(portalState[key], viewerUserId)
+                    ? { [viewerUserId]: portalState[key][viewerUserId] }
+                    : {};
+            });
+            const incomingGrades = this.state.portal.state?.studentGrades;
+            if (incomingGrades && typeof incomingGrades === 'object') {
+                const scopedGrades = {};
+                Object.entries(incomingGrades).forEach(([rosterKey, roster]) => {
+                    const canReadRoster = effectiveRole === 'student'
+                        ? Array.isArray(roster) && roster.some(student => String(student?.id || '').trim() === viewerUserId)
+                        : this.canAccessGradebookCourse(rosterKey, viewerUserId, effectiveRole, 'read');
+                    if (!canReadRoster) return;
+                    scopedGrades[rosterKey] = effectiveRole === 'student'
+                        ? roster.filter(student => String(student?.id || '').trim() === viewerUserId)
+                        : clone(roster);
+                });
+                portalState.studentGrades = scopedGrades;
+            }
+        }
         return {
             state: portalState,
             meta: clone(this.state.portal.meta || {}),
-            social: clone(this.state.social || {}),
-            accounts: Object.values(this.state.accounts).map(account => this.sanitizeAccountForClient(account))
+            social: viewerUserId && !unscopedAdmin
+                ? this.getSocialBootstrap(viewerUserId)
+                : clone(this.state.social || {}),
+            accounts: viewerUserId && !unscopedAdmin
+                ? [this.sanitizeAccountForClient(this.state.accounts[viewerUserId])].filter(Boolean)
+                : Object.values(this.state.accounts).map(account => this.sanitizeAccountForClient(account))
         };
     }
 
@@ -4075,7 +4194,6 @@ class PlatformStore {
     }
 
     createApplicationBootstrap(token = '') {
-        const bootstrap = this.createPortalBootstrap();
         const session = token ? this.getSession(token) : null;
         const account = session ? this.getAccountById(session.userId) : null;
         const effectiveRole = session
@@ -4083,6 +4201,11 @@ class PlatformStore {
                 ? String(session.impersonatedRole || '').trim().toLowerCase()
                 : String(session.actualRole || '').trim().toLowerCase())
             : '';
+        const bootstrap = this.createPortalBootstrap({
+            viewerUserId: account?.id || '',
+            effectiveRole,
+            actualRole: session?.actualRole || account?.role || ''
+        });
         return {
             ...bootstrap,
             account,
@@ -4179,11 +4302,20 @@ class PlatformStore {
         }
         const actorUserId = String(options.actorUserId || '').trim();
         const allowGlobalWrite = options.allowGlobalWrite === true;
+        const effectiveRole = String(options.effectiveRole || '').trim().toLowerCase();
         if (allowGlobalWrite || actorUserId) {
             this.state.portal.state = mergeIncomingPortalState(existingState, sanitizedIncoming, {
                 actorUserId,
                 allowGlobalWrite,
-                effectiveRole: options.effectiveRole
+                effectiveRole,
+                canWriteStudentGradesRoster: (rosterKey) => (
+                    allowGlobalWrite
+                    || effectiveRole === 'admin'
+                    || (
+                        typeof this.canAccessGradebookCourse === 'function'
+                        && this.canAccessGradebookCourse(rosterKey, actorUserId, effectiveRole, 'score')
+                    )
+                )
             });
         } else {
             this.state.portal.state = {
@@ -4453,17 +4585,8 @@ class PlatformStore {
         const chatId = String(payload.chatId || '').trim();
         const senderId = String(payload.senderId || '').trim();
         if (!chatId || !senderId) return null;
-        const chat = this.ensureChatBase({
-            id: chatId,
-            type: payload.type || 'direct',
-            members: asArray(payload.members),
-            name: payload.name || '',
-            createdBy: payload.createdBy || senderId,
-            createdAt: payload.createdAt || nowIso()
-        });
-        if (!asArray(chat.members).includes(senderId)) {
-            chat.members = uniqueStrings([...chat.members, senderId]);
-        }
+        const chat = this.state.chats[chatId];
+        if (!chat || !asArray(chat.members).includes(senderId)) return null;
         chat.hiddenByUser = chat.hiddenByUser && typeof chat.hiddenByUser === 'object' ? chat.hiddenByUser : {};
         chat.members.forEach((memberId) => {
             if (chat.hiddenByUser[memberId]) delete chat.hiddenByUser[memberId];

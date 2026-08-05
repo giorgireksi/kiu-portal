@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('LMS whiteboard wave 3a editing', () => {
     it('adds zoom-to-fit and grid snap helpers', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function fitLmsWhiteboardZoomToContent');
         expect(runtime).toContain('function snapLmsWhiteboardCoord');
@@ -17,7 +18,7 @@ describe('LMS whiteboard wave 3a editing', () => {
     });
 
     it('supports resize handles for bounded elements', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function hitTestLmsWhiteboardResizeZone');
         expect(runtime).toContain("dragStart?.mode === 'resize'");
@@ -25,7 +26,7 @@ describe('LMS whiteboard wave 3a editing', () => {
     });
 
     it('exposes z-order controls for selected elements', () => {
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
 
         expect(runtime).toContain('function reorderLmsWhiteboardElement');
         expect(runtime).toContain('data-lms-whiteboard-action="bring-forward"');
@@ -35,7 +36,7 @@ describe('LMS whiteboard wave 3a editing', () => {
 
     it('drops removed triangle and diamond element types while keeping rect shapes', () => {
         const service = readSource('backend/platform/domains/lms-whiteboard-service.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         const workspace = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
 
         expect(service).toContain("LMS_WHITEBOARD_REMOVED_ELEMENT_TYPES = ['triangle', 'diamond', 'frame']");

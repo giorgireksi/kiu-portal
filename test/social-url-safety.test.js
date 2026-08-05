@@ -15,9 +15,9 @@ describe('social URL safety regressions', () => {
         expect(socialPage).toContain('const getSafeSocialExternalUrl = window.getSafeSocialExternalUrl');
         expect(socialChrome).toContain('function getSafeSocialExternalUrl(value) {');
         // Portfolio discover feed (safe link filter) lives in workspace module
-        const socialWorkspace = readSource('assets/js/pages/social-workspace.js');
-        expect(socialWorkspace).toContain('const safePortfolioLinks = entry.externalLinks.filter');
-        expect(socialWorkspace).toContain('const safeLinkUrl = getSafeSocialExternalUrl(link?.url);');
+        const portfolioUi = readSource('assets/js/pages/social-workspace-portfolio-ui.js');
+        expect(portfolioUi).toContain('const safePortfolioLinks = entry.externalLinks.filter');
+        expect(portfolioUi).toContain('getSafeSocialExternalUrl(link?.url)');
         // Event cards no longer render raw onlineLink hrefs in the list surface.
         expect(socialPage).not.toContain('href="${escape(text(meeting.onlineLink))}"');
         expect(socialPage).not.toContain('href="${escape(link.url)}"');

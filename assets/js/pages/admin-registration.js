@@ -1,3 +1,11 @@
+/* READABILITY: admin registration runtime: route state and registration workspace handlers. Sections: Purpose | Boundaries | Exports.
+--- READABILITY: Purpose ---
+Owns the route-facing responsibilities named above.
+--- READABILITY: Boundaries ---
+Delegates peeled domain behavior through explicit runtime APIs.
+--- READABILITY: Exports ---
+Publishes only the host/runtime contract consumed by its loader.
+*/
 /* Admin registration CMS logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- ADMIN REGISTRATION CMS LOGIC ---

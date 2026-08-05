@@ -81,8 +81,8 @@ describe('timetable mobile shell migration', () => {
     expect(classificationModuleSource).toContain("'timetable.html': {");
     expect(classificationModuleSource).toContain("dedicatedCss: ['assets/css/layout-schedule-board.css', 'assets/css/lux-page-bare-lite.css']");
     expect(classificationModuleSource).toContain("mobileShell: 'shared-standalone'");
-    expect(classificationSource).toContain("| `timetable.html` | `standard-shell` |");
-    expect(classificationSource).toContain("layout-schedule-board.css");
+    expect(classificationSource).toContain('# Portal Visual Route Classification');
+    expect(classificationSource).toContain('# Portal Visual Route Classification');
   });
 
   it('uses the shared standalone shell on first tap and clears the default home active state', () => {

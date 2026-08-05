@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readLmsWhiteboardSource } from './helpers/lms-whiteboard-source.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -30,7 +31,7 @@ describe('lms whiteboard session start', () => {
 
     it('polls while students wait for instructor to start the session', () => {
         const workspace = readSource('assets/js/pages/lms-whiteboard-workspace-runtime.js');
-        const runtime = readSource('assets/js/pages/lms-whiteboard-runtime.js');
+        const runtime = readLmsWhiteboardSource();
         expect(workspace).toContain('function scheduleLmsWhiteboardSessionWaitPoll');
         expect(workspace).toContain('LMS_WHITEBOARD_SESSION_WAIT_POLL_MS');
         expect(runtime).toContain('scheduleLmsWhiteboardSessionWaitPoll(canonicalKey)');

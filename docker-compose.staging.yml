@@ -1,0 +1,56 @@
+services:
+  staging-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kiu-portal-platform:staging
+    container_name: kiu-portal-staging-backend
+    restart: unless-stopped
+    init: true
+    working_dir: /app
+    command: ["sh", "-c", "node tools/migrate-postgres.js && exec node backend/platform/server.js"]
+    env_file:
+      - .env.staging
+    environment:
+      KIU_FIREBASE_SERVICE_ACCOUNT_FILE: /run/secrets/firebase-service-account.json
+    ports:
+      - "127.0.0.1:47833:47833"
+    volumes:
+      - staging_uploads:/app/kiu-realtime-bridge/uploads
+      - ${KIU_FIREBASE_SERVICE_ACCOUNT_HOST_PATH:-/dev/null}:/run/secrets/firebase-service-account.json:ro
+    read_only: true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      staging-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:47833/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  staging-postgres:
+    image: postgres:16-alpine
+    container_name: kiu-portal-staging-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.staging
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - staging_pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  staging_pgdata:
+  staging_uploads:
