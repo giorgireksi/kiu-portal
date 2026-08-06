@@ -170,6 +170,9 @@ body.lux-route-admin-scheduler .sch-staff-picker-overlay[hidden] {
 body.lux-route-admin-scheduler .sch-staff-picker {
   width: min(1180px, 100%);
   max-height: min(92vh, 940px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 body.lux-route-admin-scheduler .sch-staff-picker-head,
 body.lux-route-admin-scheduler .sch-staff-picker-foot {
@@ -179,6 +182,17 @@ body.lux-route-admin-scheduler .sch-staff-picker-foot {
   gap: 16px;
   padding: 18px 22px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+body.lux-route-admin-scheduler .sch-staff-picker-head {
+  /* Opaque enough that scrolled profile/avatar cannot bleed through the dialog head. */
+  background: color-mix(in srgb, var(--lux-panel-surface, #0b192c) 94%, transparent);
+  border-bottom: 1px solid var(--lux-modal-glass-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler .sch-staff-picker-foot {
+  background: color-mix(in srgb, var(--lux-panel-surface, #0b192c) 94%, transparent);
+  border-top: 1px solid var(--lux-modal-glass-border, var(--lux-border));
 }
 body.lux-route-admin-scheduler .sch-staff-picker-head h2,
 body.lux-route-admin-scheduler .sch-staff-picker-head p {
@@ -364,8 +378,16 @@ body.lux-route-admin-scheduler .sch-staff-picker-profile {
   gap: 14px;
 }
 body.lux-route-admin-scheduler .sch-staff-picker-tabs {
+  display: flex;
+  flex-wrap: nowrap;
   min-width: 0;
+  max-width: 100%;
+  gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
 }
 body.lux-route-admin-scheduler .sch-staff-picker-tabs .staff-hub-tab {
   flex: 0 0 auto;
@@ -566,27 +588,115 @@ body.lux-route-admin-scheduler .sch-staff-picker-empty {
 body.lux-route-admin-scheduler .sch-staff-picker-foot {
   justify-content: flex-end;
 }
+@media (max-width: 1024px) {
+  body.lux-route-admin-scheduler .sch-staff-picker-overlay.lux-glass-dialog-overlay {
+    align-items: flex-end;
+    padding:
+      max(10px, env(safe-area-inset-top, 0px))
+      max(10px, env(safe-area-inset-right, 0px))
+      calc(72px + env(safe-area-inset-bottom, 0px))
+      max(10px, env(safe-area-inset-left, 0px));
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker {
+    width: min(1180px, 100%);
+    max-height: calc(100dvh - 72px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px);
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+  }
+}
 @media (max-width: 900px) {
   body.lux-route-admin-scheduler .sch-staff-picker-body {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
   body.lux-route-admin-scheduler .sch-staff-picker-list {
-    max-height: 24vh;
+    max-height: min(22vh, 160px);
   }
-  body.lux-route-admin-scheduler .sch-staff-picker-detail-grid,
-  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-grid,
-  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-grid {
+  body.lux-route-admin-scheduler .sch-staff-picker-detail-grid {
     grid-template-columns: 1fr;
   }
+  /* Keep overview fields 2-col on tablet/phone — denser than stacked cards. */
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-grid,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-grid.is-one {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
-@media (max-width: 560px) {
+@media (max-width: 720px) {
   body.lux-route-admin-scheduler .sch-staff-picker-head,
   body.lux-route-admin-scheduler .sch-staff-picker-foot,
   body.lux-route-admin-scheduler .sch-staff-picker-body {
-    padding: 14px;
+    padding: 12px 14px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-head {
+    align-items: flex-start;
+    gap: 10px;
   }
   body.lux-route-admin-scheduler .sch-staff-picker-head h2 {
-    font-size: 20px;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-head > div > p {
+    display: none;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-close {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-profile {
+    gap: 10px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-profile-head {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-avatar,
+  body.lux-route-admin-scheduler .sch-staff-picker-avatar.staff-hub-avatar.is-large {
+    width: 44px;
+    height: 44px;
+    font-size: 13px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-profile h3 {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-section {
+    gap: 10px;
+    padding: 12px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-section-head strong {
+    font-size: 14px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-profile-field,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-card,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-list-item,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-warning,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-schema-empty {
+    padding: 8px 10px;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-foot {
+    flex-wrap: wrap;
+    justify-content: stretch;
+    gap: 8px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker-foot .lux-secondary-btn,
+  body.lux-route-admin-scheduler .sch-staff-picker-foot .lux-primary-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-height: 44px;
+  }
+}
+@media (max-width: 560px) {
+  body.lux-route-admin-scheduler .sch-staff-picker-foot .lux-secondary-btn,
+  body.lux-route-admin-scheduler .sch-staff-picker-foot .lux-primary-btn {
+    flex: 1 1 100%;
+  }
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-form-grid,
+  body.lux-route-admin-scheduler .sch-staff-picker .staff-hub-info-grid {
+    grid-template-columns: 1fr;
   }
 }
 @media (prefers-reduced-motion: reduce) {

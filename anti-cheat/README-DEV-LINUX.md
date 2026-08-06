@@ -57,6 +57,17 @@ The launcher now opens [wifi-setup.html](../wifi-setup.html) first. That page sh
 
 The Android APK is expected at `anti-cheat/android/app/build/outputs/apk/release/app-release.apk` after `npm run build:android:apk`.
 
+For the public Funnel demo, build and install the Linux desktop browser with:
+
+```bash
+KIU_PUBLIC_APP_URL=https://YOUR_FUNNEL_HOST npm run build:anti-cheat:desktop
+npm run install:anti-cheat:desktop
+```
+
+This installs a launcher at `~/.local/share/applications/`. A browser cannot
+silently install the app on another tester's computer; the tester must approve
+the download/install once.
+
 ## Prerequisites
 
 - Node.js 20+

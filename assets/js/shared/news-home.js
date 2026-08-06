@@ -428,7 +428,7 @@
             return `
                 <a class="news-home-strip-item" href="${escapeHtml(href)}">
                     <div class="news-home-strip-item-title">${escapeHtml(post?.title || 'University update')}</div>
-                    <div class="news-home-strip-item-meta">${escapeHtml(post?.sectionLabel || 'News')}${badge ? ` · ${badge}` : ''}</div>
+                    <div class="news-home-strip-item-meta lux-card-meta">${escapeHtml(post?.sectionLabel || 'News')}${badge ? ` · ${badge}` : ''}</div>
                 </a>
             `;
         }).join('');
@@ -449,6 +449,7 @@
     function mountNewsHomeStrip(host = document.getElementById('lux-home-shell')) {
         if (!host) return;
         host.querySelector('[data-news-home-strip="1"]')?.remove();
+        if (typeof getEffectiveRole === 'function' && getEffectiveRole() === 'student') return;
         const markup = buildNewsHomeStripHtml();
         if (!markup) return;
         const grid = host.querySelector('[data-dashboard-canvas="1"], .lux-home-grid, .lux-widget-stack');

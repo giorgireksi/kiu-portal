@@ -262,7 +262,7 @@ describe('global interaction performance guardrails', () => {
     const indexHtml = readSource('index.html');
     const mobileShell = readSource('assets/js/pages/index-mobile-shell.js');
 
-    expect(indexHtml).toContain('assets/js/pages/index-mobile-shell.js?v=20260730-echancellery1');
+    expect(indexHtml).toContain('assets/js/pages/index-mobile-shell.js?v=20260806-hidetopbar2');
     expect(indexHtml).not.toContain('(function initMobileExperience(){');
     expect(mobileShell).toContain("(function initMobileExperience() {");
   });
@@ -761,6 +761,11 @@ describe('global interaction performance guardrails', () => {
     expect(sw).toContain('index-home-role.css');
     expect(sw).not.toContain('index-luxury.css');
     expect(sw).toContain('lux-fouc-ht.css');
+    expect(sw).not.toMatch(/SHELL_ASSETS[\s\S]*lux-page-bare-lite\.css/);
+    expect(sw).not.toContain("'/assets/css/lux-page-bare-lite.css");
+    expect(sw).toContain('function isVersionedAssetUrl(url)');
+    expect(sw).toContain('cachedVersioned');
+    expect(sw).toContain('isVersionedAssetUrl(url)');
   });
 
   it('locks particle render to steady 30fps pacing', () => {

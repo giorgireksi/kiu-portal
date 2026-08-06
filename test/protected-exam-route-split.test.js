@@ -18,6 +18,8 @@ describe('protected exam route split', () => {
         expect(routeModule).toContain("app.get('/api/exam-portal/session/:sessionId'");
         expect(routeModule).toContain("app.post('/api/exam-portal/sessions/:sessionId/launch-ticket'");
         expect(routeModule).toContain("app.post('/api/protected-quizzes/sync'");
+        expect(routeModule).toContain("app.get('/api/protected-quizzes/admin/policies'");
+        expect(routeModule).toContain("app.post('/api/protected-quizzes/admin/policies'");
         expect(routeModule).toContain("app.post('/api/protected-quizzes/:quizId/launch-ticket'");
         expect(routeModule).toContain("app.post('/api/protected-client/redeem-launch'");
         expect(routeModule).toContain("app.get('/api/protected-quizzes/group/:groupKey/monitor'");

@@ -90,10 +90,16 @@ function ensureCurriculumLibraryModules(faculty) {
         modules.push(buildDefaultCurriculumModule(normalizedFaculty, subjects.map((subject) => subject.id)));
     }
 
+    if (modules.some((module) => module.systemDefault !== true)) {
+        const customModules = modules.filter((module) => module.systemDefault !== true);
+        modules.splice(0, modules.length, ...customModules);
+    }
+
     const assigned = new Set(modules.flatMap((module) => module.subjectIds || []));
     const missing = subjects.map((subject) => subject.id).filter((subjectId) => !assigned.has(subjectId));
     if (missing.length > 0) {
-        const fallback = modules.find((module) => module.systemDefault) || buildDefaultCurriculumModule(normalizedFaculty, []);
+        const fallback = modules.find((module) => module.systemDefault);
+        if (!fallback) return modules;
         if (!modules.includes(fallback)) modules.unshift(fallback);
         fallback.subjectIds = [...new Set([...(fallback.subjectIds || []), ...missing])];
         fallback.maxEcts = Math.max(

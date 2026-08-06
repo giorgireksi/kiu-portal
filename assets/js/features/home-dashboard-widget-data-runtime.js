@@ -151,17 +151,16 @@ function getCurrentFacultyOrders() {
 }
 const HOME_DEFAULT_WIDGET_GEOMETRY = {
     student: {
-        alert: { x: 1, y: 1, w: 12, h: 3 },
-        hero: { x: 1, y: 4, w: 8, h: 10 },
-        'student-schedule': { x: 9, y: 4, w: 4, h: 5 },
-        'student-registration': { x: 9, y: 9, w: 4, h: 5 },
-        'student-scores': { x: 1, y: 14, w: 4, h: 5 },
-        'student-updates': { x: 5, y: 14, w: 4, h: 5 },
-        'student-support': { x: 9, y: 14, w: 4, h: 5 },
-        quick: { x: 1, y: 19, w: 8, h: 8 },
-        'student-orders': { x: 9, y: 19, w: 4, h: 4 },
-        'student-inbox': { x: 9, y: 23, w: 4, h: 4 },
-        'student-performance': { x: 1, y: 27, w: 4, h: 4 }
+        'student-header': { x: 1, y: 1, w: 12, h: 5 },
+        'student-command': { x: 1, y: 6, w: 12, h: 10 },
+        'student-summary': { x: 1, y: 16, w: 12, h: 7 },
+        'student-registration': { x: 1, y: 23, w: 4, h: 4 },
+        'student-scores': { x: 5, y: 23, w: 4, h: 4 },
+        'student-support': { x: 9, y: 23, w: 4, h: 4 },
+        'student-orders': { x: 1, y: 27, w: 4, h: 4 },
+        'student-inbox': { x: 5, y: 27, w: 4, h: 4 },
+        'student-updates': { x: 9, y: 27, w: 4, h: 4 },
+        'student-performance': { x: 1, y: 31, w: 4, h: 4 }
     },
     professor: {
         alert: { x: 1, y: 1, w: 12, h: 3 },

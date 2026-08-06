@@ -85,6 +85,36 @@ function registerProtectedExamRoutes(app, deps = {}) {
         response.json({ ok: true, quiz });
     });
 
+    app.get('/api/protected-quizzes/admin/policies', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        if (String(getSessionRole(sessionAccount) || '').trim().toLowerCase() !== 'admin') {
+            sendError(response, 403, 'Only administrators may manage global anti-cheat policies.');
+            return;
+        }
+        const store = getStore();
+        response.json({
+            ok: true,
+            defaults: store.getAntiCheatPolicyDefaults(),
+            quizzes: store.listAntiCheatPolicies()
+        });
+    });
+
+    app.post('/api/protected-quizzes/admin/policies', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        if (String(getSessionRole(sessionAccount) || '').trim().toLowerCase() !== 'admin') {
+            sendError(response, 403, 'Only administrators may manage anti-cheat policies.');
+            return;
+        }
+        const result = getStore().saveAntiCheatPolicySettings(request.body || {});
+        if (!result || result.error) {
+            sendError(response, result?.status || 400, result?.error || 'Anti-cheat policy could not be saved.');
+            return;
+        }
+        response.json({ ok: true, ...result });
+    });
+
     app.post('/api/protected-quizzes/:quizId/launch-ticket', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;

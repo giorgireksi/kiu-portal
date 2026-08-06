@@ -113,6 +113,56 @@
             `;
         }
 
+        function isSocialShortcutsTopNavViewport() {
+            try {
+                if (typeof window.matchMedia === 'function') {
+                    return window.matchMedia('(max-width: 1024px)').matches;
+                }
+            } catch (error) {}
+            try {
+                return Number(window.innerWidth || 0) <= 1024;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function renderSocialShortcutsTopNav(activePanel) {
+            const active = text(activePanel || '');
+            // Exact More-sheet Social Shortcuts set (labels shortened for icon+label strip).
+            const items = [
+                { id: 'feed', label: 'Feed', icon: 'fa-stream' },
+                { id: 'photography', label: 'Exposé', icon: 'fa-camera-retro' },
+                { id: 'workspace', label: 'Projects', icon: 'fa-diagram-project' },
+                { id: 'projects', label: 'Portfolio', icon: 'fa-briefcase' },
+                { id: 'lost-and-found', label: 'Lost', icon: 'fa-magnifying-glass-location' },
+                { id: 'surveys', label: 'Surveys', icon: 'fa-clipboard-list' },
+                { id: 'research', label: 'Research', icon: 'fa-book-open' },
+                { id: 'profile', label: 'Saved', icon: 'fa-bookmark', profileTab: 'saved' },
+                { id: 'alerts', label: 'Mods', icon: 'fa-shield-halved' }
+            ];
+            return `
+                <nav class="social-shortcuts-top-nav" aria-label="Social shortcuts">
+                    <div class="social-shortcuts-top-nav-row">
+                        ${items.map((item) => {
+                            const isActive = item.profileTab
+                                ? (active === 'profile')
+                                : active === item.id;
+                            const profileAttr = item.profileTab
+                                ? ` data-profile-tab="${escape(item.profileTab)}"`
+                                : '';
+                            return `
+                            <button type="button" class="social-shortcuts-top-nav-btn${isActive ? ' is-active' : ''}" data-action="panel-${escape(item.id)}"${profileAttr}>
+                                <i class="fas ${escape(item.icon)}" aria-hidden="true"></i>
+                                <span>${escape(item.label)}</span>
+                            </button>`;
+                        }).join('')}
+                    </div>
+                </nav>
+            `;
+        }
+        window.renderSocialShortcutsTopNav = renderSocialShortcutsTopNav;
+        window.isSocialShortcutsTopNavViewport = isSocialShortcutsTopNavViewport;
+
         function renderShellWorkspaceNav(activePanel) {
             const panels = activeNavPanels();
             const collapsed = ensureWorkspaceNavCollapsedState();
@@ -239,20 +289,8 @@
             return isSocialMessagesPanel(host) || isSocialAlertsPanel(host);
         }
         const SOCIAL_TOPBAR_SKIPPED_PANELS = new Set([
-            'feed',
-            'community',
-            'groups',
-            'workspace',
-            'projects',
-            'events',
-            'surveys',
-            'research',
-            'photography',
-            'lost-and-found',
-            'messages',
-            'alerts',
-            'pages',
-            'profile',
+            // Topbar hosts the mobile/tablet workspace shortcut strip (≤1180).
+            // Desktop (≥1181) hides it via CSS and keeps the sidebar rail.
         ]);
         const SOCIAL_COMMAND_SKIPPED_PANELS = new Set([
             'messages',
@@ -653,6 +691,8 @@
             syncWorkspaceNavCollapsedClass,
             renderShellWorkspaceNavReveal,
             renderShellWorkspaceNav,
+            renderSocialShortcutsTopNav,
+            isSocialShortcutsTopNavViewport,
             updateSocialMeasuredChrome,
             syncSocialVisualViewport,
             bindSocialScrollChromeObserver,

@@ -21,6 +21,8 @@ describe('LMS hero + subjects shared CSS parity', () => {
         const lmsBlockWithoutWhiteboardHud = lmsBlock.split('/* Whiteboard tab (retired lms-whiteboard-catalog.css')[0]
             + (lmsBlock.split('/* Interaction messenger (retired lms-interaction.css')[1] || '');
         expect(lmsBlock).toContain('body.lux-route-lms .lms-clean-subject-grid');
+        expect(lmsBlock).toContain('.lms-subject-tile-art');
+        expect(lmsBlock).toContain('.lms-subject-tile-badge');
         expect(lmsBlock).toContain('body.lux-route-lms .lms-student-semester-bar');
         expect(lmsBlockWithoutWhiteboardHud).not.toMatch(/backdrop-filter/);
         expect(bare).not.toContain('--lms-fade-');
@@ -28,17 +30,16 @@ describe('LMS hero + subjects shared CSS parity', () => {
         expect(bare).not.toContain('EXPERIMENT soft-panel v2');
     });
 
-    it('cache-busts LMS shared stack and hero focus markup', () => {
+    it('cache-busts LMS shared stack without page hero title chrome', () => {
         const html = readSource('lms.html');
         expectLmsRouteCssLinks(html);
         expect(html).toContain('lmsscss11');
-        expect(html).toMatch(/class="lms-hero-focus lux-hero-side home-hover-chip/);
-        expect(html).toContain('lux-pill lux-soft-chrome home-hover-chip lms-hero-focus-chip');
-        expect(html).toMatch(/lms-hero-focus-meta[\s\S]*lux-pill lux-soft-chrome home-hover-chip/);
+        expect(html).not.toContain('lms-subject-anchor');
+        expect(html).not.toContain('lms-hero-focus');
+        expect(html).not.toContain('lms-hero-v2-left');
+        expect(html).not.toContain('Learning Workspace');
         expect(html).toContain('lms-clean-subjects lms-clean-subjects--merged home-hover-chip');
         expect(html).toContain('lux-section-kicker lms-clean-kicker');
-        expect(html).toContain('lux-page-title');
-        expect(html).toContain('lux-page-copy');
         expect(html).toContain('lux-card-title');
         expect(html).toContain('lux-card-copy');
         expect(html).toMatch(/lux-focus-panel\.css/);
@@ -51,8 +52,6 @@ describe('LMS hero + subjects shared CSS parity', () => {
         );
         expect(fouc).toContain('.lms-clean-subjects--merged');
         expect(fouc).toContain('.lux-lms-subject-card');
-        expect(fouc).toContain('.lms-hero-focus-chip.home-hover-chip');
-        expect(fouc).toContain('.lms-hero-focus-meta .lux-pill.home-hover-chip');
         expect(fouc).toContain('.lux-lms-subject-card .lux-status-pill.home-hover-chip');
         expect(fouc).toContain('.lms-student-semester-bar');
         expect(fouc).toContain('.lms-student-semester-option');

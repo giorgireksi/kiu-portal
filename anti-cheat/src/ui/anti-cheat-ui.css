@@ -303,6 +303,55 @@ body {
   font: inherit;
 }
 
+.ac-page--settings .field select,
+.ac-page--settings .field textarea,
+.ac-page--settings .policy-check {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--ac-radius-sm);
+  border: 1px solid var(--ac-line);
+  background: var(--ac-panel-soft);
+  color: var(--ac-text);
+  outline: none;
+  font: inherit;
+}
+
+.ac-page--settings .field textarea {
+  resize: vertical;
+  min-height: 108px;
+}
+
+.ac-page--settings .panel-copy {
+  margin: -6px 0 0;
+  color: var(--ac-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ac-page--settings .policy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ac-page--settings .policy-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.ac-page--settings .policy-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ac-blue);
+  flex: 0 0 auto;
+}
+
+.ac-page--settings .policy-check:has(input:disabled) {
+  opacity: 0.55;
+}
+
 .ac-page--settings .control-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

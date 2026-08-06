@@ -634,10 +634,14 @@ function renderNewsPublisherMessagePane(activeSection) {
             </div>
             <div class="newsx-publisher-field">
                 <label class="newsx-field-label" for="news-compose-section">Feed category</label>
-                <input id="news-compose-section" name="news_compose_section" class="newsx-input lux-control" type="text" list="news-section-suggestions" value="${escapeHtml(compose.sectionLabel)}" placeholder="Academic Updates" data-news-compose-field="sectionLabel">
-                <datalist id="news-section-suggestions">
-                    ${getNewsSectionSuggestions().map(label => `<option value="${escapeHtml(label)}"></option>`).join('')}
-                </datalist>
+                <select id="news-compose-section" name="news_compose_section" class="newsx-select lux-control" data-news-compose-field="sectionLabel">
+                    ${(() => {
+                        const current = String(compose.sectionLabel || '').trim();
+                        const suggestions = getNewsSectionSuggestions();
+                        const labels = current && !suggestions.includes(current) ? [current, ...suggestions] : suggestions;
+                        return labels.map(label => `<option value="${escapeHtml(label)}" ${label === current ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('');
+                    })()}
+                </select>
             </div>
             <div class="newsx-publisher-field">
                 ${renderNewsPublisherFieldLabelRow('Body', 'news-compose-body', 'bodyFontSize', compose.bodyFontSize)}

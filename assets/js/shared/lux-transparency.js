@@ -464,6 +464,7 @@ function appendRouteOwnedSurfaces(elements, rootsOverride) {
 }
 const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [
     '#lux-shell', '#lux-topbar', '#mobile-bottom-nav', '#mobile-action-sheet', '#modal-overlay',
+    '#social-shortcuts-top-nav-portal',
     '.lux-picker-panel'
 ];
 

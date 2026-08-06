@@ -781,9 +781,9 @@
         const studentRequestRows = getStudentRequestRowsForWidget(context.studentRequests);
         const quickWidget = withGeometry(role, 'quick', {
             renderType: 'quick',
-            label: 'Workspace hub',
-            title: 'Workspace hub',
-            copy: 'The quickest path into the systems tied to this view.',
+            label: role === 'student' ? 'Quick actions' : 'Workspace hub',
+            title: role === 'student' ? 'Quick actions' : 'Workspace hub',
+            copy: role === 'student' ? 'Keep the important destinations close; open the rest from More.' : 'The quickest path into the systems tied to this view.',
             meta: ROLE_LABELS[role] || 'Portal',
             tiles: model.quick || [],
             pageId: 'home',
@@ -822,22 +822,21 @@
         });
 
         if (role === 'student') {
-            const semester = typeof getCurrentStudentSemesterNumber === 'function' ? getCurrentStudentSemesterNumber(context.user) : (KIU_STATE.activeSemester || 1);
-            const balance = typeof getEffectiveTuitionBalance === 'function' ? getEffectiveTuitionBalance(context.user?.id) : 0;
-            const completed = typeof getStudentCompletedEctsTotal === 'function' ? getStudentCompletedEctsTotal(context.user?.id, context.facultyCode) : 0;
+            const dashboard = model.studentDashboard || {};
+            const semester = dashboard.stats?.semester || 'S1';
             const performance = getStudentPerformanceMetric(context.user);
             return [
-                alertWidget,
-                heroWidget,
-                withGeometry(role, 'student-schedule', { renderType: 'list', label: 'Today schedule', title: 'Todayâ€™s schedule', copy: 'Classes, rooms, and the next academic movement in your day.', meta: context.studentScheduleRows.length ? 'Live' : 'Planning', rows: context.studentScheduleRows.length ? context.studentScheduleRows : [{ icon: 'fas fa-calendar-week', title: 'No scheduled classes yet', copy: 'Select sections in registration to populate todayâ€™s teaching plan.' }], pageId: 'timetable', minW: 3, maxW: 6, minH: 4, maxH: 10, defaultVisible: true }),
-                withGeometry(role, 'student-registration', { renderType: 'list', label: 'Registration lane', title: 'Registration lane', copy: 'Registration access, finance status, and progress conditions for the active term.', meta: KIU_STATE.registrationOpen ? 'Open now' : 'Closed', rows: [{ icon: 'fas fa-check-square', title: KIU_STATE.registrationOpen ? 'Registration is open' : 'Registration is closed', copy: KIU_STATE.registrationOpen ? 'Sections, electives, and free-credit choices can still be changed.' : 'Open registration again only when the next academic window begins.' }, { icon: 'fas fa-credit-card', title: balance > 0 ? `${balance} GEL balance` : 'Finance access clear', copy: balance > 0 ? 'A finance hold may block parts of the portal until payment or review is completed.' : 'No finance hold is blocking this semester right now.' }, { icon: 'fas fa-address-card', title: `${completed} completed ECTS`, copy: `${performance.label}: ${performance.value}` }], pageId: 'registration', minW: 3, maxW: 6, minH: 4, maxH: 10, defaultVisible: true }),
-                withGeometry(role, 'student-scores', { renderType: 'list', label: 'Current scores', title: 'Current scores', copy: 'Live grade signals from the subjects already carrying marks.', meta: performance.value || `S${semester}`, rows: context.studentScoreRows.length ? context.studentScoreRows : [{ icon: 'fas fa-chart-line', title: 'No scored subjects yet', copy: 'Scores will appear once coursework or exams are recorded in the gradebook.' }], pageId: 'study-card', minW: 3, maxW: 6, minH: 4, maxH: 10, defaultVisible: true }),
-                withGeometry(role, 'student-updates', { renderType: 'list', label: 'Official updates', title: 'Official updates', copy: 'The newest portal changes tied to your student profile.', meta: context.notifications.unread > 0 ? `${context.notifications.unread} unread` : 'Inbox', rows: notificationsRows, pageId: 'orders', minW: 3, maxW: 6, minH: 4, maxH: 10, defaultVisible: true }),
-                withGeometry(role, 'student-support', { renderType: 'list', label: 'Support access', title: 'Support & access', copy: 'E-Chancellery appeals and Student Service access around your account.', meta: context.studentRequests.length ? 'Open' : 'Access', rows: [...studentRequestRows.slice(0, 2), { icon: 'fas fa-headset', title: 'Student Service', copy: 'Ask for help, review articles, and continue tracked requests without leaving the main dashboard.' }], pageId: context.studentRequests.length ? 'chancellery' : 'student-service', minW: 3, maxW: 6, minH: 4, maxH: 10, defaultVisible: true }),
-                quickWidget,
-                withGeometry(role, 'student-orders', { renderType: 'list', label: 'Orders', title: 'Orders & notices', copy: 'Official orders that affect records, access, or semester timing.', meta: `${context.ordersSnapshot.orders.length} total`, rows: personalOrderRows, pageId: 'orders', minW: 3, maxW: 6, minH: 3, maxH: 8, defaultVisible: true }),
-                withGeometry(role, 'student-inbox', { renderType: 'list', label: 'Messages', title: 'Messages', copy: 'Conversation signals from support and academic follow-up.', meta: context.messenger.unread > 0 ? `${context.messenger.unread} unread` : 'Quiet', rows: messengerRows, pageId: 'social', minW: 3, maxW: 6, minH: 3, maxH: 8, defaultVisible: true }),
-                withGeometry(role, 'student-performance', { renderType: 'list', label: 'Performance pulse', title: 'Performance pulse', copy: 'Semester position and academic record in one smaller panel.', meta: `Semester S${semester}`, rows: buildPairListRows(model.focus?.rows || [], 'fas fa-circle-notch'), pageId: 'study-card', minW: 3, maxW: 6, minH: 3, maxH: 8, defaultVisible: false, visible: false })
+                withGeometry(role, 'student-header', { renderType: 'student-header', label: 'Student dashboard', compactModel: dashboard, heroModel: model, minW: 12, maxW: 12, minH: 4, maxH: 6, critical: true, defaultVisible: true }),
+                withGeometry(role, 'student-command', { renderType: 'student-command', label: 'Student command center', compactModel: dashboard, minW: 12, maxW: 12, minH: 8, maxH: 14, critical: true, defaultVisible: true }),
+                withGeometry(role, 'student-summary', { renderType: 'student-summary', label: 'Overall summary', compactModel: dashboard, minW: 12, maxW: 12, minH: 5, maxH: 9, critical: true, defaultVisible: true }),
+                withGeometry(role, 'student-extra', { renderType: 'student-extra', label: 'Scores & messages', compactModel: dashboard, minW: 12, maxW: 12, minH: 5, maxH: 10, critical: true, defaultVisible: true }),
+                withGeometry(role, 'student-scores', { renderType: 'list', label: 'Current scores', title: 'Current scores', copy: 'Open the study card for detailed scores.', meta: performance.value || semester, rows: context.studentScoreRows, pageId: 'study-card', minW: 3, maxW: 6, minH: 4, maxH: 8, defaultVisible: false, visible: false }),
+                withGeometry(role, 'student-registration', { renderType: 'list', label: 'Registration', title: 'Registration details', copy: 'Open registration for section and finance details.', meta: dashboard.status?.label || 'Status', rows: [], pageId: 'registration', minW: 3, maxW: 6, minH: 4, maxH: 8, defaultVisible: false, visible: false }),
+                withGeometry(role, 'student-updates', { renderType: 'list', label: 'Campus news', title: 'Campus news', copy: 'Official updates for your role and faculty.', meta: context.notifications.unread > 0 ? `${context.notifications.unread} unread` : 'Latest', rows: notificationsRows.slice(0, 3), pageId: 'news', minW: 3, maxW: 6, minH: 4, maxH: 8, defaultVisible: false, visible: false }),
+                withGeometry(role, 'student-support', { renderType: 'list', label: 'Support access', title: 'Support & access', copy: 'Student Service and tracked requests.', meta: context.studentRequests.length ? 'Open' : 'Access', rows: studentRequestRows.slice(0, 3), pageId: 'student-service', minW: 3, maxW: 6, minH: 4, maxH: 8, defaultVisible: false, visible: false }),
+                withGeometry(role, 'student-orders', { renderType: 'list', label: 'Orders', title: 'Orders & notices', copy: 'Official orders and student notices.', meta: `${context.ordersSnapshot.orders.length} total`, rows: personalOrderRows, pageId: 'orders', minW: 3, maxW: 6, minH: 3, maxH: 8, defaultVisible: false, visible: false }),
+                withGeometry(role, 'student-inbox', { renderType: 'list', label: 'Messages', title: 'Messages', copy: 'Conversation signals and academic follow-up.', meta: context.messenger.unread > 0 ? `${context.messenger.unread} unread` : 'Quiet', rows: messengerRows.slice(0, 3), pageId: 'social', minW: 3, maxW: 6, minH: 3, maxH: 8, defaultVisible: false, visible: false }),
+                withGeometry(role, 'student-performance', { renderType: 'list', label: 'Performance pulse', title: 'Performance pulse', copy: 'Semester position and academic record.', meta: `Semester ${semester}`, rows: buildPairListRows(model.focus?.rows || [], 'fas fa-circle-notch'), pageId: 'study-card', minW: 3, maxW: 6, minH: 3, maxH: 8, defaultVisible: false, visible: false })
             ];
         }
 

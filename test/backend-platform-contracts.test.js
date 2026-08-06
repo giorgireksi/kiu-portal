@@ -120,6 +120,7 @@ describe('backend platform domain contracts', () => {
             'ensureProtectedQuizAttemptRecord',
             'ensureProtectedQuizLaunch',
             'findProtectedQuizRecord',
+            'getAntiCheatPolicyDefaults',
             'getExamPortalSession',
             'getExamPortalSessionSummary',
             'getExamSession',
@@ -128,6 +129,7 @@ describe('backend platform domain contracts', () => {
             'getProtectedQuiz',
             'getProtectedQuizMonitor',
             'heartbeatProtectedQuiz',
+            'listAntiCheatPolicies',
             'listExamPortalVisibleSessions',
             'listExamSessionsForStudent',
             'manualGradeProtectedQuiz',
@@ -136,6 +138,7 @@ describe('backend platform domain contracts', () => {
             'recordProtectedQuizEvent',
             'redeemProtectedQuizLaunch',
             'revokeProtectedClientSessions',
+            'saveAntiCheatPolicySettings',
             'syncExamSession',
             'syncProtectedQuiz',
             'updateProtectedQuizAttemptControl'

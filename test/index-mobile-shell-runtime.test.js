@@ -55,6 +55,59 @@ describe('index mobile shell runtime', () => {
     expect(source).toContain('if (isElementShown(sheet)) {');
     expect(source).toContain("if (adminSwitch) adminSwitch.hidden = role !== 'admin';");
     expect(source).toContain('setElementShown(nav, isMobileViewport());');
+    expect(source).toContain('id="mob-act-faculty"');
+    expect(source).toContain("getElementById('lux-faculty-picker-btn')");
+  });
+
+  it('aligns mobile-shell-core topbar/bottom-nav breakpoints with the 1024 contract', () => {
+    const css = readSource('assets/css/mobile-shell-core.css');
+    expect(css).toContain('@media (max-width: 1024px)');
+    expect(css).toMatch(/@media \(max-width: 1024px\)[\s\S]*#lux-topbar,\s*\n?\s*#lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?display:\s*none\s*!important/);
+    expect(css).toContain('@media (min-width: 1025px)');
+    expect(css).toMatch(/@media \(min-width: 1025px\)[\s\S]*#mobile-bottom-nav\s*\{\s*display:\s*none/);
+    expect(css).not.toContain('@media (min-width: 769px)');
+    expect(css).not.toContain('padding-top: 60px');
+    expect(css).not.toContain('#lux-topbar .lux-picker-btn');
+  });
+
+  it('keeps fouc from restyling topbar into document flow on mobile', () => {
+    const fouc = readSource('assets/css/lux-fouc-ht.css');
+    expect(fouc).toMatch(/@media \(max-width: 1024px\)[\s\S]*body\.lux-unified-shell #lux-topbar\s*\{[\s\S]*?display:\s*none\s*!important/);
+    expect(fouc).not.toMatch(/@media \(max-width:900px\)[\s\S]*#lux-topbar\s*\{[\s\S]*?position:\s*relative/);
+    expect(fouc).not.toMatch(/@media \(max-width:980px\)[\s\S]*#lux-topbar\s*\{[\s\S]*?position:\s*relative/);
+  });
+
+  it('force-hides #lux-topbar on mobile boot via syncMobileTopbarVisibility', () => {
+    const source = readSource('assets/js/pages/index-mobile-shell.js');
+    expect(source).toContain('function syncMobileTopbarVisibility()');
+    expect(source).toContain("style.setProperty('display', 'none', 'important')");
+
+    const dom = new JSDOM(
+      `<!DOCTYPE html><html><head></head><body class="lux-route-home lux-unified-shell">
+        <div id="lux-topbar"><div class="lux-topbar-shell"></div></div>
+        <button id="lux-sidebar-toggle"></button>
+      </body></html>`,
+      { url: 'http://localhost/index.html', runScripts: 'outside-only' }
+    );
+    dom.window.innerWidth = 480;
+    dom.window.navigate = vi.fn();
+    dom.window.resolvePortalRouteUrl = vi.fn((target, role) => `#${role}-${target}`);
+    dom.window.requestAnimationFrame = (cb) => { cb(0); return 1; };
+    dom.window.setTimeout = (cb) => { cb(); return 1; };
+    dom.window.matchMedia = (query) => ({
+      matches: query.includes('max-width: 1024px'),
+      media: query,
+      addEventListener() {},
+      removeEventListener() {},
+      addListener() {},
+      removeListener() {}
+    });
+    dom.window.eval(readSource('assets/js/pages/index-mobile-shell.js'));
+    dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded', { bubbles: true }));
+
+    const topbar = dom.window.document.getElementById('lux-topbar');
+    expect(topbar?.hidden).toBe(true);
+    expect(topbar?.style.getPropertyValue('display')).toBe('none');
   });
 
   it('creates the mobile nav and action-sheet scaffold at runtime on mobile widths', () => {
@@ -64,6 +117,7 @@ describe('index mobile shell runtime', () => {
     expect(doc.getElementById('mobile-bottom-nav')).not.toBeNull();
     expect(doc.getElementById('mobile-action-sheet')).not.toBeNull();
     expect(doc.getElementById('mob-sheet-dynamic-nav')).not.toBeNull();
+    expect(doc.getElementById('mob-act-faculty')).not.toBeNull();
     expect(doc.getElementById('mob-badge-msg')?.hasAttribute('hidden')).toBe(true);
     expect(doc.getElementById('mob-badge-notif')?.hasAttribute('hidden')).toBe(true);
     expect(doc.body.classList.contains('lux-sidebar-collapsed')).toBe(true);

@@ -39,6 +39,14 @@ function isPlaceholderUrl(value: any) {
     || normalized.includes('quiz-api.youruniversity.edu');
 }
 
+function isLoopbackUrl(value: any) {
+  try {
+    return ['127.0.0.1', 'localhost'].includes(new URL(String(value || '').trim()).hostname.toLowerCase());
+  } catch (error) {
+    return false;
+  }
+}
+
 function isAllowedProtectedBackendUrl(value: any) {
   try {
     const target = new URL(String(value || '').trim());
@@ -1338,6 +1346,10 @@ try {
 } catch (err) {}
 
 config = normalizeRuntimeConfig(config);
+if (!RUNTIME_APP_URL_OVERRIDE && !isLoopbackUrl(config.appUrl) && isLoopbackUrl(testSettings.launchUrl)) {
+  testSettings.launchUrl = trimUrl(config.quizUrl || `${config.appUrl}/exam-portal.html`);
+  persistTestSettings();
+}
 
 // ANTI-TAMPER: Self-Integrity Check
 function verifyIntegrity() {
@@ -1668,7 +1680,8 @@ function canUseDebugTools() {
 
 async function checkBlockedProcesses(): Promise<string | null> {
   return new Promise((resolve) => {
-    exec('tasklist', (err, stdout) => {
+    const processListCommand = process.platform === 'win32' ? 'tasklist' : 'ps -eo comm=,args=';
+    exec(processListCommand, (err, stdout) => {
       if (err) return resolve(null);
       const lowerStdout = stdout.toLowerCase();
       for (const proc of getEffectiveBlockedProcesses()) {
@@ -2034,6 +2047,69 @@ ipcMain.handle('get-launch-diagnostics', async () => ({
   vmKeywords: ['virtualbox', 'vmware', 'qemu', 'parallels', 'virtual machine', 'kvm'],
   hardwareDiagnostics: await resolveHardwareDiagnostics()
 }));
+
+function canManageAntiCheatPolicies() {
+  return String(desktopSession?.account?.role || '').trim().toLowerCase() === 'admin'
+    && desktopSession?.capabilities?.canUseStaffTools === true;
+}
+
+ipcMain.handle('get-anti-cheat-policies', async () => {
+  if (!canManageAntiCheatPolicies()) {
+    return { ok: false, error: 'Only administrators can manage anti-cheat policies.' };
+  }
+  try {
+    const response = await axios.get(
+      `${String(config.backendUrl || '').replace(/\/$/, '')}/api/protected-quizzes/admin/policies`,
+      { headers: { 'X-Portal-Session': String(desktopSession?.token || '') }, timeout: 5000 }
+    );
+    return { ok: true, ...response.data };
+  } catch (error: any) {
+    return {
+      ok: false,
+      error: String(error?.response?.data?.error || error?.message || 'Anti-cheat policies could not be loaded.')
+    };
+  }
+});
+
+ipcMain.handle('save-anti-cheat-policy', async (_event, payload = {}) => {
+  if (!canManageAntiCheatPolicies()) {
+    return { ok: false, error: 'Only administrators can manage anti-cheat policies.' };
+  }
+  try {
+    const response = await axios.post(
+      `${String(config.backendUrl || '').replace(/\/$/, '')}/api/protected-quizzes/admin/policies`,
+      payload,
+      { headers: { 'X-Portal-Session': String(desktopSession?.token || '') }, timeout: 5000 }
+    );
+    return { ok: true, ...response.data };
+  } catch (error: any) {
+    return {
+      ok: false,
+      error: String(error?.response?.data?.error || error?.message || 'Anti-cheat policy could not be saved.')
+    };
+  }
+});
+
+ipcMain.handle('check-service-health', async () => {
+  const frontendUrl = String(config.quizUrl || config.appUrl || '').trim();
+  const backendUrl = String(config.backendUrl || '').trim();
+  const check = async (url: string) => {
+    try {
+      const response = await axios.get(url, {
+        timeout: 10000,
+        validateStatus: () => true
+      });
+      return response.status >= 200 && response.status < 400;
+    } catch (error) {
+      return false;
+    }
+  };
+  const [frontendOk, backendOk] = await Promise.all([
+    check(frontendUrl),
+    check(`${backendUrl}/health`)
+  ]);
+  return { frontendOk, backendOk };
+});
 
 ipcMain.handle('clear-launch-cache', async () => {
   try {

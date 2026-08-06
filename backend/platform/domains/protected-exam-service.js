@@ -94,6 +94,66 @@ function normalizeAntiCheatPolicy(policy = {}, existing = {}) {
     };
 }
 
+function getAntiCheatPolicyDefaults() {
+    const configured = this.state.meta?.antiCheatPolicyDefaults;
+    return normalizeAntiCheatPolicy(configured || {});
+}
+
+function listAntiCheatPolicies() {
+    const defaults = getAntiCheatPolicyDefaults.call(this);
+    return Object.values(this.state.lmsCourses || {}).flatMap((course) =>
+        asArray(course?.quizzes).map((quiz) => ({
+            courseId: String(course.id || course.courseId || '').trim(),
+            courseTitle: String(course.title || course.name || course.id || '').trim(),
+            quizId: String(quiz?.id || '').trim(),
+            title: String(quiz?.title || quiz?.name || 'Protected Quiz').trim(),
+            status: String(quiz?.status || 'draft').trim(),
+            antiCheatPolicy: normalizeAntiCheatPolicy(
+                quiz?.antiCheatPolicyOverride === true ? quiz.antiCheatPolicy : defaults,
+                defaults
+            ),
+            hasOverride: quiz?.antiCheatPolicyOverride === true
+        })).filter((item) => item.courseId && item.quizId)
+    );
+}
+
+function saveAntiCheatPolicySettings(payload = {}) {
+    const scope = String(payload.scope || '').trim().toLowerCase();
+    const defaults = getAntiCheatPolicyDefaults.call(this);
+    const nextPolicy = normalizeAntiCheatPolicy(payload.antiCheatPolicy, defaults);
+    if (scope === 'global') {
+        this.state.meta = this.state.meta && typeof this.state.meta === 'object' ? this.state.meta : {};
+        this.state.meta.antiCheatPolicyDefaults = nextPolicy;
+        Object.values(this.state.lmsCourses || {}).forEach((course) => {
+            asArray(course?.quizzes).forEach((quiz) => {
+                if (quiz?.antiCheatPolicyOverride === true) return;
+                quiz.antiCheatPolicy = clone(nextPolicy);
+                quiz.updatedAt = nowIso();
+            });
+        });
+        this.save();
+        return { scope: 'global', antiCheatPolicy: clone(nextPolicy) };
+    }
+    if (scope !== 'quiz') return { error: 'A valid anti-cheat policy scope is required.', status: 400 };
+    const courseId = String(payload.courseId || '').trim();
+    const quizId = String(payload.quizId || '').trim();
+    const record = findProtectedQuizRecord.call(this, courseId, quizId);
+    if (!record?.quiz) return { error: 'Protected quiz was not found.', status: 404 };
+    const useGlobalDefaults = payload.useGlobalDefaults === true;
+    record.quiz.antiCheatPolicyOverride = !useGlobalDefaults;
+    record.quiz.antiCheatPolicy = clone(useGlobalDefaults ? defaults : nextPolicy);
+    record.quiz.updatedAt = nowIso();
+    record.lmsCourse.updatedAt = nowIso();
+    this.save();
+    return {
+        scope: 'quiz',
+        courseId,
+        quizId,
+        antiCheatPolicy: clone(record.quiz.antiCheatPolicy),
+        hasOverride: record.quiz.antiCheatPolicyOverride === true
+    };
+}
+
 function ensureProtectedQuizLaunch(ticket) {
     const key = String(ticket || '').trim();
     if (!key) return null;
@@ -636,7 +696,11 @@ function syncProtectedQuiz(payload = {}) {
         requiresDesktopClient: payload.requiresDesktopClient !== false,
         installUrl: String(payload.installUrl || existing?.installUrl || `${this.backendUrl.replace(/\/$/, '')}/download`).trim(),
         allowedPlatforms: uniqueStrings(asArray(payload.allowedPlatforms || existing?.allowedPlatforms || ['windows', 'macos', 'linux'])),
-        antiCheatPolicy: normalizeAntiCheatPolicy(payload.antiCheatPolicy, existing?.antiCheatPolicy),
+        antiCheatPolicy: normalizeAntiCheatPolicy(
+            payload.antiCheatPolicy,
+            existing?.antiCheatPolicy || getAntiCheatPolicyDefaults.call(this)
+        ),
+        antiCheatPolicyOverride: payload.antiCheatPolicyOverride === true || existing?.antiCheatPolicyOverride === true,
         allowedStudentIds,
         allowedStudents: allowedStudents.length ? allowedStudents : asArray(existing?.allowedStudents || []),
         createdAt: String(existing?.createdAt || payload.createdAt || nowIso()).trim(),
@@ -1212,6 +1276,8 @@ module.exports = {
     getProtectedClientSession,
     getProtectedQuiz,
     getProtectedQuizMonitor,
+    getAntiCheatPolicyDefaults,
+    listAntiCheatPolicies,
     heartbeatProtectedQuiz,
     listExamPortalVisibleSessions,
     listExamSessionsForStudent,
@@ -1220,6 +1286,7 @@ module.exports = {
     normalizeExamSessionStatus,
     recordProtectedQuizEvent,
     redeemProtectedQuizLaunch,
+    saveAntiCheatPolicySettings,
     revokeProtectedClientSessions,
     syncExamSession,
     syncProtectedQuiz,

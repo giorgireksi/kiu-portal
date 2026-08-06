@@ -8,6 +8,19 @@ const PORT = Number(process.argv[2] || 8876);
 const LISTEN_HOST = String(process.env.KIU_LOCAL_BIND_HOST || process.env.KIU_LOCAL_LMS_HOST || '127.0.0.1').trim() || '127.0.0.1';
 const BACKEND_HOST = String(process.env.KIU_LOCAL_BACKEND_PROXY_HOST || process.env.KIU_LOCAL_BACKEND_HOST || '127.0.0.1').trim() || '127.0.0.1';
 const BACKEND_PORT = Number(process.env.KIU_LOCAL_BACKEND_PORT || 48933);
+const PROXY_TIMEOUT_MS = Number(process.env.KIU_LOCAL_PROXY_TIMEOUT_MS || 20000);
+const PROXY_RETRY_DELAY_MS = Number(process.env.KIU_LOCAL_PROXY_RETRY_DELAY_MS || 150);
+const HOP_BY_HOP_HEADERS = new Set([
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailers',
+    'transfer-encoding',
+    'upgrade',
+    'proxy-connection'
+]);
 const BLOCKED_PATH_RE = /^\/(?:artifacts(?:\/|$)|admin-tools-standalone(?:\.dom)?\.html$|\.env(?:$|[./])|\.git(?:\/|$)|\.cursor(?:\/|$)|node_modules(?:\/|$)|backend(?:\/|$)|tools(?:\/|$)|test(?:\/|$)|\.tmp(?:\/|$)|kiu-realtime-bridge(?:\/|$)|anti-cheat(?:\/|$))/i;
 
 const CONTENT_TYPES = {
@@ -85,16 +98,108 @@ function isVersionedAsset(requestUrl, requestPath) {
         && /(?:^|[?&])v=[^&]+/.test(String(requestUrl || ''));
 }
 
-function proxyBackendRequest(clientRequest, clientResponse) {
+const COMPRESSED_STATIC_CACHE = new Map();
+const COMPRESSED_STATIC_CACHE_MAX = Number(process.env.KIU_LOCAL_COMPRESS_CACHE_MAX || 64);
+
+function compressedStaticCacheKey(filePath, mtimeMs, encoding) {
+    return `${filePath}|${mtimeMs}|${encoding}`;
+}
+
+function getCachedCompressedBody(filePath, mtimeMs, encoding) {
+    return COMPRESSED_STATIC_CACHE.get(compressedStaticCacheKey(filePath, mtimeMs, encoding)) || null;
+}
+
+function setCachedCompressedBody(filePath, mtimeMs, encoding, buffer) {
+    const key = compressedStaticCacheKey(filePath, mtimeMs, encoding);
+    if (COMPRESSED_STATIC_CACHE.has(key)) {
+        COMPRESSED_STATIC_CACHE.delete(key);
+    } else if (COMPRESSED_STATIC_CACHE.size >= COMPRESSED_STATIC_CACHE_MAX) {
+        const oldest = COMPRESSED_STATIC_CACHE.keys().next().value;
+        if (oldest) COMPRESSED_STATIC_CACHE.delete(oldest);
+    }
+    COMPRESSED_STATIC_CACHE.set(key, buffer);
+}
+
+function compressStaticFileSync(filePath, encoding) {
+    const raw = fs.readFileSync(filePath);
+    if (encoding === 'br') {
+        return zlib.brotliCompressSync(raw, {
+            params: {
+                [zlib.constants.BROTLI_PARAM_QUALITY]: 4
+            }
+        });
+    }
+    if (encoding === 'gzip') {
+        return zlib.gzipSync(raw);
+    }
+    return raw;
+}
+
+function getOrCreateCompressedBody(filePath, mtimeMs, encoding) {
+    const cached = getCachedCompressedBody(filePath, mtimeMs, encoding);
+    if (cached) return cached;
+    const compressed = compressStaticFileSync(filePath, encoding);
+    setCachedCompressedBody(filePath, mtimeMs, encoding, compressed);
+    return compressed;
+}
+
+function buildUpstreamHeaders(clientHeaders = {}) {
+    const headers = {};
+    for (const [key, value] of Object.entries(clientHeaders || {})) {
+        if (HOP_BY_HOP_HEADERS.has(String(key || '').toLowerCase())) continue;
+        headers[key] = value;
+    }
+    headers.host = `${BACKEND_HOST}:${BACKEND_PORT}`;
+    return headers;
+}
+
+function isRetryableProxyError(error) {
+    const code = String(error && error.code || '').toUpperCase();
+    return code === 'ECONNRESET'
+        || code === 'ECONNREFUSED'
+        || code === 'ETIMEDOUT'
+        || code === 'EPIPE'
+        || code === 'ECONNABORTED';
+}
+
+function writeOfflineProxyResponse(clientRequest, clientResponse) {
+    if (clientResponse.headersSent || clientResponse.writableEnded) return;
+    const acceptsJson = String(clientRequest.headers.accept || '').toLowerCase().includes('application/json')
+        || String(clientRequest.url || '').startsWith('/api/');
+    if (acceptsJson) {
+        clientResponse.writeHead(503, {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            'Content-Type': 'application/json; charset=utf-8',
+            Expires: '0',
+            Pragma: 'no-cache'
+        });
+        clientResponse.end(JSON.stringify({
+            ok: false,
+            error: 'The portal backend is offline right now.',
+            code: 'offline'
+        }));
+        return;
+    }
+    sendError(clientResponse, 503, 'The portal backend is offline right now.');
+}
+
+function sendProxiedBackendRequest(clientRequest, clientResponse, body, attempt) {
+    const method = String(clientRequest.method || 'GET').toUpperCase();
+    const requestPath = String(clientRequest.url || '/');
+    const headers = buildUpstreamHeaders(clientRequest.headers);
+    if (body && body.length) {
+        headers['content-length'] = String(body.length);
+    } else {
+        delete headers['content-length'];
+        delete headers['Content-Length'];
+    }
     const options = {
         hostname: BACKEND_HOST,
         port: BACKEND_PORT,
-        method: clientRequest.method || 'GET',
-        path: clientRequest.url || '/',
-        headers: {
-            ...clientRequest.headers,
-            host: `${BACKEND_HOST}:${BACKEND_PORT}`
-        }
+        method,
+        path: requestPath,
+        headers,
+        timeout: PROXY_TIMEOUT_MS
     };
 
     const proxyRequest = http.request(options, (proxyResponse) => {
@@ -108,27 +213,54 @@ function proxyBackendRequest(clientRequest, clientResponse) {
         proxyResponse.pipe(clientResponse);
     });
 
-    proxyRequest.on('error', () => {
-        const acceptsJson = String(clientRequest.headers.accept || '').toLowerCase().includes('application/json')
-            || String(clientRequest.url || '').startsWith('/api/');
-        if (acceptsJson) {
-            clientResponse.writeHead(503, {
-                'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-                'Content-Type': 'application/json; charset=utf-8',
-                Expires: '0',
-                Pragma: 'no-cache'
-            });
-            clientResponse.end(JSON.stringify({
-                ok: false,
-                error: 'The portal backend is offline right now.',
-                code: 'offline'
-            }));
-            return;
-        }
-        sendError(clientResponse, 503, 'The portal backend is offline right now.');
+    proxyRequest.on('timeout', () => {
+        proxyRequest.destroy(Object.assign(new Error('Upstream proxy timeout'), { code: 'ETIMEDOUT' }));
     });
 
-    clientRequest.pipe(proxyRequest);
+    proxyRequest.on('error', (error) => {
+        const code = String(error && error.code || 'UNKNOWN');
+        if (attempt === 0 && isRetryableProxyError(error) && !clientResponse.headersSent) {
+            console.error(`[local-dev-proxy] ${method} ${requestPath} upstream ${code}; retrying once`);
+            setTimeout(() => {
+                sendProxiedBackendRequest(clientRequest, clientResponse, body, 1);
+            }, PROXY_RETRY_DELAY_MS);
+            return;
+        }
+        console.error(`[local-dev-proxy] ${method} ${requestPath} upstream ${code}`);
+        writeOfflineProxyResponse(clientRequest, clientResponse);
+    });
+
+    if (body && body.length) {
+        proxyRequest.end(body);
+    } else {
+        proxyRequest.end();
+    }
+}
+
+function proxyBackendRequest(clientRequest, clientResponse) {
+    const chunks = [];
+    let total = 0;
+    let settled = false;
+
+    const fail = () => {
+        if (settled) return;
+        settled = true;
+        writeOfflineProxyResponse(clientRequest, clientResponse);
+    };
+
+    clientRequest.on('data', (chunk) => {
+        const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        total += buf.length;
+        chunks.push(buf);
+    });
+    clientRequest.on('error', fail);
+    clientRequest.on('aborted', fail);
+    clientRequest.on('end', () => {
+        if (settled) return;
+        settled = true;
+        const body = chunks.length ? Buffer.concat(chunks, total) : Buffer.alloc(0);
+        sendProxiedBackendRequest(clientRequest, clientResponse, body, 0);
+    });
 }
 
 const server = http.createServer((request, response) => {
@@ -181,9 +313,25 @@ const server = http.createServer((request, response) => {
         headers['Content-Length'] = stat.size;
     }
 
+    let memoizedBody = null;
+    if (compression && cacheable && request.method !== 'HEAD') {
+        try {
+            memoizedBody = getOrCreateCompressedBody(filePath, stat.mtimeMs, compression);
+            headers['Content-Length'] = memoizedBody.length;
+        } catch (error) {
+            sendError(response, 500, 'Failed to compress file');
+            return;
+        }
+    }
+
     response.writeHead(200, headers);
     if (request.method === 'HEAD') {
         response.end();
+        return;
+    }
+
+    if (memoizedBody) {
+        response.end(memoizedBody);
         return;
     }
 
@@ -216,9 +364,16 @@ if (require.main === module) {
 
 module.exports = {
     BLOCKED_PATH_RE,
+    HOP_BY_HOP_HEADERS,
+    PROXY_TIMEOUT_MS,
+    buildUpstreamHeaders,
+    getCachedCompressedBody,
+    getOrCreateCompressedBody,
     isBlockedStaticPath,
+    isRetryableProxyError,
     normalizeRequestPath,
     resolveFilePath,
+    setCachedCompressedBody,
     shouldProxyToBackend,
     getStaticCompression,
     isVersionedAsset

@@ -31,8 +31,8 @@ describe('registration route regressions', () => {
 
     it('loads shared layout primitives and compact summary cache', () => {
         const html = readSource('registration.html');
-        expect(html).toContain('lux-page-bare-lite.css?v=20260804-divider1');
-        expect(html).toContain('registration-student-route.js?v=20260804-summarybalanced1');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260806-regcoursemobile1');
+        expect(html).toContain('registration-student-route.js?v=20260806-nofooter1');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('lux-fouc-ht.css');
     });
@@ -67,7 +67,10 @@ describe('registration route regressions', () => {
         expect(html).not.toContain('registration-summary-focus');
         expect(html).not.toContain('lux-timetable-command registration-command-band');
         expect(html).not.toContain('registration-command-band home-hover-chip');
-        expect(html).toContain('registration-footer-bar registration-footer-bar-shell registration-progress-shell home-hover-chip');
+        expect(html).not.toContain('registration-footer-bar');
+        expect(html).not.toContain('id="ects-progress-bar"');
+        expect(html).not.toContain('id="ects-text"');
+        expect(html).not.toContain('Submit Registration');
         expect(html).toContain('lux-card-meta registration-insight-label');
         expect(html).toContain('lux-card-title registration-workspace-title');
         expect(html).toMatch(/class="reg-tab active"[^>]*data-reg-tab="program"/);
@@ -82,7 +85,7 @@ describe('registration route regressions', () => {
         expect(primitives).toContain('.registration-workspace-kicker');
         expect(primitives).toContain('.registration-workspace-title');
         expect(primitives).toContain('.registration-state-summary');
-        expect(primitives).toContain('.registration-footer-bar-label');
+        expect(primitives).not.toContain('.registration-footer-bar-label');
         expect(primitives).toContain('.registration-module-list-title');
     });
 
@@ -111,9 +114,14 @@ describe('registration route regressions', () => {
         expect(regBlock).toContain('border-top: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);');
         expect(regBlock).toContain('grid-template-columns: 1fr;');
         expect(regBlock).toContain('body.lux-route-registration .reg-tabs');
+        expect(regBlock).not.toContain('body.lux-route-registration .registration-footer-bar');
+        expect(regBlock).not.toContain('body.lux-route-registration .registration-progress-submit');
+        expect(regBlock).toMatch(/@media \(max-width: 960px\)[\s\S]*\.registration-module-grid-head\s*\{\s*display:\s*none/);
+        expect(regBlock).toMatch(/@media \(max-width: 960px\)[\s\S]*\.registration-course-row\s*\{[\s\S]*grid-template-areas:/);
+        expect(regBlock).toMatch(/@media \(max-width: 960px\)[\s\S]*\.registration-course-index\s*\{\s*display:\s*none/);
+        expect(regBlock).toMatch(/@media \(max-width: 960px\)[\s\S]*\.registration-course-picker-btn[\s\S]*min-height:\s*44px/);
         expect(regBlock).not.toMatch(/body\.lux-route-registration \.reg-tab\s*\{[^}]*background:\s*transparent/);
         expect(regBlock).toMatch(/body\.lux-route-registration \.reg-tab\.active\s*\{[^}]*linear-gradient\(135deg, var\(--lux-accent\)/);
-        expect(regBlock).toContain('body.lux-route-registration .registration-footer-bar');
         expect(regBlock).not.toMatch(/backdrop-filter/);
         expect(bare).not.toContain('--registration-fade-');
     });
@@ -163,6 +171,11 @@ describe('registration route regressions', () => {
         expect(js).toContain('registration-section-title lux-card-title');
         expect(js).toContain("className = 'registration-module-list-card home-hover-chip'");
         expect(js).toContain('registration-course-title lux-card-title');
+        expect(js).not.toContain('Published sections:');
+        expect(js).not.toContain('Selected sections:');
+        expect(js).not.toContain("appendCourseMetaLine(meta, details.curriculumSemester");
+        expect(js).not.toContain('function formatStudentPublishedSectionSummary');
+        expect(js).not.toContain('function formatStudentSelectedSectionSummary');
         expect(js).toContain('function syncRegistrationTabHoverChip(tab)');
         expect(js).toContain("tab.classList.toggle('home-hover-chip', !tab.classList.contains('active'))");
         expect(fouc).toContain('.registration-module-pane-title.lux-card-title');

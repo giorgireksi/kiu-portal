@@ -197,9 +197,10 @@
             return null;
         }
         if (!ui.selectedTicketId || !tickets.some(ticket => ticket.id === ui.selectedTicketId)) {
-            ui.selectedTicketId = tickets[0].id;
+            ui.selectedTicketId = '';
+            return null;
         }
-        return tickets.find(ticket => ticket.id === ui.selectedTicketId) || tickets[0] || null;
+        return tickets.find(ticket => ticket.id === ui.selectedTicketId) || null;
     }
 
     function findStudentServiceArticleForTicket(ticket, articles) {

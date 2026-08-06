@@ -210,7 +210,6 @@
         document.body?.classList.toggle('lms-student-mode', isStudent);
         const sectionTitle = document.getElementById('lms-subjects-section-title');
         const sectionCopy = document.getElementById('lms-subjects-section-copy');
-        const heroCopy = document.querySelector('.lms-hero-v2-left .page-hero-copy');
         if (sectionTitle) {
             sectionTitle.textContent = isStudent ? 'My enrolled subjects' : 'Published faculty subjects';
         }
@@ -219,82 +218,8 @@
                 ? 'Subjects you registered for in the selected semester. Open one to continue in your course workspace.'
                 : 'Published subjects for the selected faculty, ready to open by group.';
         }
-        if (heroCopy) {
-            heroCopy.textContent = isStudent
-                ? 'Review subjects you chose during registration, switch semesters, and open your enrolled course workspace.'
-                : 'Open the right faculty subject, choose your group, and continue work in a focused LMS built for students, teaching staff, and administrators.';
-        }
         renderLmsStudentSemesterBar();
         if (typeof syncLmsCourseBackButtonLabel === 'function') syncLmsCourseBackButtonLabel();
-    }
-    function getLmsSubjectSemesterValue(subject) {
-        const semester = subject?.semester ?? subject?.semesterNumber ?? null;
-        const normalized = Number.parseInt(semester, 10);
-        if (Number.isFinite(normalized) && normalized > 0) return normalized;
-        const fallback = String(semester || '').trim();
-        return fallback || '';
-    }
-    function getLmsSubjectCourseValue(subject) {
-        const directCourse = subject?.course ?? null;
-        const normalizedCourse = Number.parseInt(directCourse, 10);
-        if (Number.isFinite(normalizedCourse) && normalizedCourse > 0) return normalizedCourse;
-        const directCourseLabel = String(directCourse || '').trim();
-        if (directCourseLabel) return directCourseLabel;
-        const semesterValue = getLmsSubjectSemesterValue(subject);
-        const normalizedSemester = Number.parseInt(semesterValue, 10);
-        return Number.isFinite(normalizedSemester) && normalizedSemester > 0
-            ? Math.ceil(normalizedSemester / 2)
-            : '';
-    }
-    function buildLmsSubjectMetaBadges(subject) {
-        const badges = [];
-        const semesterValue = getLmsSubjectSemesterValue(subject);
-        if (semesterValue) {
-            badges.push(`<span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-calendar-week"></i> Semester ${safeHtml(String(semesterValue))}</span>`);
-        }
-        const courseValue = getLmsSubjectCourseValue(subject);
-        if (courseValue) {
-            badges.push(`<span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-graduation-cap"></i> Course ${safeHtml(String(courseValue))}</span>`);
-        }
-        return badges.length ? `<div class="lms-clean-subject-meta">${badges.join('')}</div>` : '';
-    }
-    function renderLmsHeroSummary(subjects) {
-        const facultyCode = getLmsActiveFacultyCode();
-        const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(facultyCode) : facultyCode;
-        const isStudent = isLmsStudentHomeViewer();
-        const groupCount = isStudent
-            ? subjects.length
-            : subjects.reduce((sum, subject, index) => sum + getLmsSubjectGroupCount(subject, getLmsSubjectId(subject, index)), 0);
-        const subjectCount = subjects.length;
-        const waiting = subjectCount === 0;
-        const focusTitle = waiting
-            ? (isStudent ? 'No enrolled subjects yet' : 'No published subjects yet')
-            : (isStudent ? 'Subjects ready to open' : 'Faculty scope is live');
-        const focusCopy = isStudent
-            ? (waiting
-                ? 'No enrolled subjects for this semester yet. Register for courses to populate your LMS workspace.'
-                : `${subjectCount} enrolled subject${subjectCount === 1 ? '' : 's'} are available for this semester. Open one to continue.`)
-            : (waiting
-                ? 'No published LMS subjects yet. This faculty route is waiting for content.'
-                : `${subjectCount} subjects and ${groupCount} groups are ready in this faculty scope.`);
-        const focusChip = waiting
-            ? (isStudent ? '0 enrolled' : '0 subjects')
-            : (isStudent
-                ? `${subjectCount} enrolled`
-                : `${subjectCount} subjects`);
-        const focusKicker = isStudent ? 'Your LMS focus' : 'Faculty workspace';
-
-        // Timetable-style focus panel (right column)
-        const focusKickerEl = document.getElementById('lms-focus-kicker');
-        if (focusKickerEl) focusKickerEl.textContent = focusKicker;
-        const focusChipEl = document.getElementById('lms-focus-chip');
-        if (focusChipEl) focusChipEl.textContent = focusChip;
-        const focusTitleEl = document.getElementById('lms-focus-title');
-        if (focusTitleEl) focusTitleEl.textContent = focusTitle;
-        const focusCopyEl = document.getElementById('lms-focus-copy');
-        if (focusCopyEl) focusCopyEl.textContent = focusCopy;
-        const focusMetaText = document.getElementById('lms-focus-meta-text');
-        if (focusMetaText) focusMetaText.textContent = facultyLabel;
     }
     function buildLmsSubjectDeckSignature(subjects, facultyCode, isStudent) {
         return JSON.stringify({
@@ -309,6 +234,12 @@
             }))
         });
     }
+    function getLmsSubjectTileBadgeCount(subject, subjectId, isStudent) {
+        const unread = Number(subject?.unreadCount ?? subject?.unread ?? NaN);
+        if (Number.isFinite(unread) && unread >= 0) return unread;
+        if (isStudent) return 0;
+        return getLmsSubjectGroupCount(subject, subjectId);
+    }
     function renderLmsSubjectDeck(options = {}) {
         const grid = document.getElementById('lms-subject-grid');
         if (!grid) return;
@@ -319,7 +250,6 @@
         const subjects = getLmsSubjectSource().slice(0, isStudent ? 48 : 18);
         const nextSignature = buildLmsSubjectDeckSignature(subjects, facultyCode, isStudent);
         const forceRefresh = options && options.force === true;
-        renderLmsHeroSummary(subjects);
         const laneChip = document.getElementById('lms-lane-chip');
         if (laneChip) {
             laneChip.innerHTML = isStudent
@@ -345,38 +275,25 @@
         grid.innerHTML = subjects.map((subject, index) => {
             const subjectId = getLmsSubjectId(subject, index);
             const subjectName = getLmsSubjectName(subject);
-            const groupCount = getLmsSubjectGroupCount(subject, subjectId);
             const icon = subject.icon || 'fas fa-book-reader';
             const groupId = lmsScheduleLabel(subject.groupId, '');
             const groupName = lmsScheduleLabel(subject.groupName, '');
             const courseKey = lmsScheduleLabel(subject.courseKey, '') || (groupId && subjectId ? `${subjectId}::${groupId}` : subjectId);
-            const kickerLabel = isStudent ? 'Enrolled' : 'Published';
             const resolvedCourseKey = courseKey || (groupId && subjectId ? `${subjectId}::${groupId}` : '');
-            const nextSessionLine = resolvedCourseKey && typeof window.renderLmsNextSessionHtml === 'function' && typeof window.getLmsNextSessionForGroup === 'function'
-                ? window.renderLmsNextSessionHtml(window.getLmsNextSessionForGroup(resolvedCourseKey), 'compact')
-                : '';
-            const metaHtml = isStudent
-                ? `<div class="lms-clean-card-meta is-compact">
-                    <span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-door-open"></i> ${safeHtml(groupName || 'Your section')}</span>
-                   </div>${nextSessionLine}`
-                : `<div class="lms-clean-card-meta is-compact">
-                    <span class="lux-status-pill lux-soft-chrome is-muted home-hover-chip"><i class="fas fa-users"></i> ${groupCount} group${groupCount !== 1 ? 's' : ''}</span>
-                   </div>`;
+            const badgeCount = getLmsSubjectTileBadgeCount(subject, subjectId, isStudent);
+            const badgeLabel = isStudent ? `${badgeCount} updates` : `${badgeCount} group${badgeCount === 1 ? '' : 's'}`;
             return `<button
                 type="button"
-                class="lux-strip-card lux-lms-subject-card home-hover-chip"
+                class="lux-lms-subject-card home-hover-chip lux-soft-chrome"
                 data-subject-id="${safeHtml(lmsScheduleDomToken(subjectId))}"
                 data-subject-title="${safeHtml(subjectName)}"
                 data-icon-class="${safeHtml(icon)}"
                 data-course-key="${safeHtml(resolvedCourseKey)}"
                 data-group-id="${safeHtml(lmsScheduleDomToken(groupId || groupName))}"
                 data-lms-subject-card="true">
-                <div class="lux-card-body" data-lux-layout-only="1">
-                    <div class="lux-section-kicker lms-clean-card-kicker"><i class="${safeHtml(icon)}"></i> ${safeHtml(kickerLabel)}</div>
-                    <div class="lux-subject-row__title lms-clean-card-title lms-route-card-title">${safeHtml(subjectName)}</div>
-                    ${buildLmsSubjectMetaBadges(subject)}
-                    ${metaHtml}
-                </div>
+                <span class="lms-subject-tile-badge" aria-label="${safeHtml(badgeLabel)}">${safeHtml(String(badgeCount))}</span>
+                <div class="lms-subject-tile-art" aria-hidden="true"></div>
+                <div class="lms-subject-tile-title">${safeHtml(subjectName)}</div>
             </button>`;
         }).join('') || `<div class="lms-route-empty lms-route-empty--full-span">
             <div class="lms-route-empty-icon"><i class="fas fa-book-open"></i></div>

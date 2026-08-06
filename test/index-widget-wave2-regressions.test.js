@@ -13,18 +13,20 @@ describe('index widget wave 2 regressions', () => {
     expect(source).toContain('programs-module-rail-region');
     expect(source).toContain('programs-subject-panel-region');
     expect(source).toContain('data-programs-panel-shell="1"');
-    expect(source).toContain('programs-ops-total-ects');
+    expect(source).not.toContain('programs-ops-total-ects');
+    expect(source).not.toContain('syncProgramsCommandDeck');
   });
 
-  it('keeps study-card summary aligned to index hero-side and strip-card widgets', () => {
+  it('keeps study-card terms without summary hero', () => {
     const source = readSource('assets/js/pages/study-card-page.js');
 
-    expect(source).toContain('class="lux-hero-stage study-card-summary-stage"');
-    expect(source).toContain('class="lux-hero-main study-card-summary-main lux-soft-chrome home-hover-chip"');
-    expect(source).toContain('class="lux-hero-side lux-focus-panel study-card-summary-focus lux-soft-chrome home-hover-chip"');
-    expect(source).toContain('class="lux-hero-signal home-hover-chip"');
-    expect(source).toContain('lux-section-kicker study-card-summary-kicker');
+    expect(source).not.toContain('study-card-summary-region');
+    expect(source).not.toContain('renderStudyCardSummaryRegion');
+    expect(source).not.toContain('study-card-summary-stage');
+    expect(source).not.toContain('Academic Record Snapshot');
+    expect(source).toContain('study-card-terms-region');
     expect(source).toContain('study-card-term-row lux-soft-chrome home-hover-chip');
+    expect(source).toContain('study-card-summary-kicker');
   });
 
   it('keeps faculty-gradebook and chancellery summary widgets aligned to index strip and hero-side classes', () => {
@@ -70,14 +72,15 @@ describe('index widget wave 2 regressions', () => {
     expect(timetableHtml).toContain('class="lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side lux-focus-panel home-hover-chip"');
   });
 
-  it('keeps the LMS hero summary cluster aligned to index hero-side and strip-card classes', () => {
+  it('keeps the LMS subjects stage without a page hero title block', () => {
     const lmsHtml = readSource('lms.html');
 
-    expect(lmsHtml).toContain('class="lms-hero-v2-grid lux-hero-stage"');
-    expect(lmsHtml).toContain('class="lms-hero-v2-left lux-hero-main"');
-    expect(lmsHtml).toContain('class="lms-hero-focus lux-hero-side home-hover-chip"');
-    expect(lmsHtml).toContain('lms-hero-focus-chip');
-    expect(lmsHtml).toContain('lms-hero-focus-meta');
+    expect(lmsHtml).toContain('lms-clean-subjects lms-clean-subjects--merged home-hover-chip');
+    expect(lmsHtml).not.toContain('lms-hero-v2-grid');
+    expect(lmsHtml).not.toContain('lms-hero-v2-left');
+    expect(lmsHtml).not.toContain('lms-subject-anchor');
+    expect(lmsHtml).not.toContain('lms-hero-focus');
+    expect(lmsHtml).not.toContain('Learning Workspace');
   });
 
   it('keeps profile aligned to index hero-side and strip-card classes', () => {

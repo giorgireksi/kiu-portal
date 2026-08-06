@@ -429,8 +429,8 @@ describe('student service inbox filter editor', () => {
         expect(fouc).toMatch(
             /\.student-service-inbox-filter-editor-list[\s\S]*?overflow:\s*visible/
         );
-        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260730-ssfilter1/);
-        expect(html).toMatch(/student-service-modules-runtime\.js\?v=20260730-ssfilter1/);
+        expect(html).toMatch(/lux-fouc-ht\.css\?v=20260806-hidetopbar2/);
+        expect(html).toMatch(/student-service-modules-runtime\.js\?v=20260806-ssmobile1/);
         expect(modules).toContain('student-service-filters.js?v=20260730-ssfilter1');
     });
 });

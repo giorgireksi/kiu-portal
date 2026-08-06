@@ -95,11 +95,54 @@ describe('news bare shell', () => {
         expect(events).toContain('closeNewsPostDetail()');
         expect(events).toContain('closeNewsAttachmentViewer()');
         expect(readSource('news.html')).toContain('lux-modals.css?v=20260731-newsedit1');
-        expect(readSource('news.html')).toContain('lux-page-bare-lite.css?v=20260731-newsreplytab3');
-        expect(readSource('news.html')).toContain('news-feed-render.js?v=20260801-newsreplyscroll3');
-        expect(readSource('news.html')).toContain('news-events.js?v=20260801-newsreplyscroll3');
+        expect(readSource('news.html')).toContain('lux-page-bare-lite.css?v=20260806-newssectioncollapse1');
+        expect(readSource('news.html')).toContain('news-feed-render.js?v=20260806-newssectioncollapse1');
+        expect(readSource('news.html')).toContain('news-events.js?v=20260806-newssectioncollapse1');
+        expect(readSource('news.html')).toContain('news-runtime.js?v=20260806-newssectioncollapse1');
     });
 
+    it('collapses news feed filters behind a mobile Filters toggle', () => {
+        const feed = readSource('assets/js/pages/news/news-feed-render.js');
+        const events = readSource('assets/js/pages/news/news-events.js');
+        const runtime = readSource('assets/js/pages/news/news-runtime.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(runtime).toContain('headerFiltersCollapsed: null');
+        expect(runtime).toContain('function ensureNewsHeaderFiltersCollapsed');
+        expect(runtime).toContain("matchMedia('(max-width: 920px)')");
+        expect(feed).toContain('data-news-toggle-filters');
+        expect(feed).toContain('newsx-filter-toggle');
+        expect(feed).toContain('id="newsx-filter-collapse"');
+        expect(feed).toContain('newsx-filter-collapse${filtersCollapsed ? \' is-collapsed\' : \'\'}');
+        expect(events).toContain('[data-news-toggle-filters]');
+        expect(events).toContain('window.toggleNewsHeaderFilters');
+        expect(events).toContain('runtime.headerFiltersCollapsed');
+        expect(bare).toContain('#portal-news-root .newsx-filter-toggle');
+        expect(bare).toMatch(/#portal-news-root \.newsx-filter-toggle\s*\{[^}]*display:\s*inline-flex/);
+        expect(bare).toMatch(
+            /#portal-news-root \.newsx-header-bar\.is-collapsed \.newsx-filter-collapse[\s\S]*?display:\s*none/
+        );
+    });
+
+    it('collapses news sections sidebar behind a Sections toggle', () => {
+        const feed = readSource('assets/js/pages/news/news-feed-render.js');
+        const events = readSource('assets/js/pages/news/news-events.js');
+        const runtime = readSource('assets/js/pages/news/news-runtime.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(runtime).toContain('sidebarSectionsCollapsed: null');
+        expect(runtime).toContain('function ensureNewsSidebarSectionsCollapsed');
+        expect(feed).toContain('data-news-toggle-sections');
+        expect(feed).toContain('newsx-sections-toggle');
+        expect(feed).toContain('id="newsx-sections-collapse"');
+        expect(feed).toContain('newsx-sections-collapse${sectionsCollapsed ? \' is-collapsed\' : \'\'}');
+        expect(events).toContain('[data-news-toggle-sections]');
+        expect(events).toContain('window.toggleNewsSidebarSections');
+        expect(events).toContain('runtime.sidebarSectionsCollapsed');
+        expect(bare).toContain('#portal-news-root .newsx-sections-toggle');
+        expect(bare).toMatch(/#portal-news-root \.newsx-sections-toggle\s*\{[^}]*display:\s*inline-flex/);
+        expect(bare).toMatch(
+            /#portal-news-root \.newsx-sidebar\.is-collapsed \.newsx-sections-collapse[\s\S]*?display:\s*none/
+        );
+    });
     it('uses shared shell classes and home-hover-chip on news sidebar', () => {
         const feed = readSource('assets/js/pages/news/news-feed-render.js');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
@@ -239,14 +282,14 @@ describe('news bare shell', () => {
         expect(feed).toContain('newsx-btn lux-secondary-btn home-hover-chip" data-news-close-post-detail');
         expect(modals).toContain('#newsx-post-detail-panel *');
         expect(modals).toContain('#newsx-attachment-viewer-panel *');
-        expect(html).toContain('lux-page-bare-lite.css?v=20260731-newsreplytab3');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260806-newssectioncollapse1');
         expect(html).toContain('lux-modals.css?v=20260731-newsedit1');
-        expect(html).toContain('news-feed-render.js?v=20260801-newsreplyscroll3');
+        expect(html).toContain('news-feed-render.js?v=20260806-newssectioncollapse1');
         expect(html).toContain('news-replies.js?v=20260731-newsreplytab1');
-        expect(html).toContain('news-runtime.js?v=20260801-newsreplyscroll3');
-        expect(html).toContain('news-publisher.js?v=20260731-newsreplytab1');
+        expect(html).toContain('news-runtime.js?v=20260806-newssectioncollapse1');
+        expect(html).toContain('news-publisher.js?v=20260806-category-select1');
         expect(html).toContain('news-api.js?v=20260731-newsreplytab1');
-        expect(html).toContain('news-events.js?v=20260801-newsreplyscroll3');
+        expect(html).toContain('news-events.js?v=20260806-newssectioncollapse1');
         expect(feed).toContain("runtime.overlayRefreshMode === 'replies'");
         expect(feed).toContain('refreshNewsReplyShells(replyPostId)');
         expect(feed).toContain('renderNewsPostDetailPanel()');

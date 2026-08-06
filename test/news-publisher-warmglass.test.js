@@ -89,6 +89,15 @@ describe('news publisher warmglass regressions (bare-shell era)', () => {
         expect(modals).toContain('.newsx-headline.lux-card-title');
     });
 
+    it('uses a category dropdown instead of a free-text publisher field', () => {
+        const publisher = readSource('assets/js/pages/news/news-publisher.js');
+
+        expect(publisher).toContain('id="news-compose-section"');
+        expect(publisher).toContain('class="newsx-select lux-control"');
+        expect(publisher).toContain('getNewsSectionSuggestions()');
+        expect(publisher).not.toContain('list="news-section-suggestions"');
+    });
+
     it('uses bare shell on news.html with modal overlay markup', () => {
         const html = readSource('news.html');
 

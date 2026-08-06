@@ -233,7 +233,7 @@
                         <i class="fas fa-layer-group"></i>
                         <strong>No groups yet</strong>
                         <span>Create the first group to start a campus community.</span>
-                        <div class="lux-glass-dialog-form-actions lux-glass-dialog-form-actions-mt-14">
+                        <div class="social-neo-empty-hero-actions">
                             <button class="lux-primary-btn" type="button" data-action="group-create-open">
                                 <i class="fas fa-plus-circle"></i> Create Group
                             </button>
@@ -250,7 +250,7 @@
                         <i class="fas fa-door-open"></i>
                         <strong>You haven't joined any groups</strong>
                         <span>Discover groups and join conversations.</span>
-                        <div class="lux-glass-dialog-form-actions lux-glass-dialog-form-actions-mt-14">
+                        <div class="social-neo-empty-hero-actions">
                             <button class="lux-primary-btn" type="button" data-action="group-create-open">
                                 <i class="fas fa-plus-circle"></i> Create Group Instead
                             </button>

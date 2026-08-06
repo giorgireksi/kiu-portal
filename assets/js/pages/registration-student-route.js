@@ -182,24 +182,6 @@ function syncRegistrationWorkspaceSummary() {
 
 function renderECTSBudget() {
     if (!document.getElementById('page-registration')) return;
-    const currentUser = getCurrentUser();
-    if (!currentUser) return;
-    const total = typeof getStudentCompletedEctsThisSemester === 'function'
-        ? getStudentCompletedEctsThisSemester(currentUser.id, currentUser?.facultyCode || currentUser?.faculty || getCurrentFaculty())
-        : 0;
-    const limit = KIU_STATE.probationStatus?.[currentUser.id] ? 24 : 36;
-
-    const bar = document.getElementById('ects-progress-bar');
-    const txt = document.getElementById('ects-text');
-
-    if (bar && txt) {
-        const percentage = Math.min((total / limit) * 100, 100);
-        bar.style.setProperty('--registration-ects-progress', `${percentage}%`);
-        txt.innerText = `${total} / ${limit}`;
-        const isComplete = total === limit;
-        bar.classList.toggle('is-complete', isComplete);
-        txt.classList.toggle('is-complete', isComplete);
-    }
     syncRegistrationWorkspaceSummary();
 }
 

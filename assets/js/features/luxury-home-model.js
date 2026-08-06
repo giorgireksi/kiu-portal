@@ -188,10 +188,30 @@ function getStudentPerformanceMetric(user) {
 
     const averageScore = typeof getUserAverageScore === 'function' ? Number(getUserAverageScore(user?.id)) : NaN;
     if (Number.isFinite(averageScore) && averageScore > 0) {
-        return { value: String(Math.round(averageScore)), label: 'Avg score' };
+        return { value: String(Math.round(averageScore)), label: 'Average score' };
     }
 
     return { value: '--', label: 'GPA' };
+}
+
+function normalizeStudentMetric(value, fallback = 0) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.max(0, numeric) : fallback;
+}
+
+function buildStudentProgressModel({ semester, completed, performance, scheduleRows, unread }) {
+    const safeSemester = Math.max(1, Math.round(normalizeStudentMetric(semester, 1)));
+    const hasCompletedEcts = completed !== null && completed !== undefined && Number.isFinite(Number(completed));
+    const completedEcts = hasCompletedEcts ? normalizeStudentMetric(completed) : null;
+    const targetEcts = hasCompletedEcts ? Math.max(safeSemester * 30, 30) : null;
+    return {
+        completedEcts,
+        targetEcts,
+        progressPct: hasCompletedEcts ? clampPercent((completedEcts / targetEcts) * 100, 0) : null,
+        performance: performance || { value: '--', label: 'GPA' },
+        scheduleCount: Array.isArray(scheduleRows) ? scheduleRows.length : 0,
+        unreadCount: normalizeStudentMetric(unread)
+    };
 }
 
 function getNotificationSnapshot(user) {
@@ -224,21 +244,29 @@ function getRecentHomeUpdates(user, limit = 4) {
         icon: item.source === 'social' ? 'fas fa-comments' : 'fas fa-bell',
         title: cleanupUiText(item.title || item.type || 'Update', 'Update'),
         copy: cleanupUiText(item.text || 'Portal activity updated.', 'Portal activity updated.'),
-        when: formatRelativeTime(item.createdAt || item.updatedAt)
+        when: formatRelativeTime(item.createdAt || item.updatedAt),
+        timestamp: Date.parse(item.createdAt || item.updatedAt || '') || 0,
+        pageId: item.source === 'social' ? 'social' : 'news'
     }));
     const orders = getOrdersSnapshot(user).orders.map((order) => ({
         icon: 'fas fa-book-open',
         title: cleanupUiText(order.title || order.type || 'Order', 'Order'),
         copy: cleanupUiText(order.type || 'Official order published.', 'Official order published.'),
-        when: formatRelativeTime(order.createdAt || order.createdDate)
+        when: formatRelativeTime(order.createdAt || order.createdDate),
+        timestamp: Date.parse(order.createdAt || order.createdDate || '') || 0,
+        pageId: 'orders'
     }));
     const newsItems = (getNewsHomeSnapshotSafe().items || []).map((post) => ({
         icon: 'fas fa-newspaper',
         title: cleanupUiText(post.title || 'University update', 'University update'),
         copy: cleanupUiText(post.sectionLabel || 'Campus News', 'Campus News'),
-        when: formatRelativeTime(post.publishedAt || post.updatedAt || post.createdAt)
+        when: formatRelativeTime(post.publishedAt || post.updatedAt || post.createdAt),
+        timestamp: Date.parse(post.publishedAt || post.updatedAt || post.createdAt || '') || 0,
+        pageId: 'news'
     }));
-    return [...newsItems, ...notifications, ...orders].slice(0, limit);
+    return [...newsItems, ...notifications, ...orders]
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, limit);
 }
 
 function clampPercent(value, fallback = 0) {
@@ -294,6 +322,438 @@ function getStudentScheduleRows(user) {
         title: getSubjectLabel(item.courseId, item.courseName),
         copy: `${cleanupUiText(item.day || 'Day', 'Day')} - ${cleanupUiText(item.time || 'TBD', 'TBD')} - ${cleanupUiText(item.groupName || item.groupId || 'Section', 'Section')}`
     }));
+}
+
+function getStudentCompactScheduleRows(user) {
+    const schedule = sortScheduleItems(typeof getCurrentStudentSchedule === 'function' ? getCurrentStudentSchedule() : []);
+    return schedule.slice(0, 4).map((item) => ({
+        time: formatScheduleTimeRange(item),
+        title: getSubjectLabel(item.courseId, item.courseName),
+        meta: `${cleanupUiText(item.day || 'Day', 'Day')} · ${cleanupUiText(item.room || 'Room TBA', 'Room TBA')}`
+    }));
+}
+
+function buildStudentCourseList(user, limit = 4) {
+    const schedule = sortScheduleItems(typeof getCurrentStudentSchedule === 'function' ? getCurrentStudentSchedule() : []);
+    const seen = new Set();
+    const courses = [];
+    schedule.forEach((item) => {
+        const courseId = String(item?.courseId || item?.sourceCourseId || '').trim();
+        const title = getSubjectLabel(courseId, item.courseName || item.subjectName || courseId);
+        const key = courseId || title.toLowerCase();
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        courses.push({
+            title,
+            meta: [cleanupUiText(item.groupName || item.groupId || '', ''), cleanupUiText(item.day || '', '')]
+                .filter(Boolean)
+                .join(' · ') || 'Course',
+            pageId: 'lms'
+        });
+    });
+    return courses.slice(0, limit);
+}
+
+function buildStudentCampusUpdates(user, limit = 4) {
+    const items = getRecentHomeUpdates(user, limit).map((item) => ({
+        title: item.title,
+        meta: item.copy,
+        when: item.when,
+        pageId: item.pageId || 'news',
+        icon: item.icon || 'fas fa-bell'
+    }));
+    return items.length
+        ? items
+        : [{ title: 'No new updates', meta: 'News, orders, and notifications will appear here.', when: '', pageId: 'news', icon: 'fas fa-bell' }];
+}
+
+function buildStudentLifeSnapshot({
+    registrationLabel,
+    ordersUnread = 0,
+    notificationsUnread = 0,
+    messengerUnread = 0,
+    supportCount = 0
+}) {
+    return [
+        { label: 'Registration', value: registrationLabel || 'Status unavailable', pageId: 'registration', icon: 'fas fa-check-square' },
+        { label: 'Orders', value: `${Number(ordersUnread || 0)} unread`, pageId: 'orders', icon: 'fas fa-book-open' },
+        { label: 'Notifications', value: `${Number(notificationsUnread || 0)} unread`, pageId: 'news', icon: 'fas fa-bell' },
+        { label: 'Messages', value: `${Number(messengerUnread || 0)} unread`, pageId: 'social', icon: 'fas fa-comments' },
+        { label: 'Support', value: `${Number(supportCount || 0)} open`, pageId: 'student-service', icon: 'fas fa-headset' }
+    ].slice(0, 5);
+}
+
+function buildStudentDenseShortcuts({ registrationOpen = false } = {}) {
+    return [
+        { pageId: 'registration', label: registrationOpen ? 'Registration' : 'Selections' },
+        { pageId: 'orders', label: 'Orders' },
+        { pageId: 'social', label: 'Messages' },
+        { pageId: 'student-service', label: 'Student Service' }
+    ];
+}
+
+function readStudentGradeLastUpdatedMs(record = {}) {
+    let latest = Date.parse(record?.updatedAt || '') || 0;
+    const assessments = record?.assessments && typeof record.assessments === 'object' ? record.assessments : {};
+    Object.values(assessments).forEach((entries) => {
+        (Array.isArray(entries) ? entries : []).forEach((entry) => {
+            const stamp = Date.parse(entry?.updatedAt || '') || 0;
+            if (stamp > latest) latest = stamp;
+            (Array.isArray(entry?.history) ? entry.history : []).forEach((hist) => {
+                const histStamp = Date.parse(hist?.updatedAt || '') || 0;
+                if (histStamp > latest) latest = histStamp;
+            });
+        });
+    });
+    return latest;
+}
+
+function collectStudentLastUpdatedScoreEvents(user, limit = 4) {
+    const studentId = String(user?.id || '');
+    if (!studentId) return [];
+    const events = [];
+    Object.entries(KIU_STATE?.studentGrades || {}).forEach(([rosterKey, roster]) => {
+        const record = (Array.isArray(roster) ? roster : []).find((entry) => String(entry?.id) === studentId);
+        if (!record) return;
+        const subjectTitle = getSubjectLabel(
+            record.courseId || record.subjectId || rosterKey.split('_')[0],
+            record.courseName || record.subjectName || record.name || rosterKey
+        );
+        const assessments = record.assessments && typeof record.assessments === 'object' ? record.assessments : null;
+        if (assessments) {
+            Object.entries(assessments).forEach(([criterion, entries]) => {
+                (Array.isArray(entries) ? entries : []).forEach((entry) => {
+                    if (entry?.score === null || entry?.score === undefined || entry?.score === '') return;
+                    const updatedAt = entry.updatedAt || entry.history?.at?.(-1)?.updatedAt || record.updatedAt || '';
+                    const updatedMs = Date.parse(updatedAt) || 0;
+                    const label = cleanupUiText(entry.title || criterion, criterion);
+                    events.push({
+                        title: subjectTitle,
+                        meta: `${label} · ${entry.score}${updatedMs ? ` · ${formatRelativeTime(updatedAt)}` : ''}`,
+                        pageId: 'study-card',
+                        updatedMs
+                    });
+                });
+            });
+            return;
+        }
+        const combined = typeof getGradeRecordCombinedKiuPassScore === 'function'
+            ? Number(getGradeRecordCombinedKiuPassScore(record) || 0)
+            : Number(record?.q1 || 0) + Number(record?.qa || 0) + Number(record?.mid || 0) + Number(record?.final || 0);
+        if (!Number.isFinite(combined) || combined <= 0) return;
+        const updatedMs = readStudentGradeLastUpdatedMs(record);
+        const letter = record?.letter || '';
+        events.push({
+            title: subjectTitle,
+            meta: `Score ${Math.round(combined)}${letter ? ` · ${letter}` : ''}${updatedMs ? ` · ${formatRelativeTime(new Date(updatedMs).toISOString())}` : ''}`,
+            pageId: 'study-card',
+            updatedMs
+        });
+    });
+    events.sort((left, right) => (right.updatedMs || 0) - (left.updatedMs || 0));
+    return events.slice(0, limit).map(({ title, meta, pageId }) => ({ title, meta, pageId, icon: 'fas fa-chart-line' }));
+}
+
+function buildStudentScoresSnapshot(user, limit = 4) {
+    const lastUpdated = collectStudentLastUpdatedScoreEvents(user, limit);
+    if (lastUpdated.length) return lastUpdated;
+    if (typeof getStudentScoreRows === 'function') {
+        const rows = getStudentScoreRows(user, limit) || [];
+        if (rows.length) {
+            return rows.map((row) => ({
+                title: row.title || 'Subject',
+                meta: row.copy || '',
+                pageId: 'study-card',
+                icon: 'fas fa-chart-line'
+            }));
+        }
+    }
+    return [];
+}
+
+function truncateStudentFeedText(value, max = 72) {
+    const text = cleanupUiText(value, '');
+    if (!text) return '';
+    if (text.length <= max) return text;
+    return `${text.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+}
+
+function buildStudentCampusFeedSnapshot(_user, limit = 4) {
+    const runtimeFeed = Array.isArray(window.__kiuSocialLiteRuntime?.feed)
+        ? window.__kiuSocialLiteRuntime.feed
+        : [];
+    const hubPosts = Array.isArray(KIU_STATE?.socialHub?.posts)
+        ? KIU_STATE.socialHub.posts
+        : [];
+    const source = runtimeFeed.length ? runtimeFeed : hubPosts;
+    return source
+        .map((post) => {
+            const stamp = post?.createdAt || post?.updatedAt || post?.publishedAt || '';
+            const author = cleanupUiText(
+                post?.authorName || post?.authorDisplayName || post?.author?.name || post?.author?.nameEn || '',
+                'Campus Social'
+            );
+            const body = truncateStudentFeedText(post?.text || post?.body || post?.content || post?.caption || '');
+            return {
+                title: body || 'Campus post',
+                meta: author,
+                when: stamp ? formatRelativeTime(stamp) : '',
+                pageId: 'social',
+                icon: 'fas fa-comments',
+                timestamp: Date.parse(stamp) || 0
+            };
+        })
+        .sort((left, right) => (right.timestamp || 0) - (left.timestamp || 0))
+        .slice(0, limit)
+        .map(({ title, meta, when, pageId, icon }) => ({ title, meta, when, pageId, icon }));
+}
+
+function buildStudentEventsSnapshot(_user, limit = 4) {
+    const runtimeEvents = Array.isArray(window.__kiuSocialLiteRuntime?.social?.events)
+        ? window.__kiuSocialLiteRuntime.social.events
+        : [];
+    const stateEvents = Array.isArray(KIU_STATE?.social?.events)
+        ? KIU_STATE.social.events
+        : (Array.isArray(KIU_STATE?.socialHub?.events) ? KIU_STATE.socialHub.events : []);
+    const source = runtimeEvents.length ? runtimeEvents : stateEvents;
+    const graceMs = Date.now() - (60 * 60 * 1000);
+    const mapped = source.map((event) => {
+        const startRaw = event?.startsAt || event?.startAt || event?.starts || '';
+        const startMs = Date.parse(startRaw) || 0;
+        return {
+            title: cleanupUiText(event?.title || event?.name || '', 'Campus event'),
+            meta: cleanupUiText(event?.location || event?.place || event?.hostName || event?.host || '', ''),
+            when: startMs ? formatRelativeTime(startRaw) : '',
+            pageId: 'social',
+            icon: 'fas fa-calendar-check',
+            startMs
+        };
+    });
+    const upcoming = mapped.filter((item) => !item.startMs || item.startMs >= graceMs);
+    const pool = upcoming.length ? upcoming : mapped;
+    return pool
+        .sort((left, right) => (left.startMs || Number.MAX_SAFE_INTEGER) - (right.startMs || Number.MAX_SAFE_INTEGER))
+        .slice(0, limit)
+        .map(({ title, meta, when, pageId, icon }) => ({ title, meta, when, pageId, icon }));
+}
+
+function normalizeWeekdayKey(value) {
+    const raw = String(value || '').trim().toLowerCase();
+    if (!raw) return '';
+    if (raw.startsWith('mon')) return 'Mon';
+    if (raw.startsWith('tue')) return 'Tue';
+    if (raw.startsWith('wed')) return 'Wed';
+    if (raw.startsWith('thu')) return 'Thu';
+    if (raw.startsWith('fri')) return 'Fri';
+    if (raw.startsWith('sat')) return 'Sat';
+    if (raw.startsWith('sun')) return 'Sun';
+    return '';
+}
+
+function buildStudentWeekStrip(user) {
+    const schedule = sortScheduleItems(typeof getCurrentStudentSchedule === 'function' ? getCurrentStudentSchedule() : []);
+    const dayKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const todayKey = normalizeWeekdayKey(new Date().toLocaleDateString('en-US', { weekday: 'short' }));
+    const byDay = Object.fromEntries(dayKeys.map((key) => [key, []]));
+    schedule.forEach((item) => {
+        const key = normalizeWeekdayKey(item.day);
+        if (!byDay[key]) return;
+        byDay[key].push({
+            title: getSubjectLabel(item.courseId, item.courseName),
+            time: formatScheduleTimeRange(item)
+        });
+    });
+    const days = dayKeys.map((key) => {
+        const sessions = byDay[key];
+        return {
+            key,
+            label: key,
+            count: sessions.length,
+            title: sessions[0]?.title || '',
+            time: sessions[0]?.time || '',
+            isToday: key === todayKey,
+            hasSessions: sessions.length > 0
+        };
+    });
+    return {
+        days,
+        empty: !schedule.length,
+        emptyTitle: 'No listed classes yet',
+        emptyCopy: 'Register to unlock your week strip and timetable.'
+    };
+}
+
+function buildStudentAcademicPulse({ semester, completed, performance }) {
+    const known = completed !== null && completed !== undefined && Number.isFinite(Number(completed));
+    const completedEcts = known ? normalizeStudentMetric(completed) : null;
+    const targetEcts = known ? Math.max(Math.round(normalizeStudentMetric(semester, 1)) * 30, 30) : null;
+    const remaining = known ? Math.max(0, targetEcts - completedEcts) : null;
+    const pct = known ? clampPercent((completedEcts / targetEcts) * 100, 0) : null;
+    return {
+        known,
+        completed: completedEcts,
+        target: targetEcts,
+        remaining,
+        pct,
+        performance: performance || { value: '--', label: 'GPA' },
+        semester: `S${Math.max(1, Math.round(normalizeStudentMetric(semester, 1)))}`,
+        legend: known
+            ? [
+                { label: 'Completed', value: `${completedEcts} ECTS`, tone: 'done' },
+                { label: 'Remaining', value: `${remaining} ECTS`, tone: 'rest' },
+                { label: performance?.label || 'GPA', value: performance?.value || '--', tone: 'meta' }
+            ]
+            : [
+                { label: 'ECTS', value: 'Unavailable', tone: 'rest' },
+                { label: performance?.label || 'GPA', value: performance?.value || '--', tone: 'meta' },
+                { label: 'Term', value: `S${Math.max(1, Math.round(normalizeStudentMetric(semester, 1)))}`, tone: 'meta' }
+            ]
+    };
+}
+
+function buildStudentLatestNews(limit = 3) {
+    const items = (getNewsHomeSnapshotSafe().items || []).map((post) => ({
+        title: cleanupUiText(post.title || 'University update', 'University update'),
+        meta: cleanupUiText(post.sectionLabel || 'Campus News', 'Campus News'),
+        when: formatRelativeTime(post.publishedAt || post.updatedAt || post.createdAt),
+        timestamp: Date.parse(post.publishedAt || post.updatedAt || post.createdAt || '') || 0,
+        pageId: 'news'
+    }))
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, limit);
+    return items.length
+        ? items
+        : [{ title: 'No campus news yet', meta: 'Official announcements will appear here.', when: '', pageId: 'news' }];
+}
+
+function resolveStudentLmsResourceKeys(user) {
+    const schedule = typeof getCurrentStudentSchedule === 'function' ? getCurrentStudentSchedule() : [];
+    const keys = [];
+    const seen = new Set();
+    (schedule || []).forEach((item) => {
+        const courseId = String(item?.courseId || item?.sourceCourseId || '').trim();
+        const groupId = String(item?.groupId || '').trim();
+        if (!courseId) return;
+        const key = groupId ? `${courseId}::${groupId}` : courseId;
+        const canonical = typeof resolveCanonicalLmsResourceKey === 'function'
+            ? resolveCanonicalLmsResourceKey(key)
+            : key;
+        if (!canonical || seen.has(canonical)) return;
+        seen.add(canonical);
+        keys.push({
+            resourceKey: canonical,
+            subject: getSubjectLabel(courseId, item.courseName || item.subjectName || courseId)
+        });
+    });
+    return keys;
+}
+
+function readLmsAssignmentsForKey(resourceKey) {
+    if (typeof ensureLmsAssignmentsForKey === 'function') {
+        try {
+            return ensureLmsAssignmentsForKey(resourceKey) || [];
+        } catch (_error) {
+            return [];
+        }
+    }
+    const store = KIU_STATE?.groupAssignments || KIU_STATE?.assignments || {};
+    return Array.isArray(store[resourceKey]) ? store[resourceKey] : [];
+}
+
+function readLmsSubmissionForStudent(resourceKey, assignmentId, studentId) {
+    if (typeof getLmsAssignmentSubmissions === 'function') {
+        try {
+            const map = getLmsAssignmentSubmissions(resourceKey, assignmentId) || {};
+            return map[studentId] || null;
+        } catch (_error) {
+            return null;
+        }
+    }
+    const bucket = KIU_STATE?.groupSubmissions?.[resourceKey]?.[assignmentId];
+    if (!bucket || typeof bucket !== 'object') return null;
+    return bucket[studentId] || null;
+}
+
+function classifyStudentAssignmentWork(assignment, submission, nowMs) {
+    if (submission) return null;
+    const deadlineRaw = assignment?.deadline || assignment?.dueAt || assignment?.dueDate || '';
+    const deadlineMs = Date.parse(deadlineRaw) || 0;
+    if (!deadlineMs) {
+        return {
+            tone: 'missing',
+            label: 'Needs submit',
+            sort: 2,
+            dueMs: Number.MAX_SAFE_INTEGER
+        };
+    }
+    const dayMs = 24 * 60 * 60 * 1000;
+    if (deadlineMs < nowMs) {
+        return {
+            tone: 'overdue',
+            label: 'Overdue',
+            sort: 0,
+            dueMs: deadlineMs
+        };
+    }
+    if (deadlineMs - nowMs <= 7 * dayMs) {
+        return {
+            tone: 'due-soon',
+            label: 'Due soon',
+            sort: 1,
+            dueMs: deadlineMs
+        };
+    }
+    return {
+        tone: 'missing',
+        label: 'Needs submit',
+        sort: 2,
+        dueMs: deadlineMs
+    };
+}
+
+function getStudentWorkDueSnapshot(user, limit = 4) {
+    const studentId = String(user?.id || '');
+    const hasLmsHelpers = typeof ensureLmsAssignmentsForKey === 'function'
+        && typeof getLmsAssignmentSubmissions === 'function';
+    const hasPersistedStore = Boolean(
+        (KIU_STATE?.groupAssignments && Object.keys(KIU_STATE.groupAssignments).length)
+        || (KIU_STATE?.assignments && Object.keys(KIU_STATE.assignments).length)
+    );
+    if (!studentId || (!hasLmsHelpers && !hasPersistedStore)) {
+        return {
+            available: false,
+            items: [],
+            emptyTitle: 'Work signals unavailable',
+            emptyCopy: 'Open LMS to sync assignments and due work.'
+        };
+    }
+    const nowMs = Date.now();
+    const items = [];
+    resolveStudentLmsResourceKeys(user).forEach(({ resourceKey, subject }) => {
+        readLmsAssignmentsForKey(resourceKey).forEach((assignment) => {
+            const submission = readLmsSubmissionForStudent(resourceKey, assignment.id, studentId);
+            const classified = classifyStudentAssignmentWork(assignment, submission, nowMs);
+            if (!classified) return;
+            items.push({
+                title: cleanupUiText(assignment.title || 'Assignment', 'Assignment'),
+                meta: `${subject} · ${classified.label}${assignment.deadline ? ` · ${formatRelativeTime(assignment.deadline)}` : ''}`,
+                tone: classified.tone,
+                label: classified.label,
+                pageId: 'lms',
+                icon: 'fas fa-clipboard-list',
+                sort: classified.sort,
+                dueMs: classified.dueMs
+            });
+        });
+    });
+    items.sort((a, b) => (a.sort - b.sort) || (a.dueMs - b.dueMs));
+    const sliced = items.slice(0, limit);
+    return {
+        available: true,
+        items: sliced,
+        emptyTitle: sliced.length ? '' : 'No open assignments',
+        emptyCopy: sliced.length ? '' : 'Nothing due or missing right now.'
+    };
 }
 
 function getFacultyScheduleRows() {
@@ -390,16 +850,34 @@ function buildHomeModel(role) {
     const updates = getRecentHomeUpdates(user, 4);
 
     if (role === 'student') {
-        const semester = typeof getCurrentStudentSemesterNumber === 'function' ? getCurrentStudentSemesterNumber(user) : (KIU_STATE.activeSemester || 1);
-        const balance = typeof getEffectiveTuitionBalance === 'function' ? getEffectiveTuitionBalance(user.id) : 0;
+        const semester = normalizeStudentMetric(
+            typeof getCurrentStudentSemesterNumber === 'function' ? getCurrentStudentSemesterNumber(user) : (KIU_STATE.activeSemester || 1),
+            1
+        );
         const performance = getStudentPerformanceMetric(user);
-        const completed = typeof getStudentCompletedEctsTotal === 'function' ? getStudentCompletedEctsTotal(user.id, facultyCode) : 0;
+        const hasCompletedEctsSource = typeof getStudentCompletedEctsTotal === 'function';
+        const completedRaw = hasCompletedEctsSource ? getStudentCompletedEctsTotal(user.id, facultyCode) : null;
+        const completed = completedRaw !== null && completedRaw !== undefined && Number.isFinite(Number(completedRaw))
+            ? normalizeStudentMetric(completedRaw)
+            : null;
         const rawSchedule = typeof getCurrentStudentSchedule === 'function' ? getCurrentStudentSchedule() : [];
         const scheduleRows = getStudentScheduleRows(user);
         const nextClass = scheduleRows[0];
-        const progressTarget = Math.max(semester * 30, 30);
-        const progressPct = clampPercent((completed / progressTarget) * 100, 0);
-        const stats = [[`S${semester}`, 'Semester'], [performance.value, performance.label], [String(completed), 'ECTS'], [String(notifications.unread), 'Updates']];
+        const progressTarget = completed === null ? null : Math.max(semester * 30, 30);
+        const progressPct = completed === null ? null : clampPercent((completed / progressTarget) * 100, 0);
+        const studentProgress = buildStudentProgressModel({
+            semester,
+            completed,
+            performance,
+            scheduleRows,
+            unread: notifications.unread
+        });
+        const completedLabel = completed === null ? 'Unavailable' : String(completed);
+        const registrationKnown = typeof KIU_STATE.registrationOpen === 'boolean';
+        const registrationLabel = registrationKnown
+            ? (KIU_STATE.registrationOpen ? 'Registration open' : 'Registration closed')
+            : 'Registration status unavailable';
+        const stats = [[`S${semester}`, 'Semester'], [performance.value, performance.label], [completedLabel, 'ECTS'], [String(notifications.unread), 'Updates']];
         const userRequests = (KIU_STATE.chancelleryRequests || []).filter((request) => {
             const owner = String(request?.studentId || request?.userId || request?.createdBy || request?.authorId || '');
             return owner && String(user?.id || '') === owner;
@@ -408,10 +886,10 @@ function buildHomeModel(role) {
         const quick = getRoleShortcuts(role, {
             registrationOpen: Boolean(KIU_STATE.registrationOpen),
             nextClass,
-            completedEcts: completed,
+            completedEcts: completedLabel,
             performanceLabel: performance.label,
             performanceValue: performance.value,
-            progressPct,
+            progressPct: progressPct ?? 0,
             ordersCount: orders.orders.length,
             ordersUnread: orders.unread,
             unreadUpdates: notifications.unread,
@@ -419,33 +897,134 @@ function buildHomeModel(role) {
             supportCount
         });
         const actions = getRoleActions(role, { registrationOpen: Boolean(KIU_STATE.registrationOpen) });
+        const compactSchedule = getStudentCompactScheduleRows(user);
+        const weekStrip = buildStudentWeekStrip(user);
+        const academicPulse = buildStudentAcademicPulse({ semester, completed, performance });
+        const latestNews = buildStudentLatestNews(3);
+        const workDue = getStudentWorkDueSnapshot(user, 4);
+        const events = buildStudentEventsSnapshot(user, 4);
+        const messenger = getMessengerSnapshot(user);
+        const campusUpdates = buildStudentCampusUpdates(user, 4);
+        const lifeSnapshot = buildStudentLifeSnapshot({
+            registrationLabel,
+            ordersUnread: orders.unread,
+            notificationsUnread: notifications.unread,
+            messengerUnread: messenger.unread,
+            supportCount
+        });
+        const denseShortcuts = buildStudentDenseShortcuts({
+            registrationOpen: Boolean(KIU_STATE.registrationOpen)
+        });
+        const scores = buildStudentScoresSnapshot(user, 4);
+        const campusFeed = buildStudentCampusFeedSnapshot(user, 4);
+        const nextListed = compactSchedule[0] || null;
+        const latestUpdate = updates[0]
+            ? {
+                title: updates[0].title,
+                meta: `${updates[0].copy} · ${updates[0].when}`,
+                pageId: updates[0].pageId || 'news'
+            }
+            : {
+                title: 'No new updates',
+                meta: 'You are caught up.',
+                pageId: 'news'
+            };
+        const ectsSummary = completed === null
+            ? 'ECTS unavailable'
+            : `${completed} / ${progressTarget} ECTS`;
+        const nextListedLine = nextListed
+            ? `Next listed: ${nextListed.meta.split(' · ')[0] || 'Day'} ${nextListed.time} · ${nextListed.title}`
+            : 'No listed classes yet';
+        const newsUnread = Number(newsSnapshot.unread || 0);
+        const topWork = workDue.items[0] || null;
+        const attention = topWork
+            ? {
+                title: topWork.title,
+                meta: topWork.meta,
+                actionLabel: 'Open LMS',
+                actionPage: 'lms',
+                tone: topWork.tone === 'overdue' ? 'warm' : 'support'
+            }
+            : newsUnread > 0
+                ? {
+                    title: `${newsUnread} unread news item${newsUnread === 1 ? '' : 's'}`,
+                    meta: `Latest: ${latestNews[0]?.title || 'Campus news'}`,
+                    actionLabel: 'Open news',
+                    actionPage: 'news',
+                    tone: 'support'
+                }
+                : notifications.unread > 0
+                    ? {
+                        title: `${notifications.unread} portal notification${notifications.unread === 1 ? '' : 's'}`,
+                        meta: `Latest: ${latestUpdate.title}`,
+                        actionLabel: 'Review updates',
+                        actionPage: latestUpdate.pageId || 'news',
+                        tone: 'support'
+                    }
+                    : {
+                        title: 'All caught up',
+                        meta: 'No due work or urgent updates.',
+                        actionLabel: '',
+                        actionPage: '',
+                        tone: 'green'
+                    };
+        const studentDashboard = {
+            context: {
+                firstName,
+                facultyName,
+                termLabel,
+                semester: `S${semester}`,
+                registrationLabel
+            },
+            status: {
+                label: registrationLabel,
+                actionLabel: newsUnread > 0 || notifications.unread > 0 ? 'Review updates' : 'Open LMS',
+                actionPage: newsUnread > 0 || notifications.unread > 0 ? 'news' : 'lms',
+                tone: topWork?.tone === 'overdue' ? 'warm' : 'green',
+                registrationLabel
+            },
+            stats: {
+                semester: `S${semester}`,
+                performance: performance.value,
+                performanceLabel: performance.label,
+                completedEcts: completed === null ? 'Unavailable' : completed,
+                unread: notifications.unread
+            },
+            schedule: compactSchedule,
+            progress: studentProgress,
+            weekStrip,
+            academicPulse,
+            latestNews,
+            campusUpdates,
+            events,
+            lifeSnapshot,
+            shortcuts: denseShortcuts,
+            scores,
+            campusFeed,
+            workDue,
+            latestUpdate,
+            overallSummary: {
+                primary: `S${semester} · ${performance.label} ${performance.value} · ${ectsSummary}`,
+                secondary: nextListedLine,
+                tertiary: registrationLabel
+            },
+            attention
+        };
         return {
             variant: 'student',
             kicker: 'Student Dashboard',
             title: `${firstName}, here is your dashboard.`,
             copy: `${termLabel} in ${facultyName}. Your classes, registration, records, and campus updates.`,
-            pills: [facultyName, termLabel, `Semester S${semester}`, KIU_STATE.registrationOpen ? 'Registration open' : 'Registration closed', `${notifications.unread} unread updates`],
+            pills: [facultyName, termLabel, `Semester S${semester}`, registrationLabel, `${notifications.unread} unread updates`],
             stats,
             actions,
             quick,
+            studentProgress,
+            studentDashboard,
             heroAside: buildStudentHeroAside(rawSchedule, facultyName),
-            alert: balance > 0 ? {
-                tone: 'warm',
-                icon: 'fas fa-credit-card',
-                title: `Outstanding balance: ${balance} GEL`,
-                copy: 'Financial holds can limit LMS and transcript access until payment or review is completed.',
-                actionLabel: 'Open registration',
-                actionPage: 'registration'
-            } : {
-                tone: 'green',
-                icon: 'fas fa-circle-check',
-                title: 'Academic access is clear',
-                copy: 'No finance hold is blocking your current semester tools.',
-                actionLabel: 'Open study card',
-                actionPage: 'study-card'
-            },
-            summary: { title: 'Today', copy: 'Your next moves before the next class, deadline, or advisor checkpoint.', rows: [['Next class', nextClass?.title || 'No class scheduled'], ['Registration', KIU_STATE.registrationOpen ? 'Open' : 'Closed'], ['Orders', `${orders.unread} unread`], [performance.label, performance.value]] },
-            focus: { title: 'Academic status', copy: 'Credits, access, and progress conditions for the active term.', rows: [['Completed ECTS', String(completed)], ['Faculty', facultyName], ['Unread updates', String(notifications.unread)], ['Balance', balance > 0 ? `${balance} GEL` : 'Clear']] },
+            alert: null,
+            summary: { title: 'Today', copy: 'Your next moves before the next class, deadline, or advisor checkpoint.', rows: [['Next listed class', nextClass?.title || 'No class scheduled'], ['Registration', registrationLabel], ['Orders', `${orders.unread} unread`], [performance.label, performance.value]] },
+            focus: { title: 'Academic status', copy: 'Credits, access, and progress conditions for the active term.', rows: [['Completed ECTS', completedLabel], ['Faculty', facultyName], ['Unread updates', String(notifications.unread)], ['Work due', String(workDue.items.length)]] },
             updates: { title: 'Recent changes', copy: 'Recent activity across your account.', rows: updates.map((item) => [item.title, item.when]) },
             columns: [
                 { title: 'Upcoming schedule', meta: nextClass ? 'Live' : 'Planning', rows: scheduleRows.length ? scheduleRows : [{ icon: 'fas fa-calendar-day', title: 'No scheduled sections yet', copy: 'Choose sections in registration to populate your timetable.' }] },
@@ -709,6 +1288,16 @@ Object.assign(window, {
     getMessengerSnapshot,
     getStudentScheduleRows,
     getFacultyScheduleRows,
+    getStudentWorkDueSnapshot,
+    buildStudentWeekStrip,
+    buildStudentAcademicPulse,
+    buildStudentCourseList,
+    buildStudentCampusUpdates,
+    buildStudentLifeSnapshot,
+    buildStudentDenseShortcuts,
+    buildStudentScoresSnapshot,
+    buildStudentCampusFeedSnapshot,
+    buildStudentEventsSnapshot,
     formatCountLabel,
     getRoleActions,
     getRoleShortcuts,

@@ -430,6 +430,8 @@
             }
             if (action === 'panel-profile') {
                 state().ui.activeProfileUserId = text(trigger.getAttribute('data-user-id') || currentUserId());
+                const profileTab = text(trigger.getAttribute('data-profile-tab') || '');
+                if (profileTab) state().ui.profileTab = profileTab;
                 setPanel('profile');
                 invalidateSocialRenderCache({ center: true });
                 return { handled: true, result: renderSocialPageNow('panel-profile') };

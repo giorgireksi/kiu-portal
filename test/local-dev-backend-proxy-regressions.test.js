@@ -26,6 +26,45 @@ describe('local dev backend proxy regressions', () => {
         expect(server).toContain("|| requestPath === '/ready'");
         expect(server).toContain("|| requestPath === '/download'");
         expect(server).toContain("error: 'The portal backend is offline right now.'");
+        expect(server).toContain("code: 'offline'");
+        expect(server).toContain('buildUpstreamHeaders');
+        expect(server).toContain('PROXY_TIMEOUT_MS');
+        expect(server).toContain('retrying once');
+        expect(server).toContain('[local-dev-proxy]');
+        expect(server).toContain('getOrCreateCompressedBody');
+        expect(server).toContain('COMPRESSED_STATIC_CACHE');
+        expect(server).toContain('getCachedCompressedBody');
+        expect(localServerPolicy.HOP_BY_HOP_HEADERS.has('connection')).toBe(true);
+        expect(localServerPolicy.HOP_BY_HOP_HEADERS.has('transfer-encoding')).toBe(true);
+        expect(localServerPolicy.PROXY_TIMEOUT_MS).toBeGreaterThan(0);
+        expect(localServerPolicy.buildUpstreamHeaders({
+            connection: 'keep-alive',
+            'keep-alive': 'timeout=5',
+            'transfer-encoding': 'chunked',
+            accept: 'application/json',
+            cookie: 'session=1'
+        })).toEqual({
+            accept: 'application/json',
+            cookie: 'session=1',
+            host: expect.stringMatching(/^\d+\.\d+\.\d+\.\d+:\d+$|^[^:]+:\d+$/)
+        });
+        expect(localServerPolicy.isRetryableProxyError({ code: 'ECONNRESET' })).toBe(true);
+        expect(localServerPolicy.isRetryableProxyError({ code: 'ECONNREFUSED' })).toBe(true);
+        expect(localServerPolicy.isRetryableProxyError({ code: 'ENOTFOUND' })).toBe(false);
+    });
+
+    it('keeps the public demo supervisor restarting an unhealthy web proxy and Funnel', () => {
+        const demo = readSource('start-public-demo.sh');
+        expect(demo).toContain('web_healthy');
+        expect(demo).toContain('ensure_funnel');
+        expect(demo).toContain('start_web_proxy');
+        expect(demo).toContain('[public-demo] web proxy unhealthy; restarting...');
+        expect(demo).toContain('funnel_points_here');
+        expect(demo).toContain('WATCHDOG_SECONDS');
+        expect(demo).toContain('open_url');
+        expect(demo).toContain('xdg-open');
+        expect(demo).toContain("$PUBLIC_URL/login.html");
+        expect(demo).not.toContain('sleep 3600');
     });
 
     it('blocks sensitive repository paths from public static delivery', () => {

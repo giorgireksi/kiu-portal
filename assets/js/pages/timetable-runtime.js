@@ -5,6 +5,8 @@ const SCHEDULE_VIEW_STORAGE_KEY_PREFIX = 'KIU_SCHEDULE_VIEW_PREF';
 const STUDENT_ADMIN_SCHEDULE_WEEK_STORAGE_KEY = 'KIU_STUDENT_ADMIN_SCHEDULE_WEEK';
 const STUDENT_ADMIN_SCHEDULE_VIEW_PREFIX = 'KIU_STUDENT_ADMIN_SCHEDULE_VIEW';
 let timetablePageOpenedOnCurrentWeek = false;
+/** null until first paint — then true on ≤920px so Schedule Tools start collapsed on mobile. */
+let timetableCommandCollapsed = null;
 const SCHEDULE_SESSION_MARKER_TYPES = {
     quiz: { label: 'Quiz', icon: 'fa-pen-to-square', tone: 'warning' },
     oral_quiz: { label: 'Oral Quiz', icon: 'fa-microphone-lines', tone: 'info' },
@@ -275,20 +277,10 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
         if (weekLabelNode) {
             weekLabelNode.textContent = formatWeekRangeLabel(normalizedWeek);
         }
-        const gridWeekLabel = document.getElementById('timetable-grid-week-label');
-        if (gridWeekLabel) {
-            gridWeekLabel.textContent = formatWeekRangeLabel(normalizedWeek);
-        }
         if (currentWeekButton) {
             currentWeekButton.className = getTimetableCurrentWeekButtonClass(isCurrent);
             currentWeekButton.dataset.scheduleCurrentWeek = '1';
             currentWeekButton.removeAttribute('data-timetable-action');
-        }
-        const gridCurrentWeekButton = document.getElementById('timetable-grid-week-current');
-        if (gridCurrentWeekButton) {
-            gridCurrentWeekButton.className = getTimetableGridWeekCurrentButtonClass(isCurrent);
-            gridCurrentWeekButton.textContent = getTimetableGridWeekCurrentButtonLabel(isCurrent);
-            gridCurrentWeekButton.dataset.scheduleCurrentWeek = '1';
         }
         if (sessionsOverviewNode) {
             sessionsOverviewNode.innerHTML = `<i class="fas fa-layer-group"></i> ${overview.sessionCount} sessions`;
@@ -396,35 +388,6 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
     container.append(toggleRow, toolbar);
 }
 
-function syncTimetableFilterDefaults() {
-    const semesterSelect = document.getElementById('tt-filter-sem');
-    if (semesterSelect && semesterSelect.dataset.timetableFilterInit !== '1') {
-        const activeSemester = parseInt(
-            (typeof KIU_STATE !== 'undefined' && KIU_STATE.activeSemester) || 3,
-            10
-        );
-        const semesterValue = String(Number.isFinite(activeSemester) ? activeSemester : 3);
-        if (Array.from(semesterSelect.options).some((option) => option.value === semesterValue)) {
-            semesterSelect.value = semesterValue;
-        }
-        semesterSelect.dataset.timetableFilterInit = '1';
-    }
-
-    const facultySelect = document.getElementById('tt-filter-fac');
-    const role = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (getCurrentUser()?.role || USER_ROLES.STUDENT);
-    if (facultySelect && role === USER_ROLES.ADMIN && facultySelect.dataset.timetableFilterInit !== '1') {
-        const facultyCode = typeof getCurrentFaculty === 'function'
-            ? getCurrentFaculty()
-            : normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
-        if (Array.from(facultySelect.options).some((option) => option.value === facultyCode)) {
-            facultySelect.value = facultyCode;
-        }
-        facultySelect.dataset.timetableFilterInit = '1';
-    }
-}
-
 function syncTimetableStaticControls(weekStart, items, options = {}) {
     renderScheduleControls('timetable-schedule-controls', weekStart, items, {
         defaultView: options.defaultView || 'sessions',
@@ -433,7 +396,46 @@ function syncTimetableStaticControls(weekStart, items, options = {}) {
         roleLabel: options.roleLabel || (getCurrentUser()?.role === USER_ROLES.STUDENT ? 'Student timetable' : 'Weekly timetable')
     });
     syncTimetableNarrative(weekStart, items, options);
+    applyTimetableCommandCollapsed();
 }
+
+function ensureTimetableCommandCollapsed() {
+    if (timetableCommandCollapsed === null || timetableCommandCollapsed === undefined) {
+        try {
+            timetableCommandCollapsed = window.matchMedia('(max-width: 920px)').matches;
+        } catch (error) {
+            timetableCommandCollapsed = false;
+        }
+    }
+    return Boolean(timetableCommandCollapsed);
+}
+
+function applyTimetableCommandCollapsed() {
+    const collapsed = ensureTimetableCommandCollapsed();
+    const command = document.querySelector('#page-timetable .lux-timetable-command');
+    const collapse = document.getElementById('timetable-command-collapse')
+        || command?.querySelector('.lux-timetable-command-collapse');
+    const toggle = command?.querySelector('[data-timetable-toggle-command]');
+    command?.classList.toggle('is-collapsed', collapsed);
+    collapse?.classList.toggle('is-collapsed', collapsed);
+    if (toggle) {
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        const label = toggle.querySelector('span');
+        if (label) label.textContent = collapsed ? 'Tools' : 'Hide tools';
+        const icon = toggle.querySelector('i');
+        if (icon) icon.className = collapsed ? 'fas fa-sliders' : 'fas fa-chevron-up';
+    }
+}
+
+window.toggleTimetableCommandTools = function toggleTimetableCommandTools(button) {
+    ensureTimetableCommandCollapsed();
+    timetableCommandCollapsed = !Boolean(timetableCommandCollapsed);
+    applyTimetableCommandCollapsed();
+    if (button instanceof Element) {
+        const toggle = button.closest('[data-timetable-toggle-command]') || button;
+        toggle.setAttribute('aria-expanded', String(!Boolean(timetableCommandCollapsed)));
+    }
+};
 
 function normalizeScheduleActorMatch(value) {
     return String(value || '')
@@ -669,9 +671,9 @@ function renderLmsSessionDetails(item, options = {}) {
     if (surface === 'timetable') {
         return `<div class="lms-session-details lms-session-details--timetable">
             <div class="lms-session-summary">
-                <span class="lms-session-summary-item"><i class="far fa-clock" aria-hidden="true"></i><strong>Hours:</strong> ${escapeHtml(hours)}</span>
-                <span class="lms-session-summary-item"><i class="fas fa-tag" aria-hidden="true"></i><strong>Type:</strong> ${escapeHtml(type)}</span>
-                <span class="lms-session-summary-item"><i class="fas fa-hourglass-half" aria-hidden="true"></i><strong>Duration:</strong> ${escapeHtml(duration)}</span>
+                ${row('Hours:', hours, 'far fa-clock')}
+                ${row('Type:', type, 'fas fa-tag')}
+                ${row('Duration:', duration, 'fas fa-hourglass-half')}
             </div>
             ${row('Educational course:', course, 'fas fa-book-open', 'lms-session-detail-row--course')}
             <div class="lms-session-detail-grid">
@@ -869,12 +871,8 @@ function getTimetableInsightModel(weekStart, items) {
 function syncTimetableNarrative(weekStart, items, options = {}) {
     const role = getCurrentUser()?.role;
     const view = getStoredScheduleView(options.defaultView || 'sessions');
-    const targetSemester = document.getElementById('tt-filter-sem')
-        ? parseInt(document.getElementById('tt-filter-sem').value, 10)
-        : parseInt(KIU_STATE.activeSemester || 3, 10);
-    const activeFacultyCode = document.getElementById('tt-filter-fac')
-        ? normalizeFacultyCode(document.getElementById('tt-filter-fac').value, getCurrentFaculty())
-        : getCurrentFaculty();
+    const targetSemester = parseInt(KIU_STATE.activeSemester || 3, 10);
+    const activeFacultyCode = getCurrentFaculty();
     const activeFacultyName = getFacultyProfile(activeFacultyCode)?.name || activeFacultyCode;
     const roleLabel = role === USER_ROLES.STUDENT
         ? 'Student'
@@ -1101,45 +1099,6 @@ function buildScheduleToneDataAttribute(facultyCode) {
     return `data-sch-event-tone="${escapeHtml(getScheduleToneToken(facultyCode))}"`;
 }
 
-function getTimetableGridWeekCurrentButtonClass(isCurrent) {
-    return isCurrent
-        ? 'lux-primary-btn sch-week-current-btn is-current-week'
-        : 'lux-secondary-btn sch-week-current-btn';
-}
-
-function getTimetableGridWeekCurrentButtonLabel(isCurrent) {
-    return isCurrent ? 'Current week' : 'Jump to current';
-}
-
-function renderTimetableGridTopline(shell, weekStart, options = {}) {
-    const isCurrentWeek = weekStart === getCurrentWeekStartISO();
-    const profileMode = options.profileMode === true;
-    let topline = shell.querySelector(':scope > .sch-grid-topline');
-    if (!topline) {
-        topline = document.createElement('div');
-        topline.className = 'sch-grid-topline';
-        shell.prepend(topline);
-    }
-    // Profile embeds already expose week nav in compact controls — avoid duplicate chrome.
-    const weekNavMarkup = profileMode
-        ? `<strong class="sch-grid-week-label">${escapeHtml(formatWeekRangeLabel(weekStart))}</strong>`
-        : `<strong id="timetable-grid-week-label" class="sch-grid-week-label">${escapeHtml(formatWeekRangeLabel(weekStart))}</strong>
-            <div class="sch-week-nav">
-                <button type="button" class="lux-secondary-btn sch-week-arrow" data-timetable-week-shift="-1" aria-label="Previous week"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
-                <button type="button" id="timetable-grid-week-current" class="${getTimetableGridWeekCurrentButtonClass(isCurrentWeek)}" data-schedule-current-week="1">${escapeHtml(getTimetableGridWeekCurrentButtonLabel(isCurrentWeek))}</button>
-                <button type="button" class="lux-secondary-btn sch-week-arrow" data-timetable-week-shift="1" aria-label="Next week"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
-            </div>`;
-    topline.innerHTML = localizeHtmlMarkup(`
-        <div class="sch-grid-topline-start">
-            <span class="sch-grid-tag">GMT+4</span>
-            <span class="sch-grid-tag sch-grid-tag-soft">Schedule live</span>
-        </div>
-        <div class="sch-grid-topline-end">
-            ${weekNavMarkup}
-        </div>
-    `);
-}
-
 function ensureTimetableGridHost(shell, usePageGridId) {
     let gridHost = shell.querySelector(':scope > #timetable-grid, :scope > [data-timetable-grid-host="1"]');
     if (!gridHost) {
@@ -1185,7 +1144,7 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     if (profileMode) delete shell.dataset.luxGlassRoot;
     else shell.dataset.luxGlassRoot = '1';
 
-    renderTimetableGridTopline(shell, weekStart, { profileMode });
+    shell.querySelectorAll(':scope > .sch-grid-topline').forEach((node) => node.remove());
     const gridHost = ensureTimetableGridHost(shell, usePageGridId);
 
     const root = document.createElement('div');
@@ -1250,14 +1209,9 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
 function renderTimetable() {
     const container = document.getElementById('timetable-master-container');
     if (!container) return; // Not on the timetable page
-    syncTimetableFilterDefaults();
     const weekStart = getTimetableWeekStartForRender();
-    const targetSem = document.getElementById('tt-filter-sem')
-        ? parseInt(document.getElementById('tt-filter-sem').value, 10)
-        : parseInt(KIU_STATE.activeSemester || 3, 10);
-    const targetFac = document.getElementById('tt-filter-fac')
-        ? normalizeFacultyCode(document.getElementById('tt-filter-fac').value, getCurrentFaculty())
-        : getCurrentFaculty();
+    const targetSem = parseInt(KIU_STATE.activeSemester || 3, 10);
+    const targetFac = getCurrentFaculty();
     const activeItems = getRoleScopedScheduleItemsForWeek(weekStart, {
         semester: targetSem,
         faculty: targetFac
@@ -1318,7 +1272,7 @@ function renderStudentCalendarSchedule() {
         return;
     }
     const weekStart = getStoredWeekStart(TIMETABLE_WEEK_STORAGE_KEY);
-    const targetSemester = getSemesterNumberFromControl('tt-filter-sem', KIU_STATE.activeSemester || 3);
+    const targetSemester = parseInt(KIU_STATE.activeSemester || 3, 10);
     const items = getCurrentStudentScheduleItemsForWeek(weekStart, { semester: targetSemester });
     renderUnifiedWeeklyScheduleGrid(container, items, {
         weekStart,

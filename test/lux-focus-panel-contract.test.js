@@ -85,9 +85,10 @@ describe('lux-focus-panel portal contract', () => {
     });
 
     it('dual-writes lux-focus-panel on pilot and phase-3 hero asides', () => {
-        // Bare-shell era: LMS/TT keep focus class aliases without lux-focus-panel sheet/class dual-write
+        // Bare-shell era: LMS dropped the focus aside; TT/home keep focus class aliases
   expect(readSource('timetable.html')).toContain('lux-timetable-hero-focus lux-timetable-command-focus lux-hero-side');
-        expect(readSource('lms.html')).toContain('lms-hero-focus lux-hero-side');
+        expect(readSource('lms.html')).not.toContain('lms-hero-focus');
+        expect(readSource('lms.html')).not.toContain('lms-subject-anchor');
         expect(readSource('assets/js/features/home-dashboard/widget-render.js')).toContain(
             'lms-hero-focus lux-hero-side lux-focus-panel'
         );

@@ -1216,6 +1216,7 @@ Publishes only the host/runtime contract consumed by its loader.
 
     function renderStudentServiceQuestionFeed(questions = [], options = {}) {
         const mode = options.mode === 'staff' ? 'staff' : 'student';
+        const selectedQuestionId = String(options.selectedQuestionId || '').trim();
         if (!Array.isArray(questions) || !questions.length) return '';
         return `
             <div class="student-service-qa-feed">
@@ -1224,8 +1225,9 @@ Publishes only the host/runtime contract consumed by its loader.
                     const answerCount = getStudentServiceQuestionAnswerCount(question);
                     const resolution = getStudentServiceQuestionResolutionLabel(question);
                     const ownerPill = renderStudentServiceOwnerResolutionPillMarkup(question);
+                    const isSelected = selectedQuestionId && selectedQuestionId === String(question.id || '').trim();
                     return `
-                        <article class="student-service-qa-card home-hover-chip">
+                        <article class="student-service-qa-card home-hover-chip${isSelected ? ' is-selected' : ''}">
                             <div class="student-service-qa-card-head">
                                 <div class="student-service-qa-card-author">
                                     <div class="student-service-qa-avatar student-service-qa-avatar-sm">${ssEscape(ssInitials(authorLabel, '?'))}</div>
@@ -1570,6 +1572,9 @@ Publishes only the host/runtime contract consumed by its loader.
         }
         return `
             <div class="student-service-qa-detail${isStudentServiceInlineReplyOpen() ? ' is-inline-reply-open' : ''}">
+                <button type="button" class="lux-secondary-btn student-service-mobile-back" data-student-service-mobile-back="true" aria-label="Back to list">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
+                </button>
                 <div class="student-service-qa-inline-reply-banner lux-soft-chrome" aria-live="polite">
                     <i class="fas fa-reply"></i>
                     <span>Replying to a comment — use <strong>Post reply</strong> under that comment. Bottom Comment is hidden while replying.</span>

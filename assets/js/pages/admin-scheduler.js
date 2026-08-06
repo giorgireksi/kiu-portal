@@ -1078,6 +1078,10 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (window.__kiuSchedulerStaffPickerBound) return;
         window.__kiuSchedulerStaffPickerBound = true;
         document.addEventListener('click', (event) => {
+            if (event.target?.id === 'schStaffPickerOverlay') {
+                closeSchedulerStaffPicker();
+                return;
+            }
             const trigger = event.target.closest?.('#admin-tt-prof-lux-btn, #admin-tt-ta-lux-btn, #sch-prof-lux-btn, #sch-ta-lux-btn');
             if (trigger) {
                 event.preventDefault();

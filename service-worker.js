@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260805-switchperf2';
+const CACHE_NAME = 'kiu-portal-shell-v20260807-socialtopnav10';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -12,6 +12,9 @@ function normalizeNotificationTarget(value) {
     return '/index.html';
   }
 }
+// HTML shell only + home CSS/JS used on first paint. Route-only giants (bare
+// lite CSS) are NOT precached — they load on demand and stay cache-first once
+// versioned.
 const SHELL_ASSETS = [
   '/',
   '/index.html',
@@ -19,24 +22,29 @@ const SHELL_ASSETS = [
   '/news.html',
   '/exams.html',
   '/login.html',
-  '/assets/css/lux-tokens.css?v=20260725-engstruct1',
-'/assets/css/lux-fouc-ht.css?v=20260727-socshell13',
-  '/assets/css/lux-page-bare-lite.css?v=20260727-socshell13',
+  '/assets/css/lux-tokens.css?v=20260725-frosted1',
+  '/assets/css/lux-fouc-ht.css?v=20260806-hidetopbar2',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
-  '/assets/css/mobile-shell-core.css?v=20260724-chromeshare1',
+  '/assets/css/mobile-shell-core.css?v=20260806-hidetopbar2',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
-  '/assets/css/lux-shell.css?v=20260725-engstruct1',
-'/assets/css/lux-layout-primitives.css?v=20260725-ssot1',
-'/assets/css/index-home-layout.css?v=20260725-bgfix1',
-'/assets/css/index-home-widgets.css?v=20260725-dead1',
-'/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
-  '/assets/js/theme-primer.js?v=20260724-fullpaint-reveal1',
-  '/assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2',
-  '/assets/js/features/luxury-index-runtime.js?v=20260723-gpuperf2b',
+  '/assets/css/lux-shell.css?v=20260725-homefoucdedup1',
+  '/assets/css/lux-layout-primitives.css?v=20260725-ssot1',
+  '/assets/css/index-home-layout.css?v=20260806-studentboard11',
+  '/assets/css/index-home-widgets.css?v=20260806-studentboard11',
+  '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
+  '/assets/js/theme-primer.js?v=20260730-navpreload1',
+  '/assets/js/features/navigation.js?v=20260805-switchperf2',
+  '/assets/js/features/luxury-index-runtime.js?v=20260806-studentboard11',
   '/assets/js/features/luxury-shell-motion-runtime.js?v=20260725-glassblur1',
-  '/assets/js/features/index-luxury.js?v=20260724-homeshellfix1',
+  '/assets/js/features/index-luxury.js?v=20260730-echancellery1',
   '/assets/js/features/luxury-background.js?v=20260723-gpuperf4q'
 ];
+
+function isVersionedAssetUrl(url) {
+  return Boolean(url)
+    && String(url.pathname || '').startsWith('/assets/')
+    && /(?:^|[?&])v=[^&]+/.test(String(url.search || ''));
+}
 
 async function deleteLegacyPortalCaches() {
   const keys = await caches.keys();
@@ -207,13 +215,28 @@ async function handleRoutePrefetchRequest(request) {
 }
 
 async function handleStaticAssetRequest(request, event) {
-  // NETWORK-FIRST (was stale-while-revalidate, which served the OLD cached
-  // asset first and only updated in the background — so code/CSS changes never
-  // showed until a later reload, and behind a versioned URL could stay stale
-  // indefinitely). Always fetch fresh when online; fall back to cache only when
-  // the network is unavailable (offline). The dev server is no-store, so this
-  // makes edits appear immediately without any manual cache clearing.
+  const url = new URL(request.url);
   const cache = await caches.open(CACHE_NAME);
+
+  // Versioned assets are immutable (?v=). Serve cache-first and refresh in
+  // the background so public demos do not re-download every navigation.
+  if (isVersionedAssetUrl(url)) {
+    const cachedVersioned = await cache.match(request);
+    if (cachedVersioned) {
+      event.waitUntil(
+        fetch(request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.ok) {
+              return cache.put(request, networkResponse.clone());
+            }
+            return null;
+          })
+          .catch(() => null)
+      );
+      return cachedVersioned;
+    }
+  }
+
   try {
     const networkResponse = await fetch(request);
     if (networkResponse && networkResponse.ok) {

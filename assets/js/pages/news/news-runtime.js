@@ -47,6 +47,10 @@ const runtime = {
         dateFrom: '',
         dateTo: ''
     },
+    /** null until first paint — then true on ≤920px so filters start collapsed on mobile. */
+    headerFiltersCollapsed: null,
+    /** null until first paint — then true on ≤920px so section list starts collapsed on mobile. */
+    sidebarSectionsCollapsed: null,
     feedFilterTimer: null,
     pendingDeepLinkPostId: '',
     publisherModalOpen: false,
@@ -496,6 +500,28 @@ function getCurrentUserSafe() {
     } catch (error) {
         return null;
     }
+}
+
+function ensureNewsHeaderFiltersCollapsed() {
+    if (runtime.headerFiltersCollapsed === null || runtime.headerFiltersCollapsed === undefined) {
+        try {
+            runtime.headerFiltersCollapsed = window.matchMedia('(max-width: 920px)').matches;
+        } catch (error) {
+            runtime.headerFiltersCollapsed = false;
+        }
+    }
+    return Boolean(runtime.headerFiltersCollapsed);
+}
+
+function ensureNewsSidebarSectionsCollapsed() {
+    if (runtime.sidebarSectionsCollapsed === null || runtime.sidebarSectionsCollapsed === undefined) {
+        try {
+            runtime.sidebarSectionsCollapsed = window.matchMedia('(max-width: 920px)').matches;
+        } catch (error) {
+            runtime.sidebarSectionsCollapsed = false;
+        }
+    }
+    return Boolean(runtime.sidebarSectionsCollapsed);
 }
 
 function canManageNews() {

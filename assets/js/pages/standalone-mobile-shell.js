@@ -51,6 +51,20 @@
         toggle.setAttribute('aria-pressed', 'true');
     }
 
+    function syncMobileTopbarVisibility() {
+        const topbar = document.getElementById('lux-topbar');
+        if (!topbar) return;
+        if (isMob()) {
+            topbar.hidden = true;
+            topbar.setAttribute('aria-hidden', 'true');
+            topbar.style.setProperty('display', 'none', 'important');
+            return;
+        }
+        topbar.hidden = false;
+        topbar.removeAttribute('aria-hidden');
+        topbar.style.removeProperty('display');
+    }
+
     function getRoleNavConfig() {
         const config = getConfig();
         return config.navByRole && typeof config.navByRole === 'object' ? config.navByRole : {};
@@ -177,17 +191,55 @@
     }
 
     function openStd() {
-        const topbarButton = document.querySelector('.lux-topbar-editor-btn');
-        if (topbarButton) {
-            topbarButton.click();
-            return;
+        const paletteButton = document.getElementById('lux-palette-btn');
+        if (paletteButton) {
+            paletteButton.click();
+            return true;
+        }
+        if (typeof window.openStudio === 'function') {
+            window.openStudio();
+            return true;
         }
         const studio = document.querySelector('.lux-studio-backdrop');
         if (studio) {
             studio.classList.add('is-open');
+            document.body.classList.add('lux-studio-open');
+            return true;
+        }
+        return false;
+    }
+
+    function handleFacultyAction() {
+        const facultyButton = document.getElementById('lux-faculty-picker-btn');
+        if (!facultyButton) return false;
+        facultyButton.click();
+        return true;
+    }
+
+    function ensureFacultySheetButton() {
+        if (document.getElementById('mob-act-faculty')) return;
+        const sheet = document.getElementById('mobile-action-sheet');
+        if (!sheet) return;
+        const button = document.createElement('button');
+        button.className = 'mob-sheet-btn';
+        button.type = 'button';
+        button.id = 'mob-act-faculty';
+        button.innerHTML = '<span class="mob-sheet-icon"><i class="fas fa-building"></i></span><span>Faculty</span>';
+        const grid = sheet.querySelector('.mob-sheet-grid');
+        const adminButton = document.getElementById('mob-act-admin');
+        if (grid) {
+            if (adminButton && adminButton.parentElement === grid) {
+                grid.insertBefore(button, adminButton.nextSibling);
+            } else {
+                grid.prepend(button);
+            }
             return;
         }
-        if (typeof window.openStudio === 'function') window.openStudio();
+        if (adminButton && adminButton.parentElement) {
+            adminButton.parentElement.insertBefore(button, adminButton.nextSibling);
+            return;
+        }
+        sheet.appendChild(button);
     }
 
     function handleAdminAction() {
@@ -219,6 +271,15 @@
                 event.preventDefault();
                 closeSheet();
                 handleAdminAction();
+            });
+        }
+        ensureFacultySheetButton();
+        const facultyButton = document.getElementById('mob-act-faculty');
+        if (facultyButton) {
+            facultyButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                closeSheet();
+                handleFacultyAction();
             });
         }
         const themeButton = document.getElementById('mob-act-theme');
@@ -269,7 +330,7 @@
         }
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = 'assets/css/lux-mobile-action-sheet.css?v=20260720-densify6500';
+        link.href = 'assets/css/lux-mobile-action-sheet.css?v=20260806-shortcuttop1';
         link.setAttribute('data-kiu-mobile-action-sheet', '1');
         document.head.appendChild(link);
     }
@@ -364,6 +425,7 @@
 
     function onResize() {
         const nav = document.getElementById('mobile-bottom-nav');
+        syncMobileTopbarVisibility();
         if (!nav) return;
         setElementShown(nav, isMob(), '');
         if (!isMob()) closeSheet({ restoreFocus: false });
@@ -371,6 +433,7 @@
 
     function init() {
         autoCollapse();
+        syncMobileTopbarVisibility();
         setupNav();
         setupSheet();
         onResize();

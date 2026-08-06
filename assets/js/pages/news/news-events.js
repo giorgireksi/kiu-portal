@@ -19,6 +19,8 @@ function installNewsWorkspaceDelegates() {
     const clickSelector = [
         '[data-news-section]',
         '[data-news-refresh]',
+        '[data-news-toggle-filters]',
+        '[data-news-toggle-sections]',
         '[data-news-submit-reply]',
         '[data-news-reply-submit]',
         '[data-news-reply-tab]',
@@ -137,6 +139,18 @@ function installNewsWorkspaceDelegates() {
         if (action.hasAttribute('data-news-refresh')) {
             event.preventDefault();
             window.refreshNewsWorkspace();
+            return;
+        }
+
+        if (action.hasAttribute('data-news-toggle-filters')) {
+            event.preventDefault();
+            window.toggleNewsHeaderFilters(action);
+            return;
+        }
+
+        if (action.hasAttribute('data-news-toggle-sections')) {
+            event.preventDefault();
+            window.toggleNewsSidebarSections(action);
             return;
         }
 
@@ -551,6 +565,50 @@ function installNewsWorkspaceDelegates() {
 __kiuNewsEvExpose({
     renderNewsWorkspace,
 });
+window.toggleNewsHeaderFilters = function toggleNewsHeaderFilters(button) {
+    if (typeof ensureNewsHeaderFiltersCollapsed === 'function') {
+        ensureNewsHeaderFiltersCollapsed();
+    }
+    runtime.headerFiltersCollapsed = !Boolean(runtime.headerFiltersCollapsed);
+    const collapsed = Boolean(runtime.headerFiltersCollapsed);
+    const root = q(ROOT_ID);
+    const header = root?.querySelector('.newsx-header-bar');
+    const collapse = root?.querySelector('#newsx-filter-collapse') || header?.querySelector('.newsx-filter-collapse');
+    const toggle = button instanceof Element
+        ? button
+        : header?.querySelector('[data-news-toggle-filters]');
+    header?.classList.toggle('is-collapsed', collapsed);
+    collapse?.classList.toggle('is-collapsed', collapsed);
+    if (toggle) {
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        const label = toggle.querySelector('span');
+        if (label) label.textContent = collapsed ? 'Filters' : 'Hide filters';
+        const icon = toggle.querySelector('i');
+        if (icon) icon.className = collapsed ? 'fas fa-sliders' : 'fas fa-chevron-up';
+    }
+};
+window.toggleNewsSidebarSections = function toggleNewsSidebarSections(button) {
+    if (typeof ensureNewsSidebarSectionsCollapsed === 'function') {
+        ensureNewsSidebarSectionsCollapsed();
+    }
+    runtime.sidebarSectionsCollapsed = !Boolean(runtime.sidebarSectionsCollapsed);
+    const collapsed = Boolean(runtime.sidebarSectionsCollapsed);
+    const root = q(ROOT_ID);
+    const sidebar = root?.querySelector('.newsx-sidebar');
+    const collapse = root?.querySelector('#newsx-sections-collapse') || sidebar?.querySelector('.newsx-sections-collapse');
+    const toggle = button instanceof Element
+        ? button
+        : sidebar?.querySelector('[data-news-toggle-sections]');
+    sidebar?.classList.toggle('is-collapsed', collapsed);
+    collapse?.classList.toggle('is-collapsed', collapsed);
+    if (toggle) {
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        const label = toggle.querySelector('span');
+        if (label) label.textContent = collapsed ? 'Sections' : 'Hide sections';
+        const icon = toggle.querySelector('i');
+        if (icon) icon.className = collapsed ? 'fas fa-folder-tree' : 'fas fa-chevron-up';
+    }
+};
 window.refreshNewsWorkspace = function refreshNewsWorkspace() {
     bootstrapNewsWorkspace(true);
 };

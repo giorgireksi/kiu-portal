@@ -808,29 +808,34 @@ body.lux-route-home #page-home #lux-home-shell :is(
 }
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
   min-width: 0;
   margin-bottom: 6px;
 }
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary-item {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary .lms-session-detail-row {
+  display: block;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
-  color: var(--lux-text);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.4;
 }
-:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary-item strong {
-  color: var(--lux-text-muted);
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary .lms-session-detail-label {
+  display: inline;
+  margin-right: 4px;
   font-size: 12px;
   font-weight: 850;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+:is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-summary .lms-session-detail-value {
+  display: inline;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 :is(body.lux-route-admin-scheduler #page-admin-scheduler, body.lux-route-timetable #page-timetable) .lms-session-details--timetable .lms-session-detail-label {
   font-size: 12px;
@@ -1170,10 +1175,7 @@ body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
   .gb-lms-staff-roster-row,
   .study-card-term-row.lux-soft-chrome,
   .study-card-term-header.lux-soft-chrome,
-  .study-card-summary-main.lux-soft-chrome,
-  .study-card-summary-focus.lux-soft-chrome,
   .study-card-assessment-panel.lux-soft-chrome,
-  .study-card-control-band.lux-soft-chrome,
   .study-card-activity-item.lux-soft-chrome,
   .study-card-gradebook-overlay .gb-weight-card.lux-soft-chrome
 ):not(.lux-panel):not([data-lux-glass-root="1"]),
@@ -1599,7 +1601,6 @@ body.lux-route-registration #page-registration :is(
   .registration-summary-panel,
   .registration-insight-card,
   .registration-command-band,
-  .registration-footer-bar,
   .reg-tab:not(.active),
   .registration-state-card,
   .registration-module-choice,
@@ -1862,11 +1863,6 @@ body.lux-route-personal-data #page-personal-data :is(
 
 /* Study card page: matte inners (motion → global .home-hover-chip SSOT). */
 body.lux-route-study-card #page-study-card :is(
-  .study-card-control-band,
-  .study-card-summary-main,
-  .study-card-summary-focus,
-  .study-card-summary-focus .lux-hero-signal.home-hover-chip,
-  .study-card-summary-chip-row .lux-status-pill.home-hover-chip,
   .study-card-term-header,
   .study-card-term-row,
   .study-card-assessment-panel,
@@ -1880,18 +1876,6 @@ body.lux-route-study-card #page-study-card :is(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
-}
-
-body.lux-route-study-card #page-study-card .study-card-summary-focus.lux-focus-panel {
-  border-radius: 20px;
-  overflow: visible;
-}
-
-body.lux-route-study-card #page-study-card .study-card-summary-chip-row .lux-status-pill.home-hover-chip {
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* Study card assessment portal: frosted host + matte inners (layout → lux-page-bare-lite). */
@@ -3890,21 +3874,17 @@ body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lu
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 .lux-picker-panel, .lux-user-menu { z-index: 99999 !important; }
+@media (max-width: 1024px) {
+  body.lux-unified-shell #lux-topbar {
+    display: none !important;
+  }
+}
 @media (max-width:900px) {
   #lux-shell {
     position: relative;
     width: 100%;
     height: auto;
     inset: auto;
-  }
-  #lux-topbar {
-    position: relative;
-    left: auto;
-    right: auto;
-    height: auto;
-    min-height: var(--lux-topbar-height);
-    flex-wrap: wrap;
-    padding: 14px 18px;
   }
   #app-content { margin-left: 0; padding: 24px 18px 36px !important; }
 }
@@ -3913,13 +3893,6 @@ body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lu
   .lux-topbar select { flex: 1; min-width: 140px; }
 }
 @media (max-width:980px) {
-  #lux-topbar {
-    position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
-    margin: 18px 18px 0;
-  }
   #app-content { padding: 28px 18px 36px !important; }
   .lux-hero-stage { grid-template-columns: 1fr; }
 }

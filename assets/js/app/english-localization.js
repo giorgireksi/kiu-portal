@@ -635,7 +635,6 @@ function applyPersonalDataPageEnglishOverrides() {
 }
 
 function applyStudyCardPageEnglishOverrides() {
-    setNodeTextIfBroken(document.querySelector('#page-study-card .filter-shell-title'), 'Program View');
     setNodeTextIfBroken(document.querySelector('#page-study-card #modal-syllabus h3'), 'Syllabus');
     setNodeTextIfBroken(document.querySelector('#page-study-card #modal-programs h3'), 'Educational Programs');
     setNodeTextIfBroken(document.querySelector('#page-study-card #modal-programs h4'), 'Select Program');

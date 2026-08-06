@@ -161,12 +161,12 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260802-pincss1';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
-    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260728-socworkspace2';
+    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260807-socialtopnav10';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
     const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260802-modulepins1';
-    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260802-modulepins1';
+    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260806-empty-action1';
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
-    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260802-modulepins1';
+    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260807-socialtopnav10';
     const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260802-modulepins1';
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
@@ -1533,6 +1533,7 @@ Publishes only the host/runtime contract consumed by its loader.
         readWorkspaceNavCollapsed, writeWorkspaceNavCollapsed, isWorkspaceNavCollapsed,
         ensureWorkspaceNavCollapsedState, setWorkspaceNavCollapsed, syncWorkspaceNavCollapsedClass,
         renderShellWorkspaceNavReveal, renderShellWorkspaceNav,
+        renderSocialShortcutsTopNav, isSocialShortcutsTopNavViewport,
         updateSocialMeasuredChrome, syncSocialVisualViewport, bindSocialScrollChromeObserver,
         bindSocialLayoutObserver, centerScrollOverflows,
         isSocialMessagesPanel, isSocialAlertsPanel, isSocialInboxPanel,
@@ -1627,6 +1628,7 @@ Publishes only the host/runtime contract consumed by its loader.
             renderEventsPanel, renderSurveysPanel, renderResearchPanel, renderPhotographyPanel, renderLostFoundPanel,
             renderMessagesPanel, renderAlertsPanel, renderProfilePageBody,
             renderShellWorkspaceNavReveal, renderShellWorkspaceNav, renderShellDrawer, renderMobileTabBar,
+            renderSocialShortcutsTopNav, isSocialShortcutsTopNavViewport,
             revealShell, syncSocialVisualShell,
             syncSocialScrollLayout, migrateSocialScrollOnLockChange,
             scheduleSocialCenterScrollRepair, syncEventDescScrollRails,

@@ -122,6 +122,8 @@
         const renderShellWorkspaceNav = dep('renderShellWorkspaceNav');
         const renderShellDrawer = dep('renderShellDrawer');
         const renderMobileTabBar = dep('renderMobileTabBar');
+        const renderSocialShortcutsTopNav = dep('renderSocialShortcutsTopNav');
+        const isSocialShortcutsTopNavViewport = dep('isSocialShortcutsTopNavViewport');
         const setSocialRegionMarkup = dep('setSocialRegionMarkup');
         const revealShell = dep('revealShell');
         const syncSocialVisualShell = dep('syncSocialVisualShell');
@@ -784,9 +786,113 @@ function renderSocialFlashStatus(runtime) {
     return pinWarning + flash + status;
 }
 function renderSocialTopbarRegion(activePanel, activeConfig, user) {
-    // All panels use hero chrome; shell topbar region stays empty.
+    void activeConfig;
+    void user;
     if (isSocialTopbarSkippedPanel(activePanel)) return '';
-    return '';
+    if (!isPhoneSocialShortcutsViewport()) return '';
+    try {
+        try {
+            return String(renderSocialShortcutsTopNav(activePanel) || '') || renderSocialShortcutsTopNavFallback(activePanel);
+        } catch (error) {
+            if (typeof window.renderSocialShortcutsTopNav === 'function') {
+                return String(window.renderSocialShortcutsTopNav(activePanel) || '') || renderSocialShortcutsTopNavFallback(activePanel);
+            }
+            throw error;
+        }
+    } catch (error) {
+        console.warn('[Social] Top shortcuts nav failed to render; using fallback.', error);
+        return renderSocialShortcutsTopNavFallback(activePanel);
+    }
+}
+function isPhoneSocialShortcutsViewport() {
+    try {
+        if (typeof window.isSocialShortcutsTopNavViewport === 'function') {
+            return Boolean(window.isSocialShortcutsTopNavViewport());
+        }
+        try { return Boolean(isSocialShortcutsTopNavViewport()); } catch (error) {}
+        if (typeof window.matchMedia === 'function') {
+            return window.matchMedia('(max-width: 1024px)').matches;
+        }
+    } catch (error) {}
+    return Number(window.innerWidth || 0) <= 1024;
+}
+function renderSocialShortcutsTopNavFallback(activePanel) {
+    const escapeHtml = typeof escape === 'function' ? escape : (value) => String(value ?? '');
+    const active = text(activePanel || '');
+    const items = [
+        { id: 'feed', label: 'Feed', icon: 'fa-stream' },
+        { id: 'photography', label: 'Exposé', icon: 'fa-camera-retro' },
+        { id: 'workspace', label: 'Projects', icon: 'fa-diagram-project' },
+        { id: 'projects', label: 'Portfolio', icon: 'fa-briefcase' },
+        { id: 'lost-and-found', label: 'Lost', icon: 'fa-magnifying-glass-location' },
+        { id: 'surveys', label: 'Surveys', icon: 'fa-clipboard-list' },
+        { id: 'research', label: 'Research', icon: 'fa-book-open' },
+        { id: 'profile', label: 'Saved', icon: 'fa-bookmark', profileTab: 'saved' },
+        { id: 'alerts', label: 'Mods', icon: 'fa-shield-halved' }
+    ];
+    return `
+        <nav class="social-shortcuts-top-nav" aria-label="Social shortcuts">
+            <div class="social-shortcuts-top-nav-row">
+                ${items.map((item) => {
+                    const isActive = item.profileTab ? active === 'profile' : active === item.id;
+                    const profileAttr = item.profileTab ? ` data-profile-tab="${escapeHtml(item.profileTab)}"` : '';
+                    return `
+                    <button type="button" class="social-shortcuts-top-nav-btn${isActive ? ' is-active' : ''}" data-action="panel-${escapeHtml(item.id)}"${profileAttr}>
+                        <i class="fas ${escapeHtml(item.icon)}" aria-hidden="true"></i>
+                        <span>${escapeHtml(item.label)}</span>
+                    </button>`;
+                }).join('')}
+            </div>
+        </nav>
+    `;
+}
+function bindSocialShortcutsViewportWatcher() {
+    if (window.__kiuSocialShortcutsViewportBound) return;
+    window.__kiuSocialShortcutsViewportBound = true;
+    try {
+        const mql = window.matchMedia('(max-width: 1024px)');
+        const onChange = () => {
+            try {
+                const host = typeof root === 'function' ? root() : document.getElementById('public-social-root');
+                if (host) host.__kiuLastRenderSignature = '';
+                if (typeof queueRender === 'function') queueRender('social-shortcuts-viewport');
+                else if (typeof window.renderSocialPageNow === 'function') window.renderSocialPageNow('social-shortcuts-viewport');
+            } catch (error) {}
+        };
+        if (typeof mql.addEventListener === 'function') mql.addEventListener('change', onChange);
+        else if (typeof mql.addListener === 'function') mql.addListener(onChange);
+    } catch (error) {}
+}
+/** Body-level host so fixed chrome is not trapped by #app-content stacking/contain (scrolls away). */
+function syncSocialShortcutsTopNavPortal(markup) {
+    const html = String(markup || '').trim();
+    let portal = document.getElementById('social-shortcuts-top-nav-portal');
+    if (!html) {
+        if (portal) {
+            portal.innerHTML = '';
+            portal.hidden = true;
+            portal.setAttribute('aria-hidden', 'true');
+            delete portal.__kiuLastMarkup;
+        }
+        document.body.classList.remove('social-has-shortcuts-top-nav');
+        return;
+    }
+    if (!portal) {
+        portal = document.createElement('div');
+        portal.id = 'social-shortcuts-top-nav-portal';
+        portal.addEventListener('click', (event) => {
+            const fn = window.__kiuSocialPageHandleClick;
+            if (typeof fn === 'function') fn(event);
+        });
+        document.body.appendChild(portal);
+    }
+    portal.hidden = false;
+    portal.removeAttribute('aria-hidden');
+    if (portal.__kiuLastMarkup !== html) {
+        portal.innerHTML = html;
+        portal.__kiuLastMarkup = html;
+    }
+    document.body.classList.add('social-has-shortcuts-top-nav');
 }
 function renderActivePanelMarkup(activePanel) {
     return activePanel === 'community'
@@ -933,8 +1039,15 @@ function renderSocialPageNow(reason = 'manual') {
             return;
         }
         const renderPlan = resolveSocialRenderPlan(reason, activePanel, runtime);
+        bindSocialShortcutsViewportWatcher();
+        const useShortcutsTopNav = isPhoneSocialShortcutsViewport()
+            && !isSocialTopbarSkippedPanel(activePanel);
         if (isSocialTopbarSkippedPanel(activePanel)) {
             renderPlan.topbar = false;
+        } else if (useShortcutsTopNav) {
+            // Keep shortcuts top bar mounted on phone even when a deferred
+            // module forces a center-only pass.
+            renderPlan.topbar = true;
         }
         if (isSocialCommandSkippedPanel(activePanel)) {
             renderPlan.command = false;
@@ -944,7 +1057,7 @@ function renderSocialPageNow(reason = 'manual') {
         }
         if (forceCenterOnly) {
             renderPlan.flash = false;
-            renderPlan.topbar = false;
+            if (!useShortcutsTopNav) renderPlan.topbar = false;
             renderPlan.command = false;
             renderPlan.workspaceNav = false;
             renderPlan.drawer = false;
@@ -960,10 +1073,14 @@ function renderSocialPageNow(reason = 'manual') {
         shell.root.dataset.role = text(currentUser()?.role || 'student');
         shell.root.dataset.panel = activePanel;
         if (renderPlan.flash) setSocialRegionMarkup(shell.flash, renderSocialFlashStatus(runtime));
-        if (renderPlan.topbar) {
-            setSocialRegionMarkup(shell.topbar, renderSocialTopbarRegion(activePanel, activeConfig, user));
-        } else if (isSocialTopbarSkippedPanel(activePanel)) {
+        if (renderPlan.topbar || useShortcutsTopNav) {
+            const topbarHtml = renderSocialTopbarRegion(activePanel, activeConfig, user);
+            // Keep in-tree region empty: body portal owns the fixed chrome (bottom-nav twin).
             setSocialRegionMarkup(shell.topbar, '');
+            syncSocialShortcutsTopNavPortal(topbarHtml);
+        } else if (isSocialTopbarSkippedPanel(activePanel) || !isPhoneSocialShortcutsViewport()) {
+            setSocialRegionMarkup(shell.topbar, '');
+            syncSocialShortcutsTopNavPortal('');
         }
         if (renderPlan.command) {
             setSocialRegionMarkup(shell.command, renderSectionCommandCenter(activePanel, activeConfig, runtime));

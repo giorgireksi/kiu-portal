@@ -20,6 +20,10 @@ describe('student-service route regressions', () => {
         expect(bare).toContain('body.lux-page-bare');
         expect(bare).toContain('.lux-page-shell[data-lux-layout-only="1"]');
         expect(html).toContain('data-lux-layout-only="1"');
+        expect(html).toContain('<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>');
+        expect(html).toContain('id="mobile-action-sheet"');
+        expect(html).toContain("activeTarget: 'student-service'");
+        expect(html).toContain('standalone-mobile-shell.js');
         expect(readSource('assets/js/pages/student-service-page-runtime.js')).toMatch(/data-student-service-page-shell="1"[\s\S]*data-lux-glass-root="1"/);
     });
 
@@ -94,6 +98,27 @@ describe('student-service route regressions', () => {
         expect(block).toContain('#student-service-modal-root .student-service-guidance-workspace');
         expect(block).toContain('#student-service-modal-root .student-service-guidance-pane');
         expect(block).not.toMatch(/student-service-qa-composer-modal\s*\{[^}]*background:/);
+        expect(block).toMatch(/@media \(max-width: 960px\)[\s\S]*\.student-service-lane-choice-card[\s\S]*min-height:\s*0/);
+        expect(block).toMatch(/@media \(max-width: 960px\)[\s\S]*\.student-service-workbench-merged:not\(:has\(\.is-selected\)\)[\s\S]*\.student-service-workbench-column--detail[\s\S]*display:\s*none/);
+        expect(block).toMatch(/@media \(max-width: 960px\)[\s\S]*\.student-service-workbench-merged:has\(\.is-selected\)[\s\S]*\.student-service-workbench-column--inbox[\s\S]*display:\s*none/);
+        expect(block).toContain('.student-service-mobile-back');
+    });
+
+    it('mobile back clears selection and list-first selection markers exist', () => {
+        const events = readSource('assets/js/pages/student-service-events.js');
+        const service = readSource('assets/js/pages/student-service-service.js');
+        const tickets = readSource('assets/js/pages/student-service-tickets.js');
+        const qa = readSource('assets/js/pages/student-service-qa.js');
+        const html = readSource('student-service.html');
+        expect(events).toContain('data-student-service-mobile-back');
+        expect(events).toContain("ui.selectedTicketId = ''");
+        expect(events).toContain("ui.selectedQuestionId = ''");
+        expect(service).toContain('data-student-service-mobile-back="true"');
+        expect(qa).toContain('data-student-service-mobile-back="true"');
+        expect(qa).toContain("isSelected ? ' is-selected' : ''");
+        expect(tickets).toMatch(/ui\.selectedTicketId = '';\s*return null;/);
+        expect(html).toContain('lux-page-bare-lite.css?v=20260806-ssmobile1');
+        expect(html).toContain('student-service-events.js?v=20260806-ssmobile1');
     });
 
     it('fouc-ht student-service block paints matte workspace inners', () => {

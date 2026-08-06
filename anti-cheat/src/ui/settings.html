@@ -100,6 +100,52 @@
         <div class="notice">Protected exam restrictions are configured by administration for each exam or quiz and are applied automatically after launch.</div>
       </section>
 
+      <section class="panel" data-admin-only="true">
+        <h2>Protected Session Policy</h2>
+        <p class="panel-copy">Changes apply to the next protected quiz or exam session. Running sessions are not changed.</p>
+        <div class="field">
+          <label for="antiCheatPolicyScope">Policy scope</label>
+          <select id="antiCheatPolicyScope">
+            <option value="global">Global defaults</option>
+            <option value="quiz">Specific quiz or exam</option>
+          </select>
+        </div>
+        <div class="field" id="antiCheatQuizField" hidden>
+          <label for="antiCheatQuizSelect">Quiz or exam</label>
+          <select id="antiCheatQuizSelect"></select>
+        </div>
+        <label class="policy-check" id="antiCheatUseGlobalLabel">
+          <input id="antiCheatUseGlobal" type="checkbox">
+          <span>Use global defaults for this quiz</span>
+        </label>
+        <div class="policy-grid">
+          <label class="policy-check"><input type="checkbox" data-policy-key="processScanning"><span>Process scanning</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="clipboardClearing"><span>Clipboard clearing</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="focusProtection"><span>Focus enforcement</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="inputBlocking"><span>Keyboard restrictions</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="kioskMode"><span>Kiosk / fullscreen</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="vmDetection"><span>VM detection</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="devToolsProtection"><span>DevTools protection</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="navigationProtection"><span>Navigation protection</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="securityDialogs"><span>Security dialogs</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="violationScreen"><span>Violation screen</span></label>
+          <label class="policy-check"><input type="checkbox" data-policy-key="allowDebugTools"><span>Allow DevTools</span></label>
+        </div>
+        <div class="field">
+          <label for="antiCheatBlockedProcesses">Blocked processes</label>
+          <textarea id="antiCheatBlockedProcesses" rows="5" placeholder="One process name per line"></textarea>
+        </div>
+        <div class="field">
+          <label for="antiCheatProcessScanMs">Process scan interval (milliseconds)</label>
+          <input id="antiCheatProcessScanMs" type="number" min="1000" max="60000" step="500">
+        </div>
+        <div class="inline-actions">
+          <button class="btn btn-secondary" type="button" onclick="loadAntiCheatPolicies()">Reload Policy</button>
+          <button class="btn btn-primary" type="button" onclick="saveAntiCheatPolicy()">Save Policy</button>
+        </div>
+        <div class="notice" id="antiCheatPolicyStatus">Loading policy settings...</div>
+      </section>
+
       <section class="panel">
         <h2>System Status</h2>
         <div class="inline-actions">
@@ -118,6 +164,23 @@
     const LOCAL_BACKEND_URL = 'http://127.0.0.1:48933';
     let desktopSession = null;
     let desktopCapabilities = {};
+    let launchDiagnostics = {};
+
+    function configuredExamPortalUrl() {
+      return launchDiagnostics.quizUrl || LOCAL_EXAM_PORTAL_URL;
+    }
+
+    function configuredLmsQuizUrl() {
+      try {
+        return `${new URL(configuredExamPortalUrl()).origin}/lms.html`;
+      } catch (error) {
+        return LOCAL_LMS_QUIZ_URL;
+      }
+    }
+
+    function configuredBackendUrl() {
+      return launchDiagnostics.backendUrl || LOCAL_BACKEND_URL;
+    }
 
     function applyDesktopSessionState(result) {
       desktopSession = result?.desktopSession || null;
@@ -126,8 +189,13 @@
       document.getElementById('desktopUserName').textContent = account.name || account.email || 'Signed in';
       document.getElementById('desktopUserRole').textContent = account.role || 'student';
       const canUseStaffTools = desktopCapabilities.canUseStaffTools === true;
+      const isAdmin = String(account.role || '').trim().toLowerCase() === 'admin'
+        && desktopCapabilities.canUseStaffTools === true;
       document.querySelectorAll('[data-staff-only="true"]').forEach(element => {
         element.hidden = !canUseStaffTools;
+      });
+      document.querySelectorAll('[data-admin-only="true"]').forEach(element => {
+        element.hidden = !isAdmin;
       });
     }
     function readSettings() {
@@ -137,11 +205,11 @@
     }
 
     function applySettingsToForm(settings) {
-      document.getElementById('launchUrl').value = settings.launchUrl || LOCAL_EXAM_PORTAL_URL;
+      document.getElementById('launchUrl').value = settings.launchUrl || configuredExamPortalUrl();
     }
 
-    function setStudentExamUrl() { document.getElementById('launchUrl').value = LOCAL_EXAM_PORTAL_URL; }
-    function setProtectedQuizUrl() { document.getElementById('launchUrl').value = LOCAL_LMS_QUIZ_URL; }
+    function setStudentExamUrl() { document.getElementById('launchUrl').value = configuredExamPortalUrl(); }
+    function setProtectedQuizUrl() { document.getElementById('launchUrl').value = configuredLmsQuizUrl(); }
 
     function launchStudentExamPortal() {
       setStudentExamUrl();
@@ -163,15 +231,6 @@
       }
     }
 
-    async function ping(url) {
-      try {
-        const response = await fetch(url, { cache: 'no-store' });
-        return response.ok;
-      } catch (error) {
-        return false;
-      }
-    }
-
     function setStatus(id, ok) {
       const text = document.getElementById(`${id}Status`);
       const dot = document.getElementById(`${id}Dot`);
@@ -185,24 +244,128 @@
     async function runSystemCheck() {
       const output = document.getElementById('systemCheckOutput');
       output.textContent = 'Checking services...';
-      const [frontendOk, backendOk, diagnostics] = await Promise.all([
-        ping(LOCAL_EXAM_PORTAL_URL),
-        ping(`${LOCAL_BACKEND_URL}/api/portal/microsoft/config`),
-        window.antiCheat.getLaunchDiagnostics().catch(() => null)
-      ]);
+      launchDiagnostics = await window.antiCheat.getLaunchDiagnostics().catch(() => ({}));
+      const frontendUrl = configuredExamPortalUrl();
+      const backendUrl = configuredBackendUrl();
+      const health = await window.antiCheat.checkServiceHealth().catch(() => ({}));
+      const frontendOk = health.frontendOk === true;
+      const backendOk = health.backendOk === true;
       setStatus('frontend', frontendOk);
       setStatus('backend', backendOk);
-      const hardware = diagnostics?.hardwareDiagnostics || {};
+      const hardware = launchDiagnostics?.hardwareDiagnostics || {};
       output.textContent = [
-        `Frontend 8876: ${frontendOk ? 'online' : 'offline'}`,
-        `Backend 48933: ${backendOk ? 'online' : 'offline'}`,
-        `Configured target: ${document.getElementById('launchUrl').value || LOCAL_EXAM_PORTAL_URL}`,
-        `Backend URL: ${diagnostics?.backendUrl || LOCAL_BACKEND_URL}`,
-        `Allowed domains: ${(diagnostics?.allowedDomains || []).join(', ') || 'none'}`,
+        `Frontend: ${frontendOk ? 'online' : 'offline'}`,
+        `Backend: ${backendOk ? 'online' : 'offline'}`,
+        `Configured target: ${document.getElementById('launchUrl').value || frontendUrl}`,
+        `Backend URL: ${backendUrl}`,
+        `Allowed domains: ${(launchDiagnostics?.allowedDomains || []).join(', ') || 'none'}`,
         `Hardware: ${hardware.manufacturer || 'Unknown'} / ${hardware.model || 'Unknown'}`,
         `VM detected: ${hardware.isVirtualMachine ? 'yes' : 'no'}${hardware.reason ? ` (${hardware.reason})` : ''}`,
-        `Blocked processes: ${(diagnostics?.blockedProcesses || []).length || 0} configured`
+        `Blocked processes: ${(launchDiagnostics?.blockedProcesses || []).length || 0} configured`
       ].join('\n');
+    }
+
+    const POLICY_BOOLEAN_KEYS = [
+      'processScanning', 'clipboardClearing', 'focusProtection', 'inputBlocking',
+      'kioskMode', 'vmDetection', 'devToolsProtection', 'navigationProtection',
+      'securityDialogs', 'violationScreen', 'allowDebugTools'
+    ];
+    let antiCheatPolicyData = { defaults: {}, quizzes: [] };
+
+    function selectedAntiCheatQuiz() {
+      const quizId = document.getElementById('antiCheatQuizSelect').value;
+      return antiCheatPolicyData.quizzes.find(item => String(item.quizId) === String(quizId)) || null;
+    }
+
+    function applyAntiCheatPolicyForm(policy = {}) {
+      POLICY_BOOLEAN_KEYS.forEach(key => {
+        const input = document.querySelector(`[data-policy-key="${key}"]`);
+        if (input) input.checked = policy[key] === true;
+      });
+      document.getElementById('antiCheatBlockedProcesses').value = (policy.blockedProcesses || []).join('\n');
+      document.getElementById('antiCheatProcessScanMs').value = Number(policy.processScanMs || 1500);
+    }
+
+    function readAntiCheatPolicyForm() {
+      const policy = {};
+      POLICY_BOOLEAN_KEYS.forEach(key => {
+        policy[key] = document.querySelector(`[data-policy-key="${key}"]`)?.checked === true;
+      });
+      policy.blockedProcesses = document.getElementById('antiCheatBlockedProcesses').value
+        .split(/\r?\n|,/).map(value => value.trim()).filter(Boolean);
+      policy.processScanMs = Math.min(60000, Math.max(1000, Number(
+        document.getElementById('antiCheatProcessScanMs').value || 1500
+      )));
+      return policy;
+    }
+
+    function syncAntiCheatPolicyForm() {
+      const scope = document.getElementById('antiCheatPolicyScope').value;
+      const quizField = document.getElementById('antiCheatQuizField');
+      const useGlobal = document.getElementById('antiCheatUseGlobal');
+      const useGlobalLabel = document.getElementById('antiCheatUseGlobalLabel');
+      const quiz = selectedAntiCheatQuiz();
+      quizField.hidden = scope !== 'quiz';
+      useGlobalLabel.hidden = scope !== 'quiz';
+      useGlobal.checked = scope === 'quiz' && (!quiz || quiz.hasOverride !== true);
+      const usingGlobal = scope === 'quiz' && useGlobal.checked;
+      const policy = scope === 'global'
+        ? antiCheatPolicyData.defaults
+        : (useGlobal.checked ? antiCheatPolicyData.defaults : (quiz?.antiCheatPolicy || antiCheatPolicyData.defaults));
+      applyAntiCheatPolicyForm(policy);
+      document.querySelectorAll('[data-policy-key], #antiCheatBlockedProcesses, #antiCheatProcessScanMs')
+        .forEach(input => { input.disabled = usingGlobal; });
+    }
+
+    async function loadAntiCheatPolicies() {
+      const status = document.getElementById('antiCheatPolicyStatus');
+      status.textContent = 'Loading policy settings...';
+      const result = await window.antiCheat.getAntiCheatPolicies().catch(() => null);
+      if (!result?.ok) {
+        status.textContent = result?.error || 'Policy settings could not be loaded.';
+        return;
+      }
+      antiCheatPolicyData = {
+        defaults: result.defaults || {},
+        quizzes: Array.isArray(result.quizzes) ? result.quizzes : []
+      };
+      const selector = document.getElementById('antiCheatQuizSelect');
+      selector.replaceChildren();
+      antiCheatPolicyData.quizzes.forEach(quiz => {
+        const option = document.createElement('option');
+        option.value = quiz.quizId;
+        option.textContent = `${quiz.courseTitle} — ${quiz.title}`;
+        selector.appendChild(option);
+      });
+      document.getElementById('antiCheatPolicyScope').value = 'global';
+      syncAntiCheatPolicyForm();
+      status.textContent = `${antiCheatPolicyData.quizzes.length} protected quiz/exam policies loaded.`;
+    }
+
+    async function saveAntiCheatPolicy() {
+      const scope = document.getElementById('antiCheatPolicyScope').value;
+      const quiz = selectedAntiCheatQuiz();
+      if (scope === 'quiz' && !quiz) {
+        window.alert('Select a protected quiz or exam first.');
+        return;
+      }
+      const payload = {
+        scope,
+        antiCheatPolicy: readAntiCheatPolicyForm()
+      };
+      if (scope === 'quiz') {
+        payload.courseId = quiz.courseId;
+        payload.quizId = quiz.quizId;
+        payload.useGlobalDefaults = document.getElementById('antiCheatUseGlobal').checked;
+      }
+      const result = await window.antiCheat.saveAntiCheatPolicy(payload);
+      const status = document.getElementById('antiCheatPolicyStatus');
+      if (!result?.ok) {
+        status.textContent = result?.error || 'Anti-cheat policy could not be saved.';
+        return;
+      }
+      status.textContent = 'Saved. The new policy applies to the next protected session.';
+      await loadAntiCheatPolicies();
     }
 
     async function clearLaunchCache() {
@@ -233,6 +396,10 @@
       const settings = await window.antiCheat.getLauncherSettings();
       applySettingsToForm(settings || { launchUrl: LOCAL_EXAM_PORTAL_URL });
       if (!document.getElementById('launchUrl').value) setStudentExamUrl();
+      document.getElementById('antiCheatPolicyScope').addEventListener('change', syncAntiCheatPolicyForm);
+      document.getElementById('antiCheatQuizSelect').addEventListener('change', syncAntiCheatPolicyForm);
+      document.getElementById('antiCheatUseGlobal').addEventListener('change', syncAntiCheatPolicyForm);
+      await loadAntiCheatPolicies();
       runSystemCheck();
     }
 

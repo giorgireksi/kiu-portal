@@ -149,8 +149,11 @@ describe('anti-cheat admin-owned protected policy', () => {
         expect(main).toContain('protectedPolicy.heartbeatMs || 2000');
         expect(main).toContain('protectedPolicy.processScanMs || 1500');
         expect(main).toContain('getEffectiveBlockedProcesses()');
-        expect(settings).not.toContain('Protection Controls');
-        expect(settings).not.toContain('id="processScanning"');
+        expect(main).toContain("process.platform === 'win32' ? 'tasklist' : 'ps -eo comm=,args='");
+        expect(settings).toContain('Protected Session Policy');
+        expect(settings).toContain('data-policy-key="processScanning"');
+        expect(settings).toContain('getAntiCheatPolicies');
+        expect(settings).toContain('saveAntiCheatPolicy');
         expect(settings).toContain('Protected exam restrictions are configured by administration');
     });
 });
@@ -173,6 +176,8 @@ describe('anti-cheat desktop login gate', () => {
         expect(main).toContain("ipcMain.handle('restore-desktop-session'");
         expect(main).toContain("ipcMain.handle('launch-configured-url'");
         expect(main).toContain("ipcMain.handle('get-launch-settings'");
+        expect(main).toContain('function isLoopbackUrl(value: any)');
+        expect(main).toContain('if (!RUNTIME_APP_URL_OVERRIDE && !isLoopbackUrl(config.appUrl)');
         expect(preload).toContain('login: (credentials: any) => ipcRenderer.invoke');
         expect(preload).toContain("ipcRenderer.invoke('desktop-logout')");
         expect(preload).toContain("ipcRenderer.invoke('get-current-desktop-session')");
@@ -187,6 +192,9 @@ describe('anti-cheat desktop login gate', () => {
         expect(settings).toContain('canUseStaffTools');
         expect(settings).toContain('logoutDesktop');
         expect(settings).toContain('Configured Launch Target');
+        expect(settings).toContain('window.antiCheat.checkServiceHealth()');
+        expect(settings).toContain('configuredExamPortalUrl()');
+        expect(settings).toContain('configuredLmsQuizUrl()');
     });
 });
 

@@ -52,7 +52,7 @@ describe('faculty gradebook route regressions.test', () => {
 
         expect(html).toContain('lms-route-field-label');
         expect(html).toMatch(/label[^>]*for="fs-filter-sem"[^>]*class="[^"]*lms-route-field-label/);
-        expect(html).toContain('lux-fouc-ht.css?v=20260729-nestedhover2');
+        expect(html).toContain('lux-fouc-ht.css?v=20260806-hidetopbar2');
         expect(html).toContain('lux-page-bare-lite.css?v=20260729-lmsgbui1');
 
         expect(bare).toContain('#gradebook-score-edit-modal');

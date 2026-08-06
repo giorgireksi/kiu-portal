@@ -161,25 +161,10 @@ function hasVisibleAdminRegistrationCmsContent(container) {
 }
 
 function updateEctsProgress() {
-    const progressBar = document.getElementById('ects-progress-bar');
-    const ectsText = document.getElementById('ects-text');
-    if (!progressBar || !ectsText || typeof getStudentCompletedEctsThisSemester !== 'function') return;
-
-    const user = getCurrentUser() || { id: '31961' };
-    const fac = getCurrentFaculty() || 'ECON';
-    const totalEcts = getStudentCompletedEctsThisSemester(user.id, fac);
-    const percentage = Math.min((totalEcts / 36) * 100, 100);
-    progressBar.style.width = percentage + '%';
-    ectsText.innerText = `${totalEcts} / 36`;
-
-    const toneClasses = ['is-warning', 'is-over'];
-    toneClasses.forEach((className) => {
-        progressBar.classList.remove(className);
-        ectsText.classList.remove(className);
-    });
-    const toneClass = totalEcts > 36 ? 'is-over' : 'is-warning';
-    progressBar.classList.add(toneClass);
-    ectsText.classList.add(toneClass);
+    // Footer ECTS bar removed — summary panel owns ECTS via syncRegistrationWorkspaceSummary.
+    if (typeof syncRegistrationWorkspaceSummary === 'function') {
+        syncRegistrationWorkspaceSummary();
+    }
 }
 
         const api = {

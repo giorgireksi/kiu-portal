@@ -39,7 +39,7 @@ describe('scheduler session modal layout regressions', () => {
 
         expectRetiredCss('admin-scheduler-route.css');
         expect(html).not.toContain('admin-scheduler-route.css');
-        expect(html).toContain('admin-scheduler-session-modal.css?v=20260804-staffbuttons1');
+        expect(html).toContain('admin-scheduler-session-modal.css?v=20260806-staffpickermobile1');
         expect(html).toMatch(/mobile-shell-core\.css[\s\S]*admin-scheduler-session-modal\.css/);
         expect(html).toContain('lux-page-bare-lite.css');
         expect(droplist).toContain('.lux-droplist-panel');
@@ -108,7 +108,7 @@ describe('scheduler session modal layout regressions', () => {
         expect(fouc).toContain('#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent');
         expect(html).toContain('lux-modals.css?v=20260803-schapply5');
         expect(html).toContain('lux-page-bare-lite.css?v=20260804-commandmerge1');
-        expect(html).toContain('lux-fouc-ht.css?v=20260804-heroerase1');
+        expect(html).toContain('lux-fouc-ht.css?v=20260806-hidetopbar2');
     });
 
     it('uses shared CTA picker chrome from lux-controls, not session soft-field overrides', () => {

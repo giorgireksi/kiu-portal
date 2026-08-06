@@ -523,7 +523,7 @@ function getUserPerformanceSummary(user) {
 }
 function populateProgramContextControls(user, facultyProfile) {
     const programLabel = getProgramLabelForUser(user, facultyProfile);
-    [document.getElementById('program-context-select'), document.getElementById('study-card-program-select')]
+    [document.getElementById('program-context-select')]
         .filter(Boolean)
         .forEach(select => {
             select.innerHTML = '';

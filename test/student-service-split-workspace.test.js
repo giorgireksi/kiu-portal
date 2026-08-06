@@ -251,8 +251,8 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain('function bindStudentServiceDelegatedInteractions()');
         expect(source).toContain('function handleStudentServiceRootClick(');
         expect(source).toContain('function handleStudentServiceModalDocumentClick(');
-        expect(source).toContain("const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260803-sshelp5';");
-        expect(source).toContain("const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260728-sssvc4';");
+        expect(source).toContain("const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260806-ssmobile1';");
+        expect(source).toContain("const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260806-ssmobile1';");
         expect(source).toContain('function bindStudentServiceRealtimeRefreshListener(');
         expect(source).toContain('buildStudentServiceArticleFingerprint');
         expect(serviceModule).toContain('buildStudentServiceGuidanceBrowserContext');

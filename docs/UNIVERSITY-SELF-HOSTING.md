@@ -148,7 +148,7 @@ KIU_MULTI_ACCOUNT_CLEANUP=YES \
   npm run smoke:accounts
 ```
 
-Open `http://127.0.0.1:8877/login.html` for the browser rehearsal. Stop the
+Open `http://127.0.0.1:8900/login.html` for the browser rehearsal. Stop the
 containers when finished:
 
 ```bash

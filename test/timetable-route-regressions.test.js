@@ -37,18 +37,25 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('index-luxury.css');
         expect(html).toContain('lux-shell.css');
         expect(html).toContain('lux-shell.css');
-        expect(html).toContain('lux-page-bare-lite.css?v=20260804-commandmerge1');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260806-tttoolscollapse1');
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).toContain('lux-page-bare-lite.css');
         expect(html).toContain('assets/js/shared/utilities.js?v=');
-        expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260804-heroerase2');
+        expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260806-tttoolscollapse1');
+        expect(html).toContain('data-timetable-toggle-command');
+        expect(html).toContain('id="timetable-command-collapse"');
+        expect(html).toContain('class="lux-timetable-command-collapse"');
+        expect(html).toContain('[data-timetable-toggle-command]');
         expect(html).toContain('assets/js/features/navigation.js?v=20260805-switchperf2');
         expect(html).not.toContain('assets/js/pages/planner.js');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');
         expect(html).toContain('<nav id="admin-nav" aria-label="Admin navigation stub"');
-        expect(html).toContain('data-timetable-filter="semester"');
-        expect(html).toContain('data-timetable-filter="faculty"');
+        expect(html).not.toContain('data-timetable-filter="semester"');
+        expect(html).not.toContain('data-timetable-filter="faculty"');
+        expect(html).not.toContain('id="timetable-filters"');
+        expect(html).not.toContain('id="tt-filter-sem"');
+        expect(html).not.toContain('id="tt-filter-fac"');
         expect(html).toContain('data-timetable-week-shift="-1"');
         expect(html).toContain('data-timetable-week-shift="1"');
         expect(html).toContain('data-schedule-current-week="1"');
@@ -83,8 +90,6 @@ describe('timetable route regressions', () => {
         expect(html).toContain('class="lux-card lux-timetable-stage"');
         expect(html).not.toContain('â€”');
         expect(html).not.toContain('id="timetable-insight-next-time"');
-        expect(html).toContain('Management &amp; Business');
-        expect(html).toContain('Arts &amp; Humanities');
         expect(html).toContain('class="fas fa-circle timetable-stage-status-dot"');
         expect(html).toContain('<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"');
         expect(html).not.toContain('<button class="mob-sheet-btn" id="mob-act-admin"><div class="mob-sheet-icon"');
@@ -99,6 +104,11 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain('sch-empty-week-notice lux-soft-chrome');
         expect(timetableRuntime).toContain('schedule-session-card lux-timetable-session-card');
         expect(timetableRuntime).toContain('function renderTimetable() {');
+        expect(timetableRuntime).toContain('let timetableCommandCollapsed = null');
+        expect(timetableRuntime).toContain('function ensureTimetableCommandCollapsed()');
+        expect(timetableRuntime).toContain('function applyTimetableCommandCollapsed()');
+        expect(timetableRuntime).toContain('window.toggleTimetableCommandTools');
+        expect(timetableRuntime).toContain("matchMedia('(max-width: 920px)')");
         expect(timetableRuntime).toContain('[data-schedule-current-week], [data-timetable-action="current-week"]');
         expect(timetableRuntime).toContain('currentWeekButton.dataset.scheduleCurrentWeek = \'1\'');
         expect(navigationSource).toContain("activePageId === 'timetable' && typeof window.renderTimetable === 'function'");
@@ -109,8 +119,11 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain("shell.className = `sch-grid-shell");
         expect(timetableRuntime).toContain("shell.dataset.luxGlassRoot = '1'");
         expect(timetableRuntime).toContain("shell.dataset.ttGrid = '1'");
-        expect(timetableRuntime).toContain('sch-grid-topline');
-        expect(timetableRuntime).toContain('timetable-grid-week-label');
+        expect(timetableRuntime).toContain("shell.querySelectorAll(':scope > .sch-grid-topline')");
+        expect(timetableRuntime).not.toContain('function renderTimetableGridTopline');
+        expect(timetableRuntime).not.toContain('timetable-grid-week-label');
+        expect(timetableRuntime).not.toContain('timetable-grid-week-current');
+        expect(timetableRuntime).not.toContain('GMT+4');
         expect(timetableRuntime).toContain('sch-weeklist-root');
         expect(timetableRuntime).toContain('sch-day-col-label');
         expect(timetableRuntime).not.toContain("timeLabels.className = 'sch-time-labels'");
@@ -152,6 +165,11 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).toContain('fas fa-book-open');
         expect(timetableRuntime).toContain('fas fa-hourglass-half');
         expect(timetableRuntime).toContain('lms-session-summary-item--duration');
+        expect(timetableRuntime).toContain("row('Hours:', hours, 'far fa-clock')");
+        expect(timetableRuntime).toContain("row('Type:', type, 'fas fa-tag')");
+        expect(timetableRuntime).toContain("row('Duration:', duration, 'fas fa-hourglass-half')");
+        expect(timetableRuntime).not.toContain('<strong>Hours:</strong>');
+        expect(timetableRuntime).not.toContain('<strong>Duration:</strong>');
         expect(timetableRuntime).toContain('Hours:');
         expect(timetableRuntime).toContain('Educational course:');
         expect(timetableRuntime).toContain('Professor:');
@@ -189,9 +207,9 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).not.toMatch(
             /renderUnifiedWeeklyScheduleGrid[\s\S]*?showScheduleSurfaceEmpty\(container, emptyMessage/
         );
-        expect(timetableRuntime).toContain('syncTimetableFilterDefaults');
+        expect(timetableRuntime).not.toContain('syncTimetableFilterDefaults');
         expect(timetableRuntime).toContain('KIU_STATE.activeSemester');
-        expect(timetableRuntime).toContain('syncTimetableFilterDefaults()');
+        expect(timetableRuntime).toContain('getCurrentFaculty()');
         expect(timetableRuntime).toContain('lux-primary-btn');
         expect(timetableRuntime).toContain('lux-secondary-btn');
         expect(timetableRuntime).not.toContain('style="height:${slotHeight}px; cursor:default;"');
@@ -201,7 +219,7 @@ describe('timetable route regressions', () => {
         expect(timetableRuntime).not.toContain('--sch-event-line:${color}');
         expect(layoutCss).toContain('body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-time-col');
         expect(html).toContain('layout-schedule-board.css');
-        expect(html).toContain('layout-schedule-board.css?v=20260804-textsize4');
+        expect(html).toContain('layout-schedule-board.css?v=20260806-weeklist-inline1');
         expect(boardCss).toContain('.schedule-sessions-board');
         expect(boardCss).toContain('grid-template-columns: minmax(0, 1fr) auto');
         expect(boardCss).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
@@ -217,7 +235,9 @@ describe('timetable route regressions', () => {
         expect(boardCss).toContain('.lms-session-detail-row');
         expect(boardCss).toContain('.lms-session-summary-label');
         expect(boardCss).toContain('.lms-session-summary-value');
-        expect(boardCss).toContain('.lms-session-details--timetable .lms-session-summary-item');
+        expect(boardCss).toContain('.lms-session-details--timetable .lms-session-summary .lms-session-detail-row');
+        expect(boardCss).toContain('.lms-session-details--timetable .lms-session-summary .lms-session-detail-label');
+        expect(boardCss).toContain('.lms-session-details--timetable .lms-session-summary .lms-session-detail-value');
         expect(boardCss).toContain('font-weight: 800');
         expect(boardCss).toContain('.lms-session-details--timetable .lms-session-detail-label');
         expect(boardCss).toContain('.lms-session-details--timetable .lms-session-detail-value');
@@ -229,9 +249,18 @@ describe('timetable route regressions', () => {
         expect(boardCss).toContain('display: inline');
         expect(boardCss).toContain('display: flex');
         expect(boardCss).toContain('overflow-wrap: anywhere');
+        expect(boardCss).toContain('word-break: break-word');
+        expect(boardCss).toMatch(/\.lms-session-details--timetable \.lms-session-summary\s*\{[^}]*flex-direction:\s*column/);
+        expect(boardCss).toMatch(/\.lms-session-details--timetable \.lms-session-summary \.lms-session-detail-label\s*\{[^}]*display:\s*inline/);
+        expect(boardCss).toMatch(/\.lms-session-details--timetable \.lms-session-summary \.lms-session-detail-value\s*\{[^}]*display:\s*inline/);
+        expect(boardCss).not.toContain('.lms-session-details--timetable .lms-session-summary-item strong');
         expect(boardCss).toContain('.schedule-session-identity');
         expect(boardCss).toContain('flex-direction: row');
         expect(boardCss).toMatch(/\.schedule-session-identity\s*\{[^}]*flex-direction:\s*column/);
+        expect(foucCss).toContain('.lms-session-details--timetable .lms-session-summary .lms-session-detail-label');
+        expect(foucCss).toContain('.lms-session-details--timetable .lms-session-summary .lms-session-detail-value');
+        expect(foucCss).toMatch(/\.lms-session-details--timetable \.lms-session-summary\s*\{[^}]*flex-direction:\s*column/);
+        expect(foucCss).not.toContain('.lms-session-details--timetable .lms-session-summary-item strong');
         expect(layoutCss).not.toContain('.schedule-sessions-board');
         expect(existsSync(join(process.cwd(), 'assets/css/admin-scheduler-route.css'))).toBe(false);
         expect(timetableRuntime).toContain('function formatTimetableHeroFocusTitle(session)');
@@ -264,7 +293,7 @@ describe('timetable route regressions', () => {
 
         expect(html).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
         expect(html).toContain("activeTarget: 'timetable'");
-        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-timetable-mobile1');
+        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260806-hidetopbar2');
         expect(html).not.toContain('(function initMobileExperience(){');
         expect(html).not.toContain("var ht=setInterval(function(){if(typeof window.navigate==='function')");
     });
@@ -281,16 +310,16 @@ describe('timetable route regressions', () => {
         const html = readSource('timetable.html');
         expect(html).toContain('ttgrid1');
         expect(html).toContain('lux-timetable-command home-hover-chip');
-        expect(html).toContain('lux-timetable-filters home-hover-chip');
+        expect(html).not.toContain('lux-timetable-filters');
+        expect(html).not.toContain('id="tt-filter-sem"');
+        expect(html).not.toContain('id="tt-filter-fac"');
         expect(html).toContain('lux-timetable-view-switcher home-hover-chip');
         expect(html).toContain('lux-timetable-week-nav home-hover-chip');
         expect(html).toContain('lux-timetable-overview-row schedule-overview-row home-hover-chip');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).not.toContain('lux-section-kicker lux-page-kicker');
         expect(html).toContain('lux-card-copy lux-card-meta');
-        expect(html).toContain('lux-route-field-label');
-        expect(html).toMatch(/id="tt-filter-sem"[^>]*lux-control|class="[^"]*lux-control[^"]*"[^>]*id="tt-filter-sem"/);
-        expect(html).not.toMatch(/id="tt-filter-sem"[\s\S]*?<option value="1" selected>/);
+        expect(html).not.toContain('lux-route-field-label');
         expect(html).toContain('id="timetable-stage-copy" class="lux-card-copy"');
     });
 
@@ -299,8 +328,14 @@ describe('timetable route regressions', () => {
         const ttBlock = bare.split('/* ── Timetable route')[1]?.split('/* ── Staff / students hub')[0] || '';
         expect(ttBlock).toContain('body.lux-route-timetable .lux-timetable-page');
         expect(ttBlock).toContain('body.lux-route-timetable .lux-timetable-command-grid');
-        expect(ttBlock).toContain('grid-template-columns: minmax(190px, 0.75fr) minmax(0, 1.35fr) minmax(250px, 0.95fr)');
+        expect(ttBlock).toContain('grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.95fr)');
+        expect(ttBlock).not.toContain('lux-timetable-filters');
         expect(ttBlock).toContain('body.lux-route-timetable .lux-timetable-command-focus');
+        expect(ttBlock).toContain('body.lux-route-timetable .lux-timetable-command-toggle');
+        expect(ttBlock).toContain('min-height: 44px');
+        expect(ttBlock).toContain('.lux-timetable-command.is-collapsed .lux-timetable-command-collapse');
+        expect(ttBlock).toContain('.lux-timetable-command-collapse.is-collapsed');
+        expect(ttBlock).toContain('display: none');
         expect(ttBlock).not.toMatch(/backdrop-filter/);
         expect(bare).not.toContain('--tt-fade-');
     });
@@ -366,11 +401,10 @@ describe('timetable route regressions', () => {
         expect(bare).toContain('padding-left: 0 !important');
         expect(bare).toContain('padding-right: 0 !important');
         expect(bare).toContain('body.lux-route-timetable #page-timetable .sch-grid-shell .sch-weeklist-root');
-        expect(bare).toContain('margin-inline: -14px');
         expect(bare).toContain('body.lux-route-timetable #page-timetable .sch-grid-shell > #timetable-grid');
         expect(bare).toContain('body.lux-route-timetable #page-timetable .sch-grid-shell .sch-weeklist-container');
-        expect(bare).toContain('width: calc(100% + 28px)');
-        expect(bare).toContain('overflow-x: visible');
+        expect(bare).toMatch(/body\.lux-route-timetable #page-timetable \.sch-grid-shell > #timetable-grid[\s\S]*overflow-x:\s*auto/);
+        expect(bare).toMatch(/body\.lux-route-timetable #page-timetable \.sch-grid-shell > #timetable-grid[\s\S]*width:\s*100%/);
         expect(bare).toContain('margin-bottom: -14px');
         expect(bare).toContain('padding-bottom: 0');
         expect(bare).toContain('body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile .sch-weeklist-root');
@@ -424,5 +458,18 @@ describe('timetable route regressions', () => {
         expect(fouc).toContain('.lux-timetable-hero-focus .lux-hero-signal.home-hover-chip');
         expect(fouc).toContain('.lux-timetable-hero-focus .lux-focus-panel__chip.home-hover-chip');
         expect(fouc).toMatch(/body\.lux-route-timetable \.lux-timetable-page[\s\S]*overflow:\s*visible/);
+    });
+
+    it('timetable phone/tablet layout contains scroll and clears the mobile shell', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('@media (max-width: 1100px)');
+        expect(bare).toMatch(/@media \(max-width: 1100px\)[\s\S]*\.lux-timetable-command-grid[\s\S]*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1\.2fr\)/);
+        expect(bare).toMatch(/@media \(max-width: 1100px\)[\s\S]*\.lux-timetable-command-focus[\s\S]*grid-column:\s*1\s*\/\s*-1/);
+        expect(bare).toMatch(/body\.lux-route-timetable #page-timetable \.sch-grid-shell > #timetable-grid[\s\S]*overflow-x:\s*auto/);
+        expect(bare).toContain('body.lux-route-timetable #page-timetable .sch-grid-wrap');
+        expect(bare).toMatch(/body\.lux-route-timetable \.lux-timetable-page[\s\S]*safe-area-inset-bottom/);
+        expect(bare).toMatch(/@media \(max-width: 720px\)[\s\S]*\.lux-timetable-view-switcher-btn[\s\S]*min-height:\s*44px/);
+        expect(bare).toMatch(/@media \(max-width: 720px\)[\s\S]*#page-timetable \.sch-weeklist-day-head[\s\S]*min-height:\s*64px/);
+        expect(bare).toMatch(/body\.lux-route-timetable #app-content[\s\S]*overflow-x:\s*hidden/);
     });
 });

@@ -27,7 +27,7 @@ const bundleSource = buildHomeDashboardSource();
 // Plain source for fetch+install (no base64 wire tax / atob cost).
 fs.writeFileSync(plainPath, bundleSource);
 
-const PLAIN_URL = 'assets/js/features/index-home-dashboard.plain.js?v=20260723-deadcode2';
+const PLAIN_URL = 'assets/js/features/index-home-dashboard.plain.js?v=20260806-studentboard11';
 const out = `(function registerLuxuryHomeDashboardChunk() {
     if (typeof window.__kiuRegisterLuxuryHomeChunkUrl === 'function') {
         window.__kiuRegisterLuxuryHomeChunkUrl('${PLAIN_URL}');

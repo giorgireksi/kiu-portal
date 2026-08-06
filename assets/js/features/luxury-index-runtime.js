@@ -958,7 +958,10 @@ return {
             }
             renderDynamicHomeShell(homeShell);
             homeShell.dataset.homeRenderSignature = signature;
-            if (typeof window.mountNewsHomeStrip === 'function') {
+            const isStudentHome = typeof getEffectiveRole === 'function' && getEffectiveRole() === 'student';
+            if (isStudentHome) {
+                homeShell.querySelector('[data-news-home-strip="1"]')?.remove();
+            } else if (typeof window.mountNewsHomeStrip === 'function') {
                 window.mountNewsHomeStrip(homeShell);
             }
             // Paint immediately after DOM write, then once more next frame so

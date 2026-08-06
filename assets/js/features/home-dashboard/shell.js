@@ -13,7 +13,7 @@
     }
 
     function buildStaticHomeSectionsHtml(widgets, role) {
-        const fullWidth = new Set(['alert', 'hero', 'admin-ops', 'quick']);
+        const fullWidth = new Set(['alert', 'hero', 'admin-ops', 'quick', 'student-header', 'student-command', 'student-summary', 'student-extra']);
         let html = '';
         let halfBuffer = [];
         const flushHalf = () => {
@@ -60,9 +60,7 @@
         const copy = model.copy || 'Your faculty workspace at a glance.';
         const kicker = model.kicker || 'Home';
         const mergedContent = buildStaticHomeSectionsHtml(widgets, role);
-
-        homeShell.innerHTML = `
-            <div class="lux-home-page is-${escapeHtml(model.variant || role)}" data-role="${escapeHtml(model.variant || role)}">
+        const toolbar = role === 'student' ? '' : `
                 <div class="lux-home-toolbar">
                     <div>
                         <div class="lux-kicker">${escapeHtml(kicker)}</div>
@@ -70,6 +68,11 @@
                         ${copy ? `<p>${escapeHtml(copy)}</p>` : ''}
                     </div>
                 </div>
+        `;
+
+        homeShell.innerHTML = `
+            <div class="lux-home-page is-${escapeHtml(model.variant || role)}" data-role="${escapeHtml(model.variant || role)}" data-home-density="${role === 'student' ? 'compact' : 'standard'}">
+                ${toolbar}
                 <div class="lux-home-merged lux-soft-chrome" data-lux-glass-root="1">
                     ${mergedContent}
                 </div>

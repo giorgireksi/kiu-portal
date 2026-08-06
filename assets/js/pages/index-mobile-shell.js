@@ -36,6 +36,7 @@
                     '<div class="mob-sheet-handle"><span></span></div>' +
                     '<div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">' +
                         '<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>' +
+                        '<button class="mob-sheet-btn" type="button" id="mob-act-faculty"><span class="mob-sheet-icon"><i class="fas fa-building"></i></span><span>Faculty</span></button>' +
                         '<button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>' +
                         '<button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="far fa-user"></i></span><span>Personal Data</span></button>' +
                         '<button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>' +
@@ -84,6 +85,20 @@
         if (!toggle) return;
         toggle.classList.add('is-active');
         toggle.setAttribute('aria-pressed', 'true');
+    }
+
+    function syncMobileTopbarVisibility() {
+        var topbar = document.getElementById('lux-topbar');
+        if (!topbar) return;
+        if (isMobileViewport()) {
+            topbar.hidden = true;
+            topbar.setAttribute('aria-hidden', 'true');
+            topbar.style.setProperty('display', 'none', 'important');
+            return;
+        }
+        topbar.hidden = false;
+        topbar.removeAttribute('aria-hidden');
+        topbar.style.removeProperty('display');
     }
 
     function isElementShown(element) {
@@ -268,6 +283,16 @@
             });
         }
 
+        var facultyButton = document.getElementById('mob-act-faculty');
+        if (facultyButton) {
+            facultyButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                closeSheet();
+                var picker = document.getElementById('lux-faculty-picker-btn');
+                if (picker) picker.click();
+            });
+        }
+
         var themeButton = document.getElementById('mob-act-theme');
         if (themeButton) {
             themeButton.addEventListener('click', function (event) {
@@ -323,7 +348,7 @@
         }
         var link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = 'assets/css/lux-mobile-action-sheet.css?v=20260720-densify6500';
+        link.href = 'assets/css/lux-mobile-action-sheet.css?v=20260806-shortcuttop1';
         link.setAttribute('data-kiu-mobile-action-sheet', '1');
         document.head.appendChild(link);
     }
@@ -405,6 +430,7 @@
 
     function onResize() {
         var nav = document.getElementById('mobile-bottom-nav');
+        syncMobileTopbarVisibility();
         if (!nav) return;
         setElementShown(nav, isMobileViewport());
         if (!isMobileViewport()) closeSheet();
@@ -430,6 +456,7 @@
     function init() {
         ensureMobileShellScaffold();
         autoCollapse();
+        syncMobileTopbarVisibility();
         setupNav();
         setupSheet();
         onResize();

@@ -402,41 +402,7 @@ function ensureStudyCardContentShell(container) {
     container.dataset.studyCardContentShell = '1';
     container.innerHTML = `
         <div class="study-card-shell">
-            <section id="study-card-summary-region" class="study-card-shell__summary"></section>
             <section id="study-card-terms-region" class="study-card-shell__terms"></section>
-        </div>
-    `;
-}
-
-function renderStudyCardSummaryRegion(context) {
-    return `
-        <div class="lux-hero-stage study-card-summary-stage">
-            <div class="lux-hero-main study-card-summary-main lux-soft-chrome home-hover-chip">
-                <div class="lux-section-kicker study-card-summary-kicker">Academic Record Snapshot</div>
-                <div class="lux-page-title study-card-summary-title">${escapeHtml(context.latestTermLabel || 'No active term')}</div>
-                <p class="lux-card-copy study-card-summary-copy">Semester-by-semester grade signals and assessment history for the courses currently attached to your student record.</p>
-                <div class="study-card-summary-chip-row">
-                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-layer-group"></i> ${context.totalSemesters} semester${context.totalSemesters === 1 ? '' : 's'}</span>
-                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-book"></i> ${context.totalSubjects} subject${context.totalSubjects === 1 ? '' : 's'}</span>
-                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-award"></i> ${context.totalEcts} ECTS tracked</span>
-                    <span class="lux-status-pill lux-soft-chrome home-hover-chip"><i class="fas fa-chart-line"></i> ${escapeHtml(context.averageScoreLabel)}</span>
-                </div>
-            </div>
-            <aside class="lux-hero-side lux-focus-panel study-card-summary-focus lux-soft-chrome home-hover-chip" aria-label="Study card summary">
-                <div class="lux-focus-panel__head lux-hero-side-head">
-                    <div class="lux-focus-panel__kicker">Academic record</div>
-                    <span class="lux-focus-panel__chip lux-status-pill home-hover-chip">${context.totalEcts} ECTS</span>
-                </div>
-                <div class="lux-focus-panel__body">
-                    <div class="lux-focus-panel__title">${context.totalSubjects} subjects</div>
-                    <p class="lux-focus-panel__copy">Subject coverage and assessment history in the same summary language used on the home dashboard.</p>
-                </div>
-                <div class="lux-focus-panel__meta lux-hero-signal-list" aria-label="Record metrics">
-                    <span class="lux-hero-signal home-hover-chip"><span>Latest term</span> <strong>${escapeHtml(context.latestTermLabel || 'No term')}</strong></span>
-                    <span class="lux-hero-signal home-hover-chip"><span>Average</span> <strong>${escapeHtml(context.averageScoreLabel)}</strong></span>
-                    <span class="lux-hero-signal home-hover-chip"><span>Assessments</span> <strong>${context.assessmentEntryTotal}</strong></span>
-                </div>
-            </aside>
         </div>
     `;
 }
@@ -641,21 +607,8 @@ function renderStudyCard() {
         .map((value) => parseInt(value, 10))
         .filter((value) => Number.isFinite(value))
         .sort((a, b) => b - a);
-    const flattenedSubjects = sortedTerms.flatMap((termNum) => semesterBuckets[termNum] || []);
-    const scoredSubjects = flattenedSubjects.filter((subject) => Number(subject.overallScore || 0) > 0).length;
-    const totalEcts = flattenedSubjects.reduce((sum, subject) => sum + Number(subject.ects || 0), 0);
-    const assessmentEntryTotal = flattenedSubjects.reduce((sum, subject) => (
-        sum + (subject.breakdown || []).reduce((innerSum, item) => innerSum + Number(item.count || 0), 0)
-    ), 0);
-    const averageScoreLabel = scoredSubjects
-        ? String(Math.round(flattenedSubjects
-            .filter((subject) => Number(subject.overallScore || 0) > 0)
-            .reduce((sum, subject) => sum + Number(subject.overallScore || 0), 0) / scoredSubjects))
-        : 'No scores yet';
-    const latestTermLabel = sortedTerms.length ? getStudyCardSemesterLabel(sortedTerms[0]) : '';
 
     ensureStudyCardContentShell(container);
-    const summaryRegion = document.getElementById('study-card-summary-region');
     const termsRegion = document.getElementById('study-card-terms-region');
     const termsRender = renderStudyCardTermsRegion({
         semesterBuckets,
@@ -663,19 +616,6 @@ function renderStudyCard() {
     });
     window.__studyCardAssessmentCache = termsRender.assessmentWindowCache;
 
-    const summaryHtml = renderStudyCardSummaryRegion({
-        assessmentEntryTotal,
-        averageScoreLabel,
-        latestTermLabel,
-        scoredSubjects,
-        sortedTerms,
-        totalEcts,
-        totalSemesters: sortedTerms.length,
-        totalSubjects: flattenedSubjects.length
-    });
-    if (summaryRegion) {
-        summaryRegion.innerHTML = typeof localizeHtmlMarkup === 'function' ? localizeHtmlMarkup(summaryHtml) : summaryHtml;
-    }
     if (termsRegion) {
         termsRegion.innerHTML = typeof localizeHtmlMarkup === 'function' ? localizeHtmlMarkup(termsRender.html) : termsRender.html;
     }

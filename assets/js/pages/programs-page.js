@@ -70,11 +70,13 @@
                             ? renderSemesterDistributionCells(semesterList, typeof normalizeSubjectSemesters === 'function' ? normalizeSubjectSemesters(subject) : subject.semester)
                             : ''}
                     </div>
-                    <div class="lux-subject-row__stats">
-                        <span class="lux-program-requirement ${hasPrerequisite ? 'is-locked' : 'is-open'}">
-                            <i class="fas ${hasPrerequisite ? 'fa-link' : 'fa-check'}"></i>
-                            ${hasPrerequisite ? 'Requires' : 'Open'}
-                        </span>
+                    <div class="lux-subject-row__mobile-acts">
+                        <button type="button" class="lux-subject-row__info-btn lux-subject-row__info-btn--prereq ${hasPrerequisite ? 'is-locked' : 'is-open'}" data-program-info="prerequisite" aria-label="Prerequisite">
+                            <i class="fas fa-book" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="lux-subject-row__info-btn lux-subject-row__info-btn--semesters" data-program-info="semesters" aria-label="Semester distribution">
+                            <i class="fas fa-check" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </article>
             `;
@@ -166,36 +168,6 @@
         `;
     }
 
-    function syncProgramsCommandDeck(context) {
-        const setText = (id, value) => {
-            const node = document.getElementById(id);
-            if (node) node.textContent = value;
-        };
-
-        setText('programs-ops-total-ects', String(context.totalProgramEcts));
-        setText('programs-ops-visible-ects', String(context.visibleEcts));
-        setText('programs-ops-modules', String(context.modules.length));
-        setText('programs-ops-prerequisites', String(context.totalPrerequisiteSubjects));
-
-        const moduleLoadValue = context.selectedModule && context.selectedModuleLimit
-            ? `${context.selectedModuleLoad}%`
-            : (context.selectedModule ? `${context.selectedModuleEcts} ECTS` : '--');
-        setText('programs-ops-module-load', moduleLoadValue);
-
-        setText('programs-ops-total-ects-note', `${context.allProgramSubjects.length} subjects in program`);
-        setText('programs-ops-visible-ects-note', context.semesterLabel);
-        setText('programs-ops-modules-note', context.selectedModuleName);
-        setText('programs-ops-prerequisites-note', 'Across published curriculum');
-        setText('programs-ops-module-load-note', context.selectedModule && context.selectedModuleLimit
-            ? `${context.selectedModuleEcts}/${context.selectedModuleLimit} ECTS capacity`
-            : (context.selectedModule ? `${context.searchLabel}` : 'Select a module'));
-
-        const opsNote = document.getElementById('programs-ops-note');
-        if (opsNote) {
-            opsNote.textContent = `${context.programLabel} · ${context.searchQuery ? context.searchLabel : context.semesterLabel}`;
-        }
-    }
-
     function renderProgramsModuleRailRegion(context) {
         return `
             <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--module-rail">
@@ -262,7 +234,6 @@
                                     ${typeof renderSemesterDistributionHeader === 'function' ? renderSemesterDistributionHeader(semesterList) : ''}
                                 </span>
                             </div>
-                            <div class="lux-program-column-status">Status</div>
                         </div>
                         <div class="lux-program-subject-list lux-program-detail-list">
                             ${renderStudentCurriculumLibraryModuleRows(context.moduleSubjects, context.programFaculty, context.searchQuery ? 'search' : context.semesterFilter, semesterList)}
@@ -345,17 +316,136 @@
         programsUiState.detailRenderHandle = window.setTimeout(commit, 0);
     }
 
+    function closeProgramsSubjectInfoDialog() {
+        const overlay = document.getElementById('programs-subject-info-overlay');
+        if (!overlay) return;
+        overlay.hidden = true;
+        overlay.setAttribute('aria-hidden', 'true');
+        const title = overlay.querySelector('[data-program-info-title]');
+        const body = overlay.querySelector('[data-program-info-body]');
+        if (title) title.textContent = '';
+        if (body) body.innerHTML = '';
+    }
+
+    function ensureProgramsSubjectInfoDialog(root) {
+        let overlay = document.getElementById('programs-subject-info-overlay');
+        if (overlay) return overlay;
+        overlay = document.createElement('div');
+        overlay.id = 'programs-subject-info-overlay';
+        overlay.className = 'lux-program-subject-info-overlay';
+        overlay.hidden = true;
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.innerHTML = `
+            <div class="lux-program-subject-info-card lux-soft-chrome" role="dialog" aria-modal="true" aria-labelledby="programs-subject-info-title" data-lux-transparency-exempt="1" data-program-info-card="1">
+                <div class="lux-program-subject-info-head">
+                    <strong class="lux-program-subject-info-title" id="programs-subject-info-title" data-program-info-title></strong>
+                    <button type="button" class="lux-ghost-btn lux-program-subject-info-close" data-program-info-close="1" aria-label="Close">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="lux-program-subject-info-body" data-program-info-body></div>
+            </div>
+        `;
+        (root || document.getElementById('page-programs') || document.body).appendChild(overlay);
+        return overlay;
+    }
+
+    function buildProgramsPrerequisiteInfoHtml(row) {
+        const prereqEl = row.querySelector('.lux-subject-row__prerequisite-value');
+        const antiEl = row.querySelector('.lux-subject-row__prerequisite-secondary');
+        const hasPrerequisite = row.classList.contains('has-prerequisite');
+        const prereqText = String(prereqEl?.textContent || '').trim();
+        const lines = [
+            `<p class="lux-program-subject-info-copy ${hasPrerequisite ? 'is-locked' : 'is-empty'}">${escapeHtml(prereqText || (hasPrerequisite ? 'Prerequisite required' : 'No prerequisite'))}</p>`
+        ];
+        if (antiEl) {
+            lines.push(`<p class="lux-program-subject-info-copy is-secondary">${antiEl.innerHTML}</p>`);
+        }
+        return lines.join('');
+    }
+
+    function buildProgramsSemesterInfoHtml(row) {
+        const count = Math.max(1, parseInt(String(row.style.getPropertyValue('--program-semester-count') || row.querySelectorAll('.lux-program-semester-cell').length || 1), 10) || 1);
+        const semesterList = Array.from({ length: count }, (_, index) => index + 1);
+        const assigned = Array.from(row.querySelectorAll('.lux-program-semester-cell'))
+            .map((cell, index) => (cell.classList.contains('is-active') ? index + 1 : 0))
+            .filter((semester) => semester > 0);
+        const head = typeof renderSemesterDistributionHeader === 'function'
+            ? renderSemesterDistributionHeader(semesterList)
+            : semesterList.map((semester) => `<span class="lux-program-semester-head-cell">${semester}</span>`).join('');
+        const cells = typeof renderSemesterDistributionCells === 'function'
+            ? renderSemesterDistributionCells(semesterList, assigned)
+            : (row.querySelector('.lux-subject-row__semesters')?.innerHTML || '');
+        return `
+            <div class="lux-program-subject-info-semester" style="--program-semester-count:${count}">
+                <div class="lux-program-semester-head">${head}</div>
+                <div class="lux-subject-row__semesters">${cells}</div>
+            </div>
+        `;
+    }
+
+    function openProgramsSubjectInfoDialog(kind, row) {
+        const root = document.getElementById('page-programs');
+        if (!root || !row) return;
+        const overlay = ensureProgramsSubjectInfoDialog(root);
+        const title = overlay.querySelector('[data-program-info-title]');
+        const body = overlay.querySelector('[data-program-info-body]');
+        if (!title || !body) return;
+        if (kind === 'semesters') {
+            title.textContent = 'Semester distribution of credits';
+            body.innerHTML = buildProgramsSemesterInfoHtml(row);
+            overlay.dataset.programInfoKind = 'semesters';
+        } else {
+            title.textContent = 'Prerequisite';
+            body.innerHTML = buildProgramsPrerequisiteInfoHtml(row);
+            overlay.dataset.programInfoKind = 'prerequisite';
+        }
+        overlay.hidden = false;
+        overlay.setAttribute('aria-hidden', 'false');
+        overlay.querySelector('[data-program-info-close]')?.focus();
+    }
+
     function bindProgramsPageDelegates() {
         const root = document.getElementById('page-programs');
         if (!root || root.dataset.programsDelegatesBound === '1') return;
         root.dataset.programsDelegatesBound = '1';
+        ensureProgramsSubjectInfoDialog(root);
 
         root.addEventListener('click', (event) => {
             const clearSearch = event.target.closest('[data-programs-clear-search]');
             if (clearSearch) {
                 event.preventDefault();
                 setStudentEducationalProgramSearchQuery('', clearSearch.dataset.programsFaculty || getCurrentFaculty());
+                return;
             }
+
+            const infoClose = event.target.closest('[data-program-info-close]');
+            if (infoClose) {
+                event.preventDefault();
+                closeProgramsSubjectInfoDialog();
+                return;
+            }
+
+            const overlay = event.target.closest('#programs-subject-info-overlay');
+            if (overlay && !event.target.closest('[data-program-info-card]')) {
+                event.preventDefault();
+                closeProgramsSubjectInfoDialog();
+                return;
+            }
+
+            const infoBtn = event.target.closest('[data-program-info]');
+            if (infoBtn) {
+                event.preventDefault();
+                const row = infoBtn.closest('.lux-program-subject-card');
+                openProgramsSubjectInfoDialog(infoBtn.getAttribute('data-program-info'), row);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            const overlay = document.getElementById('programs-subject-info-overlay');
+            if (!overlay || overlay.hidden) return;
+            closeProgramsSubjectInfoDialog();
         });
 
         root.addEventListener('input', (event) => {
@@ -395,6 +485,22 @@
         const clearSearchButton = document.getElementById('student-program-search-clear');
 
         if (semesterFilterSelect) semesterFilterSelect.value = preservedSemesterFilter;
+        if (typeof window.enhanceUniversalPickers === 'function') {
+            window.enhanceUniversalPickers(pageSection);
+        }
+        if (typeof window.observeUniversalPickers === 'function') {
+            window.observeUniversalPickers();
+        }
+        if (
+            semesterFilterSelect?.dataset.luxPickerEnhanced === 'true'
+            && typeof window.syncUniversalPicker === 'function'
+        ) {
+            const pickerBtn = document.getElementById('student-program-semester-filter-lux-btn');
+            const pickerPanel = document.getElementById('student-program-semester-filter-lux-panel');
+            if (pickerBtn && pickerPanel) {
+                window.syncUniversalPicker(semesterFilterSelect, pickerBtn, pickerPanel);
+            }
+        }
         if (searchInput) {
             if (searchInput.value !== preservedSearchQuery) searchInput.value = preservedSearchQuery;
             searchInput.dataset.programsFaculty = programFaculty;
@@ -452,7 +558,6 @@
             totalProgramEcts,
             visibleEcts
         };
-        syncProgramsCommandDeck(renderContext);
         const moduleRailRegion = document.getElementById('programs-module-rail-region');
         const subjectPanelRegion = document.getElementById('programs-subject-panel-region');
         if (moduleRailRegion) moduleRailRegion.innerHTML = renderProgramsModuleRailRegion(renderContext);

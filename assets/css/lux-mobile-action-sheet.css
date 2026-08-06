@@ -1,4 +1,4 @@
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .mob-sheet {
     position: fixed;
     inset: 0;
@@ -46,6 +46,14 @@
   }
   body.lux-light-mode .mob-sheet-handle span { background: rgba(0, 0, 0, 0.15); }
   .mob-sheet-section { margin-bottom: 18px; }
+  .mob-sheet-section--social-top {
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  body.lux-light-mode .mob-sheet-section--social-top {
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
   .mob-sheet-label {
     font-size: 10px;
     font-weight: 800;

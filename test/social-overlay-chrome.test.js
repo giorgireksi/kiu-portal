@@ -135,6 +135,8 @@ describe('social-overlay-chrome', () => {
         const overlay = readFileSync(join(process.cwd(), 'assets/js/pages/social-overlay-chrome.js'), 'utf8');
         expect(overlay).toContain("const SOCIAL_CALL_OVERLAY_ID = 'social-neo-call-overlay'");
         expect(overlay).toMatch(/callOverlay && callOverlay\.contains\(node\)/);
+        expect(overlay).toContain("const SOCIAL_SHORTCUTS_TOP_NAV_PORTAL_ID = 'social-shortcuts-top-nav-portal'");
+        expect(overlay).toMatch(/shortcutsPortal && shortcutsPortal\.contains\(node\)/);
     });
 
     it('opens and closes dialogs with render reasons', () => {
@@ -320,7 +322,7 @@ describe('social-overlay-chrome', () => {
         expect(unlock?.[0] || '').toMatch(/centerScroller\.scrollTop = centerScrollY[\s\S]*clearSocialOverlayLockArtifacts\(\)/);
         expect(unlock?.[0] || '').not.toMatch(/clearSocialOverlayLockArtifacts\(\)[\s\S]*scrollSocialCenterTo\(centerScrollY/);
         expect(readFileSync(join(process.cwd(), 'social.html'), 'utf8'))
-            .toContain('social-overlay-chrome.js?v=20260804-graph-pages1');
+            .toContain('social-overlay-chrome.js?v=20260807-socialtopnav10');
     });
 
     it('does not call scrollSocialCenterTo on desktop overlay unlock', () => {

@@ -562,6 +562,7 @@ async function syncProtectedQuizRecordToBackend(resourceKey, quiz, options = {})
             antiCheatPolicy: typeof normalizeLmsAntiCheatPolicy === 'function'
                 ? normalizeLmsAntiCheatPolicy(quiz.antiCheatPolicy)
                 : (quiz.antiCheatPolicy || {}),
+            antiCheatPolicyOverride: quiz.antiCheatPolicyOverride === true,
             allowedStudentIds: getLmsQuizAllowedStudentIds(resourceKey, quiz),
             allowedStudents: getProtectedQuizAllowedStudentsSnapshot(resourceKey, quiz)
         });

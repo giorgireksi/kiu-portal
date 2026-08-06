@@ -159,16 +159,19 @@
         }
 
         const SOCIAL_CALL_OVERLAY_ID = 'social-neo-call-overlay';
+        const SOCIAL_SHORTCUTS_TOP_NAV_PORTAL_ID = 'social-shortcuts-top-nav-portal';
 
         function socialInteractionContains(node) {
             if (!node) return false;
             const rootHost = root();
             const portal = document.getElementById(SOCIAL_OVERLAY_PORTAL_ID);
             const callOverlay = document.getElementById(SOCIAL_CALL_OVERLAY_ID);
+            const shortcutsPortal = document.getElementById(SOCIAL_SHORTCUTS_TOP_NAV_PORTAL_ID);
             return Boolean(
                 (rootHost && rootHost.contains(node))
                 || (portal && portal.contains(node))
                 || (callOverlay && callOverlay.contains(node))
+                || (shortcutsPortal && shortcutsPortal.contains(node))
                 || node.closest?.('[data-project-task-graph-context-menu]')
             );
         }

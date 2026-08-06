@@ -302,6 +302,8 @@ const {
     getProtectedClientSession,
     getProtectedQuiz,
     getProtectedQuizMonitor,
+    getAntiCheatPolicyDefaults,
+    listAntiCheatPolicies,
     heartbeatProtectedQuiz,
     listExamPortalVisibleSessions,
     listExamSessionsForStudent,
@@ -311,6 +313,7 @@ const {
     recordProtectedQuizEvent,
     redeemProtectedQuizLaunch,
     revokeProtectedClientSessions,
+    saveAntiCheatPolicySettings,
     syncExamSession,
     syncProtectedQuiz,
     updateProtectedQuizAttemptControl
@@ -2662,6 +2665,18 @@ class PlatformStore {
 
     getProtectedQuiz(courseId, quizId) {
         return getProtectedQuiz.call(this, courseId, quizId);
+    }
+
+    getAntiCheatPolicyDefaults() {
+        return getAntiCheatPolicyDefaults.call(this);
+    }
+
+    listAntiCheatPolicies() {
+        return listAntiCheatPolicies.call(this);
+    }
+
+    saveAntiCheatPolicySettings(payload = {}) {
+        return saveAntiCheatPolicySettings.call(this, payload);
     }
 
     getProtectedClientSession(clientSessionToken, options = {}) {

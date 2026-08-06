@@ -294,8 +294,14 @@
         const closeButton = layout === 'modal' ? `
             <button type="button" class="lux-secondary-btn student-service-ticket-thread-modal-close" data-lux-skip-modern-button="true" data-student-service-cancel-ticket-thread-modal="true" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
         ` : '';
+        const mobileBackButton = layout === 'inline' ? `
+            <button type="button" class="lux-secondary-btn student-service-mobile-back" data-student-service-mobile-back="true" aria-label="Back to list">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
+            </button>
+        ` : '';
         return `
             <div class="student-service-ticket-conversation-header">
+                ${mobileBackButton}
                 <div class="lux-panel-head student-service-ticket-conversation-head">
                     <div>
                         <div class="student-service-kicker lux-section-kicker">${kicker}</div>

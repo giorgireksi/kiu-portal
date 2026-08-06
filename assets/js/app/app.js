@@ -771,7 +771,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         });
     }
 
-    const SOCIAL_RUNTIME_VERSION = '20260728-socshell14';
+    const SOCIAL_RUNTIME_VERSION = '20260807-socialtopnav10';
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
         [
             'assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1',
@@ -824,18 +824,18 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         [
             'assets/js/pages/social-dialog-router.js?v=20260726-socfix25',
             `assets/js/pages/social-overlay-chrome.js?v=${SOCIAL_RUNTIME_VERSION}`,
-            'assets/js/pages/social-shell-nav.js?v=20260726-socfix26',
+            `assets/js/pages/social-shell-nav.js?v=${SOCIAL_RUNTIME_VERSION}`,
             `assets/js/pages/social-page-events.js?v=${SOCIAL_RUNTIME_VERSION}`
         ],
         [
             'assets/js/pages/social-page-survey-runtime.js?v=20260726-socstack47',
             'assets/js/pages/social-page-feed-runtime.js?v=20260805-health-scroll2',
-            'assets/js/pages/social-page-shell-runtime.js?v=20260726-socfix25',
+            `assets/js/pages/social-page-shell-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`,
             `assets/js/pages/social-page-interactions-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`
         ],
         [
             `assets/js/pages/social-page-boot-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`,
-            'assets/js/pages/social-page.js?v=20260726-socstack57'
+            `assets/js/pages/social-page.js?v=${SOCIAL_RUNTIME_VERSION}`
         ]
     ];
     let socialRuntimeLoadPromise = null;
@@ -1595,7 +1595,7 @@ enforceSingleRuntimeEntrypoint();
 
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
-    const PORTAL_CACHE_RESET_VERSION = '20260805-switchperf3-debug';
+    const PORTAL_CACHE_RESET_VERSION = '20260807-socialtopnav10';
 
     async function clearPortalSiteCaches(force = false) {
         try {

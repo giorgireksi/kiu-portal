@@ -231,29 +231,34 @@
 }
 .lms-session-details--timetable .lms-session-summary {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
   min-width: 0;
   margin-bottom: 6px;
 }
-.lms-session-details--timetable .lms-session-summary-item {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
+.lms-session-details--timetable .lms-session-summary .lms-session-detail-row {
+  display: block;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
-  color: var(--lux-text);
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.4;
 }
-.lms-session-details--timetable .lms-session-summary-item strong {
-  color: var(--lux-text-muted);
+.lms-session-details--timetable .lms-session-summary .lms-session-detail-label {
+  display: inline;
+  margin-right: 4px;
   font-size: 12px;
   font-weight: 850;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+.lms-session-details--timetable .lms-session-summary .lms-session-detail-value {
+  display: inline;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .lms-session-details--timetable .lms-session-detail-label {
   font-size: 12px;

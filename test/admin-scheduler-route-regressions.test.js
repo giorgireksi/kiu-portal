@@ -59,6 +59,8 @@ describe('admin scheduler route regressions.test', () => {
         expect(js).toContain('aria-pressed="${key === schedulerStaffPickerState.selectedId ? \'true\' : \'false\'}"');
         expect(js).toContain('function renderSchedulerStaffPickerRoster(visibleRecords)');
         expect(js).toContain('function syncSchedulerStaffPickerSelection()');
+        expect(js).toContain("event.target?.id === 'schStaffPickerOverlay'");
+        expect(js).toContain('closeSchedulerStaffPicker();');
         expect(js).toContain('profileMarkup: new Map()');
         expect(js).toContain('profileSectionsByType: new Map()');
         expect(js).toContain('renderSchedulerStaffPicker({ roster: false })');
@@ -76,6 +78,11 @@ describe('admin scheduler route regressions.test', () => {
         expect(session).toContain('@keyframes schStaffPickerProfileReveal');
         expect(session).toContain('@media (prefers-reduced-motion: reduce)');
         expect(session).toContain('[data-scheduler-staff-picker-choose]:not(:disabled):hover');
+        expect(session).toMatch(/@media \(max-width: 1024px\)[\s\S]*?\.sch-staff-picker-overlay[\s\S]*?calc\(72px \+ env\(safe-area-inset-bottom/);
+        expect(session).toMatch(/\.sch-staff-picker-tabs[\s\S]*?flex-wrap:\s*nowrap/);
+        expect(session).toMatch(/@media \(max-width: 720px\)[\s\S]*?\.sch-staff-picker-avatar[\s\S]*?width:\s*44px/);
+        expect(session).toMatch(/@media \(max-width: 720px\)[\s\S]*?\.sch-staff-picker-foot[\s\S]*?min-height:\s*44px/);
+        expect(session).toContain('scrolled profile/avatar cannot bleed');
         const pickerCss = session.match(/\/\* ── Read-only staff assignment picker ── \*\/[\s\S]*?(?=\n@media|\n#schModalOverlay)/)?.[0] || '';
         expect(pickerCss).not.toContain('backdrop-filter');
         expect(pickerCss).not.toContain('box-shadow');
@@ -85,7 +92,7 @@ describe('admin scheduler route regressions.test', () => {
 
     it('uses sch-modal-overlay shells for scheduler modals', () => {
         const html = readSource('admin-scheduler.html');
-        expect(html).toContain('staffbuttons1');
+        expect(html).toContain('staffpickermobile1');
         expect(html).toContain('admin-scheduler-session-modal.css');
         expect(html).toMatch(/mobile-shell-core\.css[\s\S]*admin-scheduler-session-modal\.css/);
         expect(html).toContain('sch-modal-overlay');
@@ -203,8 +210,8 @@ describe('admin scheduler route regressions.test', () => {
         expect(html).toContain('sch-preset-manage-empty" class="sch-empty-state lux-summary-surface lux-summary-surface--panel home-hover-chip"');
         expect(html).not.toContain('lux-timetable-stage');
         expect(html).toContain('defer src="assets/js/pages/admin-scheduler.js');
-        expect(html).toContain('assets/css/lux-fouc-ht.css?v=20260804-heroerase1');
-        expect(html).toContain('assets/js/pages/admin-scheduler.js?v=20260804-surfacevariants1');
+        expect(html).toContain('assets/css/lux-fouc-ht.css?v=20260806-hidetopbar2');
+        expect(html).toContain('assets/js/pages/admin-scheduler.js?v=20260806-backdropclose1');
         expect(html).toContain('defer src="assets/js/features/index-luxury.js');
         expect(js).toContain("card.className = `palette-card lux-strip-card lux-soft-chrome home-hover-chip${isActive ? ' selected' : ''}`");
         expect(js).toContain("state.className = 'sch-empty-state lux-soft-chrome'");

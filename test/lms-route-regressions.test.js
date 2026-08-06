@@ -31,7 +31,8 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(html).toContain('student-schedule-refs.js');
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('lux-section-kicker lms-clean-kicker');
-        expect(html).toContain('lux-page-title');
+        expect(html).not.toContain('Learning Workspace');
+        expect(html).not.toContain('lms-hero-v2-left');
         expect(html).toContain('lux-card-title');
         expect(html).toContain('lux-card-copy');
         expect(html).toContain('lux-secondary-btn lms-clean-action-secondary');
@@ -54,7 +55,8 @@ describe('lms route regressions (retired skins purged)', () => {
         const lmsBlockWithoutWhiteboardHud = lmsBlock.split('/* Whiteboard tab (retired lms-whiteboard-catalog.css')[0]
             + (lmsBlock.split('/* Interaction messenger (retired lms-interaction.css')[1] || '');
         expect(lmsBlock).toContain('body.lux-route-lms .lms-route-stage');
-        expect(lmsBlock).toContain('.lux-lms-subject-card .lux-card-body');
+        expect(lmsBlock).toContain('.lms-subject-tile-title');
+        expect(lmsBlock).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
         expect(lmsBlockWithoutWhiteboardHud).not.toMatch(/backdrop-filter/);
         expect(bare).not.toContain('--lms-fade-');
     });
@@ -259,14 +261,15 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(shell).toContain('workspace: {');
     });
 
-    it('dynamic subject deck uses shared text primitives', () => {
+    it('dynamic subject deck uses illustration tile cards', () => {
         const js = read('assets/js/pages/lms-route-boot.js');
-        expect(js).toContain('lux-section-kicker lms-clean-card-kicker');
-        expect(js).toContain('lux-subject-row__title lms-clean-card-title lms-route-card-title');
-        expect(js).toContain('<div class="lux-card-body" data-lux-layout-only="1">');
-        expect(js).toContain('lux-lms-subject-card home-hover-chip');
-        expect(js).toContain('lux-status-pill lux-soft-chrome is-muted home-hover-chip');
-        expect(js).toContain('lmsScheduleLabel');
+        expect(js).toContain('lms-subject-tile-badge');
+        expect(js).toContain('lms-subject-tile-art');
+        expect(js).toContain('lms-subject-tile-title');
+        expect(js).not.toContain('assets/icons/ui/el-');
+        expect(js).toContain('lux-lms-subject-card home-hover-chip lux-soft-chrome');
+        expect(js).not.toContain('lux-section-kicker lms-clean-card-kicker');
+        expect(js).not.toContain('lms-clean-card-meta is-compact');
         expect(js).toContain('lux-empty-state__title lms-route-empty-title');
         expect(js).toContain('lux-empty-state__copy lms-route-empty-copy');
     });

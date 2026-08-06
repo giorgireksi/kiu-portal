@@ -227,4 +227,34 @@ describe('admin tools route regressions.test', () => {
         expect(bare).toContain('.lux-admin-curriculum-shell .curriculum-library-detail-actions');
         expect(bare).toContain('#lux-admin-tools-shell .lux-admin-curriculum-shell');
     });
+
+    it('admin-tools every-device layout stacks grids and subject rows on tablet/phone', () => {
+        const html = readSource('admin-tools.html');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260806-atoolsphone1');
+        expect(bare).toMatch(/@media \(max-width: 1100px\)[\s\S]*?#lux-admin-tools-shell \.lux-admin-curriculum-grid/);
+        expect(bare).toMatch(/@media \(max-width: 1100px\)[\s\S]*?#lux-admin-tools-shell \.admin-reg-program-layout/);
+        expect(bare).toMatch(
+            /@media \(max-width: 1100px\)[\s\S]*?#lux-admin-tools-shell \.lux-card-head\.lux-admin-tools-registration-panel-head[\s\S]*?flex-wrap:\s*wrap/
+        );
+        expect(bare).toMatch(/@media \(max-width: 720px\)[\s\S]*?#lux-admin-tools-shell \.lux-panel[\s\S]*?padding:\s*14px/);
+        expect(bare).toMatch(
+            /@media \(max-width: 720px\)[\s\S]*?#lux-admin-tools-shell \.admin-reg-program-subject-head[\s\S]*?display:\s*none/
+        );
+        expect(bare).toMatch(
+            /@media \(max-width: 720px\)[\s\S]*?#lux-admin-tools-shell \.admin-reg-program-subject-row[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/
+        );
+        expect(bare).toMatch(
+            /@media \(max-width: 720px\)[\s\S]*?#lux-admin-tools-shell \.admin-reg-track-subject-row[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/
+        );
+        expect(bare).toMatch(
+            /@media \(max-width: 720px\)[\s\S]*?#lux-admin-tools-shell \.admin-reg-program-subject-actions[\s\S]*?min-height:\s*44px/
+        );
+        expect(bare).toMatch(
+            /@media \(max-width: 720px\)[\s\S]*?#kiu-subject-builder-modal #curriculum-subject-builder-card[\s\S]*?max-height:\s*min\(92dvh/
+        );
+        expect(bare).toMatch(
+            /@media \(max-width: 720px\)[\s\S]*?#lux-admin-tools-shell \.admin-reg-program-list[\s\S]*?max-height:\s*min\(50dvh/
+        );
+    });
 });

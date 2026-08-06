@@ -126,9 +126,19 @@
         throw new Error('Social messages hooks are unavailable.');
     }
 
+    function isSocialMessagesPhoneViewport() {
+        try {
+            if (typeof window.matchMedia === 'function') {
+                return window.matchMedia('(max-width: 1024px)').matches;
+            }
+        } catch (error) {}
+        return Number(window.innerWidth || 0) <= 1024;
+    }
+
     window.renderMessagesThreadShell = function renderMessagesThreadShell(chat, options = {}) {
         const emptyCopy = text(options?.emptyCopy || '') || 'Pick a thread to open the conversation. Alerts stay one tap away from the inbox.';
         const luxChrome = text(options?.chrome || '') === 'workspace';
+        const isPhoneMessages = isSocialMessagesPhoneViewport();
         const shellClass = luxChrome
             ? 'social-neo-messages__thread-shell lux-soft-chrome home-hover-chip'
             : 'social-neo-messages__thread-shell';
@@ -290,6 +300,11 @@
                         ` : ''}
                         <div class="social-neo-thread-head__main">
                             <div class="social-neo-person">
+                                ${isPhoneMessages ? `
+                                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-btn-icon social-neo-messages__thread-back" type="button" data-action="messages-inbox-back" aria-label="Back to inbox" title="Back">
+                                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                                    </button>
+                                ` : ''}
                                 ${isGroupThread
                                     ? groupAvatar(group, 'social-neo-avatar-md')
                                     : avatar(peer, 'social-neo-avatar-md')}
@@ -338,10 +353,14 @@
         const messagesFilter = text(runtime.ui?.messagesFilter || 'all') || 'all';
         const visibleChats = messagesFilter === 'unread' ? chats.filter((entry) => unreadMessages(entry) > 0) : chats;
         const activeChatId = text(runtime.ui?.activeChatId || '');
-        const chat = visibleChats.find((entry) => text(entry.id) === activeChatId) || visibleChats[0] || null;
+        const isPhoneMessages = isSocialMessagesPhoneViewport();
+        const chat = visibleChats.find((entry) => text(entry.id) === activeChatId)
+            || (isPhoneMessages ? null : visibleChats[0])
+            || null;
         const group = groupForChat(chat);
         const isGroupThread = Boolean(chat && text(chat?.type || '') === 'group' && group);
         const railOpen = isGroupThread && runtime.ui?.groupThreadRailOpen !== false;
+        const threadOpenClass = chat ? 'is-thread-open' : 'is-thread-closed';
         const renderChatAvatar = (entry) => {
             const entryGroup = groupForChat(entry);
             if (text(entry?.type || '') === 'group' && entryGroup) return groupAvatar(entryGroup, 'social-neo-avatar-sm');
@@ -362,7 +381,7 @@
             ? `Open alerts, ${totalUnreadAlerts > 9 ? '9 plus' : totalUnreadAlerts} unread`
             : 'Open alerts';
         return `
-            <div class="social-neo-messages ${isGroupThread ? 'social-neo-messages-group' : ''} ${railOpen ? 'is-group-rail-open' : 'is-group-rail-closed'}">
+            <div class="social-neo-messages ${isGroupThread ? 'social-neo-messages-group' : ''} ${railOpen ? 'is-group-rail-open' : 'is-group-rail-closed'} ${threadOpenClass}">
                 <section class="social-neo-chat-list social-neo-messages__inbox">
                     <header class="social-neo-messages__inbox-header">
                         <div class="social-neo-messages__inbox-toolbar">
@@ -518,12 +537,16 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
     function isSocialMessagesClickAction(action) {
         const a = text(action || '');
         if (!a) return false;
-        if (a === 'directory-message' || a === 'message-start') return true;
+        if (a === 'directory-message' || a === 'message-start' || a === 'messages-inbox-back') return true;
         return a.startsWith('message-') || a.startsWith('chat-') || a.startsWith('call-') || a.startsWith('thread-');
     }
 
     function handleSocialMessagesClick(action, trigger) {
         if (!isSocialMessagesClickAction(action)) return false;
+        if (action === 'messages-inbox-back') {
+            setActiveChat('');
+            return renderSocialPageNow('messages-inbox-back');
+        }
         if (action === 'message-delete-open') {
             return openDialog('message-delete', {
                 chatId: text(trigger.getAttribute('data-chat-id')),
@@ -550,7 +573,10 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
                 const chatId = text(trigger.getAttribute('data-chat-id'));
                 await hidePortalMessengerChat(chatId);
                 const remainingChats = activeChats().filter((entry) => text(entry.id) !== chatId);
-                state().ui.activeChatId = text(remainingChats[0]?.id || '');
+                // Phone: return to list. Desktop: keep a selected pane chat when possible.
+                state().ui.activeChatId = isSocialMessagesPhoneViewport()
+                    ? ''
+                    : text(remainingChats[0]?.id || '');
                 renderSocialPageNow('chat-hide');
             });
         }

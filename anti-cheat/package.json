@@ -10,6 +10,7 @@
     "start": "node node_modules/electron/cli.js .",
     "package": "npm run build && electron-forge package",
     "make": "npm run build && electron-forge make",
+    "make:public": "bash ../tools/build-anti-cheat-desktop-public.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

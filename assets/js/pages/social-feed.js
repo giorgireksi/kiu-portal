@@ -501,10 +501,12 @@ function __kiuFeedExpose(map) {
                     <div class="social-neo-feed-hero-actions">
                         ${(window.renderSocialBrowseFacultyHeroControl || (window.KiuSocialChromeModel || {}).renderSocialBrowseFacultyHeroControl)?.(runtime) || ''}
                         <button class="lux-primary-btn social-neo-feed-hero-action-btn" type="button" data-action="feed-refresh">
-                            <i class="fas fa-arrows-rotate"></i> Refresh feed
+                            <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+                            <span class="social-neo-feed-hero-action-label">Refresh feed</span>
                         </button>
                         <button class="lux-secondary-btn social-neo-feed-hero-action-btn" type="button" data-action="panel-groups" data-groups-tab="discover">
-                            <i class="fas fa-users"></i> Find groups
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                            <span class="social-neo-feed-hero-action-label">Find groups</span>
                         </button>
                     </div>
                 </div>
@@ -578,9 +580,11 @@ function __kiuFeedExpose(map) {
         return `
             <div class="social-neo-feed-shell">
                 <section class="social-neo-card social-neo-feed-header-card lux-soft-chrome home-hover-chip">
-                    ${renderFeedHero(runtime, homeFilter, feedHeroMetrics, focusOptions, feedScopeId)}
-                    <div class="social-neo-feed-header-divider" aria-hidden="true"></div>
-                    ${composerMarkup}
+                    <div class="social-neo-feed-mobile-stack">
+                        ${composerMarkup}
+                        <div class="social-neo-feed-header-divider" aria-hidden="true"></div>
+                        ${renderFeedHero(runtime, homeFilter, feedHeroMetrics, focusOptions, feedScopeId)}
+                    </div>
                 </section>
             <section class="social-neo-stack">
                 ${visibleFeed.length

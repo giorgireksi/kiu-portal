@@ -252,6 +252,7 @@ function saveLmsQuizAccessSettings(resourceKey, quizId) {
     quiz.blueSessionMode = 'helper-session';
     quiz.attendanceGateEnabled = attendanceGateEnabled;
     quiz.antiCheatPolicy = readLmsAntiCheatPolicyFromAccessDialog(quiz);
+    quiz.antiCheatPolicyOverride = true;
     quiz.publishedAt = requestedMode === 'scheduled'
         ? (isLmsQuizVisibleToStudentsNow(quiz) ? (quiz.publishedAt || new Date().toISOString()) : null)
         : (quiz.publishedAt || new Date().toISOString());

@@ -255,6 +255,15 @@ function handleStudentServiceRootClick(event) {
         toggleStudentServiceDetailSection('internalNotes');
         return;
     }
+    const mobileBackButton = studentServiceEventEl(event, '[data-student-service-mobile-back]');
+    if (mobileBackButton) {
+        event.preventDefault();
+        const ui = ensureStudentServiceUiState();
+        ui.selectedTicketId = '';
+        ui.selectedQuestionId = '';
+        if (typeof renderStudentServicePage === 'function') renderStudentServicePage();
+        return;
+    }
     const openTicketButton = studentServiceEventEl(event, '[data-student-service-open-ticket]');
     if (openTicketButton) {
         event.preventDefault();

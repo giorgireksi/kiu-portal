@@ -6,6 +6,31 @@ accounts and test course data only; do not expose real student records.
 
 ## 1. Start the local stack
 
+For the normal test flow, double-click `start-public-demo.sh` in the repository
+root (open with Terminal / Run if your file manager asks). It starts the staging
+backend, PostgreSQL, port `8900` web proxy, and Tailscale Funnel, then opens the
+public login URL in your browser. Keep its terminal open while testers use the
+site; press `Ctrl+C` to stop the demo. The script watches
+`/health` and Tailscale Funnel every few seconds and restarts the web proxy (or
+re-publishes Funnel) if either drops.
+
+Browser console `503` responses and service-worker “Fetch failed loading” lines
+mean the Funnel/proxy/backend path was unreachable for that request — not that
+news/notifications routes are missing. Staging `/ready` returning `503
+degraded` is normal when TURN/mail/push production blockers are unset; API
+calls still work once a session exists.
+
+First public visit still downloads many CSS/JS files; after the service worker
+activates, versioned `/assets/*?v=` responses are cache-first so repeat
+navigations should feel much faster. Hard-refresh once after demo stack updates
+so the new worker installs.
+
+The equivalent command is:
+
+```bash
+npm run start:public-demo
+```
+
 Keep the staging backend, PostgreSQL, and frontend proxy running:
 
 ```bash
@@ -16,7 +41,7 @@ npm run start:staging:web
 Publish the frontend proxy with Tailscale Funnel:
 
 ```bash
-sudo tailscale funnel --bg 8877
+sudo tailscale funnel --bg 8900
 sudo tailscale funnel status
 ```
 

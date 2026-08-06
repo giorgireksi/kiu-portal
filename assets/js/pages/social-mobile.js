@@ -121,6 +121,20 @@
         return window.innerWidth <= MOBILE_BREAKPOINT;
     }
 
+    function syncMobileTopbarVisibility() {
+        const topbar = document.getElementById('lux-topbar');
+        if (!topbar) return;
+        if (isMobileViewport()) {
+            topbar.hidden = true;
+            topbar.setAttribute('aria-hidden', 'true');
+            topbar.style.setProperty('display', 'none', 'important');
+            return;
+        }
+        topbar.hidden = false;
+        topbar.removeAttribute('aria-hidden');
+        topbar.style.removeProperty('display');
+    }
+
     function getRole() {
         try {
             if (typeof getEffectiveRole === 'function') return getEffectiveRole() || 'student';
@@ -299,11 +313,27 @@
         }, 300);
     }
 
+    function ensureMobileActionSheetCss() {
+        if (typeof document === 'undefined') return;
+        if (document.querySelector('link[data-kiu-mobile-action-sheet]')) return;
+        const links = document.querySelectorAll('link[rel="stylesheet"]');
+        for (let i = 0; i < links.length; i += 1) {
+            const href = String(links[i].getAttribute('href') || '');
+            if (href.indexOf('lux-mobile-action-sheet.css') !== -1) return;
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'assets/css/lux-mobile-action-sheet.css?v=20260806-shortcuttop1';
+        link.setAttribute('data-kiu-mobile-action-sheet', '1');
+        document.head.appendChild(link);
+    }
+
     function openSheet() {
         const sheet = document.getElementById('mobile-action-sheet');
         const moreButton = document.getElementById('mob-nav-more');
         const closeButton = document.getElementById('mob-sheet-close');
         if (!sheet) return;
+        ensureMobileActionSheetCss();
         setElementShown(sheet, true);
         sheet.setAttribute('aria-hidden', 'false');
         if (moreButton) moreButton.setAttribute('aria-expanded', 'true');
@@ -364,20 +394,8 @@
         if (!container) return;
         const role = getRole();
         const groups = ROLE_NAV[role] || ROLE_NAV.student;
-        container.innerHTML = groups.map((group) => `
-            <div class="mob-sheet-section">
-                <div class="mob-sheet-label">${group.group}</div>
-                <div class="mob-sheet-nav">
-                    ${group.items.map((item) => `
-                        <button class="mob-sheet-nav-btn" type="button" data-nav-target="${item[0]}">
-                            <i class="${item[2]}"></i>
-                            <span>${item[1]}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-        `).join('') + `
-            <div class="mob-sheet-section">
+        const socialShortcutsHtml = `
+            <div class="mob-sheet-section mob-sheet-section--social-top">
                 <div class="mob-sheet-label">Social Shortcuts</div>
                 <div class="mob-sheet-nav">
                     <button class="mob-sheet-nav-btn" type="button" data-social-panel="feed">
@@ -419,6 +437,20 @@
                 </div>
             </div>
         `;
+        const roleGroupsHtml = groups.map((group) => `
+            <div class="mob-sheet-section">
+                <div class="mob-sheet-label">${group.group}</div>
+                <div class="mob-sheet-nav">
+                    ${group.items.map((item) => `
+                        <button class="mob-sheet-nav-btn" type="button" data-nav-target="${item[0]}">
+                            <i class="${item[2]}"></i>
+                            <span>${item[1]}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+        container.innerHTML = socialShortcutsHtml + roleGroupsHtml;
 
         container.querySelectorAll('.mob-sheet-nav-btn[data-nav-target]').forEach((button) => {
             button.addEventListener('click', (event) => {
@@ -523,6 +555,7 @@
     }
 
     function handleResize() {
+        syncMobileTopbarVisibility();
         const nav = document.getElementById('mobile-bottom-nav');
         if (!nav) return;
         setElementShown(nav, isMobileViewport());
@@ -578,11 +611,13 @@
 
     function handleSocialRuntimeEvent() {
         ensureNavigateHooks();
+        syncMobileTopbarVisibility();
         syncSocialChrome();
     }
 
     function boot() {
         window.__kiuSocialMobileSync = syncSocialChrome;
+        syncMobileTopbarVisibility();
         setupBottomNav();
         setupSheet();
         setSidebarCollapsedState();

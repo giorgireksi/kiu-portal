@@ -201,24 +201,6 @@ function getStudentCourseSelectedSections(studentId, courseId) {
         });
 }
 
-function formatStudentPublishedSectionSummary(groups) {
-    const counts = { lecture: 0, seminar: 0 };
-    (groups || []).forEach(group => {
-        const type = String(group?.sessionType || 'lecture').toLowerCase();
-        if (type === 'seminar') counts.seminar += 1;
-        else counts.lecture += 1;
-    });
-    const parts = [];
-    if (counts.lecture) parts.push(`Lecture: ${counts.lecture}`);
-    if (counts.seminar) parts.push(`Seminar: ${counts.seminar}`);
-    return parts.join(' / ');
-}
-
-function formatStudentSelectedSectionSummary(selectedSections) {
-    const labels = [...new Set((selectedSections || []).map(item => getStudentSectionTypeLabel(item?.sessionType || 'lecture')))];
-    return labels.join(', ');
-}
-
 function buildStudentRegistrationEnrollmentSignature(userId, faculty) {
     if (!userId) return '';
     const normalizedFaculty = normalizeFacultyCode(faculty || '', 'ECON');
@@ -476,8 +458,6 @@ function buildStudentCourseRowNode(courseRef, idx, fac, courseContext) {
     const details = getAssignedCourseCurriculumDetails(courseRef, fac);
     const selectedSections = getStudentCourseSelectedSections(courseContext.user.id, courseId);
     const publishedGroups = getStudentCoursePickerGroups(courseId);
-    const publishedSummary = formatStudentPublishedSectionSummary(publishedGroups);
-    const selectedSummary = formatStudentSelectedSectionSummary(selectedSections);
     const eligibility = evaluateStudentCourseEligibility(
         courseContext.user,
         courseMeta,
@@ -510,10 +490,7 @@ function buildStudentCourseRowNode(courseRef, idx, fac, courseContext) {
     meta.className = 'registration-course-meta';
     appendCourseMetaLine(meta, `Prerequisite: ${details.prerequisite}`);
     appendCourseMetaLine(meta, details.antiRequisite ? `Anti-requisite: ${details.antiRequisite}` : '', 'is-spaced');
-    appendCourseMetaLine(meta, details.curriculumSemester || '', 'is-spaced is-accent');
     appendCourseMetaLine(meta, details.studentAccess ? `Student access: ${details.studentAccess}` : '', 'is-spaced is-info');
-    appendCourseMetaLine(meta, publishedSummary ? `Published sections: ${publishedSummary}` : '', 'is-spaced is-accent');
-    appendCourseMetaLine(meta, selectedSummary ? `Selected sections: ${selectedSummary}` : '', 'is-spaced is-success');
     appendCourseMetaLine(meta, eligibility.reasons.length > 0 ? eligibility.reasons.join(' / ') : '', 'is-spaced is-danger is-small');
 
     const action = document.createElement('div');

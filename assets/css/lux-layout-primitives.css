@@ -367,14 +367,6 @@
   color: var(--lux-text-muted);
 }
 
-.registration-footer-bar-label,
-.registration-progress-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .registration-focus-value {
   font-family: 'DM Mono', ui-monospace, monospace;
   font-size: clamp(24px, 2.2vw, 30px);

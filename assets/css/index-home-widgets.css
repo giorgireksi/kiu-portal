@@ -19,3 +19,546 @@
   min-height: 0;
   overflow: visible;
 }
+
+/* Compact student board: centered ~1080px, 2x2 content, quiet meta. */
+#page-home #lux-home-shell .lux-home-page[data-home-density="compact"] .lux-home-merged {
+  box-shadow: var(--lux-elev-2, none);
+}
+
+#page-home #lux-home-shell .lux-student-compact-header,
+#page-home #lux-home-shell .lux-student-command,
+#page-home #lux-home-shell .lux-student-summary-strip {
+  min-height: 0;
+  padding: 12px 18px;
+  animation: lux-student-pulse-in 420ms ease both;
+}
+
+#page-home #lux-home-shell .lux-student-command {
+  animation-delay: 60ms;
+}
+
+#page-home #lux-home-shell .lux-student-summary-strip {
+  animation-delay: 120ms;
+}
+
+@keyframes lux-student-pulse-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-home #lux-home-shell .lux-student-compact-header,
+  #page-home #lux-home-shell .lux-student-command,
+  #page-home #lux-home-shell .lux-student-summary-strip {
+    animation: none !important;
+  }
+}
+
+#page-home #lux-home-shell .lux-student-compact-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px 16px;
+}
+
+#page-home #lux-home-shell .lux-student-compact-heading {
+  min-width: 0;
+}
+
+#page-home #lux-home-shell .lux-student-compact-heading h1 {
+  margin: 2px 0 2px;
+  overflow: hidden;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-home #lux-home-shell .lux-student-compact-heading p,
+#page-home #lux-home-shell .lux-student-compact-status span,
+#page-home #lux-home-shell .lux-student-summary-panel span,
+#page-home #lux-home-shell .lux-student-attention-panel span,
+#page-home #lux-home-shell .lux-student-study-panel span {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+}
+
+#page-home #lux-home-shell .lux-student-compact-heading p {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-home #lux-home-shell .lux-student-compact-meta {
+  margin-top: 4px !important;
+  color: var(--lux-text-soft, var(--lux-text-muted)) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.02em;
+}
+
+#page-home #lux-home-shell .lux-student-compact-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-left: 14px;
+  border-left: 1px solid var(--lux-panel-border-soft);
+}
+
+#page-home #lux-home-shell .lux-student-compact-status.is-warm {
+  color: var(--lux-accent-2);
+}
+
+#page-home #lux-home-shell .lux-student-compact-status.is-green {
+  color: #8cc8a0;
+}
+
+#page-home #lux-home-shell .lux-student-compact-status .lux-ghost-btn {
+  min-height: 30px;
+  padding: 5px 9px;
+  font-size: 11px;
+}
+
+#page-home #lux-home-shell .lux-student-command {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#page-home #lux-home-shell .lux-student-cell.lux-soft-chrome {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  height: 100%;
+  overflow: hidden;
+}
+
+#page-home #lux-home-shell .lux-student-command-column + .lux-student-command-column {
+  padding-left: 14px;
+  border-left: 0;
+}
+
+#page-home #lux-home-shell .lux-student-compact-overline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lux-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+#page-home #lux-home-shell .lux-student-compact-overline i {
+  width: 12px;
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  letter-spacing: normal;
+  text-align: center;
+  text-transform: none;
+}
+
+#page-home #lux-home-shell .lux-student-week-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#page-home #lux-home-shell .lux-student-week-day.lux-soft-chrome {
+  display: grid;
+  gap: 3px;
+  min-height: 58px;
+  padding: 7px 6px;
+  align-content: start;
+}
+
+#page-home #lux-home-shell .lux-student-week-day-label,
+#page-home #lux-home-shell .lux-student-week-day small {
+  color: var(--lux-text-muted);
+  font-size: 10px;
+}
+
+#page-home #lux-home-shell .lux-student-week-day strong {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+#page-home #lux-home-shell .lux-student-week-day small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-home #lux-home-shell .lux-student-week-day.has-sessions {
+  border-color: var(--lux-soft-chrome-border-accent, var(--lux-accent-2));
+}
+
+#page-home #lux-home-shell .lux-student-week-day.is-today {
+  border-color: var(--lux-accent-2);
+  box-shadow: var(--lux-soft-chrome-rim-ring, 0 0 0 1px var(--lux-accent-2)), var(--lux-soft-chrome-rim-glow, none);
+}
+
+#page-home #lux-home-shell .lux-student-week-empty,
+#page-home #lux-home-shell .lux-student-work-empty {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+  align-content: start;
+  align-items: start;
+}
+
+#page-home #lux-home-shell .lux-student-week-empty > div,
+#page-home #lux-home-shell .lux-student-work-empty > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+#page-home #lux-home-shell .lux-student-week-empty strong,
+#page-home #lux-home-shell .lux-student-work-empty strong,
+#page-home #lux-home-shell .lux-student-work-row strong,
+#page-home #lux-home-shell .lux-student-news-row strong,
+#page-home #lux-home-shell .lux-student-study-panel strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-home #lux-home-shell .lux-student-week-empty span,
+#page-home #lux-home-shell .lux-student-work-empty span,
+#page-home #lux-home-shell .lux-student-work-row span,
+#page-home #lux-home-shell .lux-student-news-row span {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+}
+
+#page-home #lux-home-shell .lux-student-week-next {
+  margin-top: 0;
+}
+
+#page-home #lux-home-shell .lux-student-compact-schedule {
+  display: grid;
+  gap: 3px;
+}
+
+#page-home #lux-home-shell .lux-student-compact-schedule-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) minmax(90px, auto);
+  align-items: baseline;
+  gap: 8px;
+  min-height: 24px;
+  padding: 2px 0;
+}
+
+#page-home #lux-home-shell .lux-student-compact-schedule-row time {
+  color: var(--lux-accent-2);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+#page-home #lux-home-shell .lux-student-compact-schedule-row strong,
+#page-home #lux-home-shell .lux-student-compact-empty strong,
+#page-home #lux-home-shell .lux-student-summary-panel strong,
+#page-home #lux-home-shell .lux-student-attention-panel strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-home #lux-home-shell .lux-student-compact-schedule-row span,
+#page-home #lux-home-shell .lux-student-compact-empty span {
+  overflow: hidden;
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-home #lux-home-shell .lux-student-compact-empty {
+  display: grid;
+  gap: 2px;
+  min-height: 0;
+  align-content: center;
+}
+
+#page-home #lux-home-shell .lux-student-compact-link.lux-ghost-btn {
+  align-self: flex-start;
+  min-height: 30px;
+  margin-top: auto;
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+#page-home #lux-home-shell .lux-student-study-panel {
+  display: grid;
+  gap: 4px;
+  min-height: 0;
+  align-content: start;
+}
+
+#page-home #lux-home-shell .lux-student-study-panel.is-quiet strong {
+  font-weight: 650;
+}
+
+#page-home #lux-home-shell .lux-student-summary-strip,
+#page-home #lux-home-shell .lux-student-extra-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#page-home #lux-home-shell .lux-student-summary-panel,
+#page-home #lux-home-shell .lux-student-attention-panel,
+#page-home #lux-home-shell .lux-student-extra-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+}
+
+#page-home #lux-home-shell .lux-student-attention-panel {
+  padding-left: 0;
+  border-left: 0;
+}
+
+#page-home #lux-home-shell .lux-student-work-list,
+#page-home #lux-home-shell .lux-student-news-list,
+#page-home #lux-home-shell .lux-student-course-list,
+#page-home #lux-home-shell .lux-student-score-list,
+#page-home #lux-home-shell .lux-student-message-list,
+#page-home #lux-home-shell .lux-student-feed-list,
+#page-home #lux-home-shell .lux-student-event-list {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+
+#page-home #lux-home-shell .lux-student-week-strip,
+#page-home #lux-home-shell .lux-student-compact-schedule,
+#page-home #lux-home-shell .lux-student-week-empty,
+#page-home #lux-home-shell .lux-student-work-empty,
+#page-home #lux-home-shell .lux-student-study-panel,
+#page-home #lux-home-shell .lux-student-life-snapshot,
+#page-home #lux-home-shell .lux-student-shortcut-row {
+  width: 100%;
+}
+
+#page-home #lux-home-shell .lux-student-work-row,
+#page-home #lux-home-shell .lux-student-news-row,
+#page-home #lux-home-shell .lux-student-course-row,
+#page-home #lux-home-shell .lux-student-score-row,
+#page-home #lux-home-shell .lux-student-message-row,
+#page-home #lux-home-shell .lux-student-feed-row,
+#page-home #lux-home-shell .lux-student-event-row {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--lux-panel-border-soft);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  align-items: start;
+}
+
+#page-home #lux-home-shell .lux-student-work-row > div,
+#page-home #lux-home-shell .lux-student-news-row > div,
+#page-home #lux-home-shell .lux-student-course-row > div,
+#page-home #lux-home-shell .lux-student-score-row > div,
+#page-home #lux-home-shell .lux-student-message-row > div,
+#page-home #lux-home-shell .lux-student-feed-row > div,
+#page-home #lux-home-shell .lux-student-event-row > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+#page-home #lux-home-shell .lux-student-week-empty > i,
+#page-home #lux-home-shell .lux-student-work-empty > i,
+#page-home #lux-home-shell .lux-student-work-row > i,
+#page-home #lux-home-shell .lux-student-news-row > i,
+#page-home #lux-home-shell .lux-student-score-row > i,
+#page-home #lux-home-shell .lux-student-feed-row > i,
+#page-home #lux-home-shell .lux-student-event-row > i,
+#page-home #lux-home-shell .lux-student-life-row > i {
+  width: 14px;
+  margin-top: 2px;
+  color: var(--lux-text-muted);
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+#page-home #lux-home-shell .lux-student-work-tone {
+  color: var(--lux-text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#page-home #lux-home-shell .lux-student-work-row.is-overdue {
+  border-color: color-mix(in srgb, var(--lux-accent-2) 50%, var(--lux-panel-border-soft));
+}
+
+#page-home #lux-home-shell .lux-student-work-row.is-overdue .lux-student-work-tone,
+#page-home #lux-home-shell .lux-student-work-row.is-overdue strong {
+  color: var(--lux-accent-2);
+}
+
+#page-home #lux-home-shell .lux-student-work-row.is-due-soon {
+  border-color: color-mix(in srgb, var(--lux-accent) 45%, var(--lux-panel-border-soft));
+}
+
+#page-home #lux-home-shell .lux-student-work-row.is-due-soon .lux-student-work-tone {
+  color: var(--lux-accent);
+}
+
+#page-home #lux-home-shell .lux-student-course-row strong,
+#page-home #lux-home-shell .lux-student-life-row strong,
+#page-home #lux-home-shell .lux-student-score-row strong,
+#page-home #lux-home-shell .lux-student-message-row strong,
+#page-home #lux-home-shell .lux-student-feed-row strong,
+#page-home #lux-home-shell .lux-student-event-row strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#page-home #lux-home-shell .lux-student-course-row span,
+#page-home #lux-home-shell .lux-student-life-row span,
+#page-home #lux-home-shell .lux-student-score-row span,
+#page-home #lux-home-shell .lux-student-message-row span,
+#page-home #lux-home-shell .lux-student-feed-row span,
+#page-home #lux-home-shell .lux-student-event-row span {
+  color: var(--lux-text-muted);
+  font-size: 11px;
+}
+
+#page-home #lux-home-shell .lux-student-life-snapshot {
+  display: grid;
+  gap: 4px;
+}
+
+#page-home #lux-home-shell .lux-student-life-row {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--lux-panel-border-soft);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+#page-home #lux-home-shell .lux-student-life-row:last-child {
+  border-bottom: 0;
+}
+
+#page-home #lux-home-shell .lux-student-shortcut-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+#page-home #lux-home-shell .lux-student-shortcut-chip.lux-ghost-btn {
+  min-height: 28px;
+  padding: 4px 9px;
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  #page-home.page-section > #lux-home-shell {
+    gap: 10px;
+  }
+
+  #page-home #lux-home-shell .lux-student-compact-header {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+
+  #page-home #lux-home-shell .lux-student-compact-status {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  #page-home #lux-home-shell .lux-student-command,
+  #page-home #lux-home-shell .lux-student-summary-strip,
+  #page-home #lux-home-shell .lux-student-extra-strip {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  #page-home #lux-home-shell .lux-student-command-column + .lux-student-command-column,
+  #page-home #lux-home-shell .lux-student-attention-panel {
+    padding-top: 0;
+    padding-left: 0;
+    border-top: 0;
+    border-left: 0;
+  }
+
+  #page-home #lux-home-shell .lux-student-week-day {
+    min-height: 64px;
+  }
+}
+
+@media (max-width: 560px) {
+  #page-home #lux-home-shell .lux-student-compact-header {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  #page-home #lux-home-shell .lux-student-compact-status {
+    justify-content: space-between;
+    padding-top: 7px;
+    padding-left: 0;
+    border-top: 1px solid var(--lux-panel-border-soft);
+    border-left: 0;
+  }
+
+  #page-home #lux-home-shell .lux-student-week-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #page-home #lux-home-shell .lux-student-compact-schedule-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  #page-home #lux-home-shell .lux-student-compact-schedule-row span {
+    grid-column: 2;
+  }
+}

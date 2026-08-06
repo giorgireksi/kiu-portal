@@ -138,8 +138,14 @@ function renderSections() {
         </button>
     `)).join('');
 
+    const sectionsCollapsed = typeof ensureNewsSidebarSectionsCollapsed === 'function'
+        ? ensureNewsSidebarSectionsCollapsed()
+        : Boolean(runtime.sidebarSectionsCollapsed);
+    const sectionsToggleLabel = sectionsCollapsed ? 'Sections' : 'Hide sections';
+    const sectionsToggleIcon = sectionsCollapsed ? 'fas fa-folder-tree' : 'fas fa-chevron-up';
+
     return `
-        <aside class="newsx-sidebar home-hover-chip" aria-label="News sections">
+        <aside class="newsx-sidebar home-hover-chip${sectionsCollapsed ? ' is-collapsed' : ''}" aria-label="News sections">
             <div class="newsx-sidebar-deco">
                 <div class="newsx-sidebar-deco-icon"><i class="fas fa-newspaper"></i></div>
                 <div class="newsx-sidebar-deco-copy">
@@ -152,9 +158,15 @@ function renderSections() {
                     </button>
                 ` : ''}
             </div>
-            <p class="newsx-subtle lux-card-copy lms-route-copy">Filter news by category.</p>
-            <div class="newsx-divider"></div>
-            <div class="newsx-section-list">${buttons}</div>
+            <button type="button" class="newsx-btn lux-secondary-btn newsx-sections-toggle" data-news-toggle-sections aria-expanded="${sectionsCollapsed ? 'false' : 'true'}" aria-controls="newsx-sections-collapse">
+                <i class="${sectionsToggleIcon}" aria-hidden="true"></i>
+                <span>${sectionsToggleLabel}</span>
+            </button>
+            <div class="newsx-sections-collapse${sectionsCollapsed ? ' is-collapsed' : ''}" id="newsx-sections-collapse">
+                <p class="newsx-subtle lux-card-copy lms-route-copy">Filter news by category.</p>
+                <div class="newsx-divider"></div>
+                <div class="newsx-section-list">${buttons}</div>
+            </div>
         </aside>
     `;
 }
@@ -256,41 +268,52 @@ function renderPostBody(post) {
 function renderNewsHeaderBar(currentUser) {
     const filters = runtime.feedFilters || {};
     const manager = canManageNews();
+    const filtersCollapsed = typeof ensureNewsHeaderFiltersCollapsed === 'function'
+        ? ensureNewsHeaderFiltersCollapsed()
+        : Boolean(runtime.headerFiltersCollapsed);
+    const filterToggleLabel = filtersCollapsed ? 'Filters' : 'Hide filters';
+    const filterToggleIcon = filtersCollapsed ? 'fas fa-sliders' : 'fas fa-chevron-up';
     return `
-        <section class="newsx-header-bar newsx-filter home-hover-chip" data-lux-picker-scroll-exempt>
+        <section class="newsx-header-bar newsx-filter home-hover-chip${filtersCollapsed ? ' is-collapsed' : ''}" data-lux-picker-scroll-exempt>
             <div class="newsx-header-top">
                 <div class="newsx-header-copy">
                     <div class="newsx-kicker"><i class="fas fa-broadcast-tower newsx-icon-leading"></i> University News</div>
                     <h1 class="newsx-title">Campus News</h1>
                 </div>
                 <div class="newsx-hero-command">
+                    <button type="button" class="newsx-btn lux-secondary-btn newsx-filter-toggle" data-news-toggle-filters aria-expanded="${filtersCollapsed ? 'false' : 'true'}" aria-controls="newsx-filter-collapse">
+                        <i class="${filterToggleIcon}" aria-hidden="true"></i>
+                        <span>${filterToggleLabel}</span>
+                    </button>
                     ${manager ? `<button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-open-publisher><i class="fas fa-plus"></i> New Announcement</button>` : ''}
                     <button type="button" class="newsx-btn lux-secondary-btn" data-news-refresh><i class="fas fa-rotate"></i> Refresh</button>
                 </div>
             </div>
-            <div class="newsx-filter-grid newsx-filter-grid--extended">
-                <input id="news-feed-search" name="news_feed_search" class="newsx-input lux-control" type="text" value="${escapeHtml(runtime.search)}" placeholder="Search by title, body, author, or section..." data-news-search-input>
-                <select class="newsx-select lux-control" data-news-feed-filter="priority">
-                    <option value="all" ${filters.priority === 'all' ? 'selected' : ''}>All priorities</option>
-                    <option value="standard" ${filters.priority === 'standard' ? 'selected' : ''}>Standard</option>
-                    <option value="important" ${filters.priority === 'important' ? 'selected' : ''}>Important</option>
-                    <option value="critical" ${filters.priority === 'critical' ? 'selected' : ''}>Critical</option>
-                </select>
-                <select class="newsx-select lux-control" data-news-feed-filter="pinned">
-                    <option value="all" ${filters.pinned === 'all' ? 'selected' : ''}>Pinned: All</option>
-                    <option value="yes" ${filters.pinned === 'yes' ? 'selected' : ''}>Pinned only</option>
-                    <option value="no" ${filters.pinned === 'no' ? 'selected' : ''}>Not pinned</option>
-                </select>
-                ${manager ? `
-                    <select class="newsx-select lux-control" data-news-feed-filter="status">
-                        <option value="all" ${filters.status === 'all' ? 'selected' : ''}>All statuses</option>
-                        <option value="published" ${filters.status === 'published' ? 'selected' : ''}>Published</option>
-                        <option value="draft" ${filters.status === 'draft' ? 'selected' : ''}>Draft</option>
-                        <option value="archived" ${filters.status === 'archived' ? 'selected' : ''}>Archived</option>
+            <div class="newsx-filter-collapse${filtersCollapsed ? ' is-collapsed' : ''}" id="newsx-filter-collapse">
+                <div class="newsx-filter-grid newsx-filter-grid--extended">
+                    <input id="news-feed-search" name="news_feed_search" class="newsx-input lux-control" type="text" value="${escapeHtml(runtime.search)}" placeholder="Search by title, body, author, or section..." data-news-search-input>
+                    <select class="newsx-select lux-control" data-news-feed-filter="priority">
+                        <option value="all" ${filters.priority === 'all' ? 'selected' : ''}>All priorities</option>
+                        <option value="standard" ${filters.priority === 'standard' ? 'selected' : ''}>Standard</option>
+                        <option value="important" ${filters.priority === 'important' ? 'selected' : ''}>Important</option>
+                        <option value="critical" ${filters.priority === 'critical' ? 'selected' : ''}>Critical</option>
                     </select>
-                ` : ''}
-                <input class="newsx-input lux-control" type="date" value="${escapeHtml(filters.dateFrom || '')}" data-news-feed-filter="dateFrom" aria-label="Date from">
-                <input class="newsx-input lux-control" type="date" value="${escapeHtml(filters.dateTo || '')}" data-news-feed-filter="dateTo" aria-label="Date to">
+                    <select class="newsx-select lux-control" data-news-feed-filter="pinned">
+                        <option value="all" ${filters.pinned === 'all' ? 'selected' : ''}>Pinned: All</option>
+                        <option value="yes" ${filters.pinned === 'yes' ? 'selected' : ''}>Pinned only</option>
+                        <option value="no" ${filters.pinned === 'no' ? 'selected' : ''}>Not pinned</option>
+                    </select>
+                    ${manager ? `
+                        <select class="newsx-select lux-control" data-news-feed-filter="status">
+                            <option value="all" ${filters.status === 'all' ? 'selected' : ''}>All statuses</option>
+                            <option value="published" ${filters.status === 'published' ? 'selected' : ''}>Published</option>
+                            <option value="draft" ${filters.status === 'draft' ? 'selected' : ''}>Draft</option>
+                            <option value="archived" ${filters.status === 'archived' ? 'selected' : ''}>Archived</option>
+                        </select>
+                    ` : ''}
+                    <input class="newsx-input lux-control" type="date" value="${escapeHtml(filters.dateFrom || '')}" data-news-feed-filter="dateFrom" aria-label="Date from">
+                    <input class="newsx-input lux-control" type="date" value="${escapeHtml(filters.dateTo || '')}" data-news-feed-filter="dateTo" aria-label="Date to">
+                </div>
             </div>
             <div class="newsx-filter-meta">${escapeHtml(String(runtime.posts.length))} matching announcements</div>
             ${runtime.error && !runtime.publisherModalOpen ? renderNewsErrorState(runtime.error) : ''}
