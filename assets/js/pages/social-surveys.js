@@ -1364,9 +1364,15 @@
                 if (scope.scopeType === 'group' && audience === 'campus') audience = 'group';
                 if (scope.scopeType === 'page' && audience === 'campus') audience = 'page';
                 const visibility = audience === 'faculty' ? 'faculty' : 'public';
-                const facultyCode = text(form.surveyFaculty?.value || state().ui?.surveyDraftFaculty || '')
-                    || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(state()) || '');
-                if (!facultyCode || facultyCode === 'all') throw new Error('Faculty is required.');
+                const facultyCode = typeof (window.KiuSocialChromeModel || {}).socialNormalizeCreateFacultyCode === 'function'
+                    ? (window.KiuSocialChromeModel.socialNormalizeCreateFacultyCode(
+                        text(form.surveyFaculty?.value || state().ui?.surveyDraftFaculty || '')
+                            || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(state()) || ''),
+                        state()
+                    ))
+                    : (text(form.surveyFaculty?.value || state().ui?.surveyDraftFaculty || '')
+                        || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(state()) || ''));
+                if (!facultyCode) throw new Error('Faculty is required.');
                 let resultsVisibility = text(form.surveyResultsVisibility?.value || (isOfficial ? 'public_after_close' : 'respondents_after_close'))
                     || (isOfficial ? 'public_after_close' : 'respondents_after_close');
                 const allowAnonymous = Boolean(form.surveyAnonymous?.checked);

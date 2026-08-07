@@ -38,7 +38,7 @@ install([
         'computeProjectTaskGraphPreviewZoom', 'renderProjectTaskGraphGroupNode', 'renderProjectTaskGraphCardNode', 'projectTaskGraphPortRole', 'resolveProjectTaskGraphWireEndpoints', 'readProjectTaskGraphPortCenter',
         'resolveProjectTaskGraphLinkPreviewHost', 'ensureProjectTaskGraphLinkPreview', 'clearProjectTaskGraphLinkPreview', 'scheduleProjectTaskGraphEdgeRefresh', 'findProjectTaskGraphLinkDropTarget', 'findProjectTaskGraphMembershipDropGroup',
         'renderProjectTaskGraphEdgeGroupsHtml', 'renderProjectTaskGraphGroupEdgesHtml', 'renderProjectTaskGraphGroupDependencyEdgesHtml', 'readProjectTaskGraphLivePositions', 'escapeProjectTaskGraphAttr', 'patchRemoveProjectTaskGraphEdge',
-        'patchProjectTaskGraphLinkCountLabel', 'renderProjectTaskGraphSvg', 'renderProjectTaskGraphCanvas', 'refreshProjectTaskGraphEdgeLines', 'projectTaskGraphWouldCycle', 'readProjectTaskGraphPan',
+        'renderProjectTaskGraphSvg', 'renderProjectTaskGraphCanvas', 'refreshProjectTaskGraphEdgeLines', 'projectTaskGraphWouldCycle', 'readProjectTaskGraphPan',
         'isProjectTaskGraphScrollPanCanvas', 'resolveProjectTaskGraphPanSlack', 'clampProjectTaskGraphPan', 'readProjectTaskGraphScrollSurface', 'readProjectTaskGraphLayoutSize', 'projectTaskGraphScrollOffsets',
         'readProjectTaskGraphPanSlackFromCanvas', 'readProjectTaskGraphPanFromScroll', 'ensureProjectTaskGraphScrollSurface', 'centerProjectTaskGraphScrollPan', 'resolveProjectTaskGraphPanBackdrop', 'clientToProjectTaskGraphCoords',
         'getProjectTaskGraphHost', 'projectTaskGraphMineOnlyActive', 'filterProjectTaskGraphVisibleTasks', 'resolveProjectTaskGraphScheduleScope', 'computeProjectTaskGraphMapSchedule', 'resolveProjectTaskGraphContext',

@@ -128,32 +128,17 @@
 
         function renderSocialShortcutsTopNav(activePanel) {
             const active = text(activePanel || '');
-            // Exact More-sheet Social Shortcuts set (labels shortened for icon+label strip).
-            const items = [
-                { id: 'feed', label: 'Feed', icon: 'fa-stream' },
-                { id: 'photography', label: 'Exposé', icon: 'fa-camera-retro' },
-                { id: 'workspace', label: 'Projects', icon: 'fa-diagram-project' },
-                { id: 'projects', label: 'Portfolio', icon: 'fa-briefcase' },
-                { id: 'lost-and-found', label: 'Lost', icon: 'fa-magnifying-glass-location' },
-                { id: 'surveys', label: 'Surveys', icon: 'fa-clipboard-list' },
-                { id: 'research', label: 'Research', icon: 'fa-book-open' },
-                { id: 'profile', label: 'Saved', icon: 'fa-bookmark', profileTab: 'saved' },
-                { id: 'alerts', label: 'Mods', icon: 'fa-shield-halved' }
-            ];
+            const panels = activeNavPanels();
             return `
-                <nav class="social-shortcuts-top-nav" aria-label="Social shortcuts">
+                <nav class="social-shortcuts-top-nav" aria-label="Social Workspace">
                     <div class="social-shortcuts-top-nav-row">
-                        ${items.map((item) => {
-                            const isActive = item.profileTab
-                                ? (active === 'profile')
-                                : active === item.id;
-                            const profileAttr = item.profileTab
-                                ? ` data-profile-tab="${escape(item.profileTab)}"`
-                                : '';
+                        ${panels.map((panel) => {
+                            const panelId = text(panel?.id || '');
+                            const isActive = active === panelId;
                             return `
-                            <button type="button" class="social-shortcuts-top-nav-btn${isActive ? ' is-active' : ''}" data-action="panel-${escape(item.id)}"${profileAttr}>
-                                <i class="fas ${escape(item.icon)}" aria-hidden="true"></i>
-                                <span>${escape(item.label)}</span>
+                            <button type="button" class="social-shortcuts-top-nav-btn${isActive ? ' is-active' : ''}" data-action="panel-${escape(panelId)}">
+                                <i class="fas ${escape(text(panel?.icon || ''))}" aria-hidden="true"></i>
+                                <span>${escape(text(panel?.label || panelId))}</span>
                             </button>`;
                         }).join('')}
                     </div>
@@ -509,7 +494,7 @@
                 const center = getSocialCenterScroller(host);
                 if (!center || !center.contains(event.target)) return;
                 const shell = host?.querySelector?.('.social-neo-shell');
-                const innerScroller = event.target.closest('.social-neo-messages__thread-scroll, .social-neo-thread-messages, .social-neo-chat-items, .social-neo-chat-list, .sn-alerts-list, .lux-scroll-rail__viewport, .social-neo-event-feature-desc-viewport');
+                const innerScroller = event.target.closest('.social-neo-messages__thread-scroll, .social-neo-thread-messages, .social-neo-chat-items, .social-neo-chat-list, .sn-alerts-list, .lux-scroll-rail__viewport, .social-neo-event-feature-desc-viewport, .social-project-scroll-list');
                 if (innerScroller && innerScroller !== center && socialInnerScrollerCanAbsorbWheel(innerScroller, event.deltaY)) return;
                 if (applySocialCenterWheel(center, shell, host, event.deltaY)) event.preventDefault();
             }, { passive: false, capture: true });

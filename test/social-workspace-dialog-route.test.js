@@ -77,6 +77,7 @@ describe('social-workspace-dialog-route', () => {
         expect(html).toContain('<stack>');
         expect(html).toContain('<graph-fullscreen/>');
         expect(html).toContain('<child-history/>');
+        expect(html).toContain('lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child');
     });
 
     it('wraps history on graph when previousDialog still has legacy health chain', () => {
@@ -95,6 +96,18 @@ describe('social-workspace-dialog-route', () => {
         const html = routeApi.renderWorkspaceOwnedDialog(runtime, { type: 'project-task-graph-history', projectId: 'p1' });
         expect(html).toContain('<stack>');
         expect(html).toContain('<graph-fullscreen/>');
+        expect(html).toContain('<child-history/>');
+        expect(html).toContain('lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child');
+    });
+
+    it('keeps the shared backdrop around live history child refreshes', () => {
+        const { api: routeApi, runtime } = loadRoute({
+            activeDialog: () => ({ type: 'project-task-graph-history', projectId: 'p1' }),
+            getProjectTaskGraphStackAnchorDialog: () => ({ type: 'project-task-graph', projectId: 'p1' }),
+            renderProjectTaskGraphHistoryDialog: () => '<child-history/>'
+        });
+        const html = routeApi.renderStackedProjectTaskChild(runtime, 'project-task-graph-history');
+        expect(html).toContain('lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child');
         expect(html).toContain('<child-history/>');
     });
 

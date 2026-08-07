@@ -44,14 +44,14 @@ describe('social-portfolio-editor-regressions.test (bare-shell era)', () => {
         expect(runtime).toContain('isPortfolioDocument: true');
         expect(runtime).toMatch(/if \(force\)\s*myPortfolioApiDenied\s*=\s*false/);
         const html = readSource('social.html');
-        expect(html).toContain('social-page.js?v=20260807-socialtopnav10');
+        expect(html).toContain('social-page.js?v=20260808-smoothfps1');
         expect(html).toContain('social-fingerprint-model.js?v=20260804-pagination1');
         expect(html).toContain('social-render-plan.js?v=20260802-dialogscroll1');
         expect(html).toContain('social-page-feed-runtime.js?v=20260805-health-scroll2');
         expect(page).toContain('social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer3');
         expect(page).toContain('social-workspace-portfolio-runtime.js?v=20260802-portfolio-viewer1');
-        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260802-pincss1');
-        expect(page).toContain('social-workspace-events.js?v=20260805-health-scroll2');
+        expect(page).toContain('social-workspace-portfolio-ui.js?v=20260807-socialtopnav34');
+        expect(page).toContain('social-workspace-events.js?v=20260807-socialtopnav34');
         const fingerprint = readSource('assets/js/pages/social-fingerprint-model.js');
         expect(fingerprint).toMatch(/buildPortfolioFingerprint[\s\S]*extras\.length/);
         const renderPlan = readSource('assets/js/pages/social-render-plan.js');

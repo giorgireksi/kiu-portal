@@ -905,7 +905,11 @@
             addPortalSocialToast?.({ title: 'Title required', text: 'Add a publication title.', icon: 'fa-circle-exclamation' });
             return true;
         }
-        if (!draft.facultyCode || draft.facultyCode === 'all') {
+        const chrome = window.KiuSocialChromeModel || {};
+        draft.facultyCode = typeof chrome.socialNormalizeCreateFacultyCode === 'function'
+            ? chrome.socialNormalizeCreateFacultyCode(draft.facultyCode || chrome.socialDefaultCreateFaculty?.(runtime), runtime)
+            : draft.facultyCode;
+        if (!draft.facultyCode) {
             addPortalSocialToast?.({ title: 'Faculty required', text: 'Choose a faculty for this deposit.', icon: 'fa-circle-exclamation' });
             return true;
         }

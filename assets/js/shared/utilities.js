@@ -1167,9 +1167,14 @@ function setInterfaceMode(mode) {
         applyPalette(currentPalette);
     }
 
-    // Re-apply transparency so inline backgrounds recalculate for the new mode
+    // Re-apply transparency when the optional engine is ready. Its script may
+    // load after this shared utility on legacy/deferred entry points.
     const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '13';
-    refreshLuxuryTransparencySurfaces(parseInt(saved, 10));
+    if (typeof window.refreshLuxuryTransparencySurfaces === 'function') {
+        window.refreshLuxuryTransparencySurfaces(parseInt(saved, 10));
+    } else if (typeof window.scheduleLuxuryTransparencyBootRefresh === 'function') {
+        window.scheduleLuxuryTransparencyBootRefresh(parseInt(saved, 10));
+    }
     return nextMode;
 }
 

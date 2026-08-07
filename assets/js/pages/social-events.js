@@ -978,8 +978,11 @@
                     facultyCode: text(form.eventFaculty?.value || runtime.ui?.eventFaculty || '')
                         || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '')
                 };
+                payload.facultyCode = typeof (window.KiuSocialChromeModel || {}).socialNormalizeCreateFacultyCode === 'function'
+                    ? (window.KiuSocialChromeModel.socialNormalizeCreateFacultyCode(payload.facultyCode, runtime))
+                    : payload.facultyCode;
                 if (!payload.title || !payload.startsAt) throw new Error('Event title and start time are required.');
-                if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
+                if (!payload.facultyCode) throw new Error('Faculty is required.');
                 const selectedEditorIds = Array.isArray(runtime.ui?.eventEditorSelectedIds)
                     ? runtime.ui.eventEditorSelectedIds.map((item) => text(item)).filter(Boolean)
                     : [];

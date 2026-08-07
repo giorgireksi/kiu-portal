@@ -19,6 +19,8 @@ describe('portal support route split', () => {
         expect(routeModule).toContain("app.get('/api/me'");
         expect(routeModule).toContain("app.get('/api/events'");
         expect(routeModule).toContain("app.get('/api/accounts'");
+        expect(routeModule).toContain("app.get('/api/accounts/directory'");
+        expect(routeModule).toContain('DIRECTORY_ACCOUNT_FIELDS');
         expect(routeModule).toContain("app.post('/api/accounts/upsert'");
         expect(routeModule).toContain("app.get('/api/notifications'");
         expect(routeModule).toContain("app.post('/api/notifications/read'");

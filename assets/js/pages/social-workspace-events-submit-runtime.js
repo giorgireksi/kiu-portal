@@ -61,6 +61,7 @@
             isSocialWorkspaceInputTarget,
             isSocialWorkspaceSubmitForm,
             loadProjectTaskGraphView,
+            markProjectTaskGraphMeaningfulDirty,
             markProjectTaskGraphPreviewStale,
             normalizePortfolioEntry,
             normalizeProjectPlanHorizon,
@@ -79,7 +80,6 @@
             parseProjectTaskPriorityPayload,
             patchProjectHealthPlanCard,
             patchProjectHealthPlanPick,
-            patchProjectTaskGraphLinkCountLabel,
             patchProjectWorkspaceTab,
             patchRemoveProjectTaskGraphEdge,
             persistProjectTaskGraphView,
@@ -142,6 +142,15 @@
             writeDeskSavedViews
         } = deps;
 
+        function resolveProjectFacultyCodes(runtime) {
+            const chrome = window.KiuSocialChromeModel || {};
+            const raw = Array.isArray(runtime?.ui?.projectFacultyCodes) ? runtime.ui.projectFacultyCodes : [];
+            if (typeof chrome.socialResolveProjectFacultyCodes === 'function') {
+                return chrome.socialResolveProjectFacultyCodes(raw, runtime);
+            }
+            return raw.length ? raw : [currentFacultyCode()];
+        }
+
         function handleSocialWorkspaceSubmit(formType, form, runtime, event) {
             if (!isSocialWorkspaceSubmitForm(formType)) return false;
             if (formType === 'create-portfolio') {
@@ -152,13 +161,7 @@
                     return;
                 }
                 return withBusy(async () => {
-                    const facultyCodes = Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length
-                        ? runtime.ui.projectFacultyCodes
-                        : [];
-                    if (!facultyCodes.length) {
-                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Select at least one faculty before publishing.', 'danger');
-                        return;
-                    }
+                    const facultyCodes = resolveProjectFacultyCodes(runtime);
                     await createPortalSocialProject({
                         title: text(form.projectName?.value || runtime.ui?.projectName),
                         name: text(form.projectName?.value || runtime.ui?.projectName),
@@ -189,6 +192,7 @@
             if (formType === 'portfolio-settings') {
                 return withBusy(async () => {
                     const projectId = text(form.getAttribute('data-project-id'));
+                    const facultyCodes = resolveProjectFacultyCodes(runtime);
                     await updatePortalSocialProject(projectId, {
                         title: text(form.projectName?.value || runtime.ui?.projectName),
                         name: text(form.projectName?.value || runtime.ui?.projectName),
@@ -198,8 +202,8 @@
                         visibility: text(form.projectVisibility?.value || runtime.ui?.projectVisibility || 'all_logged_in') === 'all_logged_in' ? 'public' : 'private',
                         visibilityMode: text(form.projectVisibility?.value || runtime.ui?.projectVisibility || 'all_logged_in') || 'all_logged_in',
                         courseTag: text(form.projectCourseTag?.value || runtime.ui?.projectCourseTag || ''),
-                        facultyCodes: Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length ? runtime.ui.projectFacultyCodes : [currentFacultyCode()],
-                        facultyTags: Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length ? runtime.ui.projectFacultyCodes : [currentFacultyCode()],
+                        facultyCodes,
+                        facultyTags: facultyCodes,
                         skillTags: text(form.projectSkillTags?.value || runtime.ui?.projectSkillTags || '').split(',').map((item) => text(item)).filter(Boolean),
                         hashtags: text(form.projectHashtags?.value || runtime.ui?.projectHashtags || '').split(',').map((item) => text(item).replace(/^#/, '')).filter(Boolean),
                         externalLinks: parsePortfolioLinksInput(form.projectExternalLinks?.value || runtime.ui?.projectExternalLinks || ''),
@@ -224,13 +228,7 @@
                     return;
                 }
                 return withBusy(async () => {
-                    const facultyCodes = Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length
-                        ? runtime.ui.projectFacultyCodes
-                        : [];
-                    if (!facultyCodes.length) {
-                        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Select at least one faculty before creating the workspace.', 'danger');
-                        return;
-                    }
+                    const facultyCodes = resolveProjectFacultyCodes(runtime);
                     const skillTags = text(form.projectSkillTags?.value || runtime.ui?.projectSkillTags || '')
                         .split(',')
                         .map((item) => text(item))
@@ -271,7 +269,6 @@
                     runtime.ui.projectCourseTag = '';
                     runtime.ui.projectSkillTags = '';
                     runtime.ui.projectAdvisorUserId = '';
-                    runtime.ui.projectFacultyCodes = [];
                     runtime.ui.projectInviteSearch = '';
                     runtime.ui.projectInviteFaculty = 'all';
                     runtime.ui.projectInviteSelectedIds = [];
@@ -287,6 +284,7 @@
             if (formType === 'project-settings') {
                 return withBusy(async () => {
                     const projectId = text(form.getAttribute('data-project-id'));
+                    const facultyCodes = resolveProjectFacultyCodes(runtime);
                     await updatePortalSocialProject(projectId, {
                         title: text(form.projectName?.value || runtime.ui?.projectName),
                         name: text(form.projectName?.value || runtime.ui?.projectName),
@@ -296,8 +294,8 @@
                         visibility: text(form.projectVisibility?.value || runtime.ui?.projectVisibility || 'all_logged_in') === 'all_logged_in' ? 'public' : 'private',
                         visibilityMode: text(form.projectVisibility?.value || runtime.ui?.projectVisibility || 'all_logged_in') || 'all_logged_in',
                         courseTag: text(form.projectCourseTag?.value || runtime.ui?.projectCourseTag || ''),
-                        facultyCodes: Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length ? runtime.ui.projectFacultyCodes : [currentFacultyCode()],
-                        facultyTags: Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length ? runtime.ui.projectFacultyCodes : [currentFacultyCode()],
+                        facultyCodes,
+                        facultyTags: facultyCodes,
                         skillTags: text(form.projectSkillTags?.value || runtime.ui?.projectSkillTags || '').split(',').map((item) => text(item)).filter(Boolean),
                         hashtags: text(form.projectHashtags?.value || runtime.ui?.projectHashtags || '').split(',').map((item) => text(item).replace(/^#/, '')).filter(Boolean),
                         externalLinks: parsePortfolioLinksInput(form.projectExternalLinks?.value || runtime.ui?.projectExternalLinks || ''),
@@ -352,6 +350,7 @@
                         priority: 'medium',
                         dependsOnTaskIds
                     }, { silent: true });
+                    markProjectTaskGraphMeaningfulDirty(runtime, projectId);
                     const taskId = text(created?.id || '');
                     if (taskId) {
                         const positions = { ...getProjectTaskGraphPositions(runtime, projectId) };
@@ -397,6 +396,9 @@
                         dependsOnTaskIds: createDepends
                     }, { silent: true });
                     const createdTaskId = text(createdTask?.id || '');
+                    if (runtime.ui.previousDialog?.type === 'project-task-graph') {
+                        markProjectTaskGraphMeaningfulDirty(runtime, createProjectId);
+                    }
                     // Prefer package from form select; fall back to package Add prefill.
                     const createGroupId = text(form.projectTaskPackageId?.value || runtime.ui?.projectTaskCreateGroupId || '');
                     if (createdTaskId) {
@@ -510,6 +512,9 @@
                         { silent: true }
                     );
                     const editDeps = parseDependsOnFromForm(form);
+                    if (runtime.ui.previousDialog?.type === 'project-task-graph') {
+                        markProjectTaskGraphMeaningfulDirty(runtime, editProjectId);
+                    }
                     /* editTaskId already set */
                     if (editTaskId && editDeps.length) {
                         ensureProjectTaskGraphPositionForTask(runtime, editProjectId, editTaskId, {
@@ -628,6 +633,9 @@
                     if (!projectId || !taskId) return;
                     const stackedGraph = runtime.ui.previousDialog?.type === 'project-task-graph';
                     await deletePortalSocialProjectTask(projectId, taskId);
+                    if (stackedGraph) {
+                        markProjectTaskGraphMeaningfulDirty(runtime, projectId);
+                    }
                     scrubDeletedTaskFromProjectTaskGraphGroups(runtime, projectId, taskId);
                     runtime.ui.projectTaskChecklist = [];
                     runtime.ui.projectTaskDependsOnIds = [];

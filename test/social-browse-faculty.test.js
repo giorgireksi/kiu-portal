@@ -25,6 +25,10 @@ describe('social global browse faculty', () => {
         expect(chrome).toContain('function renderSocialBrowseFacultyHeroControl');
         expect(chrome).toContain('social-neo-hero-faculty');
         expect(chrome).toContain('function socialDefaultCreateFaculty');
+        expect(chrome).toContain('function socialCreateFacultyIsAll');
+        expect(chrome).toContain('function socialNormalizeCreateFacultyCode');
+        expect(chrome).toContain('function socialResolveProjectFacultyCodes');
+        expect(chrome).toContain('function socialEntityIsAllFaculties');
         expect(shell).toContain('SOCIAL_COMMAND_SKIPPED_PANELS');
         expect(shell).toContain("'messages'");
         expect(shell).toContain("'alerts'");
@@ -74,7 +78,8 @@ describe('social global browse faculty', () => {
         expect(readSource('assets/js/pages/social-research.js')).not.toContain('data-bind="research-faculty"');
     });
 
-    it('requires faculty on create dialogs and persists lost-found facultyCode', () => {
+    it('allows all faculties on create dialogs and resolves workspace faculty codes', () => {
+        const chrome = readSource('assets/js/pages/social-chrome-model.js');
         const creates = [
             'assets/js/pages/social-groups.js',
             'assets/js/pages/social-pages.js',
@@ -85,7 +90,9 @@ describe('social global browse faculty', () => {
             'assets/js/pages/social-surveys.js',
             'assets/js/pages/social-workspace-events-submit-runtime.js'
         ].map(readSource).join('\n');
+        const submitRuntime = readSource('assets/js/pages/social-workspace-events-submit-runtime.js');
 
+        expect(chrome).toContain("if (browse === SOCIAL_BROWSE_FACULTY_ALL) return SOCIAL_BROWSE_FACULTY_ALL");
         expect(creates).toContain("name: 'groupFaculty'");
         expect(creates).toContain("name: 'pageFaculty'");
         expect(creates).toContain("name: 'eventFaculty'");
@@ -93,12 +100,17 @@ describe('social global browse faculty', () => {
         expect(creates).toContain("name: 'photographyFaculty'");
         expect(creates).toContain("name: 'researchFaculty'");
         expect(creates).toContain("name: 'surveyFaculty'");
-        expect(creates).toContain('Faculty is required');
-        expect(creates).toContain('Select at least one faculty');
+        expect(creates).toContain('socialNormalizeCreateFacultyCode');
+        expect(creates).not.toMatch(/facultyCode === 'all'\) throw new Error\('Faculty is required\.'\)/);
+        expect(submitRuntime).toContain('function resolveProjectFacultyCodes(runtime)');
+        expect(submitRuntime).toContain('socialResolveProjectFacultyCodes');
+        expect(submitRuntime).not.toContain('Select at least one faculty before creating the workspace');
 
         const formModel = readSource('assets/js/pages/social-form-model.js');
         const stateService = readSource('backend/platform/domains/social-state-service.js');
+        const contentService = readSource('backend/platform/domains/social-content-service.js');
         expect(formModel).toContain('facultyCode: text(item?.facultyCode || item?.faculty || \'\')');
         expect(stateService).toContain("facultyCode: socialText(item?.facultyCode || item?.faculty || '')");
+        expect(contentService).toContain('function isSocialAllFacultyCode(value)');
     });
 });

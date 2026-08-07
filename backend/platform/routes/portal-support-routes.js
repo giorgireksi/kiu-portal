@@ -1,3 +1,29 @@
+const DIRECTORY_ACCOUNT_FIELDS = [
+    'id',
+    'email',
+    'name',
+    'nameEn',
+    'displayName',
+    'role',
+    'faculty',
+    'facultyCode',
+    'avatar',
+    'photo',
+    'interests',
+    'online',
+    'lastSeenAt',
+    'presenceLabel'
+];
+
+function toDirectoryAccount(account) {
+    return DIRECTORY_ACCOUNT_FIELDS.reduce((result, field) => {
+        if (account && Object.prototype.hasOwnProperty.call(account, field)) {
+            result[field] = account[field];
+        }
+        return result;
+    }, {});
+}
+
 function registerPortalSupportRoutes(app, deps = {}) {
     const {
         addRouteAuditEvent,
@@ -172,6 +198,30 @@ function registerPortalSupportRoutes(app, deps = {}) {
         }
         const ownAccount = store.getAccountById(actorUserId);
         response.json({ ok: true, account: ownAccount, accounts: ownAccount ? [ownAccount] : [], total: ownAccount ? 1 : 0 });
+    });
+
+    app.get('/api/accounts/directory', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const facultyCode = String(
+            sessionAccount.account?.facultyCode
+                || sessionAccount.account?.faculty
+                || sessionAccount.session?.faculty
+                || ''
+        ).trim();
+        const hasIds = String(request.query?.ids || '').trim().length > 0;
+        const query = {
+            ...request.query,
+            ...(facultyCode || hasIds ? {} : { facultyCode: '__no_faculty_scope__' }),
+            ...(facultyCode ? { facultyCode } : {})
+        };
+        const listing = store.listAccounts(query);
+        response.json({
+            ok: true,
+            ...listing,
+            items: listing.items.map(toDirectoryAccount)
+        });
     });
 
     app.post('/api/accounts/upsert', (request, response) => {

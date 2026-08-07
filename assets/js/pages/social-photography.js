@@ -275,12 +275,13 @@
         const raw = text(draft.facultyCode || form?.photographyFaculty?.value || '')
             || (typeof chrome.socialDefaultCreateFaculty === 'function' ? chrome.socialDefaultCreateFaculty(runtime) : '')
             || (typeof currentFacultyCode === 'function' ? currentFacultyCode() : '');
+        if (typeof chrome.socialNormalizeCreateFacultyCode === 'function') {
+            return chrome.socialNormalizeCreateFacultyCode(raw, runtime);
+        }
         const normalized = typeof chrome.normalizeSocialFacultyCode === 'function'
             ? chrome.normalizeSocialFacultyCode(raw, '')
             : text(raw).toUpperCase();
-        if (normalized && normalized !== 'all') return normalized;
-        const codes = typeof chrome.socialBrowseFacultyCodes === 'function' ? chrome.socialBrowseFacultyCodes() : [];
-        return text(codes[0] || '') || 'ECON';
+        return normalized || 'all';
     }
 
     function isFollowingProfile(userId) {

@@ -1,7 +1,31 @@
 <resources>
     <string name="app_name">KIU Anti-Cheat Browser</string>
+    <string name="app_name_short">KIU SECURE</string>
+    <string name="app_subtitle">Secure learning browser</string>
+    <string name="app_description">Sign in once, then open your LMS or protected assessment.</string>
     <string name="login_heading">Sign in</string>
+    <string name="login_description">Use your university account to continue securely.</string>
     <string name="launcher_heading">Launcher</string>
     <string name="staff_heading">Staff diagnostics</string>
     <string name="blocked_heading">Protected session blocked</string>
+    <string name="email_hint">University email</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="open_lms">Open LMS</string>
+    <string name="open_exam_portal">Open exam portal</string>
+    <string name="system_check">Run system check</string>
+    <string name="clear_cache">Clear cache</string>
+    <string name="refresh_session">Refresh session</string>
+    <string name="sign_out">Sign out</string>
+    <string name="staff_show_diagnostics">Show staff diagnostics</string>
+    <string name="staff_hide_diagnostics">Hide staff diagnostics</string>
+    <string name="staff_toggle_content_description">Toggle staff diagnostics</string>
+    <string name="staff_url_hint">Open an approved URL</string>
+    <string name="staff_open_url">Open URL</string>
+    <string name="web_loading_title">Opening secure content</string>
+    <string name="web_loading_message">Please wait while the learning session loads.</string>
+    <string name="web_error_title">Could not open secure content</string>
+    <string name="web_error_message">Check your connection and try again.</string>
+    <string name="web_http_error_message">The server returned HTTP %1$d. Check your connection and try again.</string>
+    <string name="retry">Try again</string>
 </resources>

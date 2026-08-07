@@ -99,9 +99,9 @@ describe('social-research-regressions', () => {
         expect(centerOnlyBlock).not.toContain("'research-create-open'");
         const html = readSource('social.html');
         expect(html).toContain('social-render-plan.js?v=20260802-dialogscroll1');
-        expect(html).toContain('social-page.js?v=20260807-socialtopnav10');
+        expect(html).toContain('social-page.js?v=20260808-smoothfps1');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(page).toContain('social-research.js?v=20260802-pincss1');
+        expect(page).toContain('social-research.js?v=20260807-socialtopnav34');
         expect(page).toContain('social-research-pdf-runtime.js?v=20260801-researchviewer12');
         expect(research).toMatch(/resolvePortalCreateResearchApi[\s\S]*?Upload unavailable/);
         expect(research).toMatch(/if \(!created\)[\s\S]*?Deposit failed/);

@@ -133,7 +133,14 @@
                 .sort((left, right) => Number(right?.activityCount || 0) - Number(left?.activityCount || 0))
                 .slice(0, 6);
             const projectRolePill = (role) => `<span class="social-neo-pill home-hover-chip">${escape(roleLabels[text(role).toLowerCase()] || roleLabel(role || 'member'))}</span>`;
-            const facultyPills = (codes = []) => (Array.isArray(codes) ? codes : []).map((code) => `<span class="social-neo-pill home-hover-chip">${escape(code)}</span>`).join('');
+            const facultyPills = (codes = []) => {
+                const chrome = window.KiuSocialChromeModel || {};
+                const list = Array.isArray(codes) ? codes : [];
+                if (list.some((code) => typeof chrome.socialCreateFacultyIsAll === 'function' && chrome.socialCreateFacultyIsAll(code))) {
+                    return `<span class="social-neo-pill home-hover-chip">${escape(chrome.socialBrowseFacultyAllLabel?.() || 'All faculties')}</span>`;
+                }
+                return list.map((code) => `<span class="social-neo-pill home-hover-chip">${escape(code)}</span>`).join('');
+            };
             const skillPills = (skills = []) => (Array.isArray(skills) ? skills : []).map((skill) => `<span class="social-neo-pill home-hover-chip">${escape(skill)}</span>`).join('');
             const scrollList = (modifier, content) => `<div class="social-project-scroll-list${modifier ? ` ${modifier}` : ''}">${content}</div>`;
             const projectToneFromAccent = (accent = '') => {

@@ -68,7 +68,8 @@ function loadOverlayChrome(extraDeps = {}) {
             'project-task-detail',
             'project-health',
             'project-risk',
-            'project-task-graph-history'
+            'project-task-graph-history',
+            'project-task-graph-schedule-help'
         ]),
         PROJECT_HEALTH_OVERLAY_DIALOGS: new Set(['project-task-detail', 'project-risk', 'project-health-plan-pick']),
         getProjectTaskGraphStackAnchorDialog: () => (
@@ -157,6 +158,28 @@ describe('social-overlay-chrome', () => {
         expect(runtime.ui.socialDialog.type).toBe('project-task-graph');
         expect(sandbox.document.body.dataset.socialOverlayLocked).toBeUndefined();
         expect(sandbox.document.body.classList.contains('social-overlay-open')).toBe(false);
+    });
+
+    it('anchors history and schedule help above the full task map when opened directly', () => {
+        for (const type of ['project-task-graph-history', 'project-task-graph-schedule-help']) {
+            runtime.ui.socialDialog = null;
+            runtime.ui.previousDialog = null;
+            runtime.ui.projectTaskGraphStackAnchor = null;
+            renders.length = 0;
+
+            api.openDialog(type, { projectId: 'p1' });
+
+            expect(runtime.ui.projectTaskGraphStackAnchor).toEqual({
+                type: 'project-task-graph',
+                projectId: 'p1'
+            });
+            expect(runtime.ui.previousDialog).toEqual({
+                type: 'project-task-graph',
+                projectId: 'p1'
+            });
+            expect(renders).toContain('dialog-only');
+            api.closeDialog();
+        }
     });
 
     it('uses dialog-only render for post-comments open and close', () => {
@@ -322,7 +345,7 @@ describe('social-overlay-chrome', () => {
         expect(unlock?.[0] || '').toMatch(/centerScroller\.scrollTop = centerScrollY[\s\S]*clearSocialOverlayLockArtifacts\(\)/);
         expect(unlock?.[0] || '').not.toMatch(/clearSocialOverlayLockArtifacts\(\)[\s\S]*scrollSocialCenterTo\(centerScrollY/);
         expect(readFileSync(join(process.cwd(), 'social.html'), 'utf8'))
-            .toContain('social-overlay-chrome.js?v=20260807-socialtopnav10');
+            .toContain('social-overlay-chrome.js?v=20260807-graphanchor2');
     });
 
     it('does not call scrollSocialCenterTo on desktop overlay unlock', () => {

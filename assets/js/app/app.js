@@ -771,13 +771,13 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         });
     }
 
-    const SOCIAL_RUNTIME_VERSION = '20260807-socialtopnav10';
+    const SOCIAL_RUNTIME_VERSION = '20260808-smoothfps1';
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
         [
             'assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1',
-            'assets/js/shared/social-lite-content-runtime.js?v=20260726-socfix38',
+            'assets/js/shared/social-lite-content-runtime.js?v=20260807-activityquiet1',
             'assets/js/shared/social-lite-invite-runtime.js?v=20260720-w18',
-            'assets/js/shared/social-runtime-lite.js?v=flashoff1'
+            'assets/js/shared/social-runtime-lite.js?v=20260808-mobileroute1'
         ],
         [
             'assets/js/pages/social-mobile.js?v=20260624-event-edit2',
@@ -1595,7 +1595,7 @@ enforceSingleRuntimeEntrypoint();
 
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
-    const PORTAL_CACHE_RESET_VERSION = '20260807-socialtopnav10';
+    const PORTAL_CACHE_RESET_VERSION = '20260808-mobileroute1';
 
     async function clearPortalSiteCaches(force = false) {
         try {

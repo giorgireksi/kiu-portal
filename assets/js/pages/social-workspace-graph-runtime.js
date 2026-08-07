@@ -294,6 +294,7 @@
         const projectTaskGraphPseudoRandom = window.projectTaskGraphPseudoRandom || __graphModel.projectTaskGraphPseudoRandom;
         const getProjectTaskGraphMetrics = window.getProjectTaskGraphMetrics || __graphModel.getProjectTaskGraphMetrics;
         const computeProjectTaskGraphStageSize = window.computeProjectTaskGraphStageSize || __graphModel.computeProjectTaskGraphStageSize;
+        const isProjectTaskGraphMobileViewport = window.isProjectTaskGraphMobileViewport || __graphModel.isProjectTaskGraphMobileViewport;
         const computeProjectTaskGraphNodeDegree = window.computeProjectTaskGraphNodeDegree || __graphModel.computeProjectTaskGraphNodeDegree;
         const projectTaskGraphBoxRepulse = window.projectTaskGraphBoxRepulse || __graphModel.projectTaskGraphBoxRepulse;
         const resolveProjectTaskGraphCardOverlaps = window.resolveProjectTaskGraphCardOverlaps || __graphModel.resolveProjectTaskGraphCardOverlaps;
@@ -370,7 +371,20 @@
 
         /* Wave 18: social-workspace-graph-layout-runtime.js */
         const __graphLayoutApi = typeof window.__kiuCreateSocialWorkspaceGraphLayoutApi === 'function'
-            ? window.__kiuCreateSocialWorkspaceGraphLayoutApi(deps) : null;
+            ? window.__kiuCreateSocialWorkspaceGraphLayoutApi({
+                ...deps,
+                PROJECT_TASK_GROUP_NODE_H: __graphModel.PROJECT_TASK_GROUP_NODE_H
+                    || deps.PROJECT_TASK_GROUP_NODE_H || 228,
+                PROJECT_TASK_GROUP_NODE_W: __graphModel.PROJECT_TASK_GROUP_NODE_W
+                    || deps.PROJECT_TASK_GROUP_NODE_W || 264,
+                applyProjectTaskGraphSavedPositions,
+                buildProjectTaskGraphModel: buildProjectTaskGraphModel || deps.buildProjectTaskGraphModel,
+                ensureProjectTaskGraphPositionsLoaded,
+                getProjectTaskGraphGroups,
+                getProjectTaskGraphPositions,
+                projectTaskGraphRectsOverlap: projectTaskGraphRectsOverlap || deps.projectTaskGraphRectsOverlap,
+                setProjectTaskGraphPositions
+            }) : null;
         if (!__graphLayoutApi) throw new Error('social-workspace-graph-layout-runtime.js missing');
         const { findFreeProjectTaskGraphPosition, ensureProjectTaskGraphPositionForTask } = __graphLayoutApi;
 
@@ -592,6 +606,25 @@
             }, 500));
         }
 
+        function markProjectTaskGraphMeaningfulDirty(runtime = state(), projectId = '') {
+            const id = text(projectId);
+            if (!id || !runtime?.ui) return;
+            const dirtyByProject = runtime.ui.projectTaskGraphMeaningfulDirtyByProject
+                || (runtime.ui.projectTaskGraphMeaningfulDirtyByProject = {});
+            dirtyByProject[id] = true;
+        }
+
+        function isProjectTaskGraphMeaningfulDirty(runtime = state(), projectId = '') {
+            const id = text(projectId);
+            return Boolean(id && runtime?.ui?.projectTaskGraphMeaningfulDirtyByProject?.[id]);
+        }
+
+        function clearProjectTaskGraphMeaningfulDirty(runtime = state(), projectId = '') {
+            const id = text(projectId);
+            if (!id || !runtime?.ui?.projectTaskGraphMeaningfulDirtyByProject) return;
+            delete runtime.ui.projectTaskGraphMeaningfulDirtyByProject[id];
+        }
+
 
 
         function getProjectTaskGraphGroups(runtime = state(), projectId = '') {
@@ -615,6 +648,9 @@
             if (!id) return;
             const list = Array.isArray(groups) ? groups : [];
             if (runtime?.ui) (runtime.ui.projectTaskGraphGroupsByProject || (runtime.ui.projectTaskGraphGroupsByProject = {}))[id] = list;
+            if (runtime?.ui && !options.skipNotify && !options.skipSync) {
+                markProjectTaskGraphMeaningfulDirty(runtime, id);
+            }
             try { localStorage.setItem(projectTaskGraphGroupsStorageKey(id), JSON.stringify(list)); } catch (error) {}
             if (!options.skipSync) queueProjectTaskGraphSync(id, { taskGraphGroups: list });
             // Membership drives Work Desk package lanes — keep desk/preview in sync with graph.
@@ -791,6 +827,7 @@
             const id = text(projectId);
             const snapshot = collectProjectTaskGraphCheckpoint(runtime, id);
             if (!snapshot) throw new Error('Nothing to save.');
+            const recordActivity = isProjectTaskGraphMeaningfulDirty(runtime, id);
             const history = [snapshot, ...readProjectTaskGraphCheckpoints(id)];
             writeProjectTaskGraphCheckpoints(id, history);
             // Persist live layout into normal stores + push server now.
@@ -800,9 +837,13 @@
             const synced = await flushProjectTaskGraphSync(id, {
                 taskGraphPositions: snapshot.taskGraphPositions,
                 taskGraphGroups: snapshot.taskGraphGroups,
-                taskGraphView: snapshot.taskGraphView
+                taskGraphView: snapshot.taskGraphView,
+                recordActivity
             });
             snapshot.serverSynced = Boolean(synced);
+            if (snapshot.serverSynced && runtime?.ui && recordActivity) {
+                clearProjectTaskGraphMeaningfulDirty(runtime, id);
+            }
             return snapshot;
         }
 
@@ -1123,6 +1164,7 @@
                 get getProjectTaskGraphGroups() { return typeof getProjectTaskGraphGroups === "function" ? getProjectTaskGraphGroups : window.getProjectTaskGraphGroups; },
                 get getProjectTaskGraphPositions() { return typeof getProjectTaskGraphPositions === "function" ? getProjectTaskGraphPositions : window.getProjectTaskGraphPositions; },
                 get measureProjectTaskGraphCardHeights() { return typeof measureProjectTaskGraphCardHeights === "function" ? measureProjectTaskGraphCardHeights : window.measureProjectTaskGraphCardHeights; },
+                get markProjectTaskGraphMeaningfulDirty() { return typeof markProjectTaskGraphMeaningfulDirty === "function" ? markProjectTaskGraphMeaningfulDirty : window.markProjectTaskGraphMeaningfulDirty; },
                 get notifyProjectTaskGraphSurfaceChanged() { return typeof notifyProjectTaskGraphSurfaceChanged === "function" ? notifyProjectTaskGraphSurfaceChanged : window.notifyProjectTaskGraphSurfaceChanged; },
                 get readProjectTaskGraphPortCenter() { return typeof readProjectTaskGraphPortCenter === "function" ? readProjectTaskGraphPortCenter : window.readProjectTaskGraphPortCenter; },
                 get resolveProjectTaskGraphNodeFromTarget() { return typeof resolveProjectTaskGraphNodeFromTarget === "function" ? resolveProjectTaskGraphNodeFromTarget : window.resolveProjectTaskGraphNodeFromTarget; },
@@ -1137,7 +1179,6 @@
             findProjectTaskGraphMembershipDropGroup,
             readProjectTaskGraphLivePositions,
             patchRemoveProjectTaskGraphEdge,
-            patchProjectTaskGraphLinkCountLabel,
             syncProjectTaskGraphEdgesOnly,
             refreshProjectTaskGraphEdgeLines,
             isProjectTaskGraphScrollPanCanvas,
@@ -1200,6 +1241,7 @@
                     { dependsOnTaskIds: deps },
                     { silent: true }
                 );
+                markProjectTaskGraphMeaningfulDirty(runtime, projectId);
             } catch (error) {
                 patchLocalProjectTaskDepends(runtime, projectId, to, deps);
             }
@@ -1345,7 +1387,54 @@
             let dragState = null;
             let panState = null;
             let portLinkState = null;
+            let pinchState = null;
+            const activePointers = new Map();
+            let dragFrame = 0;
+            let portLinkFrame = 0;
+            let pinchFrame = 0;
+            let panFrame = 0;
+            let longPressTimer = null;
+            let longPressOrigin = null;
+            const clearLongPress = () => {
+                if (longPressTimer != null) {
+                    window.clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                longPressOrigin = null;
+            };
             const graphMode = () => normalizeProjectTaskGraphMode(state().ui?.projectTaskGraphMode || 'browse');
+            const applyZoomAtClientPoint = (canvas, inner, clientX, clientY, newZoom, options = {}) => {
+                const oldZoom = clampProjectTaskGraphZoom(Number(canvas.getAttribute('data-zoom')) || 1);
+                const z = clampProjectTaskGraphZoom(newZoom);
+                if (Math.abs(z - oldZoom) < 0.001) return oldZoom;
+                if (isProjectTaskGraphScrollPanCanvas(canvas)) {
+                    const rect = options.rect || canvas.getBoundingClientRect();
+                    const vx = clientX - rect.left;
+                    const vy = clientY - rect.top;
+                    const pan = readProjectTaskGraphPanFromScroll(canvas);
+                    const layoutX = (pan.x + vx) / oldZoom;
+                    const layoutY = (pan.y + vy) / oldZoom;
+                    const {
+                        width: lw,
+                        height: lh
+                    } = options.layoutSize || readProjectTaskGraphLayoutSize(canvas);
+                    const slack = resolveProjectTaskGraphPanSlack(Math.max(lw * z, lh * z));
+                    const nextPan = clampProjectTaskGraphPan(
+                        layoutX * z - vx,
+                        layoutY * z - vy,
+                        slack
+                    );
+                    state().ui.projectTaskGraphZoom = z;
+                    state().ui.projectTaskGraphPan = { x: nextPan.x, y: nextPan.y };
+                    applyProjectTaskGraphCanvasTransform(canvas, inner, nextPan.x, nextPan.y, z);
+                } else {
+                    state().ui.projectTaskGraphZoom = z;
+                    applyProjectTaskGraphZoom(state());
+                }
+                const label = getProjectTaskGraphHost()?.querySelector('.social-project-task-graph-zoom-label');
+                if (label) label.textContent = `${Math.round(z * 100)}%`;
+                return z;
+            };
             const setPortLinkTarget = (portEl) => {
                 svg.querySelectorAll('.social-project-task-graph-link-handle.is-drop-target, .social-project-task-graph-svg-port.is-drop-target').forEach((entry) => entry.classList.remove('is-drop-target'));
                 portEl?.classList.add('is-drop-target');
@@ -1356,6 +1445,126 @@
             const clearPortLinkTarget = () => {
                 svg.querySelectorAll('.social-project-task-graph-link-handle.is-drop-target, .social-project-task-graph-svg-port.is-drop-target').forEach((entry) => entry.classList.remove('is-drop-target'));
                 svg.querySelectorAll('.social-project-task-graph-node-g.is-link-target').forEach((entry) => entry.classList.remove('is-link-target'));
+            };
+            const flushPortLinkFrame = () => {
+                portLinkFrame = 0;
+                const link = portLinkState;
+                if (!link?.latest) return;
+                const { clientX, clientY } = link.latest;
+                const coords = clientToProjectTaskGraphCoords(stage, clientX, clientY);
+                updateProjectTaskGraphLinkPreview(
+                    svg,
+                    link.origin.x,
+                    link.origin.y,
+                    coords.x,
+                    coords.y,
+                    link.rubberColor || ''
+                );
+                link.target = findProjectTaskGraphLinkDropTarget(svg, clientX, clientY, link.origin.taskId);
+                setPortLinkTarget(null);
+                svg.querySelectorAll('.social-project-task-graph-group-node.is-drop-target').forEach((entry) => {
+                    entry.classList.remove('is-drop-target');
+                });
+                if (!link.target?.taskId) return;
+                const targetNode = svg.querySelector(`.social-project-task-graph-node-g[data-task-id="${link.target.taskId}"]`);
+                targetNode?.classList.add('is-link-target');
+                if (link.target.groupId) targetNode?.classList.add('is-drop-target');
+                const side = text(link.target.side || 'w') || 'w';
+                const inHandle = targetNode
+                    ? (targetNode.querySelector(`[data-graph-link-port="${side}"]`)
+                        || targetNode.querySelector('[data-graph-link-port]'))
+                    : null;
+                setPortLinkTarget(inHandle);
+            };
+            const schedulePortLinkFrame = () => {
+                if (portLinkFrame) return;
+                portLinkFrame = window.requestAnimationFrame(flushPortLinkFrame);
+            };
+            const flushDragFrame = () => {
+                dragFrame = 0;
+                const drag = dragState;
+                if (!drag?.moved || !drag.latest) return;
+                const { clientX, clientY } = drag.latest;
+                const dx = (clientX - drag.startX) / drag.scale;
+                const dy = (clientY - drag.startY) / drag.scale;
+                const w = Number(drag.node.getAttribute('data-w')) || PROJECT_TASK_GRAPH_CARD_W;
+                const h = Number(drag.node.getAttribute('data-h')) || PROJECT_TASK_GRAPH_CARD_H;
+                const nx = Math.round(drag.originX + dx);
+                const ny = Math.round(drag.originY + dy);
+                drag.node.setAttribute('transform', `translate(${nx - Math.round(w / 2)},${ny - Math.round(h / 2)})`);
+                drag.node.setAttribute('data-cx', String(nx));
+                drag.node.setAttribute('data-cy', String(ny));
+                scheduleProjectTaskGraphEdgeRefresh(svg);
+                svg.querySelectorAll('.social-project-task-graph-group-node.is-drop-target').forEach((g) => {
+                    g.classList.remove('is-drop-target');
+                });
+                const membershipDrop = findProjectTaskGraphMembershipDropGroup(
+                    svg,
+                    clientX,
+                    clientY,
+                    drag.taskId
+                );
+                if (membershipDrop?.groupId) {
+                    svg.querySelector(
+                        `.social-project-task-graph-group-node[data-group-id="${membershipDrop.groupId}"]`
+                    )?.classList.add('is-drop-target');
+                }
+            };
+            const scheduleDragFrame = () => {
+                if (dragFrame) return;
+                dragFrame = window.requestAnimationFrame(flushDragFrame);
+            };
+            const flushPinchFrame = () => {
+                pinchFrame = 0;
+                if (!pinchState || activePointers.size < 2) return;
+                const pts = Array.from(activePointers.values());
+                const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+                const canvas = stage.querySelector('[data-project-task-graph-canvas]');
+                const inner = canvas?.querySelector('.social-project-task-graph-canvas-inner');
+                if (!canvas || !inner) return;
+                const factor = dist / pinchState.startDist;
+                const midX = (pts[0].x + pts[1].x) / 2;
+                const midY = (pts[0].y + pts[1].y) / 2;
+                applyZoomAtClientPoint(
+                    canvas,
+                    inner,
+                    midX,
+                    midY,
+                    pinchState.startZoom * factor,
+                    { rect: pinchState.rect, layoutSize: pinchState.layoutSize }
+                );
+            };
+            const schedulePinchFrame = () => {
+                if (pinchFrame) return;
+                pinchFrame = window.requestAnimationFrame(flushPinchFrame);
+            };
+            const flushPanFrame = () => {
+                panFrame = 0;
+                const pan = panState;
+                if (!pan?.moved || !pan.latest) return;
+                const { clientX, clientY } = pan.latest;
+                if (pan.scrollPan) {
+                    pan.canvas.scrollLeft = pan.originScrollLeft - (clientX - pan.startX);
+                    pan.canvas.scrollTop = pan.originScrollTop - (clientY - pan.startY);
+                    const next = readProjectTaskGraphPanFromScroll(pan.canvas);
+                    pan.canvas.setAttribute('data-pan-x', String(next.x));
+                    pan.canvas.setAttribute('data-pan-y', String(next.y));
+                    return;
+                }
+                const panX = Math.round(pan.originPanX + (clientX - pan.startX));
+                const panY = Math.round(pan.originPanY + (clientY - pan.startY));
+                applyProjectTaskGraphCanvasTransform(
+                    pan.canvas,
+                    pan.inner,
+                    panX,
+                    panY,
+                    pan.zoom,
+                    { syncState: false }
+                );
+            };
+            const schedulePanFrame = () => {
+                if (panFrame) return;
+                panFrame = window.requestAnimationFrame(flushPanFrame);
             };
             const endPan = (event) => {
                 if (!panState) return;
@@ -1375,6 +1584,9 @@
                     backdrop
                 } = panState;
                 if (moved) {
+                    panState.latest = { clientX: event.clientX, clientY: event.clientY };
+                    if (panFrame) window.cancelAnimationFrame(panFrame);
+                    flushPanFrame();
                     if (panState.scrollPan) {
                         const pan = readProjectTaskGraphPanFromScroll(canvas);
                         state().ui.projectTaskGraphPan = { x: pan.x, y: pan.y };
@@ -1410,17 +1622,8 @@
                 if (Math.hypot(event.clientX - panState.startX, event.clientY - panState.startY) > 3) panState.moved = true;
                 if (!panState.moved) return;
                 event.preventDefault();
-                if (panState.scrollPan) {
-                    panState.canvas.scrollLeft = panState.originScrollLeft - (event.clientX - panState.startX);
-                    panState.canvas.scrollTop = panState.originScrollTop - (event.clientY - panState.startY);
-                    const pan = readProjectTaskGraphPanFromScroll(panState.canvas);
-                    panState.canvas.setAttribute('data-pan-x', String(pan.x));
-                    panState.canvas.setAttribute('data-pan-y', String(pan.y));
-                    return;
-                }
-                const panX = Math.round(panState.originPanX + (event.clientX - panState.startX));
-                const panY = Math.round(panState.originPanY + (event.clientY - panState.startY));
-                applyProjectTaskGraphCanvasTransform(panState.canvas, panState.inner, panX, panY, panState.zoom, { syncState: false });
+                panState.latest = { clientX: event.clientX, clientY: event.clientY };
+                schedulePanFrame();
             };
             const startPan = (event) => {
                 if (panState || portLinkState || dragState) return;
@@ -1465,6 +1668,7 @@
                 attachProjectTaskGraphPanWindowListeners({ pointerId: event.pointerId, onMove: movePan, onEnd: endPan });
             };
             const onPointerDown = (event) => {
+                if (pinchState || activePointers.size > 1) return;
                 if (isProjectTaskGraphPanButton(event)) {
                     // RMB on a task card opens the context menu — do not pan.
                     if (event.button === 2) {
@@ -1480,6 +1684,7 @@
                 const outPort = event.target.closest('[data-graph-link-port]');
                 const portHost = outPort?.closest?.('.social-project-task-graph-node-g');
                 if (outPort && portHost && svg.contains(portHost)) {
+                    clearLongPress();
                     const origin = readProjectTaskGraphPortCenter(outPort);
                     if (!origin?.taskId) return;
                     event.preventDefault();
@@ -1510,6 +1715,20 @@
                 if (event.target.closest('[data-graph-link-port]')) return;
                 // Let inner buttons (group rename/delete/remove-member) receive their click.
                 if (event.target.closest('button[data-action]')) return;
+                // Touch long-press opens the same context menu as right-click.
+                if (event.pointerType !== 'mouse' && isProjectTaskGraphMobileViewport?.()) {
+                    clearLongPress();
+                    longPressOrigin = { x: event.clientX, y: event.clientY, node };
+                    longPressTimer = window.setTimeout(() => {
+                        const projectId = text(node.getAttribute('data-project-id') || '');
+                        const taskId = text(node.getAttribute('data-task-id') || '');
+                        clearLongPress();
+                        if (!projectId || !taskId) return;
+                        openProjectTaskGraphContextMenu(event.clientX, event.clientY, { projectId, taskId });
+                        dragState = null;
+                        try { node.releasePointerCapture?.(event.pointerId); } catch (error) {}
+                    }, 500);
+                }
                 event.preventDefault();
                 setProjectTaskGraphInteracting(stage, true);
                 dragState = {
@@ -1530,57 +1749,19 @@
                 if (portLinkState && event.pointerId === portLinkState.pointerId) {
                     if (Math.hypot(event.clientX - portLinkState.startX, event.clientY - portLinkState.startY) > 3) portLinkState.moved = true;
                     event.preventDefault();
-                    const coords = clientToProjectTaskGraphCoords(stage, event.clientX, event.clientY);
-                    const { origin } = portLinkState;
-                    updateProjectTaskGraphLinkPreview(svg, origin.x, origin.y, coords.x, coords.y, portLinkState.rubberColor || '');
-                    const drop = findProjectTaskGraphLinkDropTarget(svg, event.clientX, event.clientY, portLinkState.origin.taskId);
-                    svg.querySelectorAll('.social-project-task-graph-group-node.is-drop-target, .social-project-task-graph-node-g.is-link-target').forEach((g) => {
-                        g.classList.remove('is-drop-target', 'is-link-target');
-                    });
-                    if (drop?.taskId) {
-                        const targetNode = svg.querySelector(`.social-project-task-graph-node-g[data-task-id="${drop.taskId}"]`);
-                        targetNode?.classList.add('is-link-target');
-                        if (drop.groupId) targetNode?.classList.add('is-drop-target');
-                        const side = text(drop?.side || 'w') || 'w';
-                        const inHandle = targetNode
-                            ? (targetNode.querySelector(`[data-graph-link-port="${side}"]`)
-                                || targetNode.querySelector('[data-graph-link-port]'))
-                            : null;
-                        setPortLinkTarget(inHandle);
-                        return;
-                    }
-                    setPortLinkTarget(null);
+                    portLinkState.latest = { clientX: event.clientX, clientY: event.clientY };
+                    schedulePortLinkFrame();
                     return;
                 }
                 if (!dragState || event.pointerId !== dragState.pointerId) return;
-                if (Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY) > 4) dragState.moved = true;
+                if (Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY) > 4) {
+                    dragState.moved = true;
+                    clearLongPress();
+                }
                 if (!dragState.moved) return;
                 event.preventDefault();
-                const dx = (event.clientX - dragState.startX) / dragState.scale;
-                const dy = (event.clientY - dragState.startY) / dragState.scale;
-                const w = Number(dragState.node.getAttribute('data-w')) || PROJECT_TASK_GRAPH_CARD_W;
-                const h = Number(dragState.node.getAttribute('data-h')) || PROJECT_TASK_GRAPH_CARD_H;
-                const nx = Math.round(dragState.originX + dx);
-                const ny = Math.round(dragState.originY + dy);
-                dragState.node.setAttribute('transform', `translate(${nx - Math.round(w / 2)},${ny - Math.round(h / 2)})`);
-                dragState.node.setAttribute('data-cx', String(nx));
-                dragState.node.setAttribute('data-cy', String(ny));
-                scheduleProjectTaskGraphEdgeRefresh(svg);
-                // Highlight package under pointer for membership absorb.
-                svg.querySelectorAll('.social-project-task-graph-group-node.is-drop-target').forEach((g) => {
-                    g.classList.remove('is-drop-target');
-                });
-                const membershipDrop = findProjectTaskGraphMembershipDropGroup(
-                    svg,
-                    event.clientX,
-                    event.clientY,
-                    dragState.taskId
-                );
-                if (membershipDrop?.groupId) {
-                    svg.querySelector(
-                        `.social-project-task-graph-group-node[data-group-id="${membershipDrop.groupId}"]`
-                    )?.classList.add('is-drop-target');
-                }
+                dragState.latest = { clientX: event.clientX, clientY: event.clientY };
+                scheduleDragFrame();
             };
             const onPointerUp = async (event) => {
                 if (panState && !panState.isMouse && event.pointerId === panState.pointerId) {
@@ -1588,7 +1769,10 @@
                     return;
                 }
                 if (portLinkState && event.pointerId === portLinkState.pointerId) {
-                    const { origin, port, moved } = portLinkState;
+                    portLinkState.latest = { clientX: event.clientX, clientY: event.clientY };
+                    if (portLinkFrame) window.cancelAnimationFrame(portLinkFrame);
+                    flushPortLinkFrame();
+                    const { origin, port, moved, target } = portLinkState;
                     clearProjectTaskGraphLinkPreview(svg);
                     clearPortLinkTarget();
                     svg.querySelectorAll('.social-project-task-graph-group-node.is-drop-target, .social-project-task-graph-node-g.is-link-target').forEach((g) => {
@@ -1598,16 +1782,14 @@
                     port.classList.remove('is-linking');
                     setProjectTaskGraphInteracting(stage, false);
                     try { stage.releasePointerCapture(event.pointerId); } catch (error) {}
-                    const target = moved
-                        ? findProjectTaskGraphLinkDropTarget(svg, event.clientX, event.clientY, origin.taskId)
-                        : null;
+                    const resolvedTarget = moved ? target : null;
                     portLinkState = null;
                     // Port-wire always creates a dependency (task or package endpoints). Membership is card-drop only.
                     // Direction follows port roles (out→in), not drag order alone.
-                    if (moved && target?.taskId && target.taskId !== origin.taskId) {
+                    if (moved && resolvedTarget?.taskId && resolvedTarget.taskId !== origin.taskId) {
                         event.preventDefault();
                         event.stopPropagation();
-                        const ends = resolveProjectTaskGraphWireEndpoints(origin, target);
+                        const ends = resolveProjectTaskGraphWireEndpoints(origin, resolvedTarget);
                         if (!ends?.from || !ends?.to) return;
                         await withBusy(async () => {
                             await addProjectGraphDependency(origin.projectId, ends.to, ends.from);
@@ -1626,6 +1808,9 @@
                     return;
                 }
                 if (!dragState || event.pointerId !== dragState.pointerId) return;
+                dragState.latest = { clientX: event.clientX, clientY: event.clientY };
+                if (dragFrame) window.cancelAnimationFrame(dragFrame);
+                flushDragFrame();
                 const { node, taskId, moved } = dragState;
                 node.classList.remove('is-dragging');
                 setProjectTaskGraphInteracting(stage, false);
@@ -1722,39 +1907,64 @@
             stage.addEventListener('wheel', (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                if (panState || dragState || portLinkState) return;
+                if (panState || dragState || portLinkState || pinchState) return;
                 const canvas = stage.querySelector('[data-project-task-graph-canvas]');
                 const inner = canvas?.querySelector('.social-project-task-graph-canvas-inner');
                 if (!canvas || !inner) return;
                 const oldZoom = clampProjectTaskGraphZoom(Number(canvas.getAttribute('data-zoom')) || 1);
                 const factor = event.deltaY > 0 ? (1 / 1.08) : 1.08;
-                const newZoom = clampProjectTaskGraphZoom(oldZoom * factor);
-                if (Math.abs(newZoom - oldZoom) < 0.001) return;
-                if (isProjectTaskGraphScrollPanCanvas(canvas)) {
-                    const rect = canvas.getBoundingClientRect();
-                    const vx = event.clientX - rect.left;
-                    const vy = event.clientY - rect.top;
-                    const pan = readProjectTaskGraphPanFromScroll(canvas);
-                    const layoutX = (pan.x + vx) / oldZoom;
-                    const layoutY = (pan.y + vy) / oldZoom;
-                    const { width: lw, height: lh } = readProjectTaskGraphLayoutSize(canvas);
-                    const slack = resolveProjectTaskGraphPanSlack(Math.max(lw * newZoom, lh * newZoom));
-                    const nextPan = clampProjectTaskGraphPan(
-                        layoutX * newZoom - vx,
-                        layoutY * newZoom - vy,
-                        slack
-                    );
-                    state().ui.projectTaskGraphZoom = newZoom;
-                    state().ui.projectTaskGraphPan = { x: nextPan.x, y: nextPan.y };
-                    applyProjectTaskGraphCanvasTransform(canvas, inner, nextPan.x, nextPan.y, newZoom);
-                } else {
-                    state().ui.projectTaskGraphZoom = newZoom;
-                    applyProjectTaskGraphZoom(state());
-                }
+                applyZoomAtClientPoint(canvas, inner, event.clientX, event.clientY, oldZoom * factor);
                 persistProjectTaskGraphView(state());
-                const label = getProjectTaskGraphHost()?.querySelector('.social-project-task-graph-zoom-label');
-                if (label) label.textContent = `${Math.round(newZoom * 100)}%`;
             }, { passive: false, signal });
+            const onPinchPointerDown = (event) => {
+                if (event.pointerType === 'mouse') return;
+                if (!isProjectTaskGraphMobileViewport?.()) return;
+                activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (activePointers.size === 2 && !pinchState && !dragState && !portLinkState && !panState) {
+                    clearLongPress();
+                    const pts = Array.from(activePointers.values());
+                    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+                    const canvas = stage.querySelector('[data-project-task-graph-canvas]');
+                    pinchState = {
+                        startDist: dist,
+                        startZoom: clampProjectTaskGraphZoom(Number(canvas?.getAttribute('data-zoom')) || 1),
+                        midX: (pts[0].x + pts[1].x) / 2,
+                        midY: (pts[0].y + pts[1].y) / 2,
+                        rect: canvas?.getBoundingClientRect(),
+                        layoutSize: canvas ? readProjectTaskGraphLayoutSize(canvas) : null
+                    };
+                    setProjectTaskGraphInteracting(stage, true);
+                    stage.classList.add('is-pinching');
+                }
+            };
+            const onPinchPointerMove = (event) => {
+                if (!activePointers.has(event.pointerId)) return;
+                activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (longPressOrigin) {
+                    if (Math.hypot(event.clientX - longPressOrigin.x, event.clientY - longPressOrigin.y) > 8) {
+                        clearLongPress();
+                    }
+                }
+                if (!pinchState || activePointers.size < 2) return;
+                event.preventDefault();
+                schedulePinchFrame();
+            };
+            const onPinchPointerUp = (event) => {
+                if (pinchFrame) window.cancelAnimationFrame(pinchFrame);
+                if (pinchState) flushPinchFrame();
+                activePointers.delete(event.pointerId);
+                if (pinchState && activePointers.size < 2) {
+                    pinchState = null;
+                    stage.classList.remove('is-pinching');
+                    setProjectTaskGraphInteracting(stage, false);
+                    persistProjectTaskGraphView(state());
+                }
+                clearLongPress();
+            };
+            stage.addEventListener('pointerdown', onPinchPointerDown, { signal, capture: true });
+            stage.addEventListener('pointermove', onPinchPointerMove, { signal, capture: true });
+            stage.addEventListener('pointerup', onPinchPointerUp, { signal, capture: true });
+            stage.addEventListener('pointercancel', onPinchPointerUp, { signal, capture: true });
             stage.addEventListener('pointerdown', onPointerDown, { signal, capture: true });
             stage.addEventListener('mousedown', (event) => {
                 if (!isProjectTaskGraphPanButton(event) || panState) return;
@@ -1892,17 +2102,18 @@
             isProjectTaskGraphStackActive,
             loadProjectTaskGraphPositions,
             loadProjectTaskGraphView,
+            markProjectTaskGraphMeaningfulDirty,
             markProjectTaskGraphPreviewStale,
             measureProjectTaskGraphCardHeights,
             notifyProjectTaskGraphSurfaceChanged,
             openProjectTaskGraphContextMenu,
             patchLocalProjectTaskDepends,
-            patchProjectTaskGraphLinkCountLabel,
             patchRemoveProjectTaskGraphEdge,
             persistProjectTaskGraphView,
             projectTaskGraphStackedBackdropClass,
             pulseProjectTaskGraphCheckpointButton,
             queueProjectTaskGraphSync,
+            isProjectTaskGraphMeaningfulDirty,
             readProjectTaskGraphCheckpoint,
             readProjectTaskGraphCheckpoints,
             readProjectTaskGraphLayoutSize,
@@ -1940,6 +2151,7 @@
             toggleProjectTaskGraphGroupMember,
             trySyncProjectTaskGraphStackDialog,
             clearProjectTaskGraphChildSlot,
+            clearProjectTaskGraphMeaningfulDirty,
             syncProjectTaskGraphStackSlotState,
             updateProjectTaskGraphGroup,
             updateProjectTaskGraphLinkPreview,

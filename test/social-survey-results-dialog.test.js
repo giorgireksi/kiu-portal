@@ -75,6 +75,6 @@ describe('social-survey-results-dialog (shared shell CSS)', () => {
     it('social.html cache-busts survey take shell CSS', () => {
         const html = readSource('social.html');
         expect(html).toMatch(/lux-fouc-ht\.css\?v=20260806-hidetopbar2/);
-        expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260807-socialtopnav10/);
+        expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260807-socialsurface1/);
     });
 });

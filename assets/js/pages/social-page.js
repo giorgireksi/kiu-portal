@@ -152,48 +152,48 @@ Publishes only the host/runtime contract consumed by its loader.
         ].filter((ms) => Number.isFinite(ms));
         return candidates.length ? Math.max(...candidates) : 0;
     }
-    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260801-socialfaculty3';
+    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260807-socialtopnav34';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
-    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260802-modulepins1';
-    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260802-pincss1';
-    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260802-modulepins1';
+    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260807-socialtopnav34';
+    const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260807-socialtopnav34';
+    const SOCIAL_SURVEYS_MODULE_URL = 'assets/js/pages/social-surveys.js?v=20260807-socialtopnav34';
     const SOCIAL_RESEARCH_PDF_RUNTIME_URL = 'assets/js/pages/social-research-pdf-runtime.js?v=20260801-researchviewer12';
-    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260802-pincss1';
+    const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260807-socialtopnav34';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
-    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260807-socialtopnav10';
+    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260807-socialtopnav34';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
-    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260802-modulepins1';
-    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260806-empty-action1';
+    const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260807-socialtopnav34';
+    const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260807-socialtopnav34';
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
-    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260807-socialtopnav10';
-    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260802-modulepins1';
+    const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260807-socialtopnav34';
+    const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260807-socialtopnav34';
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260726-socfix20';
     const SOCIAL_WORKSPACE_GRAPH_MODEL_URL = 'assets/js/pages/social-workspace-graph-model.js?v=20260726-socfix20';
     const SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL = 'assets/js/pages/social-workspace-portfolio-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL = 'assets/js/pages/social-workspace-week-plan-model.js?v=20260726-socfix16';
-    const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260726-socfix19';
-    const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260726-socfix16';
+    const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260808-smoothfps1';
+    const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260807-runtimefix1';
     const SOCIAL_WORKSPACE_SCHEDULE_UI_URL = 'assets/js/pages/social-workspace-schedule-ui.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
-    const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260801-portfolioresume3';
-    const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260801-socialfaculty3';
-    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260805-health-scroll2';
+    const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260807-socialtopnav34';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
-    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260801-socialfaculty3';
-    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260804-graph-pages1';
-    const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260805-health-layout1';
-    const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260805-graph-hover1';
-    const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260804-graph-pages1';
+    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260808-smoothfps1';
+    const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260807-socialsurface1';
+    const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260807-mapopaque1';
+    const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260807-socialsurface1';
     const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260802-portfolio-viewer1';
     const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer3';
-    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260802-pincss1';
-    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260804-graph-pages1';
-    const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260804-graph-pages1';
-    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260804-graph-pages1';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260807-socialsurface1';
+    const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260807-graphstack1';
+    const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260807-runtimefix1';
     const DIRECTORY_REFRESH_MS = 180;
     const MAX_RENDER_ATTEMPTS = 24;
     const USER_ROLES_FALLBACK = {
@@ -1303,7 +1303,7 @@ Publishes only the host/runtime contract consumed by its loader.
         orderDeskTasksByDependency, buildDeskTaskForest, buildProjectTaskInspectorFields, syncProjectTaskMatrixPreview, computePertExpected, taskHasPert,
         resolveTaskScheduleEstimate, resolveProjectTaskPriorityDisplay, clampProjectTaskGraphCardHeight, estimateProjectTaskGraphCardHeight, measureProjectTaskGraphCardHeights, normalizeProjectTaskGraphMode,
         projectTaskGraphShowInferred, projectTaskGraphShowCritical, projectTaskGraphShowFlow, projectTaskGraphVisibleEdges, buildProjectTaskGraphModel, layoutProjectTaskGraphByStatus,
-        compareProjectTaskGraphNodes, hashProjectTaskGraphSeed, projectTaskGraphPseudoRandom, getProjectTaskGraphMetrics, computeProjectTaskGraphStageSize, computeProjectTaskGraphNodeDegree,
+        compareProjectTaskGraphNodes, hashProjectTaskGraphSeed, projectTaskGraphPseudoRandom, getProjectTaskGraphMetrics, computeProjectTaskGraphStageSize, isProjectTaskGraphMobileViewport, computeProjectTaskGraphNodeDegree,
         projectTaskGraphBoxRepulse, resolveProjectTaskGraphCardOverlaps, layoutProjectTaskGraphForce, projectTaskGraphLayoutUsesSavedPositions, applyProjectTaskGraphSavedPositions, projectTaskGraphRectsOverlap,
         findFreeProjectTaskGraphPosition, ensureProjectTaskGraphPositionForTask, projectTaskGraphContentBounds, resolveProjectTaskGraphGroupBox, collectProjectTaskGraphGroupBoxes, projectTaskGraphContentViewBox,
         projectTaskGraphPositionsStorageKey, loadProjectTaskGraphPositions, saveProjectTaskGraphPositions, getProjectTaskGraphPositions, setProjectTaskGraphPositions, ensureProjectTaskGraphPositionsLoaded,
@@ -1323,7 +1323,7 @@ Publishes only the host/runtime contract consumed by its loader.
         renderProjectTaskGraphCardNode, projectTaskGraphPortRole, resolveProjectTaskGraphWireEndpoints, readProjectTaskGraphPortCenter, resolveProjectTaskGraphLinkPreviewHost, ensureProjectTaskGraphLinkPreview,
         updateProjectTaskGraphLinkPreview, clearProjectTaskGraphLinkPreview, setProjectTaskGraphInteracting, scheduleProjectTaskGraphEdgeRefresh, findProjectTaskGraphLinkDropTarget, findProjectTaskGraphMembershipDropGroup,
         renderProjectTaskGraphEdgeGroupsHtml, renderProjectTaskGraphGroupEdgesHtml, renderProjectTaskGraphGroupDependencyEdgesHtml, readProjectTaskGraphLivePositions, escapeProjectTaskGraphAttr, patchRemoveProjectTaskGraphEdge,
-        patchProjectTaskGraphLinkCountLabel, syncProjectTaskGraphEdgesOnly, renderProjectTaskGraphSvg, renderProjectTaskGraphCanvas, refreshProjectTaskGraphEdgeLines, projectTaskGraphWouldCycle,
+        syncProjectTaskGraphEdgesOnly, renderProjectTaskGraphSvg, renderProjectTaskGraphCanvas, refreshProjectTaskGraphEdgeLines, projectTaskGraphWouldCycle,
         readProjectTaskGraphPan, isProjectTaskGraphScrollPanCanvas, resolveProjectTaskGraphPanSlack, clampProjectTaskGraphPan, readProjectTaskGraphScrollSurface, readProjectTaskGraphLayoutSize,
         projectTaskGraphScrollOffsets, readProjectTaskGraphPanSlackFromCanvas, readProjectTaskGraphPanFromScroll, ensureProjectTaskGraphScrollSurface, applyProjectTaskGraphScrollZoom, centerProjectTaskGraphScrollPan,
         applyProjectTaskGraphCanvasTransform, initProjectTaskGraphScrollPan, resolveProjectTaskGraphPanBackdrop, clientToProjectTaskGraphCoords, getProjectTaskGraphHost, projectTaskGraphMineOnlyActive,

@@ -45,6 +45,63 @@ describe('social project task graph sync', () => {
         expect(decorated.taskGraphPositions[task.id]).toEqual({ x: 100, y: 200 });
     });
 
+    it('does not create project activity for automatic position sync', () => {
+        const store = new PlatformStore({});
+        const { project, task } = seedProject(store);
+        const beforeCount = store.state.social.projectActivities
+            .filter((entry) => entry.projectId === project.id).length;
+
+        store.updateSocialProjectTaskGraph(project.id, {
+            taskGraphPositions: { [task.id]: { x: 100, y: 200 } }
+        }, 'owner-1');
+
+        expect(store.state.social.projectActivities
+            .filter((entry) => entry.projectId === project.id)).toHaveLength(beforeCount);
+    });
+
+    it('records one concise activity for an explicit meaningful graph save', () => {
+        const store = new PlatformStore({});
+        const { project, task } = seedProject(store);
+        const beforeCount = store.state.social.projectActivities
+            .filter((entry) => entry.projectId === project.id).length;
+
+        store.updateSocialProjectTaskGraph(project.id, {
+            taskGraphPositions: { [task.id]: { x: 100, y: 200 } },
+            taskGraphGroups: [{
+                id: 'grp_phase',
+                name: 'Phase 1',
+                x: 100,
+                y: 200,
+                memberTaskIds: [task.id],
+                blocksIds: [],
+                dependsOnIds: []
+            }],
+            recordActivity: true
+        }, 'owner-1');
+
+        const activities = store.state.social.projectActivities
+            .filter((entry) => entry.projectId === project.id);
+        expect(activities).toHaveLength(beforeCount + 1);
+        expect(activities[0].type).toBe('project-task-graph-saved');
+        expect(activities[0].summary).toContain('saved meaningful task map changes');
+        expect(activities[0].summary).not.toContain('layout');
+    });
+
+    it('does not create activity for an explicit position-only save', () => {
+        const store = new PlatformStore({});
+        const { project, task } = seedProject(store);
+        const beforeCount = store.state.social.projectActivities
+            .filter((entry) => entry.projectId === project.id).length;
+
+        store.updateSocialProjectTaskGraph(project.id, {
+            taskGraphPositions: { [task.id]: { x: 100, y: 200 } },
+            recordActivity: false
+        }, 'owner-1');
+
+        expect(store.state.social.projectActivities
+            .filter((entry) => entry.projectId === project.id)).toHaveLength(beforeCount);
+    });
+
     it('lets members update graph state but blocks advisors without contribute role', () => {
         const store = new PlatformStore({});
         const { project, task } = seedProject(store);
@@ -157,10 +214,22 @@ describe('social project task graph sync', () => {
             + readSource('assets/js/pages/social-workspace-stubs.js');
         expect(routes).toContain("app.post('/api/social/projects/:id/task-graph'");
         expect(runtime).toContain('/task-graph');
+        expect(runtime).toContain('recordActivity');
         expect(readSource('assets/js/shared/social-runtime-lite.js')).toContain('updatePortalSocialProjectTaskGraph');
         expect(page).toContain("'queueProjectTaskGraphSync'");
         expect(page).toContain('createSocialWorkspaceStub');
         expect(page).toMatch(/setProjectTaskGraphPositions[\s\S]*?queueProjectTaskGraphSync/);
+        const graphRuntime = readSource('assets/js/pages/social-workspace-graph-runtime.js');
+        const graphSyncRuntime = readSource('assets/js/pages/social-workspace-graph-sync-runtime.js');
+        expect(graphRuntime).toContain('projectTaskGraphMeaningfulDirty');
+        expect(graphRuntime).toContain('recordActivity');
+        expect(graphRuntime).toContain('schedulePinchFrame');
+        expect(graphRuntime).toContain('scheduleDragFrame');
+        expect(graphRuntime).toContain('schedulePortLinkFrame');
+        expect(graphRuntime).toContain('schedulePanFrame');
+        expect(graphSyncRuntime).toContain('projectTaskGraphScrollSurfaceMetrics');
+        expect(graphSyncRuntime).toContain('sampleProjectTaskGraphPerf');
+        expect(graphSyncRuntime).toContain('longTasks');
     });
 });
 

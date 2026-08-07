@@ -1,242 +1,328 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/app_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/anti_cheat_background"
-    android:orientation="vertical"
-    android:padding="16dp">
-
-    <TextView
-        android:id="@+id/app_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
-        android:text="@string/app_name"
-        android:textColor="@color/anti_cheat_text"
-        android:textSize="24sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/status_banner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@color/anti_cheat_panel_alt"
-        android:padding="12dp"
-        android:textColor="@color/anti_cheat_text"
-        android:visibility="gone" />
-
-    <TextView
-        android:id="@+id/security_banner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="#2A1111"
-        android:padding="12dp"
-        android:textColor="#FCA5A5"
-        android:visibility="gone" />
+    android:background="@color/anti_cheat_background">
 
     <ScrollView
         android:id="@+id/controls_scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:overScrollMode="ifContentScrolls"
+        android:visibility="gone"
+        android:scrollbars="vertical">
 
         <LinearLayout
+            android:id="@+id/controls_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="18dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="28dp">
+
+            <LinearLayout
+                android:id="@+id/app_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/app_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="@string/app_name_short"
+                    android:textColor="@color/anti_cheat_accent"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/app_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/app_subtitle"
+                    android:textColor="@color/anti_cheat_text"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/app_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/app_description"
+                    android:textColor="@color/anti_cheat_text_muted"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/status_banner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_banner_info"
+                android:lineSpacingExtra="2dp"
+                android:padding="14dp"
+                android:textColor="@color/anti_cheat_text"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/security_banner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_banner_warning"
+                android:lineSpacingExtra="2dp"
+                android:padding="14dp"
+                android:textColor="@color/anti_cheat_warning"
+                android:textSize="14sp"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:id="@+id/login_panel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/anti_cheat_panel"
-                android:elevation="2dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_panel"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="8dp"
                     android:text="@string/login_heading"
                     android:textColor="@color/anti_cheat_text"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/login_description"
+                    android:textColor="@color/anti_cheat_text_muted"
+                    android:textSize="14sp" />
 
                 <EditText
                     android:id="@+id/email_input"
+                    style="@style/AntiCheatField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="University email"
+                    android:layout_marginTop="20dp"
+                    android:autofillHints="username"
+                    android:hint="@string/email_hint"
                     android:imeOptions="actionNext"
-                    android:inputType="textEmailAddress"
-                    android:padding="12dp"
-                    android:textColor="@color/anti_cheat_text"
-                    android:textColorHint="@color/anti_cheat_text_muted" />
+                    android:inputType="textEmailAddress" />
 
                 <EditText
                     android:id="@+id/password_input"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:hint="Password"
-                    android:imeOptions="actionDone"
-                    android:inputType="textPassword"
-                    android:padding="12dp"
-                    android:textColor="@color/anti_cheat_text"
-                    android:textColorHint="@color/anti_cheat_text_muted" />
-
-                <Button
-                    android:id="@+id/login_button"
+                    style="@style/AntiCheatField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Sign in" />
+                    android:autofillHints="password"
+                    android:hint="@string/password_hint"
+                    android:imeOptions="actionDone"
+                    android:inputType="textPassword" />
+
+                <Button
+                    android:id="@+id/login_button"
+                    style="@style/AntiCheatButtonPrimary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/sign_in" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/launcher_panel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@color/anti_cheat_panel"
-                android:elevation="2dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_panel"
                 android:orientation="vertical"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:visibility="gone">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="8dp"
                     android:text="@string/launcher_heading"
                     android:textColor="@color/anti_cheat_text"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/user_summary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/anti_cheat_text" />
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="2dp"
+                    android:textColor="@color/anti_cheat_text"
+                    android:textSize="16sp" />
 
                 <TextView
                     android:id="@+id/role_badge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@color/anti_cheat_panel_alt"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="6dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_badge"
+                    android:paddingStart="12dp"
+                    android:paddingTop="7dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="7dp"
                     android:textColor="@color/anti_cheat_text"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/session_summary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:textColor="@color/anti_cheat_text_muted" />
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_panel_alt"
+                    android:lineSpacingExtra="2dp"
+                    android:padding="14dp"
+                    android:textColor="@color/anti_cheat_text_muted"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/policy_summary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:textColor="@color/anti_cheat_text_muted" />
+                    android:background="@drawable/bg_panel_alt"
+                    android:lineSpacingExtra="2dp"
+                    android:padding="14dp"
+                    android:textColor="@color/anti_cheat_text_muted"
+                    android:textSize="14sp" />
 
                 <Button
                     android:id="@+id/open_lms_button"
+                    style="@style/AntiCheatButtonPrimary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="Open LMS" />
+                    android:layout_marginTop="18dp"
+                    android:text="@string/open_lms" />
 
                 <Button
                     android:id="@+id/open_exam_portal_button"
+                    style="@style/AntiCheatButtonSecondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Open Exam Portal" />
+                    android:text="@string/open_exam_portal" />
 
                 <Button
                     android:id="@+id/system_check_button"
+                    style="@style/AntiCheatButtonSecondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="System Check" />
+                    android:text="@string/system_check" />
 
                 <Button
                     android:id="@+id/clear_cache_button"
+                    style="@style/AntiCheatButtonSecondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Clear Cache" />
+                    android:text="@string/clear_cache" />
 
                 <Button
                     android:id="@+id/refresh_session_button"
+                    style="@style/AntiCheatButtonSecondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Refresh Session" />
+                    android:text="@string/refresh_session" />
 
                 <Button
                     android:id="@+id/logout_button"
+                    style="@style/AntiCheatButtonSecondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Sign Out" />
+                    android:text="@string/sign_out" />
 
                 <LinearLayout
                     android:id="@+id/staff_panel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:background="@color/anti_cheat_panel_alt"
+                    android:layout_marginTop="18dp"
+                    android:background="@drawable/bg_panel_alt"
                     android:orientation="vertical"
                     android:padding="14dp"
                     android:visibility="gone">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="8dp"
-                        android:text="@string/staff_heading"
-                        android:textColor="@color/anti_cheat_text"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/config_summary"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/anti_cheat_text_muted" />
-
-                    <EditText
-                        android:id="@+id/staff_url_input"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:hint="Open a URL"
-                        android:inputType="textUri"
-                        android:padding="12dp"
-                        android:textColor="@color/anti_cheat_text"
-                        android:textColorHint="@color/anti_cheat_text_muted" />
-
                     <Button
-                        android:id="@+id/staff_open_url_button"
+                        android:id="@+id/staff_toggle_button"
+                        style="@style/AntiCheatButtonSecondary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="Open URL" />
+                        android:contentDescription="@string/staff_toggle_content_description"
+                        android:text="@string/staff_show_diagnostics" />
 
-                    <TextView
-                        android:id="@+id/staff_diagnostics_summary"
+                    <LinearLayout
+                        android:id="@+id/staff_content"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:textColor="@color/anti_cheat_text_muted" />
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/staff_heading_label"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="@string/staff_heading"
+                            android:textColor="@color/anti_cheat_text"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/config_summary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:lineSpacingExtra="2dp"
+                            android:textColor="@color/anti_cheat_text_muted"
+                            android:textSize="13sp" />
+
+                        <EditText
+                            android:id="@+id/staff_url_input"
+                            style="@style/AntiCheatField"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:hint="@string/staff_url_hint"
+                            android:inputType="textUri" />
+
+                        <Button
+                            android:id="@+id/staff_open_url_button"
+                            style="@style/AntiCheatButtonSecondary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/staff_open_url" />
+
+                        <TextView
+                            android:id="@+id/staff_diagnostics_summary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:lineSpacingExtra="2dp"
+                            android:textColor="@color/anti_cheat_text_muted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -244,25 +330,28 @@
                 android:id="@+id/blocked_panel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="#2A1111"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_banner_danger"
                 android:orientation="vertical"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:visibility="gone">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="8dp"
                     android:text="@string/blocked_heading"
-                    android:textColor="#FCA5A5"
+                    android:textColor="@color/anti_cheat_danger"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/blocked_message"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#FCA5A5" />
+                    android:layout_marginTop="10dp"
+                    android:lineSpacingExtra="2dp"
+                    android:textColor="@color/anti_cheat_text"
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
@@ -271,11 +360,74 @@
         android:id="@+id/web_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/anti_cheat_background"
         android:visibility="gone">
 
         <WebView
             android:id="@+id/webview"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/web_mode_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:background="@drawable/bg_banner_info"
+            android:elevation="4dp"
+            android:lineSpacingExtra="2dp"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp"
+            android:textColor="@color/anti_cheat_text"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/web_loading_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/anti_cheat_background"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="28dp"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/web_loading_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/anti_cheat_accent" />
+
+            <TextView
+                android:id="@+id/web_loading_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:gravity="center"
+                android:text="@string/web_loading_title"
+                android:textColor="@color/anti_cheat_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/web_loading_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/web_loading_message"
+                android:textColor="@color/anti_cheat_text_muted"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/web_retry_button"
+                style="@style/AntiCheatButtonPrimary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/retry" />
+        </LinearLayout>
     </FrameLayout>
-</LinearLayout>
+</FrameLayout>

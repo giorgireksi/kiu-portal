@@ -253,12 +253,16 @@
         const normalizedStep = Number(step) || 1;
         if (normalizedStep === 1) {
             const name = text(ui.pageName);
-            const facultyCode = text(ui.pageFaculty)
-                || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '');
+            const facultyCode = typeof (window.KiuSocialChromeModel || {}).socialNormalizeCreateFacultyCode === 'function'
+                ? (window.KiuSocialChromeModel.socialNormalizeCreateFacultyCode(
+                    text(ui.pageFaculty) || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                    runtime
+                ))
+                : (text(ui.pageFaculty) || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''));
             if (!name) {
                 return { ok: false, message: 'Page name is required.', focusStep: 1 };
             }
-            if (!facultyCode || facultyCode === 'all') {
+            if (!facultyCode) {
                 return { ok: false, message: 'Faculty is required.', focusStep: 1 };
             }
         }
@@ -1465,8 +1469,11 @@
                     facultyCode: text(form.pageFaculty?.value || runtime.ui?.pageFaculty || '')
                         || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '')
                 };
+                payload.facultyCode = typeof (window.KiuSocialChromeModel || {}).socialNormalizeCreateFacultyCode === 'function'
+                    ? (window.KiuSocialChromeModel.socialNormalizeCreateFacultyCode(payload.facultyCode, runtime))
+                    : payload.facultyCode;
                 if (!payload.name) throw new Error('Page name is required.');
-                if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
+                if (!payload.facultyCode) throw new Error('Faculty is required.');
                 if (!payload.category) throw new Error('Page category is required.');
                 if (!payload.description && payload.tagline) payload.description = payload.tagline;
                 if (!payload.description && !payload.about) {

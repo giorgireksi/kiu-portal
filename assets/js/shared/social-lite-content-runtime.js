@@ -332,6 +332,7 @@ async function updateProjectTaskGraph(projectId, patch = {}) {
     if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphPositions')) body.taskGraphPositions = patch.taskGraphPositions;
     if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphView')) body.taskGraphView = patch.taskGraphView;
     if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphGroups')) body.taskGraphGroups = patch.taskGraphGroups;
+    if (patch.recordActivity === true) body.recordActivity = true;
     const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/task-graph`, {
         method: 'POST',
         body: JSON.stringify(body)

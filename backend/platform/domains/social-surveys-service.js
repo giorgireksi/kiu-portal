@@ -205,7 +205,7 @@ function canViewSocialSurvey(survey, userId) {
     if (audience === 'faculty') {
         if (!normalizedUserId) return false;
         const facultyCode = normalizeCode(survey.audienceFacultyCode || survey.facultyCode || this.getSocialActorFacultyCode(authorUserId));
-        return !facultyCode || this.getSocialActorFacultyCode(normalizedUserId) === facultyCode;
+        return !facultyCode || facultyCode === 'ALL' || this.getSocialActorFacultyCode(normalizedUserId) === facultyCode;
     }
     if (audience === 'group') {
         const group = this.getSocialGroupRecord(scopeId);
@@ -217,7 +217,9 @@ function canViewSocialSurvey(survey, userId) {
     }
     if (visibility === 'faculty') {
         if (!normalizedUserId) return false;
-        return this.getSocialActorFacultyCode(normalizedUserId) === normalizeCode(survey.facultyCode || survey.audienceFacultyCode || '');
+        const facultyCode = normalizeCode(survey.facultyCode || survey.audienceFacultyCode || '');
+        if (!facultyCode || facultyCode === 'ALL') return true;
+        return this.getSocialActorFacultyCode(normalizedUserId) === facultyCode;
     }
     if (visibility === 'private') {
         if (!normalizedUserId) return false;

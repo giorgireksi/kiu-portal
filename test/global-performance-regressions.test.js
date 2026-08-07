@@ -45,6 +45,19 @@ describe('global interaction performance guardrails', () => {
     expect(utilities).toContain('node.matches?.(SHARED_TRANSPARENCY_OBSERVER_SELECTORS.join');
   });
 
+  it('keeps palette boot safe when transparency loads after shared utilities', () => {
+    const utilities = readSource('assets/js/shared/utilities.js');
+    const socialHtml = readSource('social.html');
+    const transparencyIndex = socialHtml.indexOf('assets/js/shared/lux-transparency.js');
+    const utilitiesIndex = socialHtml.indexOf('assets/js/shared/utilities.js');
+
+    expect(utilities).toContain('typeof window.refreshLuxuryTransparencySurfaces === \'function\'');
+    expect(utilities).toContain('typeof window.scheduleLuxuryTransparencyBootRefresh === \'function\'');
+    expect(transparencyIndex).toBeGreaterThan(-1);
+    expect(utilitiesIndex).toBeGreaterThan(-1);
+    expect(transparencyIndex).toBeLessThan(utilitiesIndex);
+  });
+
   it('avoids duplicate syncAll boot on standalone LMS routes', () => {
     const utilities = readSource('assets/js/shared/utilities.js');
     const transparency = readSource('assets/js/shared/lux-transparency.js');

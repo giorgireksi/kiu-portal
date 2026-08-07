@@ -81,7 +81,6 @@
             parseProjectTaskPriorityPayload,
             patchProjectHealthPlanCard,
             patchProjectHealthPlanPick,
-            patchProjectTaskGraphLinkCountLabel,
             patchProjectWorkspaceTab,
             patchRemoveProjectTaskGraphEdge,
             persistProjectTaskGraphView,

@@ -205,6 +205,7 @@
                             <div class="lux-glass-dialog-portfolio-create-faculties">
                                 <span class="social-neo-label">Faculty tags *</span>
                                 <div class="social-neo-badge-row social-neo-badge-row-mt-8">
+                                    <button class="lux-secondary-btn ${draftFaculties.some((code) => text(code) === (((window.KiuSocialChromeModel || {}).SOCIAL_BROWSE_FACULTY_ALL) || 'all')) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(((window.KiuSocialChromeModel || {}).SOCIAL_BROWSE_FACULTY_ALL) || 'all')}">${escape(((window.KiuSocialChromeModel || {}).socialBrowseFacultyAllLabel?.()) || 'All faculties')}</button>
                                     ${uniqueStrings([currentFaculty, 'BUS', 'CS', 'LAW', 'MED', 'ARTS', ...facultyOptions.filter((code) => code !== 'all')]).map((facultyCode) => `
                                         <button class="lux-secondary-btn ${draftFaculties.includes(facultyCode) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>
                                     `).join('')}

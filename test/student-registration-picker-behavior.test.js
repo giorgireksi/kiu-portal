@@ -61,7 +61,7 @@ describe('student registration picker behavior', () => {
         const primer = readSource('assets/js/theme-primer.js');
 
         expect(app).toContain('REGISTRATION_PICKER_ASSET_TOKEN');
-        expect(app).toContain("const PORTAL_CACHE_RESET_VERSION = '20260807-socialtopnav10'");
+        expect(app).toContain("const PORTAL_CACHE_RESET_VERSION = '20260808-mobileroute1'");
         expect(primer).toContain("var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1'");
         expect(app).toContain('function normalizeRuntimeScriptKey(src)');
         expect(app).toContain('function removeRuntimeScriptsWithPath(pathname)');

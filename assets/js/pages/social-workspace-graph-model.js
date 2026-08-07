@@ -202,13 +202,52 @@
     }
 
     const PROJECT_TASK_GRAPH_PAN_SLACK = 2400;
+    const PROJECT_TASK_GRAPH_MOBILE_CHROME_H = 220;
+
+    function isProjectTaskGraphMobileViewport() {
+        if (typeof window === 'undefined') return false;
+        if (typeof window.matchMedia === 'function') {
+            try {
+                return window.matchMedia('(max-width: 1024px)').matches;
+            } catch (error) {
+                /* fall through */
+            }
+        }
+        return Math.round(Number(window.innerWidth) || 0) <= 1024;
+    }
+
+    function measureProjectTaskGraphImmersiveChromeH() {
+        if (typeof document === 'undefined') return 0;
+        const immersive = document.querySelector?.('.social-project-task-graph-immersive');
+        if (!immersive) return 0;
+        const head = immersive.querySelector('.social-project-task-graph-page-head');
+        const foot = immersive.querySelector('.social-project-task-graph-immersive-footer');
+        const headH = Math.round(Number(head?.offsetHeight) || 0);
+        const footH = Math.round(Number(foot?.offsetHeight) || 0);
+        return headH + footH;
+    }
 
     function resolveProjectTaskGraphPanSlack(contentExtent = 0) {
-        const base = typeof window === 'undefined'
-            ? PROJECT_TASK_GRAPH_PAN_SLACK
-            : Math.max(PROJECT_TASK_GRAPH_PAN_SLACK, Math.round(window.innerWidth || 0), Math.round(window.innerHeight || 0));
+        const extent = Math.round(Number(contentExtent) || 0);
+        if (typeof window === 'undefined') {
+            return Math.max(PROJECT_TASK_GRAPH_PAN_SLACK, extent);
+        }
+        if (isProjectTaskGraphMobileViewport()) {
+            // Cap slack on phone so scroll-surface isn't ~5k×5k; still grow with content.
+            const viewport = Math.max(
+                Math.round(window.innerWidth || 0),
+                Math.round(window.innerHeight || 0)
+            );
+            const mobileBase = Math.max(480, Math.round(viewport * 1.5));
+            return Math.max(mobileBase, extent);
+        }
+        const base = Math.max(
+            PROJECT_TASK_GRAPH_PAN_SLACK,
+            Math.round(window.innerWidth || 0),
+            Math.round(window.innerHeight || 0)
+        );
         // Grow with scaled content so far-off cards stay reachable (not clamped to empty).
-        return Math.max(base, Math.round(Number(contentExtent) || 0));
+        return Math.max(base, extent);
     }
 
     function clampProjectTaskGraphPan(panX, panY, slack = resolveProjectTaskGraphPanSlack()) {
@@ -455,6 +494,16 @@
         const hasSelection = Boolean(text(runtime.ui?.projectTaskGraphSelectedId || ''));
         const viewportW = typeof window !== 'undefined' ? window.innerWidth : 1100;
         const viewportH = typeof window !== 'undefined' ? window.innerHeight : 720;
+        const mobile = isProjectTaskGraphMobileViewport();
+        if (mobile) {
+            // Bottom-sheet inspector overlays the map — do not subtract a side rail.
+            const measuredChrome = measureProjectTaskGraphImmersiveChromeH();
+            const chromeH = measuredChrome > 0 ? measuredChrome : PROJECT_TASK_GRAPH_MOBILE_CHROME_H;
+            return {
+                stageWidth: Math.max(280, Math.round(viewportW)),
+                stageHeight: Math.max(240, Math.round(viewportH - chromeH))
+            };
+        }
         let stageWidth = Math.max(720, viewportW);
         let stageHeight = Math.max(480, viewportH - PROJECT_TASK_GRAPH_IMMERSIVE_CHROME_H);
         // Right detail rail always present (overview + inspector / empty state).
@@ -1633,10 +1682,13 @@
         PROJECT_TASK_GRAPH_CARD_COMPACT_MIN_H,
         PROJECT_TASK_GRAPH_CARD_COMPACT_MAX_H,
         PROJECT_TASK_GRAPH_IMMERSIVE_CHROME_H,
+        PROJECT_TASK_GRAPH_MOBILE_CHROME_H,
         PROJECT_TASK_STATUS_RANK,
         PROJECT_TASK_PRIORITY_RANK,
         clampProjectTaskGraphCardHeight,
         estimateProjectTaskGraphCardHeight,
+        isProjectTaskGraphMobileViewport,
+        measureProjectTaskGraphImmersiveChromeH,
         normalizeProjectTaskGraphMode,
         projectTaskGraphVisibleEdges,
         buildProjectTaskGraphModel,

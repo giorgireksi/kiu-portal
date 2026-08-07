@@ -471,6 +471,7 @@ function canViewSocialProject(project, userId) {
     const visibility = normalizeSocialVisibility(project.visibility, 'private');
     if (visibility === 'faculty') {
         const faculties = socialIdArray(project.facultyCodes || []).map((code) => normalizeCode(code || ''));
+        if (faculties.includes('ALL')) return true;
         return faculties.includes(viewerFacultyCode);
     }
     return false;
@@ -917,6 +918,7 @@ function updateSocialProjectTaskGraph(projectId, payload = {}, actorId = '') {
     const hasPositions = Object.prototype.hasOwnProperty.call(payload, 'taskGraphPositions');
     const hasView = Object.prototype.hasOwnProperty.call(payload, 'taskGraphView');
     const hasGroups = Object.prototype.hasOwnProperty.call(payload, 'taskGraphGroups');
+    const recordActivity = payload.recordActivity === true;
     if (!hasPositions && !hasView && !hasGroups) return null;
     const beforeState = clone(project);
     if (hasPositions) project.taskGraphPositions = normalizeTaskGraphPositions(payload.taskGraphPositions);
@@ -947,7 +949,14 @@ function updateSocialProjectTaskGraph(projectId, payload = {}, actorId = '') {
     const capturedAt = nowIso();
     project.taskGraphUpdatedAt = capturedAt;
     project.updatedAt = capturedAt;
-    this.appendSocialProjectActivity(project.id, normalizedActorId, 'project-task-graph-updated', `${this.getSocialActorDisplayName(normalizedActorId)} updated the task map layout.`);
+    if (recordActivity) {
+        this.appendSocialProjectActivity(
+            project.id,
+            normalizedActorId,
+            'project-task-graph-saved',
+            `${this.getSocialActorDisplayName(normalizedActorId)} saved meaningful task map changes.`
+        );
+    }
     this.saveSocialMutation(normalizedActorId, 'project-task-graph-updated', 'social-project', project.id, beforeState, project);
     return decorateSocialProject.call(this, project, normalizedActorId);
 }

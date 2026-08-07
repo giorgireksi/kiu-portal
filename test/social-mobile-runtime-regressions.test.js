@@ -16,7 +16,7 @@ describe('social-mobile-runtime-regressions.test (bare-shell era)', () => {
         const source = readSource('assets/js/pages/social-mobile.js');
         expect(source).toContain('function syncMobileTopbarVisibility()');
         expect(source).toContain("style.setProperty('display', 'none', 'important')");
-        expect(readSource('social.html')).toMatch(/social-mobile\.js\?v=20260806-shortcuttop1/);
+        expect(readSource('social.html')).toMatch(/social-mobile\.js\?v=20260807-theme1/);
 
         const dom = new JSDOM(
             `<!DOCTYPE html><html><head></head><body class="lux-route-social lux-unified-shell">
@@ -157,5 +157,42 @@ describe('social-mobile-runtime-regressions.test (bare-shell era)', () => {
         expect(html).toContain('mob-sheet-section--social-top');
         expect(html.indexOf('Social Shortcuts')).toBeGreaterThan(-1);
         expect(html.indexOf('Social Shortcuts')).toBeLessThan(html.indexOf('Core'));
+    });
+
+    it('opens the color studio from Theme, not the dashboard customize button', () => {
+        const source = readSource('assets/js/pages/social-mobile.js');
+        expect(source).toContain("getElementById('lux-palette-btn')");
+        expect(source).toContain('window.openStudio');
+        expect(source).not.toMatch(/function openStudioPanel\(\) \{[\s\S]*lux-topbar-editor-btn/);
+
+        const dom = new JSDOM(
+            `<!DOCTYPE html><html><head></head><body class="lux-route-social lux-unified-shell">
+        <button id="lux-palette-btn" type="button"></button>
+        <div id="mobile-action-sheet" style="display:none;">
+          <button id="mob-act-theme" type="button"></button>
+        </div>
+      </body></html>`,
+            { url: 'http://localhost/social.html', runScripts: 'outside-only' }
+        );
+        dom.window.innerWidth = 480;
+        dom.window.requestAnimationFrame = (cb) => {
+            cb(0);
+            return 1;
+        };
+        dom.window.setTimeout = (cb) => {
+            cb();
+            return 1;
+        };
+
+        const paletteClick = vi.fn();
+        dom.window.document.getElementById('lux-palette-btn')
+            ?.addEventListener('click', paletteClick);
+
+        dom.window.eval(readSource('assets/js/pages/social-mobile.js'));
+        dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded', { bubbles: true }));
+        dom.window.document.getElementById('mob-act-theme')
+            ?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+
+        expect(paletteClick).toHaveBeenCalledTimes(1);
     });
 });

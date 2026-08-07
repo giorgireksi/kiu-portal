@@ -549,9 +549,15 @@
                     || text(existing?.expiresAt || defaultLostFoundExpiresAt());
                 if (!expiresAt) throw new Error('Listing end time is required.');
                 if (new Date(expiresAt).getTime() <= Date.now()) throw new Error('Listing end time must be in the future.');
-                const facultyCode = text(form.lostFoundFaculty?.value || runtime.ui?.lostFoundFaculty || existing?.facultyCode || '')
-                    || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || '');
-                if (!facultyCode || facultyCode === 'all') throw new Error('Faculty is required.');
+                const facultyCode = typeof (window.KiuSocialChromeModel || {}).socialNormalizeCreateFacultyCode === 'function'
+                    ? (window.KiuSocialChromeModel.socialNormalizeCreateFacultyCode(
+                        text(form.lostFoundFaculty?.value || runtime.ui?.lostFoundFaculty || existing?.facultyCode || '')
+                            || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
+                        runtime
+                    ))
+                    : (text(form.lostFoundFaculty?.value || runtime.ui?.lostFoundFaculty || existing?.facultyCode || '')
+                        || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''));
+                if (!facultyCode) throw new Error('Faculty is required.');
                 const nextItem = normalizeLostFoundItem({
                     ...existing,
                     id: editId || makeId('lf'),

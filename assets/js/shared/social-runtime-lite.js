@@ -758,7 +758,7 @@ Publishes only the host/runtime contract consumed by its loader.
         const targetIds = unique(ids).filter((id) => !runtime.accountsById[id]);
         if (!targetIds.length) return [];
         const query = new URLSearchParams({ ids: targetIds.join(','), limit: String(Math.max(targetIds.length, 10)) });
-        const payload = await portalRequest(`/api/admin/accounts?${query.toString()}`);
+        const payload = await portalRequest(`/api/accounts/directory?${query.toString()}`);
         const items = Array.isArray(payload?.items) ? payload.items : [];
         mergeAccounts(items);
         return items;
@@ -1019,7 +1019,7 @@ Publishes only the host/runtime contract consumed by its loader.
         });
         if (runtime.ui.directoryRole && runtime.ui.directoryRole !== 'all') query.set('role', runtime.ui.directoryRole);
         if (!runtime.ui.directorySearch && user.role !== 'admin') query.set('facultyCode', currentFacultyCode());
-        runtime.directoryPromise = portalRequest(`/api/admin/accounts?${query.toString()}`)
+        runtime.directoryPromise = portalRequest(`/api/accounts/directory?${query.toString()}`)
             .then((payload) => {
                 if (text(currentUserId()) !== requestUserId) return runtime.directory;
                 const items = Array.isArray(payload?.items) ? payload.items : [];

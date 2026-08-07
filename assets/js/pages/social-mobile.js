@@ -359,18 +359,19 @@
     }
 
     function openStudioPanel() {
-        const editorButton = document.querySelector('.lux-topbar-editor-btn');
-        if (editorButton) {
-            editorButton.click();
+        const paletteButton = document.getElementById('lux-palette-btn');
+        if (paletteButton) {
+            paletteButton.click();
+            return;
+        }
+        if (typeof window.openStudio === 'function') {
+            window.openStudio();
             return;
         }
         const backdrop = document.querySelector('.lux-studio-backdrop');
         if (backdrop) {
             backdrop.classList.add('is-open');
-            return;
-        }
-        if (typeof window.openStudio === 'function') {
-            window.openStudio();
+            document.body.classList.add('lux-studio-open');
         }
     }
 

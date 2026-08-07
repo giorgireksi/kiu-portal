@@ -47,6 +47,16 @@ describe('social-project-workspace-ui.test', () => {
         expect(bare).toContain('.social-project-detail-top {');
         expect(bare).toContain('.social-project-ring-card svg {');
         expect(bare).toContain('.social-project-hero-tab-icon');
+        expect(bare).toContain('.social-projects-shell .social-project-scroll-list--activity');
+        expect(bare).toContain('max-height: none;');
+        expect(bare).toContain('overflow: visible;');
+        expect(bare).toContain('overscroll-behavior: auto;');
         expect(bare).not.toMatch(/button\.social-project-tab-pill/);
+    });
+
+    it('wheel forwarding recognizes bounded project scroll rails', () => {
+        const runtime = readSource('assets/js/pages/social-page-shell-runtime.js');
+        expect(runtime).toContain('.social-project-scroll-list');
+        expect(runtime).toContain('socialInnerScrollerCanAbsorbWheel(innerScroller, event.deltaY)');
     });
 });

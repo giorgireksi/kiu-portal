@@ -238,7 +238,7 @@
             const scheduleStartValue = toDateTimeLocalValue(project.scheduleStartAt || '');
             const pageSurface = options.pageSurface === true;
             const surfaceOpen = pageSurface
-                ? '<section class="social-page-surface social-project-settings-page" data-social-page-surface="project-settings" data-action="noop" aria-label="Workspace settings">'
+                ? '<section class="social-page-surface social-project-settings-page" data-social-page-surface="project-settings" data-lux-transparency-exempt="1" data-action="noop" aria-label="Workspace settings">'
                 : '<div class="lux-glass-dialog-backdrop" data-action="dialog-close">';
             const formClass = pageSurface
                 ? 'social-page-surface-content'
@@ -347,7 +347,8 @@
                             <div class="lux-glass-dialog-project-create-faculties">
                                 <span class="social-neo-label">Faculties involved *</span>
                                 <div class="social-neo-badge-row social-neo-badge-row-mt-8">
-                                    ${ctx.facultyOptions.map((facultyCode) => `<button class="lux-secondary-btn ${ctx.projectFaculties.includes(facultyCode) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>`).join('')}
+                                    <button class="lux-secondary-btn ${ctx.projectFaculties.some((code) => text(code) === (((window.KiuSocialChromeModel || {}).SOCIAL_BROWSE_FACULTY_ALL) || 'all')) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(((window.KiuSocialChromeModel || {}).SOCIAL_BROWSE_FACULTY_ALL) || 'all')}">${escape(((window.KiuSocialChromeModel || {}).socialBrowseFacultyAllLabel?.()) || 'All faculties')}</button>
+                                    ${ctx.facultyOptions.filter((facultyCode) => text(facultyCode) !== (((window.KiuSocialChromeModel || {}).SOCIAL_BROWSE_FACULTY_ALL) || 'all')).map((facultyCode) => `<button class="lux-secondary-btn ${ctx.projectFaculties.includes(facultyCode) ? 'lux-primary-btn' : 'lux-secondary-btn'} lux-secondary-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>`).join('')}
                                 </div>
                             </div>
                         </section>

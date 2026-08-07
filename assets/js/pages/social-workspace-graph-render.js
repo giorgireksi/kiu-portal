@@ -879,7 +879,7 @@
                 }).join('')
                 : `<div class="social-neo-empty sptg-history-empty">No saves yet. Click <strong>Save</strong> on the map to create one.</div>`;
             return `
-                <section class="social-page-surface social-project-task-graph-history-page sptg-history-dialog" data-social-page-surface="project-task-graph-history" data-action="noop" aria-label="Map save history">
+                <section class="social-page-surface social-project-task-graph-history-page sptg-history-dialog lux-studio-panel" data-social-page-surface="project-task-graph-history" data-lux-transparency-exempt="1" data-action="noop" aria-label="Map save history">
                     <header class="social-page-surface-head">
                         <div class="social-page-surface-heading">
                             <strong><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Map save history</strong>
@@ -922,7 +922,7 @@
                 </div>
             `).join('');
             return `
-                <section class="social-page-surface social-project-task-graph-schedule-page sptg-schedule-help-dialog" data-social-page-surface="project-task-graph-schedule-help" data-action="noop" aria-label="Schedule terms">
+                <section class="social-page-surface social-project-task-graph-schedule-page sptg-schedule-help-dialog lux-studio-panel" data-social-page-surface="project-task-graph-schedule-help" data-lux-transparency-exempt="1" data-action="noop" aria-label="Schedule terms">
                     <header class="social-page-surface-head">
                         <div class="social-page-surface-heading">
                             <strong><i class="fas fa-circle-question" aria-hidden="true"></i> Schedule terms</strong>
@@ -1555,9 +1555,10 @@
                     ? 'No open tasks assigned to you. Turn off Only mine to see the full map.'
                     : 'No tasks yet. Add a task to populate the map.'}</div>`;
             const railContent = renderProjectTaskGraphDetailRailContent(project, runtime, projectTasks);
-            const detailRailMarkup = `<aside class="lux-card social-project-task-graph-detail-rail lux-soft-chrome${railContent.empty ? ' is-empty' : ''}" data-lux-transparency-exempt="1">${railContent.markup}</aside>`;
+            const railOpen = !railContent.empty;
+            const detailRailMarkup = `<aside class="lux-card social-project-task-graph-detail-rail lux-soft-chrome${railContent.empty ? ' is-empty' : ''}" data-lux-transparency-exempt="1"><div class="social-project-task-graph-rail-sheet-handle" aria-hidden="true"></div>${railContent.markup}</aside>`;
             const modeToolbar = canContribute && linkFromId ? `
-                <div class="social-page-toolbar-group social-project-task-graph-mode-toolbar" role="group" aria-label="Link actions">
+                <div class="social-page-toolbar-group social-project-task-graph-mode-toolbar social-project-task-graph-more-item" role="group" aria-label="Link actions">
                     <button class="lux-secondary-btn" type="button" data-action="project-task-graph-link-cancel"><i class="fas fa-times"></i> Cancel</button>
                 </div>
             ` : '';
@@ -1571,7 +1572,7 @@
                 ? `${graphCheckpoints.length} save${graphCheckpoints.length === 1 ? '' : 's'} — open history`
                 : 'Open save history';
             const groupFocusPills = mapGroups.length ? `
-                <label class="social-page-toolbar-field social-project-task-graph-group-focus" title="Focus a package (portrait mode)">
+                <label class="social-page-toolbar-field social-project-task-graph-group-focus social-project-task-graph-more-item" title="Focus a package (portrait mode)">
                     <i class="fas fa-layer-group" aria-hidden="true"></i>
                     <select class="lux-control social-project-task-graph-group-select" name="projectTaskGraphFocusGroup" data-lux-picker aria-label="Focus package">
                         <option value="" ${!focusGroupId ? 'selected' : ''}>All packages</option>
@@ -1586,42 +1587,52 @@
             ` : '';
             const showCritical = projectTaskGraphShowCritical(runtime);
             const checkpointBtns = canContribute ? `
-                                    <div class="social-page-toolbar-group social-project-task-graph-checkpoint-controls">
+                                    <div class="social-page-toolbar-group social-project-task-graph-checkpoint-controls social-project-task-graph-more-item">
                                         <button class="lux-primary-btn social-project-task-graph-save-btn" type="button" data-action="project-task-graph-save" data-project-id="${escape(text(project.id))}" title="${escape(saveTitle)}"><i class="fas fa-floppy-disk" aria-hidden="true"></i> Save</button>
                                         <button class="lux-secondary-btn social-project-task-graph-history-btn" type="button" data-action="project-task-graph-history-open" data-project-id="${escape(text(project.id))}" title="${escape(historyTitle)}"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> History${graphCheckpoints.length ? ` <span class="lux-status-pill">${escape(String(graphCheckpoints.length))}</span>` : ''}</button>
                                     </div>
             ` : '';
             const criticalToggleBtn = `
-                                    <button class="lux-secondary-btn social-project-task-graph-critical-toggle${showCritical ? ' is-active' : ''}" type="button" data-action="project-task-graph-toggle-critical" title="${showCritical ? 'Hide critical path emphasis on the map' : 'Highlight critical path on the map'}" aria-pressed="${showCritical ? 'true' : 'false'}"><i class="fas fa-route" aria-hidden="true"></i> Critical path</button>
+                                    <button class="lux-secondary-btn social-project-task-graph-critical-toggle social-project-task-graph-more-item${showCritical ? ' is-active' : ''}" type="button" data-action="project-task-graph-toggle-critical" title="${showCritical ? 'Hide critical path emphasis on the map' : 'Highlight critical path on the map'}" aria-pressed="${showCritical ? 'true' : 'false'}"><i class="fas fa-route" aria-hidden="true"></i> Critical path</button>
+            `;
+            const onlyMineToolbarBtn = `
+                                    <button type="button" class="social-project-task-graph-my-switch${mineOnly ? ' is-active' : ''}" data-action="project-task-graph-toggle-my" role="switch" aria-checked="${mineOnly ? 'true' : 'false'}" title="Show only tasks assigned to you (same as Desk Mine)">
+                                        <span>Only mine</span>
+                                        <span class="social-project-task-graph-my-switch-track" aria-hidden="true"></span>
+                                    </button>
             `;
             return `
-                <main class="social-page-surface social-project-task-graph-page" data-social-page-surface="project-task-graph" data-action="noop" aria-label="Task map">
-                        <div class="social-project-task-graph-immersive">
+                <main class="social-page-surface social-project-task-graph-page" data-social-page-surface="project-task-graph" data-lux-transparency-exempt="1" data-action="noop" aria-label="Task map">
+                        <div class="social-project-task-graph-immersive${railOpen ? ' is-rail-open' : ''}">
                             <header class="social-page-surface-head social-project-task-graph-page-head lux-soft-chrome home-hover-chip">
-                                <div class="social-page-surface-heading social-project-task-graph-immersive-title">
-                                    <strong class="social-page-surface-title"><i class="fas fa-diagram-project" aria-hidden="true"></i> Task map</strong>
-                                    <span class="social-page-surface-subtitle">${escape(text(project.name || 'Project'))}</span>
-                                </div>
                                 <div class="social-page-surface-actions social-project-task-graph-immersive-actions social-project-task-graph-page-actions">
-                                    ${modeToolbar}
-                                    ${groupFocusPills}
-                                    ${checkpointBtns}
-                                    <div class="social-page-toolbar-group social-project-task-graph-schedule-controls">
-                                        ${criticalToggleBtn}
+                                    <div class="social-page-toolbar-group social-project-task-graph-essential-controls">
+                                        <button class="lux-ghost-btn social-project-task-graph-back-btn" type="button" data-action="dialog-close" aria-label="Back to workspace"><i class="fas fa-arrow-left"></i> <span class="social-project-task-graph-btn-label">Back to workspace</span></button>
+                                        <div class="social-page-toolbar-group social-project-task-graph-zoom-controls">
+                                            <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fas fa-minus"></i></button>
+                                            <span class="social-page-toolbar-zoom-label social-project-task-graph-zoom-label">${escape(String(Math.round(zoom * 100)))}%</span>
+                                            <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fas fa-plus"></i></button>
+                                            <button class="lux-secondary-btn social-project-task-graph-zoom-btn social-project-task-graph-reset-view-btn" type="button" data-action="project-task-graph-reset-view" title="Reset view — fit all tasks"><i class="fas fa-expand"></i> <span class="social-project-task-graph-btn-label">Reset</span></button>
+                                        </div>
+                                        ${canContribute
+                                            ? `<button class="lux-primary-btn social-project-task-graph-add-btn social-project-task-graph-essential-add" type="button" data-action="project-task-create-open" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> <span class="social-project-task-graph-btn-label">Add</span></button>`
+                                            : ''}
                                     </div>
-                                    <div class="social-page-toolbar-group social-project-task-graph-nav-controls">
-                                        ${renderProjectWorkspaceNavButtons(project, { buttonClass: 'lux-secondary-btn' })}
+                                    <div class="social-project-task-graph-tool-strip social-project-task-graph-more-panel" id="sptg-more-panel" data-project-task-graph-more-panel="1" aria-label="Task map tools" aria-hidden="false">
+                                        ${modeToolbar}
+                                        ${groupFocusPills}
+                                        ${checkpointBtns}
+                                        <div class="social-page-toolbar-group social-project-task-graph-schedule-controls social-project-task-graph-more-item">
+                                            ${criticalToggleBtn}
+                                        </div>
+                                        <div class="social-page-toolbar-group social-project-task-graph-nav-controls social-project-task-graph-more-item">
+                                            ${renderProjectWorkspaceNavButtons(project, { buttonClass: 'lux-secondary-btn' })}
+                                        </div>
+                                        ${onlyMineToolbarBtn}
                                     </div>
-                                    <div class="social-page-toolbar-group social-project-task-graph-zoom-controls">
-                                        <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-out" title="Zoom out" aria-label="Zoom out"><i class="fas fa-minus"></i></button>
-                                        <span class="social-page-toolbar-zoom-label social-project-task-graph-zoom-label">${escape(String(Math.round(zoom * 100)))}%</span>
-                                        <button class="lux-secondary-btn social-project-task-graph-zoom-btn" type="button" data-action="project-task-graph-zoom-in" title="Zoom in" aria-label="Zoom in"><i class="fas fa-plus"></i></button>
-                                        <button class="lux-secondary-btn social-project-task-graph-zoom-btn social-project-task-graph-reset-view-btn" type="button" data-action="project-task-graph-reset-view" title="Reset view — fit all tasks"><i class="fas fa-expand"></i> Reset view</button>
-                                    </div>
-                                    <button class="lux-ghost-btn" type="button" data-action="dialog-close" aria-label="Back to workspace"><i class="fas fa-arrow-left"></i> Back to workspace</button>
                                 </div>
                             </header>
-                            <div class="social-project-task-graph-immersive-body">
+                            <div class="social-project-task-graph-immersive-body${railOpen ? ' is-rail-open' : ''}">
                                 <div class="social-project-task-graph-stage social-project-task-graph-stage--immersive is-mode-browse is-mode-link${focusGroupId ? ' is-group-portrait' : ''}" data-project-task-graph-stage="1" data-lux-transparency-exempt="1">
                                     ${canvasMarkup}
                                     ${renderProjectTaskGraphQuickCreatePopover(project, runtime)}
@@ -1632,17 +1643,6 @@
                                 <div class="social-project-task-graph-footer-main" data-lux-transparency-exempt="1" aria-label="Task status and progress">
                                     ${renderProjectTaskGraphHealth(allTasks, runtime)}
                                     ${renderProjectTaskGraphStatusMini(project, allTasks)}
-                                </div>
-                                <div class="social-project-task-graph-footer-tools">
-                                    <button type="button" class="social-project-task-graph-my-switch${mineOnly ? ' is-active' : ''}" data-action="project-task-graph-toggle-my" role="switch" aria-checked="${mineOnly ? 'true' : 'false'}" title="Show only tasks assigned to you (same as Desk Mine)">
-                                        <span>Only mine</span>
-                                        <span class="social-project-task-graph-my-switch-track" aria-hidden="true"></span>
-                                    </button>
-                                </div>
-                                <div class="social-project-task-graph-footer-actions">
-                                    ${canContribute
-                                        ? `<button class="lux-primary-btn social-project-task-graph-add-btn" type="button" data-action="project-task-create-open" data-project-id="${escape(text(project.id))}"><i class="fas fa-plus"></i> Add task</button>`
-                                        : ''}
                                 </div>
                             </footer>
                         </div>

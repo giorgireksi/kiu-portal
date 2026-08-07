@@ -86,13 +86,31 @@
             </div>`;
         }
 
-        function renderGraphStackLayers(runtime, childMarkup) {
-            const graphDialog = getProjectTaskGraphStackAnchorDialog(runtime)
+        function wrapProjectTaskGraphChildBackdrop(kind, childMarkup) {
+            const markup = String(childMarkup || '');
+            if (!markup) return '';
+            if (kind !== 'project-task-graph-history' && kind !== 'project-task-graph-schedule-help') {
+                return markup;
+            }
+            if (markup.includes('lux-glass-dialog-backdrop--stacked-child')) return markup;
+            return `<div class="lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child" data-lux-transparency-exempt="1">${markup}</div>`;
+        }
+
+        function renderGraphStackLayers(runtime, childMarkup, kind = '') {
+            let graphDialog = getProjectTaskGraphStackAnchorDialog(runtime)
                 || (runtime.ui?.previousDialog?.type === 'project-task-graph' ? runtime.ui.previousDialog : null);
-            if (!graphDialog) return childMarkup || '';
+            if (!graphDialog) {
+                const projectId = text(runtime.ui?.socialDialog?.projectId || runtime.ui?.activeProjectId || '');
+                if (!projectId) return '';
+                graphDialog = { type: 'project-task-graph', projectId };
+            }
+            const childSurface = wrapProjectTaskGraphChildBackdrop(
+                kind || runtime.ui?.socialDialog?.type,
+                childMarkup
+            );
             return wrapProjectTaskGraphStack(
                 renderProjectTaskGraphFullscreen(runtime, graphDialog),
-                childMarkup
+                childSurface
             );
         }
 
@@ -124,7 +142,7 @@
                 return renderHealthStackLayers(runtime, childMarkup);
             }
             if (shouldWrapGraphStackChild(runtime, kind)) {
-                return renderGraphStackLayers(runtime, childMarkup);
+                return renderGraphStackLayers(runtime, childMarkup, kind);
             }
             return childMarkup;
         }
@@ -165,10 +183,16 @@
                 return renderProjectRiskDialog(runtime, dialog);
             }
             if (normalizedKind === 'project-task-graph-history') {
-                return renderProjectTaskGraphHistoryDialog(runtime, dialog);
+                return wrapProjectTaskGraphChildBackdrop(
+                    normalizedKind,
+                    renderProjectTaskGraphHistoryDialog(runtime, dialog)
+                );
             }
             if (normalizedKind === 'project-task-graph-schedule-help') {
-                return renderProjectTaskGraphScheduleHelpDialog(runtime, dialog);
+                return wrapProjectTaskGraphChildBackdrop(
+                    normalizedKind,
+                    renderProjectTaskGraphScheduleHelpDialog(runtime, dialog)
+                );
             }
             return '';
         }
@@ -198,17 +222,11 @@
             }
             if (kind === 'project-task-graph-history') {
                 const child = renderProjectTaskGraphHistoryDialog(runtime, dialog);
-                if (shouldWrapGraphStackChild(runtime, kind)) {
-                    return renderGraphStackLayers(runtime, child);
-                }
-                return child;
+                return renderGraphStackLayers(runtime, child, kind);
             }
             if (kind === 'project-task-graph-schedule-help') {
                 const child = renderProjectTaskGraphScheduleHelpDialog(runtime, dialog);
-                if (shouldWrapGraphStackChild(runtime, kind)) {
-                    return renderGraphStackLayers(runtime, child);
-                }
-                return child;
+                return renderGraphStackLayers(runtime, child, kind);
             }
             if (kind === 'project-column-tasks') {
                 const project = resolveActiveSocialProject(runtime, dialog?.projectId);
@@ -247,7 +265,7 @@
             if (kind === 'project-health') {
                 const child = renderProjectHealthDialog(runtime, dialog);
                 if (shouldWrapGraphStackChild(runtime, kind)) {
-                    return renderGraphStackLayers(runtime, child);
+                    return renderGraphStackLayers(runtime, child, kind);
                 }
                 return child;
             }

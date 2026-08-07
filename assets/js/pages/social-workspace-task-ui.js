@@ -58,7 +58,7 @@
             const backdropClass = text(options.backdropClass || '');
             const pageSurface = options.pageSurface === true;
             const surfaceOpen = pageSurface
-                ? '<section class="social-page-surface social-project-task-delete-page" data-social-page-surface="project-task-delete" data-action="noop" aria-label="Remove task">'
+                ? '<section class="social-page-surface social-project-task-delete-page" data-social-page-surface="project-task-delete" data-lux-transparency-exempt="1" data-action="noop" aria-label="Remove task">'
                 : `<div class="${['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ')}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Remove task">`;
             const formClass = pageSurface
                 ? 'social-page-surface-content social-neo-delete-confirm'
@@ -114,7 +114,7 @@
             const backdropClass = projectTaskGraphStackedBackdropClass(runtime, isEdit ? 'project-task-edit' : 'project-task-create');
             const pageSurface = options.pageSurface === true;
             const surfaceOpen = pageSurface
-                ? `<section class="social-page-surface social-project-task-form-page" data-social-page-surface="project-task-${isEdit ? 'edit' : 'create'}" data-action="noop" aria-label="${isEdit ? 'Edit task' : 'Create task'}">`
+                ? `<section class="social-page-surface social-project-task-form-page" data-social-page-surface="project-task-${isEdit ? 'edit' : 'create'}" data-lux-transparency-exempt="1" data-action="noop" aria-label="${isEdit ? 'Edit task' : 'Create task'}">`
                 : `<div class="${['lux-glass-dialog-backdrop', backdropClass].filter(Boolean).join(' ')}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="${isEdit ? 'Edit task' : 'Create task'}">`;
             const formClass = pageSurface
                 ? 'social-page-surface-content'

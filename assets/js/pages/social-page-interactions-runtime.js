@@ -816,30 +816,40 @@ function isPhoneSocialShortcutsViewport() {
     } catch (error) {}
     return Number(window.innerWidth || 0) <= 1024;
 }
+function socialWorkspaceTopNavPanelsFallback() {
+    return [
+        { id: 'feed', label: 'Home', icon: 'fa-house' },
+        { id: 'community', label: 'People', icon: 'fa-user-group' },
+        { id: 'groups', label: 'Groups', icon: 'fa-layer-group' },
+        { id: 'workspace', label: 'Projects', icon: 'fa-diagram-project' },
+        { id: 'projects', label: 'Portfolio', icon: 'fa-briefcase' },
+        { id: 'research', label: 'Research', icon: 'fa-book-open' },
+        { id: 'pages', label: 'Pages', icon: 'fa-flag' },
+        { id: 'events', label: 'Events', icon: 'fa-calendar-days' },
+        { id: 'surveys', label: 'Surveys', icon: 'fa-clipboard-list' },
+        { id: 'photography', label: 'Exposé', icon: 'fa-camera-retro' },
+        { id: 'lost-and-found', label: 'Lost & Found', icon: 'fa-magnifying-glass-location' },
+        { id: 'messages', label: 'Messages', icon: 'fa-comments' },
+        { id: 'alerts', label: 'Alerts', icon: 'fa-bell' }
+    ];
+}
 function renderSocialShortcutsTopNavFallback(activePanel) {
     const escapeHtml = typeof escape === 'function' ? escape : (value) => String(value ?? '');
     const active = text(activePanel || '');
-    const items = [
-        { id: 'feed', label: 'Feed', icon: 'fa-stream' },
-        { id: 'photography', label: 'Exposé', icon: 'fa-camera-retro' },
-        { id: 'workspace', label: 'Projects', icon: 'fa-diagram-project' },
-        { id: 'projects', label: 'Portfolio', icon: 'fa-briefcase' },
-        { id: 'lost-and-found', label: 'Lost', icon: 'fa-magnifying-glass-location' },
-        { id: 'surveys', label: 'Surveys', icon: 'fa-clipboard-list' },
-        { id: 'research', label: 'Research', icon: 'fa-book-open' },
-        { id: 'profile', label: 'Saved', icon: 'fa-bookmark', profileTab: 'saved' },
-        { id: 'alerts', label: 'Mods', icon: 'fa-shield-halved' }
-    ];
+    const resolvePanels = window.activeNavPanels || window.KiuSocialPanelModel?.activeNavPanels;
+    const panels = typeof resolvePanels === 'function'
+        ? resolvePanels()
+        : socialWorkspaceTopNavPanelsFallback();
     return `
-        <nav class="social-shortcuts-top-nav" aria-label="Social shortcuts">
+        <nav class="social-shortcuts-top-nav" aria-label="Social Workspace">
             <div class="social-shortcuts-top-nav-row">
-                ${items.map((item) => {
-                    const isActive = item.profileTab ? active === 'profile' : active === item.id;
-                    const profileAttr = item.profileTab ? ` data-profile-tab="${escapeHtml(item.profileTab)}"` : '';
+                ${panels.map((panel) => {
+                    const panelId = text(panel?.id || '');
+                    const isActive = active === panelId;
                     return `
-                    <button type="button" class="social-shortcuts-top-nav-btn${isActive ? ' is-active' : ''}" data-action="panel-${escapeHtml(item.id)}"${profileAttr}>
-                        <i class="fas ${escapeHtml(item.icon)}" aria-hidden="true"></i>
-                        <span>${escapeHtml(item.label)}</span>
+                    <button type="button" class="social-shortcuts-top-nav-btn${isActive ? ' is-active' : ''}" data-action="panel-${escapeHtml(panelId)}">
+                        <i class="fas ${escapeHtml(text(panel?.icon || ''))}" aria-hidden="true"></i>
+                        <span>${escapeHtml(text(panel?.label || panelId))}</span>
                     </button>`;
                 }).join('')}
             </div>
@@ -863,6 +873,50 @@ function bindSocialShortcutsViewportWatcher() {
         else if (typeof mql.addListener === 'function') mql.addListener(onChange);
     } catch (error) {}
 }
+function updateSocialShortcutsScrollIndicator(nav, row, indicator) {
+    if (!nav || !row || !indicator) return;
+    const overflow = Math.max(0, row.scrollWidth - row.clientWidth);
+    const hasOverflow = overflow > 1;
+    indicator.hidden = !hasOverflow;
+    if (!hasOverflow) return;
+    const trackWidth = Math.max(1, Math.round(indicator.getBoundingClientRect().width || nav.clientWidth));
+    const thumbWidth = Math.max(28, Math.round(trackWidth * (row.clientWidth / row.scrollWidth)));
+    const maxOffset = Math.max(0, trackWidth - thumbWidth);
+    const progress = Math.max(0, Math.min(1, row.scrollLeft / overflow));
+    const thumb = indicator.firstElementChild;
+    if (!thumb) return;
+    thumb.style.width = `${thumbWidth}px`;
+    thumb.style.transform = `translateX(${Math.round(maxOffset * progress)}px)`;
+}
+function bindSocialShortcutsScrollIndicator(portal) {
+    const nav = portal?.querySelector?.('.social-shortcuts-top-nav');
+    const row = nav?.querySelector?.('.social-shortcuts-top-nav-row');
+    if (!nav || !row) return;
+    let indicator = nav.querySelector('[data-social-shortcuts-scroll-indicator]');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.className = 'social-shortcuts-top-nav-scroll-indicator';
+        indicator.dataset.socialShortcutsScrollIndicator = '1';
+        indicator.setAttribute('aria-hidden', 'true');
+        indicator.innerHTML = '<span class="social-shortcuts-top-nav-scroll-thumb"></span>';
+        nav.appendChild(indicator);
+    }
+    const update = () => updateSocialShortcutsScrollIndicator(nav, row, indicator);
+    if (row.__kiuShortcutsScrollIndicatorBound) {
+        update();
+        return;
+    }
+    row.__kiuShortcutsScrollIndicatorBound = true;
+    row.addEventListener('scroll', update, { passive: true });
+    if (typeof ResizeObserver === 'function') {
+        const observer = new ResizeObserver(update);
+        observer.observe(row);
+        observer.observe(nav);
+        row.__kiuShortcutsScrollIndicatorObserver = observer;
+    }
+    update();
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(update);
+}
 /** Body-level host so fixed chrome is not trapped by #app-content stacking/contain (scrolls away). */
 function syncSocialShortcutsTopNavPortal(markup) {
     const html = String(markup || '').trim();
@@ -877,6 +931,10 @@ function syncSocialShortcutsTopNavPortal(markup) {
         document.body.classList.remove('social-has-shortcuts-top-nav');
         return;
     }
+    const existingRow = portal?.querySelector?.('.social-shortcuts-top-nav-row');
+    const priorScrollLeft = existingRow && Number.isFinite(existingRow.scrollLeft)
+        ? existingRow.scrollLeft
+        : null;
     if (!portal) {
         portal = document.createElement('div');
         portal.id = 'social-shortcuts-top-nav-portal';
@@ -891,6 +949,19 @@ function syncSocialShortcutsTopNavPortal(markup) {
     if (portal.__kiuLastMarkup !== html) {
         portal.innerHTML = html;
         portal.__kiuLastMarkup = html;
+    }
+    const nextRow = portal.querySelector('.social-shortcuts-top-nav-row');
+    if (nextRow && priorScrollLeft !== null) {
+        const maxScrollLeft = Math.max(0, nextRow.scrollWidth - nextRow.clientWidth);
+        nextRow.scrollLeft = Math.max(0, Math.min(maxScrollLeft, priorScrollLeft));
+    }
+    bindSocialShortcutsScrollIndicator(portal);
+    if (nextRow && priorScrollLeft !== null && typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(() => {
+            const maxScrollLeft = Math.max(0, nextRow.scrollWidth - nextRow.clientWidth);
+            nextRow.scrollLeft = Math.max(0, Math.min(maxScrollLeft, priorScrollLeft));
+            bindSocialShortcutsScrollIndicator(portal);
+        });
     }
     document.body.classList.add('social-has-shortcuts-top-nav');
 }

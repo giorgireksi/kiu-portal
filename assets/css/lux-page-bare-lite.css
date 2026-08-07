@@ -4,6 +4,7 @@
 body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content {
   min-width: 0;
 }
+
 body.lux-page-bare .lux-page-shell { display: grid; gap: 12px; padding: 12px 0; }
 body.lux-page-bare .lux-page-title, body.lux-page-bare h1 {
   color: var(--lux-text, #f8fafc);
@@ -23699,6 +23700,45 @@ body.lux-route-social .social-shortcuts-top-nav-row::-webkit-scrollbar-track {
   background: transparent;
 }
 
+body.lux-route-social .social-shortcuts-top-nav-row {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+body.lux-route-social .social-shortcuts-top-nav-row::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+body.lux-route-social .social-shortcuts-top-nav-scroll-indicator {
+  position: absolute;
+  right: max(8px, env(safe-area-inset-right, 0px));
+  bottom: 2px;
+  left: max(8px, env(safe-area-inset-left, 0px));
+  z-index: 3;
+  height: 3px;
+  overflow: hidden;
+  border: 1px solid var(--lux-panel-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-text) 12%, transparent);
+  pointer-events: none;
+}
+
+body.lux-route-social .social-shortcuts-top-nav-scroll-indicator[hidden] {
+  display: none;
+}
+
+body.lux-route-social .social-shortcuts-top-nav-scroll-thumb {
+  display: block;
+  height: 100%;
+  min-width: 28px;
+  border-radius: inherit;
+  background: var(--lux-accent);
+  box-shadow: var(--lux-elev-1);
+  will-change: transform, width;
+}
+
 body.lux-route-social .social-shortcuts-top-nav-btn {
   appearance: none;
   -webkit-appearance: none;
@@ -30039,6 +30079,1320 @@ body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages {
     }
 }
 
+/* Phone: densify Lost & Found — stack hero actions; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-shell {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-copy {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-copy h2 {
+        font-size: clamp(1.05rem, 4.5vw, 1.2rem);
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-actions {
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: stretch;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-actions .social-neo-hero-faculty {
+        flex: 1 1 auto;
+        max-width: none;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-actions .social-neo-hero-faculty .lux-universal-picker-field,
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-actions .social-neo-hero-faculty .lux-picker-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-create-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-stats--dual {
+        gap: 6px;
+        padding-block: 2px;
+        margin-block: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-stat {
+        padding: 10px 12px;
+        gap: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-stat strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-stat span {
+        font-size: 11px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-toolbar {
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 6px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        touch-action: pan-x;
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-tabs .lux-secondary-btn-sm {
+        flex: 0 0 auto;
+        min-height: 32px;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 999px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-toolbar label {
+        width: 100%;
+        gap: 4px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lost-found-hero-divider {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lf-empty {
+        padding: 18px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lf-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lf-card-head,
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lf-card-actions {
+        flex-wrap: wrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-lf-card-actions {
+        width: 100%;
+    }
+}
+
+/* Phone: densify Surveys — stack hero actions; chip lane/tab rows; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="surveys"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-shell {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-copy {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-copy h2 {
+        font-size: clamp(1.05rem, 4.5vw, 1.2rem);
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-actions {
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: stretch;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-actions .social-neo-hero-faculty {
+        flex: 1 1 auto;
+        max-width: none;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-actions .social-neo-hero-faculty .lux-universal-picker-field,
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-actions .social-neo-hero-faculty .lux-picker-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-create-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding-block: 2px;
+        margin-block: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-stat {
+        padding: 10px 12px;
+        gap: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-stat strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-stat span {
+        font-size: 11px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-grid--lanes,
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-grid:not(.social-neo-surveys-hero-grid--lanes) {
+        gap: 6px;
+        padding: 4px 2px;
+        border: 0;
+        background: transparent;
+        background-color: transparent;
+        background-image: none;
+        box-shadow: none;
+        width: 100%;
+        overflow: visible;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-grid--lanes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-grid:not(.social-neo-surveys-hero-grid--lanes) {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: stretch;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] button.social-neo-surveys-hero-tab.lux-secondary-btn {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        flex: unset;
+        width: 100%;
+        min-width: 0;
+        min-height: 48px;
+        padding: 6px 10px;
+        text-align: center;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-tab-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-tab-copy strong {
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-tab-copy small {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-tab-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-toolbar {
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-toolbar label {
+        width: 100%;
+        gap: 4px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-hero-divider {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-surveys-empty {
+        padding: 18px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-survey-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="surveys"] .social-neo-survey-card .social-neo-inline {
+        flex-wrap: wrap;
+    }
+}
+
+/* Phone: densify Research — stack hero actions; 2×2 stats/tabs; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="research"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="research"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-shell {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero,
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-catalog,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="research"] .social-neo-research-catalog {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-copy {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-title {
+        font-size: clamp(1.05rem, 4.5vw, 1.2rem);
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-actions {
+        display: flex;
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: stretch;
+        align-items: center;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-actions .social-neo-hero-faculty {
+        flex: 1 1 auto;
+        max-width: none;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-actions .social-neo-hero-faculty .lux-universal-picker-field,
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-actions .social-neo-hero-faculty .lux-picker-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-actions .lux-primary-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-stat {
+        padding: 10px 12px;
+        gap: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-stat strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-stat span {
+        font-size: 11px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-tab {
+        width: 100%;
+        min-width: 0;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-tab-copy small {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-toolbar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.lux-route-social .social-neo[data-panel="research"] .social-neo-research-empty {
+        padding: 18px 12px;
+    }
+}
+
+/* Phone: densify People / Community — stack hero; 2×2 stats/tabs; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="community"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="community"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-shell {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-copy {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-copy h2 {
+        font-size: clamp(1.05rem, 4.5vw, 1.2rem);
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-actions {
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: stretch;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-actions .social-neo-hero-faculty {
+        flex: 1 1 auto;
+        max-width: none;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-actions .social-neo-hero-faculty .lux-universal-picker-field,
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-actions .social-neo-hero-faculty .lux-picker-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-actions > .lux-secondary-btn[data-community-tab="requests"] {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding-block: 2px;
+        margin-block: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-stat {
+        padding: 10px 12px;
+        gap: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-stat strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-stat span {
+        font-size: 11px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding: 4px 2px;
+        border: 0;
+        background: transparent;
+        background-color: transparent;
+        background-image: none;
+        box-shadow: none;
+        width: 100%;
+        overflow: visible;
+        align-items: stretch;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] button.social-neo-community-hero-tab.lux-secondary-btn {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        flex: unset;
+        width: 100%;
+        min-width: 0;
+        min-height: 48px;
+        padding: 6px 10px;
+        text-align: center;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-tab-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-tab-copy strong {
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-tab-copy small {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-tab-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-divider {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-hero-toolbar {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-directory-filters {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-directory-item.social-neo-community-card {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 12px;
+        gap: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-action-row-primary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-action-row-secondary {
+        flex-wrap: wrap;
+    }
+}
+
+/* Phone: densify Projects / Workspace — compact hero; 2×3 stats; scroll hub filters; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="workspace"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-shell {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-head {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-actions {
+        display: flex;
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: stretch;
+        align-items: center;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-actions .social-neo-hero-faculty {
+        flex: 1 1 auto;
+        max-width: none;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-actions .social-neo-hero-faculty .lux-universal-picker-field,
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-actions .social-neo-hero-faculty .lux-picker-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-create-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding-block: 2px;
+        margin-block: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-stat {
+        padding: 10px 12px;
+        gap: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-stat strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hero-stat span {
+        font-size: 11px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-neo-workspace-hub-section,
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-discover {
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-scope {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 6px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        touch-action: pan-x;
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-scope .lux-secondary-btn-sm {
+        flex: 0 0 auto;
+        min-height: 32px;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 999px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-filterbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-filter-group--skills {
+        flex: unset;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-filter-pills {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 6px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        touch-action: pan-x;
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-filter-pills .lux-secondary-btn-sm {
+        flex: 0 0 auto;
+        min-height: 32px;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 999px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-main-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-view-toggle {
+        flex-wrap: wrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-contribution {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hub-rail-card {
+        padding: 10px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-card-new {
+        padding: 12px 14px;
+        min-height: 152px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-hero {
+        gap: 10px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-top {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-hero-rich h2 {
+        font-size: 1.25rem;
+        margin: 4px 0 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-copy .social-neo-badge-row {
+        gap: 6px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-actions {
+        justify-items: stretch;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-actions .social-neo-person {
+        justify-self: start;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-actions .social-neo-inline {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        width: 100%;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-actions .social-neo-inline > .lux-secondary-btn,
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-detail-actions .social-neo-inline > .lux-primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+        padding: 8px 6px;
+        font-size: 11px;
+        line-height: 1.2;
+        text-align: center;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-dashboard-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-metric-card-wide {
+        grid-column: 1 / -1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-ring-card,
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-metric-card {
+        padding: 10px 12px;
+        gap: 6px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-ring-card svg {
+        width: 56px;
+        height: 56px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-ring-copy strong,
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-metric-card strong {
+        font-size: 1.1rem;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-metric-card span {
+        font-size: 10px;
+        line-height: 1.2;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-metric-card-wide .social-project-sparkline-svg {
+        height: 72px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-metric-card-wide .social-project-sparkline-labels {
+        font-size: 10px;
+        margin-top: 4px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hero-grid.social-project-tab-row-rich {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        align-items: stretch;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hero-grid.social-project-tab-row-rich .social-project-hero-tab {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 6px 4px;
+        text-align: center;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hero-grid.social-project-tab-row-rich .social-project-hero-tab-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hero-grid.social-project-tab-row-rich .social-project-hero-tab-copy small {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="workspace"] .social-project-hero-grid.social-project-tab-row-rich .social-project-hero-tab-copy strong {
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+}
+
+/* Phone: densify Portfolio — stack hero actions; compact stats/tabs; scroll filters; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="projects"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="projects"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-shell {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-head {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-actions {
+        display: flex;
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: stretch;
+        align-items: center;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-actions .social-neo-hero-faculty {
+        flex: 1 1 100%;
+        max-width: none;
+        min-width: 0;
+        width: 100%;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-actions .social-neo-hero-faculty .lux-universal-picker-field,
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-actions .social-neo-hero-faculty .lux-picker-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-create-btn,
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-profile-btn {
+        flex: 1 1 auto;
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        padding-block: 2px;
+        margin-block: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-stat {
+        padding: 10px 8px;
+        gap: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-stat strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-stat span {
+        font-size: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-tabs-row {
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] :is(.portfolio-panel-tabs, .social-neo-portfolio-hero-tabs) {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        overflow: visible;
+        align-items: stretch;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] button.portfolio-panel-tab:is(.lux-primary-btn, .lux-secondary-btn) {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+        padding: 6px 8px;
+        text-align: center;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .portfolio-panel-tab-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .portfolio-panel-tab-copy small {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .portfolio-panel-tab-copy strong {
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-discover {
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-portfolio-toolbar-head span {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-portfolio-search-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-portfolio-tag-row {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 6px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        touch-action: pan-x;
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-portfolio-tag-row .lux-secondary-btn-sm {
+        flex: 0 0 auto;
+        min-height: 32px;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 999px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-neo-portfolio-hero-divider {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="projects"] .social-portfolio-card {
+        padding: 12px 14px;
+    }
+}
+
+/* Phone: densify Events — compact hero; 2×2 stats/tabs; stacked lane filters; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="events"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="events"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-shell {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero,
+    body.lux-light-mode.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-head {
+        width: 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-actions {
+        display: flex;
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: stretch;
+        align-items: center;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-actions .social-neo-hero-faculty {
+        flex: 1 1 auto;
+        max-width: none;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-actions .social-neo-hero-faculty .lux-universal-picker-field,
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-actions .social-neo-hero-faculty .lux-picker-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-create-trigger {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding-block: 2px;
+        margin-block: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-stat {
+        padding: 10px 12px;
+        gap: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-stat strong {
+        font-size: 1.35rem;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-stat span {
+        font-size: 11px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        padding: 4px 2px;
+        border: 0;
+        background: transparent;
+        background-color: transparent;
+        background-image: none;
+        box-shadow: none;
+        width: 100%;
+        overflow: visible;
+        align-items: stretch;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] button.social-neo-events-hero-tab.lux-secondary-btn {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        flex: unset;
+        width: 100%;
+        min-width: 0;
+        min-height: 48px;
+        padding: 6px 10px;
+        text-align: center;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-tab-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-tab-copy strong {
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-tab-copy small {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-tab-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero-divider {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero.is-merged .social-neo-events-list-card,
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-hero.is-merged .social-neo-events-manage-card {
+        padding: 10px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-section-head--events-student {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-section-head--events-student > div:first-child span {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-section-head--events-student .social-neo-events-student-filter {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        width: 100%;
+        flex: unset;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-section-head--events-student .social-neo-events-student-filter-tab.lux-secondary-btn {
+        width: 100%;
+        flex: unset;
+        min-height: 36px;
+        padding: 6px 10px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    body.lux-route-social .social-neo[data-panel="events"] .social-neo-events-empty {
+        padding: 18px 12px;
+    }
+}
+
+/* Phone: densify Alerts — compact header; 3×2 category grid; stack cards; hide VIEW strip. */
+@media (max-width: 1024px) {
+    body.lux-route-social .social-neo[data-panel="alerts"] #social-neo-command-region,
+    body.lux-route-social .social-neo[data-panel="alerts"] .social-pagination-mode-control {
+        display: none !important;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] #social-neo-center-region,
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-panel {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-panel {
+        gap: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-header {
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-header__toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-header__title {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-header__actions {
+        width: 100%;
+        justify-content: stretch;
+        gap: 6px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-header__actions .lux-secondary-btn {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-header__filters {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-category-filters.lux-tab-strip--segmented {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+        border-radius: 14px;
+        padding: 2px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-category-filters.lux-tab-strip--segmented .lux-tab-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 5px 2px;
+        box-sizing: border-box;
+        overflow: hidden;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.1;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-category-filters.lux-tab-strip--segmented .lux-tab-btn.lux-tab-btn--icon {
+        white-space: normal;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-category-filters.lux-tab-strip--segmented .lux-tab-btn:is(.is-active, [aria-pressed="true"], [aria-selected="true"]) {
+        border-color: transparent;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lux-accent) 24%, var(--lux-border));
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-category-filters.lux-tab-strip--segmented .lux-tab-btn > i {
+        font-size: 13px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-category-filters.lux-tab-strip--segmented .lux-tab-btn span:not(.lux-tab-badge) {
+        font-size: 9px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-category-filters.lux-tab-strip--segmented .lux-tab-badge {
+        font-size: 9px;
+        min-width: 16px;
+        padding: 1px 4px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-empty {
+        padding: 24px 12px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alert-card {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 12px;
+        gap: 10px;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alert-card__aside {
+        width: 100%;
+        justify-items: start;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-mod-toggle {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    body.lux-route-social .social-neo[data-panel="alerts"] .sn-alerts-mod-body {
+        padding: 8px 0 0;
+    }
+}
+
 /* Social: call overlay PiP (portal-call SSOT in layout-portal.css) */
 body.lux-route-social #social-neo-call-overlay.portal-call-overlay {
     z-index: 4200;
@@ -31499,7 +32853,27 @@ body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sp
     flex: 0 0 auto;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .social-page-surface-body {
+    flex: 1 1 auto;
     min-height: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page {
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    min-height: 100dvh;
+    overflow: hidden;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page-head {
+    width: 100%;
+    box-sizing: border-box;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page-head .social-page-surface-heading {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page-head > .lux-ghost-btn {
+    flex: 0 0 auto;
 }
 body.lux-route-social #social-neo-overlay-portal .social-page-section-head {
     display: grid;
@@ -31540,7 +32914,9 @@ body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-
     display: grid;
     grid-template-columns: minmax(220px, 32%) minmax(0, 1fr);
     gap: 14px;
-    min-height: min(420px, 62vh);
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
     align-items: stretch;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-risk-page :is(.spr-rail, .spr-main) {
@@ -31581,6 +32957,14 @@ body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-
     color: var(--lux-text-muted);
     font-size: 11px;
     font-weight: 650;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page > .social-page-form-actions {
+    width: 100%;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding: 12px max(18px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px))
+        max(18px, env(safe-area-inset-left, 0px));
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card.lux-card,
 body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-why.lux-card {
@@ -31975,6 +33359,158 @@ body.lux-route-social #social-neo-overlay-portal .social-page-surface .lux-glass
         overflow: visible;
     }
 }
+@media (max-width: 900px) {
+    body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .social-page-surface-body {
+        overflow: auto;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, auto) minmax(0, 1fr);
+        gap: 12px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-rail {
+        max-height: min(36dvh, 280px);
+        overflow: auto;
+        overscroll-behavior: contain;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-main {
+        min-height: min(320px, 52dvh);
+        overflow: hidden;
+    }
+}
+@media (max-width: 720px) {
+    body.lux-route-social #social-neo-overlay-portal .social-project-risk-page > .social-page-form-actions {
+        justify-content: stretch;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-risk-page > .social-page-form-actions > button {
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 44px;
+    }
+}
+
+/* Risk register compose: keep the global luxury controls from overpowering the form. */
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose {
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose-head {
+    gap: 4px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--lux-border);
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose-head > strong {
+    color: var(--lux-text);
+    font-size: 15px;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose-head > span {
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    line-height: 1.4;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose .social-page-field {
+    gap: 6px;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose .social-page-field-label {
+    color: var(--lux-text-soft);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose :is(
+    .social-neo-textarea,
+    .social-neo-select,
+    .lux-picker-btn--compact
+) {
+    border: 1px solid var(--lux-panel-border-soft, rgba(148, 163, 184, 0.24));
+    border-radius: 12px;
+    background: var(--lux-panel-control, rgba(15, 23, 42, 0.72));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 5px 14px rgba(0, 0, 0, 0.12);
+    color: var(--lux-text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-shadow: none;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose .social-neo-textarea {
+    min-height: 76px;
+    padding: 12px 14px;
+    line-height: 1.45;
+    resize: vertical;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose .lux-picker-field {
+    gap: 6px;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose .lux-picker-btn--compact {
+    width: 100%;
+    min-height: 44px;
+    justify-content: space-between;
+    padding: 0 14px;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose :is(
+    .social-neo-textarea,
+    .lux-picker-btn--compact
+):focus-visible {
+    border-color: color-mix(in srgb, var(--lux-accent) 72%, var(--lux-panel-border-soft));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lux-accent) 18%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    outline: none;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose .spr-exposure-hint {
+    margin: -2px 0 0;
+    font-size: 10px;
+    line-height: 1.45;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose .spr-exposure-live {
+    margin: 0;
+    padding: 9px 11px;
+    border: 1px solid var(--lux-panel-border-soft, rgba(148, 163, 184, 0.18));
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--lux-accent) 5%, var(--lux-panel-control, rgba(15, 23, 42, 0.72)));
+    color: var(--lux-text-muted);
+    font-size: 11px;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose-actions,
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page > .social-page-form-actions {
+    gap: 8px;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose-actions > button,
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page > .social-page-form-actions > button {
+    min-height: 42px;
+    padding: 0 16px;
+    border-width: 1px;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-shadow: none;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-risk-list:has(.spr-empty) {
+    flex: 0 0 auto;
+    max-height: none;
+    overflow: visible;
+}
+body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-risk-list:has(.spr-empty) .spr-empty {
+    width: 100%;
+    box-sizing: border-box;
+}
+@media (max-width: 720px) {
+    body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose {
+        padding: 14px;
+    }
+    body.lux-route-social #social-neo-overlay-portal [data-lux-transparency-exempt="1"].social-project-risk-page .spr-compose-actions > button {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
 
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-head {
     align-items: center;
@@ -31985,10 +33521,6 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-head:not(.lux-soft-chrome) {
     background: transparent;
-}
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-title {
-    flex: 0 1 auto;
-    min-width: 180px;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions {
     display: flex;
@@ -32053,7 +33585,6 @@ body.lux-route-social #social-neo-overlay-portal .social-page-toolbar-zoom-label
     body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-head {
         align-items: stretch;
     }
-    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-title,
     body.lux-route-social #social-neo-overlay-portal .social-page-toolbar-field {
         min-width: 100%;
         max-width: none;
@@ -32894,6 +34425,12 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .soci
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-stage--immersive.is-interacting .social-project-task-graph-edge {
     transition: none !important;
     filter: none !important;
+}
+body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-stage--immersive.is-interacting :is(
+    .social-project-task-graph-card,
+    .social-project-task-graph-group
+) {
+    box-shadow: none !important;
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-node-g.is-dragging .social-project-task-graph-card {
     box-shadow: 0 10px 28px rgba(2, 6, 23, 0.45);
@@ -34070,7 +35607,7 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-foot
     gap: 8px;
     flex: 0 0 auto;
 }
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch {
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -34088,12 +35625,12 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-imme
     line-height: 1.2;
     transition: border-color 0.15s ease, background 0.15s ease;
 }
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch > span:first-child {
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch > span:first-child {
     font-size: 12px;
     font-weight: 550;
     color: var(--lux-text);
 }
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch-track {
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch-track {
     position: relative;
     width: 36px;
     height: 20px;
@@ -34103,7 +35640,7 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-imme
     background: rgba(30, 41, 59, 0.85);
     transition: background 0.15s ease, border-color 0.15s ease;
 }
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch-track::after {
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch-track::after {
     content: "";
     position: absolute;
     top: 2px;
@@ -34114,18 +35651,18 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-imme
     background: rgba(226, 232, 240, 0.92);
     transition: transform 0.15s ease;
 }
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch.is-active,
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch[aria-checked="true"] {
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch.is-active,
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch[aria-checked="true"] {
     border-color: rgba(var(--lux-accent-rgb), 0.45);
     background: rgba(var(--lux-accent-rgb), 0.12);
 }
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch.is-active .social-project-task-graph-my-switch-track,
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch[aria-checked="true"] .social-project-task-graph-my-switch-track {
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch.is-active .social-project-task-graph-my-switch-track,
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch[aria-checked="true"] .social-project-task-graph-my-switch-track {
     background: rgba(var(--lux-accent-rgb), 0.85);
     border-color: rgba(var(--lux-accent-rgb), 0.55);
 }
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch.is-active .social-project-task-graph-my-switch-track::after,
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer .social-project-task-graph-my-switch[aria-checked="true"] .social-project-task-graph-my-switch-track::after {
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch.is-active .social-project-task-graph-my-switch-track::after,
+body.lux-route-social #social-neo-overlay-portal :is(.social-project-task-graph-immersive-footer, .social-project-task-graph-page-actions) .social-project-task-graph-my-switch[aria-checked="true"] .social-project-task-graph-my-switch-track::after {
     transform: translateX(16px);
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-footer-actions {
@@ -34240,6 +35777,11 @@ body.lux-route-social #social-neo-overlay-portal:has(.social-project-task-graph-
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 }
+body.lux-route-social #social-neo-overlay-portal:has(.social-project-task-graph-stage--immersive.is-interacting) .lux-glass-dialog-backdrop,
+body.lux-route-social #social-neo-overlay-portal:has(.social-project-task-graph-stage--immersive.is-interacting) .social-project-task-graph-immersive-footer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-stage--immersive.is-interacting .social-project-task-graph-canvas-inner {
     transition: none !important;
 }
@@ -34344,8 +35886,18 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-stac
     pointer-events: none;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-stack > [data-social-page-surface],
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-child-slot > [data-social-page-surface] {
+    position: fixed;
+    inset: 0;
+    z-index: 10102;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+}
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-stack > .lux-glass-dialog-backdrop--stacked-child,
-body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-child-slot > [data-social-page-surface],
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-child-slot .lux-glass-dialog-backdrop--stacked-child {
     position: fixed;
     inset: 0;
@@ -36178,6 +37730,304 @@ body.lux-route-social #social-neo-overlay-portal .lux-glass-dialog-card--project
         border-left: none;
         border-top: 1px solid var(--portfolio-editor-border, var(--lux-border));
         max-height: min(42dvh, 360px);
+    }
+}
+
+/* Task map immersive: essential toolbar + more panel (desktop shows more panel inline) */
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-essential-controls {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-more-btn {
+    display: none;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-essential-add {
+    display: inline-flex;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-more-panel {
+    display: contents;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-rail-sheet-handle {
+    display: none;
+}
+
+/* Social: task map mobile densify (≤1024) — bottom sheet, pinch-friendly canvas, compact chrome */
+@media (max-width: 1024px) {
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-head {
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px 12px;
+        padding-left: max(12px, env(safe-area-inset-left, 0px));
+        padding-right: max(12px, env(safe-area-inset-right, 0px));
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-page-toolbar-field {
+        min-width: 0;
+        max-width: none;
+        flex: 1 1 100%;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions {
+        display: flex;
+        flex: 0 0 auto;
+        flex-basis: 100%;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 8px;
+        padding: 2px 2px 4px;
+        padding-inline: max(2px, env(safe-area-inset-left, 0px)) max(2px, env(safe-area-inset-right, 0px));
+        position: relative;
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        box-shadow: inset -18px 0 16px -18px rgba(148, 163, 184, 0.8);
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-essential-controls,
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-tool-strip {
+        display: contents !important;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-essential-add {
+        display: inline-flex !important;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-essential-controls > :is(button, .social-page-toolbar-group, .social-page-toolbar-field),
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-tool-strip > :is(button, .social-page-toolbar-group, .social-page-toolbar-field) {
+        flex: 0 0 auto;
+        min-width: max-content;
+        white-space: nowrap;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-essential-controls .social-project-task-graph-zoom-controls {
+        display: inline-flex !important;
+        flex: 0 0 auto !important;
+        min-width: max-content;
+        flex-wrap: nowrap;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-essential-controls > :is(button, .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn),
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-tool-strip :is(button, .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 8px 10px;
+        justify-content: center;
+        font-size: 12px;
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-reset-view-btn .social-project-task-graph-btn-label,
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-back-btn .social-project-task-graph-btn-label {
+        display: inline;
+    }
+
+    /* Stacked popup heads (History / Health / Risks / schedule help) scroll when crowded */
+    body.lux-route-social #social-neo-overlay-portal :is(
+        .social-project-task-graph-history-page,
+        .social-project-task-graph-schedule-page,
+        .social-project-health-page,
+        .social-project-risk-page
+    ) .social-page-surface-head {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 8px;
+    }
+    body.lux-route-social #social-neo-overlay-portal :is(
+        .social-project-task-graph-history-page,
+        .social-project-task-graph-schedule-page,
+        .social-project-health-page,
+        .social-project-risk-page
+    ) .social-page-surface-head :is(.social-page-surface-actions, .social-page-surface-heading) {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    /* Canvas fills body; inspector is a bottom sheet overlay */
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-body {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: minmax(0, 1fr) !important;
+        position: relative;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-body.is-rail-open .social-project-task-graph-stage--immersive::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: rgba(2, 6, 23, 0.28);
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail.is-empty {
+        display: none !important;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail:not(.is-empty) {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 6;
+        width: 100%;
+        max-width: 100vw;
+        height: 100dvh;
+        min-height: 100dvh;
+        max-height: none;
+        margin: 0;
+        border-left: none !important;
+        border-top: none;
+        border-radius: 0;
+        box-shadow: none;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        animation: sptgRailSheetIn 0.22s ease;
+        background-color: var(--lux-panel-fill) !important;
+        background-image: var(--lux-panel-surface) !important;
+        border: 1px solid var(--lux-panel-host-border, var(--lux-panel-border)) !important;
+        box-shadow: var(--lux-panel-host-shadow, var(--lux-elev-3)) !important;
+        backdrop-filter: var(--lux-panel-blur-filter) !important;
+        -webkit-backdrop-filter: var(--lux-panel-blur-filter) !important;
+        background-clip: padding-box;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail:not(.is-empty) .social-project-task-graph-inspector-head {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail:not(.is-empty) .social-project-task-graph-inspector-scroll {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail:not(.is-empty) .social-project-task-graph-inspector-actions {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail:not(.is-empty) .social-project-task-graph-inspector-actions > button {
+        min-height: 44px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail:not(.is-empty) .social-project-task-graph-inspector-delete {
+        width: 44px;
+        min-width: 44px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-rail-sheet-handle {
+        display: block;
+        flex: 0 0 auto;
+        width: 40px;
+        height: 4px;
+        margin: 10px auto 4px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--lux-text-muted, #94a3b8) 55%, transparent);
+    }
+    @keyframes sptgRailSheetIn {
+        from { transform: translateY(12%); opacity: 0.7; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-detail-rail:not(.is-empty) {
+            animation: none;
+        }
+    }
+
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-stage--immersive .social-project-task-graph-canvas.is-fullscreen {
+        touch-action: pan-x pan-y;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-hit {
+        stroke-width: 22px;
+    }
+
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-card-title {
+        font-size: 12px;
+        -webkit-line-clamp: 2;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-card-meta .social-project-task-graph-card-actual-cost,
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-card-meta .social-project-task-graph-card-actual-time,
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-card-schedule-pill.is-float,
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-group-metric.is-variance,
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-group-signal.is-float {
+        display: none !important;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-group {
+        padding: 8px 10px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-group-name {
+        font-size: 12px;
+    }
+
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-immersive-footer {
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+        flex-wrap: wrap;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-footer-main {
+        flex: 1 1 100%;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-footer-main .social-project-task-graph-health-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        width: 100%;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-footer-tools,
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-footer-actions {
+        flex: 1 1 auto;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-footer-actions .social-project-task-graph-add-btn {
+        width: 100%;
+        min-height: 44px;
+        justify-content: center;
+    }
+
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-quick-create {
+        left: 12px !important;
+        right: 12px !important;
+        top: auto !important;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+        width: auto;
+        max-width: none;
+    }
+
+    /* Preview + embedded graph bodies */
+    body.lux-route-social .social-project-graph-preview-card .social-project-graph-preview-viewport {
+        height: 200px;
+        max-height: 220px;
+    }
+    body.lux-route-social .social-project-graph-preview-meta {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    body.lux-route-social .social-project-graph-preview-meta .social-project-card-new-cta {
+        width: 100%;
+        text-align: center;
+    }
+    body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-body {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-sidebar {
+        max-height: 0;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        border: none;
+        opacity: 0;
+        pointer-events: none;
+    }
+    body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-sidebar.is-open,
+    body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-body.is-sidebar-open .social-project-task-graph-sidebar {
+        max-height: 220px;
+        opacity: 1;
+        pointer-events: auto;
+        overflow: auto;
+        padding: inherit;
     }
 }
 
@@ -44747,4 +46597,575 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-share
     display: flex;
     justify-content: flex-end;
     margin-top: 8px;
+}
+
+/* Project health: full-page dashboard flow and compact mobile controls. */
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page {
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    min-height: 100dvh;
+    overflow: hidden;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .social-page-surface-body--project-health {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-topbar,
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-footer {
+    width: 100%;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-footer {
+    padding: 12px max(18px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px))
+        max(18px, env(safe-area-inset-left, 0px));
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-health-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 4px 10px;
+    border: 1px solid var(--lux-studio-chip-border, var(--lux-border));
+    border-radius: 999px;
+    background: var(--lux-studio-chip-surface, transparent);
+    color: var(--lux-text-muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-health-badge[data-health="good"] {
+    color: var(--lux-success);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-health-badge[data-health="warn"] {
+    color: var(--lux-warning);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-health-badge[data-health="critical"] {
+    color: var(--lux-danger);
+}
+
+@media (max-width: 900px) {
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-coach-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-topbar {
+        align-items: stretch;
+        gap: 10px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-topbar .social-page-surface-heading {
+        width: 100%;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-topbar-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 8px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-topbar-actions .sph-health-badge {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-topbar-actions > button {
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        justify-content: center;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-verdict {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-verdict-lede {
+        grid-column: 1 / -1;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-verdict > div {
+        padding: 12px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-verdict > .sph-verdict-stat {
+        border-top: 1px solid var(--lux-studio-chip-border, var(--lux-border));
+        border-left: 0;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-verdict > .sph-verdict-stat:nth-child(2n + 3) {
+        border-left: 1px solid var(--lux-studio-chip-border, var(--lux-border));
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-vval {
+        font-size: 20px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-hygiene {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-hygiene > .sph-hygiene-chip {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        box-sizing: border-box;
+        padding: 8px;
+        overflow-wrap: anywhere;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page :is(.sph-card.lux-card, .sph-why.lux-card) {
+        gap: 10px;
+        padding: 12px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card-head.lux-card-head {
+        align-items: flex-start;
+        gap: 6px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card-head.lux-card-head h3 {
+        font-size: 14px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-card-head-note {
+        flex-basis: 100%;
+        width: 100%;
+        overflow-wrap: anywhere;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-tab {
+        width: 100%;
+        min-height: 44px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-plan-add > button {
+        width: 100%;
+        min-height: 44px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-board .sph-card {
+        grid-column: 1 / -1;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-facts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fact {
+        min-width: 0;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fk,
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-empty {
+        overflow-wrap: anywhere;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-deprow {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page :is(.sph-week-item, .sph-fix-task) {
+        min-height: 44px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-legend {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        font-size: 10px;
+        line-height: 1.4;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-footer {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-health-page .sph-fs-footer > button {
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        justify-content: center;
+    }
+}
+
+/* Risk register: direct page-surface rail controls. */
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-rail-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 2px;
+    padding: 0 2px 4px;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-rail-head strong {
+    color: var(--lux-text);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-rail-head span {
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-rail-section,
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-task-row {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-rail-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-top: 6px;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-rail-section-label {
+    padding: 4px 2px 2px;
+    color: var(--lux-text-muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-group-head {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-section,
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-task-select,
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-group-select {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border-radius: 12px;
+    line-height: 1.25;
+    text-align: left;
+    font: inherit;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-section > i,
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-task-select > i,
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-group-select > i {
+    width: 22px;
+    color: var(--lux-text-muted);
+    text-align: center;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page :is(.spr-section-label, .spr-task-label) {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--lux-text);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-section-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 750;
+    line-height: 1;
+    justify-self: end;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-task-row {
+    align-items: stretch;
+    gap: 8px;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-task-select {
+    flex: 1 1 auto;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-group-select {
+    flex: 1 1 auto;
+    width: auto;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-group-toggle {
+    display: inline-flex;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 0;
+    border-radius: 12px;
+    line-height: 1;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-risk-page .spr-task-add {
+    display: inline-flex;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 0;
+    border-radius: 12px;
+    line-height: 1;
+}
+
+/* Task-map child dialogs are centered studio popups, not full-screen page surfaces. */
+body.lux-route-social:has(#social-neo-overlay-portal .social-project-task-graph-page) #page-social {
+    visibility: hidden;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-anchor > .social-project-task-graph-page {
+    background: var(--lux-surface);
+    background-image: none;
+}
+body.lux-route-social #social-neo-overlay-portal :is(
+    .social-project-task-graph-stack > .sptg-history-dialog.lux-studio-panel,
+    .social-project-task-graph-stack > .sptg-schedule-help-dialog.lux-studio-panel,
+    .social-project-task-graph-child-slot > .sptg-history-dialog.lux-studio-panel,
+    .social-project-task-graph-child-slot > .sptg-schedule-help-dialog.lux-studio-panel
+) {
+    position: fixed;
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    z-index: 10103;
+    display: flex;
+    width: min(560px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    height: min(680px, calc(100dvh - 48px));
+    max-height: calc(100dvh - 48px);
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 0;
+    overflow: hidden;
+    flex-direction: column;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--lux-panel-border);
+    border-radius: 22px;
+    background: var(--lux-panel-fill);
+    box-shadow: var(--lux-elev-3);
+    backdrop-filter: var(--lux-panel-blur-filter);
+    -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+}
+body.lux-route-social #social-neo-overlay-portal :is(
+    .sptg-history-dialog.lux-studio-panel,
+    .sptg-schedule-help-dialog.lux-studio-panel
+) > .social-page-surface-head {
+    flex: 0 0 auto;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--lux-border);
+    background: transparent;
+}
+body.lux-route-social #social-neo-overlay-portal :is(
+    .sptg-history-dialog.lux-studio-panel,
+    .sptg-schedule-help-dialog.lux-studio-panel
+) > .social-page-surface-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 14px 18px 18px;
+}
+body.lux-route-social #social-neo-overlay-portal :is(
+    .sptg-history-dialog.lux-studio-panel,
+    .sptg-schedule-help-dialog.lux-studio-panel
+) > .lux-glass-dialog-form-actions,
+body.lux-route-social #social-neo-overlay-portal :is(
+    .sptg-history-dialog.lux-studio-panel,
+    .sptg-schedule-help-dialog.lux-studio-panel
+) > .lux-glass-dialog-actions {
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding: 12px 18px max(12px, env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--lux-border);
+}
+
+/* Match the Color & Motion Studio: one dimming backdrop, one centered panel. */
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop--stacked-child:has(
+    > .sptg-history-dialog.lux-studio-panel,
+    > .sptg-schedule-help-dialog.lux-studio-panel
+) {
+    background: var(--lux-warmglass-overlay-dark, rgba(0, 0, 0, 0.55));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+:is(html.lux-light-mode, body.lux-light-mode) #social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop--stacked-child:has(
+    > .sptg-history-dialog.lux-studio-panel,
+    > .sptg-schedule-help-dialog.lux-studio-panel
+) {
+    background: var(--lux-warmglass-overlay-light, rgba(73, 48, 25, 0.20));
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-stack:has(
+    .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop--stacked-child
+) .social-project-task-graph-anchor {
+    opacity: 1;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop--stacked-child > :is(
+    .sptg-history-dialog.lux-studio-panel,
+    .sptg-schedule-help-dialog.lux-studio-panel
+) {
+    position: relative;
+    inset: auto;
+    top: auto;
+    left: auto;
+    z-index: 1;
+    width: min(560px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    height: min(680px, calc(100dvh - 48px));
+    max-height: calc(100dvh - 48px);
+    transform: none;
+}
+@media (max-width: 720px) {
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-child-slot > .lux-glass-dialog-backdrop--stacked-child > :is(
+        .sptg-history-dialog.lux-studio-panel,
+        .sptg-schedule-help-dialog.lux-studio-panel
+    ) {
+        width: calc(100vw - 24px);
+        max-width: calc(100vw - 24px);
+        height: min(720px, calc(100dvh - 24px));
+        max-height: calc(100dvh - 24px);
+        border-radius: 18px;
+    }
+    body.lux-route-social #social-neo-overlay-portal :is(
+        .social-project-task-graph-stack > .sptg-history-dialog.lux-studio-panel,
+        .social-project-task-graph-stack > .sptg-schedule-help-dialog.lux-studio-panel,
+        .social-project-task-graph-child-slot > .sptg-history-dialog.lux-studio-panel,
+        .social-project-task-graph-child-slot > .sptg-schedule-help-dialog.lux-studio-panel
+    ) {
+        width: calc(100vw - 24px);
+        max-width: calc(100vw - 24px);
+        height: min(720px, calc(100dvh - 24px));
+        max-height: calc(100dvh - 24px);
+        border-radius: 18px;
+    }
+    body.lux-route-social #social-neo-overlay-portal :is(
+        .sptg-history-dialog.lux-studio-panel,
+        .sptg-schedule-help-dialog.lux-studio-panel
+    ) > .social-page-surface-head {
+        padding: 14px;
+    }
+    body.lux-route-social #social-neo-overlay-portal :is(
+        .sptg-history-dialog.lux-studio-panel,
+        .sptg-schedule-help-dialog.lux-studio-panel
+    ) > .social-page-surface-body {
+        padding: 12px 14px 16px;
+    }
+}
+
+/* Task-map toolbar: use the shared control materials without changing its layout. */
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions {
+    align-items: center;
+    gap: 6px;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions :is(
+    .social-page-toolbar-group,
+    .social-project-task-graph-tool-strip
+) {
+    align-items: center;
+    gap: 6px;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-zoom-btn {
+    width: 44px;
+    min-width: 44px;
+    padding-inline: 0;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-group-focus {
+    min-width: 180px;
+    max-width: 220px;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-group-focus .lux-picker-btn--compact {
+    width: 100%;
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-my-switch {
+    box-sizing: border-box;
+    min-height: var(--lux-secondary-btn-min-height, 44px);
+    padding: 0 10px;
+    border: 1px solid var(--lux-panel-border);
+    background: var(--lux-panel-control);
+    box-shadow: var(--lux-elev-1);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-my-switch-track {
+    border-color: var(--lux-panel-border);
+    background: var(--lux-panel-control);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-my-switch-track::after {
+    background: var(--lux-text-muted);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-my-switch.is-active,
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-my-switch[aria-checked="true"] {
+    border-color: var(--lux-accent);
+    background: color-mix(in srgb, var(--lux-accent) 12%, var(--lux-panel-control));
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-my-switch.is-active .social-project-task-graph-my-switch-track,
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions .social-project-task-graph-my-switch[aria-checked="true"] .social-project-task-graph-my-switch-track {
+    border-color: var(--lux-accent);
+    background: var(--lux-accent);
+}
+body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions :is(
+    button,
+    .lux-picker-btn--compact
+):focus-visible {
+    outline: 2px solid var(--lux-accent);
+    outline-offset: 2px;
+}
+@media (max-width: 1024px) {
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions :is(
+        button.lux-primary-btn,
+        button.lux-secondary-btn,
+        button.lux-ghost-btn,
+        button.lux-picker-btn--compact
+    ) {
+        min-height: 44px;
+    }
+    body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-page-actions :is(
+        .social-project-task-graph-add-btn,
+        .social-project-task-graph-save-btn
+    ) {
+        min-height: 44px;
+    }
+}
+
+/* Project activity belongs to the page flow; team/invite rails remain bounded. */
+body.lux-route-social .social-projects-shell .social-project-scroll-list--activity {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    overscroll-behavior: auto;
+}
+
+/* Social full-page child surfaces use the shared outer panel material. */
+body.lux-route-social #social-neo-overlay-portal .social-page-surface[data-lux-transparency-exempt="1"]:not(
+    .social-project-task-graph-page,
+    .lux-studio-panel
+) {
+    background-color: var(--lux-panel-fill);
+    background-image: var(--lux-panel-surface);
+    border: 1px solid var(--lux-panel-host-border);
+    box-shadow: var(--lux-panel-host-shadow);
+    backdrop-filter: var(--lux-panel-blur-filter);
+    -webkit-backdrop-filter: var(--lux-panel-blur-filter);
+    background-clip: padding-box;
 }

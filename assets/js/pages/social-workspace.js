@@ -141,6 +141,7 @@
     const projectTaskGraphPseudoRandom = window.projectTaskGraphPseudoRandom || __swGraphBatch.projectTaskGraphPseudoRandom;
     const getProjectTaskGraphMetrics = window.getProjectTaskGraphMetrics || __swGraphBatch.getProjectTaskGraphMetrics;
     const computeProjectTaskGraphStageSize = window.computeProjectTaskGraphStageSize || __swGraphBatch.computeProjectTaskGraphStageSize;
+    const isProjectTaskGraphMobileViewport = window.isProjectTaskGraphMobileViewport || __swGraphBatch.isProjectTaskGraphMobileViewport;
     const computeProjectTaskGraphNodeDegree = window.computeProjectTaskGraphNodeDegree || __swGraphBatch.computeProjectTaskGraphNodeDegree;
     const projectTaskGraphBoxRepulse = window.projectTaskGraphBoxRepulse || __swGraphBatch.projectTaskGraphBoxRepulse;
     const resolveProjectTaskGraphCardOverlaps = window.resolveProjectTaskGraphCardOverlaps || __swGraphBatch.resolveProjectTaskGraphCardOverlaps;
@@ -582,12 +583,12 @@
     const isProjectTaskGraphStackActive = __wsGraphRtApi?.isProjectTaskGraphStackActive;
     const loadProjectTaskGraphPositions = __wsGraphRtApi?.loadProjectTaskGraphPositions;
     const loadProjectTaskGraphView = __wsGraphRtApi?.loadProjectTaskGraphView;
+    const markProjectTaskGraphMeaningfulDirty = __wsGraphRtApi?.markProjectTaskGraphMeaningfulDirty;
     const markProjectTaskGraphPreviewStale = __wsGraphRtApi?.markProjectTaskGraphPreviewStale;
     const measureProjectTaskGraphCardHeights = __wsGraphRtApi?.measureProjectTaskGraphCardHeights;
     const notifyProjectTaskGraphSurfaceChanged = __wsGraphRtApi?.notifyProjectTaskGraphSurfaceChanged;
     const openProjectTaskGraphContextMenu = __wsGraphRtApi?.openProjectTaskGraphContextMenu;
     const patchLocalProjectTaskDepends = __wsGraphRtApi?.patchLocalProjectTaskDepends;
-    const patchProjectTaskGraphLinkCountLabel = __wsGraphRtApi?.patchProjectTaskGraphLinkCountLabel;
     const patchRemoveProjectTaskGraphEdge = __wsGraphRtApi?.patchRemoveProjectTaskGraphEdge;
     const persistProjectTaskGraphView = __wsGraphRtApi?.persistProjectTaskGraphView;
     const projectTaskGraphStackedBackdropClass = __wsGraphRtApi?.projectTaskGraphStackedBackdropClass;
@@ -660,6 +661,7 @@
     __kiuSwApi.projectTaskGraphPseudoRandom = projectTaskGraphPseudoRandom;
     __kiuSwApi.getProjectTaskGraphMetrics = getProjectTaskGraphMetrics;
     __kiuSwApi.computeProjectTaskGraphStageSize = computeProjectTaskGraphStageSize;
+    __kiuSwApi.isProjectTaskGraphMobileViewport = isProjectTaskGraphMobileViewport;
     __kiuSwApi.computeProjectTaskGraphNodeDegree = computeProjectTaskGraphNodeDegree;
     __kiuSwApi.projectTaskGraphBoxRepulse = projectTaskGraphBoxRepulse;
     __kiuSwApi.resolveProjectTaskGraphCardOverlaps = resolveProjectTaskGraphCardOverlaps;
@@ -756,7 +758,6 @@
     __kiuSwApi.readProjectTaskGraphLivePositions = readProjectTaskGraphLivePositions;
     __kiuSwApi.escapeProjectTaskGraphAttr = escapeProjectTaskGraphAttr;
     __kiuSwApi.patchRemoveProjectTaskGraphEdge = patchRemoveProjectTaskGraphEdge;
-    __kiuSwApi.patchProjectTaskGraphLinkCountLabel = patchProjectTaskGraphLinkCountLabel;
     __kiuSwApi.syncProjectTaskGraphEdgesOnly = syncProjectTaskGraphEdgesOnly;
     __kiuSwApi.refreshProjectTaskGraphEdgeLines = refreshProjectTaskGraphEdgeLines;
     __kiuSwApi.projectTaskGraphWouldCycle = projectTaskGraphWouldCycle;
@@ -808,6 +809,7 @@
     __kiuSwApi.bindProjectTaskGraphResizeObserver = bindProjectTaskGraphResizeObserver;
     __kiuSwApi.isProjectTaskGraphDialogOpen = isProjectTaskGraphDialogOpen;
     __kiuSwApi.markProjectTaskGraphPreviewStale = markProjectTaskGraphPreviewStale;
+    __kiuSwApi.markProjectTaskGraphMeaningfulDirty = markProjectTaskGraphMeaningfulDirty;
     __kiuSwApi.notifyProjectTaskGraphSurfaceChanged = notifyProjectTaskGraphSurfaceChanged;
 
     /* ── Task detail / risk / health dialogs: social-workspace-dialogs.js ── */
@@ -815,6 +817,7 @@
         ? (window.__kiuCreateSocialWorkspaceDialogsApi || window.createKiuSocialWorkspaceDialogsApi)({
         PROJECT_RISK_RESPONSE_OPTIONS,
         PROJECT_RISK_STATUS_OPTIONS,
+        PROJECT_SCHEDULE_FLOAT_TITLE,
         PROJECT_TASK_COLUMNS,
         PROJECT_TASK_STATUS_EDGE_COLOR,
         __riskModel,
@@ -1072,6 +1075,7 @@
         computeProjectTaskGraphGroupRollup,
         computeProjectTaskGraphMapSchedule,
         computeProjectTaskGraphStageSize,
+        isProjectTaskGraphMobileViewport,
         countNum,
         displayName,
         ensureProjectTaskGraphPositionsLoaded,
@@ -1322,6 +1326,7 @@
         createPortalSocialProjectTask: typeof createPortalSocialProjectTask === 'function' ? createPortalSocialProjectTask : window.createPortalSocialProjectTask,
         createProjectTaskGraphGroup,
         currentFacultyCode,
+        isProjectTaskGraphMobileViewport,
         deletePortalSocialProject: typeof deletePortalSocialProject === 'function' ? deletePortalSocialProject : window.deletePortalSocialProject,
         deletePortalSocialProjectBudgetCategory: typeof deletePortalSocialProjectBudgetCategory === 'function' ? deletePortalSocialProjectBudgetCategory : window.deletePortalSocialProjectBudgetCategory,
         deletePortalSocialProjectBudgetExpense: typeof deletePortalSocialProjectBudgetExpense === 'function' ? deletePortalSocialProjectBudgetExpense : window.deletePortalSocialProjectBudgetExpense,
@@ -1351,6 +1356,7 @@
         isSocialWorkspaceInputTarget,
         isSocialWorkspaceSubmitForm,
         loadProjectTaskGraphView,
+        markProjectTaskGraphMeaningfulDirty,
         markProjectTaskGraphPreviewStale,
         normalizePortfolioEntry,
         normalizeProjectPlanHorizon,
@@ -1370,7 +1376,6 @@
         parseProjectTaskPriorityPayload,
         patchProjectHealthPlanCard,
         patchProjectHealthPlanPick,
-        patchProjectTaskGraphLinkCountLabel,
         patchProjectWorkspaceTab,
         patchRemoveProjectTaskGraphEdge,
         persistProjectTaskGraphView,

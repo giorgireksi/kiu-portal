@@ -12,6 +12,11 @@ function socialText(value) {
     return String(value || '').trim();
 }
 
+function isSocialAllFacultyCode(value) {
+    const code = normalizeCode(value || '');
+    return !code || code === 'ALL';
+}
+
 function socialIdArray(values) {
     return uniqueStrings(
         asArray(values)
@@ -299,7 +304,9 @@ function canViewSocialPage(page, userId) {
     if (!socialText(userId)) return false;
     if (canManageSocialPage.call(this, page, userId)) return true;
     if (visibility === 'faculty') {
-        return getSocialActorFacultyCode.call(this, userId) === normalizeCode(page.facultyCode || page.faculty || '');
+        const facultyCode = normalizeCode(page.facultyCode || page.faculty || '');
+        if (isSocialAllFacultyCode(facultyCode)) return true;
+        return getSocialActorFacultyCode.call(this, userId) === facultyCode;
     }
     return false;
 }
@@ -314,10 +321,12 @@ function canViewSocialGroup(group, userId) {
     if (isSocialGroupMember.call(this, group, normalizedUserId)) return true;
     if (isSocialStaffViewer.call(this, normalizedUserId)) {
         const facultyCode = normalizeCode(group.facultyCode || group.faculty || '');
-        return !facultyCode || getSocialActorFacultyCode.call(this, normalizedUserId) === facultyCode;
+        return isSocialAllFacultyCode(facultyCode) || getSocialActorFacultyCode.call(this, normalizedUserId) === facultyCode;
     }
     if (visibility === 'faculty') {
-        return getSocialActorFacultyCode.call(this, normalizedUserId) === normalizeCode(group.facultyCode || group.faculty || '');
+        const facultyCode = normalizeCode(group.facultyCode || group.faculty || '');
+        if (isSocialAllFacultyCode(facultyCode)) return true;
+        return getSocialActorFacultyCode.call(this, normalizedUserId) === facultyCode;
     }
     return false;
 }
@@ -337,7 +346,9 @@ function canViewSocialEvent(event, userId) {
         if (group && (canManageSocialGroup.call(this, group, userId) || isSocialGroupMember.call(this, group, userId))) return true;
     }
     if (visibility === 'faculty') {
-        return getSocialActorFacultyCode.call(this, userId) === normalizeCode(event.facultyCode || event.audienceFacultyCode || '');
+        const facultyCode = normalizeCode(event.facultyCode || event.audienceFacultyCode || '');
+        if (isSocialAllFacultyCode(facultyCode)) return true;
+        return getSocialActorFacultyCode.call(this, userId) === facultyCode;
     }
     return false;
 }
@@ -425,7 +436,7 @@ function canViewSocialPost(post, userId) {
     if (audience === 'faculty') {
         if (!normalizedUserId) return false;
         const facultyCode = normalizeCode(post.audienceFacultyCode || post.authorFacultyCode || getSocialActorFacultyCode.call(this, authorUserId));
-        return !facultyCode || getSocialActorFacultyCode.call(this, normalizedUserId) === facultyCode;
+        return isSocialAllFacultyCode(facultyCode) || getSocialActorFacultyCode.call(this, normalizedUserId) === facultyCode;
     }
     if (audience === 'group') {
         const group = getSocialGroupRecord.call(this, scopeId);

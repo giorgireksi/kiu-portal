@@ -52,6 +52,64 @@ describe('social-project-health-ui', () => {
         expect(bare).toContain('.social-page-surface');
         expect(bare).toContain('.social-project-health-page');
         expect(bare).toContain('.social-project-risk-page');
+        expect(bare).toContain('.social-project-risk-page > .social-page-form-actions');
+        expect(bare).toContain('grid-template-rows: minmax(0, auto) minmax(0, 1fr)');
+        expect(bare).toMatch(/\.social-project-risk-page\s*\{[\s\S]*align-items:\s*stretch/);
+    });
+
+    it('marks every full-page Social child surface for shared styling', () => {
+        const dialogs = readSource('assets/js/pages/social-workspace-dialogs.js');
+        const projectChrome = readSource('assets/js/pages/social-workspace-project-chrome.js');
+        const taskUi = readSource('assets/js/pages/social-workspace-task-ui.js');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+
+        for (const surface of [
+            'social-project-task-detail-page',
+            'social-project-health-plan-page',
+            'social-project-health-page',
+            'social-project-risk-page'
+        ]) {
+            expect(dialogs).toMatch(new RegExp(`social-page-surface ${surface}[^>]*data-lux-transparency-exempt="1"`));
+        }
+        expect(projectChrome).toMatch(/social-page-surface social-project-settings-page[^>]*data-lux-transparency-exempt="1"/);
+        expect(taskUi).toMatch(/social-page-surface social-project-task-delete-page[^>]*data-lux-transparency-exempt="1"/);
+        expect(taskUi).toMatch(/social-page-surface social-project-task-form-page[^>]*data-lux-transparency-exempt="1"/);
+        expect(bare).toContain('.social-page-surface[data-lux-transparency-exempt="1"]:not(');
+        expect(bare).toContain('background-color: var(--lux-panel-fill);');
+        expect(bare).toContain('background-image: var(--lux-panel-surface);');
+        expect(bare).toContain('box-shadow: var(--lux-panel-host-shadow);');
+        expect(bare).toContain('backdrop-filter: var(--lux-panel-blur-filter);');
+    });
+
+    it('bare-lite defines compact stacked health mobile flow', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.social-project-health-page .social-page-surface-body--project-health');
+        expect(bare).toContain('overscroll-behavior: contain');
+        expect(bare).toContain('.social-project-health-page .sph-fs-topbar-actions');
+        expect(bare).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
+        expect(bare).toContain('.social-project-health-page .sph-hygiene');
+        expect(bare).toContain('.social-project-health-page .sph-plan-tabs');
+        expect(bare).toContain('.social-project-health-page .sph-fs-footer > button');
+        expect(bare).toContain('min-height: 44px;');
+    });
+
+    it('bare-lite defines direct risk rail control geometry', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.social-project-risk-page .spr-rail-head');
+        expect(bare).toContain('.social-project-risk-page .spr-rail-section');
+        expect(bare).toContain('.social-project-risk-page .spr-task-row');
+        expect(bare).toContain('.social-project-risk-page .spr-group-head');
+        expect(bare).toContain('.social-project-risk-page .spr-group-select');
+        expect(bare).toContain('.social-project-risk-page .spr-group-toggle');
+        expect(bare).toContain('grid-template-columns: 22px minmax(0, 1fr) auto;');
+        expect(bare).toContain('.social-project-risk-page .spr-task-add');
+        expect(bare).toContain('flex: 0 0 44px;');
+        expect(bare).toContain('.social-project-risk-page .spr-compose');
+        expect(bare).toContain('.social-project-risk-page .spr-compose .social-page-field-label');
+        expect(bare).toContain('.social-project-risk-page .spr-risk-list:has(.spr-empty)');
+        expect(bare).toContain('letter-spacing: 0;');
+        expect(bare).toContain('text-shadow: none;');
+        expect(bare).toContain('min-height: 44px;');
     });
 
     it('bare-lite blocks graph clicks when stacked child is open', () => {
@@ -108,6 +166,7 @@ describe('social-project-health-ui', () => {
 
         const stackBlock = bare.slice(bare.indexOf('/* Stacked child modals must clear dashboard chrome'));
         expect(stackBlock).toContain('.social-project-task-graph-child-slot > .lux-glass-dialog-backdrop');
+        expect(stackBlock).toContain('.social-project-task-graph-child-slot > [data-social-page-surface]');
         expect(stackBlock).not.toContain('background: rgba(2, 6, 23, 0.86)');
         expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-body');
         expect(stackBlock).toContain('.social-project-task-graph-stack--child-open .social-project-task-graph-immersive-footer');
@@ -209,12 +268,60 @@ describe('social-project-health-ui', () => {
         const graph = readSource('assets/js/pages/social-workspace-graph-render.js');
         expect(graph).toContain('social-project-task-graph-history-page sptg-history-dialog');
         expect(graph).toContain('social-project-task-graph-schedule-page sptg-schedule-help-dialog');
+        expect(graph).toContain('social-project-task-graph-page" data-social-page-surface="project-task-graph" data-lux-transparency-exempt="1"');
         expect(graph).toContain('social-page-surface-body sptg-history-list');
         expect(graph).toContain('social-page-surface-body sptg-schedule-help-list');
+        expect(graph).toContain('sptg-history-dialog lux-studio-panel');
+        expect(graph).toContain('sptg-schedule-help-dialog lux-studio-panel');
+        expect(graph).toContain('data-lux-transparency-exempt="1"');
         expect(graph).not.toContain('role="dialog"');
         expect(graph).toContain('sptg-history-row lux-control-btn');
         expect(graph).toContain('sptg-schedule-help-row lux-control-btn');
         expect(graph).not.toContain('sptg-history-row lux-soft-chrome');
+    });
+
+    it('bare-lite centers task-map child popups over the map', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('body.lux-route-social:has(#social-neo-overlay-portal .social-project-task-graph-page) #page-social');
+        expect(bare).toContain('visibility: hidden;');
+        expect(bare).toContain('.social-project-task-graph-anchor > .social-project-task-graph-page');
+        expect(bare).toContain('background: var(--lux-surface);');
+        expect(bare).toContain('.social-project-task-graph-stack > .sptg-history-dialog.lux-studio-panel');
+        expect(bare).toContain('.social-project-task-graph-child-slot > .sptg-schedule-help-dialog.lux-studio-panel');
+        expect(bare).toContain('top: 50%;');
+        expect(bare).toContain('left: 50%;');
+        expect(bare).toContain('transform: translate(-50%, -50%);');
+        expect(bare).toContain('height: min(680px, calc(100dvh - 48px));');
+        expect(bare).toContain('width: calc(100vw - 24px);');
+    });
+
+    it('uses one shared backdrop beneath task-map child popups', () => {
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('.social-project-task-graph-child-slot > .lux-glass-dialog-backdrop--stacked-child:has(');
+        expect(bare).toContain('> .sptg-history-dialog.lux-studio-panel');
+        expect(bare).toContain('> .sptg-schedule-help-dialog.lux-studio-panel');
+        expect(bare).toContain('> .lux-glass-dialog-backdrop--stacked-child > :is(');
+        expect(bare).toContain('z-index: 10102;');
+        expect(bare).toContain('background: var(--lux-warmglass-overlay-dark, rgba(0, 0, 0, 0.55));');
+        expect(bare).toContain('background: var(--lux-warmglass-overlay-light, rgba(73, 48, 25, 0.20));');
+        expect(bare).toContain('backdrop-filter: none;');
+        expect(bare).toContain('opacity: 1;');
+        expect(bare).not.toContain(')::before');
+        expect(bare).toContain('z-index: 10103;');
+    });
+
+    it('routes history and schedule help through the full task-map stack', () => {
+        const route = readSource('assets/js/pages/social-workspace-dialog-route.js');
+        expect(route).toContain("graphDialog = { type: 'project-task-graph', projectId };");
+        expect(route).toContain('lux-glass-dialog-backdrop lux-glass-dialog-backdrop--stacked-child');
+        expect(route).toContain('wrapProjectTaskGraphChildBackdrop');
+
+        const historyStart = route.indexOf("if (kind === 'project-task-graph-history')");
+        const scheduleStart = route.indexOf("if (kind === 'project-task-graph-schedule-help')");
+        expect(historyStart).toBeGreaterThan(-1);
+        expect(scheduleStart).toBeGreaterThan(historyStart);
+        expect(route.slice(historyStart, scheduleStart)).toContain('return renderGraphStackLayers(runtime, child, kind);');
+        expect(route.slice(scheduleStart, scheduleStart + 320)).toContain('return renderGraphStackLayers(runtime, child, kind);');
     });
 
     it('lux-modals defines project-task-detail studio layout helpers', () => {

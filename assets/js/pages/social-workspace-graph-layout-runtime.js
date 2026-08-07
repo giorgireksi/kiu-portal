@@ -7,7 +7,24 @@
     window.__kiuCreateSocialWorkspaceGraphLayoutApi = function createKiuPeelApi(deps) {
         if (!deps || typeof deps !== 'object') throw new Error('graph layout deps required');
         const d = deps;
-        /* Prefer reading helpers from mutable deps bag. */
+        const graphBatch = d.__swGraphBatch || {};
+        const {
+            PROJECT_TASK_GRAPH_CARD_H,
+            PROJECT_TASK_GRAPH_CARD_W,
+            PROJECT_TASK_GROUP_NODE_H = graphBatch.PROJECT_TASK_GROUP_NODE_H || 228,
+            PROJECT_TASK_GROUP_NODE_W = graphBatch.PROJECT_TASK_GROUP_NODE_W || 264,
+            applyProjectTaskGraphSavedPositions,
+            buildProjectTaskGraphLayout,
+            buildProjectTaskGraphModel,
+            ensureProjectTaskGraphPositionsLoaded,
+            getProjectTaskGraphGroups,
+            getProjectTaskGraphPositions,
+            projectTaskGraphRectsOverlap,
+            resolveActiveSocialProject,
+            setProjectTaskGraphPositions,
+            text,
+            uniqueStrings
+        } = d;
 
 function findFreeProjectTaskGraphPosition(runtime, projectId, options = {}) {
     const pid = text(projectId);

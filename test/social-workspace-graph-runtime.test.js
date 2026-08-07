@@ -214,4 +214,60 @@ describe('social-workspace-graph-runtime', () => {
         expect(api.syncProjectTaskGraphStackSlotState(region)).toBe(false);
         expect(childSlot.hidden).toBe(true);
     });
+
+    it('passes peeled layout dependencies into task placement', () => {
+        const project = {
+            id: 'p1',
+            viewerCanContribute: true,
+            tasks: [{ id: 't1' }, { id: 't2' }]
+        };
+        ({ api, runtime } = loadGraphRuntime({
+            resolveActiveSocialProject: () => project,
+            buildProjectTaskGraphModel: () => ({ nodes: [] }),
+            buildProjectTaskGraphLayout: () => ({
+                positions: { t1: { x: 0, y: 0, w: 100, h: 60 } }
+            }),
+            applyProjectTaskGraphSavedPositions: (layout) => layout,
+            projectTaskGraphRectsOverlap: () => false
+        }));
+        runtime.social.projects = [project];
+
+        expect(api.findFreeProjectTaskGraphPosition(runtime, 'p1', {
+            taskId: 't2',
+            preferNearIds: ['t1'],
+            cardW: 100,
+            cardH: 60
+        })).toEqual({ x: 168, y: 0 });
+    });
+
+    it('marks cycle rejection as user-facing without changing the guard', async () => {
+        ({ api } = loadGraphRuntime({
+            resolveActiveSocialProject: () => ({
+                id: 'p1',
+                tasks: [{ id: 't1' }, { id: 't2' }]
+            }),
+            projectTaskGraphWouldCycle: () => true
+        }));
+
+        await expect(api.addProjectGraphDependency('p1', 't2', 't1'))
+            .rejects.toMatchObject({
+                message: 'That link would create a dependency cycle.',
+                userFacing: true
+            });
+    });
+
+    it('wires pinch-zoom helpers into graph interaction binding', () => {
+        const runtimeSrc = readFileSync(
+            join(process.cwd(), 'assets/js/pages/social-workspace-graph-runtime.js'),
+            'utf8'
+        );
+        expect(runtimeSrc).toContain('isProjectTaskGraphMobileViewport');
+        expect(runtimeSrc).toContain('pinchState');
+        expect(runtimeSrc).toContain('applyZoomAtClientPoint');
+        expect(runtimeSrc).toContain('is-pinching');
+        expect(runtimeSrc).toContain('onPinchPointerDown');
+        expect(runtimeSrc).toMatch(/if \(panState \|\| dragState \|\| portLinkState \|\| pinchState\) return/);
+        expect(runtimeSrc).toContain('openProjectTaskGraphContextMenu');
+        expect(runtimeSrc).toContain('longPressTimer');
+    });
 });

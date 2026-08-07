@@ -290,11 +290,57 @@
         return normalizeSocialFacultyCode(raw, 'all') || 'all';
     }
 
+    function socialCreateFacultyIsAll(value, runtime) {
+        const raw = text(value).toLowerCase();
+        if (raw === 'all') return true;
+        if (!raw && runtime && socialBrowseFacultyValue(runtime) === SOCIAL_BROWSE_FACULTY_ALL) return true;
+        return false;
+    }
+
+    function socialNormalizeCreateFacultyCode(value, runtime) {
+        if (socialCreateFacultyIsAll(value, runtime)) return SOCIAL_BROWSE_FACULTY_ALL;
+        const normalized = normalizeSocialFacultyCode(value, '');
+        if (normalized && normalized !== 'ALL') return normalized;
+        return socialDefaultCreateFaculty(runtime);
+    }
+
+    function socialResolveProjectFacultyCodes(rawCodes, runtime) {
+        const codes = Array.isArray(rawCodes) ? rawCodes.map((item) => text(item)).filter(Boolean) : [];
+        if (codes.some((code) => socialCreateFacultyIsAll(code))) return [SOCIAL_BROWSE_FACULTY_ALL];
+        if (codes.length) {
+            return Array.from(new Set(codes.map((code) => (
+                socialCreateFacultyIsAll(code) ? SOCIAL_BROWSE_FACULTY_ALL : normalizeSocialFacultyCode(code, '')
+            )).filter(Boolean)));
+        }
+        const browse = socialBrowseFacultyValue(runtime);
+        if (browse === SOCIAL_BROWSE_FACULTY_ALL) return [SOCIAL_BROWSE_FACULTY_ALL];
+        const fallback = socialDefaultCreateFaculty(runtime);
+        return fallback ? [fallback] : [SOCIAL_BROWSE_FACULTY_ALL];
+    }
+
+    function socialEntityIsAllFaculties(entity) {
+        if (!entity || typeof entity !== 'object') return false;
+        const values = [];
+        if (Array.isArray(entity.facultyCodes)) values.push(...entity.facultyCodes);
+        values.push(
+            entity.facultyCode,
+            entity.faculty,
+            entity.audienceFacultyCode,
+            entity.ownerFacultyCode,
+            entity.authorFacultyCode
+        );
+        if (entity.photoMeta && typeof entity.photoMeta === 'object') {
+            values.push(entity.photoMeta.facultyCode, entity.photoMeta.faculty);
+        }
+        return values.some((value) => socialCreateFacultyIsAll(value));
+    }
+
     function socialDefaultCreateFaculty(runtime) {
         const browse = socialBrowseFacultyValue(runtime);
-        if (browse && browse !== 'all') return browse;
+        if (browse === SOCIAL_BROWSE_FACULTY_ALL) return SOCIAL_BROWSE_FACULTY_ALL;
+        if (browse && browse !== SOCIAL_BROWSE_FACULTY_ALL) return browse;
         const actorFaculty = normalizeSocialFacultyCode(currentFacultyCode(), '');
-        if (actorFaculty && actorFaculty !== 'all') return actorFaculty;
+        if (actorFaculty && actorFaculty !== 'ALL') return actorFaculty;
         return socialBrowseFacultyCodes()[0] || 'ECON';
     }
 
@@ -302,8 +348,14 @@
         if (!entity || typeof entity !== 'object') return [];
         const codes = [];
         const push = (value) => {
+            const raw = text(value);
+            if (!raw) return;
+            if (raw.toLowerCase() === 'all') {
+                codes.push('ALL');
+                return;
+            }
             const code = normalizeSocialFacultyCode(value, '');
-            if (code && code !== 'ALL') codes.push(code);
+            if (code) codes.push(code);
         };
         if (Array.isArray(entity.facultyCodes)) entity.facultyCodes.forEach(push);
         push(entity.facultyCode);
@@ -319,11 +371,13 @@
     }
 
     function socialMatchesBrowseFaculty(entity, filter) {
+        if (socialEntityIsAllFaculties(entity)) return true;
         const want = text(filter || 'all') || 'all';
         if (!want || want === 'all') return true;
         const normalized = normalizeSocialFacultyCode(want, '');
         if (!normalized) return true;
         const codes = socialEntityFacultyCodes(entity);
+        if (codes.includes('ALL')) return true;
         if (!codes.length) return false;
         return codes.includes(normalized);
     }
@@ -613,7 +667,12 @@
         socialBrowseFacultyAllLabel,
         socialBrowseFacultyOptionLabel,
         socialBrowseFacultyCodes,
+        SOCIAL_BROWSE_FACULTY_ALL,
         socialBrowseFacultyValue,
+        socialCreateFacultyIsAll,
+        socialNormalizeCreateFacultyCode,
+        socialResolveProjectFacultyCodes,
+        socialEntityIsAllFaculties,
         socialDefaultCreateFaculty,
         socialEntityFacultyCodes,
         socialMatchesBrowseFaculty,

@@ -25,7 +25,7 @@ function loadDialogs(extraDeps = {}) {
                 projectRiskScaleOptionLabel: (v) => String(v || ''),
                 formatProjectRiskScore: (v) => String(v || '0'),
                 projectRiskExposureScore: () => 0,
-                projectRiskExposureTiers: () => ({ high: 0, medium: 0, low: 0 }),
+                projectRiskExposureTiers: () => 'medium',
                 projectRiskIsActiveStatus: () => true,
                 sortProjectRisksForRegister: (rows) => rows || [],
                 projectRiskRegisterSummary: () => ({ total: 0, open: 0 }),
@@ -86,6 +86,7 @@ function loadDialogs(extraDeps = {}) {
             { id: 'blocked', label: 'Blocked', tone: 'rose', icon: 'fa-ban' },
             { id: 'done', label: 'Done', tone: 'emerald', icon: 'fa-circle-check' }
         ],
+        PROJECT_SCHEDULE_FLOAT_TITLE: 'Schedule float help',
         PROJECT_RISK_STATUS_OPTIONS: ['open', 'watching', 'mitigated', 'closed'],
         PROJECT_RISK_RESPONSE_OPTIONS: ['avoid', 'mitigate', 'transfer', 'accept'],
         __riskModel: sandbox.window.KiuSocialWorkspaceRiskModel,
@@ -154,24 +155,64 @@ describe('social-workspace-dialogs', () => {
         expect(workspace).not.toMatch(/function\s+renderProjectRiskDialog\s*\(/);
         expect(workspace).not.toMatch(/function\s+renderProjectHealthDialog\s*\(/);
         expect(workspace).toContain('createKiuSocialWorkspaceDialogsApi');
+        expect(workspace).toMatch(/PROJECT_SCHEDULE_FLOAT_TITLE,[\s\S]{0,120}PROJECT_TASK_COLUMNS/);
         expect(page).toContain('SOCIAL_WORKSPACE_DIALOGS_URL');
         expect(page).toMatch(/GRAPH_RUNTIME_URL[\s\S]*DIALOGS_URL[\s\S]*GRAPH_RENDER_URL[\s\S]*TASK_UI_URL[\s\S]*PORTFOLIO_RUNTIME_URL[\s\S]*PORTFOLIO_UI_URL[\s\S]*PROJECT_CHROME_URL[\s\S]*DIALOG_ROUTE_URL[\s\S]*MODULE_URL/);
     });
 
     it('renders task detail modal for a known task', () => {
+        ({ api, runtime } = loadDialogs({
+            computeProjectSchedule: () => ({ byId: { t1: {} } }),
+            formatTaskScheduleDisplay: () => ({
+                noEstimate: false,
+                durationLabel: '1h',
+                isCritical: false,
+                pathLabel: 'No',
+                floatLabel: '0h',
+                esLabel: '—',
+                esHoursLabel: '0h',
+                efLabel: '—',
+                efHoursLabel: '0h',
+                lsLabel: '—',
+                lsHoursLabel: '0h',
+                lfLabel: '—',
+                lfHoursLabel: '0h',
+                hasProjectStart: false
+            })
+        }));
         const project = runtime.social.projects[0];
         const html = api.renderProjectTaskDetailModal(runtime, project, 't1');
         expect(html).toContain('Task one');
+        expect(html).toContain('Schedule float help');
     });
 
     it('renders risk page surface for active project', () => {
         const html = api.renderProjectRiskDialog(runtime, { type: 'project-risk', projectId: 'p1' });
         expect(html).toContain('social-page-surface social-project-risk-page');
+        expect(html).toContain('data-lux-transparency-exempt="1"');
         expect(html).toContain('social-project-risk-page-head lux-soft-chrome');
         expect(html).toContain('social-page-form-actions');
         expect(html).not.toContain('lux-glass-dialog');
         expect(html).not.toContain('role="dialog"');
         expect(html).toContain('data-project-id');
+        expect(html.match(/data-action="project-risk-compose-open"/g)).toHaveLength(1);
+        expect(html).toContain('<div class="social-page-form-actions">');
+    });
+
+    it('renders populated risk cards through the plural exposure-tier helper', () => {
+        runtime.social.projects[0].risks = [{
+            id: 'risk-1',
+            title: 'Delivery delay',
+            description: 'A dependency may slip.',
+            likelihood: 3,
+            impact: 3,
+            status: 'open',
+            response: 'mitigate'
+        }];
+        const html = api.renderProjectRiskDialog(runtime, { type: 'project-risk', projectId: 'p1' });
+        expect(html).toContain('spr-risk-card');
+        expect(html).toContain('Delivery delay');
+        expect(html).toContain('data-exposure="medium"');
     });
 
     it('wires PROJECT_TASK_STATUS_EDGE_COLOR for health dialog status rows', () => {

@@ -128,6 +128,11 @@
             if (typeof impl === "function") return impl(...a);
             if (typeof window.notifyProjectTaskGraphSurfaceChanged === "function") return window.notifyProjectTaskGraphSurfaceChanged(...a);
         }
+        function markProjectTaskGraphMeaningfulDirty(...a) {
+            const impl = deps.markProjectTaskGraphMeaningfulDirty;
+            if (typeof impl === "function") return impl(...a);
+            if (typeof window.markProjectTaskGraphMeaningfulDirty === "function") return window.markProjectTaskGraphMeaningfulDirty(...a);
+        }
         function readProjectTaskGraphPortCenter(...a) {
             const impl = deps.readProjectTaskGraphPortCenter;
             if (typeof impl === "function") return impl(...a);
@@ -150,14 +155,93 @@
         }
 
         let projectTaskGraphEdgeRaf = 0;
+        const projectTaskGraphScrollSurfaceMetrics = new WeakMap();
+        let projectTaskGraphPerfRaf = 0;
+        let projectTaskGraphPerfActive = false;
+        let projectTaskGraphPerfStartedAt = 0;
+        let projectTaskGraphPerfLastFrameAt = 0;
+        let projectTaskGraphPerfLastPublishedAt = 0;
+        let projectTaskGraphPerfFrames = 0;
+        let projectTaskGraphPerfDroppedFrames = 0;
+        let projectTaskGraphPerfMaxFrameMs = 0;
+        let projectTaskGraphPerfLongTasks = 0;
+        let projectTaskGraphPerfLongTaskMs = 0;
+        let projectTaskGraphLongTaskObserver = null;
+
+        function publishProjectTaskGraphPerf(now = performance.now()) {
+            const elapsed = Math.max(1, now - projectTaskGraphPerfStartedAt);
+            window.__KIU_MOBILE_PERF = {
+                ...(window.__KIU_MOBILE_PERF || {}),
+                taskMap: {
+                    elapsedMs: Math.round(elapsed),
+                    fps: Math.round((projectTaskGraphPerfFrames * 1000 / elapsed) * 10) / 10,
+                    frames: projectTaskGraphPerfFrames,
+                    droppedFrames: projectTaskGraphPerfDroppedFrames,
+                    maxFrameMs: Math.round(projectTaskGraphPerfMaxFrameMs * 10) / 10,
+                    longTasks: projectTaskGraphPerfLongTasks,
+                    longTaskMs: Math.round(projectTaskGraphPerfLongTaskMs * 10) / 10
+                }
+            };
+        }
+
+        function sampleProjectTaskGraphPerf(now) {
+            if (!projectTaskGraphPerfActive) return;
+            if (projectTaskGraphPerfLastFrameAt) {
+                const frameMs = now - projectTaskGraphPerfLastFrameAt;
+                projectTaskGraphPerfMaxFrameMs = Math.max(projectTaskGraphPerfMaxFrameMs, frameMs);
+                if (frameMs > 16.7) {
+                    projectTaskGraphPerfDroppedFrames += Math.max(1, Math.round(frameMs / 16.7) - 1);
+                }
+            }
+            projectTaskGraphPerfLastFrameAt = now;
+            projectTaskGraphPerfFrames += 1;
+            if (!projectTaskGraphPerfLastPublishedAt || now - projectTaskGraphPerfLastPublishedAt >= 1000) {
+                projectTaskGraphPerfLastPublishedAt = now;
+                publishProjectTaskGraphPerf(now);
+            }
+            projectTaskGraphPerfRaf = window.requestAnimationFrame(sampleProjectTaskGraphPerf);
+        }
 
         function setProjectTaskGraphInteracting(stage, active) {
             if (!stage) return;
             stage.classList.toggle('is-interacting', active);
             if (active) {
                 window.__kiuSuppressLuxTransparencyRefresh = true;
+                if (!projectTaskGraphPerfActive) {
+                    projectTaskGraphPerfActive = true;
+                    projectTaskGraphPerfStartedAt = performance.now();
+                    projectTaskGraphPerfLastFrameAt = 0;
+                    projectTaskGraphPerfLastPublishedAt = 0;
+                    projectTaskGraphPerfFrames = 0;
+                    projectTaskGraphPerfDroppedFrames = 0;
+                    projectTaskGraphPerfMaxFrameMs = 0;
+                    projectTaskGraphPerfLongTasks = 0;
+                    projectTaskGraphPerfLongTaskMs = 0;
+                    if (
+                        !projectTaskGraphLongTaskObserver
+                        && window.PerformanceObserver
+                        && window.PerformanceObserver.supportedEntryTypes?.includes('longtask')
+                    ) {
+                        projectTaskGraphLongTaskObserver = new window.PerformanceObserver((list) => {
+                            if (!projectTaskGraphPerfActive) return;
+                            list.getEntries().forEach((entry) => {
+                                projectTaskGraphPerfLongTasks += 1;
+                                projectTaskGraphPerfLongTaskMs += Number(entry.duration) || 0;
+                            });
+                        });
+                    }
+                    projectTaskGraphLongTaskObserver?.observe({ type: 'longtask', buffered: false });
+                    projectTaskGraphPerfRaf = window.requestAnimationFrame(sampleProjectTaskGraphPerf);
+                }
                 return;
             }
+            projectTaskGraphPerfActive = false;
+            projectTaskGraphLongTaskObserver?.disconnect();
+            if (projectTaskGraphPerfRaf) {
+                window.cancelAnimationFrame(projectTaskGraphPerfRaf);
+                projectTaskGraphPerfRaf = 0;
+            }
+            if (projectTaskGraphPerfStartedAt) publishProjectTaskGraphPerf();
             window.requestAnimationFrame(() => {
                 window.__kiuSuppressLuxTransparencyRefresh = false;
             });
@@ -263,19 +347,6 @@
             return true;
         }
 
-        /** Keep immersive title project name in sync without remounting chrome. */
-
-        function patchProjectTaskGraphLinkCountLabel(runtime = state()) {
-            const host = getProjectTaskGraphHost();
-            const titleSpan = host?.querySelector('.social-project-task-graph-immersive-title > span');
-            if (!titleSpan) return false;
-            const dialog = activeDialog();
-            const ctx = resolveProjectTaskGraphContext(runtime, dialog);
-            if (!ctx) return false;
-            titleSpan.textContent = text(ctx.project.name || 'Project');
-            return true;
-        }
-
         function syncProjectTaskGraphEdgesOnly(runtime = state()) {
             const host = getProjectTaskGraphHost();
             const svg = host?.querySelector('[data-project-task-graph-svg]');
@@ -325,7 +396,6 @@
                     showCritical
                 });
             // Do not rewrite selection rail / sidebar — that is the flicker source.
-            patchProjectTaskGraphLinkCountLabel(runtime);
             return true;
         }
 
@@ -455,6 +525,18 @@
             const scaledH = Math.round(layoutH * z);
             const slack = resolveProjectTaskGraphPanSlack(Math.max(scaledW, scaledH));
             const surface = readProjectTaskGraphScrollSurface(canvas) || inner?.parentElement;
+            const cached = canvas ? projectTaskGraphScrollSurfaceMetrics.get(canvas) : null;
+            if (
+                cached
+                && cached.inner === inner
+                && cached.surface === surface
+                && cached.width === scaledW
+                && cached.height === scaledH
+                && cached.zoom === z
+                && cached.slack === slack
+            ) {
+                return cached.metrics;
+            }
             if (surface?.matches?.('[data-project-task-graph-scroll-surface]')) {
                 surface.style.setProperty('--ptg-pan-slack', `${slack}px`);
                 surface.style.width = `${scaledW + (slack * 2)}px`;
@@ -470,7 +552,19 @@
                 svg.setAttribute('width', String(scaledW));
                 svg.setAttribute('height', String(scaledH));
             }
-            return { width: scaledW, height: scaledH, zoom: z, slack };
+            const metrics = { width: scaledW, height: scaledH, zoom: z, slack };
+            if (canvas) {
+                projectTaskGraphScrollSurfaceMetrics.set(canvas, {
+                    inner,
+                    surface,
+                    width: scaledW,
+                    height: scaledH,
+                    zoom: z,
+                    slack,
+                    metrics
+                });
+            }
+            return metrics;
         }
 
         function applyProjectTaskGraphScrollZoom(canvas, inner, zoom, layoutW, layoutH) {
@@ -504,7 +598,6 @@
             if (isProjectTaskGraphScrollPanCanvas(canvas)) {
                 const { width, height } = readProjectTaskGraphLayoutSize(canvas);
                 if (width && height) {
-                    applyProjectTaskGraphScrollZoom(canvas, inner, z, width, height);
                     return centerProjectTaskGraphScrollPan(canvas, px, py, z, width, height, { syncState });
                 }
             }
@@ -618,8 +711,14 @@
             const graphMode = normalizeProjectTaskGraphMode(runtime.ui?.projectTaskGraphMode || 'browse');
             const linkFromId = text(runtime.ui?.projectTaskGraphLinkFrom || '');
             const canContribute = Boolean(ctx?.project?.viewerCanContribute);
+            const selectedId = text(runtime.ui?.projectTaskGraphSelectedId || '');
             const body = immersive.querySelector('.social-project-task-graph-immersive-body');
             const stage = body?.querySelector('[data-project-task-graph-stage="1"]');
+            const railOpen = Boolean(selectedId);
+            immersive.classList.toggle('is-rail-open', railOpen);
+            body?.classList.toggle('is-rail-open', railOpen);
+            const toolStrip = immersive.querySelector('[data-project-task-graph-more-panel]');
+            toolStrip?.setAttribute('aria-hidden', 'false');
             stage?.classList.toggle('is-mode-link', graphMode === 'connect');
             stage?.classList.toggle('is-mode-connect', graphMode === 'connect');
             stage?.classList.toggle('is-mode-browse', graphMode === 'browse');
@@ -627,17 +726,16 @@
             const connectBtn = immersive.querySelector('[data-action="project-task-graph-mode-connect"], [data-action="project-task-graph-mode-link"]');
             connectBtn?.classList.toggle('lux-primary-btn', graphMode === 'connect');
             let toolbar = immersive.querySelector('.social-project-task-graph-mode-toolbar');
-            const actions = immersive.querySelector('.social-project-task-graph-immersive-actions');
+            const toolStripHost = immersive.querySelector('[data-project-task-graph-more-panel]')
+                || immersive.querySelector('.social-project-task-graph-immersive-actions');
             if (linkFromId && canContribute && graphMode === 'connect') {
-                if (!toolbar && actions) {
+                if (!toolbar && toolStripHost) {
                     toolbar = document.createElement('div');
-                    toolbar.className = 'social-project-tab-row social-project-task-graph-mode-toolbar';
+                    toolbar.className = 'social-page-toolbar-group social-project-task-graph-mode-toolbar social-project-task-graph-more-item';
                     toolbar.setAttribute('data-lux-transparency-exempt', '1');
                     toolbar.setAttribute('role', 'group');
                     toolbar.setAttribute('aria-label', 'Link actions');
-                    const zoomControls = actions.querySelector('.social-project-task-graph-zoom-controls');
-                    if (zoomControls) actions.insertBefore(toolbar, zoomControls);
-                    else actions.prepend(toolbar);
+                    toolStripHost.prepend(toolbar);
                 }
                 if (toolbar && !toolbar.querySelector('[data-action="project-task-graph-link-cancel"]')) {
                     const cancelBtn = document.createElement('button');
@@ -651,18 +749,15 @@
                 toolbar.remove();
             }
             if (ctx) {
-                const titleSpan = immersive.querySelector('.social-project-task-graph-immersive-title > span');
-                if (titleSpan) titleSpan.textContent = text(ctx.project.name || 'Project');
-                const myToggle = immersive.querySelector('[data-action="project-task-graph-toggle-my"]');
-                if (myToggle) {
-                    const mineOn = projectTaskGraphMineOnlyActive(runtime);
+                const mineOn = projectTaskGraphMineOnlyActive(runtime);
+                immersive.querySelectorAll('[data-action="project-task-graph-toggle-my"]').forEach((myToggle) => {
                     myToggle.setAttribute('aria-checked', mineOn ? 'true' : 'false');
                     myToggle.classList.toggle('is-active', mineOn);
                     const mySwitchInput = myToggle.matches?.('input[type="checkbox"]')
                         ? myToggle
                         : myToggle.querySelector?.('input[type="checkbox"]');
                     if (mySwitchInput) mySwitchInput.checked = mineOn;
-                }
+                });
                 const inferredToggle = immersive.querySelector('[data-action="project-task-graph-toggle-inferred"]');
                 if (inferredToggle) inferredToggle.checked = ctx.showInferred;
                 const flowToggle = immersive.querySelector('[data-action="project-task-graph-toggle-flow"]');
@@ -1014,7 +1109,11 @@
             const from = text(fromId);
             if (!to || !from) throw new Error('Missing link endpoints.');
             if (to === from) throw new Error('Cannot link a node to itself.');
-            if (projectTaskGraphWouldCycle(tasks, to, from, groups)) throw new Error('That link would create a dependency cycle.');
+            if (projectTaskGraphWouldCycle(tasks, to, from, groups)) {
+                const error = new Error('That link would create a dependency cycle.');
+                error.userFacing = true;
+                throw error;
+            }
 
             // Target is a package: package waits on from (task or package).
             if (isProjectTaskGraphGroupId(to)) {
@@ -1062,6 +1161,7 @@
                 { dependsOnTaskIds: [...deps, from] },
                 { silent: true }
             );
+            markProjectTaskGraphMeaningfulDirty(runtime, projectId);
         }
 
         function patchLocalProjectTaskDepends(runtime, projectId, taskId, dependsOnTaskIds) {
@@ -1081,7 +1181,6 @@
             findProjectTaskGraphMembershipDropGroup,
             readProjectTaskGraphLivePositions,
             patchRemoveProjectTaskGraphEdge,
-            patchProjectTaskGraphLinkCountLabel,
             syncProjectTaskGraphEdgesOnly,
             refreshProjectTaskGraphEdgeLines,
             isProjectTaskGraphScrollPanCanvas,

@@ -15,7 +15,7 @@ describe('service worker offline API regressions', () => {
         expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*lux-page-bare-lite\.css/);
         expect(source).not.toContain("'/assets/css/lux-page-bare-lite.css");
         expect(source).not.toContain('"/assets/css/lux-page-bare-lite.css');
-        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260806-loadperf1'/);
+        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260808-mobileroute1'/);
     });
 
     it('returns an explicit offline API response instead of cached shell HTML for /api/ failures', () => {

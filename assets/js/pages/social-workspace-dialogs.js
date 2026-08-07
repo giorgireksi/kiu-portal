@@ -12,6 +12,7 @@
         const {
             PROJECT_RISK_RESPONSE_OPTIONS,
             PROJECT_RISK_STATUS_OPTIONS,
+            PROJECT_SCHEDULE_FLOAT_TITLE,
             PROJECT_TASK_COLUMNS,
             PROJECT_TASK_STATUS_EDGE_COLOR,
             __riskModel,
@@ -305,7 +306,7 @@
 
             const pageSurface = options.pageSurface === true;
             const surfaceOpen = pageSurface
-                ? '<section class="social-page-surface social-project-task-detail-page" data-social-page-surface="project-task-detail" data-action="noop" aria-label="Task detail">'
+                ? '<section class="social-page-surface social-project-task-detail-page" data-social-page-surface="project-task-detail" data-lux-transparency-exempt="1" data-action="noop" aria-label="Task detail">'
                 : `<div class="${['lux-glass-dialog-backdrop', projectTaskGraphStackedBackdropClass(runtime, 'project-task-detail')].filter(Boolean).join(' ')}" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Task detail"><div class="lux-glass-dialog-card lux-glass-dialog-card--form lux-glass-dialog-card--project-task-detail lux-glass-dialog-card lux-glass-dialog-card--social-glass lux-studio-panel spt-detail-dialog" data-action="noop" data-lux-transparency-exempt="1">`;
             const surfaceClose = pageSurface ? '</section>' : '</div></div>';
             return `${surfaceOpen}
@@ -595,7 +596,7 @@
                 </div>`;
 
             const riskRow = (risk) => {
-                const tier = projectRiskExposureTier(risk?.likelihood, risk?.impact);
+                const tier = projectRiskExposureTiers(risk?.likelihood, risk?.impact);
                 const score = projectRiskExposureScore(risk?.likelihood, risk?.impact);
                 const rankL = projectRiskScaleRank(risk?.likelihood ?? 3);
                 const rankI = projectRiskScaleRank(risk?.impact ?? 3);
@@ -673,7 +674,7 @@
                     ? pageActions({ cancelLabel: 'Close', submitLabel: 'Add risk', submitIcon: 'fas fa-plus', submitType: 'button', submitAttrs: `data-action="project-risk-compose-open" data-project-id="${escape(projectId)}"` })
                     : pageActions({ hideCancel: true, submitLabel: 'Close', submitIcon: 'fas fa-check', submitType: 'button', submitAttrs: 'data-action="dialog-close"' }));
 
-            return `<main class="social-page-surface social-project-risk-page" data-social-page-surface="project-risk" data-action="noop" aria-label="Risk register">
+            return `<main class="social-page-surface social-project-risk-page" data-social-page-surface="project-risk" data-lux-transparency-exempt="1" data-action="noop" aria-label="Risk register">
                 <header class="social-page-surface-head social-project-risk-page-head lux-soft-chrome">
                         <div class="social-page-surface-heading">
                             <strong class="social-page-surface-title"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Risk register</strong>
@@ -704,7 +705,6 @@
                                         <h3>${escape(sectionLabel)}</h3>
                                         <p>${filteredRisks.length ? `${filteredRisks.length} risk${filteredRisks.length === 1 ? '' : 's'} in this scope` : 'No risks in this scope'}</p>
                                     </div>
-                                    ${canEdit && !composeOpen ? `<button type="button" class="lux-primary-btn lux-secondary-btn-sm" data-action="project-risk-compose-open" data-project-id="${escape(projectId)}"><i class="fas fa-plus"></i> Add risk</button>` : ''}
                                 </div>
                                 <div class="spr-risk-list">
                                     ${listEmpty}
@@ -865,7 +865,7 @@
                 selectedCount
             } = model;
 
-            return `<section class="social-page-surface social-project-health-plan-page" data-social-page-surface="project-health-plan-pick" data-action="noop" aria-label="Add tasks to plan" data-project-id="${escape(projectId)}" data-horizon="${escape(horizon)}">
+            return `<section class="social-page-surface social-project-health-plan-page" data-social-page-surface="project-health-plan-pick" data-lux-transparency-exempt="1" data-action="noop" aria-label="Add tasks to plan" data-project-id="${escape(projectId)}" data-horizon="${escape(horizon)}">
                     <header class="social-page-surface-head">
                         <div class="social-page-surface-heading">
                             <strong><i class="fas fa-list-check" aria-hidden="true"></i> Add to plan · ${escape(horizonLabel)}</strong>
@@ -955,7 +955,7 @@
                 </button>`;
             };
 
-            return `<main class="social-page-surface social-project-health-page" data-social-page-surface="project-health" data-action="noop" aria-label="Project health">
+            return `<main class="social-page-surface social-project-health-page" data-social-page-surface="project-health" data-lux-transparency-exempt="1" data-action="noop" aria-label="Project health">
                 <header class="social-page-surface-head sph-fs-topbar lux-soft-chrome">
                         <div class="social-page-surface-heading">
                             <strong class="social-page-surface-title"><i class="fas fa-heart-pulse" aria-hidden="true"></i> Project health</strong>

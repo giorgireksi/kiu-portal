@@ -5,6 +5,46 @@
         <item name="colorAccent">@color/anti_cheat_accent</item>
         <item name="android:windowBackground">@color/anti_cheat_background</item>
         <item name="android:statusBarColor">@color/anti_cheat_background</item>
-        <item name="android:navigationBarColor">@color/anti_cheat_background</item>
+        <item name="android:navigationBarColor">@color/anti_cheat_panel_deep</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:fontFamily">sans</item>
+    </style>
+
+    <style name="AntiCheatButtonPrimary" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/bg_button_primary</item>
+        <item name="android:textColor">@color/anti_cheat_text</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:fontFamily">sans</item>
+    </style>
+
+    <style name="AntiCheatButtonSecondary" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/bg_button_secondary</item>
+        <item name="android:textColor">@color/anti_cheat_text</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minHeight">50dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:fontFamily">sans</item>
+    </style>
+
+    <style name="AntiCheatField" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:textColor">@color/anti_cheat_text</item>
+        <item name="android:textColorHint">@color/anti_cheat_text_muted</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:minHeight">54dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:fontFamily">sans</item>
     </style>
 </resources>

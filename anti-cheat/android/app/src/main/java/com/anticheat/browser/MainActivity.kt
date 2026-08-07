@@ -3,10 +3,10 @@ package com.anticheat.browser
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.EditorInfo
 import android.webkit.CookieManager
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebStorage
@@ -25,6 +26,10 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
@@ -41,6 +46,7 @@ import kotlin.math.min
 
 private const val PREFS_NAME = "kiu_anticheat_android"
 private const val KEY_CONFIG_JSON = "kiu_android_config"
+private const val KEY_CONFIG_ASSET_SIGNATURE = "kiu_android_config_asset_signature"
 private const val KEY_PORTAL_SESSION_JSON = "kiu_android_portal_session"
 private const val KEY_PORTAL_SESSION_TOKEN = "kiu_android_portal_session_token"
 private const val KEY_PENDING_OPEN_TARGET_JSON = "kiu_android_pending_open_target"
@@ -54,6 +60,10 @@ private const val DEFAULT_APP_URL = "http://127.0.0.1:8876"
 private const val DEFAULT_BACKEND_URL = "http://127.0.0.1:48933"
 private const val DEFAULT_QUIZ_URL = "http://127.0.0.1:8876/lms.html"
 private const val DEFAULT_EXAM_PORTAL_URL = "http://127.0.0.1:8876/exam-portal.html"
+
+private fun isLocalHttpHost(host: String): Boolean {
+    return host.trim().lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")
+}
 
 private enum class Tone {
     INFO,
@@ -71,6 +81,7 @@ private enum class ActiveScreen {
 
 private enum class WebMode {
     NONE,
+    PORTAL,
     LMS,
     EXAM_PORTAL,
     PROTECTED
@@ -93,7 +104,7 @@ private fun normalizeUrl(value: String, fallback: String): String {
         val parsed = URL(candidate)
         when (parsed.protocol.lowercase()) {
             "https" -> candidate
-            "http" -> if (BuildConfig.DEBUG || parsed.host.lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")) candidate else fallback.trim().removeSuffix("/")
+            "http" -> if (BuildConfig.DEBUG && isLocalHttpHost(parsed.host)) candidate else fallback.trim().removeSuffix("/")
             else -> fallback.trim().removeSuffix("/")
         }
     } catch (_: Exception) {
@@ -677,6 +688,8 @@ class MainActivity : AppCompatActivity() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val prefs by lazy { getSharedPreferences(PREFS_NAME, MODE_PRIVATE) }
 
+    private lateinit var appRoot: View
+    private lateinit var controlsContent: View
     private lateinit var statusBanner: TextView
     private lateinit var securityBanner: TextView
     private lateinit var controlsScroll: View
@@ -698,12 +711,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var clearCacheButton: Button
     private lateinit var refreshSessionButton: Button
     private lateinit var logoutButton: Button
+    private lateinit var staffToggleButton: Button
+    private lateinit var staffContent: View
     private lateinit var staffUrlInput: EditText
     private lateinit var staffOpenUrlButton: Button
     private lateinit var configSummary: TextView
     private lateinit var staffDiagnosticsSummary: TextView
     private lateinit var blockedMessage: TextView
     private lateinit var webView: WebView
+    private lateinit var webModeBanner: TextView
+    private lateinit var webLoadingOverlay: View
+    private lateinit var webLoadingProgress: View
+    private lateinit var webLoadingTitle: TextView
+    private lateinit var webLoadingMessage: TextView
+    private lateinit var webRetryButton: Button
 
     private var appConfig: AppConfig = AppConfig.default()
     private var portalSession: PortalSessionState? = null
@@ -717,22 +738,35 @@ class MainActivity : AppCompatActivity() {
     private var bootstrapApplied: Boolean = false
     private var currentPageTitle: String = ""
     private var activeSecurityIssues: List<String> = emptyList()
+    private var lastRequestedWebUrl: String = ""
+    private var staffDiagnosticsExpanded = false
+    private var webShellSessionSyncInFlight = false
+    private var webMainFrameLoadFailed = false
+    private var webNavigationStartedAtMs = 0L
+    private var assetConfigSignature = ""
     private var heartbeatRunnable: Runnable? = null
     private var pollRunnable: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)
 
         bindViews()
+        setupWindowInsets()
         loadRuntimeConfig()
         loadSavedState()
         applyIntentOverrides(intent?.data)
         setupWebView()
         setupHandlers()
         refreshSecuritySummary()
-        showLoadingState("Validating saved session...")
+        showScreen(ActiveScreen.WEB)
+        showWebLoadingState(
+            title = getString(R.string.web_loading_title),
+            message = getString(R.string.web_loading_message),
+            error = false
+        )
         handleIncomingIntent(intent)
         restorePortalSessionOrShowLogin()
     }
@@ -746,9 +780,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        webView.onResume()
         refreshSecuritySummary()
-        if (portalSession != null) {
+        if (protectedLaunch != null && activeWebMode == WebMode.PROTECTED) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
         if (protectedLaunch != null && activeWebMode == WebMode.PROTECTED) {
             startProtectedTimers()
@@ -758,6 +795,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        webView.onPause()
         if (protectedLaunch?.policy?.focusProtection == true && protectedLaunch != null && activeWebMode == WebMode.PROTECTED) {
             reportProtectedEvent(
                 event = "violation_focus_lost",
@@ -785,14 +823,14 @@ class MainActivity : AppCompatActivity() {
                     note = "Student attempted to leave the protected session."
                 )
             }
-            activeWebMode == WebMode.LMS && webView.canGoBack() -> {
+            activeWebMode != WebMode.NONE && webView.canGoBack() -> {
                 webView.goBack()
             }
-            activeWebMode == WebMode.LMS -> {
-                showLauncherState("Returned from the web view.")
+            activeWebMode == WebMode.PORTAL || activeWebMode == WebMode.LMS || activeWebMode == WebMode.EXAM_PORTAL -> {
+                openPortalShell()
             }
             portalSession != null -> {
-                showLauncherState()
+                openPortalShell()
             }
             else -> {
                 super.onBackPressed()
@@ -802,10 +840,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         stopProtectedTimers(preserveState = false)
+        webView.destroy()
         super.onDestroy()
     }
 
     private fun bindViews() {
+        appRoot = findViewById(R.id.app_root)
+        controlsContent = findViewById(R.id.controls_content)
         statusBanner = findViewById(R.id.status_banner)
         securityBanner = findViewById(R.id.security_banner)
         controlsScroll = findViewById(R.id.controls_scroll)
@@ -827,12 +868,41 @@ class MainActivity : AppCompatActivity() {
         clearCacheButton = findViewById(R.id.clear_cache_button)
         refreshSessionButton = findViewById(R.id.refresh_session_button)
         logoutButton = findViewById(R.id.logout_button)
+        staffToggleButton = findViewById(R.id.staff_toggle_button)
+        staffContent = findViewById(R.id.staff_content)
         staffUrlInput = findViewById(R.id.staff_url_input)
         staffOpenUrlButton = findViewById(R.id.staff_open_url_button)
         configSummary = findViewById(R.id.config_summary)
         staffDiagnosticsSummary = findViewById(R.id.staff_diagnostics_summary)
         blockedMessage = findViewById(R.id.blocked_message)
         webView = findViewById(R.id.webview)
+        webModeBanner = findViewById(R.id.web_mode_banner)
+        webLoadingOverlay = findViewById(R.id.web_loading_overlay)
+        webLoadingProgress = findViewById(R.id.web_loading_progress)
+        webLoadingTitle = findViewById(R.id.web_loading_title)
+        webLoadingMessage = findViewById(R.id.web_loading_message)
+        webRetryButton = findViewById(R.id.web_retry_button)
+    }
+
+    private fun setupWindowInsets() {
+        val baseLeft = controlsContent.paddingLeft
+        val baseTop = controlsContent.paddingTop
+        val baseRight = controlsContent.paddingRight
+        val baseBottom = controlsContent.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(appRoot) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = max(systemBars.bottom, ime.bottom)
+            controlsContent.setPadding(
+                baseLeft,
+                baseTop + systemBars.top,
+                baseRight,
+                baseBottom + bottomInset
+            )
+            webContainer.setPadding(0, systemBars.top, 0, systemBars.bottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(appRoot)
     }
 
     private fun loadRuntimeConfig() {
@@ -843,7 +913,10 @@ class MainActivity : AppCompatActivity() {
         }
         val persisted = AppConfig.fromJson(prefs.getString(KEY_CONFIG_JSON, null))
         val asset = AppConfig.fromAsset(assetConfig)
-        appConfig = (persisted?.mergedWith(asset) ?: asset).normalized()
+        assetConfigSignature = configSignature(asset)
+        val persistedSignature = prefs.getString(KEY_CONFIG_ASSET_SIGNATURE, "").orEmpty()
+        val compatiblePersisted = persisted?.takeIf { persistedSignature == assetConfigSignature }
+        appConfig = (compatiblePersisted?.mergedWith(asset) ?: asset).normalized()
         persistConfig(appConfig)
         updateConfigSummary()
         if (staffUrlInput.text.isNullOrBlank()) {
@@ -873,9 +946,9 @@ class MainActivity : AppCompatActivity() {
         return try {
             val url = URL(value.trim())
             val protocol = url.protocol.lowercase()
-            val localHttp = protocol == "http" && url.host.lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")
+            val localHttp = protocol == "http" && isLocalHttpHost(url.host)
             if (!url.toURI().userInfo.isNullOrBlank()) return false
-            (protocol == "https" || (BuildConfig.DEBUG && localHttp) || localHttp)
+            (protocol == "https" || (BuildConfig.DEBUG && localHttp))
                 && isProtectedModeHostAllowed(url.host, appConfig.allowedDomains)
         } catch (_: Exception) {
             false
@@ -996,6 +1069,26 @@ class MainActivity : AppCompatActivity() {
         refreshSessionButton.setOnClickListener { refreshSession() }
         logoutButton.setOnClickListener { performLogout() }
         staffOpenUrlButton.setOnClickListener { openCustomUrl() }
+        staffToggleButton.setOnClickListener {
+            staffDiagnosticsExpanded = !staffDiagnosticsExpanded
+            staffContent.visibility = if (staffDiagnosticsExpanded) View.VISIBLE else View.GONE
+            staffToggleButton.setText(
+                if (staffDiagnosticsExpanded) R.string.staff_hide_diagnostics
+                else R.string.staff_show_diagnostics
+            )
+        }
+        webRetryButton.setOnClickListener {
+            if (lastRequestedWebUrl.isBlank()) {
+                showLauncherState()
+            } else {
+                showWebLoadingState(
+                    title = getString(R.string.web_loading_title),
+                    message = getString(R.string.web_loading_message),
+                    error = false
+                )
+                webView.reload()
+            }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -1008,8 +1101,12 @@ class MainActivity : AppCompatActivity() {
             allowContentAccess = false
             javaScriptCanOpenWindowsAutomatically = false
             setSupportMultipleWindows(false)
-            cacheMode = WebSettings.LOAD_NO_CACHE
-            userAgentString = "AntiCheatBrowser/Android"
+            cacheMode = if (BuildConfig.DEBUG) {
+                WebSettings.LOAD_NO_CACHE
+            } else {
+                WebSettings.LOAD_DEFAULT
+            }
+            userAgentString = "${WebSettings.getDefaultUserAgent(this@MainActivity)} AntiCheatBrowser/1"
         }
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
@@ -1025,17 +1122,148 @@ class MainActivity : AppCompatActivity() {
             }
         }
         webView.webViewClient = object : WebViewClient() {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                webMainFrameLoadFailed = false
+                webNavigationStartedAtMs = SystemClock.elapsedRealtime()
+                showWebLoadingState(
+                    title = getString(R.string.web_loading_title),
+                    message = getString(R.string.web_loading_message),
+                    error = false
+                )
+            }
+
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val target = request?.url ?: return false
                 return handleNavigationRequest(target)
             }
 
+            override fun onReceivedError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                error: WebResourceError?
+            ) {
+                super.onReceivedError(view, request, error)
+                if (request?.isForMainFrame == true) {
+                    webMainFrameLoadFailed = true
+                    showWebLoadingState(
+                        title = getString(R.string.web_error_title),
+                        message = error?.description?.toString()
+                            ?.ifBlank { getString(R.string.web_error_message) }
+                            ?: getString(R.string.web_error_message),
+                        error = true
+                    )
+                }
+            }
+
+            override fun onReceivedHttpError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                errorResponse: android.webkit.WebResourceResponse?
+            ) {
+                super.onReceivedHttpError(view, request, errorResponse)
+                if (request?.isForMainFrame == true && errorResponse != null && errorResponse.statusCode >= 400) {
+                    webMainFrameLoadFailed = true
+                    showWebLoadingState(
+                        title = getString(R.string.web_error_title),
+                        message = getString(
+                            R.string.web_http_error_message,
+                            errorResponse.statusCode
+                        ),
+                        error = true
+                    )
+                }
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 currentPageTitle = view?.title?.trim().orEmpty()
+                publishWebViewPerformance(view)
                 maybeApplyBrowserBootstrap(url.orEmpty())
                 updateWebModeBanner()
+                syncPortalSessionFromWebView()
+                if (!webMainFrameLoadFailed) {
+                    webLoadingOverlay.visibility = View.GONE
+                }
             }
+        }
+    }
+
+    private fun publishWebViewPerformance(view: WebView?) {
+        val startedAt = webNavigationStartedAtMs
+        if (view == null || startedAt <= 0L) return
+        val navigationMs = (SystemClock.elapsedRealtime() - startedAt).coerceAtLeast(0L)
+        view.evaluateJavascript(
+            """
+            (() => {
+                const perf = window.__KIU_MOBILE_PERF || (window.__KIU_MOBILE_PERF = {});
+                perf.webView = {
+                    ...(perf.webView || {}),
+                    lastNavigationMs: $navigationMs,
+                    lastNavigationAt: Date.now()
+                };
+                return true;
+            })();
+            """.trimIndent(),
+            null
+        )
+    }
+
+    private fun syncPortalSessionFromWebView() {
+        if (webShellSessionSyncInFlight || activeWebMode == WebMode.PROTECTED) return
+        webShellSessionSyncInFlight = true
+        webView.evaluateJavascript(
+            "(function(){try{return JSON.stringify(localStorage.getItem('KIU_PORTAL_SESSION_TOKEN')||'')}catch(e){return JSON.stringify('')}})()"
+        ) { encodedToken ->
+            val token = decodeJavascriptString(encodedToken)
+            if (token.isBlank()) {
+                webShellSessionSyncInFlight = false
+                if (portalSession != null && activeBootstrap == null) {
+                    clearNativePortalSessionFromWeb()
+                }
+                return@evaluateJavascript
+            }
+            if (portalSession?.token == token) {
+                webShellSessionSyncInFlight = false
+                if (!restoreProtectedLaunchIfPossible()) {
+                    if (!redeemPendingLaunchIfPossible()) {
+                        openPendingOpenTargetIfPossible()
+                    }
+                }
+                return@evaluateJavascript
+            }
+            validatePortalSession(token) { validated ->
+                webShellSessionSyncInFlight = false
+                if (validated == null) return@validatePortalSession
+                val tokenChanged = portalSession?.token != validated.token
+                portalSession = validated
+                if (tokenChanged) persistPortalSession(validated)
+                if (!restoreProtectedLaunchIfPossible()) {
+                    if (!redeemPendingLaunchIfPossible()) {
+                        openPendingOpenTargetIfPossible()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun clearNativePortalSessionFromWeb() {
+        clearPortalSessionStorage()
+        clearPendingOpenTarget()
+        clearPendingLaunch()
+        clearProtectedLaunchState()
+        persistExamPortalState(null)
+        clearProtectedClientToken()
+        showStatus("The portal session ended. Sign in again.", Tone.INFO)
+    }
+
+    private fun decodeJavascriptString(value: String?): String {
+        val raw = value?.trim().orEmpty()
+        if (raw.isBlank() || raw == "null") return ""
+        return try {
+            JSONArray("[$raw]").optString(0).trim()
+        } catch (_: Exception) {
+            raw.removePrefix("\"").removeSuffix("\"")
         }
     }
 
@@ -1056,8 +1284,8 @@ class MainActivity : AppCompatActivity() {
             }
             return true
         }
-        val localHttp = scheme == "http" && url.host.orEmpty().lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")
-        if (scheme != "https" && !(BuildConfig.DEBUG && localHttp) && !localHttp) {
+        val localHttp = scheme == "http" && isLocalHttpHost(url.host.orEmpty())
+        if (scheme != "https" && !(BuildConfig.DEBUG && localHttp)) {
             showStatus("Secure HTTPS navigation is required.", Tone.WARNING)
             return true
         }
@@ -1298,6 +1526,18 @@ class MainActivity : AppCompatActivity() {
         showLoginState("Signed out.")
     }
 
+    private fun openPortalShell() {
+        val target = "${appConfig.appUrl.removeSuffix("/")}/login.html"
+        loadWebPage(
+            targetUrl = target,
+            mode = WebMode.PORTAL,
+            bootstrap = portalSession?.let {
+                buildBrowserBootstrap(examPortalState = null, protectedToken = "")
+            },
+            explicitTitle = "KIU Portal"
+        )
+    }
+
     private fun openLms() {
         val session = portalSession ?: run {
             showLoginState("Sign in to open the LMS.")
@@ -1529,7 +1769,13 @@ class MainActivity : AppCompatActivity() {
         activeBootstrapTargetUrl = sanitized
         bootstrapApplied = false
         currentPageTitle = explicitTitle
+        lastRequestedWebUrl = sanitized
         showScreen(ActiveScreen.WEB)
+        showWebLoadingState(
+            title = getString(R.string.web_loading_title),
+            message = getString(R.string.web_loading_message),
+            error = false
+        )
         webView.stopLoading()
         webView.loadUrl(sanitized)
     }
@@ -1904,6 +2150,11 @@ class MainActivity : AppCompatActivity() {
         refreshSessionButton.visibility = View.VISIBLE
         logoutButton.visibility = View.VISIBLE
         staffPanel.visibility = if (staffAllowed) View.VISIBLE else View.GONE
+        staffContent.visibility = if (staffAllowed && staffDiagnosticsExpanded) View.VISIBLE else View.GONE
+        staffToggleButton.setText(
+            if (staffDiagnosticsExpanded) R.string.staff_hide_diagnostics
+            else R.string.staff_show_diagnostics
+        )
         configSummary.text = buildString {
             append("App URL: ")
             append(appConfig.appUrl)
@@ -1946,6 +2197,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateWebModeBanner() {
         val text = when (activeWebMode) {
+            WebMode.PORTAL -> ""
             WebMode.PROTECTED -> {
                 val title = protectedLaunch?.quizTitle.orEmpty().ifBlank { protectedLaunch?.quizId.orEmpty() }
                 val status = protectedLaunch?.attemptStatus.orEmpty().ifBlank { "in-progress" }
@@ -1957,16 +2209,27 @@ class MainActivity : AppCompatActivity() {
         }
         if (text.isBlank()) {
             statusBanner.visibility = View.GONE
+            webModeBanner.visibility = View.GONE
             return
         }
         statusBanner.visibility = View.VISIBLE
         statusBanner.text = text
-        statusBanner.setBackgroundColor(
+        webModeBanner.visibility = View.VISIBLE
+        webModeBanner.text = text
+        statusBanner.setBackgroundResource(
             when (activeWebMode) {
-                WebMode.PROTECTED -> Color.parseColor("#1F2937")
-                WebMode.EXAM_PORTAL -> Color.parseColor("#0F172A")
-                WebMode.LMS -> Color.parseColor("#102A43")
-                else -> Color.parseColor("#111827")
+                WebMode.PROTECTED -> R.drawable.bg_badge
+                WebMode.EXAM_PORTAL -> R.drawable.bg_banner_info
+                WebMode.LMS -> R.drawable.bg_banner_info
+                else -> R.drawable.bg_panel
+            }
+        )
+        webModeBanner.setBackgroundResource(
+            when (activeWebMode) {
+                WebMode.PROTECTED -> R.drawable.bg_badge
+                WebMode.EXAM_PORTAL -> R.drawable.bg_banner_info
+                WebMode.LMS -> R.drawable.bg_banner_info
+                else -> R.drawable.bg_panel
             }
         )
     }
@@ -2039,32 +2302,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showLoginState(message: String = "") {
-        activeWebMode = WebMode.NONE
-        showScreen(ActiveScreen.LOGIN)
-        loginPanel.visibility = View.VISIBLE
-        launcherPanel.visibility = View.GONE
-        blockedPanel.visibility = View.GONE
-        webContainer.visibility = View.GONE
         if (message.isNotBlank()) showStatus(message, Tone.INFO) else hideStatus()
+        openPortalShell()
         updateSecurityBanner()
     }
 
     private fun showLauncherState(message: String = "") {
-        activeWebMode = WebMode.NONE
-        showScreen(ActiveScreen.LAUNCHER)
-        loginPanel.visibility = View.GONE
-        launcherPanel.visibility = View.VISIBLE
-        blockedPanel.visibility = View.GONE
-        webContainer.visibility = View.GONE
-        renderLauncherForSession(portalSession)
-        if (message.isNotBlank()) {
-            showStatus(message, Tone.INFO)
-        } else if (portalSession != null) {
-            showStatus(
-                "Signed in as ${(portalSession?.account?.nameEn?.ifBlank { portalSession?.account?.name }.orEmpty())} (${portalSession?.effectiveRole.orEmpty()}).",
-                Tone.INFO
-            )
-        }
+        if (message.isNotBlank()) showStatus(message, Tone.INFO)
+        openPortalShell()
         updateSecurityBanner()
     }
 
@@ -2095,6 +2340,7 @@ class MainActivity : AppCompatActivity() {
             ActiveScreen.LOGIN, ActiveScreen.LAUNCHER, ActiveScreen.BLOCKED -> {
                 controlsScroll.visibility = View.VISIBLE
                 webContainer.visibility = View.GONE
+                webLoadingOverlay.visibility = View.GONE
             }
             ActiveScreen.WEB -> {
                 controlsScroll.visibility = View.GONE
@@ -2106,13 +2352,32 @@ class MainActivity : AppCompatActivity() {
     private fun showStatus(message: String, tone: Tone) {
         statusBanner.visibility = View.VISIBLE
         statusBanner.text = message
-        statusBanner.setBackgroundColor(
+        statusBanner.setBackgroundResource(
             when (tone) {
-                Tone.INFO -> Color.parseColor("#1E293B")
-                Tone.SUCCESS -> Color.parseColor("#123D2E")
-                Tone.WARNING -> Color.parseColor("#4B2E0C")
-                Tone.DANGER -> Color.parseColor("#4B1111")
+                Tone.INFO -> R.drawable.bg_banner_info
+                Tone.SUCCESS -> R.drawable.bg_badge
+                Tone.WARNING -> R.drawable.bg_banner_warning
+                Tone.DANGER -> R.drawable.bg_banner_danger
             }
+        )
+        statusBanner.setTextColor(
+            when (tone) {
+                Tone.WARNING -> ContextCompat.getColor(this, R.color.anti_cheat_warning)
+                Tone.DANGER -> ContextCompat.getColor(this, R.color.anti_cheat_danger)
+                else -> ContextCompat.getColor(this, R.color.anti_cheat_text)
+            }
+        )
+    }
+
+    private fun showWebLoadingState(title: String, message: String, error: Boolean) {
+        webLoadingOverlay.visibility = View.VISIBLE
+        webLoadingTitle.text = title
+        webLoadingMessage.text = message
+        webLoadingProgress.visibility = if (error) View.GONE else View.VISIBLE
+        webRetryButton.visibility = if (error) View.VISIBLE else View.GONE
+        webLoadingOverlay.setBackgroundColor(
+            if (error) ContextCompat.getColor(this, R.color.anti_cheat_danger_surface)
+            else ContextCompat.getColor(this, R.color.anti_cheat_background)
         )
     }
 
@@ -2138,9 +2403,23 @@ class MainActivity : AppCompatActivity() {
         passwordInput.setText("")
     }
 
+    private fun configSignature(config: AppConfig): String {
+        return listOf(
+            config.appUrl,
+            config.backendUrl,
+            config.quizUrl,
+            config.examPortalUrl,
+            config.reportingUrl,
+            config.heartbeatUrl
+        ).joinToString("|")
+    }
+
     private fun persistConfig(config: AppConfig) {
         try {
-            prefs.edit().putString(KEY_CONFIG_JSON, config.toPrefsJson()).apply()
+            prefs.edit()
+                .putString(KEY_CONFIG_JSON, config.toPrefsJson())
+                .putString(KEY_CONFIG_ASSET_SIGNATURE, assetConfigSignature)
+                .apply()
         } catch (_: Exception) {}
     }
 
@@ -2345,10 +2624,11 @@ class MainActivity : AppCompatActivity() {
             }
             portalSession = validated
             persistPortalSession(validated)
-            showLauncherState()
             if (!restoreProtectedLaunchIfPossible()) {
                 if (!redeemPendingLaunchIfPossible()) {
-                    openPendingOpenTargetIfPossible()
+                    if (!openPendingOpenTargetIfPossible()) {
+                        openPortalShell()
+                    }
                 }
             }
         }
@@ -2398,7 +2678,7 @@ class MainActivity : AppCompatActivity() {
             val url = URL(normalized)
             val protocol = url.protocol.lowercase()
             if (!url.toURI().userInfo.isNullOrBlank()) return ""
-            if (protocol != "https" && !(protocol == "http" && (BuildConfig.DEBUG || url.host.lowercase() in setOf("127.0.0.1", "localhost", "10.0.2.2")))) return ""
+            if (protocol != "https" && !(protocol == "http" && BuildConfig.DEBUG && isLocalHttpHost(url.host))) return ""
             if (!isProtectedModeHostAllowed(url.host, getProtectedAllowedDomains())) return ""
             normalized.removeSuffix("/")
         } catch (_: Exception) {

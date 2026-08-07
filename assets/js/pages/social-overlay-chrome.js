@@ -421,7 +421,21 @@
             }
             const ui = state().ui;
             const currentDialog = ui.socialDialog || null;
-            const graphAnchorForSwitch = resolveGraphStackAnchorDialog(ui);
+            let graphAnchorForSwitch = resolveGraphStackAnchorDialog(ui);
+            const opensTaskGraphChild = type === 'project-task-graph-history'
+                || type === 'project-task-graph-schedule-help';
+            if (opensTaskGraphChild && !graphAnchorForSwitch) {
+                ui.projectTaskGraphStackAnchor = {
+                    type: 'project-task-graph',
+                    projectId: text(payload?.projectId || ui.activeProjectId || '')
+                };
+                graphAnchorForSwitch = ui.projectTaskGraphStackAnchor;
+            }
+            if (opensTaskGraphChild
+                && graphAnchorForSwitch
+                && (!currentDialog || currentDialog.type === 'project-task-graph')) {
+                ui.previousDialog = { ...graphAnchorForSwitch };
+            }
             if (PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(text(type))) {
                 ui.projectTaskGraphQuickCreate = { open: false };
             }
@@ -449,7 +463,10 @@
                     && currentDialog
                     && (currentDialog?.type === 'project-task-graph'
                         || PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(currentDialog?.type));
-                if (!keepGraphAnchor) ui.previousDialog = null;
+                const keepDirectTaskGraphParent = opensTaskGraphChild
+                    && graphAnchorForSwitch?.type === 'project-task-graph'
+                    && (!currentDialog || currentDialog.type === 'project-task-graph');
+                if (!keepGraphAnchor && !keepDirectTaskGraphParent) ui.previousDialog = null;
             }
             if (PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(type)) {
                 const graphAnchor = getProjectTaskGraphStackAnchorDialog(state());

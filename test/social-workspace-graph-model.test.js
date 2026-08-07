@@ -456,4 +456,58 @@ describe('social-workspace-graph-model', () => {
             }
         });
     });
+
+    describe('mobile viewport helpers', () => {
+        it('exposes isProjectTaskGraphMobileViewport and mobile chrome constant', () => {
+            expect(typeof win.isProjectTaskGraphMobileViewport).toBe('function');
+            expect(win.PROJECT_TASK_GRAPH_MOBILE_CHROME_H).toBeGreaterThan(112);
+        });
+
+        it('computeProjectTaskGraphStageSize skips rail subtract on mobile', () => {
+            win.innerWidth = 390;
+            win.innerHeight = 844;
+            win.matchMedia = (query) => ({
+                matches: String(query).includes('max-width: 1024px'),
+                media: query,
+                addListener() {},
+                removeListener() {}
+            });
+            const withSel = win.computeProjectTaskGraphStageSize({
+                ui: { projectTaskGraphSelectedId: 'task-1' }
+            });
+            const withoutSel = win.computeProjectTaskGraphStageSize({ ui: {} });
+            expect(withSel.stageWidth).toBe(withoutSel.stageWidth);
+            expect(withSel.stageWidth).toBe(390);
+            expect(withSel.stageHeight).toBeLessThan(844);
+            expect(withSel.stageHeight).toBeGreaterThanOrEqual(240);
+        });
+
+        it('resolveProjectTaskGraphPanSlack caps base slack on mobile', () => {
+            win.innerWidth = 390;
+            win.innerHeight = 844;
+            win.matchMedia = (query) => ({
+                matches: String(query).includes('max-width: 1024px'),
+                media: query,
+                addListener() {},
+                removeListener() {}
+            });
+            const slack = win.resolveProjectTaskGraphPanSlack(100);
+            expect(slack).toBeLessThan(2400);
+            expect(slack).toBeGreaterThanOrEqual(Math.round(844 * 1.5));
+            const grown = win.resolveProjectTaskGraphPanSlack(5000);
+            expect(grown).toBe(5000);
+        });
+
+        it('keeps desktop pan slack floor at 2400', () => {
+            win.innerWidth = 1440;
+            win.innerHeight = 900;
+            win.matchMedia = () => ({
+                matches: false,
+                media: '',
+                addListener() {},
+                removeListener() {}
+            });
+            expect(win.resolveProjectTaskGraphPanSlack(100)).toBeGreaterThanOrEqual(2400);
+        });
+    });
 });

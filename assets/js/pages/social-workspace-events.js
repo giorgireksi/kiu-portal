@@ -37,6 +37,7 @@
             createPortalSocialProjectTask,
             createProjectTaskGraphGroup,
             currentFacultyCode,
+            isProjectTaskGraphMobileViewport,
             deletePortalSocialProject,
             deletePortalSocialProjectBudgetCategory,
             deletePortalSocialProjectBudgetExpense,
@@ -85,7 +86,6 @@
             parseProjectTaskPriorityPayload,
             patchProjectHealthPlanCard,
             patchProjectHealthPlanPick,
-            patchProjectTaskGraphLinkCountLabel,
             patchProjectWorkspaceTab,
             patchRemoveProjectTaskGraphEdge,
             persistProjectTaskGraphView,
@@ -802,13 +802,31 @@
             }
             if (action === 'project-faculty-toggle') {
                 const faculty = text(trigger.getAttribute('data-faculty'));
-                state().ui.projectFacultyCodes = Array.isArray(state().ui.projectFacultyCodes) ? state().ui.projectFacultyCodes : [currentFacultyCode()];
-                if (state().ui.projectFacultyCodes.includes(faculty)) {
-                    state().ui.projectFacultyCodes = state().ui.projectFacultyCodes.filter((item) => text(item) !== faculty);
+                const chrome = window.KiuSocialChromeModel || {};
+                const allSentinel = chrome.SOCIAL_BROWSE_FACULTY_ALL || 'all';
+                const isAll = faculty === allSentinel
+                    || (typeof chrome.socialCreateFacultyIsAll === 'function' && chrome.socialCreateFacultyIsAll(faculty));
+                state().ui.projectFacultyCodes = Array.isArray(state().ui.projectFacultyCodes) ? state().ui.projectFacultyCodes : [];
+                if (isAll) {
+                    if (state().ui.projectFacultyCodes.some((item) => text(item) === allSentinel)) {
+                        state().ui.projectFacultyCodes = state().ui.projectFacultyCodes.filter((item) => text(item) !== allSentinel);
+                    } else {
+                        state().ui.projectFacultyCodes = [allSentinel];
+                    }
                 } else {
-                    state().ui.projectFacultyCodes.push(faculty);
+                    state().ui.projectFacultyCodes = state().ui.projectFacultyCodes.filter((item) => text(item) !== allSentinel);
+                    if (state().ui.projectFacultyCodes.includes(faculty)) {
+                        state().ui.projectFacultyCodes = state().ui.projectFacultyCodes.filter((item) => text(item) !== faculty);
+                    } else {
+                        state().ui.projectFacultyCodes.push(faculty);
+                    }
                 }
-                if (!state().ui.projectFacultyCodes.length) state().ui.projectFacultyCodes = [currentFacultyCode()];
+                if (!state().ui.projectFacultyCodes.length) {
+                    const fallback = typeof chrome.socialDefaultCreateFaculty === 'function'
+                        ? chrome.socialDefaultCreateFaculty(state())
+                        : currentFacultyCode();
+                    state().ui.projectFacultyCodes = fallback ? [fallback] : [allSentinel];
+                }
                 return renderSocialPageNow('project-faculty-toggle');
             }
             if (action === 'project-creator-member-add') {
@@ -971,11 +989,19 @@
                 } else {
                     // First open: content-fit all tasks (same idea as Reset view / preview).
                     const groupBoxes = collectProjectTaskGraphGroupBoxes(graphRuntime, openProjectId, graphLayout);
+                    const mobile = typeof isProjectTaskGraphMobileViewport === 'function'
+                        ? isProjectTaskGraphMobileViewport()
+                        : false;
                     const firstFit = computeProjectTaskGraphContentFitView(
                         graphLayout,
                         graphStageSize.stageWidth,
                         graphStageSize.stageHeight,
-                        { pad: 56, minZoom: PROJECT_TASK_GRAPH_MIN_ZOOM, maxZoom: 1.15, extraBoxes: groupBoxes }
+                        {
+                            pad: mobile ? 28 : 56,
+                            minZoom: PROJECT_TASK_GRAPH_MIN_ZOOM,
+                            maxZoom: 1.15,
+                            extraBoxes: groupBoxes
+                        }
                     );
                     graphRuntime.ui.projectTaskGraphZoom = firstFit.zoom;
                     graphRuntime.ui.projectTaskGraphPan = { ...firstFit.pan };
@@ -1323,7 +1349,6 @@
                     if (!patchRemoveProjectTaskGraphEdge(svg, fromId, taskId)) {
                         syncProjectTaskGraphEdgesOnly(state());
                     }
-                    patchProjectTaskGraphLinkCountLabel(state());
                 });
             }
             if (action === 'project-task-checklist-add') {

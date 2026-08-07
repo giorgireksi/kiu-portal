@@ -1490,8 +1490,11 @@
                         || ((window.KiuSocialChromeModel || {}).socialDefaultCreateFaculty?.(runtime) || ''),
                     tags: text(form.groupType?.value || 'standard') === 'study' ? ['study'] : []
                 };
+                payload.facultyCode = typeof (window.KiuSocialChromeModel || {}).socialNormalizeCreateFacultyCode === 'function'
+                    ? (window.KiuSocialChromeModel.socialNormalizeCreateFacultyCode(payload.facultyCode, runtime))
+                    : payload.facultyCode;
                 if (!payload.name) throw new Error('Group name is required.');
-                if (!payload.facultyCode || payload.facultyCode === 'all') throw new Error('Faculty is required.');
+                if (!payload.facultyCode) throw new Error('Faculty is required.');
                 const group = await createPortalSocialGroup(payload);
                 if (group?.id && inviteIds.length && typeof invitePortalSocialGroupMember === 'function') {
                     for (const memberId of inviteIds) {
