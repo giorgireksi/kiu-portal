@@ -353,6 +353,7 @@
             backdrop = document.createElement('div');
             backdrop.id = 'lux-bg-gallery-backdrop';
             backdrop.className = 'lux-bg-gallery-backdrop';
+            backdrop.hidden = true;
             backdrop.setAttribute('data-lux-transparency-exempt', '1');
             backdrop.innerHTML = `
             <div class="lux-bg-gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="lux-bg-gallery-title" data-lux-transparency-exempt="1">
@@ -672,6 +673,7 @@
             el.hidden = !isGalleryAdmin();
         });
         setGalleryTab(GALLERY_STATE.activeTab);
+        backdrop.hidden = false;
         backdrop.classList.add('is-open');
         renderBackgroundGalleryPopup();
         updateGalleryUploadSessionUi();
@@ -1059,7 +1061,6 @@
     }
 
     function bindBackgroundGalleryStudioControls() {
-        ensureBackgroundGalleryPopup();
         bindBackgroundGalleryStudioLauncher();
     }
 

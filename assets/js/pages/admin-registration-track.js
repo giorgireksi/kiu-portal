@@ -683,7 +683,7 @@ function renderAdminRegTrackTab(container, tabConfig) {
             <button type="button" data-admin-reg-add-program="1" data-admin-reg-tab="${escapeHtml(tabId)}" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
         <div class="admin-reg-program-layout admin-reg-program-layout--wide">
-            <div class="admin-reg-program-list-shell lux-soft-chrome">
+            <div class="admin-reg-program-list-shell lux-soft-chrome home-hover-chip">
                 <div class="admin-reg-program-list-head">
                     <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">${escapeHtml(tabConfig.programsLabel)}</div>
                     <span class="admin-reg-program-list-count">${programs.length}</span>

@@ -4,7 +4,7 @@ import {
   onGovernorStateChange,
   readGovernedFrameIntervalMs,
   shouldSkipCanvasFrame,
-} from "../shared/lux-render-governor.js";
+} from "../shared/lux-render-governor.js?v=20260808-overallperf1";
 
 const PARTICLE_QUALITY_KEYS = ["low", "balanced", "high", "auto"];
 const DEFAULT_PARTICLE_MOTION = 100;

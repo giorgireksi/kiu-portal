@@ -103,9 +103,12 @@
                             ${(model.pills || []).map((pill) => `<span class="lux-pill lux-soft-chrome home-hover-chip">${escapeHtml(pill)}</span>`).join('')}
                         </div>
                         <div class="lux-hero-actions">
-                            ${(model.actions || []).map(([pageId, label], index) => `
-                                <button class="${index === 0 ? 'lux-primary-btn' : index === 1 ? 'lux-secondary-btn' : 'lux-ghost-btn'}" type="button" data-nav-target="${escapeHtml(pageId)}">${escapeHtml(label)}</button>
-                            `).join('')}
+                            ${(model.actions || []).map(([pageId, label, actionType], index) => {
+                                const actionAttribute = actionType === 'utility'
+                                    ? `data-action="${escapeHtml(pageId)}"`
+                                    : `data-nav-target="${escapeHtml(pageId)}"`;
+                                return `<button class="${index === 0 ? 'lux-primary-btn' : index === 1 ? 'lux-secondary-btn' : 'lux-ghost-btn'}" type="button" ${actionAttribute}>${escapeHtml(label)}</button>`;
+                            }).join('')}
                         </div>
                     </div>
                     ${renderHeroFocusAsideMarkup(model.heroAside)}

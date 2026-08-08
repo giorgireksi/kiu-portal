@@ -275,7 +275,7 @@ describe('global interaction performance guardrails', () => {
     const indexHtml = readSource('index.html');
     const mobileShell = readSource('assets/js/pages/index-mobile-shell.js');
 
-    expect(indexHtml).toContain('assets/js/pages/index-mobile-shell.js?v=20260806-hidetopbar2');
+    expect(indexHtml).toContain('assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1');
     expect(indexHtml).not.toContain('(function initMobileExperience(){');
     expect(mobileShell).toContain("(function initMobileExperience() {");
   });

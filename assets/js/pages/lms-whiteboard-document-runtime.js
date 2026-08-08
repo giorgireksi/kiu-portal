@@ -883,8 +883,10 @@ function paintLmsWhiteboardDocumentOverlayCanvas(inkCanvas, element = {}, resour
     const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 3));
     const width = Math.max(inkCanvas.clientWidth, 1);
     const height = Math.max(inkCanvas.clientHeight, 1);
-    inkCanvas.width = Math.round(width * dpr);
-    inkCanvas.height = Math.round(height * dpr);
+    const expectedWidth = Math.round(width * dpr);
+    const expectedHeight = Math.round(height * dpr);
+    if (inkCanvas.width !== expectedWidth) inkCanvas.width = expectedWidth;
+    if (inkCanvas.height !== expectedHeight) inkCanvas.height = expectedHeight;
     const ctx = inkCanvas.getContext('2d');
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -935,6 +937,32 @@ function repaintAllLmsWhiteboardDocumentInks() {
             const inkCanvas = shell.querySelector('[data-lms-whiteboard-document-ink]');
             if (element && inkCanvas) paintLmsWhiteboardDocumentOverlayCanvas(inkCanvas, element, resourceKey);
         });
+}
+
+let lmsWhiteboardDocumentInkFrame = 0;
+const lmsWhiteboardDocumentInkPending = new Set();
+
+function scheduleLmsWhiteboardDocumentInk(documentId = '') {
+    const id = String(documentId || '').trim();
+    if (!id) return;
+    lmsWhiteboardDocumentInkPending.add(id);
+    if (lmsWhiteboardDocumentInkFrame) return;
+    lmsWhiteboardDocumentInkFrame = window.requestAnimationFrame(() => {
+        lmsWhiteboardDocumentInkFrame = 0;
+        const pending = Array.from(lmsWhiteboardDocumentInkPending);
+        lmsWhiteboardDocumentInkPending.clear();
+        pending.forEach(idValue => repaintLmsWhiteboardDocumentInk(idValue));
+    });
+}
+
+function flushLmsWhiteboardDocumentInk() {
+    if (lmsWhiteboardDocumentInkFrame) {
+        window.cancelAnimationFrame(lmsWhiteboardDocumentInkFrame);
+        lmsWhiteboardDocumentInkFrame = 0;
+    }
+    const pending = Array.from(lmsWhiteboardDocumentInkPending);
+    lmsWhiteboardDocumentInkPending.clear();
+    pending.forEach(idValue => repaintLmsWhiteboardDocumentInk(idValue));
 }
 
 function repaintLmsWhiteboardDocumentInk(documentId = '') {

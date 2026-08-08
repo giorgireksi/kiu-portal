@@ -259,7 +259,9 @@ describe('social-project-health-ui', () => {
         expect(modals).toContain('border-radius: 14px;');
         expect(modals).toContain('.lux-glass-dialog-compact-stat-stack');
         expect(modals).toContain('.lux-glass-dialog-compact-stat');
-        expect(readSource('social.html')).toContain('lux-modals.css?v=20260804-graph-pages1');
+        expect(readSource('assets/js/pages/social-page.js'))
+            .toContain("assets/css/lux-modals.css?v=20260808-loadperf1");
+        expect(readSource('social.html')).not.toContain('lux-modals.css');
         expect(dialogs).not.toContain('lux-glass-dialog-group-section sph-fs-hero-section');
         expect(dialogs).not.toContain('lux-soft-chrome lux-glass-dialog-panel-section');
     });

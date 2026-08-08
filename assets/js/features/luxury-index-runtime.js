@@ -800,6 +800,14 @@ return {
     let __luxHomeDashboardChunkRetryTimer = null;
     let __luxHomeDashboardChunkRetryAttempts = 0;
 
+    function validateLuxuryHomeDashboardChunk(sourceText) {
+        const source = String(sourceText || '').trim();
+        if (!source || !source.includes('renderDynamicHomeShell = function')) {
+            throw new Error('Home dashboard bundle did not expose the required renderer.');
+        }
+        return source;
+    }
+
     function installLuxuryHomeDashboardChunk(decodedSource) {
         const exports = Function(`
 let renderDynamicHomeShell = function noopRenderDynamicHomeShell() {};
@@ -811,9 +819,10 @@ return {
     buildHomeWidgetDefinitions: typeof buildHomeWidgetDefinitions === 'function' ? buildHomeWidgetDefinitions : null
 };
 `)();
-        if (typeof exports?.renderDynamicHomeShell === 'function') {
-            renderDynamicHomeShell = exports.renderDynamicHomeShell;
+        if (typeof exports?.renderDynamicHomeShell !== 'function') {
+            throw new Error('Home dashboard bundle renderer installation failed.');
         }
+        renderDynamicHomeShell = exports.renderDynamicHomeShell;
         if (typeof exports?.startBackground === 'function') {
             startBackground = exports.startBackground;
         }
@@ -828,8 +837,10 @@ return {
 
     function homeShellHasDashboardContent(homeShell = document.getElementById('lux-home-shell')) {
         if (!homeShell) return false;
+        if (homeShell.querySelector('[data-home-loading-shell="1"], [data-home-recovery-shell="1"]')) return false;
         return Boolean(
-            homeShell.querySelector('[data-dashboard-canvas="1"], .lux-home-page, .lux-home-merged, .lux-home-band, .lux-grid-widget, .lux-dashboard-section, .lux-widget-stack, .lux-home-grid--builder')
+            homeShell.dataset.homeRenderReady === '1'
+            && homeShell.querySelector('.lux-home-page[data-home-root="1"]')
         );
     }
 
@@ -841,6 +852,11 @@ return {
     }
 
     function renderHomeShellLoadingPlaceholder(homeShell) {
+        if (homeShell?.dataset) {
+            delete homeShell.dataset.homeRenderReady;
+            delete homeShell.dataset.homeRenderSignature;
+            homeShell.dataset.homeRenderState = 'loading';
+        }
         homeShell.innerHTML = `
             <div class="lux-home-grid is-loading" data-home-loading-shell="1" data-lux-glass-root="1">
                 <section class="lux-card">
@@ -862,7 +878,11 @@ return {
 
     function renderHomeShellRecoveryPanel(homeShell, { title, copy, showRetry = true } = {}) {
         clearHomeShellLoadTimeout();
-        if (homeShell?.dataset) delete homeShell.dataset.homeRenderSignature;
+        if (homeShell?.dataset) {
+            delete homeShell.dataset.homeRenderSignature;
+            delete homeShell.dataset.homeRenderReady;
+            homeShell.dataset.homeRenderState = 'recovery';
+        }
         const safeTitle = escapeHtml(title || 'Dashboard could not load');
         const safeCopy = escapeHtml(copy || 'The home dashboard bundle did not finish loading. Try again or refresh the page.');
         homeShell.innerHTML = `
@@ -957,6 +977,8 @@ return {
                 return;
             }
             renderDynamicHomeShell(homeShell);
+            homeShell.dataset.homeRenderReady = '1';
+            homeShell.dataset.homeRenderState = 'ready';
             homeShell.dataset.homeRenderSignature = signature;
             const isStudentHome = typeof getEffectiveRole === 'function' && getEffectiveRole() === 'student';
             if (isStudentHome) {
@@ -977,8 +999,12 @@ return {
             const idleRunner = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 120));
             idleRunner(repaintHomeSurfaces);
             queueHeavySurfaceObservationRefresh();
+            if (typeof window.__kiuReplayHomeLoadingMotion === 'function') {
+                window.__kiuReplayHomeLoadingMotion('render');
+            }
         } catch (error) {
             console.error('Home dashboard render failed.', error);
+            delete homeShell.dataset.homeRenderReady;
             delete homeShell.dataset.homeRenderSignature;
             renderHomeShellRecoveryPanel(homeShell, {
                 title: 'Dashboard render failed',
@@ -1099,12 +1125,13 @@ return {
                 }
                 return false;
             }
-            __luxHomeDashboardChunkRetryAttempts = 0;
+            validateLuxuryHomeDashboardChunk(sourceText);
             if (executeHomeChunk && encoded && !plainUrl) {
                 executeHomeChunk(encoded);
             } else {
                 installLuxuryHomeDashboardChunk(sourceText);
             }
+            __luxHomeDashboardChunkRetryAttempts = 0;
             window.__kiuLuxuryHomeDashboardLoaded = true;
             return true;
         }).then((loaded) => {
@@ -1112,6 +1139,9 @@ return {
             return true;
         }).catch((error) => {
             console.error('Failed to load route-owned home dashboard luxury bundle.', error);
+            if (typeof isIndexPortalShell === 'function' && isIndexPortalShell()) {
+                scheduleLuxuryHomeDashboardChunkRetry();
+            }
             return false;
         }).finally(() => {
             __luxHomeDashboardBundlePromise = null;

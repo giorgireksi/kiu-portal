@@ -1,0 +1,40 @@
+/*
+ * Admin-tools loading motion only.
+ * Paint, panels, shell chrome, and theme tokens remain owned by shared CSS.
+ */
+body.admin-tools-assembly-active #lux-admin-tools-shell .kiu-admin-tools-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.admin-tools-assembly-active #lux-admin-tools-shell .kiu-admin-tools-assembly-structure {
+  opacity: 0;
+}
+
+body.admin-tools-assembly-active #lux-admin-tools-shell .kiu-admin-tools-assembly-outer[data-kiu-assembly-phase="children"] .kiu-admin-tools-assembly-structure {
+  opacity: 1;
+}
+
+body.admin-tools-assembly-active #lux-admin-tools-shell .kiu-admin-tools-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.admin-tools-assembly-ready #lux-admin-tools-shell .kiu-admin-tools-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.admin-tools-assembly-active #lux-admin-tools-shell .kiu-admin-tools-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.admin-tools-assembly-active #lux-admin-tools-shell .kiu-admin-tools-assembly-structure {
+    opacity: 1;
+  }
+}

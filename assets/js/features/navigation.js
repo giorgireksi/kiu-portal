@@ -959,14 +959,139 @@ function isPortalStartupDependencyReady() {
     });
 }
 
-function markPortalShellReady() {
-    markPortalNavigationIntentForCurrentPage();
-    document.documentElement.classList.add('kiu-shell-ready');
-    document.documentElement.classList.remove('kiu-shell-loading');
+const KIU_SHELL_REVEAL_TIMINGS = Object.freeze({
+    shell: 48,
+    panel: 116,
+    controls: 184,
+    content: 244,
+    ready: 320
+});
+let kiuShellRevealTimers = [];
+let kiuShellRevealStarted = false;
+let kiuShellRevealFinished = false;
+let kiuShellRouteReady = false;
+
+function getKiuShellLoadState() {
+    return window.__kiuShellLoadState || {
+        phase: 'loading',
+        stage: 'background',
+        degraded: false
+    };
+}
+
+function setKiuShellLoadState(next) {
+    if (typeof window.__kiuSetShellLoadState === 'function') {
+        return window.__kiuSetShellLoadState(next);
+    }
+    const state = window.__kiuShellLoadState = {
+        ...getKiuShellLoadState(),
+        ...(next || {})
+    };
+    const root = document.documentElement;
+    root.dataset.kiuLoadPhase = state.phase;
+    root.dataset.kiuLoadStage = state.stage;
+    root.dataset.kiuLoadDegraded = state.degraded ? '1' : '0';
+    if (document.body) {
+        document.body.dataset.kiuLoadPhase = state.phase;
+        document.body.dataset.kiuLoadStage = state.stage;
+        document.body.dataset.kiuLoadDegraded = state.degraded ? '1' : '0';
+    }
+    return state;
+}
+
+function clearKiuShellRevealTimers() {
+    kiuShellRevealTimers.forEach((timer) => window.clearTimeout(timer));
+    kiuShellRevealTimers = [];
+}
+
+function setKiuShellRevealStage(stage) {
+    setKiuShellLoadState({
+        phase: getKiuShellLoadState().degraded ? 'degraded' : 'revealing',
+        stage
+    });
+}
+
+function finishKiuShellReveal() {
+    clearKiuShellRevealTimers();
+    kiuShellRevealFinished = true;
+    setKiuShellLoadState({
+        phase: 'ready',
+        stage: 'ready'
+    });
+    const root = document.documentElement;
+    root.classList.add('kiu-shell-ready');
+    root.classList.remove('kiu-shell-loading', 'kiu-shell-revealing');
     if (document.body) {
         document.body.classList.add('kiu-shell-ready');
-        document.body.classList.remove('kiu-shell-loading');
+        document.body.classList.remove('kiu-shell-loading', 'kiu-shell-revealing');
+        document.body.removeAttribute('aria-busy');
     }
+}
+
+function continueKiuShellRevealFromDegraded() {
+    if (kiuShellRevealFinished) return;
+    clearKiuShellRevealTimers();
+    setKiuShellLoadState({ degraded: false, phase: 'revealing' });
+    kiuShellRevealTimers = [
+        window.setTimeout(() => setKiuShellRevealStage('controls'), 24),
+        window.setTimeout(() => setKiuShellRevealStage('content'), 84),
+        window.setTimeout(finishKiuShellReveal, 148)
+    ];
+}
+
+function startKiuShellReveal({ degraded = false } = {}) {
+    if (kiuShellRevealFinished) return getKiuShellLoadState();
+    if (kiuShellRevealStarted) {
+        if (!degraded && getKiuShellLoadState().degraded) continueKiuShellRevealFromDegraded();
+        return getKiuShellLoadState();
+    }
+    kiuShellRevealStarted = true;
+    const reduceMotion = Boolean(
+        window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+    setKiuShellLoadState({
+        phase: degraded ? 'degraded' : 'revealing',
+        stage: 'background',
+        degraded
+    });
+    const root = document.documentElement;
+    root.classList.add('kiu-shell-revealing');
+    root.classList.remove('kiu-shell-loading', 'kiu-shell-ready');
+    if (document.body) {
+        document.body.classList.add('kiu-shell-revealing');
+        document.body.classList.remove('kiu-shell-loading', 'kiu-shell-ready');
+        document.body.setAttribute('aria-busy', 'true');
+    }
+    if (reduceMotion) {
+        finishKiuShellReveal();
+        return getKiuShellLoadState();
+    }
+    kiuShellRevealTimers = [
+        window.setTimeout(() => setKiuShellRevealStage('shell'), degraded ? 28 : KIU_SHELL_REVEAL_TIMINGS.shell),
+        window.setTimeout(() => setKiuShellRevealStage('panel'), degraded ? 92 : KIU_SHELL_REVEAL_TIMINGS.panel)
+    ];
+    if (degraded) {
+        kiuShellRevealTimers.push(window.setTimeout(() => {
+            if (!kiuShellRouteReady) finishKiuShellReveal();
+        }, 420));
+    } else {
+        kiuShellRevealTimers.push(
+            window.setTimeout(() => setKiuShellRevealStage('controls'), KIU_SHELL_REVEAL_TIMINGS.controls),
+            window.setTimeout(() => setKiuShellRevealStage('content'), KIU_SHELL_REVEAL_TIMINGS.content),
+            window.setTimeout(finishKiuShellReveal, KIU_SHELL_REVEAL_TIMINGS.ready)
+        );
+    }
+    return getKiuShellLoadState();
+}
+
+window.__kiuStartShellReveal = startKiuShellReveal;
+
+function markPortalShellReady() {
+    markPortalNavigationIntentForCurrentPage();
+    kiuShellRouteReady = true;
+    if (getKiuShellLoadState().phase === 'ready') return;
+    startKiuShellReveal({ degraded: false });
 }
 
 __kiuNavExpose({

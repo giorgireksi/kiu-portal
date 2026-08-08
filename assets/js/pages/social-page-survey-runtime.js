@@ -625,7 +625,13 @@ function socialCenterHasLiveScrollRoom(center, contentH = 0) {
 
 function getSocialCenterContentScrollHeight(center) {
     if (!center) return 0;
-    if (center.querySelector('.social-neo-messages') || center.querySelector('.sn-alerts-panel')) return center.clientHeight;
+    const cached = center.__kiuSocialCenterContentScrollHeight;
+    if (cached && cached.root === center.firstElementChild) return cached.value;
+    if (center.querySelector('.social-neo-messages') || center.querySelector('.sn-alerts-panel')) {
+        const value = center.clientHeight;
+        center.__kiuSocialCenterContentScrollHeight = { root: center.firstElementChild, value };
+        return value;
+    }
     const contentRoot = center.firstElementChild;
     const directory = center.querySelector('.social-neo-directory');
     const scrollItems = center.querySelectorAll(
@@ -647,7 +653,7 @@ function getSocialCenterContentScrollHeight(center) {
         : 0;
     const panelShell = center.querySelector('[class$="-shell"], .social-portfolio-feed');
     const panelExtent = getSocialCenterContentExtent(center);
-    return Math.max(
+    const value = Math.max(
         center.scrollHeight || 0,
         contentRoot?.offsetHeight || 0,
         contentRoot?.scrollHeight || 0,
@@ -660,6 +666,8 @@ function getSocialCenterContentScrollHeight(center) {
         panelShell?.offsetHeight || 0,
         panelExtent
     );
+    center.__kiuSocialCenterContentScrollHeight = { root: center.firstElementChild, value };
+    return value;
 }
 
 function getSocialCenterMaxScroll(center, shell) {
@@ -688,6 +696,8 @@ function setSocialRegionMarkup(node, markup) {
     if (node.__kiuLastMarkup === nextMarkup && !(nextMarkup === '' && String(node.innerHTML || '').trim())) return;
     node.innerHTML = nextMarkup;
     node.__kiuLastMarkup = nextMarkup;
+    const center = node.closest?.('#social-neo-center-region');
+    if (center) delete center.__kiuSocialCenterContentScrollHeight;
 }
 
 function invalidateSocialRenderCache({ center = true } = {}) {
@@ -699,7 +709,10 @@ function invalidateSocialRenderCache({ center = true } = {}) {
     if (host) host.__kiuLastRenderSignature = '';
     if (center) {
         const centerEl = document.getElementById('social-neo-center-region');
-        if (centerEl) delete centerEl.__kiuLastMarkup;
+        if (centerEl) {
+            delete centerEl.__kiuLastMarkup;
+            delete centerEl.__kiuSocialCenterContentScrollHeight;
+        }
     }
 }
 

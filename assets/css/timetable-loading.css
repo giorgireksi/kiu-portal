@@ -1,0 +1,40 @@
+/*
+ * Timetable loading motion only.
+ * Shared timetable paint, panels, and theme tokens remain unchanged.
+ */
+body.timetable-assembly-active #page-timetable .kiu-timetable-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.timetable-assembly-active #page-timetable .kiu-timetable-assembly-structure {
+  opacity: 0;
+}
+
+body.timetable-assembly-active #page-timetable .kiu-timetable-assembly-outer[data-kiu-assembly-phase="children"] .kiu-timetable-assembly-structure {
+  opacity: 1;
+}
+
+body.timetable-assembly-active #page-timetable .kiu-timetable-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.timetable-assembly-ready #page-timetable .kiu-timetable-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.timetable-assembly-active #page-timetable .kiu-timetable-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.timetable-assembly-active #page-timetable .kiu-timetable-assembly-structure {
+    opacity: 1;
+  }
+}

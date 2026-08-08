@@ -166,10 +166,6 @@
         function bindEvents() {
             const host = root();
             if (!host) return;
-            if (document.body?.classList.contains('kiu-shell-loading')
-                || document.documentElement?.classList.contains('kiu-shell-loading')) {
-                revealShell();
-            }
             const binding = hostEventState();
             ensureSocialOverlayPortal();
             ensurePhotographyUploadFileSink();
@@ -233,6 +229,8 @@
                 if (renderAttemptCount < MAX_RENDER_ATTEMPTS) {
                     window.requestAnimationFrame(renderOrRetry);
                 } else {
+                    const host = root();
+                    if (host) host.dataset.socialInitialMotionFallback = '1';
                     revealShell();
                 }
                 return;

@@ -145,7 +145,7 @@ describe('LMS whiteboard document interaction ux8', () => {
     });
 
     it('bumps lms cache to document mode toggles', () => {
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('20260808-overallperf1');
     });
 
     it('defers heavy document repaint during layout-only reposition', () => {

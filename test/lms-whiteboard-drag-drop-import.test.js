@@ -50,7 +50,7 @@ describe('LMS whiteboard drag-drop import', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-document-runtime.js?v=20260729-wbdocmode5');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-document-runtime.js?v=20260808-overallperf1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260808-overallperf1');
     });
 });

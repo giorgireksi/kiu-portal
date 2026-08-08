@@ -157,9 +157,87 @@
         const PANEL_KEY = d.PANEL_KEY ?? window.PANEL_KEY;
         const CHAT_KEY = d.CHAT_KEY ?? window.CHAT_KEY ?? 'KIU_SOCIAL_ACTIVE_CHAT';
         let renderDebounceTimer = 0;
+        let socialAssemblyInitialRetryTimer = 0;
+        let socialAssemblyReplayTimer = 0;
+        const socialAssemblyReplayScopeSet = new Set();
         const SOCIAL_TAB_SCROLL_RESET_RE = /^(panel|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|feed-tab)$/;
         const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|research-input|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
         void d;
+
+        function startSocialAssemblyMotion(host) {
+            const motion = window.__kiuSocialLoadingMotion;
+            if (!host || typeof motion?.start !== 'function') return false;
+            try {
+                const started = motion.start(host);
+                if (started) host.dataset.socialInitialMotionStarted = '1';
+                return Boolean(started);
+            } catch (error) {
+                host.dataset.socialInitialMotionError = String(error?.message || error || 'start-failed');
+                return false;
+            }
+        }
+
+        function retrySocialAssemblyMotion(host) {
+            if (!host || host.dataset.socialInitialMotionStarted === '1') return;
+            if (socialAssemblyInitialRetryTimer) return;
+            let attempts = 0;
+            const retry = () => {
+                socialAssemblyInitialRetryTimer = 0;
+                if (!host.isConnected || host.dataset.socialInitialRenderReady !== '1') return;
+                if (startSocialAssemblyMotion(host)) {
+                    delete host.dataset.socialInitialMotionError;
+                    revealShell();
+                    return;
+                }
+                if (attempts++ >= 24) {
+                    host.dataset.socialInitialMotionFallback = '1';
+                    revealShell();
+                    return;
+                }
+                socialAssemblyInitialRetryTimer = window.setTimeout(retry, 64);
+            };
+            socialAssemblyInitialRetryTimer = window.setTimeout(retry, 0);
+        }
+
+        function queueSocialAssemblyReplay(renderPlan, reason) {
+            socialAssemblyReplayScopeSet.clear();
+            getSocialAssemblyReplayScopes(renderPlan, reason).forEach((scope) => {
+                socialAssemblyReplayScopeSet.add(scope);
+            });
+            if (socialAssemblyReplayTimer) return;
+            const flush = () => {
+                socialAssemblyReplayTimer = 0;
+                const scopes = [...socialAssemblyReplayScopeSet];
+                socialAssemblyReplayScopeSet.clear();
+                if (!scopes.length) return;
+                try { window.__kiuSocialLoadingMotion?.replay?.(scopes); } catch (error) {}
+            };
+            socialAssemblyReplayTimer = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(flush)
+                : window.setTimeout(flush, 0);
+        }
+
+        function getSocialAssemblyReplayScopes(renderPlan, reason) {
+            const scopes = [];
+            const include = (condition, selector) => {
+                if (condition && !scopes.includes(selector)) scopes.push(selector);
+            };
+            include(renderPlan?.flash, '#social-neo-flash-region');
+            include(renderPlan?.topbar, '#social-neo-topbar-region');
+            include(renderPlan?.command, '#social-neo-command-region');
+            include(renderPlan?.workspaceNav, '#social-neo-workspace-nav-region');
+            include(renderPlan?.center, '#social-neo-center-region');
+            include(renderPlan?.drawer, '#social-neo-drawer-region');
+            include(renderPlan?.mobileTab, '#social-neo-mobile-tab-region');
+            include(renderPlan?.toast, '#social-neo-toast-region');
+            if (/-module$/.test(String(reason || ''))) {
+                include(true, '#social-neo-center-region');
+            }
+            if (document.getElementById('social-shortcuts-top-nav-portal')) {
+                include(true, '#social-shortcuts-top-nav-portal');
+            }
+            return scopes;
+        }
 
 function reactionEmoji(reactionType) {
     const type = text(reactionType || 'like').toLowerCase();
@@ -1228,7 +1306,35 @@ function renderSocialPageNow(reason = 'manual') {
             delete runtime.ui.commentReplyFocusPostId;
         }
         bindEvents();
-        revealShell();
+        const initialRenderWindow = host.dataset.socialAssemblyState !== 'ready'
+            && host.dataset.socialInitialRenderReady !== '1';
+        const initialSurfaceReady = Boolean(
+            shell.center?.firstElementChild
+            && !shell.center.firstElementChild.matches('.social-neo-card.sn-mat-soft')
+            && !shell.center.querySelector('.social-neo-module-loading, [aria-busy="true"]')
+        );
+        const shouldStartInitialMotion = initialRenderWindow
+            && initialSurfaceReady
+            && host.dataset.socialInitialRenderReady !== '1';
+        let initialMotionStarted = host.dataset.socialInitialMotionStarted === '1';
+        if (shouldStartInitialMotion) {
+            host.dataset.socialInitialRenderReady = '1';
+            host.closest('#page-social')?.setAttribute('data-social-initial-render-ready', '1');
+            initialMotionStarted = startSocialAssemblyMotion(host);
+            if (!initialMotionStarted) retrySocialAssemblyMotion(host);
+        }
+        const initialMotionCanReveal = initialMotionStarted
+            || host.dataset.socialAssemblyState === 'ready'
+            || host.dataset.socialInitialMotionFallback === '1';
+        if (initialMotionCanReveal) {
+            revealShell();
+        }
+        const isAssemblyReplayRender = !initialRenderWindow
+            && host.dataset.socialInitialRenderReady === '1'
+            && (reason === 'panel' || SOCIAL_TAB_SCROLL_RESET_RE.test(reason) || /-module$/.test(reason));
+        if (isAssemblyReplayRender) {
+            queueSocialAssemblyReplay(renderPlan, reason);
+        }
         const wasScrollLocked = interactionSnapshot.layoutScrollLock;
         syncSocialScrollLayout(host);
         scheduleSocialCenterScrollRepair(host);

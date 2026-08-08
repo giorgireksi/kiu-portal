@@ -196,8 +196,13 @@ describe('background gallery feature', () => {
         expect(studioCss).toContain(':is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal)');
         expect(studioCss).toContain('.lux-bg-gallery-tabs');
         expect(studioCss).toContain('minmax(140px, 1fr)');
+        expect(studioCss).toMatch(/#lux-bg-gallery-backdrop\s*\{[\s\S]*?visibility:\s*hidden/);
+        expect(studioCss).toContain('#lux-bg-gallery-backdrop.is-open');
         expect(studio).toContain('data-gallery-tab="curated"');
         expect(studio).toContain('lux-bg-gallery-tile-overlay');
+        expect(studio).toContain('backdrop.hidden = true');
+        expect(studio).toContain('backdrop.hidden = false');
+        expect(studio).toMatch(/function bindBackgroundGalleryStudioControls\(\) \{\s*bindBackgroundGalleryStudioLauncher\(\);/);
         expect(shellChrome).toContain('#lux-bg-gallery-backdrop');
     });
 

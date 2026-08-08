@@ -83,6 +83,28 @@
 }
 body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
 
+#lux-bg-gallery-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--lux-popup-anim-close-duration) ease, visibility 0s linear var(--lux-popup-anim-close-duration);
+  background: rgba(0, 0, 0, 0.45);
+}
+#lux-bg-gallery-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
 :is(
   #lux-studio-backdrop .lux-studio-panel,
   .lux-bg-gallery-dialog,

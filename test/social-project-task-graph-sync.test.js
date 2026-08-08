@@ -230,6 +230,8 @@ describe('social project task graph sync', () => {
         expect(graphSyncRuntime).toContain('projectTaskGraphScrollSurfaceMetrics');
         expect(graphSyncRuntime).toContain('sampleProjectTaskGraphPerf');
         expect(graphSyncRuntime).toContain('longTasks');
+        expect(graphSyncRuntime).toContain('const nodeById = new Map');
+        expect(graphSyncRuntime).not.toContain('const obstacles = Array.from');
     });
 });
 

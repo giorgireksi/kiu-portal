@@ -155,13 +155,13 @@ describe('student service workspace navigation', () => {
 describe('student service workspace cache busters', () => {
     // Shared workspace nav buster, with route-specific bumps allowed where nav was patched.
     const workspaceNavBusters = {
-        'student-service.html': '20260805-switchperf2',
-        'index.html': '20260805-switchperf2',
-        'orders.html': '20260805-switchperf2',
-        'library.html': '20260805-switchperf2',
-        'news.html': '20260805-switchperf2',
-        'social.html': '20260805-switchperf2',
-        'profile-view.html': '20260805-switchperf2'
+        'student-service.html': '20260808-loadreveal1',
+        'index.html': '20260808-loadreveal1',
+        'orders.html': '20260808-loadreveal1',
+        'library.html': '20260808-loadreveal1',
+        'news.html': '20260808-loadreveal1',
+        'social.html': '20260808-loadreveal1',
+        'profile-view.html': '20260808-loadreveal1'
     };
 
     it('workspace html entrypoints share the workspace nav cache buster', () => {

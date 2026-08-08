@@ -12,10 +12,14 @@ describe('service worker offline API regressions', () => {
         expect(source).toContain('function isVersionedAssetUrl(url)');
         expect(source).toContain('const cachedVersioned = await cache.match(request)');
         expect(source).toContain('if (cachedVersioned)');
+        expect(source).not.toContain('refresh in');
+        expect(source).not.toContain('fetch(request)\n          .then((networkResponse)');
         expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*lux-page-bare-lite\.css/);
         expect(source).not.toContain("'/assets/css/lux-page-bare-lite.css");
         expect(source).not.toContain('"/assets/css/lux-page-bare-lite.css');
-        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260808-mobileroute1'/);
+        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260809-socialassembly16'/);
+        expect(source).toContain('isSocialStandaloneNavigation');
+        expect(source).toContain("new Request(request, { cache: 'no-store' })");
     });
 
     it('returns an explicit offline API response instead of cached shell HTML for /api/ failures', () => {

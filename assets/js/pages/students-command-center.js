@@ -1782,10 +1782,14 @@
                 renderStudentAdminScheduleEmbed(selected.id);
             }
         }
-        if (document.documentElement?.classList.contains('kiu-shell-loading')) {
-            document.documentElement.classList.remove('kiu-shell-loading');
+        if (typeof markPortalShellReady === 'function') {
+            markPortalShellReady();
+        } else if (typeof window.__kiuStartShellReveal === 'function') {
+            window.__kiuStartShellReveal({ degraded: true });
+        } else {
+            document.documentElement?.classList.remove('kiu-shell-loading');
+            document.body?.classList.remove('kiu-shell-loading');
         }
-        document.body?.classList.remove('kiu-shell-loading');
     }
 
     function consumePendingAdminAccountFlow() {

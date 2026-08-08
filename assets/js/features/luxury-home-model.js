@@ -16,7 +16,8 @@ function getRoleStats(role, facultyName) {
         return [[String(schedule.length), 'Sections'], [String(students), 'Students'], [String(unread), 'Updates'], [facultyName, 'Faculty']];
     }
     if (role === 'student_service') {
-        const stores = typeof ensureStudentServiceStores === 'function' ? ensureStudentServiceStores() : { tickets: [], articles: [] };
+        const stores = (typeof ensureStudentServiceStores === 'function' ? ensureStudentServiceStores() : null)
+            || { tickets: [], articles: [] };
         const tickets = stores.tickets || [];
         const unread = typeof getPortalNotificationUnreadCount === 'function' ? getPortalNotificationUnreadCount(user.id) : 0;
         const open = tickets.filter((ticket) => !['Resolved', 'Closed'].includes(ticket.status)).length;
@@ -1100,7 +1101,8 @@ function buildHomeModel(role) {
 
     if (role === 'student_service') {
         const stats = getRoleStats(role, facultyName);
-        const stores = typeof ensureStudentServiceStores === 'function' ? ensureStudentServiceStores() : { tickets: [], articles: [] };
+        const stores = (typeof ensureStudentServiceStores === 'function' ? ensureStudentServiceStores() : null)
+            || { tickets: [], articles: [] };
         const tickets = stores.tickets || [];
         const articles = stores.articles || [];
         const openTickets = tickets.filter((ticket) => !['Resolved', 'Closed'].includes(ticket.status));

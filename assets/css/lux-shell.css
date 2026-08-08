@@ -971,3 +971,71 @@ body.lux-full-paint {
     z-index: 900;
   }
 }
+
+/* Shared staged shell reveal — roots only, so route panels keep their own paint. */
+html.kiu-shell-revealing body :is(#lux-topbar, #lux-shell, #app-content, #mobile-bottom-nav, #mobile-action-sheet) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.18s ease-out, transform 0.24s var(--lux-shell-slide-ease);
+}
+html.kiu-shell-revealing body #lux-topbar {
+  transform: translate3d(0, 0, 0);
+}
+html.kiu-shell-revealing[data-kiu-load-stage="shell"] body :is(#lux-topbar, #lux-shell),
+html.kiu-shell-revealing[data-kiu-load-stage="panel"] body :is(#lux-topbar, #lux-shell),
+html.kiu-shell-revealing[data-kiu-load-stage="controls"] body :is(#lux-topbar, #lux-shell),
+html.kiu-shell-revealing[data-kiu-load-stage="content"] body :is(#lux-topbar, #lux-shell) {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+html.kiu-shell-revealing body.lux-sidebar-collapsed #lux-shell {
+  pointer-events: none !important;
+}
+html.kiu-shell-revealing[data-kiu-load-stage="panel"] body #app-content,
+html.kiu-shell-revealing[data-kiu-load-stage="controls"] body #app-content,
+html.kiu-shell-revealing[data-kiu-load-stage="content"] body #app-content {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate3d(0, 0, 0);
+}
+html.kiu-shell-revealing[data-kiu-load-stage="controls"] body :is(#mobile-bottom-nav, #mobile-action-sheet),
+html.kiu-shell-revealing[data-kiu-load-stage="content"] body :is(#mobile-bottom-nav, #mobile-action-sheet) {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate3d(0, 0, 0);
+}
+html[data-kiu-load-phase="degraded"]::after {
+  content: "Loading workspace";
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 2147483001;
+  transform: translateX(-50%);
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--lux-accent, #26a69a) 35%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-panel-surface, #0b1520) 88%, transparent);
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.72));
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: kiuShellLoadProgress 1.2s ease-in-out infinite;
+}
+@keyframes kiuShellLoadProgress {
+  0%, 100% { opacity: 0.56; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.kiu-shell-revealing body :is(#lux-topbar, #lux-shell, #app-content, #mobile-bottom-nav, #mobile-action-sheet) {
+    transition: none !important;
+    transform: none !important;
+  }
+  html[data-kiu-load-phase="degraded"]::after {
+    animation: none !important;
+  }
+}

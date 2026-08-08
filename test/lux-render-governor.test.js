@@ -11,6 +11,7 @@ function readSource(relativePath) {
 describe('lux render governor', () => {
     it('centralizes pacing, modal cache, and canvas skip flags', () => {
         const governor = readSource('assets/js/shared/lux-render-governor.js');
+        const app = readSource('assets/js/app/app.js');
         const particles = readSource('assets/js/features/luxury-particle-background.js');
         const fog = readSource('assets/js/features/luxury-vanta-fog-background.js');
 
@@ -20,6 +21,12 @@ describe('lux render governor', () => {
         expect(governor).toContain('export function readGovernedFrameIntervalMs');
         expect(governor).toContain('export function shouldDeferTransparency');
         expect(governor).toContain('export function shouldDeferLegacyVisualRefresh');
+        expect(governor).toContain('export function startLuxPortalPerfProbe');
+        expect(governor).toContain('export function stopLuxPortalPerfProbe');
+        expect(governor).toContain('window.startKiuPortalPerfProbe');
+        expect(governor).toContain('longTasks');
+        expect(app).toContain("import('../shared/lux-render-governor.js?v=20260808-overallperf1')");
+        expect(app).toContain("get('perf') !== '1'");
         expect(governor).toContain('window.shouldDeferLuxTransparency');
         expect(governor).toContain('window.__luxIsScrolling');
         expect(governor).toContain('return 4.5');

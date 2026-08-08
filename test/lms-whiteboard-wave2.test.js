@@ -90,6 +90,6 @@ describe('LMS whiteboard wave 2 collaboration', () => {
 
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-collab-runtime.js?v=20260708-wb-shapes-v4');
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1');
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('lms-whiteboard-runtime.js?v=20260808-overallperf1');
     });
 });

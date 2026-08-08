@@ -1,0 +1,40 @@
+/*
+ * Admin-scheduler loading motion only.
+ * Shared scheduler paint, panels, and theme tokens remain unchanged.
+ */
+body.admin-scheduler-assembly-active #page-admin-scheduler .kiu-admin-scheduler-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.admin-scheduler-assembly-active #page-admin-scheduler .kiu-admin-scheduler-assembly-structure {
+  opacity: 0;
+}
+
+body.admin-scheduler-assembly-active #page-admin-scheduler .kiu-admin-scheduler-assembly-outer[data-kiu-assembly-phase="children"] .kiu-admin-scheduler-assembly-structure {
+  opacity: 1;
+}
+
+body.admin-scheduler-assembly-active #page-admin-scheduler .kiu-admin-scheduler-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.admin-scheduler-assembly-ready #page-admin-scheduler .kiu-admin-scheduler-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.admin-scheduler-assembly-active #page-admin-scheduler .kiu-admin-scheduler-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.admin-scheduler-assembly-active #page-admin-scheduler .kiu-admin-scheduler-assembly-structure {
+    opacity: 1;
+  }
+}

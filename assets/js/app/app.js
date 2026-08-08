@@ -2,7 +2,31 @@
 window.KiuApp=window.KiuApp||{};const __kiuAppApi=window.KiuApp;window.__kiuAppApi=__kiuAppApi;
 function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k];window[k]=map[k];});}
 
+(function enablePortalPerformanceProbeFromQuery() {
+    try {
+        if (new URLSearchParams(window.location.search || '').get('perf') !== '1') return;
+        import('../shared/lux-render-governor.js?v=20260808-overallperf1')
+            .then(module => module.startLuxPortalPerfProbe())
+            .catch(() => {});
+    } catch (_error) {}
+})();
+
 /* Compatibility-first runtime/bootstrap slice extracted from the legacy core.js bundle. Active routes now load split files directly. */
+
+(function installPortalPerfProbeHook() {
+    try {
+        if (new URLSearchParams(window.location.search || '').get('perf') !== '1') return;
+        import('../shared/lux-render-governor.js?v=20260808-overallperf1')
+            .then(({ startLuxPortalPerfProbe }) => {
+                startLuxPortalPerfProbe();
+                window.__KIU_PORTAL_PERF = {
+                    ...(window.__KIU_PORTAL_PERF || {}),
+                    route: window.location.pathname
+                };
+            })
+            .catch(() => {});
+    } catch (_error) {}
+})();
 
 (function ensurePortalApiRuntimeAvailability() {
     const fallbackPromise = Promise.resolve(null);
@@ -771,7 +795,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         });
     }
 
-    const SOCIAL_RUNTIME_VERSION = '20260808-smoothfps1';
+    const SOCIAL_RUNTIME_VERSION = '20260808-overallperf1';
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
         [
             'assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1',
@@ -828,7 +852,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
             `assets/js/pages/social-page-events.js?v=${SOCIAL_RUNTIME_VERSION}`
         ],
         [
-            'assets/js/pages/social-page-survey-runtime.js?v=20260726-socstack47',
+            'assets/js/pages/social-page-survey-runtime.js?v=20260808-overallperf1',
             'assets/js/pages/social-page-feed-runtime.js?v=20260805-health-scroll2',
             `assets/js/pages/social-page-shell-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`,
             `assets/js/pages/social-page-interactions-runtime.js?v=${SOCIAL_RUNTIME_VERSION}`
@@ -1036,11 +1060,11 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         'assets/js/pages/student-registration-eligibility-runtime.js?v=20260725-portalmodal2',
         'assets/js/pages/student-registration-choice-runtime.js?v=20260727-peelfix2',
         'assets/js/pages/student-registration.js?v=20260727-peelfix2',
-        'assets/js/pages/admin-registration-track.js?v=20260731-regmig1',
+        'assets/js/pages/admin-registration-track.js?v=20260808-hoverchips1',
         'assets/js/pages/admin-registration-seats-runtime.js?v=20260719-regseats1',
-        'assets/js/pages/admin-registration-cms-runtime.js?v=20260724-peelfix2',
+        'assets/js/pages/admin-registration-cms-runtime.js?v=20260808-hoverchips1',
         'assets/js/pages/admin-registration-boot-runtime.js?v=20260724-peelfix1',
-        'assets/js/pages/admin-registration.js?v=20260725-portalmodal1'
+        'assets/js/pages/admin-registration.js?v=20260808-hoverchips1'
     ];
     const REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS = [
         registrationRuntimeAsset('assets/js/pages/timetable-runtime.js'),
@@ -1595,7 +1619,7 @@ enforceSingleRuntimeEntrypoint();
 
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
-    const PORTAL_CACHE_RESET_VERSION = '20260808-mobileroute1';
+    const PORTAL_CACHE_RESET_VERSION = '20260808-overallperf1';
 
     async function clearPortalSiteCaches(force = false) {
         try {

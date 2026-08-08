@@ -1256,7 +1256,7 @@ function renderFreeTab(container, modules, tabType) {
             <button type="button" data-admin-reg-add-module="free" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
         <div class="admin-reg-program-layout admin-reg-program-layout--wide">
-            <div class="admin-reg-program-list-shell lux-soft-chrome">
+            <div class="admin-reg-program-list-shell lux-soft-chrome home-hover-chip">
                 <div class="admin-reg-program-list-head">
                     <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">Free Credit Modules</div>
                     <span class="admin-reg-program-list-count">${modules.length}</span>
@@ -1626,7 +1626,7 @@ function renderConcTab(container, modules, tabType) {
             <button type="button" data-admin-reg-add-conc-program="1" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
         <div class="admin-reg-program-layout admin-reg-program-layout--wide">
-            <div class="admin-reg-program-list-shell lux-soft-chrome">
+            <div class="admin-reg-program-list-shell lux-soft-chrome home-hover-chip">
                 <div class="admin-reg-program-list-head">
                     <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">Concentration Programs</div>
                     <span class="admin-reg-program-list-count">${concPrograms.length}</span>

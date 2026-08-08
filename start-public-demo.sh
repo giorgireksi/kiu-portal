@@ -6,6 +6,7 @@ COMPOSE_FILE="$ROOT/docker-compose.staging.yml"
 STAGING_ENV="$ROOT/.env.staging"
 WEB_PORT="${KIU_PUBLIC_DEMO_WEB_PORT:-8900}"
 BACKEND_PORT="${KIU_PUBLIC_DEMO_BACKEND_PORT:-47833}"
+WEB_PID_FILE="${KIU_PUBLIC_DEMO_WEB_PID_FILE:-$ROOT/.public-demo-web.pid}"
 WEB_PID=""
 STACK_STARTED=0
 FUNNEL_STARTED=0
@@ -50,11 +51,15 @@ open_url() {
 }
 
 stop_web_proxy() {
+    if [[ -z "$WEB_PID" && -f "$WEB_PID_FILE" ]]; then
+        WEB_PID="$(<"$WEB_PID_FILE")"
+    fi
     if [[ -n "$WEB_PID" ]] && kill -0 "$WEB_PID" >/dev/null 2>&1; then
         kill "$WEB_PID" 2>/dev/null || true
         wait "$WEB_PID" 2>/dev/null || true
     fi
     WEB_PID=""
+    rm -f "$WEB_PID_FILE"
 }
 
 start_web_proxy() {
@@ -65,6 +70,7 @@ start_web_proxy() {
     KIU_LOCAL_BIND_HOST=127.0.0.1 \
         node "$ROOT/tools/local_dev_server.js" "$WEB_PORT" &
     WEB_PID=$!
+    printf '%s\n' "$WEB_PID" > "$WEB_PID_FILE"
 }
 
 wait_for_web_healthy() {

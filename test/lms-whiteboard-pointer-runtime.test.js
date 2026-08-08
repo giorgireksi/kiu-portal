@@ -18,6 +18,9 @@ describe('lms-whiteboard-pointer-runtime peel', () => {
         expect(pointer).toMatch(/^function bindLmsWhiteboardStagePointerHandlers\b/m);
         expect(pointer).toMatch(/^function startLmsWhiteboardPan\b/m);
         expect(pointer).toMatch(/^function endLmsWhiteboardPan\b/m);
+        expect(pointer).toContain('function scheduleLmsWhiteboardGesturePaint');
+        expect(pointer).toContain('function flushLmsWhiteboardGesturePaint');
+        expect(pointer).toContain('window.requestAnimationFrame');
         expect(pointer).toContain('window.startLmsWhiteboardPan = startLmsWhiteboardPan');
     });
 

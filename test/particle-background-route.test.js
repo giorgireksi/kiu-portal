@@ -60,7 +60,7 @@ describe('particle background route integration', () => {
         expect(luxury).not.toContain('startBackground();');
     });
 
-    it('loads background orchestrator module on luxury html entry points', () => {
+    it('lazy-loads background orchestrator after the shell is ready', () => {
         const htmlFiles = [
             'index.html',
             'lms.html',
@@ -69,15 +69,17 @@ describe('particle background route integration', () => {
         ];
         htmlFiles.forEach((file) => {
             const html = readSource(file);
-            expect(html).toContain('luxury-background.js');
+            expect(html).not.toContain('luxury-background.js');
         });
+        expect(readSource('assets/js/features/index-luxury.js'))
+            .toContain("import('./luxury-background.js?v=20260808-loadperf1')");
     });
 
     it('lazy-creates LMS particle canvas via orchestrator (no static markup)', () => {
         const html = readSource('lms.html');
         const orchestrator = readSource('assets/js/features/luxury-background.js');
         expect(html).not.toContain('<canvas id="lux-bg-canvas"');
-        expect(html).toContain('luxury-background.js');
+        expect(readSource('assets/js/features/index-luxury.js')).toContain('ensureLuxuryBackgroundRuntime');
         expect(orchestrator).toContain('scheduleBackgroundSelfInit');
         expect(orchestrator).toContain('window.__kiuInitLuxuryParticleBackground');
     });
@@ -641,11 +643,13 @@ describe('particle background route integration', () => {
 
     it('cache-busts particle and luxury background assets', () => {
         const html = readSource('index.html');
+        const luxury = readSource('assets/js/features/index-luxury.js');
         const background = readSource('assets/js/features/luxury-background.js');
-        expect(html).toContain('luxury-background.js?v=20260723-gpuperf4q');
+        expect(html).not.toContain('luxury-background.js');
         expect(html).toContain('index-luxury.js?v=');
         expect(html).toContain('luxury-index-runtime.js?v=');
         expect(html).not.toContain('index-luxury.css');
+        expect(luxury).toContain("import('./luxury-background.js?v=20260808-loadperf1')");
         expect(background).toContain('import("./luxury-particle-background.js?v=20260723-gpuperf4q")');
         expect(background).toContain('import("./luxury-vanta-fog-background.js?v=20260723-adaptive1")');
     });

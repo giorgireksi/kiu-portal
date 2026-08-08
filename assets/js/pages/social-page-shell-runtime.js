@@ -218,6 +218,8 @@
                 updateSocialMeasuredChrome(host);
                 if (socialScrollLockActive()) {
                     syncSocialVisualViewport();
+                    const center = getSocialCenterScroller(host);
+                    if (center) delete center.__kiuSocialCenterContentScrollHeight;
                     ensureSocialCenterScrollBounds(host);
                 }
             };
@@ -242,6 +244,8 @@
                 if (!socialScrollLockActive()) return;
                 syncSocialVisualViewport();
                 updateSocialMeasuredChrome(host);
+                const center = getSocialCenterScroller(host);
+                if (center) delete center.__kiuSocialCenterContentScrollHeight;
                 ensureSocialCenterScrollBounds(host);
             };
             if (!socialLayoutResizeObserver) {
@@ -604,6 +608,8 @@
             }
             if (typeof markPortalShellReady === 'function') {
                 markPortalShellReady();
+            } else if (typeof window.__kiuStartShellReveal === 'function') {
+                window.__kiuStartShellReveal({ degraded: true });
             } else {
                 document.documentElement.classList.add('kiu-shell-ready');
                 document.documentElement.classList.remove('kiu-shell-loading');

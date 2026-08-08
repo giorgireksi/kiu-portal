@@ -774,9 +774,12 @@
                             ${(model.pills || []).map((pill) => `<span class="lux-pill lux-soft-chrome home-hover-chip">${escapeHtml(pill)}</span>`).join('')}
                         </div>
                         <div class="lux-hero-actions">
-                            ${(model.actions || []).map(([pageId, label], index) => `
-                                <button class="${index === 0 ? 'lux-primary-btn' : index === 1 ? 'lux-secondary-btn' : 'lux-ghost-btn'}" type="button" data-nav-target="${escapeHtml(pageId)}">${escapeHtml(label)}</button>
-                            `).join('')}
+                            ${(model.actions || []).map(([pageId, label, actionType], index) => {
+                                const actionAttribute = actionType === 'utility'
+                                    ? `data-action="${escapeHtml(pageId)}"`
+                                    : `data-nav-target="${escapeHtml(pageId)}"`;
+                                return `<button class="${index === 0 ? 'lux-primary-btn' : index === 1 ? 'lux-secondary-btn' : 'lux-ghost-btn'}" type="button" ${actionAttribute}>${escapeHtml(label)}</button>`;
+                            }).join('')}
                         </div>
                     </div>
                     ${renderHeroFocusAsideMarkup(model.heroAside)}
@@ -1178,6 +1181,9 @@
             queueAdminToolsFocus(button.dataset.adminFocus);
             if (typeof navigate === 'function') navigate('admin-tools');
         }));
+        if (typeof bindCacheClearLaunchButtons === 'function') {
+            bindCacheClearLaunchButtons(homeShell);
+        }
     }
 
     function buildStaticHomeSectionsHtml(widgets, role) {
@@ -1186,19 +1192,25 @@
         let halfBuffer = [];
         const flushHalf = () => {
             if (!halfBuffer.length) return;
-            const cells = halfBuffer.map((content) => `<div class="lux-home-cell">${content}</div>`).join('');
-            html += `<section class="lux-home-band lux-home-band--split">${cells}</section>`;
+            const cells = halfBuffer.map(({ widget, content }) => {
+                const widgetId = escapeHtml(widget.widgetId || widget.renderType || 'widget');
+                const renderType = escapeHtml(widget.renderType || 'widget');
+                return `<div class="lux-home-cell" data-home-widget-id="${widgetId}" data-home-render-type="${renderType}">${content}</div>`;
+            }).join('');
+            html += `<section class="lux-home-band lux-home-band--split" data-home-band="split">${cells}</section>`;
             halfBuffer = [];
         };
         (widgets || []).forEach((widget) => {
             const content = typeof renderWidgetContent === 'function' ? renderWidgetContent(widget, role) : '';
             if (!content) return;
+            const widgetId = escapeHtml(widget.widgetId || widget.renderType || 'section');
+            const renderType = escapeHtml(widget.renderType || 'section');
             if (fullWidth.has(widget.renderType)) {
                 flushHalf();
-                html += `<section class="lux-home-band lux-home-band--full" data-band="${escapeHtml(widget.renderType || 'section')}">${content}</section>`;
+                html += `<section class="lux-home-band lux-home-band--full" data-band="${renderType}" data-home-widget-id="${widgetId}" data-home-render-type="${renderType}">${content}</section>`;
                 return;
             }
-            halfBuffer.push(content);
+            halfBuffer.push({ widget, content });
             if (halfBuffer.length >= 2) flushHalf();
         });
         flushHalf();
@@ -1239,9 +1251,9 @@
         `;
 
         homeShell.innerHTML = `
-            <div class="lux-home-page is-${escapeHtml(model.variant || role)}" data-role="${escapeHtml(model.variant || role)}" data-home-density="${role === 'student' ? 'compact' : 'standard'}">
-                ${toolbar}
-                <div class="lux-home-merged lux-soft-chrome" data-lux-glass-root="1">
+            <div class="lux-home-page is-${escapeHtml(model.variant || role)}" data-role="${escapeHtml(model.variant || role)}" data-home-density="${role === 'student' ? 'compact' : 'standard'}" data-home-root="1">
+                ${toolbar ? toolbar.replace('class="lux-home-toolbar"', 'class="lux-home-toolbar" data-home-region="toolbar"') : ''}
+                <div class="lux-home-merged lux-soft-chrome" data-lux-glass-root="1" data-home-region="dashboard">
                     ${mergedContent}
                 </div>
             </div>

@@ -53,6 +53,18 @@ describe('admin registration flicker prevention', () => {
         expect(track).toContain('class="admin-reg-program-list"');
     });
 
+    it('program list shells use shared hover and touch motion', () => {
+        [
+            'assets/js/pages/admin-registration.js',
+            'assets/js/pages/admin-registration-track.js',
+            'assets/js/pages/admin-registration-cms-runtime.js'
+        ].forEach((path) => {
+            expect(readSource(path)).toContain(
+                'admin-reg-program-list-shell lux-soft-chrome home-hover-chip'
+            );
+        });
+    });
+
     it('registration container opts out of luxury transparency rewriting', () => {
         const track = readSource('assets/js/pages/admin-registration-track.js');
         const cmsRuntime = readSource('assets/js/pages/admin-registration-cms-runtime.js');

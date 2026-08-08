@@ -78,6 +78,34 @@
     root.classList.add('kiu-shell-loading');
     root.classList.remove('kiu-shell-ready');
 
+    var shellLoadState = window.__kiuShellLoadState = window.__kiuShellLoadState || {
+        phase: 'loading',
+        stage: 'background',
+        degraded: false,
+        startedAt: Date.now()
+    };
+    shellLoadState.phase = 'loading';
+    shellLoadState.stage = 'background';
+    shellLoadState.degraded = false;
+    shellLoadState.startedAt = shellLoadState.startedAt || Date.now();
+    function setShellLoadState(next) {
+        var patch = next || {};
+        Object.keys(patch).forEach(function (key) {
+            shellLoadState[key] = patch[key];
+        });
+        if (shellLoadState.phase) root.dataset.kiuLoadPhase = shellLoadState.phase;
+        if (shellLoadState.stage) root.dataset.kiuLoadStage = shellLoadState.stage;
+        root.dataset.kiuLoadDegraded = shellLoadState.degraded ? '1' : '0';
+        if (document.body) {
+            if (shellLoadState.phase) document.body.dataset.kiuLoadPhase = shellLoadState.phase;
+            if (shellLoadState.stage) document.body.dataset.kiuLoadStage = shellLoadState.stage;
+            document.body.dataset.kiuLoadDegraded = shellLoadState.degraded ? '1' : '0';
+        }
+        return shellLoadState;
+    }
+    window.__kiuSetShellLoadState = setShellLoadState;
+    setShellLoadState(shellLoadState);
+
     appendLateStyle('kiu-shell-boot-guard', '' +
         'html.kiu-shell-loading{' +
             'background:#08120f!important;' +
@@ -120,6 +148,11 @@
         'body.kiu-shell-loading #lux-topbar,' +
         'body.kiu-shell-loading #mobile-bottom-nav,' +
         'body.kiu-shell-loading #mobile-action-sheet{' +
+            'opacity:0!important;' +
+            'pointer-events:none!important;' +
+        '}' +
+        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style){' +
+            'visibility:hidden!important;' +
             'opacity:0!important;' +
             'pointer-events:none!important;' +
         '}' +
@@ -702,6 +735,8 @@
         b.classList.add('lux-unified-shell');
         b.classList.add('kiu-shell-loading');
         b.classList.remove('kiu-shell-ready');
+        b.setAttribute('aria-busy', 'true');
+        setShellLoadState({ phase: 'loading', stage: 'background' });
         b.classList.remove('role-student', 'role-professor', 'role-ta', 'role-admin', 'role-student_service');
         b.classList.add('role-' + requestedRole);
         b.dataset.shellRole = requestedRole;
@@ -743,14 +778,21 @@
         var revealDeadlineMs = 1400;
         var revealElapsedMs = 0;
         function forceRevealPage() {
+            if (typeof window.__kiuStartShellReveal === 'function') {
+                window.__kiuStartShellReveal({ degraded: true });
+                return;
+            }
+            setShellLoadState({ phase: 'degraded', stage: 'ready', degraded: true });
             root.classList.add('kiu-shell-ready');
             root.classList.remove('kiu-shell-loading');
             if (document.body) {
                 document.body.classList.add('kiu-shell-ready');
                 document.body.classList.remove('kiu-shell-loading');
+                document.body.removeAttribute('aria-busy');
             }
         }
         function tryRevealPageEarly() {
+            if (shellLoadState.phase !== 'loading') return;
             var navRoot = document.getElementById('lux-nav');
             var body = document.body;
             var canRevealFromNav = body && body.classList.contains('lux-full-paint');

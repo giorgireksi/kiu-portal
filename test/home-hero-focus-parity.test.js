@@ -181,6 +181,7 @@ describe('home hero focus LMS parity', () => {
 
     it('cache-busts home dashboard assets', () => {
         const html = readSource('index.html');
+        const registration = readSource('assets/js/features/index-home-dashboard.js');
         expect(html).toMatch(/index-home-layout\.css\?v=/);
         expect(html).toMatch(/index-home-widgets\.css\?v=/);
         expect(html).toMatch(/index-home-role\.css\?v=/);
@@ -192,7 +193,7 @@ describe('home hero focus LMS parity', () => {
         expect(html).toContain('utilities.js?v=');
         expect(html).toMatch(/luxury-home-model\.js\?v=/);
         expect(html).toMatch(/index-home-dashboard\.js\?v=/);
-        expect(html).toMatch(/index-home-dashboard\.plain\.js\?v=/);
+        expect(registration).toMatch(/index-home-dashboard\.plain\.js\?v=/);
         expect(html).toContain('lux-focus-panel.css');
     });
 

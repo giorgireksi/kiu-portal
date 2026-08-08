@@ -664,7 +664,7 @@ function ensureStudioCss() {
     ensureStudioChipBurstHandler();
     if (typeof document === 'undefined') return;
     const sheets = [
-        { href: 'assets/css/lux-studio.css?v=20260725-frosted1', key: 'data-kiu-studio' },
+        { href: 'assets/css/lux-studio.css?v=20260808-galleryfouc1', key: 'data-kiu-studio' },
         { href: 'assets/css/lux-studio-mobile.css?v=20260722-popupblack1', key: 'data-kiu-studio-mobile' }
     ];
     for (const sheet of sheets) {

@@ -1,0 +1,75 @@
+/*
+ * News loading motion only.
+ * Shared news paint, panels, controls, and theme tokens remain unchanged.
+ */
+body.news-assembly-active #page-news .kiu-news-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* The shell and feed are rendered asynchronously after the static page shell. */
+body.news-assembly-active #page-news :is(
+  .newsx-shell,
+  .newsx-sidebar,
+  .newsx-main,
+  .newsx-header-bar,
+  .newsx-feed,
+  [data-news-feed-state="1"],
+  .newsx-feed-list,
+  [data-news-post-host="1"],
+  [data-news-post-shell="1"],
+  .newsx-loading-card
+) {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.news-assembly-active #page-news .kiu-news-assembly-structure {
+  opacity: 0;
+}
+
+body.news-assembly-active #page-news .kiu-news-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.news-assembly-ready #page-news .kiu-news-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.news-assembly-ready #page-news .kiu-news-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.news-assembly-active #page-news .kiu-news-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.news-assembly-active #page-news :is(
+    .newsx-shell,
+    .newsx-sidebar,
+    .newsx-main,
+    .newsx-header-bar,
+    .newsx-feed,
+    [data-news-feed-state="1"],
+    .newsx-feed-list,
+    [data-news-post-host="1"],
+    [data-news-post-shell="1"],
+    .newsx-loading-card
+  ) {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.news-assembly-active #page-news .kiu-news-assembly-structure {
+    opacity: 1;
+  }
+}

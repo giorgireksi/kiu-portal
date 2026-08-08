@@ -1,0 +1,40 @@
+/*
+ * Registration loading motion only.
+ * Shared registration paint, tabs, panels, and theme tokens remain unchanged.
+ */
+body.registration-assembly-active #page-registration .kiu-registration-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.registration-assembly-active #page-registration .kiu-registration-assembly-structure {
+  opacity: 0;
+}
+
+body.registration-assembly-active #page-registration .kiu-registration-assembly-outer[data-kiu-assembly-phase="children"] .kiu-registration-assembly-structure {
+  opacity: 1;
+}
+
+body.registration-assembly-active #page-registration .kiu-registration-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.registration-assembly-ready #page-registration .kiu-registration-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.registration-assembly-active #page-registration .kiu-registration-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.registration-assembly-active #page-registration .kiu-registration-assembly-structure {
+    opacity: 1;
+  }
+}

@@ -149,7 +149,7 @@ function ensureAdminToolsPage() {
                             <div class="lux-card-title">Curriculum Library</div>
                         </div>
 
-                        <div class="lux-admin-curriculum-control-band lux-soft-chrome">
+                        <div class="lux-admin-curriculum-control-band lux-soft-chrome home-hover-chip">
                             <label class="lux-program-field lux-admin-curriculum-select-wrap">
                                 <span>Semester filter</span>
                                 <select class="lux-control" id="filter-curriculum-semester" name="filter_curriculum_semester" data-curriculum-semester-filter="1">

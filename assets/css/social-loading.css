@@ -1,0 +1,90 @@
+/*
+ * Social initial assembly motion only.
+ * Existing Social glass, controls, hover, and panel paint remains authoritative.
+ */
+body.social-assembly-active #public-social-root:not([data-social-initial-render-ready="1"]) {
+  visibility: hidden;
+}
+
+body.social-assembly-ready #public-social-root {
+  visibility: visible;
+}
+
+body.social-assembly-active #public-social-root .kiu-social-assembly-target.is-social-assembly-staging {
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+body.social-assembly-active :is(
+  #mobile-bottom-nav,
+  #mobile-action-sheet,
+  #social-shortcuts-top-nav-portal,
+  #social-neo-overlay-portal
+).kiu-social-assembly-target.is-social-assembly-staging,
+body.social-assembly-active :is(
+  #mobile-bottom-nav,
+  #mobile-action-sheet,
+  #social-shortcuts-top-nav-portal,
+  #social-neo-overlay-portal
+) .kiu-social-assembly-target.is-social-assembly-staging {
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+body.social-assembly-active #public-social-root .kiu-social-assembly-target.is-flight,
+body.social-assembly-active :is(
+  #mobile-bottom-nav,
+  #mobile-action-sheet,
+  #social-shortcuts-top-nav-portal,
+  #social-neo-overlay-portal
+) .kiu-social-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.social-assembly-active #public-social-root .kiu-social-assembly-target.is-flight,
+body.social-assembly-active :is(
+  #mobile-bottom-nav,
+  #mobile-action-sheet,
+  #social-shortcuts-top-nav-portal,
+  #social-neo-overlay-portal
+) .kiu-social-assembly-target.is-flight {
+  pointer-events: none;
+}
+
+body.social-assembly-ready #public-social-root .kiu-social-assembly-target,
+body.social-assembly-ready :is(
+  #mobile-bottom-nav,
+  #mobile-action-sheet,
+  #social-shortcuts-top-nav-portal,
+  #social-neo-overlay-portal
+).kiu-social-assembly-target,
+body.social-assembly-ready :is(
+  #mobile-bottom-nav,
+  #mobile-action-sheet,
+  #social-shortcuts-top-nav-portal,
+  #social-neo-overlay-portal
+) .kiu-social-assembly-target {
+  opacity: 1;
+  pointer-events: auto;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.social-assembly-active #public-social-root .kiu-social-assembly-target.is-social-assembly-staging,
+  body.social-assembly-active :is(
+    #mobile-bottom-nav,
+    #mobile-action-sheet,
+    #social-shortcuts-top-nav-portal,
+    #social-neo-overlay-portal
+  ) .kiu-social-assembly-target.is-social-assembly-staging {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+}

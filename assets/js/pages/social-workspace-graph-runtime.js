@@ -1435,16 +1435,36 @@
                 if (label) label.textContent = `${Math.round(z * 100)}%`;
                 return z;
             };
-            const setPortLinkTarget = (portEl) => {
-                svg.querySelectorAll('.social-project-task-graph-link-handle.is-drop-target, .social-project-task-graph-svg-port.is-drop-target').forEach((entry) => entry.classList.remove('is-drop-target'));
+            let activePortLinkHandle = null;
+            let activePortLinkNode = null;
+            let activePortLinkDropNode = null;
+            const setPortLinkTarget = (portEl, options = {}) => {
+                const node = portEl?.closest?.('.social-project-task-graph-node-g') || null;
+                const dropNode = options.dropNode || null;
+                if (
+                    activePortLinkHandle === portEl
+                    && activePortLinkNode === node
+                    && activePortLinkDropNode === dropNode
+                ) {
+                    return;
+                }
+                activePortLinkHandle?.classList.remove('is-drop-target');
+                activePortLinkNode?.classList.remove('is-link-target');
+                activePortLinkDropNode?.classList.remove('is-drop-target');
                 portEl?.classList.add('is-drop-target');
-                svg.querySelectorAll('.social-project-task-graph-node-g.is-link-target').forEach((entry) => entry.classList.remove('is-link-target'));
-                const node = portEl?.closest?.('.social-project-task-graph-node-g');
-                if (node) node.classList.add('is-link-target');
+                node?.classList.add('is-link-target');
+                dropNode?.classList.add('is-drop-target');
+                activePortLinkHandle = portEl;
+                activePortLinkNode = node;
+                activePortLinkDropNode = dropNode;
             };
             const clearPortLinkTarget = () => {
-                svg.querySelectorAll('.social-project-task-graph-link-handle.is-drop-target, .social-project-task-graph-svg-port.is-drop-target').forEach((entry) => entry.classList.remove('is-drop-target'));
-                svg.querySelectorAll('.social-project-task-graph-node-g.is-link-target').forEach((entry) => entry.classList.remove('is-link-target'));
+                activePortLinkHandle?.classList.remove('is-drop-target');
+                activePortLinkNode?.classList.remove('is-link-target');
+                activePortLinkDropNode?.classList.remove('is-drop-target');
+                activePortLinkHandle = null;
+                activePortLinkNode = null;
+                activePortLinkDropNode = null;
             };
             const flushPortLinkFrame = () => {
                 portLinkFrame = 0;
@@ -1461,20 +1481,17 @@
                     link.rubberColor || ''
                 );
                 link.target = findProjectTaskGraphLinkDropTarget(svg, clientX, clientY, link.origin.taskId);
-                setPortLinkTarget(null);
-                svg.querySelectorAll('.social-project-task-graph-group-node.is-drop-target').forEach((entry) => {
-                    entry.classList.remove('is-drop-target');
-                });
-                if (!link.target?.taskId) return;
+                if (!link.target?.taskId) {
+                    setPortLinkTarget(null);
+                    return;
+                }
                 const targetNode = svg.querySelector(`.social-project-task-graph-node-g[data-task-id="${link.target.taskId}"]`);
-                targetNode?.classList.add('is-link-target');
-                if (link.target.groupId) targetNode?.classList.add('is-drop-target');
                 const side = text(link.target.side || 'w') || 'w';
                 const inHandle = targetNode
                     ? (targetNode.querySelector(`[data-graph-link-port="${side}"]`)
                         || targetNode.querySelector('[data-graph-link-port]'))
                     : null;
-                setPortLinkTarget(inHandle);
+                setPortLinkTarget(inHandle, { dropNode: link.target.groupId ? targetNode : null });
             };
             const schedulePortLinkFrame = () => {
                 if (portLinkFrame) return;

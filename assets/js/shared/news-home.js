@@ -446,8 +446,16 @@
         `;
     }
 
+    function notifyHomeNewsMotion() {
+        const onHome = document.body?.classList?.contains('lux-route-home')
+            || (typeof getActivePageId === 'function' && getActivePageId() === 'home');
+        if (!onHome || typeof window.__kiuReplayHomeLoadingMotion !== 'function') return;
+        window.__kiuReplayHomeLoadingMotion('news', ['[data-news-home-strip="1"]']);
+    }
+
     function mountNewsHomeStrip(host = document.getElementById('lux-home-shell')) {
         if (!host) return;
+        if (host.dataset?.homeRenderReady !== '1') return;
         host.querySelector('[data-news-home-strip="1"]')?.remove();
         if (typeof getEffectiveRole === 'function' && getEffectiveRole() === 'student') return;
         const markup = buildNewsHomeStripHtml();
@@ -455,9 +463,11 @@
         const grid = host.querySelector('[data-dashboard-canvas="1"], .lux-home-grid, .lux-widget-stack');
         if (grid) {
             grid.insertAdjacentHTML('afterbegin', markup);
+            notifyHomeNewsMotion();
             return;
         }
         host.insertAdjacentHTML('afterbegin', markup);
+        notifyHomeNewsMotion();
     }
 
     Object.assign(window, {

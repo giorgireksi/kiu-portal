@@ -15,14 +15,18 @@ describe('LMS whiteboard document embed', () => {
         expect(runtime).toContain('function syncLmsWhiteboardDocumentLayer');
         expect(runtime).toContain('function importLmsWhiteboardDocumentFile');
         expect(runtime).toContain('function repositionLmsWhiteboardDocumentViewers');
+        expect(runtime).toContain('const expectedWidth');
+        expect(runtime).toContain('if (inkCanvas.width !== expectedWidth)');
+        expect(runtime).toContain('function scheduleLmsWhiteboardDocumentInk');
+        expect(runtime).toContain('function flushLmsWhiteboardDocumentInk');
         expect(runtime).toContain('inline=1');
         expect(runtime).toContain("type: 'document'");
     });
 
     it('loads document runtime before main whiteboard runtime', () => {
         const html = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        const docIndex = html.indexOf('lms-whiteboard-document-runtime.js?v=20260729-wbdocmode5');
-        const mainIndex = html.indexOf('lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
+        const docIndex = html.indexOf('lms-whiteboard-document-runtime.js?v=20260808-overallperf1');
+        const mainIndex = html.indexOf('lms-whiteboard-runtime.js?v=20260808-overallperf1');
 
         expect(docIndex).toBeGreaterThan(-1);
         expect(mainIndex).toBeGreaterThan(docIndex);

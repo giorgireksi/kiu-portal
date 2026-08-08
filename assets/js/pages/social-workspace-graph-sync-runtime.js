@@ -408,40 +408,37 @@
                 h: Number(node.getAttribute('data-h'))
             });
             const groups = Array.from(svg.querySelectorAll('.social-project-task-graph-edge-group'));
-            const edgeList = groups.map((group) => ({
+            const nodeById = new Map(
+                Array.from(svg.querySelectorAll('.social-project-task-graph-node-g'))
+                    .map((node) => [text(node.getAttribute('data-task-id')), node])
+                    .filter(([id]) => id)
+            );
+            const edgeRecords = groups.map((group) => ({
+                group,
                 from: text(group.getAttribute('data-edge-from')),
-                to: text(group.getAttribute('data-edge-to'))
+                to: text(group.getAttribute('data-edge-to')),
+                line: group.querySelector('.social-project-task-graph-edge:not(.is-critical-twin)'),
+                twin: group.querySelector('.social-project-task-graph-edge.is-critical-twin'),
+                hit: group.querySelector('.social-project-task-graph-edge-hit'),
+                label: group.querySelector('.social-project-task-graph-edge-label'),
+                unlink: group.querySelector('.social-project-task-graph-edge-unlink')
             }));
+            const edgeList = edgeRecords.map(({ from, to }) => ({ from, to }));
             const fanByKey = projectTaskGraphEdgeFanMap(edgeList);
             const statusLayout = Boolean(svg.closest('[data-layout-kind="status"]'))
                 || Boolean(svg.classList.contains('is-status-layout'));
-            const obstacles = Array.from(svg.querySelectorAll('.social-project-task-graph-node-g')).map((node) => ({
-                id: text(node.getAttribute('data-task-id')),
-                x: Number(node.getAttribute('data-cx')),
-                y: Number(node.getAttribute('data-cy')),
-                w: Number(node.getAttribute('data-w')) || PROJECT_TASK_GRAPH_CARD_W,
-                h: Number(node.getAttribute('data-h')) || PROJECT_TASK_GRAPH_CARD_H
-            }));
             const criticalTwinFan = 6; // keep in sync with dual-wire render offset
-            groups.forEach((group) => {
-                const fromId = text(group.getAttribute('data-edge-from'));
-                const toId = text(group.getAttribute('data-edge-to'));
-                const line = group.querySelector('.social-project-task-graph-edge:not(.is-critical-twin)');
-                const twin = group.querySelector('.social-project-task-graph-edge.is-critical-twin');
-                const hit = group.querySelector('.social-project-task-graph-edge-hit');
-                const label = group.querySelector('.social-project-task-graph-edge-label');
-                const unlink = group.querySelector('.social-project-task-graph-edge-unlink');
-                const fromNode = svg.querySelector(`.social-project-task-graph-node-g[data-task-id="${fromId}"]`);
-                const toNode = svg.querySelector(`.social-project-task-graph-node-g[data-task-id="${toId}"]`);
+            edgeRecords.forEach(({ group, from, to, line, twin, hit, label, unlink }) => {
+                const fromNode = nodeById.get(from);
+                const toNode = nodeById.get(to);
                 if (!line || !fromNode || !toNode) return;
-                const edgeKey = `${fromId}->${toId}`;
+                const edgeKey = `${from}->${to}`;
                 const baseFan = fanByKey[edgeKey] || 0;
                 const pathMeta = {
                     fanOffset: baseFan,
                     statusLayout,
-                    obstacles,
-                    fromId,
-                    toId
+                    fromId: from,
+                    toId: to
                 };
                 const path = projectTaskGraphEdgePath(readNodePos(fromNode), readNodePos(toNode), pathMeta);
                 group.setAttribute('data-edge-mode', path.mode);

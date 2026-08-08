@@ -1,4 +1,16 @@
 /* News page module: feed — classic script, shares globals with sibling news/* modules. */
+function revealNewsShell() {
+    if (typeof markPortalShellReady === 'function') {
+        markPortalShellReady();
+        return;
+    }
+    if (typeof window.__kiuStartShellReveal === 'function') {
+        window.__kiuStartShellReveal({ degraded: true });
+        return;
+    }
+    document.body?.classList.remove('kiu-shell-loading');
+}
+
 function finishNewsBootstrapRefresh() {
     const root = q(ROOT_ID);
     if (!root) return;
@@ -65,7 +77,7 @@ function finishNewsBootstrapRefresh() {
 
     root.dataset.newsRenderSignature = nextSignature;
     root.dataset.newsReady = 'true';
-    document.body.classList.remove('kiu-shell-loading');
+    revealNewsShell();
 }
 
 async function bootstrapNewsWorkspace(force = false) {
@@ -479,6 +491,7 @@ function renderNewsWorkspace() {
     if (!shell) return;
     const renderSignature = buildNewsRenderSignature();
     if (root.dataset.newsRenderSignature === renderSignature) {
+        revealNewsShell();
         return;
     }
 
@@ -489,7 +502,7 @@ function renderNewsWorkspace() {
     renderNewsModals();
     root.dataset.newsReady = 'true';
     root.dataset.newsRenderSignature = renderSignature;
-    document.body.classList.remove('kiu-shell-loading');
+    revealNewsShell();
     if (runtime.pendingDeepLinkPostId) {
         focusNewsPostCard(runtime.pendingDeepLinkPostId);
         runtime.pendingDeepLinkPostId = '';

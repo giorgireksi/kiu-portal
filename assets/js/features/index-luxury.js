@@ -167,7 +167,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'assets/js/features/luxury-background-gallery-palette.js?v=20260722-bgg21',
             'assets/js/features/luxury-background-gallery-optimizer.js?v=20260722-bgg21',
             'assets/js/features/luxury-background-gallery-runtime.js?v=20260722-bgg21',
-            'assets/js/features/luxury-background-gallery-studio.js?v=20260722-bgg21'
+            'assets/js/features/luxury-background-gallery-studio.js?v=20260808-galleryfouc1'
         ];
         const loadOne = (src) => new Promise((resolve, reject) => {
             if (document.querySelector(`script[data-kiu-bg-gallery="${src}"]`)) {
@@ -1157,6 +1157,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function getBackgroundIntensity() {
         try { return getDashboardVisuals().backgroundIntensity || 'standard'; } catch(e) { return 'standard'; }
     }
+    function ensureLuxuryBackgroundRuntime() {
+        if (typeof window.__kiuInitLuxuryParticleBackground === 'function') return Promise.resolve(true);
+        return window.__kiuLuxuryBackgroundModulePromise ||= import('./luxury-background.js?v=20260808-loadperf1')
+            .then(() => true).catch(() => false);
+    }
     Object.assign(window, {
         ROLE_LABELS,
         PAGE_LABELS,
@@ -1725,9 +1730,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                     );
                 }
                 const scheduleParticleInit = () => {
-                    if (typeof window.__kiuInitLuxuryParticleBackground === 'function') {
-                        window.__kiuInitLuxuryParticleBackground();
-                    }
+                    if (typeof window.__kiuInitLuxuryParticleBackground === 'function') return window.__kiuInitLuxuryParticleBackground();
+                    ensureLuxuryBackgroundRuntime().then((loaded) => loaded && window.__kiuInitLuxuryParticleBackground?.());
                 };
                 if (!onStandaloneAdminOrders && !onStandaloneScheduler) {
                     if (onStandaloneLibrary || onStandaloneOrders) {

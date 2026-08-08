@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260808-mobileroute1';
+const CACHE_NAME = 'kiu-portal-shell-v20260809-socialassembly16';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -27,17 +27,31 @@ const SHELL_ASSETS = [
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260806-hidetopbar2',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
-  '/assets/css/lux-shell.css?v=20260725-homefoucdedup1',
+  '/assets/css/lux-shell.css?v=20260808-loadreveal1',
   '/assets/css/lux-layout-primitives.css?v=20260725-ssot1',
   '/assets/css/index-home-layout.css?v=20260806-studentboard11',
   '/assets/css/index-home-widgets.css?v=20260806-studentboard11',
   '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
-  '/assets/js/theme-primer.js?v=20260730-navpreload1',
-  '/assets/js/features/navigation.js?v=20260805-switchperf2',
-  '/assets/js/features/luxury-index-runtime.js?v=20260806-studentboard11',
+  '/assets/css/index-home-loading.css?v=20260809-homeassembly2',
+  '/assets/css/social-loading.css?v=20260809-socialassembly3',
+  '/assets/js/theme-primer.js?v=20260808-loadreveal1',
+  '/assets/js/features/navigation.js?v=20260808-loadreveal1',
+  '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
+  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260809-assembly16',
+  '/assets/js/features/luxury-index-runtime.js?v=20260809-homeassembly2',
+  '/assets/js/features/luxury-index-home-shell-runtime.js?v=20260720-w18',
   '/assets/js/features/luxury-shell-motion-runtime.js?v=20260725-glassblur1',
-  '/assets/js/features/index-luxury.js?v=20260730-echancellery1',
-  '/assets/js/features/luxury-background.js?v=20260723-gpuperf4q'
+  '/assets/js/features/index-luxury.js?v=20260808-galleryfouc1',
+  '/assets/js/features/luxury-home-model.js?v=20260809-homeassembly3',
+  '/assets/js/features/home-dashboard-widget-layout-runtime.js?v=20260809-homeassembly3',
+  '/assets/js/features/home-dashboard-widget-data-runtime.js?v=20260806-studentboard11',
+  '/assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2',
+  '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
+  '/assets/js/pages/home-loading-runtime.js?v=20260809-homeassembly2',
+  '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
+  '/assets/js/pages/social-page-interactions-runtime.js?v=20260809-socialloading7',
+  '/assets/js/pages/social-page-boot-runtime.js?v=20260809-socialloading2',
+  '/assets/js/pages/social-loading-runtime.js?v=20260809-socialassembly8'
 ];
 
 function isVersionedAssetUrl(url) {
@@ -88,7 +102,7 @@ function buildOfflineAssetResponse(request) {
   const destination = String(request.destination || '').trim().toLowerCase();
   if (destination === 'script') {
     return new Response('/* offline asset fallback */', {
-      status: 200,
+      status: 503,
       headers: {
         'Content-Type': 'application/javascript; charset=utf-8',
         'Cache-Control': 'no-store'
@@ -97,7 +111,7 @@ function buildOfflineAssetResponse(request) {
   }
   if (destination === 'style') {
     return new Response('/* offline asset fallback */', {
-      status: 200,
+      status: 503,
       headers: {
         'Content-Type': 'text/css; charset=utf-8',
         'Cache-Control': 'no-store'
@@ -111,6 +125,17 @@ function buildOfflineAssetResponse(request) {
       'Cache-Control': 'no-store'
     }
   });
+}
+
+async function isUsableStaticAssetResponse(response, request) {
+  if (!response || !response.ok) return false;
+  const pathname = String(new URL(request.url).pathname || '').toLowerCase();
+  const isCodeAsset = request.destination === 'script'
+    || request.destination === 'style'
+    || /\.(?:m?js|css)$/.test(pathname);
+  if (!isCodeAsset) return true;
+  const body = await response.clone().text();
+  return Boolean(body.trim()) && !body.includes('offline asset fallback');
 }
 
 function shouldCacheResponse(response) {
@@ -178,14 +203,22 @@ async function handleSocialRuntimeScriptRequest(request, event) {
 }
 
 async function handleNavigationRequest(request) {
+  const pathname = new URL(request.url).pathname.toLowerCase();
+  const isSocialStandaloneNavigation = pathname.endsWith('/social.html');
   const prefetchCache = await caches.open(ROUTE_PREFETCH_CACHE_NAME);
-  const prefetched = await prefetchCache.match(request);
-  if (prefetched) {
-    await prefetchCache.delete(request);
-    return prefetched;
+  if (!isSocialStandaloneNavigation) {
+    const prefetched = await prefetchCache.match(request);
+    if (prefetched) {
+      await prefetchCache.delete(request);
+      return prefetched;
+    }
   }
   try {
-    const networkResponse = await fetch(request);
+    const networkResponse = await fetch(
+      isSocialStandaloneNavigation
+        ? new Request(request, { cache: 'no-store' })
+        : request
+    );
     return await cacheResponse(request, networkResponse);
   } catch (error) {
     const cached = await caches.match(request);
@@ -218,34 +251,26 @@ async function handleStaticAssetRequest(request, event) {
   const url = new URL(request.url);
   const cache = await caches.open(CACHE_NAME);
 
-  // Versioned assets are immutable (?v=). Serve cache-first and refresh in
-  // the background so public demos do not re-download every navigation.
+  // Versioned assets are immutable (?v=). Serve them strictly cache-first;
+  // changing the query string is the invalidation mechanism.
   if (isVersionedAssetUrl(url)) {
     const cachedVersioned = await cache.match(request);
     if (cachedVersioned) {
-      event.waitUntil(
-        fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && networkResponse.ok) {
-              return cache.put(request, networkResponse.clone());
-            }
-            return null;
-          })
-          .catch(() => null)
-      );
-      return cachedVersioned;
+      if (await isUsableStaticAssetResponse(cachedVersioned, request)) {
+        return cachedVersioned;
+      }
     }
   }
 
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.ok) {
+    if (await isUsableStaticAssetResponse(networkResponse, request)) {
       event.waitUntil(cacheResponse(request, networkResponse.clone()).catch(() => {}));
       return networkResponse;
     }
   } catch (error) {}
   const cached = await cache.match(request);
-  if (cached) return cached;
+  if (cached && await isUsableStaticAssetResponse(cached, request)) return cached;
   return buildOfflineAssetResponse(request);
 }
 

@@ -65,6 +65,6 @@ describe('LMS whiteboard wave 1b improvements', () => {
         const html = readSource('lms.html');
 
         expectLmsRouteCssLinks(html);
-        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260729-wbdocmode5');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-whiteboard-runtime.js?v=20260808-overallperf1');
     });
 });

@@ -168,13 +168,16 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
     const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260807-socialtopnav34';
     const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260807-socialtopnav34';
+    const SOCIAL_DIALOG_STYLES_URL = 'assets/css/lux-modals.css?v=20260808-loadperf1';
+    let socialDialogStylesPromise = null;
+    let socialDialogStylesReady = false;
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_HEALTH_MODEL_URL = 'assets/js/pages/social-workspace-health-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL = 'assets/js/pages/social-workspace-graph-desk-model.js?v=20260726-socfix20';
     const SOCIAL_WORKSPACE_GRAPH_MODEL_URL = 'assets/js/pages/social-workspace-graph-model.js?v=20260726-socfix20';
     const SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL = 'assets/js/pages/social-workspace-portfolio-model.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL = 'assets/js/pages/social-workspace-week-plan-model.js?v=20260726-socfix16';
-    const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260808-smoothfps1';
+    const SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-sync-runtime.js?v=20260808-overallperf1';
     const SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-layout-runtime.js?v=20260807-runtimefix1';
     const SOCIAL_WORKSPACE_SCHEDULE_UI_URL = 'assets/js/pages/social-workspace-schedule-ui.js?v=20260726-socfix16';
     const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
@@ -184,7 +187,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
     const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260807-socialtopnav34';
-    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260808-smoothfps1';
+    const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260808-overallperf1';
     const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260807-socialsurface1';
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260807-mapopaque1';
     const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260807-socialsurface1';
@@ -203,6 +206,29 @@ Publishes only the host/runtime contract consumed by its loader.
         ADMIN: 'admin',
         STUDENT_SERVICE: 'student_service'
     };
+
+    function ensureSocialDialogStyles() {
+        if (socialDialogStylesReady) return Promise.resolve(true);
+        const existing = document.querySelector(`link[data-kiu-social-dialog-styles="${SOCIAL_DIALOG_STYLES_URL}"]`);
+        if (existing) {
+            if (socialDialogStylesPromise) return socialDialogStylesPromise;
+            socialDialogStylesReady = true;
+            return Promise.resolve(true);
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = SOCIAL_DIALOG_STYLES_URL;
+        link.dataset.kiuSocialDialogStyles = SOCIAL_DIALOG_STYLES_URL;
+        socialDialogStylesPromise = new Promise((resolve) => {
+            link.addEventListener('load', () => resolve(true), { once: true });
+            link.addEventListener('error', () => resolve(false), { once: true });
+        }).then((loaded) => {
+            socialDialogStylesReady = true;
+            return loaded;
+        });
+        document.head.appendChild(link);
+        return socialDialogStylesPromise;
+    }
 
     function renderProjectWorkspaceNavButtons(project, options = {}) {
         const projectId = escape(text(project?.id || ''));
@@ -618,12 +644,20 @@ Publishes only the host/runtime contract consumed by its loader.
     // changes), so drive this interaction synchronously instead.
     function renderPhotographyUploadDialogNow() {
         if (text(activeDialog()?.type || '') !== 'photography-upload') return;
+        if (!socialDialogStylesReady) {
+            ensureSocialDialogStyles().then(() => renderPhotographyUploadDialogNow());
+            return;
+        }
         const region = socialDialogRegion();
         if (!region) return;
         setSocialRegionMarkup(region, invokeRenderDialog());
         bindPhotographyUploadDialogFileInput();
     }
     function renderDialogOnlyNow() {
+        if (activeDialog() && !socialDialogStylesReady) {
+            ensureSocialDialogStyles().then(() => renderDialogOnlyNow());
+            return;
+        }
         const host = root();
         if (!host) return;
         const shell = ensureSocialShell(host);

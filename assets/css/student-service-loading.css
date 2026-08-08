@@ -1,0 +1,79 @@
+/*
+ * Student Service loading motion only.
+ * Shared Student Service panels, controls, and theme tokens remain unchanged.
+ */
+body.student-service-assembly-active #page-student-service .kiu-student-service-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* The shell and lazy service modules are rendered after the static page shell. */
+body.student-service-assembly-active #page-student-service :is(
+  [data-student-service-page-shell="1"],
+  [data-student-service-page-hero="1"] > *,
+  [data-student-service-page-switcher="1"] > *,
+  [data-student-service-page-workflow="1"] > *,
+  [data-student-service-page-overview="1"] > *,
+  #student-service-page-body,
+  #student-service-page-body > *,
+  .student-service-zone,
+  .student-service-workbench-merged,
+  .student-service-ticket-inbox-list,
+  .student-service-qa-feed,
+  .student-service-guidance-workspace
+) {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.student-service-assembly-active #page-student-service .kiu-student-service-assembly-structure {
+  opacity: 0;
+}
+
+body.student-service-assembly-active #page-student-service .kiu-student-service-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.student-service-assembly-ready #page-student-service .kiu-student-service-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.student-service-assembly-ready #page-student-service .kiu-student-service-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.student-service-assembly-active #page-student-service .kiu-student-service-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.student-service-assembly-active #page-student-service :is(
+    [data-student-service-page-shell="1"],
+    [data-student-service-page-hero="1"] > *,
+    [data-student-service-page-switcher="1"] > *,
+    [data-student-service-page-workflow="1"] > *,
+    [data-student-service-page-overview="1"] > *,
+    #student-service-page-body,
+    #student-service-page-body > *,
+    .student-service-zone,
+    .student-service-workbench-merged,
+    .student-service-ticket-inbox-list,
+    .student-service-qa-feed,
+    .student-service-guidance-workspace
+  ) {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.student-service-assembly-active #page-student-service .kiu-student-service-assembly-structure {
+    opacity: 1;
+  }
+}

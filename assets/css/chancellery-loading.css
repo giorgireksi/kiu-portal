@@ -1,0 +1,73 @@
+/*
+ * Chancellery loading motion only.
+ * Shared Chancellery paint, panels, controls, and theme tokens remain unchanged.
+ */
+body.chancellery-assembly-active #page-chancellery .kiu-chancellery-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* Chancellery markup is rendered after the static page shell. */
+body.chancellery-assembly-active #page-chancellery :is(
+  [data-chancellery-shell="1"],
+  #chancellery-hero-region > *,
+  #chancellery-command-region > *,
+  #chancellery-content-region > *,
+  .lux-chancellery-workspace,
+  .lux-chancellery-workspace-split,
+  .lux-chancellery-list-region,
+  .lux-chancellery-finance-grid,
+  .lux-chancellery-queue-item
+) {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.chancellery-assembly-active #page-chancellery .kiu-chancellery-assembly-structure {
+  opacity: 0;
+}
+
+body.chancellery-assembly-active #page-chancellery .kiu-chancellery-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.chancellery-assembly-ready #page-chancellery .kiu-chancellery-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.chancellery-assembly-ready #page-chancellery .kiu-chancellery-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.chancellery-assembly-active #page-chancellery .kiu-chancellery-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.chancellery-assembly-active #page-chancellery :is(
+    [data-chancellery-shell="1"],
+    #chancellery-hero-region > *,
+    #chancellery-command-region > *,
+    #chancellery-content-region > *,
+    .lux-chancellery-workspace,
+    .lux-chancellery-workspace-split,
+    .lux-chancellery-list-region,
+    .lux-chancellery-finance-grid,
+    .lux-chancellery-queue-item
+  ) {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.chancellery-assembly-active #page-chancellery .kiu-chancellery-assembly-structure {
+    opacity: 1;
+  }
+}

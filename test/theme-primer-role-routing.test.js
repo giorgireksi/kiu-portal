@@ -43,4 +43,43 @@ describe('theme primer role routing', () => {
     expect(body.classList.contains('role-ta')).toBe(true);
     expect(body.dataset.shellRole).toBe('ta');
   });
+
+  it('installs a universal pre-paint guard for route body content', () => {
+    const dom = bootPrimer('http://localhost/index.html#home');
+    const guard = dom.window.document.getElementById('kiu-shell-boot-guard');
+
+    expect(guard?.textContent).toContain(
+      'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style)'
+    );
+    expect(guard?.textContent).toContain('visibility:hidden!important;');
+  });
+
+  it('publishes a loading state before the shared reveal coordinator loads', () => {
+    const dom = bootPrimer('http://localhost/index.html#home');
+    const root = dom.window.document.documentElement;
+    const body = dom.window.document.body;
+
+    expect(dom.window.__kiuShellLoadState).toMatchObject({
+      phase: 'loading',
+      stage: 'background',
+      degraded: false
+    });
+    expect(root.dataset.kiuLoadPhase).toBe('loading');
+    expect(root.dataset.kiuLoadStage).toBe('background');
+    expect(body.dataset.kiuLoadPhase).toBe('loading');
+    expect(body.dataset.kiuLoadStage).toBe('background');
+    expect(body.getAttribute('aria-busy')).toBe('true');
+    expect(typeof dom.window.__kiuSetShellLoadState).toBe('function');
+  });
+
+  it('loads the primer synchronously before body content on unified entry routes', () => {
+    for (const route of ['index.html', 'social.html', 'exam-portal.html']) {
+      const html = readSource(route);
+      expect(html.indexOf('theme-primer.js?v=20260808-loadreveal1')).toBeGreaterThanOrEqual(0);
+      expect(html.indexOf('theme-primer.js?v=20260808-loadreveal1')).toBeLessThan(html.indexOf('<body'));
+    }
+    expect(readSource('exam-portal.html')).toMatch(
+      /<body[^>]*class="[^"]*kiu-shell-loading/
+    );
+  });
 });

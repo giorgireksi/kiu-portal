@@ -15,6 +15,7 @@
     "stop:staging": "docker compose -f docker-compose.staging.yml down",
     "start:staging:web": "env KIU_LOCAL_BACKEND_PORT=47833 node tools/local_dev_server.js 8900",
     "start:public-demo": "bash ./start-public-demo.sh",
+    "stop:public-demo": "bash ./stop-public-demo.sh",
     "stop:local": "env KIU_LAUNCHER_IN_TERMINAL=1 bash ./stop-local-lms-anticheat.sh",
     "start:local:win": "start-local-lms-anticheat.bat",
     "start:local:web:win": "set KIU_SKIP_ANTICHEAT=1&& start-local-lms-anticheat.bat",

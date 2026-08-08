@@ -708,7 +708,7 @@
 
         if (role === 'student_service') {
             const serviceStores = typeof ensureStudentServiceStores === 'function'
-                ? ensureStudentServiceStores()
+                ? (ensureStudentServiceStores() || { tickets: [], articles: [] })
                 : { tickets: [], articles: [] };
             context.tickets = (serviceStores.tickets || []).filter((ticket) => {
                 const ticketFaculty = String(ticket?.facultyCode || ticket?.faculty || '').trim().toUpperCase();

@@ -1,0 +1,78 @@
+/*
+ * Home assembly motion only.
+ * Existing shell, widget, hover, and modal paint remains authoritative.
+ */
+body.home-assembly-active #lux-home-shell .kiu-home-assembly-target.is-home-assembly-staging {
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+body.home-assembly-active :is(
+  #lux-shell,
+  #lux-nav,
+  #lux-topbar,
+  #mobile-bottom-nav,
+  #mobile-action-sheet
+).kiu-home-assembly-target.is-home-assembly-staging,
+body.home-assembly-active :is(
+  #lux-shell,
+  #lux-nav,
+  #lux-topbar,
+  #mobile-bottom-nav,
+  #mobile-action-sheet
+) .kiu-home-assembly-target.is-home-assembly-staging {
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+body.home-assembly-active #lux-home-shell .kiu-home-assembly-target.is-flight,
+body.home-assembly-active :is(
+  #lux-shell,
+  #lux-nav,
+  #lux-topbar,
+  #mobile-bottom-nav,
+  #mobile-action-sheet
+) .kiu-home-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.home-assembly-ready #lux-home-shell .kiu-home-assembly-target,
+body.home-assembly-ready :is(
+  #lux-shell,
+  #lux-nav,
+  #lux-topbar,
+  #mobile-bottom-nav,
+  #mobile-action-sheet
+).kiu-home-assembly-target,
+body.home-assembly-ready :is(
+  #lux-shell,
+  #lux-nav,
+  #lux-topbar,
+  #mobile-bottom-nav,
+  #mobile-action-sheet
+) .kiu-home-assembly-target {
+  opacity: 1;
+  pointer-events: auto;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.home-assembly-active #lux-home-shell .kiu-home-assembly-target.is-home-assembly-staging,
+  body.home-assembly-active :is(
+    #lux-shell,
+    #lux-nav,
+    #lux-topbar,
+    #mobile-bottom-nav,
+    #mobile-action-sheet
+  ) .kiu-home-assembly-target.is-home-assembly-staging {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+}

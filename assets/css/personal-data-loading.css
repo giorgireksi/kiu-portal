@@ -1,0 +1,49 @@
+/*
+ * Personal-data loading motion only.
+ * Shared personal-data paint, panels, and theme tokens remain unchanged.
+ */
+body.personal-data-assembly-active #page-personal-data .kiu-personal-data-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* Blueprint fields are inserted after the static personal-data shell. */
+body.personal-data-assembly-active #page-personal-data #personal-data-blueprint-details-root > *,
+body.personal-data-assembly-active #page-personal-data [data-personal-data-field-key] {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.personal-data-assembly-active #page-personal-data .kiu-personal-data-assembly-structure {
+  opacity: 0;
+}
+
+body.personal-data-assembly-active #page-personal-data .kiu-personal-data-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.personal-data-assembly-ready #page-personal-data .kiu-personal-data-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.personal-data-assembly-ready #page-personal-data .kiu-personal-data-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.personal-data-assembly-active #page-personal-data .kiu-personal-data-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.personal-data-assembly-active #page-personal-data .kiu-personal-data-assembly-structure {
+    opacity: 1;
+  }
+}

@@ -5,6 +5,76 @@ let modalOpenCached = false;
 let modalOpenCacheUntil = 0;
 const stateListeners = new Set();
 let lastNotifiedBusy = false;
+let portalPerfProbe = null;
+
+function publishPortalPerfProbe(now = performance.now()) {
+    if (!portalPerfProbe) return;
+    const elapsed = Math.max(1, now - portalPerfProbe.startedAt);
+    window.__KIU_PORTAL_PERF = {
+        elapsedMs: Math.round(elapsed),
+        fps: Math.round((portalPerfProbe.frames * 1000 / elapsed) * 10) / 10,
+        frames: portalPerfProbe.frames,
+        droppedFrames: portalPerfProbe.droppedFrames,
+        maxFrameMs: Math.round(portalPerfProbe.maxFrameMs * 10) / 10,
+        longTasks: portalPerfProbe.longTasks,
+        longTaskMs: Math.round(portalPerfProbe.longTaskMs * 10) / 10
+    };
+}
+
+function samplePortalPerfProbe(now) {
+    if (!portalPerfProbe) return;
+    if (portalPerfProbe.lastFrameAt) {
+        const frameMs = now - portalPerfProbe.lastFrameAt;
+        portalPerfProbe.maxFrameMs = Math.max(portalPerfProbe.maxFrameMs, frameMs);
+        if (frameMs > 16.7) {
+            portalPerfProbe.droppedFrames += Math.max(1, Math.round(frameMs / 16.7) - 1);
+        }
+    }
+    portalPerfProbe.lastFrameAt = now;
+    portalPerfProbe.frames += 1;
+    if (!portalPerfProbe.lastPublishedAt || now - portalPerfProbe.lastPublishedAt >= 1000) {
+        portalPerfProbe.lastPublishedAt = now;
+        publishPortalPerfProbe(now);
+    }
+    portalPerfProbe.raf = requestAnimationFrame(samplePortalPerfProbe);
+}
+
+export function startLuxPortalPerfProbe() {
+    if (portalPerfProbe || typeof window === 'undefined') return window.__KIU_PORTAL_PERF || null;
+    portalPerfProbe = {
+        startedAt: performance.now(),
+        lastFrameAt: 0,
+        lastPublishedAt: 0,
+        frames: 0,
+        droppedFrames: 0,
+        maxFrameMs: 0,
+        longTasks: 0,
+        longTaskMs: 0,
+        observer: null,
+        raf: 0
+    };
+    if (window.PerformanceObserver?.supportedEntryTypes?.includes('longtask')) {
+        portalPerfProbe.observer = new window.PerformanceObserver((list) => {
+            if (!portalPerfProbe) return;
+            list.getEntries().forEach((entry) => {
+                portalPerfProbe.longTasks += 1;
+                portalPerfProbe.longTaskMs += Number(entry.duration) || 0;
+            });
+        });
+        portalPerfProbe.observer.observe({ type: 'longtask', buffered: false });
+    }
+    portalPerfProbe.raf = requestAnimationFrame(samplePortalPerfProbe);
+    return window.__KIU_PORTAL_PERF || null;
+}
+
+export function stopLuxPortalPerfProbe() {
+    if (!portalPerfProbe) return window.__KIU_PORTAL_PERF || null;
+    cancelAnimationFrame(portalPerfProbe.raf);
+    portalPerfProbe.observer?.disconnect();
+    publishPortalPerfProbe();
+    portalPerfProbe = null;
+    return window.__KIU_PORTAL_PERF || null;
+}
 
 export function isModalOverlayOpen() {
     const now = performance.now();
@@ -84,4 +154,11 @@ if (typeof window !== 'undefined') {
     window.shouldDeferLuxLegacyVisualRefresh = shouldDeferLegacyVisualRefresh;
     window.notifyLuxGovernorStateChange = notifyGovernorStateChange;
     window.onLuxGovernorStateChange = onGovernorStateChange;
+    window.startKiuPortalPerfProbe = startLuxPortalPerfProbe;
+    window.stopKiuPortalPerfProbe = stopLuxPortalPerfProbe;
+    try {
+        if (new URLSearchParams(window.location.search).get('perf') === '1') {
+            startLuxPortalPerfProbe();
+        }
+    } catch (_error) { /* ignore */ }
 }
