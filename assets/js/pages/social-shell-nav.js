@@ -92,7 +92,7 @@
             if (tab && uiKey) {
                 state().ui[uiKey] = typeof applyTab === 'function' ? applyTab(tab) : tab;
             }
-            setPanel(panel);
+            setPanel(panel, { skipRender: true });
             invalidateSocialRenderCache({ center: true });
             return {
                 wasOn,
@@ -252,14 +252,12 @@
                 return { handled: true, result: renderSocialPageNow('panel-events') };
             }
             if (action === 'panel-lost-found' || action === 'panel-lost-and-found') {
-                setPanel('lost-and-found');
-                return {
-                    handled: true,
-                    result: withBusy(async () => {
-                        await pruneExpiredLostFoundItems();
-                        renderSocialPageNow('panel-lost-and-found');
-                    })
-                };
+                setPanel('lost-and-found', { skipRender: true });
+                // Mount immediately (like Events). Never await prune first — that
+                // delayed the shell and skipped assembly the same way Exposé did.
+                void Promise.resolve(pruneExpiredLostFoundItems()).catch(() => null);
+                invalidateSocialRenderCache({ center: true });
+                return { handled: true, result: renderSocialPageNow('panel-lost-and-found') };
             }
             if (action === 'panel-surveys') {
                 const tab = text(trigger.getAttribute('data-surveys-tab'));
@@ -319,17 +317,11 @@
                     state().ui.photographyTab = normalized;
                 }
                 state().ui.photographyProfileUserId = '';
-                setPanel('photography');
+                setPanel('photography', { skipRender: true });
+                // Mount Exposé immediately (like Events). Never await feed refresh first —
+                // that left center on feed-shell while ui said photography, so assembly never ran.
                 if (!wasOnPhotography) {
-                    return {
-                        handled: true,
-                        result: withBusy(async () => {
-                            await refreshPortalSocialFeed(true);
-                            invalidateSocialRenderCache({ center: true });
-                            if (refreshPhotographyPanelStage()) return;
-                            renderSocialPageNow(tab ? 'photography-tab' : 'panel-photography');
-                        })
-                    };
+                    void Promise.resolve(refreshPortalSocialFeed(true)).catch(() => null);
                 }
                 if (wasOnPhotography && tab && tab !== previousTab && refreshPhotographyPanelStage()) {
                     return { handled: true };
@@ -349,7 +341,7 @@
             if (action === 'panel-groups') {
                 const tab = text(trigger.getAttribute('data-groups-tab'));
                 if (tab) state().ui.groupsTab = tab;
-                setPanel('groups');
+                setPanel('groups', { skipRender: true });
                 invalidateSocialRenderCache({ center: true });
                 if (tab) return { handled: true, result: renderSocialPageNow('groups-tab') };
                 return { handled: true, result: renderSocialPageNow('panel-groups') };
@@ -357,14 +349,14 @@
             if (action === 'panel-workspace') {
                 state().ui.activeProjectId = '';
                 state().ui.projectTab = 'overview';
-                setPanel('workspace');
+                setPanel('workspace', { skipRender: true });
                 invalidateSocialRenderCache({ center: true });
                 return { handled: true, result: renderSocialPageNow('panel-workspace') };
             }
             if (action === 'panel-projects') {
                 state().ui.activeProjectId = '';
                 state().ui.projectTab = 'overview';
-                setPanel('projects');
+                setPanel('projects', { skipRender: true });
                 invalidateSocialRenderCache({ center: true });
                 return { handled: true, result: renderSocialPageNow('panel-projects') };
             }
@@ -377,7 +369,7 @@
                 state().ui.activePageProfileId = '';
                 state().ui.pageProfileEditMode = false;
                 state().ui.pageWizardOpen = false;
-                setPanel('pages');
+                setPanel('pages', { skipRender: true });
                 invalidateSocialRenderCache({ center: true });
                 if (profileWasOpen) return { handled: true, result: renderSocialPageNow('page-profile-back') };
                 if (wasOnPages && tab && tab !== previousTab) {
@@ -390,43 +382,45 @@
                 const wasOnMessages = text(state().ui?.activePanel) === 'messages';
                 const previousFilter = text(state().ui?.messagesFilter || 'all');
                 if (filter) state().ui.messagesFilter = filter;
-                setPanel('messages');
+                // skipRender: setPanel would paint center as reason `panel`, then we remount
+                // again for panel-messages — that flashes full UI before assembly staging.
+                setPanel('messages', { skipRender: true });
+                invalidateSocialRenderCache({ center: true });
+                if (wasOnMessages && filter && filter !== previousFilter) {
+                    const filterResult = renderSocialPageNow('messages-filter');
+                    // Mark-read after first paint so chat-read/upsert remount can replay in-flight assembly.
+                    const activeChatId = text(state().ui?.activeChatId || '');
+                    if (activeChatId && typeof window.markPortalChatMessagesRead === 'function') {
+                        window.markPortalChatMessagesRead(activeChatId).catch(() => null);
+                    }
+                    return { handled: true, result: filterResult };
+                }
+                const openResult = renderSocialPageNow('panel-messages');
+                // After mount+assembly start: mark-read may remount via chat-read/upsert;
+                // queueSocialMessagesMotion replays while assembly is still in flight.
                 const activeChatId = text(state().ui?.activeChatId || '');
                 if (activeChatId && typeof window.markPortalChatMessagesRead === 'function') {
                     window.markPortalChatMessagesRead(activeChatId).catch(() => null);
                 }
-                invalidateSocialRenderCache({ center: true });
-                if (wasOnMessages && filter && filter !== previousFilter) {
-                    return { handled: true, result: renderSocialPageNow('messages-filter') };
-                }
-                return { handled: true, result: renderSocialPageNow('panel-messages') };
+                return { handled: true, result: openResult };
             }
             if (action === 'panel-alerts') {
                 const filter = text(trigger.getAttribute('data-alerts-filter'));
                 const wasOnAlerts = text(state().ui?.activePanel) === 'alerts';
                 const previousFilter = text(state().ui?.alertsFilter || 'all');
                 if (filter) state().ui.alertsFilter = filter;
-                if (typeof window.refreshPortalNotifications === 'function') {
-                    return {
-                        handled: true,
-                        result: withBusy(async () => {
-                            await window.refreshPortalNotifications(true);
-                            setPanel('alerts');
-                            invalidateSocialRenderCache({ center: true });
-                            if (wasOnAlerts && filter && filter !== previousFilter) {
-                                renderSocialPageNow('alerts-filter');
-                                return;
-                            }
-                            renderSocialPageNow('panel-alerts');
-                        })
-                    };
-                }
-                setPanel('alerts');
+                // Mount immediately (like Messages / Lost & Found). Never await
+                // refresh first — that delayed the shell and skipped assembly.
+                setPanel('alerts', { skipRender: true });
                 invalidateSocialRenderCache({ center: true });
-                if (wasOnAlerts && filter && filter !== previousFilter) {
-                    return { handled: true, result: renderSocialPageNow('alerts-filter') };
+                const paintReason = wasOnAlerts && filter && filter !== previousFilter
+                    ? 'alerts-filter'
+                    : 'panel-alerts';
+                const openResult = renderSocialPageNow(paintReason);
+                if (typeof window.refreshPortalNotifications === 'function') {
+                    void Promise.resolve(window.refreshPortalNotifications(true)).catch(() => null);
                 }
-                return { handled: true, result: renderSocialPageNow('panel-alerts') };
+                return { handled: true, result: openResult };
             }
             if (action === 'panel-profile') {
                 state().ui.activeProfileUserId = text(trigger.getAttribute('data-user-id') || currentUserId());

@@ -582,6 +582,10 @@ Publishes only the host/runtime contract consumed by its loader.
     }
 
     function invalidateSocialFeedRenderCache() {
+        const activePanel = text(runtime.ui?.activePanel || 'feed') || 'feed';
+        // Only the feed panel owns feed markup; clearing center cache while on
+        // Exposé/Projects/etc. forces a destructive remount of the wrong shell.
+        if (activePanel !== 'feed') return;
         invalidateSocialRenderCache({ center: true });
     }
 

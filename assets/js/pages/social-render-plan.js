@@ -421,6 +421,24 @@
             'project-task-desk',
             'task-graph-group-member',
         ]);
+        // Background feed refresh/error must not remount other panels' centers —
+        // that aborts in-flight Exposé (and other) assembly intros mid-flight.
+        if ((reason === 'feed' || reason === 'feed-error') && text(activePanel || '') !== 'feed') {
+            return {
+                flash: false,
+                topbar: false,
+                command: false,
+                center: false,
+                workspaceNav: false,
+                drawer: false,
+                mobileTab: false,
+                toast: false,
+                dialog: false,
+                storyViewer: false,
+                storyComposer: false
+            };
+        }
+
         if (centerOnlyReasons.has(reason)) {
             const plan = {
                 ...fullPlan,

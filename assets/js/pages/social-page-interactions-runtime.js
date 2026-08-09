@@ -157,86 +157,1040 @@
         const PANEL_KEY = d.PANEL_KEY ?? window.PANEL_KEY;
         const CHAT_KEY = d.CHAT_KEY ?? window.CHAT_KEY ?? 'KIU_SOCIAL_ACTIVE_CHAT';
         let renderDebounceTimer = 0;
-        let socialAssemblyInitialRetryTimer = 0;
-        let socialAssemblyReplayTimer = 0;
-        const socialAssemblyReplayScopeSet = new Set();
         const SOCIAL_TAB_SCROLL_RESET_RE = /^(panel|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|feed-tab)$/;
         const SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE = /^(feed-tab|community-tab|pages-tab|groups-tab|events-tab|surveys-tab|research-tab|research-input|feed-scope|directory-search|directory-role|post-react|post-save|photography-tab|photography-search-input|photography-follow|photography-view-profile|photography-profile-back|photography-my-profile|photography-my-profile-tab|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|alerts-filter|messages-filter|mobile-nav|workspace-nav-open|workspace-nav-close|workspace-nav-collapse|workspace-nav-expand|connection-|comment-react|comment-reply|comment-post|project-task-)/;
+        let socialHomeMotionFrame = 0;
+        let socialHomeMotionGeneration = 0;
+        let socialCommunityMotionFrame = 0;
+        let socialCommunityMotionGeneration = 0;
+        let socialGroupsMotionFrame = 0;
+        let socialGroupsMotionGeneration = 0;
+        let socialProjectsMotionFrame = 0;
+        let socialProjectsMotionGeneration = 0;
+        let socialPortfolioMotionFrame = 0;
+        let socialPortfolioMotionGeneration = 0;
+        let socialResearchMotionFrame = 0;
+        let socialResearchMotionGeneration = 0;
+        let socialPagesMotionFrame = 0;
+        let socialPagesMotionGeneration = 0;
+        let socialEventsMotionFrame = 0;
+        let socialEventsMotionGeneration = 0;
+        let socialLostFoundMotionFrame = 0;
+        let socialLostFoundMotionGeneration = 0;
+        let socialMessagesMotionFrame = 0;
+        let socialMessagesMotionGeneration = 0;
+        let socialAlertsMotionFrame = 0;
+        let socialAlertsMotionGeneration = 0;
+        let socialSurveysMotionFrame = 0;
+        let socialSurveysMotionGeneration = 0;
+        let socialPhotographyMotionFrame = 0;
+        let socialPhotographyMotionGeneration = 0;
         void d;
 
-        function startSocialAssemblyMotion(host) {
-            const motion = window.__kiuSocialLoadingMotion;
-            if (!host || typeof motion?.start !== 'function') return false;
-            try {
-                const started = motion.start(host);
-                if (started) host.dataset.socialInitialMotionStarted = '1';
-                return Boolean(started);
-            } catch (error) {
-                host.dataset.socialInitialMotionError = String(error?.message || error || 'start-failed');
-                return false;
+        function queueSocialHomeMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'feed'
+                && (reason === 'boot' || reason === 'panel' || reason === 'feed-module' || reason === 'panel-feed' || reason === 'feed-tab');
+            if (!shouldAnimate) {
+                if (panel !== 'feed') {
+                    socialHomeMotionGeneration += 1;
+                    if (socialHomeMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialHomeMotionFrame);
+                        } else {
+                            window.clearTimeout(socialHomeMotionFrame);
+                        }
+                        socialHomeMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-home-assembly-ready',
+                        'social-home-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialHomeAssemblyState;
+                    document.querySelectorAll('[data-social-home-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialHomeAssemblyRoot;
+                    });
+                }
+                return;
             }
-        }
 
-        function retrySocialAssemblyMotion(host) {
-            if (!host || host.dataset.socialInitialMotionStarted === '1') return;
-            if (socialAssemblyInitialRetryTimer) return;
+            socialHomeMotionGeneration += 1;
+            if (socialHomeMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialHomeMotionFrame);
+                } else {
+                    window.clearTimeout(socialHomeMotionFrame);
+                }
+                socialHomeMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-card.sn-mat-soft, .social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialHomeMotionGeneration;
             let attempts = 0;
-            const retry = () => {
-                socialAssemblyInitialRetryTimer = 0;
-                if (!host.isConnected || host.dataset.socialInitialRenderReady !== '1') return;
-                if (startSocialAssemblyMotion(host)) {
-                    delete host.dataset.socialInitialMotionError;
-                    revealShell();
+            const run = () => {
+                socialHomeMotionFrame = 0;
+                if (generation !== socialHomeMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'feed'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
                     return;
                 }
-                if (attempts++ >= 24) {
-                    host.dataset.socialInitialMotionFallback = '1';
-                    revealShell();
+                const startMotion = window.__kiuStartSocialHomeLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialHomeMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
                     return;
                 }
-                socialAssemblyInitialRetryTimer = window.setTimeout(retry, 64);
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
             };
-            socialAssemblyInitialRetryTimer = window.setTimeout(retry, 0);
+            socialHomeMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
         }
 
-        function queueSocialAssemblyReplay(renderPlan, reason) {
-            socialAssemblyReplayScopeSet.clear();
-            getSocialAssemblyReplayScopes(renderPlan, reason).forEach((scope) => {
-                socialAssemblyReplayScopeSet.add(scope);
-            });
-            if (socialAssemblyReplayTimer) return;
-            const flush = () => {
-                socialAssemblyReplayTimer = 0;
-                const scopes = [...socialAssemblyReplayScopeSet];
-                socialAssemblyReplayScopeSet.clear();
-                if (!scopes.length) return;
-                try { window.__kiuSocialLoadingMotion?.replay?.(scopes); } catch (error) {}
+        function queueSocialCommunityMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'community'
+                && (reason === 'panel' || reason === 'community-module' || reason === 'panel-community' || reason === 'community-tab');
+            if (!shouldAnimate) {
+                if (panel !== 'community') {
+                    socialCommunityMotionGeneration += 1;
+                    if (socialCommunityMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialCommunityMotionFrame);
+                        } else {
+                            window.clearTimeout(socialCommunityMotionFrame);
+                        }
+                        socialCommunityMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-community-assembly-ready',
+                        'social-community-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialCommunityAssemblyState;
+                    document.querySelectorAll('[data-social-community-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialCommunityAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialCommunityMotionGeneration += 1;
+            if (socialCommunityMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialCommunityMotionFrame);
+                } else {
+                    window.clearTimeout(socialCommunityMotionFrame);
+                }
+                socialCommunityMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialCommunityMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialCommunityMotionFrame = 0;
+                if (generation !== socialCommunityMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'community'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialCommunityLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialCommunityMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
             };
-            socialAssemblyReplayTimer = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(flush)
-                : window.setTimeout(flush, 0);
+            socialCommunityMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
         }
 
-        function getSocialAssemblyReplayScopes(renderPlan, reason) {
-            const scopes = [];
-            const include = (condition, selector) => {
-                if (condition && !scopes.includes(selector)) scopes.push(selector);
+        function queueSocialGroupsMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'groups'
+                && (reason === 'panel' || reason === 'groups-module' || reason === 'panel-groups' || reason === 'groups-tab');
+            if (!shouldAnimate) {
+                if (panel !== 'groups') {
+                    socialGroupsMotionGeneration += 1;
+                    if (socialGroupsMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialGroupsMotionFrame);
+                        } else {
+                            window.clearTimeout(socialGroupsMotionFrame);
+                        }
+                        socialGroupsMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-groups-assembly-ready',
+                        'social-groups-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialGroupsAssemblyState;
+                    document.querySelectorAll('[data-social-groups-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialGroupsAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialGroupsMotionGeneration += 1;
+            if (socialGroupsMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialGroupsMotionFrame);
+                } else {
+                    window.clearTimeout(socialGroupsMotionFrame);
+                }
+                socialGroupsMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialGroupsMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialGroupsMotionFrame = 0;
+                if (generation !== socialGroupsMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'groups'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialGroupsLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialGroupsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
             };
-            include(renderPlan?.flash, '#social-neo-flash-region');
-            include(renderPlan?.topbar, '#social-neo-topbar-region');
-            include(renderPlan?.command, '#social-neo-command-region');
-            include(renderPlan?.workspaceNav, '#social-neo-workspace-nav-region');
-            include(renderPlan?.center, '#social-neo-center-region');
-            include(renderPlan?.drawer, '#social-neo-drawer-region');
-            include(renderPlan?.mobileTab, '#social-neo-mobile-tab-region');
-            include(renderPlan?.toast, '#social-neo-toast-region');
-            if (/-module$/.test(String(reason || ''))) {
-                include(true, '#social-neo-center-region');
+            socialGroupsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialProjectsMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'workspace'
+                && (reason === 'panel' || reason === 'workspace-module' || reason === 'panel-workspace');
+            if (!shouldAnimate) {
+                if (panel !== 'workspace') {
+                    socialProjectsMotionGeneration += 1;
+                    if (socialProjectsMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialProjectsMotionFrame);
+                        } else {
+                            window.clearTimeout(socialProjectsMotionFrame);
+                        }
+                        socialProjectsMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-projects-assembly-ready',
+                        'social-projects-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialProjectsAssemblyState;
+                    document.querySelectorAll('[data-social-projects-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialProjectsAssemblyRoot;
+                    });
+                }
+                return;
             }
-            if (document.getElementById('social-shortcuts-top-nav-portal')) {
-                include(true, '#social-shortcuts-top-nav-portal');
+
+            socialProjectsMotionGeneration += 1;
+            if (socialProjectsMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialProjectsMotionFrame);
+                } else {
+                    window.clearTimeout(socialProjectsMotionFrame);
+                }
+                socialProjectsMotionFrame = 0;
             }
-            return scopes;
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')
+                || (section.matches('.social-neo-card') && section.querySelector('.social-neo-empty-hero'))) {
+                return;
+            }
+            const generation = socialProjectsMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialProjectsMotionFrame = 0;
+                if (generation !== socialProjectsMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'workspace'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialProjectsLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialProjectsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialProjectsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialPortfolioMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'projects'
+                && (reason === 'boot' || reason === 'panel' || reason === 'workspace-module' || reason === 'portfolio-panel-tab' || reason === 'panel-projects');
+            if (!shouldAnimate) {
+                if (panel !== 'projects') {
+                    socialPortfolioMotionGeneration += 1;
+                    if (socialPortfolioMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialPortfolioMotionFrame);
+                        } else {
+                            window.clearTimeout(socialPortfolioMotionFrame);
+                        }
+                        socialPortfolioMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-portfolio-assembly-ready',
+                        'social-portfolio-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialPortfolioAssemblyState;
+                    document.querySelectorAll('[data-social-portfolio-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialPortfolioAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialPortfolioMotionGeneration += 1;
+            if (socialPortfolioMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialPortfolioMotionFrame);
+                } else {
+                    window.clearTimeout(socialPortfolioMotionFrame);
+                }
+                socialPortfolioMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')
+                || (section.matches('.social-neo-card') && section.querySelector('.social-neo-empty-hero'))) {
+                return;
+            }
+            const generation = socialPortfolioMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialPortfolioMotionFrame = 0;
+                if (generation !== socialPortfolioMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'projects'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialPortfolioLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialPortfolioMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialPortfolioMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialResearchMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'research'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'research-module'
+                    || reason === 'research-tab'
+                    || reason === 'panel-research'
+                    || reason === 'research-reader-open'
+                    || reason === 'research-reader-close');
+            if (!shouldAnimate) {
+                if (panel !== 'research') {
+                    socialResearchMotionGeneration += 1;
+                    if (socialResearchMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialResearchMotionFrame);
+                        } else {
+                            window.clearTimeout(socialResearchMotionFrame);
+                        }
+                        socialResearchMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-research-assembly-ready',
+                        'social-research-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialResearchAssemblyState;
+                    document.querySelectorAll('[data-social-research-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialResearchAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialResearchMotionGeneration += 1;
+            if (socialResearchMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialResearchMotionFrame);
+                } else {
+                    window.clearTimeout(socialResearchMotionFrame);
+                }
+                socialResearchMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialResearchMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialResearchMotionFrame = 0;
+                if (generation !== socialResearchMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'research'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialResearchLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialResearchMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialResearchMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialPagesMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'pages'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'pages-module'
+                    || reason === 'pages-tab'
+                    || reason === 'panel-pages'
+                    || reason === 'page-open-profile'
+                    || reason === 'page-profile-back'
+                    || reason === 'page-profile-tab');
+            if (!shouldAnimate) {
+                if (panel !== 'pages') {
+                    socialPagesMotionGeneration += 1;
+                    if (socialPagesMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialPagesMotionFrame);
+                        } else {
+                            window.clearTimeout(socialPagesMotionFrame);
+                        }
+                        socialPagesMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-pages-assembly-ready',
+                        'social-pages-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialPagesAssemblyState;
+                    document.querySelectorAll('[data-social-pages-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialPagesAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialPagesMotionGeneration += 1;
+            if (socialPagesMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialPagesMotionFrame);
+                } else {
+                    window.clearTimeout(socialPagesMotionFrame);
+                }
+                socialPagesMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialPagesMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialPagesMotionFrame = 0;
+                if (generation !== socialPagesMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'pages'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialPagesLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialPagesMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialPagesMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialEventsMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'events'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'events-module'
+                    || reason === 'events-tab'
+                    || reason === 'panel-events');
+            if (!shouldAnimate) {
+                if (panel !== 'events') {
+                    socialEventsMotionGeneration += 1;
+                    if (socialEventsMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialEventsMotionFrame);
+                        } else {
+                            window.clearTimeout(socialEventsMotionFrame);
+                        }
+                        socialEventsMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-events-assembly-ready',
+                        'social-events-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialEventsAssemblyState;
+                    document.querySelectorAll('[data-social-events-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialEventsAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialEventsMotionGeneration += 1;
+            if (socialEventsMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialEventsMotionFrame);
+                } else {
+                    window.clearTimeout(socialEventsMotionFrame);
+                }
+                socialEventsMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialEventsMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialEventsMotionFrame = 0;
+                if (generation !== socialEventsMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'events'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialEventsLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialEventsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialEventsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialLostFoundMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'lost-and-found'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'lost-found-module'
+                    || reason === 'lost-found-tab'
+                    || reason === 'panel-lost-and-found');
+            if (!shouldAnimate) {
+                if (panel !== 'lost-and-found') {
+                    socialLostFoundMotionGeneration += 1;
+                    if (socialLostFoundMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialLostFoundMotionFrame);
+                        } else {
+                            window.clearTimeout(socialLostFoundMotionFrame);
+                        }
+                        socialLostFoundMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-lost-found-assembly-ready',
+                        'social-lost-found-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialLostFoundAssemblyState;
+                    document.querySelectorAll('[data-social-lost-found-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialLostFoundAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialLostFoundMotionGeneration += 1;
+            if (socialLostFoundMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialLostFoundMotionFrame);
+                } else {
+                    window.clearTimeout(socialLostFoundMotionFrame);
+                }
+                socialLostFoundMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialLostFoundMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialLostFoundMotionFrame = 0;
+                if (generation !== socialLostFoundMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'lost-and-found'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialLostFoundLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialLostFoundMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialLostFoundMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialMessagesMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            // mark-read / upsert remount center after panel-messages sync-start.
+            // Replay only while intro is in flight — not after ready (avoids re-animating receipts).
+            const assemblyInFlight = document.body?.classList.contains('social-messages-assembly-active')
+                || ['pending', 'active'].includes(text(center?.dataset?.socialMessagesAssemblyState || ''));
+            const shouldAnimate = panel === 'messages'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'messages-module'
+                    || reason === 'messages-filter'
+                    || reason === 'panel-messages'
+                    || ((reason === 'chat-read' || reason === 'chat-upsert') && assemblyInFlight));
+            // Only invalidate in-flight starts when leaving Messages.
+            // chat-read / chat-upsert while ready must not cancel a completed intro.
+            if (!shouldAnimate) {
+                if (panel !== 'messages') {
+                    socialMessagesMotionGeneration += 1;
+                    if (socialMessagesMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialMessagesMotionFrame);
+                        } else {
+                            window.clearTimeout(socialMessagesMotionFrame);
+                        }
+                        socialMessagesMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-messages-assembly-ready',
+                        'social-messages-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialMessagesAssemblyState;
+                    // Clear any leftover root markers so the next Messages open is a fresh force start.
+                    document.querySelectorAll('[data-social-messages-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialMessagesAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialMessagesMotionGeneration += 1;
+            if (socialMessagesMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialMessagesMotionFrame);
+                } else {
+                    window.clearTimeout(socialMessagesMotionFrame);
+                }
+                socialMessagesMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || !section.matches('.social-neo-messages')
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialMessagesLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialMessagesMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialMessagesMotionFrame = 0;
+                    if (generation !== socialMessagesMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'messages') {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialMessagesLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) return;
+                        socialMessagesMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialMessagesMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
+        }
+
+        function queueSocialAlertsMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            // Background notifications-refresh remounts after panel-alerts sync-start.
+            // Replay only while intro is in flight — not after ready.
+            const assemblyInFlight = document.body?.classList.contains('social-alerts-assembly-active')
+                || ['pending', 'active'].includes(text(center?.dataset?.socialAlertsAssemblyState || ''));
+            const shouldAnimate = panel === 'alerts'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'alerts-module'
+                    || reason === 'alerts-filter'
+                    || reason === 'panel-alerts'
+                    || ((reason === 'notifications-refresh'
+                        || reason === 'notification-read'
+                        || reason === 'notification-removed') && assemblyInFlight));
+            // Only invalidate in-flight starts when leaving Alerts.
+            if (!shouldAnimate) {
+                if (panel !== 'alerts') {
+                    socialAlertsMotionGeneration += 1;
+                    if (socialAlertsMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialAlertsMotionFrame);
+                        } else {
+                            window.clearTimeout(socialAlertsMotionFrame);
+                        }
+                        socialAlertsMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-alerts-assembly-ready',
+                        'social-alerts-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialAlertsAssemblyState;
+                    document.querySelectorAll('[data-social-alerts-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialAlertsAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialAlertsMotionGeneration += 1;
+            if (socialAlertsMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialAlertsMotionFrame);
+                } else {
+                    window.clearTimeout(socialAlertsMotionFrame);
+                }
+                socialAlertsMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || !section.matches('.sn-alerts-panel')
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialAlertsLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialAlertsMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialAlertsMotionFrame = 0;
+                    if (generation !== socialAlertsMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'alerts') {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialAlertsLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) return;
+                        socialAlertsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialAlertsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
+        }
+
+        function queueSocialSurveysMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'surveys'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'surveys-module'
+                    || reason === 'surveys-tab'
+                    || reason === 'panel-surveys'
+                    || reason === 'surveys-lane'
+                    || reason === 'survey-take-open'
+                    || reason === 'survey-take-close');
+            if (!shouldAnimate) {
+                if (panel !== 'surveys') {
+                    socialSurveysMotionGeneration += 1;
+                    if (socialSurveysMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialSurveysMotionFrame);
+                        } else {
+                            window.clearTimeout(socialSurveysMotionFrame);
+                        }
+                        socialSurveysMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-surveys-assembly-ready',
+                        'social-surveys-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialSurveysAssemblyState;
+                    document.querySelectorAll('[data-social-surveys-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialSurveysAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialSurveysMotionGeneration += 1;
+            if (socialSurveysMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialSurveysMotionFrame);
+                } else {
+                    window.clearTimeout(socialSurveysMotionFrame);
+                }
+                socialSurveysMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialSurveysMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialSurveysMotionFrame = 0;
+                if (generation !== socialSurveysMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'surveys'
+                    || center?.firstElementChild !== section
+                    || !section.isConnected) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialSurveysLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialSurveysMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialSurveysMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
+        }
+
+        function queueSocialPhotographyMotion(center, activePanel, reason) {
+            const panel = text(activePanel || '');
+            const shouldAnimate = panel === 'photography'
+                && (reason === 'boot'
+                    || reason === 'panel'
+                    || reason === 'photography-module'
+                    || reason === 'photography-tab'
+                    || reason === 'panel-photography'
+                    || reason === 'photography-my-profile'
+                    || reason === 'photography-my-profile-tab'
+                    || reason === 'photography-view-profile'
+                    || reason === 'photography-profile-back');
+            // Only invalidate in-flight starts when leaving Exposé or replaying.
+            // Bumping generation on every photography center render canceled the
+            // queued start and left the shell without assembly.
+            if (!shouldAnimate) {
+                if (panel !== 'photography') {
+                    socialPhotographyMotionGeneration += 1;
+                    if (socialPhotographyMotionFrame) {
+                        if (typeof window.cancelAnimationFrame === 'function') {
+                            window.cancelAnimationFrame(socialPhotographyMotionFrame);
+                        } else {
+                            window.clearTimeout(socialPhotographyMotionFrame);
+                        }
+                        socialPhotographyMotionFrame = 0;
+                    }
+                    document.body?.classList.remove(
+                        'social-photography-assembly-ready',
+                        'social-photography-assembly-active'
+                    );
+                    const centerEl = document.querySelector('#social-neo-center-region');
+                    if (centerEl?.dataset) delete centerEl.dataset.socialPhotographyAssemblyState;
+                    document.querySelectorAll('[data-social-photography-assembly-root]').forEach((el) => {
+                        delete el.dataset.socialPhotographyAssemblyRoot;
+                    });
+                }
+                return;
+            }
+
+            socialPhotographyMotionGeneration += 1;
+            if (socialPhotographyMotionFrame) {
+                if (typeof window.cancelAnimationFrame === 'function') {
+                    window.cancelAnimationFrame(socialPhotographyMotionFrame);
+                } else {
+                    window.clearTimeout(socialPhotographyMotionFrame);
+                }
+                socialPhotographyMotionFrame = 0;
+            }
+
+            const section = center?.firstElementChild;
+            if (!section
+                || !section.matches('.social-photo-shell, .social-photo-profile-shell, .social-photo-shell--my-profile')
+                || section.matches('.social-neo-module-loading, [aria-busy="true"]')
+                || section.querySelector('[aria-busy="true"]')) {
+                return;
+            }
+            const generation = socialPhotographyMotionGeneration;
+            let attempts = 0;
+            const run = () => {
+                socialPhotographyMotionFrame = 0;
+                // Re-resolve live shell — Exposé remounts before rAF (module hydrate).
+                const liveSection = center?.firstElementChild;
+                if (generation !== socialPhotographyMotionGeneration
+                    || text(state().ui?.activePanel || '') !== 'photography'
+                    || !liveSection
+                    || !liveSection.isConnected
+                    || !liveSection.matches('.social-photo-shell, .social-photo-profile-shell, .social-photo-shell--my-profile')
+                    || liveSection.matches('.social-neo-module-loading, [aria-busy="true"]')
+                    || liveSection.querySelector('[aria-busy="true"]')) {
+                    return;
+                }
+                const startMotion = window.__kiuStartSocialPhotographyLoadingMotion;
+                if (typeof startMotion !== 'function') {
+                    if (attempts++ >= 24) return;
+                    socialPhotographyMotionFrame = typeof window.requestAnimationFrame === 'function'
+                        ? window.requestAnimationFrame(run)
+                        : window.setTimeout(run, 32);
+                    return;
+                }
+                try {
+                    startMotion(center, { force: true });
+                } catch (error) {}
+            };
+            socialPhotographyMotionFrame = typeof window.requestAnimationFrame === 'function'
+                ? window.requestAnimationFrame(run)
+                : window.setTimeout(run, 0);
         }
 
 function reactionEmoji(reactionType) {
@@ -643,7 +1597,7 @@ function optimizeEventCoverFile(file) {
     }
     return Promise.resolve(file);
 }
-function setPanel(panel) {
+function setPanel(panel, options = {}) {
     const runtime = state();
     const normalizedPanel = text(panel).toLowerCase() === 'lost-found' ? 'lost-and-found' : text(panel);
     const nextPanel = ['feed', 'community', 'groups', 'workspace', 'projects', 'research', 'pages', 'events', 'surveys', 'photography', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(normalizedPanel) ? normalizedPanel : 'feed';
@@ -652,12 +1606,13 @@ function setPanel(panel) {
     const workspaceNavChanged = runtime.ui.workspaceNavOpen !== false;
     if (runtime.ui.workspaceNavOpen && (panelChanged || drawerChanged)) {
         return closeSocialWorkspaceNavAnimated(() => {
-            finalizeSetPanel(nextPanel, panelChanged, drawerChanged);
+            // Always paint after nav close — caller's sync follow-up render already raced.
+            finalizeSetPanel(nextPanel, panelChanged, drawerChanged, false);
         });
     }
-    finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavChanged);
+    finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavChanged, options);
 }
-function finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavChanged = false) {
+function finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavChanged = false, options = {}) {
     const runtime = state();
     runtime.ui.activePanel = nextPanel;
     runtime.ui.shellDrawerOpen = false;
@@ -671,6 +1626,8 @@ function finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavCh
     if (!panelChanged && !drawerChanged && !workspaceNavChanged) {
         return;
     }
+    // Caller will paint once (e.g. panel-messages) — avoid flash of full UI then remount+assembly.
+    if (options?.skipRender) return;
     renderSocialPageNow('panel');
 }
 function setActiveChat(chatId) {
@@ -1264,6 +2221,19 @@ function renderSocialPageNow(reason = 'manual') {
             if (text(runtime.ui?.researchReaderId || '') && typeof window.scheduleResearchFileViewerMount === 'function') {
                 try { window.scheduleResearchFileViewerMount(); } catch (e) {}
             }
+            queueSocialHomeMotion(shell.center, activePanel, reason);
+            queueSocialCommunityMotion(shell.center, activePanel, reason);
+            queueSocialGroupsMotion(shell.center, activePanel, reason);
+            queueSocialProjectsMotion(shell.center, activePanel, reason);
+            queueSocialPortfolioMotion(shell.center, activePanel, reason);
+            queueSocialResearchMotion(shell.center, activePanel, reason);
+            queueSocialPagesMotion(shell.center, activePanel, reason);
+            queueSocialEventsMotion(shell.center, activePanel, reason);
+            queueSocialLostFoundMotion(shell.center, activePanel, reason);
+            queueSocialMessagesMotion(shell.center, activePanel, reason);
+            queueSocialAlertsMotion(shell.center, activePanel, reason);
+            queueSocialSurveysMotion(shell.center, activePanel, reason);
+            queueSocialPhotographyMotion(shell.center, activePanel, reason);
         }
         if (renderPlan.drawer) setSocialRegionMarkup(shell.drawer, renderShellDrawer(activePanel));
         if (renderPlan.mobileTab) setSocialRegionMarkup(shell.mobileTab, renderMobileTabBar(activePanel));
@@ -1306,35 +2276,7 @@ function renderSocialPageNow(reason = 'manual') {
             delete runtime.ui.commentReplyFocusPostId;
         }
         bindEvents();
-        const initialRenderWindow = host.dataset.socialAssemblyState !== 'ready'
-            && host.dataset.socialInitialRenderReady !== '1';
-        const initialSurfaceReady = Boolean(
-            shell.center?.firstElementChild
-            && !shell.center.firstElementChild.matches('.social-neo-card.sn-mat-soft')
-            && !shell.center.querySelector('.social-neo-module-loading, [aria-busy="true"]')
-        );
-        const shouldStartInitialMotion = initialRenderWindow
-            && initialSurfaceReady
-            && host.dataset.socialInitialRenderReady !== '1';
-        let initialMotionStarted = host.dataset.socialInitialMotionStarted === '1';
-        if (shouldStartInitialMotion) {
-            host.dataset.socialInitialRenderReady = '1';
-            host.closest('#page-social')?.setAttribute('data-social-initial-render-ready', '1');
-            initialMotionStarted = startSocialAssemblyMotion(host);
-            if (!initialMotionStarted) retrySocialAssemblyMotion(host);
-        }
-        const initialMotionCanReveal = initialMotionStarted
-            || host.dataset.socialAssemblyState === 'ready'
-            || host.dataset.socialInitialMotionFallback === '1';
-        if (initialMotionCanReveal) {
-            revealShell();
-        }
-        const isAssemblyReplayRender = !initialRenderWindow
-            && host.dataset.socialInitialRenderReady === '1'
-            && (reason === 'panel' || SOCIAL_TAB_SCROLL_RESET_RE.test(reason) || /-module$/.test(reason));
-        if (isAssemblyReplayRender) {
-            queueSocialAssemblyReplay(renderPlan, reason);
-        }
+        revealShell();
         const wasScrollLocked = interactionSnapshot.layoutScrollLock;
         syncSocialScrollLayout(host);
         scheduleSocialCenterScrollRepair(host);

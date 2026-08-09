@@ -1,0 +1,52 @@
+/*
+ * Social Portfolio center motion only.
+ * Persistent Social chrome and dialog overlays remain untouched.
+ */
+body.lux-route-social #social-neo-center-region > .social-neo-card:has(.social-neo-empty-hero),
+body.lux-route-social #social-neo-center-region > .social-neo-module-loading {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.social-portfolio-assembly-active #social-neo-center-region .kiu-social-portfolio-assembly-target.is-social-portfolio-assembly-staging {
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+body.social-portfolio-assembly-active #social-neo-center-region .kiu-social-portfolio-assembly-target.is-flight {
+  pointer-events: none;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Keep openers clickable during intro / accidental remount flight. */
+body.social-portfolio-assembly-active #social-neo-center-region .kiu-social-portfolio-assembly-target.is-social-portfolio-assembly-staging:is(
+  a, button, input, select, textarea, [role="button"], [role="tab"],
+  .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn
+),
+body.social-portfolio-assembly-active #social-neo-center-region .kiu-social-portfolio-assembly-target.is-flight:is(
+  a, button, input, select, textarea, [role="button"], [role="tab"],
+  .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn
+) {
+  pointer-events: auto;
+}
+
+
+body.social-portfolio-assembly-ready #social-neo-center-region .kiu-social-portfolio-assembly-target {
+  opacity: 1;
+  pointer-events: auto;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.social-portfolio-assembly-active #social-neo-center-region .kiu-social-portfolio-assembly-target.is-social-portfolio-assembly-staging {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+}

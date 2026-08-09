@@ -1,0 +1,50 @@
+/*
+ * Social Pages center motion only.
+ * Persistent Social chrome and page dialogs remain untouched.
+ */
+body.lux-route-social #social-neo-center-region > .social-neo-module-loading {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.social-pages-assembly-active #social-neo-center-region .kiu-social-pages-assembly-target.is-social-pages-assembly-staging {
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+body.social-pages-assembly-active #social-neo-center-region .kiu-social-pages-assembly-target.is-flight {
+  pointer-events: none;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Keep openers clickable during intro / accidental remount flight. */
+body.social-pages-assembly-active #social-neo-center-region .kiu-social-pages-assembly-target.is-social-pages-assembly-staging:is(
+  a, button, input, select, textarea, [role="button"], [role="tab"],
+  .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn
+),
+body.social-pages-assembly-active #social-neo-center-region .kiu-social-pages-assembly-target.is-flight:is(
+  a, button, input, select, textarea, [role="button"], [role="tab"],
+  .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-picker-btn
+) {
+  pointer-events: auto;
+}
+
+body.social-pages-assembly-ready #social-neo-center-region .kiu-social-pages-assembly-target {
+  opacity: 1;
+  pointer-events: auto;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.social-pages-assembly-active #social-neo-center-region .kiu-social-pages-assembly-target.is-social-pages-assembly-staging {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+}
