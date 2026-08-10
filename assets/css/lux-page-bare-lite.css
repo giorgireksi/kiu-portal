@@ -3447,10 +3447,10 @@ body.lux-route-lms #page-lms .lms-clean-subject-card:hover {
 body.lux-route-lms #page-lms .lux-lms-subject-card {
     position: relative;
     display: grid;
-    grid-template-rows: minmax(140px, 1fr) auto;
+    grid-template-rows: minmax(64px, 1fr) auto;
     gap: 0;
-    min-height: 220px;
-    padding: 18px 18px 16px;
+    min-height: 112px;
+    padding: 8px 10px 7px;
     overflow: hidden;
     text-align: center;
     cursor: pointer;
@@ -3463,14 +3463,14 @@ body.lux-route-lms #page-lms .lux-lms-subject-card::before {
 
 body.lux-route-lms #page-lms .lms-subject-tile-badge {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 8px;
+    right: 8px;
     z-index: 2;
     display: inline-grid;
     place-items: center;
-    min-width: 28px;
-    height: 28px;
-    padding: 0 7px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 5px;
     border-radius: 999px;
     background: var(--lux-accent-2, #2f6fed);
     color: #fff;
@@ -3481,16 +3481,16 @@ body.lux-route-lms #page-lms .lms-subject-tile-badge {
 }
 
 body.lux-route-lms #page-lms .lms-subject-tile-art {
-    min-height: 140px;
+    min-height: 64px;
 }
 
 body.lux-route-lms #page-lms .lms-subject-tile-title {
     margin: 0;
-    padding: 4px 8px 2px;
+    padding: 2px 4px 0;
     color: var(--lux-text);
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 650;
-    line-height: 1.35;
+    line-height: 1.2;
     text-wrap: balance;
 }
 
@@ -3503,7 +3503,7 @@ body.lux-route-lms .lms-clean-group-grid {
 
 body.lux-route-lms #page-lms .lms-clean-subject-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: 10px;
 }
 
 @media (max-width: 720px) {
@@ -31987,7 +31987,7 @@ body.lux-route-social .social-project-status-bar {
     display: flex; gap: 3px; height: 14px; border-radius: 999px; overflow: hidden;
     background: var(--social-chip-fill); padding: 0;
 }
-body.lux-route-social .social-project-status-segment { height: 100%; border-radius: 4px; transition: width 0.18s ease); }
+body.lux-route-social .social-project-status-segment { height: 100%; border-radius: 4px; transition: width 0.18s ease; }
 body.lux-route-social .social-project-status-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(96px,1fr)); gap: 8px; margin-top: 14px;
 }
@@ -32110,7 +32110,7 @@ body.lux-route-social .social-project-overview-brief-chevron {
     margin-top: 4px;
     font-size: 12px;
     color: var(--lux-text-muted);
-    transition: transform 0.18s ease);
+    transition: transform 0.18s ease;
 }
 body.lux-route-social .social-project-overview-brief[open] .social-project-overview-brief-chevron {
     transform: rotate(180deg);
@@ -32374,7 +32374,7 @@ body.lux-route-social .social-project-deadline-bar {
 }
 body.lux-route-social .social-project-deadline-fill {
     height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--lux-accent), rgba(var(--lux-accent-rgb), .7));
-    transition: width 0.18s ease);
+    transition: width 0.18s ease;
 }
 body.lux-route-social .social-project-deadline-fill.is-overdue { background: var(--lux-danger); }
 body.lux-route-social .social-project-deadline-checkin {
@@ -32387,7 +32387,7 @@ body.lux-route-social .social-project-my-tasks-list { display: flex; flex-direct
 body.lux-route-social .social-project-my-task-item {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px;
     border-radius: 12px; background: var(--social-chip-fill); font-size: 13px;
-    transition: background 0.18s ease);
+    transition: background 0.18s ease;
 }
 body.lux-route-social .social-project-my-task-item:hover { background: var(--lux-panel-control); }
 body.lux-route-social .social-project-my-task-item.is-overdue { border-left: 3px solid var(--lux-danger); }
@@ -37609,7 +37609,7 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-quic
     border: 1px solid rgba(var(--lux-accent-rgb), 0.26);
     background:
         linear-gradient(180deg, rgba(var(--lux-accent-rgb), 0.045), transparent 60%),
-        transparent));
+        transparent;
     box-shadow:
         0 18px 42px rgba(0, 0, 0, 0.42),
         inset 0 1px 0 rgba(255, 255, 255, 0.07);
@@ -37639,7 +37639,7 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-quic
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-quick-create .lux-picker-btn {
     border-radius: 12px;
     border: 1px solid var(--lux-border);
-    background: transparent);
+    background: transparent;
     min-height: 40px;
 }
 /* Hide native Status select (before + after lux-picker enhance) so old droplist never shows. */
@@ -37687,7 +37687,7 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-quic
     min-height: 36px;
     padding: 8px 14px;
     cursor: pointer;
-    transition: transform 0.18s ease), box-shadow 0.18s ease), background 0.18s ease), border-color 0.18s ease);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
 }
 body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-quick-create .lux-glass-dialog-cancel-btn {
     border: 1px solid var(--lux-border) !important;
@@ -40805,8 +40805,7 @@ body.lux-route-social .spt-desk--v2 .spt-desk-status-chip[data-status="done"] {
     --spt-status-bd: rgba(45, 160, 120, 0.24);
 }
 body.lux-route-social .spt-desk--v2 .spt-desk-status-chip:hover {
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
     filter: brightness(1.06);
 }
 
@@ -41804,7 +41803,7 @@ body.lux-route-social .social-project-task-deps-chip {
     gap: 6px;
     cursor: pointer;
     border: 1px solid var(--lux-border);
-    background: transparent);
+    background: transparent;
 }
 body.lux-route-social .social-project-task-deps-chip:hover {
     border-color: var(--lux-accent);
@@ -43363,7 +43362,6 @@ body.lux-route-exams #admin-exams-root .ex2-stat-card {
     padding: 18px 20px;
     border-radius: 18px;
     border: 1px solid var(--lux-border);
-    -webkit-
     transition: transform .2s, box-shadow .2s;
 }
 
@@ -43513,7 +43511,6 @@ body.lux-route-exams #admin-exams-root .ex2-panel {
     padding: 24px;
     border-radius: 22px;
     border: 1px solid var(--lux-border);
-    -webkit-
 }
 
 body.lux-route-exams #admin-exams-root .ex2-panel-head {
