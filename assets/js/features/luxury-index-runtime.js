@@ -969,6 +969,7 @@ return {
         clearHomeShellLoadTimeout();
         try {
             const signature = buildHomeShellRenderSignature();
+            const wasAlreadyRendered = Boolean(homeShell.dataset.homeRenderSignature);
             if (
                 homeShell.dataset.homeRenderSignature === signature
                 && homeShellHasDashboardContent(homeShell)
@@ -1000,7 +1001,7 @@ return {
             idleRunner(repaintHomeSurfaces);
             queueHeavySurfaceObservationRefresh();
             if (typeof window.__kiuReplayHomeLoadingMotion === 'function') {
-                window.__kiuReplayHomeLoadingMotion('render');
+                window.__kiuReplayHomeLoadingMotion('render', undefined, { intro: !wasAlreadyRendered });
             }
         } catch (error) {
             console.error('Home dashboard render failed.', error);

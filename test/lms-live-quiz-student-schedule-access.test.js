@@ -86,6 +86,13 @@ describe('LMS live quiz student portal schedule access', () => {
         expect(Array.isArray(objectSchedule)).toBe(false);
     });
 
+    it('allows admin testing student personas to see their faculty live quiz scope', () => {
+        const accessSource = readSource('assets/js/pages/lms-live-quiz-access-runtime.js');
+        const serverSource = readSource('backend/platform/server.js');
+        expect(accessSource).toContain('isAdminTestingPersonaStudentForLmsLiveQuiz');
+        expect(serverSource).toContain('isAdminTestingPersonaStudentForLiveQuiz');
+    });
+
     it('documents the portal schedule fallback + normalize in server access control', () => {
         const serverSource = readSource('backend/platform/server.js');
         expect(serverSource).toContain('function isStudentViaLmsLiveQuizPortalSchedule');

@@ -1530,7 +1530,7 @@ function syncLmsImpersonatedStudentSession(resourceKey, quiz = null) {
     if (!targetUser) return studentMeta;
     try {
         currentUserRole = USER_ROLES.STUDENT;
-        localStorage.setItem('currentUserRole', USER_ROLES.STUDENT);
+        sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', USER_ROLES.STUDENT);
         if (currentUser?.role && currentUser.role !== USER_ROLES.STUDENT) {
             sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
         }
@@ -1539,7 +1539,7 @@ function syncLmsImpersonatedStudentSession(resourceKey, quiz = null) {
     }
     setActiveSessionUser(targetUser.id);
     if ((targetUser.facultyCode || targetUser.faculty) && typeof localStorage !== 'undefined') {
-        localStorage.setItem('currentFaculty', targetUser.facultyCode || targetUser.faculty);
+        sessionStorage.setItem('KIU_TAB_CURRENT_FACULTY', targetUser.facultyCode || targetUser.faculty);
     }
     if (typeof syncPortalBackendImpersonation === 'function') {
         syncPortalBackendImpersonation(USER_ROLES.STUDENT);

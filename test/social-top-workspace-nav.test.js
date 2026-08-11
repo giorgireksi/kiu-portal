@@ -85,8 +85,8 @@ describe('social shortcuts top nav + desktop rail', () => {
         expect(shortcutsCss).not.toContain('position: sticky');
 
         expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260807-socialsurface1/);
-        expect(html).toMatch(/social-page-interactions-runtime\.js\?v=20260809-socialassemblyreplay1/);
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1'");
+        expect(html).toMatch(/social-page-interactions-runtime\.js\?v=20260810-socialbootveil2/);
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
     });
 
     it('densifies phone feed chrome without changing desktop stack order', () => {

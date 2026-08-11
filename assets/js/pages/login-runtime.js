@@ -31,7 +31,7 @@ function getKiuPortalBackendUrl() {
 
 function getPortalSessionToken() {
     try {
-        return String(localStorage.getItem(LOGIN_PORTAL_SESSION_TOKEN_KEY) || '').trim();
+        return String(sessionStorage.getItem('KIU_TAB_PORTAL_SESSION_TOKEN') || '').trim();
     } catch (error) {
         return '';
     }
@@ -39,15 +39,15 @@ function getPortalSessionToken() {
 
 function setPortalSessionToken(token) {
     try {
-        if (token) localStorage.setItem(LOGIN_PORTAL_SESSION_TOKEN_KEY, String(token));
-        else localStorage.removeItem(LOGIN_PORTAL_SESSION_TOKEN_KEY);
+        if (token) sessionStorage.setItem('KIU_TAB_PORTAL_SESSION_TOKEN', String(token));
+        else sessionStorage.removeItem('KIU_TAB_PORTAL_SESSION_TOKEN');
     } catch (error) {}
 }
 
 function getStoredAuthState() {
     let parsedState = null;
     try {
-        parsedState = JSON.parse(localStorage.getItem('KIU_AUTH_STATE') || 'null');
+        parsedState = JSON.parse(sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE') || 'null');
     } catch (error) {
         parsedState = null;
     }
@@ -65,14 +65,14 @@ function getStoredAuthState() {
 }
 
 function clearStaleLoginSnapshot() {
-    try { localStorage.removeItem('KIU_AUTH_STATE'); } catch (error) {}
-    try { localStorage.removeItem('KIU_PERSISTENT_STATE'); } catch (error) {}
-    try { localStorage.removeItem('currentUserRole'); } catch (error) {}
-    try { localStorage.removeItem('KIU_FACULTY_CONTEXT'); } catch (error) {}
-    try { localStorage.removeItem('currentFaculty'); } catch (error) {}
-    try { localStorage.removeItem(LOGIN_PENDING_ROLE_SWITCH_KEY); } catch (error) {}
-    try { localStorage.removeItem(LOGIN_PORTAL_SESSION_TOKEN_KEY); } catch (error) {}
+    try { sessionStorage.removeItem('KIU_TAB_AUTH_STATE'); } catch (error) {}
+    try { sessionStorage.removeItem('KIU_TAB_PORTAL_SESSION_TOKEN'); } catch (error) {}
+    try { sessionStorage.removeItem('KIU_TAB_CURRENT_ROLE'); } catch (error) {}
+    try { sessionStorage.removeItem('KIU_TAB_CURRENT_FACULTY'); } catch (error) {}
     try { sessionStorage.removeItem(LOGIN_ACTIVE_SESSION_KEY); } catch (error) {}
+    try { sessionStorage.removeItem(LOGIN_ACTIVE_ROLE_IMPERSONATION_KEY); } catch (error) {}
+    try { localStorage.removeItem('KIU_AUTH_STATE'); } catch (error) {}
+    try { localStorage.removeItem(LOGIN_PORTAL_SESSION_TOKEN_KEY); } catch (error) {}
     try { sessionStorage.removeItem(LOGIN_ACTIVE_ROLE_IMPERSONATION_KEY); } catch (error) {}
 }
 
@@ -174,27 +174,27 @@ function storePortalBackendAuth(account, session) {
         role: actualRole,
         faculty: String(account.facultyCode || account.faculty || '').trim()
     };
-    try { localStorage.setItem('KIU_AUTH_STATE', JSON.stringify(normalizedAuth)); } catch (error) {}
-    try { localStorage.setItem('currentUserRole', effectiveRole || actualRole); } catch (error) {}
+    try { sessionStorage.setItem('KIU_TAB_AUTH_STATE', JSON.stringify(normalizedAuth)); } catch (error) {}
+    try { sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', effectiveRole || actualRole); } catch (error) {}
     try {
         if (actualRole === 'admin' && effectiveRole && effectiveRole !== actualRole) {
-            localStorage.setItem(LOGIN_PENDING_ROLE_SWITCH_KEY, effectiveRole);
+            sessionStorage.setItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE', effectiveRole);
             sessionStorage.setItem(LOGIN_ACTIVE_ROLE_IMPERSONATION_KEY, '1');
         } else {
-            localStorage.removeItem(LOGIN_PENDING_ROLE_SWITCH_KEY);
+            sessionStorage.removeItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE');
             sessionStorage.removeItem(LOGIN_ACTIVE_ROLE_IMPERSONATION_KEY);
         }
     } catch (error) {}
     setPortalSessionToken(session.token || getPortalSessionToken());
     if (normalizedAuth.faculty) {
-        try { localStorage.setItem('KIU_FACULTY_CONTEXT', normalizedAuth.faculty); } catch (error) {}
-        try { localStorage.setItem('currentFaculty', normalizedAuth.faculty); } catch (error) {}
+        try { sessionStorage.setItem('KIU_TAB_CURRENT_FACULTY', normalizedAuth.faculty); } catch (error) {}
     }
     try {
         sessionStorage.setItem(LOGIN_ACTIVE_SESSION_KEY, normalizedAuth.id);
     } catch (error) {}
     try {
-        let persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
+        const stateKey = `KIU_PERSISTENT_STATE::${normalizedAuth.id}`;
+        let persistedState = JSON.parse(localStorage.getItem(stateKey) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
         const priorOwnerAccountId = String(
             persistedState?.meta?.portalStateOwnerAccountId || persistedState?.auth?.activeUserId || ''
         ).trim();
@@ -205,7 +205,7 @@ function storePortalBackendAuth(account, session) {
         persistedState.meta = persistedState.meta && typeof persistedState.meta === 'object' ? persistedState.meta : {};
         persistedState.meta.portalStateOwnerAccountId = nextOwnerAccountId;
         delete persistedState.auth;
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
+        localStorage.setItem(stateKey, JSON.stringify(persistedState));
     } catch (error) {}
     return normalizedAuth;
 }

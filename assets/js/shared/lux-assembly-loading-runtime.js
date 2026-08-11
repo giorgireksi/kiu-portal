@@ -20,6 +20,14 @@
         outerMaxDelayMs: 70,
         innerMaxDelayMs: 85
     });
+    // Per-route flight travel distance. Home uses a longer inner glide so
+    // text/buttons/shells visibly arrive one after another instead of riding
+    // the panel; Social keeps the compact defaults.
+    const DEFAULT_FLIGHT_DISTANCE = Object.freeze({
+        innerMin: 38,
+        innerFactor: 0.12,
+        innerMax: 72
+    });
 
     function createAssemblyLoadingMotion(options = {}) {
         const classes = {
@@ -34,6 +42,7 @@
         };
         const timing = { ...DEFAULT_TIMING, ...(options.timing || {}) };
         const flightTiming = { ...DEFAULT_FLIGHT_TIMING, ...(options.flightTiming || {}) };
+        const flightDistance = { ...DEFAULT_FLIGHT_DISTANCE, ...(options.flightDistance || {}) };
         const contentWaitMaxMs = Number.isFinite(Number(timing.contentWaitMaxMs))
             ? Number(timing.contentWaitMaxMs)
             : timing.maxShellWaitMs;
@@ -87,6 +96,8 @@
             waitTimer: 0,
             scheduleTimer: 0,
             deadlineTimer: 0,
+            flightDeferTimer: 0,
+            watchdogTimer: 0,
             generation: 0,
             readyAt: 0,
             lateFinishTimer: 0,
@@ -286,10 +297,85 @@
                 window.clearTimeout(state.deadlineTimer);
                 state.deadlineTimer = 0;
             }
+            if (state.flightDeferTimer) {
+                window.clearTimeout(state.flightDeferTimer);
+                state.flightDeferTimer = 0;
+            }
+            if (state.watchdogTimer) {
+                window.clearTimeout(state.watchdogTimer);
+                state.watchdogTimer = 0;
+            }
             if (state.lateFinishTimer) {
                 window.clearTimeout(state.lateFinishTimer);
                 state.lateFinishTimer = 0;
             }
+        }
+
+        function stripAssemblyDom(root) {
+            if (!root) return;
+            const classNames = [
+                classes.target,
+                classes.outer,
+                classes.inner,
+                classes.structure,
+                classes.flight,
+                classes.staging
+            ];
+            getScopes(root).forEach((scope) => {
+                classNames.forEach((className) => {
+                    scope.querySelectorAll(`.${className}`).forEach((element) => {
+                        element.classList.remove(...classNames);
+                        delete element.dataset[phaseDataset];
+                    });
+                });
+            });
+            delete root.dataset[rootStateDataset];
+        }
+
+        function abort() {
+            const root = state.root;
+            clearAnimationState();
+            if (state.scheduleTimer) {
+                window.clearTimeout(state.scheduleTimer);
+                state.scheduleTimer = 0;
+            }
+            document.body?.classList.remove(classes.active, classes.ready);
+            stripAssemblyDom(root);
+            state.root = null;
+            state.phase = 'idle';
+            state.pendingReplay = null;
+            state.targetCount = 0;
+            recordEvent('aborted');
+            return true;
+        }
+
+        function forceReady() {
+            const root = state.root;
+            const generation = state.generation;
+            if (!root) return false;
+            if (state.phase === 'ready') return true;
+            if (state.phase === 'pending') {
+                abort();
+                return true;
+            }
+            finish(root, generation);
+            return true;
+        }
+
+        function armWatchdog(root, generation) {
+            if (state.watchdogTimer) {
+                window.clearTimeout(state.watchdogTimer);
+                state.watchdogTimer = 0;
+            }
+            state.watchdogTimer = window.setTimeout(() => {
+                state.watchdogTimer = 0;
+                if (state.root !== root || state.generation !== generation) return;
+                if (state.phase === 'ready') return;
+                if (document.body?.classList.contains(classes.active)) {
+                    recordEvent('watchdog-force-ready');
+                    forceReady();
+                }
+            }, timing.maxTotalAssemblyMs + 250);
         }
 
         function finish(root, generation) {
@@ -326,7 +412,13 @@
                 || Boolean(outerFlightSelector && target.matches?.(outerFlightSelector));
             const distance = isOuterShell
                 ? Math.max(Number(rect.left || 0) + Number(rect.width || 320) + 40, 320)
-                : Math.min(Math.max(Number(rect.width || 320) * 0.12, 38), 72);
+                : Math.min(
+                    Math.max(
+                        Number(rect.width || 320) * Number(flightDistance.innerFactor),
+                        Number(flightDistance.innerMin)
+                    ),
+                    Number(flightDistance.innerMax)
+                );
             const rotation = isOuterShell ? -1.6 : -0.65;
             const motionProfile = getTargetMotionProfile(target, node, root);
             const preserveTransform = Boolean(
@@ -574,6 +666,7 @@
             });
             registerStructures(root);
             registerTree(tree);
+            armWatchdog(root, generation);
             if (!isAnimationSupported()) {
                 finish(root, generation);
                 return true;
@@ -651,10 +744,42 @@
             });
         }
 
+        function isAppContentPaintable() {
+            if (document.documentElement?.classList.contains('kiu-shell-ready')
+                || document.body?.classList.contains('kiu-shell-ready')) {
+                return true;
+            }
+            const stage = String(document.documentElement?.dataset?.kiuLoadStage || '');
+            return stage === 'panel' || stage === 'controls' || stage === 'content';
+        }
+
+        // After Social boot revealShell, #app-content stays veiled until load-stage=panel (~116ms).
+        // Starting WAAPI under the veil makes the intro invisible on hard refresh.
+        function waitForAppContentPaint(generation, then) {
+            const panelMs = Number(global.KIU_SHELL_REVEAL_TIMINGS?.panel);
+            const fallbackMs = Math.min(Math.max((Number.isFinite(panelMs) ? panelMs : 116) + 20, 130), 150);
+            const startedAt = Date.now();
+            const tick = () => {
+                if (state.generation !== generation) {
+                    state.flightDeferTimer = 0;
+                    return;
+                }
+                if (isAppContentPaintable() || (Date.now() - startedAt) >= fallbackMs) {
+                    state.flightDeferTimer = 0;
+                    then();
+                    return;
+                }
+                state.flightDeferTimer = window.setTimeout(tick, 16);
+            };
+            tick();
+        }
+
         function run(root, generation) {
             if (state.root !== root || state.generation !== generation) return;
             root.dataset[rootStateDataset] = 'active';
             state.phase = 'active';
+            document.body?.classList.remove(classes.ready);
+            document.body?.classList.add(classes.active);
             const reduceMotion = Boolean(
                 window.matchMedia
                 && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -666,21 +791,56 @@
             registerStructures(root);
             registerTree(tree);
             tree.nodes.forEach((node) => node.element.classList.add(classes.staging));
-            if (reduceMotion || !state.animationSupported) {
-                finish(root, generation);
-                return;
+            // Route prehide covers content until flight owns hide.
+            document.body?.classList.remove('social-center-assembly-prehide');
+            document.body?.classList.remove('home-shell-assembly-prehide');
+            const didSocialBootReveal = Boolean(global.__kiuSocialBootAwaitingAssemblyReveal);
+            const didHomeBootReveal = Boolean(global.__kiuHomeBootAwaitingAssemblyReveal);
+            const didBootReveal = didSocialBootReveal || didHomeBootReveal;
+            if (didSocialBootReveal) {
+                global.__kiuSocialBootAwaitingAssemblyReveal = false;
+                global.__kiuSocialShellRevealAllowed = true;
+                if (typeof global.__kiuSocialRevealShellNow === 'function') {
+                    try { global.__kiuSocialRevealShellNow({ force: true }); } catch (_error) {}
+                }
+            }
+            if (didHomeBootReveal) {
+                global.__kiuHomeBootAwaitingAssemblyReveal = false;
+                if (typeof global.__kiuHomeRevealShellNow === 'function') {
+                    try { global.__kiuHomeRevealShellNow({ force: true }); } catch (_error) {}
+                } else {
+                    global.__kiuHomeShellRevealAllowed = true;
+                    if (typeof global.markPortalShellReady === 'function') {
+                        try { global.markPortalShellReady(); } catch (_error) {}
+                    }
+                }
             }
 
-            state.deadlineTimer = window.setTimeout(() => {
-                finish(root, generation);
-            }, timing.maxTotalAssemblyMs);
-            runSiblings(tree.roots, root, generation)
-                .then(() => waitForLateAssembly(root, generation))
-                .then(() => finish(root, generation))
-                .catch((error) => {
-                    recordEvent('assembly-error', error);
+            const beginFlights = () => {
+                if (state.root !== root || state.generation !== generation) return;
+                armWatchdog(root, generation);
+                if (reduceMotion || !state.animationSupported) {
                     finish(root, generation);
-                });
+                    return;
+                }
+
+                state.deadlineTimer = window.setTimeout(() => {
+                    finish(root, generation);
+                }, timing.maxTotalAssemblyMs);
+                runSiblings(tree.roots, root, generation)
+                    .then(() => waitForLateAssembly(root, generation))
+                    .then(() => finish(root, generation))
+                    .catch((error) => {
+                        recordEvent('assembly-error', error);
+                        finish(root, generation);
+                    });
+            };
+
+            if (didBootReveal) {
+                waitForAppContentPaint(generation, beginFlights);
+                return;
+            }
+            beginFlights();
         }
 
         function waitForShell(root, generation) {
@@ -689,8 +849,12 @@
                 if (state.root !== root || state.generation !== generation) return;
                 const elapsed = Date.now() - startedAt;
                 const contentReady = isContentReady();
+                // Boot keeps kiu-shell-loading until run() reveals — still allow flight to start under the veil.
+                const bootAwaitingReveal = Boolean(global.__kiuSocialBootAwaitingAssemblyReveal)
+                    || Boolean(global.__kiuHomeBootAwaitingAssemblyReveal);
                 const canStart = isSharedShellReady()
-                    || !isSharedRevealActive();
+                    || !isSharedRevealActive()
+                    || bootAwaitingReveal;
                 const shellTimedOut = elapsed >= timing.maxShellWaitMs;
                 const contentTimedOut = elapsed >= contentWaitMaxMs;
                 if ((canStart || shellTimedOut) && (contentReady || contentTimedOut)) {
@@ -707,15 +871,61 @@
             if (!isRoute() || !root) return false;
             const targets = getTargets(root);
             if (!targets.length) return false;
-            if (state.root === root && root.dataset[rootStateDataset]) return true;
+            if (state.root === root
+                && state.phase === 'ready'
+                && root.dataset[rootStateDataset] === 'ready') {
+                return true;
+            }
+            if (state.root) {
+                abort();
+            } else if (root.dataset[rootStateDataset]) {
+                stripAssemblyDom(root);
+                document.body?.classList.remove(classes.active, classes.ready);
+            }
 
-            clearAnimationState();
             state.root = root;
             state.generation += 1;
             const generation = state.generation;
             state.phase = 'pending';
             state.targetCount = targets.length;
+            state.pendingReplay = null;
             recordEvent('pending');
+            root.dataset[rootStateDataset] = 'pending';
+            // Hide immediately so the first paint after remount is opacity 0
+            // (deferring hide until run() flashed a full visible frame).
+            document.body?.classList.remove(classes.ready);
+            document.body?.classList.add(classes.active);
+            registerStructures(root);
+            targets.forEach((target) => target.classList.add(classes.target, classes.staging));
+            waitForShell(root, generation);
+            return true;
+        }
+
+        // Restart intro without dropping body assembly-active (avoids a visible flash
+        // between abort() clearing hide classes and start() re-applying them).
+        function softRestart(root = getPageRoot()) {
+            if (!isRoute() || !root) return false;
+            const targets = getTargets(root);
+            if (!targets.length) return false;
+
+            const previousRoot = state.root;
+            clearAnimationState();
+            if (state.scheduleTimer) {
+                window.clearTimeout(state.scheduleTimer);
+                state.scheduleTimer = 0;
+            }
+            if (previousRoot && previousRoot !== root) {
+                stripAssemblyDom(previousRoot);
+            }
+            stripAssemblyDom(root);
+
+            state.root = root;
+            state.generation += 1;
+            const generation = state.generation;
+            state.phase = 'pending';
+            state.targetCount = targets.length;
+            state.pendingReplay = null;
+            recordEvent('soft-restart');
             root.dataset[rootStateDataset] = 'pending';
             document.body?.classList.remove(classes.ready);
             document.body?.classList.add(classes.active);
@@ -729,9 +939,7 @@
             if (!autoStart) return;
             const currentRoot = getPageRoot();
             if (currentRoot && state.root && state.root !== currentRoot) {
-                clearAnimationState();
-                state.root = null;
-                state.phase = 'idle';
+                abort();
                 recordEvent('root-replaced');
             }
             if (state.phase === 'active' && state.root) {
@@ -779,8 +987,11 @@
 
         return Object.freeze({
             start,
+            softRestart,
             install,
             replay,
+            abort,
+            forceReady,
             getTargets,
             getState: () => ({
                 ...state,

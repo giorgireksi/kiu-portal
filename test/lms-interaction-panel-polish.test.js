@@ -40,6 +40,6 @@ describe('LMS interaction panel polish', () => {
         expectLmsRouteCssLinks(html);
         expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-interaction-messages-runtime.js?v=20260714-lmspro2')
         expect(html).not.toContain('assets/js/pages/lms-interaction-messages-runtime.js');
-        expect(html).toContain('assets/js/pages/lms-classroom-tabs-runtime.js?v=20260805-switchperf2');
+        expect(html).toContain('assets/js/pages/lms-classroom-tabs-runtime.js?v=20260810-switchperf3');
     });
 });

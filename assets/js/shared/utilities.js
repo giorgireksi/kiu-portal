@@ -326,7 +326,7 @@ function warnMissingImpersonationPersona(role) {
     if (typeof getPreferredImpersonationUserForRole !== 'function') return true;
     let preferredFaculty = '';
     try {
-        preferredFaculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON';
+        preferredFaculty = sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON';
     } catch (error) {
         preferredFaculty = currentUser?.facultyCode || currentUser?.faculty || 'ECON';
     }
@@ -416,12 +416,12 @@ function persistAdminImpersonationRoleState(requestedRole, impersonatedSessionUs
     const normalizedRole = String(requestedRole || USER_ROLES.STUDENT).trim().toLowerCase() || USER_ROLES.STUDENT;
     currentUserRole = normalizedRole;
     try {
-        localStorage.setItem('currentUserRole', normalizedRole);
+        sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', normalizedRole);
         if (normalizedRole === USER_ROLES.ADMIN) {
             localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
             sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
         } else {
-            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, normalizedRole);
+            sessionStorage.setItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE', normalizedRole);
             sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
         }
     } catch (error) {
@@ -431,14 +431,14 @@ function persistAdminImpersonationRoleState(requestedRole, impersonatedSessionUs
         || (typeof setActiveSessionUserByRole === 'function' ? setActiveSessionUserByRole(normalizedRole) : null);
     if (persona && (persona.facultyCode || persona.faculty) && normalizedRole !== USER_ROLES.ADMIN) {
         try {
-            localStorage.setItem('currentFaculty', persona.facultyCode || persona.faculty);
+            sessionStorage.setItem('KIU_TAB_CURRENT_FACULTY', persona.facultyCode || persona.faculty);
         } catch (error) {}
     }
     const facultySelect = document.getElementById('faculty-select');
     if (facultySelect) {
         const targetFaculty = normalizedRole === USER_ROLES.ADMIN
-            ? normalizeFacultyCode(localStorage.getItem('currentFaculty') || persona?.facultyCode || persona?.faculty || 'ECON', 'ECON')
-            : normalizeFacultyCode(persona?.facultyCode || persona?.faculty || localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
+            ? normalizeFacultyCode(sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || persona?.facultyCode || persona?.faculty || 'ECON', 'ECON')
+            : normalizeFacultyCode(persona?.facultyCode || persona?.faculty || sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
         facultySelect.value = targetFaculty;
     }
     if (typeof window.invalidatePageAccessCache === 'function') window.invalidatePageAccessCache();
@@ -589,7 +589,7 @@ function switchRole(newRole) {
             return;
         }
         currentUserRole = currentUser.role || USER_ROLES.STUDENT;
-        localStorage.setItem('currentUserRole', currentUserRole);
+        sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', currentUserRole);
         sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
         return;
     }
@@ -609,7 +609,7 @@ function switchRole(newRole) {
     void (async () => {
         let preferredFaculty = 'ECON';
         try {
-            preferredFaculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON';
+            preferredFaculty = sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON';
         } catch (error) {
             preferredFaculty = currentUser?.facultyCode || currentUser?.faculty || 'ECON';
         }
@@ -650,7 +650,7 @@ async function continueAdminRoleSwitch(requestedRole) {
         if (requestedRole === USER_ROLES.ADMIN) {
             localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
         } else {
-            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, requestedRole);
+            sessionStorage.setItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE', requestedRole);
         }
     } catch (error) {
         console.warn('Could not persist pending role switch target.', error);
@@ -662,7 +662,7 @@ async function continueAdminRoleSwitch(requestedRole) {
         console.warn('Could not persist role impersonation state.', e);
     }
     currentUserRole = activeUser.role;
-    localStorage.setItem('currentUserRole', activeUser.role);
+    sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', activeUser.role);
     const impersonatedSessionUser = typeof setActiveSessionUserByRole === 'function'
         ? (setActiveSessionUserByRole(activeUser.role) || activeUser)
         : activeUser;

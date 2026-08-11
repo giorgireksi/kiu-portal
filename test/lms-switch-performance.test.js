@@ -21,6 +21,7 @@ describe('LMS switch performance', () => {
         const shell = readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js');
 
         expect(boot).toContain("document.addEventListener('pointerover', warmLmsTabRuntime");
+        expect(boot).toContain('prefetchLmsRuntimeForTab');
         expect(boot).toContain('scheduleLmsTabRuntimePrefetch();');
         expect(shell).toContain('const LMS_TAB_RENDER_CACHE_TTL_MS = 15000;');
         expect(shell).toContain('function getLmsTabRenderCache(cacheKey) {');

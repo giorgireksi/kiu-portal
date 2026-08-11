@@ -11,9 +11,9 @@ describe('Social Lost & Found loading animation', () => {
 
     it('loads Lost & Found motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260809-assembly17');
-        const lostFoundIndex = html.indexOf('social-lost-found-loading-runtime.js?v=20260809-socialassemblyreplay1');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
+        const lostFoundIndex = html.indexOf('social-lost-found-loading-runtime.js?v=20260810-socialbootveil2');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
         expect(html).toContain('social-lost-found-loading.css?v=20260809-socialassemblyreplay1');
         expect(sharedIndex).toBeGreaterThan(-1);
@@ -214,9 +214,9 @@ describe('Social Lost & Found loading animation', () => {
 
     it('cache-busts Lost & Found assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
         expect(sw).toContain('social-lost-found-loading.css?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-lost-found-loading-runtime.js?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        expect(sw).toContain('social-lost-found-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
     });
 });

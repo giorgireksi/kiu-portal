@@ -187,12 +187,43 @@
         let socialPhotographyMotionGeneration = 0;
         void d;
 
+        function abortSocialSectionMotion(motionGlobal) {
+            const motion = window[motionGlobal];
+            if (motion && typeof motion.abort === 'function') {
+                try { motion.abort(); } catch (_error) {}
+            }
+        }
+
+        function shouldPrehideCenterForAssembly(reason) {
+            const r = text(reason || '');
+            if (!r) return false;
+            if (r === 'boot' || r === 'panel') return true;
+            if (/^panel-/.test(r) || /-module$/.test(r)) return true;
+            return /^(feed-tab|community-tab|groups-tab|pages-tab|events-tab|surveys-tab|research-tab|photography-tab|portfolio-panel-tab|surveys-lane|survey-take-open|survey-take-close|lost-found-tab|messages-filter)$/.test(r);
+        }
+
+        function clearSocialCenterAssemblyPrehide() {
+            document.body?.classList.remove('social-center-assembly-prehide');
+        }
+
+        function releaseSocialBootShellReveal() {
+            if (!window.__kiuSocialBootAwaitingAssemblyReveal) return;
+            window.__kiuSocialBootAwaitingAssemblyReveal = false;
+            clearSocialCenterAssemblyPrehide();
+            window.__kiuSocialShellRevealAllowed = true;
+            window.__kiuSocialBootForceUnveil = true;
+            try { revealShell({ force: true }); } catch (_error) {}
+        }
+
+        window.__kiuSocialRevealShellNow = revealShell;
+
         function queueSocialHomeMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
             const shouldAnimate = panel === 'feed'
                 && (reason === 'boot' || reason === 'panel' || reason === 'feed-module' || reason === 'panel-feed' || reason === 'feed-tab');
             if (!shouldAnimate) {
                 if (panel !== 'feed') {
+                    abortSocialSectionMotion('__kiuSocialHomeLoadingMotion');
                     socialHomeMotionGeneration += 1;
                     if (socialHomeMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -229,41 +260,50 @@
             if (!section
                 || section.matches('.social-neo-card.sn-mat-soft, .social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialHomeMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialHomeMotionFrame = 0;
-                if (generation !== socialHomeMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'feed'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialHomeLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialHomeMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialHomeMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialHomeLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialHomeMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialHomeMotionFrame = 0;
+                    if (generation !== socialHomeMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'feed'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialHomeLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialHomeMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialHomeMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialCommunityMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
             const shouldAnimate = panel === 'community'
-                && (reason === 'panel' || reason === 'community-module' || reason === 'panel-community' || reason === 'community-tab');
+                && (reason === 'boot' || reason === 'panel' || reason === 'community-module' || reason === 'panel-community' || reason === 'community-tab');
             if (!shouldAnimate) {
                 if (panel !== 'community') {
+                    abortSocialSectionMotion('__kiuSocialCommunityLoadingMotion');
                     socialCommunityMotionGeneration += 1;
                     if (socialCommunityMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -300,41 +340,50 @@
             if (!section
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialCommunityMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialCommunityMotionFrame = 0;
-                if (generation !== socialCommunityMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'community'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialCommunityLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialCommunityMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialCommunityMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialCommunityLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialCommunityMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialCommunityMotionFrame = 0;
+                    if (generation !== socialCommunityMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'community'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialCommunityLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialCommunityMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialCommunityMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialGroupsMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
             const shouldAnimate = panel === 'groups'
-                && (reason === 'panel' || reason === 'groups-module' || reason === 'panel-groups' || reason === 'groups-tab');
+                && (reason === 'boot' || reason === 'panel' || reason === 'groups-module' || reason === 'panel-groups' || reason === 'groups-tab');
             if (!shouldAnimate) {
                 if (panel !== 'groups') {
+                    abortSocialSectionMotion('__kiuSocialGroupsLoadingMotion');
                     socialGroupsMotionGeneration += 1;
                     if (socialGroupsMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -371,41 +420,50 @@
             if (!section
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialGroupsMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialGroupsMotionFrame = 0;
-                if (generation !== socialGroupsMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'groups'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialGroupsLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialGroupsMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialGroupsMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialGroupsLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialGroupsMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialGroupsMotionFrame = 0;
+                    if (generation !== socialGroupsMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'groups'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialGroupsLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialGroupsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialGroupsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialProjectsMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
             const shouldAnimate = panel === 'workspace'
-                && (reason === 'panel' || reason === 'workspace-module' || reason === 'panel-workspace');
+                && (reason === 'boot' || reason === 'panel' || reason === 'workspace-module' || reason === 'panel-workspace');
             if (!shouldAnimate) {
                 if (panel !== 'workspace') {
+                    abortSocialSectionMotion('__kiuSocialProjectsLoadingMotion');
                     socialProjectsMotionGeneration += 1;
                     if (socialProjectsMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -443,33 +501,41 @@
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')
                 || (section.matches('.social-neo-card') && section.querySelector('.social-neo-empty-hero'))) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialProjectsMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialProjectsMotionFrame = 0;
-                if (generation !== socialProjectsMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'workspace'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialProjectsLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialProjectsMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialProjectsMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialProjectsLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialProjectsMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialProjectsMotionFrame = 0;
+                    if (generation !== socialProjectsMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'workspace'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialProjectsLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialProjectsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialProjectsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialPortfolioMotion(center, activePanel, reason) {
@@ -478,6 +544,7 @@
                 && (reason === 'boot' || reason === 'panel' || reason === 'workspace-module' || reason === 'portfolio-panel-tab' || reason === 'panel-projects');
             if (!shouldAnimate) {
                 if (panel !== 'projects') {
+                    abortSocialSectionMotion('__kiuSocialPortfolioLoadingMotion');
                     socialPortfolioMotionGeneration += 1;
                     if (socialPortfolioMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -515,33 +582,41 @@
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')
                 || (section.matches('.social-neo-card') && section.querySelector('.social-neo-empty-hero'))) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialPortfolioMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialPortfolioMotionFrame = 0;
-                if (generation !== socialPortfolioMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'projects'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialPortfolioLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialPortfolioMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialPortfolioMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialPortfolioLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialPortfolioMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialPortfolioMotionFrame = 0;
+                    if (generation !== socialPortfolioMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'projects'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialPortfolioLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialPortfolioMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialPortfolioMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialResearchMotion(center, activePanel, reason) {
@@ -556,6 +631,7 @@
                     || reason === 'research-reader-close');
             if (!shouldAnimate) {
                 if (panel !== 'research') {
+                    abortSocialSectionMotion('__kiuSocialResearchLoadingMotion');
                     socialResearchMotionGeneration += 1;
                     if (socialResearchMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -592,33 +668,41 @@
             if (!section
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialResearchMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialResearchMotionFrame = 0;
-                if (generation !== socialResearchMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'research'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialResearchLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialResearchMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialResearchMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialResearchLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialResearchMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialResearchMotionFrame = 0;
+                    if (generation !== socialResearchMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'research'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialResearchLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialResearchMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialResearchMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialPagesMotion(center, activePanel, reason) {
@@ -634,6 +718,7 @@
                     || reason === 'page-profile-tab');
             if (!shouldAnimate) {
                 if (panel !== 'pages') {
+                    abortSocialSectionMotion('__kiuSocialPagesLoadingMotion');
                     socialPagesMotionGeneration += 1;
                     if (socialPagesMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -670,33 +755,41 @@
             if (!section
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialPagesMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialPagesMotionFrame = 0;
-                if (generation !== socialPagesMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'pages'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialPagesLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialPagesMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialPagesMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialPagesLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialPagesMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialPagesMotionFrame = 0;
+                    if (generation !== socialPagesMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'pages'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialPagesLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialPagesMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialPagesMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialEventsMotion(center, activePanel, reason) {
@@ -709,6 +802,7 @@
                     || reason === 'panel-events');
             if (!shouldAnimate) {
                 if (panel !== 'events') {
+                    abortSocialSectionMotion('__kiuSocialEventsLoadingMotion');
                     socialEventsMotionGeneration += 1;
                     if (socialEventsMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -745,33 +839,41 @@
             if (!section
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialEventsMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialEventsMotionFrame = 0;
-                if (generation !== socialEventsMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'events'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialEventsLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialEventsMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialEventsMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialEventsLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialEventsMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialEventsMotionFrame = 0;
+                    if (generation !== socialEventsMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'events'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialEventsLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialEventsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialEventsMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialLostFoundMotion(center, activePanel, reason) {
@@ -784,6 +886,7 @@
                     || reason === 'panel-lost-and-found');
             if (!shouldAnimate) {
                 if (panel !== 'lost-and-found') {
+                    abortSocialSectionMotion('__kiuSocialLostFoundLoadingMotion');
                     socialLostFoundMotionGeneration += 1;
                     if (socialLostFoundMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -820,33 +923,41 @@
             if (!section
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialLostFoundMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialLostFoundMotionFrame = 0;
-                if (generation !== socialLostFoundMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'lost-and-found'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialLostFoundLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialLostFoundMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialLostFoundMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialLostFoundLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialLostFoundMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialLostFoundMotionFrame = 0;
+                    if (generation !== socialLostFoundMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'lost-and-found'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialLostFoundLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialLostFoundMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialLostFoundMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialMessagesMotion(center, activePanel, reason) {
@@ -866,6 +977,7 @@
             // chat-read / chat-upsert while ready must not cancel a completed intro.
             if (!shouldAnimate) {
                 if (panel !== 'messages') {
+                    abortSocialSectionMotion('__kiuSocialMessagesLoadingMotion');
                     socialMessagesMotionGeneration += 1;
                     if (socialMessagesMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -904,6 +1016,7 @@
                 || !section.matches('.social-neo-messages')
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
             // Start sync in this turn so staging applies before the browser paints
@@ -920,7 +1033,7 @@
                     }
                     const live = window.__kiuStartSocialMessagesLoadingMotion;
                     if (typeof live !== 'function') {
-                        if (attempts++ >= 24) return;
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
                         socialMessagesMotionFrame = typeof window.requestAnimationFrame === 'function'
                             ? window.requestAnimationFrame(run)
                             : window.setTimeout(run, 32);
@@ -944,11 +1057,11 @@
             // Replay only while intro is in flight — not after ready.
             const assemblyInFlight = document.body?.classList.contains('social-alerts-assembly-active')
                 || ['pending', 'active'].includes(text(center?.dataset?.socialAlertsAssemblyState || ''));
+            // Category filter tab switches repaint the list only — no assembly replay.
             const shouldAnimate = panel === 'alerts'
                 && (reason === 'boot'
                     || reason === 'panel'
                     || reason === 'alerts-module'
-                    || reason === 'alerts-filter'
                     || reason === 'panel-alerts'
                     || ((reason === 'notifications-refresh'
                         || reason === 'notification-read'
@@ -956,6 +1069,7 @@
             // Only invalidate in-flight starts when leaving Alerts.
             if (!shouldAnimate) {
                 if (panel !== 'alerts') {
+                    abortSocialSectionMotion('__kiuSocialAlertsLoadingMotion');
                     socialAlertsMotionGeneration += 1;
                     if (socialAlertsMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -993,6 +1107,7 @@
                 || !section.matches('.sn-alerts-panel')
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
             // Start sync in this turn so staging applies before the browser paints
@@ -1009,7 +1124,7 @@
                     }
                     const live = window.__kiuStartSocialAlertsLoadingMotion;
                     if (typeof live !== 'function') {
-                        if (attempts++ >= 24) return;
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
                         socialAlertsMotionFrame = typeof window.requestAnimationFrame === 'function'
                             ? window.requestAnimationFrame(run)
                             : window.setTimeout(run, 32);
@@ -1040,6 +1155,7 @@
                     || reason === 'survey-take-close');
             if (!shouldAnimate) {
                 if (panel !== 'surveys') {
+                    abortSocialSectionMotion('__kiuSocialSurveysLoadingMotion');
                     socialSurveysMotionGeneration += 1;
                     if (socialSurveysMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -1076,33 +1192,41 @@
             if (!section
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialSurveysMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialSurveysMotionFrame = 0;
-                if (generation !== socialSurveysMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'surveys'
-                    || center?.firstElementChild !== section
-                    || !section.isConnected) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialSurveysLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialSurveysMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialSurveysMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialSurveysLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialSurveysMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialSurveysMotionFrame = 0;
+                    if (generation !== socialSurveysMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'surveys'
+                        || center?.firstElementChild !== section
+                        || !section.isConnected) {
+                        return;
+                    }
+                    const live = window.__kiuStartSocialSurveysLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialSurveysMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialSurveysMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
         function queueSocialPhotographyMotion(center, activePanel, reason) {
@@ -1122,6 +1246,7 @@
             // queued start and left the shell without assembly.
             if (!shouldAnimate) {
                 if (panel !== 'photography') {
+                    abortSocialSectionMotion('__kiuSocialPhotographyLoadingMotion');
                     socialPhotographyMotionGeneration += 1;
                     if (socialPhotographyMotionFrame) {
                         if (typeof window.cancelAnimationFrame === 'function') {
@@ -1159,38 +1284,47 @@
                 || !section.matches('.social-photo-shell, .social-photo-profile-shell, .social-photo-shell--my-profile')
                 || section.matches('.social-neo-module-loading, [aria-busy="true"]')
                 || section.querySelector('[aria-busy="true"]')) {
+                clearSocialCenterAssemblyPrehide();
                 return;
             }
-            const generation = socialPhotographyMotionGeneration;
-            let attempts = 0;
-            const run = () => {
-                socialPhotographyMotionFrame = 0;
-                // Re-resolve live shell — Exposé remounts before rAF (module hydrate).
-                const liveSection = center?.firstElementChild;
-                if (generation !== socialPhotographyMotionGeneration
-                    || text(state().ui?.activePanel || '') !== 'photography'
-                    || !liveSection
-                    || !liveSection.isConnected
-                    || !liveSection.matches('.social-photo-shell, .social-photo-profile-shell, .social-photo-shell--my-profile')
-                    || liveSection.matches('.social-neo-module-loading, [aria-busy="true"]')
-                    || liveSection.querySelector('[aria-busy="true"]')) {
-                    return;
-                }
-                const startMotion = window.__kiuStartSocialPhotographyLoadingMotion;
-                if (typeof startMotion !== 'function') {
-                    if (attempts++ >= 24) return;
-                    socialPhotographyMotionFrame = typeof window.requestAnimationFrame === 'function'
-                        ? window.requestAnimationFrame(run)
-                        : window.setTimeout(run, 32);
-                    return;
-                }
-                try {
-                    startMotion(center, { force: true });
-                } catch (error) {}
-            };
-            socialPhotographyMotionFrame = typeof window.requestAnimationFrame === 'function'
-                ? window.requestAnimationFrame(run)
-                : window.setTimeout(run, 0);
+            // Start sync in this turn so staging applies before the browser paints
+            // the freshly mounted shell (rAF left one visible frame / blank intro).
+            const startMotion = window.__kiuStartSocialPhotographyLoadingMotion;
+            if (typeof startMotion !== 'function') {
+                const generation = socialPhotographyMotionGeneration;
+                let attempts = 0;
+                const run = () => {
+                    socialPhotographyMotionFrame = 0;
+                    // Re-resolve live shell — Exposé remounts before rAF (module hydrate).
+                    const liveSection = center?.firstElementChild;
+                    if (generation !== socialPhotographyMotionGeneration
+                        || text(state().ui?.activePanel || '') !== 'photography'
+                        || !liveSection
+                        || !liveSection.isConnected
+                        || !liveSection.matches('.social-photo-shell, .social-photo-profile-shell, .social-photo-shell--my-profile')
+                        || liveSection.matches('.social-neo-module-loading, [aria-busy="true"]')
+                        || liveSection.querySelector('[aria-busy="true"]')) {
+                        clearSocialCenterAssemblyPrehide();
+                        return;
+                    }
+                    const live = window.__kiuStartSocialPhotographyLoadingMotion;
+                    if (typeof live !== 'function') {
+                        if (attempts++ >= 24) { releaseSocialBootShellReveal(); return; }
+                        socialPhotographyMotionFrame = typeof window.requestAnimationFrame === 'function'
+                            ? window.requestAnimationFrame(run)
+                            : window.setTimeout(run, 32);
+                        return;
+                    }
+                    try { live(center, { force: true }); } catch (error) {}
+                };
+                socialPhotographyMotionFrame = typeof window.requestAnimationFrame === 'function'
+                    ? window.requestAnimationFrame(run)
+                    : window.setTimeout(run, 0);
+                return;
+            }
+            try {
+                startMotion(center, { force: true });
+            } catch (error) {}
         }
 
 function reactionEmoji(reactionType) {
@@ -2198,6 +2332,8 @@ function renderSocialPageNow(reason = 'manual') {
             setSocialRegionMarkup(shell.workspaceNav, renderShellWorkspaceNav(activePanel));
         }
         if (renderPlan.center) {
+            const prehideCenter = shouldPrehideCenterForAssembly(reason);
+            if (prehideCenter) document.body?.classList.add('social-center-assembly-prehide');
             setSocialRegionMarkup(shell.center, renderActivePanelMarkup(activePanel));
             if (typeof window.KiuSocialPagination?.decorate === 'function') {
                 window.KiuSocialPagination.decorate(shell.center, activePanel);
@@ -2221,6 +2357,12 @@ function renderSocialPageNow(reason = 'manual') {
             if (text(runtime.ui?.researchReaderId || '') && typeof window.scheduleResearchFileViewerMount === 'function') {
                 try { window.scheduleResearchFileViewerMount(); } catch (e) {}
             }
+            // Start assembly under the shell-loading veil (staging + active) before
+            // revealShell lifts it — otherwise one paint shows fully loaded center.
+            const deferBootReveal = reason === 'boot' || reason === 'social-bootstrap';
+            if (deferBootReveal) {
+                window.__kiuSocialBootAwaitingAssemblyReveal = true;
+            }
             queueSocialHomeMotion(shell.center, activePanel, reason);
             queueSocialCommunityMotion(shell.center, activePanel, reason);
             queueSocialGroupsMotion(shell.center, activePanel, reason);
@@ -2234,6 +2376,17 @@ function renderSocialPageNow(reason = 'manual') {
             queueSocialAlertsMotion(shell.center, activePanel, reason);
             queueSocialSurveysMotion(shell.center, activePanel, reason);
             queueSocialPhotographyMotion(shell.center, activePanel, reason);
+            // Boot: keep veil until assembly run() calls __kiuSocialRevealShellNow.
+            if (!deferBootReveal) {
+                revealShell();
+            } else if (window.__kiuSocialBootAwaitingAssemblyReveal) {
+                // Long fail-safe only — never uncover on double-rAF before deferred start claims active.
+                window.setTimeout(() => {
+                    if (!window.__kiuSocialBootAwaitingAssemblyReveal) return;
+                    if (/\b\S+-assembly-active\b/.test(document.body?.className || '')) return;
+                    releaseSocialBootShellReveal();
+                }, 2500);
+            }
         }
         if (renderPlan.drawer) setSocialRegionMarkup(shell.drawer, renderShellDrawer(activePanel));
         if (renderPlan.mobileTab) setSocialRegionMarkup(shell.mobileTab, renderMobileTabBar(activePanel));
@@ -2276,7 +2429,7 @@ function renderSocialPageNow(reason = 'manual') {
             delete runtime.ui.commentReplyFocusPostId;
         }
         bindEvents();
-        revealShell();
+        if (!window.__kiuSocialBootAwaitingAssemblyReveal) revealShell();
         const wasScrollLocked = interactionSnapshot.layoutScrollLock;
         syncSocialScrollLayout(host);
         scheduleSocialCenterScrollRepair(host);

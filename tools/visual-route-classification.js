@@ -14,7 +14,7 @@ const routeVisualClassification = {
     'faculty-gradebook.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
     'faculty-schedule.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
     'gradebook.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
-    'index.html': { category: 'standard-shell', dedicatedCss: ['assets/css/index-home-layout.css', 'assets/css/index-home-widgets.css', 'assets/css/index-home-role.css'], mobileShell: 'index-shared' },
+    'index.html': { category: 'standard-shell', dedicatedCss: ['assets/css/index-home-layout.css', 'assets/css/index-home-widgets.css', 'assets/css/index-home-role.css', 'assets/css/index-home-loading.css', 'assets/css/home-assembly-prehide.css', 'assets/css/lux-layout-primitives.css'], mobileShell: 'index-shared' },
     'library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-layout-primitives.css', 'assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
     'lms.html': {
         category: 'standard-shell',

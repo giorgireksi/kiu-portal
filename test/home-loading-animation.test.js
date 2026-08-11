@@ -10,37 +10,65 @@ describe('Home loading animation', () => {
     it('wires Home motion assets after the dashboard bundle', () => {
         const html = readSource('index.html');
 
-        expect(html).toContain('assets/css/index-home-loading.css?v=20260809-homeassembly2');
+        expect(html).toContain('assets/css/home-assembly-prehide.css?v=20260810-homeassembly5');
+        expect(html).toContain('assets/css/index-home-loading.css?v=20260810-homeassembly5');
+        expect(html).toContain('home-shell-assembly-prehide');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260810-homebootveil1');
+        expect(html).toContain('assets/js/features/navigation.js?v=20260810-homebootveil1');
         expect(html).toContain('assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260809-assembly15');
-        expect(html).toContain('assets/js/pages/home-loading-runtime.js?v=20260809-homeassembly2');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly26');
+        expect(html).toContain('assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9');
         expect(html.match(/index-home-loading\.css/g)).toHaveLength(1);
         expect(html.match(/home-loading-runtime\.js/g)).toHaveLength(1);
+        expect(html.match(/home-assembly-prehide\.css/g)).toHaveLength(1);
     });
 
-    it('defines explicit dashboard, shell, and mobile replay boundaries', () => {
+    it('defines dashboard-only assembly with mobile late replay and boot ownership', () => {
         const runtime = readSource('assets/js/pages/home-loading-runtime.js');
 
         [
-            '#lux-shell',
-            '#lux-nav',
-            '#lux-topbar',
-            '#mobile-bottom-nav',
-            '#mobile-action-sheet',
             '.lux-home-toolbar',
             '.lux-home-merged',
             '.lux-home-band',
             '[data-home-widget-id]',
             '[data-news-home-strip="1"]',
+            '#mobile-bottom-nav',
+            '#mobile-action-sheet',
             'button',
             'input',
             'select',
             'textarea'
         ].forEach((selector) => expect(runtime).toContain(selector));
         expect(runtime).toContain("getPageRoot: () => document.querySelector('#lux-home-shell')");
+        expect(runtime).toContain("document.querySelector('#page-home')");
+        expect(runtime).not.toContain('getObserverRoot: () => document.body');
+        expect(runtime).toContain("root.querySelector('[data-home-widget-id]')");
+        expect(runtime).not.toContain(".lux-home-band[data-home-widget-id]");
+        expect(runtime).toContain('autoStart: false');
         expect(runtime).toContain('autoReplayLateMutations: false');
+        expect(runtime).toContain('flattenInnerTargets: false');
         expect(runtime).toContain('transformSafeSelector:');
         expect(runtime).toContain('window.__kiuReplayHomeLoadingMotion');
+        expect(runtime).toContain('__kiuHomeBootAwaitingAssemblyReveal');
+        expect(runtime).toContain('__kiuHomeShellRevealAllowed');
+        expect(runtime).toContain('__kiuHomeRevealShellNow');
+        expect(runtime).not.toContain("'#lux-shell'");
+        expect(runtime).not.toContain("'#lux-nav'");
+        expect(runtime).not.toContain("'#lux-topbar'");
+    });
+
+    it('gates Home shell reveal until assembly run like Social', () => {
+        const nav = readSource('assets/js/features/navigation.js');
+        const primer = readSource('assets/js/theme-primer.js');
+        const shared = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
+
+        expect(nav).toContain('lux-route-home');
+        expect(nav).toContain('__kiuHomeShellRevealAllowed');
+        expect(primer).toContain("body.classList.contains('lux-route-home')");
+        expect(shared).toContain('__kiuHomeBootAwaitingAssemblyReveal');
+        expect(shared).toContain('home-shell-assembly-prehide');
+        expect(shared).toContain('__kiuHomeRevealShellNow');
+        expect(shared).toContain('waitForAppContentPaint');
     });
 
     it('marks every rendered widget boundary in the dashboard bundle', () => {
@@ -64,7 +92,7 @@ describe('Home loading animation', () => {
 
     it('replays Home after dashboard, news, and mobile mounts', () => {
         expect(readSource('assets/js/features/luxury-index-runtime.js')).toContain(
-            'window.__kiuReplayHomeLoadingMotion(\'render\')'
+            "__kiuReplayHomeLoadingMotion('render', undefined, { intro:"
         );
         expect(readSource('assets/js/shared/news-home.js')).toContain(
             'window.__kiuReplayHomeLoadingMotion(\'news\''
@@ -74,17 +102,38 @@ describe('Home loading animation', () => {
         );
     });
 
+    it('skips the intro on data refresh renders to avoid load-disappear-load flash', () => {
+        const runtime = readSource('assets/js/features/luxury-index-runtime.js');
+        const motion = readSource('assets/js/pages/home-loading-runtime.js');
+
+        expect(runtime).toContain('const wasAlreadyRendered = Boolean(homeShell.dataset.homeRenderSignature)');
+        expect(runtime).toContain('{ intro: !wasAlreadyRendered }');
+        expect(motion).toContain('options.intro === false');
+        expect(motion).toContain('motion.forceReady');
+        expect(motion).toContain('releaseHomeBootShellReveal()');
+    });
+
     it('keeps Home stylesheet motion-only and interaction-safe', () => {
         const css = readSource('assets/css/index-home-loading.css');
+        const prehide = readSource('assets/css/home-assembly-prehide.css');
 
         expect(css).not.toContain('background');
         expect(css).not.toContain('border');
         expect(css).not.toContain('box-shadow');
         expect(css).toContain('is-home-assembly-staging');
+        expect(css).toContain('is-home-assembly-staging:not(.is-flight)');
         expect(css).toContain('prefers-reduced-motion: reduce');
         expect(css).toContain('pointer-events: none');
         expect(css).toContain('pointer-events: auto');
         expect(css).not.toContain('.home-hover-chip:hover');
+        expect(css).not.toContain('#lux-shell');
+        expect(css).not.toContain('#lux-nav');
+        expect(css).not.toContain('#lux-topbar');
+        expect(css).toContain('.lux-home-page');
+        expect(css).toContain('[data-home-widget-id]');
+        expect(prehide).toContain('home-shell-assembly-prehide');
+        expect(prehide).toContain('#lux-home-shell > *');
+        expect(prehide).toContain('opacity: 0 !important');
     });
 
     it('separates final Home content from loading and recovery shells', () => {
@@ -97,6 +146,7 @@ describe('Home loading animation', () => {
         expect(runtime).toContain('homeShell.dataset.homeRenderState = \'ready\'');
         expect(runtime).toContain('[data-home-loading-shell="1"], [data-home-recovery-shell="1"]');
         expect(motion).toContain('root?.dataset.homeRenderReady === \'1\'');
+        expect(motion).toContain("root.querySelector('[data-home-widget-id]')");
     });
 
     it('keeps Home utility actions on the existing cache-clear handler', () => {
@@ -120,6 +170,10 @@ describe('Home loading animation', () => {
         expect(worker).toContain('isUsableStaticAssetResponse');
         expect(worker).toContain('offline asset fallback');
         expect(worker).toContain('/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2');
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
+        expect(worker).toContain('/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5');
+        expect(worker).toContain('/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9');
+        expect(worker).toContain('/assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly26');
     });
 
     it('covers role-specific and mobile replay surfaces without broad mutation replay', () => {

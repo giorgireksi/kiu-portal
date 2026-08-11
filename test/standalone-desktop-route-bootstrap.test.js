@@ -14,6 +14,9 @@ describe('standalone desktop route bootstrap', () => {
     expect(navigation).toContain('function refreshStandaloneDesktopShellChrome(options = {}) {');
     expect(navigation).toContain('function refreshStandaloneDesktopRouteContent(pageId, options = {}) {');
     expect(navigation).toContain('function autoBootStandaloneDesktopRoute() {');
+    expect(navigation).toContain("entryId === 'social'");
+    expect(navigation).toContain('__kiuSocialShellRevealAllowed');
+    expect(navigation).toContain("classList.contains('lux-route-social')");
     expect(navigation).toContain('function applyStandaloneDesktopRouteVisualState(config = {}) {');
     expect(navigation).toContain('function scheduleRouteContentRender(renderFn) {');
     expect(navigation).toContain('window.requestAnimationFrame(() => {\n            window.requestAnimationFrame(run);');

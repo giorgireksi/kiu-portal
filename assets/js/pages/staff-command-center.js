@@ -492,6 +492,7 @@
                 <span>Admin actions</span>
                 <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced lux-btn-row-stack">
                     <button class="lux-secondary-btn" type="button" data-staff-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
+                    <button class="lux-secondary-btn" type="button" data-staff-action="login-credentials" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-key"></i> Generate login credentials</button>
                     <button class="lux-secondary-btn" type="button" data-staff-action="toggle-login" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-power-off"></i> Toggle login</button>
                     <button class="lux-secondary-btn" type="button" data-staff-action="mark-reviewed" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-clipboard-check"></i> Mark reviewed</button>
                     ${record.status === 'Archived'
@@ -1409,6 +1410,20 @@
         }
         if (action === 'invite') {
             inviteStaff(staffId);
+            return;
+        }
+        if (action === 'login-credentials') {
+            const record = buildStaffRecords(typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON').records
+                .find((item) => String(item.id) === String(staffId));
+            if (typeof window.provisionAdminAccountCredentials !== 'function') {
+                showToast('Credential generation is not loaded. Hard-refresh the page and try again.');
+                return;
+            }
+            window.provisionAdminAccountCredentials({
+                id: staffId,
+                ...(record || {}),
+                role: record?.platformRole || record?.role || 'ta'
+            }).catch((error) => showToast(error?.message || 'Could not generate login credentials.'));
             return;
         }
         if (action === 'toggle-login') {

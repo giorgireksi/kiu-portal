@@ -5,8 +5,33 @@ const KIU_REALTIME_BRIDGE_TIMEOUT_MS = 4000;
 const KIU_REALTIME_BRIDGE_COOLDOWN_MS = 5000;
 let kiuAuthRestoreInFlight = null;
 
+function readKiuTabIdentity(key, legacyKey = key) {
+    try {
+        const scoped = typeof getKiuTabValue === 'function'
+            ? getKiuTabValue(key)
+            : sessionStorage.getItem(key);
+        return String(scoped || localStorage.getItem(legacyKey) || '').trim();
+    } catch (error) {
+        return '';
+    }
+}
+
+function writeKiuTabIdentity(key, value) {
+    if (typeof setKiuTabValue === 'function') setKiuTabValue(key, value);
+    else {
+        try {
+            if (value) sessionStorage.setItem(key, String(value));
+            else sessionStorage.removeItem(key);
+        } catch (error) {}
+    }
+}
+
 function getStoredAuthState() {
-    const rawState = localStorage.getItem('KIU_AUTH_STATE');
+    let rawState = '';
+    try {
+        rawState = sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE') || '';
+    } catch (error) {}
+    if (!rawState) return null;
     if (!rawState) return null;
 
     let parsedState = null;
@@ -20,7 +45,7 @@ function getStoredAuthState() {
 
     let persistedAuthState = null;
     try {
-        persistedAuthState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+        persistedAuthState = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
     } catch (e) {
         persistedAuthState = null;
     }
@@ -50,11 +75,15 @@ function getStoredAuthState() {
     };
 
     if (!normalizedState.id || !normalizedState.role) {
-        localStorage.removeItem('KIU_AUTH_STATE');
+        try { sessionStorage.removeItem('KIU_TAB_AUTH_STATE'); } catch (error) {}
+        try { localStorage.removeItem('KIU_AUTH_STATE'); } catch (error) {}
         return null;
     }
 
-    localStorage.setItem('KIU_AUTH_STATE', JSON.stringify(normalizedState));
+    if (typeof setKiuTabAuthState === 'function') setKiuTabAuthState(normalizedState);
+    else {
+        try { sessionStorage.setItem('KIU_TAB_AUTH_STATE', JSON.stringify(normalizedState)); } catch (error) {}
+    }
     return normalizedState;
 }
 
@@ -69,7 +98,7 @@ function loadAuthState() {
             currentUser = state;
             const pendingRoleTarget = (() => {
                 try {
-                    const nextRole = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+                    const nextRole = readKiuTabIdentity(PENDING_ROLE_SWITCH_KEY, PENDING_ROLE_SWITCH_KEY).toLowerCase();
                     return currentUser?.role === USER_ROLES.ADMIN && Object.values(USER_ROLES).includes(nextRole)
                         ? nextRole
                         : '';
@@ -79,7 +108,7 @@ function loadAuthState() {
             })();
             const storedImpersonatedRole = (() => {
                 try {
-                    return pendingRoleTarget || localStorage.getItem('currentUserRole');
+                    return pendingRoleTarget || readKiuTabIdentity('KIU_TAB_CURRENT_ROLE', 'currentUserRole');
                 } catch (e) {
                     return null;
                 }
@@ -87,13 +116,13 @@ function loadAuthState() {
             const isAdminAccount = currentUser.role === USER_ROLES.ADMIN;
             if (!isAdminAccount) {
                 try {
-                    const pendingRole = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+                    const pendingRole = readKiuTabIdentity(PENDING_ROLE_SWITCH_KEY, PENDING_ROLE_SWITCH_KEY).toLowerCase();
                     if (pendingRole && pendingRole !== currentUser.role) {
-                        localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+                        writeKiuTabIdentity(PENDING_ROLE_SWITCH_KEY, '');
                     }
                     sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
                     currentUserRole = currentUser.role;
-                    localStorage.setItem('currentUserRole', currentUser.role);
+                    writeKiuTabIdentity('KIU_TAB_CURRENT_ROLE', currentUser.role);
                 } catch (storageError) {
                     console.warn('Could not clear stale impersonation keys for faculty account.', storageError);
                 }
@@ -106,7 +135,7 @@ function loadAuthState() {
                 sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
                 currentUserRole = normalizedStoredRole;
                 try {
-                    localStorage.setItem('currentUserRole', normalizedStoredRole);
+                    writeKiuTabIdentity('KIU_TAB_CURRENT_ROLE', normalizedStoredRole);
                 } catch (storageError) {
                     console.warn('Could not persist impersonated role for authenticated account.', storageError);
                 }
@@ -127,7 +156,7 @@ function loadAuthState() {
                     sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
                     currentUserRole = pendingWorkspaceRole;
                     try {
-                        localStorage.setItem('currentUserRole', pendingWorkspaceRole);
+                        writeKiuTabIdentity('KIU_TAB_CURRENT_ROLE', pendingWorkspaceRole);
                     } catch (storageError) {
                         console.warn('Could not persist pending workspace role for authenticated account.', storageError);
                     }
@@ -135,7 +164,7 @@ function loadAuthState() {
                     sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
                     currentUserRole = currentUser.role;
                     try {
-                        localStorage.setItem('currentUserRole', currentUser.role);
+                        writeKiuTabIdentity('KIU_TAB_CURRENT_ROLE', currentUser.role);
                     } catch (storageError) {
                         console.warn('Could not normalize stored role for authenticated account.', storageError);
                     }
@@ -176,7 +205,7 @@ function loadAuthState() {
                         return '';
                     }
                 })();
-                const storedImpersonatedRole = pendingRoleTarget || localStorage.getItem('currentUserRole');
+                const storedImpersonatedRole = pendingRoleTarget || readKiuTabIdentity('KIU_TAB_CURRENT_ROLE', 'currentUserRole');
                 const isAdminAccount = currentUser?.role === USER_ROLES.ADMIN;
                 const hasStoredImpersonatedRole = isAdminAccount && Object.values(USER_ROLES).includes(storedImpersonatedRole);
                 const impersonationEnabled = hasStoredImpersonatedRole && storedImpersonatedRole !== currentUser?.role;
@@ -187,7 +216,7 @@ function loadAuthState() {
                     sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
                     currentUserRole = currentUser.role;
                     try {
-                        localStorage.setItem('currentUserRole', currentUser.role);
+                        writeKiuTabIdentity('KIU_TAB_CURRENT_ROLE', currentUser.role);
                     } catch (storageError) {
                         console.warn('Could not normalize stored role after restore error.', storageError);
                     }
@@ -360,7 +389,7 @@ function handleLogout() {
 
 function _findUserByEmail(email) {
     let state = null;
-    try { state = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE')); } catch(e){}
+    try { state = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE')); } catch(e){}
     if (!state) state = KIU_EMPTY_STATE;
 
     const allUsers = getAllAuthUsersFromState(state);
@@ -369,7 +398,7 @@ function _findUserByEmail(email) {
 
 function _findUserById(id) {
     let state = null;
-    try { state = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE')); } catch(e){}
+    try { state = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE')); } catch(e){}
     if (!state) state = KIU_EMPTY_STATE;
 
     const found = getAllAuthUsersFromState(state).find(m => String(m.id) === String(id));
@@ -450,6 +479,10 @@ function shouldSkipKiuRealtimeBridge() {
 
 function teardownKiuRealtimeEventStream() {
     const runtime = ensureKiuRealtimeRuntime();
+    if (runtime.messengerSnapshotPollHandle) {
+        clearInterval(runtime.messengerSnapshotPollHandle);
+        runtime.messengerSnapshotPollHandle = null;
+    }
     if (runtime.eventSource) {
         try { runtime.eventSource.close(); } catch (error) {}
         runtime.eventSource = null;
@@ -476,6 +509,8 @@ function ensureKiuRealtimeRuntime() {
         bridgeUnavailableUntil: 0,
         sseBlockedUntil: 0,
         sseConnectInFlight: false,
+        messengerSnapshotPollHandle: null,
+        messengerSnapshotPollInFlight: false,
         lastBridgeError: '',
         lastBrowserNoticeAtByKey: {}
     };
@@ -666,7 +701,7 @@ async function kiuRealtimeFetch(path, options = {}) {
             if (
                 response.status === 401 &&
                 typeof handleKiuUnauthorizedSession === 'function' &&
-                (typeof getPortalSessionToken !== 'function' || getPortalSessionToken() || localStorage.getItem('KIU_AUTH_STATE'))
+                (typeof getPortalSessionToken !== 'function' || getPortalSessionToken() || getStoredAuthState())
             ) {
                 handleKiuUnauthorizedSession({
                     redirect: true,
@@ -859,7 +894,7 @@ async function refreshImpersonationDirectoryFromBackend(requestedRole = '', pref
     try {
         const normalizedRole = String(requestedRole || '').trim().toLowerCase();
         const facultyCode = normalizeFacultyCode(
-            preferredFaculty || localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '',
+            preferredFaculty || readKiuTabIdentity('KIU_TAB_CURRENT_FACULTY', 'currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '',
             ''
         );
         let accounts = [];
@@ -985,6 +1020,88 @@ function queueRealtimeUserSync(user) {
     }, 0);
 }
 
+function generateAdminAccountPassword() {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    const values = new Uint32Array(18);
+    if (window.crypto?.getRandomValues) window.crypto.getRandomValues(values);
+    else values.forEach((value, index) => { values[index] = Math.floor(Math.random() * 0xffffffff); });
+    return `Kiu-${Array.from(values, value => alphabet[value % alphabet.length]).join('')}`;
+}
+
+async function provisionAdminAccountCredentials(account = {}) {
+    const normalizedId = String(account.id || account.accountId || account.userId || account.studentId || account.staffId || '').trim()
+        || String(window.prompt('Enter a unique account ID for this person:', '') || '').trim();
+    if (!normalizedId || typeof kiuRealtimeFetch !== 'function') {
+        throw new Error('A valid account ID is required.');
+    }
+    let enteredEmail = String(account.email || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(enteredEmail)) {
+        const emailLocalPart = String(
+            account.username
+            || account.studentId
+            || account.staffId
+            || normalizedId
+            || `user-${Date.now()}`
+        ).trim().toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || `user-${Date.now()}`;
+        enteredEmail = `${emailLocalPart}@kiu.edu.ge`;
+    }
+    const password = generateAdminAccountPassword();
+    const payload = await kiuRealtimeFetch('/api/admin/accounts', {
+        method: 'POST',
+        body: {
+            id: normalizedId,
+            email: enteredEmail,
+            name: account.name || account.nameEn || enteredEmail,
+            nameEn: account.nameEn || account.name || enteredEmail,
+            displayName: account.displayName || account.nameEn || account.name || enteredEmail,
+            role: account.role || 'student',
+            facultyCode: account.facultyCode || account.faculty || '',
+            faculty: account.faculty || account.facultyCode || '',
+            accountStatus: 'active',
+            activationRequired: false,
+            password
+        }
+    });
+    const savedEmail = String(payload?.account?.email || enteredEmail).trim().toLowerCase();
+    window.prompt(
+        'Login credentials generated. Give these credentials to the account holder.',
+        `Email: ${savedEmail}\nPassword: ${password}`
+    );
+    return payload;
+}
+
+window.generateAdminAccountPassword = generateAdminAccountPassword;
+window.provisionAdminAccountCredentials = provisionAdminAccountCredentials;
+
+function pollKiuMessengerSnapshot() {
+    const runtime = ensureKiuRealtimeRuntime();
+    const userId = String(getCurrentUserId() || '').trim();
+    const token = typeof getPortalSessionToken === 'function' ? getPortalSessionToken() : '';
+    if (!userId || !token || runtime.messengerSnapshotPollInFlight) return;
+    runtime.messengerSnapshotPollInFlight = true;
+    kiuRealtimeFetch(`/api/messenger/snapshot?userId=${encodeURIComponent(userId)}`)
+        .then((snapshot) => {
+            if (!snapshot || typeof snapshot !== 'object') return;
+            applyKiuRealtimeSnapshot(snapshot, false);
+            if (typeof renderPortalMessengerWorkspace === 'function') {
+                renderPortalMessengerWorkspace();
+            }
+        })
+        .catch(() => null)
+        .finally(() => {
+            runtime.messengerSnapshotPollInFlight = false;
+        });
+}
+
+function startKiuMessengerSnapshotFallback() {
+    const runtime = ensureKiuRealtimeRuntime();
+    if (runtime.messengerSnapshotPollHandle) return;
+    runtime.messengerSnapshotPollHandle = setInterval(() => {
+        if (document.visibilityState === 'hidden') return;
+        pollKiuMessengerSnapshot();
+    }, 3000);
+}
+
 function handleKiuRealtimeEventPayload(payload) {
     if (!payload || typeof payload !== 'object') return;
     const uiState = typeof ensurePortalMessengerUiState === 'function' ? ensurePortalMessengerUiState() : null;
@@ -1027,8 +1144,7 @@ function handleKiuRealtimeEventPayload(payload) {
                 if (getCurrentUserId()) {
                     unhidePortalMessengerChatForUser(payload.chat.id, getCurrentUserId());
                 }
-                const onLmsRoute = document.body?.classList?.contains('lux-route-lms');
-                if (!onLmsRoute && typeof renderPortalMessengerWorkspace === 'function') {
+                if (typeof renderPortalMessengerWorkspace === 'function') {
                     renderPortalMessengerWorkspace();
                 }
                 if (typeof refreshLmsInteractionMessagesIfActive === 'function') {
@@ -1121,6 +1237,31 @@ function handleKiuRealtimeEventPayload(payload) {
                 });
             }
             emitWorkspaceEvent('kiu:news-updated', payload);
+            break;
+        case 'orders:updated':
+            if (typeof window.refreshRecipientOrdersAfterRealtime === 'function') {
+                window.refreshRecipientOrdersAfterRealtime(payload);
+            } else if (typeof window.renderOrdersInboxPage === 'function') {
+                window.renderOrdersInboxPage({ skipLoadingAnimation: true, force: true });
+            }
+            emitWorkspaceEvent('kiu:orders-updated', payload);
+            break;
+        case 'mail:updated':
+            if (typeof window.refreshPortalMailAfterRealtime === 'function') {
+                window.refreshPortalMailAfterRealtime(payload);
+            }
+            if (typeof window.syncTopbar === 'function') window.syncTopbar();
+            emitWorkspaceEvent('kiu:mail-updated', payload);
+            break;
+        case 'exam:updated':
+        case 'academic:updated':
+        case 'timetable:updated':
+            if (typeof window.refreshActiveAcademicWorkspace === 'function') {
+                window.refreshActiveAcademicWorkspace(payload);
+            } else if (typeof schedulePortalBackendBootstrap === 'function') {
+                schedulePortalBackendBootstrap(true);
+            }
+            emitWorkspaceEvent(`kiu:${payload.type}`, payload);
             break;
         case 'student-service:updated': {
             const refreshStudentServiceState = () => {
@@ -1340,6 +1481,7 @@ async function bootstrapKiuRealtimeBridge(force = false) {
         await syncUserToRealtimeBridge(currentUser);
         const snapshot = await kiuRealtimeFetch(`/api/messenger/snapshot?userId=${encodeURIComponent(currentUserId)}`);
         applyKiuRealtimeSnapshot(snapshot, true);
+        startKiuMessengerSnapshotFallback();
         const hasActiveStream = Boolean(
             runtime.eventSource
             && runtime.bootstrappedFor === currentUserId
@@ -1446,7 +1588,7 @@ async function authLogin(email, password) {
             actualRole: user.role
         });
     } else {
-        localStorage.setItem('KIU_AUTH_STATE', JSON.stringify({
+        const fallbackAuth = {
             id: user.id,
             name: user.name,
             nameEn: user.nameEn,
@@ -1454,25 +1596,24 @@ async function authLogin(email, password) {
             email: user.email,
             role: user.role,
             faculty: user.facultyCode || user.faculty
-        }));
-        localStorage.setItem('currentUserRole', user.role);
+        };
+        if (typeof setKiuTabAuthState === 'function') setKiuTabAuthState(fallbackAuth);
+        else sessionStorage.setItem('KIU_TAB_AUTH_STATE', JSON.stringify(fallbackAuth));
+        writeKiuTabIdentity('KIU_TAB_CURRENT_ROLE', user.role);
         if (user.role === USER_ROLES.ADMIN && effectiveRole !== user.role) sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
         else sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
 
         let persistedState = null;
-        try { persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE')); } catch (e) {}
+        try { persistedState = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE')); } catch (e) {}
         if (!persistedState) persistedState = JSON.parse(JSON.stringify(KIU_EMPTY_STATE));
         persistedState.auth = persistedState.auth || {};
         persistedState.auth.activeUserId = user.id;
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
+        localStorage.setItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
         sessionStorage.setItem(ACTIVE_SESSION_KEY, user.id);
     }
     
     // Set faculty context automatically on login
-    if (user.faculty) {
-        localStorage.setItem('KIU_FACULTY_CONTEXT', user.faculty);
-        localStorage.setItem('currentFaculty', user.faculty);
-    }
+    if (user.faculty) writeKiuTabIdentity('KIU_TAB_CURRENT_FACULTY', user.faculty);
     
     loadAuthState();
     queueRealtimeUserSync(user);
@@ -1540,13 +1681,13 @@ function syncAuthenticatedSessionState() {
             if (sessionUserId) return String(sessionUserId);
         } catch (error) {}
         try {
-            const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+            const persistedState = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
             const persistedUserId = persistedState?.auth?.activeUserId;
             if (persistedUserId) return String(persistedUserId);
         } catch (error) {}
         try {
             const preferredFaculty = normalizeFacultyCode(
-                localStorage.getItem('currentFaculty') || currentUser.facultyCode || currentUser.faculty || 'ECON',
+                readKiuTabIdentity('KIU_TAB_CURRENT_FACULTY', 'currentFaculty') || currentUser.facultyCode || currentUser.faculty || 'ECON',
                 'ECON'
             );
             if (typeof getPreferredImpersonationUserForRole === 'function') {
@@ -1560,10 +1701,10 @@ function syncAuthenticatedSessionState() {
     KIU_STATE.auth.activeUserId = activeSessionUserId;
     sessionStorage.setItem(ACTIVE_SESSION_KEY, activeSessionUserId);
     try {
-        const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
+        const persistedState = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
         persistedState.auth = persistedState.auth || {};
         persistedState.auth.activeUserId = activeSessionUserId;
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
+        localStorage.setItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
     } catch (error) {
         console.warn('Could not persist active session user during auth sync.', error);
     }
@@ -1587,12 +1728,11 @@ function syncAuthenticatedSessionState() {
 
     const normalizedFaculty = normalizeFacultyCode(
         impersonationEnabled && currentUser.role === USER_ROLES.ADMIN
-            ? (localStorage.getItem('currentFaculty') || getCurrentUser()?.facultyCode || getCurrentUser()?.faculty || currentUser.facultyCode || currentUser.faculty || 'ECON')
-            : (currentUser.facultyCode || currentUser.faculty || localStorage.getItem('currentFaculty') || 'ECON'),
+            ? (readKiuTabIdentity('KIU_TAB_CURRENT_FACULTY', 'currentFaculty') || getCurrentUser()?.facultyCode || getCurrentUser()?.faculty || currentUser.facultyCode || currentUser.faculty || 'ECON')
+            : (currentUser.facultyCode || currentUser.faculty || readKiuTabIdentity('KIU_TAB_CURRENT_FACULTY', 'currentFaculty') || 'ECON'),
         'ECON'
     );
-    localStorage.setItem('currentFaculty', normalizedFaculty);
-    localStorage.setItem('KIU_FACULTY_CONTEXT', normalizedFaculty);
+    writeKiuTabIdentity('KIU_TAB_CURRENT_FACULTY', normalizedFaculty);
 }
 
 async function authActivate(id, activationToken, newPassword) {

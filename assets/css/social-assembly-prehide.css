@@ -1,0 +1,9 @@
+/*
+ * Hide Social center children before assembly staging tags exist.
+ * Cleared when section motion start/softRestart applies *-assembly-active.
+ */
+body.lux-route-social.social-center-assembly-prehide #social-neo-center-region > * {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

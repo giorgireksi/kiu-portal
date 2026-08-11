@@ -28,7 +28,7 @@ describe('social-page-shell-runtime peel', () => {
         expect(html).toContain('social-page-shell-runtime.js');
         expect(html.indexOf('social-page-shell-runtime.js'))
             .toBeLessThan(html.indexOf('assets/js/pages/social-page.js'));
-        expect(html).toContain('social-page-shell-runtime.js?v=20260807-projectscroll1');
+        expect(html).toContain('social-page-shell-runtime.js?v=20260810-socialbootveil2');
     });
 
     it('does not clear overlay lock artifacts inside syncSocialScrollLayout', () => {

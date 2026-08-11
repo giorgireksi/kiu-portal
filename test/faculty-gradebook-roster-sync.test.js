@@ -115,6 +115,16 @@ describe('faculty gradebook roster sync', () => {
         expect(enrolled.some((entry) => entry.id === 'STU-ECON-TEST-1')).toBe(true);
     });
 
+    it('syncs roster rows when the full gradebook model normalizer is absent', () => {
+        const ctx = loadMessengerGradebookApi({ ensureGradeRecordHistories: undefined });
+        ctx.syncGradebookRostersForStudent('STU-ECON-TEST-1');
+        const rosterKeys = Object.keys(ctx.KIU_STATE.studentGrades);
+        expect(rosterKeys.length).toBeGreaterThan(0);
+        const roster = ctx.KIU_STATE.studentGrades[rosterKeys[0]];
+        expect(roster.some((entry) => entry.id === 'STU-ECON-TEST-1')).toBe(true);
+        expect(roster[0].assessments).toBeDefined();
+    });
+
     it('syncs roster rows for object-shaped schedule via syncGradebookRostersForStudent', () => {
         const ctx = loadMessengerGradebookApi();
         ctx.syncGradebookRostersForStudent('STU-ECON-TEST-1');

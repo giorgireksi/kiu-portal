@@ -178,10 +178,11 @@
         var storedFaculty = '';
         var storedRole = '';
         try {
-            persistentState = parseJson(localStorage.getItem('KIU_PERSISTENT_STATE'));
-            authState = parseJson(localStorage.getItem('KIU_AUTH_STATE'));
-            storedFaculty = String(localStorage.getItem('currentFaculty') || '').trim().toUpperCase();
-            storedRole = normalizeRole(localStorage.getItem('currentUserRole'));
+            authState = parseJson(sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE'));
+            var primerUserId = String(authState && authState.id || sessionStorage.getItem('KIU_ACTIVE_SESSION_USER_ID') || '').trim();
+            persistentState = parseJson(localStorage.getItem(primerUserId ? `KIU_PERSISTENT_STATE::${primerUserId}` : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE'));
+            storedFaculty = String(sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || '').trim().toUpperCase();
+            storedRole = normalizeRole(sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole'));
         } catch (e) {}
 
         var authRole = normalizeRole(authState && authState.role);
@@ -793,8 +794,11 @@
         }
         function tryRevealPageEarly() {
             if (shellLoadState.phase !== 'loading') return;
-            var navRoot = document.getElementById('lux-nav');
             var body = document.body;
+            // Social / Home own reveal via assembly run — do not uncover early.
+            if (body && body.classList.contains('lux-route-social')) return;
+            if (body && body.classList.contains('lux-route-home')) return;
+            var navRoot = document.getElementById('lux-nav');
             var canRevealFromNav = body && body.classList.contains('lux-full-paint');
             if (canRevealFromNav && navRoot && navRoot.children && navRoot.children.length > 0) {
                 forceRevealPage();

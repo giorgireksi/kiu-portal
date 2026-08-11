@@ -1,0 +1,67 @@
+/* Library catalog assembly motion only. */
+body.library-assembly-active #page-library .kiu-library-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* Stage catalog components without changing their existing surfaces. */
+body.library-assembly-active #page-library :is(
+  [data-library-catalog-shell="1"],
+  .library-catalog-filters-panel,
+  .admin-library-metric-card,
+  .admin-library-catalog-card,
+  .admin-library-catalog-head,
+  .admin-library-scroll-wrap,
+  .admin-library-catalog-table thead tr,
+  .admin-library-catalog-row,
+  .admin-library-empty-row,
+  .admin-library-catalog-foot
+) {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.library-assembly-active #page-library .kiu-library-assembly-structure {
+  opacity: 0;
+}
+
+body.library-assembly-active #page-library .kiu-library-assembly-target.is-flight,
+body.library-assembly-ready #page-library .kiu-library-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.library-assembly-ready #page-library .kiu-library-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.library-assembly-active #page-library .kiu-library-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.library-assembly-active #page-library :is(
+    [data-library-catalog-shell="1"],
+    .library-catalog-filters-panel,
+    .admin-library-metric-card,
+    .admin-library-catalog-card,
+    .admin-library-catalog-head,
+    .admin-library-scroll-wrap,
+    .admin-library-catalog-table thead tr,
+    .admin-library-catalog-row,
+    .admin-library-empty-row,
+    .admin-library-catalog-foot
+  ) {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.library-assembly-active #page-library .kiu-library-assembly-structure {
+    opacity: 1;
+  }
+}

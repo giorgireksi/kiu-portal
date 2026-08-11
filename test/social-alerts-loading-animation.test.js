@@ -11,9 +11,9 @@ describe('Social Alerts loading animation', () => {
 
     it('loads Alerts motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260809-assembly17');
-        const alertsIndex = html.indexOf('social-alerts-loading-runtime.js?v=20260809-socialassemblyreplay1');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
+        const alertsIndex = html.indexOf('social-alerts-loading-runtime.js?v=20260810-socialbootveil2');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
         expect(html).toContain('social-alerts-loading.css?v=20260809-socialassemblyreplay1');
         expect(sharedIndex).toBeGreaterThan(-1);
@@ -45,7 +45,11 @@ describe('Social Alerts loading animation', () => {
         expect(runtime).toContain('options?.force');
         expect(interactions).toContain('function queueSocialAlertsMotion(center, activePanel, reason)');
         expect(interactions).toContain("reason === 'alerts-module'");
-        expect(interactions).toContain("reason === 'alerts-filter'");
+        const alertsMotionGate = interactions.match(
+            /function queueSocialAlertsMotion[\s\S]*?function queueSocialSurveysMotion/
+        )?.[0] || '';
+        expect(alertsMotionGate).not.toContain("reason === 'alerts-filter'");
+        expect(shellNav).toContain("'alerts-filter'");
         expect(interactions).toContain("reason === 'panel-alerts'");
         expect(interactions).toContain("reason === 'notifications-refresh'");
         expect(interactions).toContain("reason === 'notification-read'");
@@ -69,7 +73,13 @@ describe('Social Alerts loading animation', () => {
         expect(panelAlertsPaint).toBeGreaterThan(-1);
         expect(shellNav.indexOf('refreshPortalNotifications(true)', panelAlertsPaint))
             .toBeGreaterThan(panelAlertsPaint);
-        expect(interactions).toContain('options?.skipRender');
+        expect(interactions).toContain('abortSocialSectionMotion');
+        expect(interactions).toContain("__kiuSocialAlertsLoadingMotion");
+        expect(interactions).toContain('motion.abort');
+        expect(runtime).toContain('motion.softRestart');
+        expect(runtime).not.toContain('motion.abort()');
+        expect(runtime).not.toContain('social-center-assembly-prehide');
+        expect(interactions).toContain('shouldPrehideCenterForAssembly');
     });
 
     it('starts the shared engine for an already-rendered Alerts center', async () => {
@@ -341,9 +351,10 @@ describe('Social Alerts loading animation', () => {
 
     it('cache-busts Alerts assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
         expect(sw).toContain('social-alerts-loading.css?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-alerts-loading-runtime.js?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        expect(sw).toContain('social-alerts-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain('lux-assembly-loading-runtime.js?v=20260810-assembly25');
+        expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
     });
 });

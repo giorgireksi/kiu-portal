@@ -598,7 +598,7 @@
                 console.warn('[Social] Shell identity sync skipped.', error);
             }
         }
-        function revealShell() {
+        function revealShell(options = {}) {
             document.getElementById('social-loading-placeholder')?.remove();
             const socialRoot = root();
             if (socialRoot) socialRoot.style.display = isSocialRouteDesktopScroll() ? 'flex' : 'block';
@@ -606,6 +606,17 @@
                 socialVisualShellSynced = true;
                 syncSocialVisualShell();
             }
+            const forceUnveil = options?.force === true || window.__kiuSocialBootForceUnveil === true;
+            // Keep the global shell veil until assembly run() (or an explicit force fail-safe)
+            // allows first paint — early pin/guardian/standalone renders must not uncover Feed.
+            if (document.body?.classList.contains('lux-route-social')
+                && document.body?.classList.contains('kiu-shell-loading')
+                && !window.__kiuSocialShellRevealAllowed
+                && !forceUnveil) {
+                return;
+            }
+            window.__kiuSocialShellRevealAllowed = true;
+            window.__kiuSocialBootForceUnveil = false;
             if (typeof markPortalShellReady === 'function') {
                 markPortalShellReady();
             } else if (typeof window.__kiuStartShellReveal === 'function') {

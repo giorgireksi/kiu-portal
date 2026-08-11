@@ -4,7 +4,8 @@ function registerOrdersRoutes(app, deps = {}) {
         getActualSessionRole,
         getStore,
         requireSessionAccount,
-        sendError
+        sendError,
+        pushEvent
     } = deps;
 
     app.get('/api/orders/recipient-filter-layout', (request, response) => {
@@ -32,6 +33,12 @@ function registerOrdersRoutes(app, deps = {}) {
         if (!result || result?.error) {
             sendError(response, result?.status || 400, result?.error || 'Recipient Orders filter layout could not be saved.');
             return;
+        }
+        if (typeof pushEvent === 'function') {
+            pushEvent([getActorUserId(sessionAccount)], {
+                type: 'orders:updated',
+                emittedAt: new Date().toISOString()
+            });
         }
         response.json(result);
     });

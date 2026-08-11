@@ -44,7 +44,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
     function getFallbackNavigationRole() {
         try {
             const params = new URLSearchParams(window.location.search || '');
-            const requested = String(params.get('view') || localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
+            const requested = String(params.get('view') || sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
             return requested || 'student';
         } catch (error) {
             return 'student';
@@ -1226,9 +1226,9 @@ const PERMISSION_MATRIX = {
 // Check if role is stored in localStorage
 let currentUserRole = (() => {
     try {
-        const storedRole = localStorage.getItem('currentUserRole');
-        const pendingRole = localStorage.getItem(PENDING_ROLE_SWITCH_KEY);
-        const rawAuthState = localStorage.getItem('KIU_AUTH_STATE');
+        const storedRole = sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole');
+        const pendingRole = sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE') || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem(PENDING_ROLE_SWITCH_KEY);
+        const rawAuthState = sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE');
         const authState = rawAuthState ? JSON.parse(rawAuthState) : null;
         const authenticatedRole = String(authState?.role || '').trim().toLowerCase();
         if (authenticatedRole && authenticatedRole !== USER_ROLES.ADMIN) {
@@ -1250,7 +1250,7 @@ function getAuthenticatedAccountRole() {
     const sessionRole = String(currentUser?.role || '').trim().toLowerCase();
     if (sessionRole) return sessionRole;
     try {
-        const rawAuthState = localStorage.getItem('KIU_AUTH_STATE');
+        const rawAuthState = sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE');
         const authState = rawAuthState ? JSON.parse(rawAuthState) : null;
         return String(authState?.role || '').trim().toLowerCase();
     } catch (error) {
@@ -1274,11 +1274,11 @@ function resolveStoredWorkspaceRole() {
         }
     } catch (error) {}
     try {
-        const pendingRole = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+        const pendingRole = String(sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE') || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
         if (Object.values(USER_ROLES).includes(pendingRole) && pendingRole !== USER_ROLES.ADMIN) {
             return pendingRole;
         }
-        const storedRole = String(localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
+        const storedRole = String(sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
         if (Object.values(USER_ROLES).includes(storedRole) && storedRole !== USER_ROLES.ADMIN) {
             return storedRole;
         }
@@ -1349,7 +1349,7 @@ if (typeof window.getCurrentFaculty !== 'function') {
         const activeUser = stateUser || authUser || currentUser || null;
         const selectedFaculty = (() => {
             try {
-                return localStorage.getItem('currentFaculty') || localStorage.getItem('KIU_FACULTY_CONTEXT') || '';
+                return sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || localStorage.getItem('KIU_FACULTY_CONTEXT') || '';
             } catch (e) {
                 return '';
             }

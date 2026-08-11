@@ -84,8 +84,7 @@
     }
 
     function isLostFoundSurfaceReady() {
-        const section = getLostFoundSection();
-        return Boolean(section && section.dataset.socialLostFoundAssemblyRoot === '1');
+        return Boolean(getLostFoundSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -170,6 +169,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialLostFoundAssemblyState;
         section.dataset.socialLostFoundAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

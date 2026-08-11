@@ -83,8 +83,7 @@
     }
 
     function isCommunitySurfaceReady() {
-        const section = getCommunitySection();
-        return Boolean(section && section.dataset.socialCommunityAssemblyRoot === '1');
+        return Boolean(getCommunitySection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -176,6 +175,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialCommunityAssemblyState;
         section.dataset.socialCommunityAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

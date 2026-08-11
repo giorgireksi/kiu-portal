@@ -11,11 +11,11 @@ describe('Social Groups loading animation', () => {
 
     it('loads Groups motion before Social boot', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260809-assembly17');
-        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260809-socialpopup1');
-        const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260809-socialpopup1');
-        const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260809-socialpopup1');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
+        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260810-socialhomeanim5');
+        const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260810-socialbootveil2');
+        const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260810-socialbootveil2');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
         expect(html).toContain('social-groups-loading.css?v=20260809-socialpopup1');
         expect(sharedIndex).toBeGreaterThan(-1);
@@ -52,6 +52,11 @@ describe('Social Groups loading animation', () => {
         expect(interactions).toContain("[data-social-groups-assembly-root]");
         expect(interactions).toContain('window.__kiuStartSocialGroupsLoadingMotion');
         expect(interactions).toContain('startMotion(center, { force: true })');
+        expect(interactions).toContain('Start sync in this turn');
+        const groupsGate = interactions.match(
+            /function queueSocialGroupsMotion[\s\S]*?function queueSocialProjectsMotion/
+        )?.[0] || '';
+        expect(groupsGate).toContain("reason === 'boot'");
         expect(readSource('assets/css/social-groups-loading.css')).toContain('Keep openers clickable');
     });
 
@@ -109,9 +114,9 @@ describe('Social Groups loading animation', () => {
 
     it('cache-busts the Groups assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
         expect(sw).toContain('social-groups-loading.css?v=20260809-socialpopup1');
-        expect(sw).toContain('social-groups-loading-runtime.js?v=20260809-socialpopup1');
-        expect(sw).toContain('social-projects-loading-runtime.js?v=20260809-socialpopup1');
+        expect(sw).toContain('social-groups-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain('social-projects-loading-runtime.js?v=20260810-socialbootveil2');
     });
 });

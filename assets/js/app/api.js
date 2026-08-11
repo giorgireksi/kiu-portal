@@ -20,12 +20,79 @@ function getKiuPortalBackendDefaultUrl() {
 }
 var KIU_PORTAL_BACKEND_DEFAULT_URL = getKiuPortalBackendDefaultUrl();
 var KIU_PORTAL_SESSION_TOKEN_KEY = 'KIU_PORTAL_SESSION_TOKEN';
-function getPortalSessionToken() {
+var KIU_TAB_AUTH_STATE_KEY = 'KIU_TAB_AUTH_STATE';
+var KIU_TAB_SESSION_TOKEN_KEY = 'KIU_TAB_PORTAL_SESSION_TOKEN';
+var KIU_TAB_ROLE_KEY = 'KIU_TAB_CURRENT_ROLE';
+var KIU_TAB_FACULTY_KEY = 'KIU_TAB_CURRENT_FACULTY';
+
+function getKiuTabValue(key) {
     try {
-        return String(localStorage.getItem(KIU_PORTAL_SESSION_TOKEN_KEY) || '').trim();
+        return String(sessionStorage.getItem(key) || '').trim();
     } catch (error) {
         return '';
     }
+}
+
+function setKiuTabValue(key, value) {
+    try {
+        if (value === null || value === undefined || value === '') sessionStorage.removeItem(key);
+        else sessionStorage.setItem(key, String(value));
+    } catch (error) {}
+}
+
+function getKiuTabAuthState() {
+    try {
+        const raw = sessionStorage.getItem(KIU_TAB_AUTH_STATE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function setKiuTabAuthState(state) {
+    try {
+        if (state && typeof state === 'object') sessionStorage.setItem(KIU_TAB_AUTH_STATE_KEY, JSON.stringify(state));
+        else sessionStorage.removeItem(KIU_TAB_AUTH_STATE_KEY);
+    } catch (error) {}
+}
+
+function getKiuPersistentStateKey() {
+    const userId = getKiuTabValue('KIU_ACTIVE_SESSION_USER_ID') || String(getKiuTabAuthState()?.id || '').trim();
+    return userId ? `KIU_PERSISTENT_STATE::${userId}` : 'KIU_PERSISTENT_STATE';
+}
+
+function migrateKiuLegacyTabIdentity() {
+    try {
+        if (!sessionStorage.getItem(KIU_TAB_AUTH_STATE_KEY)) {
+            const rawAuth = localStorage.getItem('KIU_AUTH_STATE');
+            if (rawAuth) sessionStorage.setItem(KIU_TAB_AUTH_STATE_KEY, rawAuth);
+        }
+        if (!sessionStorage.getItem(KIU_TAB_SESSION_TOKEN_KEY)) {
+            const token = localStorage.getItem(KIU_PORTAL_SESSION_TOKEN_KEY);
+            if (token) sessionStorage.setItem(KIU_TAB_SESSION_TOKEN_KEY, token);
+        }
+        if (!sessionStorage.getItem(KIU_TAB_ROLE_KEY)) {
+            const role = localStorage.getItem('currentUserRole');
+            if (role) sessionStorage.setItem(KIU_TAB_ROLE_KEY, role);
+        }
+        if (!sessionStorage.getItem(KIU_TAB_FACULTY_KEY)) {
+            const faculty = localStorage.getItem('currentFaculty') || localStorage.getItem('KIU_FACULTY_CONTEXT');
+            if (faculty) sessionStorage.setItem(KIU_TAB_FACULTY_KEY, faculty);
+        }
+        // These legacy identity keys are unsafe for multi-account tabs. They
+        // are only used as a one-time migration source above.
+        localStorage.removeItem('KIU_AUTH_STATE');
+        localStorage.removeItem(KIU_PORTAL_SESSION_TOKEN_KEY);
+        localStorage.removeItem('currentUserRole');
+        localStorage.removeItem('KIU_FACULTY_CONTEXT');
+        localStorage.removeItem('currentFaculty');
+    } catch (error) {}
+}
+
+migrateKiuLegacyTabIdentity();
+
+function getPortalSessionToken() {
+    return getKiuTabValue(KIU_TAB_SESSION_TOKEN_KEY);
 }
 var KIU_PORTAL_BACKEND_TIMEOUT_MS = 4000;
 var KIU_PORTAL_BACKEND_COOLDOWN_MS = 5000;
@@ -71,6 +138,19 @@ function getKiuPortalBackendUrl() {
         return String(KIU_PORTAL_BACKEND_DEFAULT_URL).replace(/\/$/, '');
     } catch (error) {
         return KIU_PORTAL_BACKEND_DEFAULT_URL;
+    }
+}
+
+function getKiuPortalBackendRecoveryHint() {
+    try {
+        const host = String(window.location?.hostname || '').trim().toLowerCase();
+        const isLocalHost = /^(127\.0\.0\.1|localhost)$/i.test(host);
+        if (isLocalHost) {
+            return `Start the local stack (./start-local-8876.sh) to serve the backend on port ${KIU_PORTAL_BACKEND_PORT} and the app at http://127.0.0.1:8876.`;
+        }
+        return `Restart the public stack (./start-public-demo.sh) to serve the backend at ${getKiuPortalBackendUrl()}, or use the local stack at http://127.0.0.1:8876 instead.`;
+    } catch (error) {
+        return `Start the backend on port ${KIU_PORTAL_BACKEND_PORT} and use http://127.0.0.1:8876.`;
     }
 }
 
@@ -145,7 +225,7 @@ async function kiuPortalFetch(path, options = {}) {
         if (error?.name === 'AbortError') {
             runtime.lastBackendError = `Portal backend timed out after ${Math.round(timeoutMs / 1000)}s.`;
         } else if (String(error?.message || '').trim().toLowerCase() === 'failed to fetch') {
-            runtime.lastBackendError = `Portal backend unreachable at ${getKiuPortalBackendUrl()}. Start the backend on port ${KIU_PORTAL_BACKEND_PORT} and use http://127.0.0.1:8876.`;
+            runtime.lastBackendError = `Portal backend unreachable at ${getKiuPortalBackendUrl()}. ${getKiuPortalBackendRecoveryHint()}`;
         } else {
             runtime.lastBackendError = error?.message || 'Portal backend is unavailable.';
         }
@@ -172,7 +252,10 @@ async function kiuPortalFetch(path, options = {}) {
     }
     if (!response.ok) {
         runtime.online = response.status < 500;
-        const message = payload?.error || payload?.message || `Portal backend request failed (${response.status}).`;
+        let message = payload?.error || payload?.message || `Portal backend request failed (${response.status}).`;
+        if (response.status === 503 && payload?.code === 'offline') {
+            message = `${message} ${getKiuPortalBackendRecoveryHint()}`;
+        }
         if (
             response.status === 401 &&
             !/\/api\/portal\/session\/login\b/i.test(String(path || '')) &&
@@ -220,9 +303,9 @@ function ensurePortalBackendRuntime() {
 
 function hasPortalAuthSnapshot() {
     try {
-        return Boolean(localStorage.getItem('KIU_AUTH_STATE'));
+        return Boolean(getKiuTabAuthState() || localStorage.getItem('KIU_AUTH_STATE'));
     } catch (error) {
-        return false;
+        return Boolean(getKiuTabAuthState());
     }
 }
 
@@ -296,14 +379,12 @@ function clearPortalClientAuthState(options = {}) {
     const activeRoleImpersonationKey = typeof ACTIVE_ROLE_IMPERSONATION_KEY !== 'undefined' ? ACTIVE_ROLE_IMPERSONATION_KEY : 'KIU_ACTIVE_ROLE_IMPERSONATION';
     const preserveFaculty = options.preserveFaculty !== false;
     const preservedFaculty = preserveFaculty
-        ? (() => {
-            try {
-                return String(localStorage.getItem('currentFaculty') || localStorage.getItem('KIU_FACULTY_CONTEXT') || '').trim();
-            } catch (error) {
-                return '';
-            }
-        })()
+        ? (getKiuTabValue(KIU_TAB_FACULTY_KEY) || '')
         : '';
+    setKiuTabAuthState(null);
+    setKiuTabValue(KIU_TAB_SESSION_TOKEN_KEY, '');
+    setKiuTabValue(KIU_TAB_ROLE_KEY, '');
+    setKiuTabValue(PENDING_ROLE_SWITCH_KEY, '');
     try { localStorage.removeItem('KIU_AUTH_STATE'); } catch (error) {}
     try { localStorage.removeItem('currentUserRole'); } catch (error) {}
     try { localStorage.removeItem(PENDING_ROLE_SWITCH_KEY); } catch (error) {}
@@ -314,8 +395,7 @@ function clearPortalClientAuthState(options = {}) {
         try { localStorage.removeItem('KIU_FACULTY_CONTEXT'); } catch (error) {}
         try { localStorage.removeItem('currentFaculty'); } catch (error) {}
     } else if (preservedFaculty) {
-        try { localStorage.setItem('currentFaculty', preservedFaculty); } catch (error) {}
-        try { localStorage.setItem('KIU_FACULTY_CONTEXT', preservedFaculty); } catch (error) {}
+        setKiuTabValue(KIU_TAB_FACULTY_KEY, preservedFaculty);
     }
     try { sessionStorage.removeItem(activeSessionKey); } catch (error) {}
     try { sessionStorage.removeItem(activeRoleImpersonationKey); } catch (error) {}
@@ -327,12 +407,13 @@ function clearPortalClientAuthState(options = {}) {
 
     try {
         if (options.clearPersistentState !== false) {
+            localStorage.removeItem(getKiuPersistentStateKey());
             localStorage.removeItem('KIU_PERSISTENT_STATE');
         } else {
-            const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+            const persistedState = JSON.parse(localStorage.getItem(getKiuPersistentStateKey()) || 'null');
             if (persistedState?.auth) {
                 delete persistedState.auth.activeUserId;
-                localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
+                localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(persistedState));
             }
         }
     } catch (error) {}
@@ -359,12 +440,12 @@ function clearPortalClientAuthState(options = {}) {
 function handleKiuUnauthorizedSession(options = {}) {
     const authStateExists = (() => {
         try {
-            return Boolean(localStorage.getItem('KIU_AUTH_STATE') || localStorage.getItem(KIU_PORTAL_SESSION_TOKEN_KEY));
+            return Boolean(getKiuTabAuthState() || getPortalSessionToken());
         } catch (error) {
             return false;
         }
     })();
-    if (!authStateExists) return;
+    if (!authStateExists && !getKiuTabAuthState()) return;
     const runtime = ensurePortalBackendRuntime();
     const handledAt = Number(window.__kiuUnauthorizedHandledAt || 0);
     if (handledAt && Date.now() - handledAt < 1500) return;
@@ -392,8 +473,7 @@ function handleKiuUnauthorizedSession(options = {}) {
 
 function setPortalSessionToken(token) {
     try {
-        if (token) localStorage.setItem(KIU_PORTAL_SESSION_TOKEN_KEY, String(token));
-        else localStorage.removeItem(KIU_PORTAL_SESSION_TOKEN_KEY);
+        setKiuTabValue(KIU_TAB_SESSION_TOKEN_KEY, token ? String(token) : '');
     } catch (error) {
         console.warn('Could not persist portal session token.', error);
     }
@@ -407,11 +487,11 @@ function resolveAdminEffectiveRole(account, session = {}) {
         return sessionRole;
     }
     try {
-        const pending = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+        const pending = String(getKiuTabValue(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
         if (Object.values(USER_ROLES).includes(pending) && pending !== USER_ROLES.ADMIN) {
             return pending;
         }
-        const stored = String(localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
+        const stored = String(getKiuTabValue(KIU_TAB_ROLE_KEY) || '').trim().toLowerCase();
         if (Object.values(USER_ROLES).includes(stored) && stored !== USER_ROLES.ADMIN) {
             return stored;
         }
@@ -432,10 +512,10 @@ function storePortalBackendAuth(account, session) {
         role: actualRole,
         faculty: account.facultyCode || account.faculty || ''
     };
-    localStorage.setItem('KIU_AUTH_STATE', JSON.stringify(normalizedAuth));
-    localStorage.setItem('currentUserRole', effectiveRole);
-    if (actualRole === USER_ROLES.ADMIN && effectiveRole !== USER_ROLES.ADMIN) localStorage.setItem(PENDING_ROLE_SWITCH_KEY, effectiveRole);
-    else localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+    setKiuTabAuthState(normalizedAuth);
+    setKiuTabValue(KIU_TAB_ROLE_KEY, effectiveRole);
+    if (actualRole === USER_ROLES.ADMIN && effectiveRole !== USER_ROLES.ADMIN) setKiuTabValue(PENDING_ROLE_SWITCH_KEY, effectiveRole);
+    else setKiuTabValue(PENDING_ROLE_SWITCH_KEY, '');
     setPortalSessionToken(session.token || getPortalSessionToken());
 
     const activeSessionUserId = (() => {
@@ -445,7 +525,7 @@ function storePortalBackendAuth(account, session) {
             return normalizedAuth.id;
         }
         try {
-            const preferredFaculty = normalizedAuth.faculty || localStorage.getItem('currentFaculty') || 'ECON';
+            const preferredFaculty = normalizedAuth.faculty || getKiuTabValue(KIU_TAB_FACULTY_KEY) || 'ECON';
             if (typeof getPreferredImpersonationUserForRole === 'function') {
                 const persona = getPreferredImpersonationUserForRole(effectiveRole, preferredFaculty);
                 if (persona?.id) return String(persona.id);
@@ -463,13 +543,12 @@ function storePortalBackendAuth(account, session) {
     }
 
     if (normalizedAuth.faculty) {
-        localStorage.setItem('KIU_FACULTY_CONTEXT', normalizedAuth.faculty);
-        localStorage.setItem('currentFaculty', normalizedAuth.faculty);
+        setKiuTabValue(KIU_TAB_FACULTY_KEY, normalizedAuth.faculty);
     }
 
     let persistedState = null;
     try {
-        persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+        persistedState = JSON.parse(localStorage.getItem(getKiuPersistentStateKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
     } catch (error) {
         persistedState = null;
     }
@@ -485,7 +564,7 @@ function storePortalBackendAuth(account, session) {
     if (persistedState) {
         persistedState.meta = persistedState.meta && typeof persistedState.meta === 'object' ? persistedState.meta : {};
         persistedState.meta.portalStateOwnerAccountId = nextOwnerAccountId;
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
+        localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(persistedState));
     }
 
     currentUserRole = effectiveRole;
@@ -548,9 +627,7 @@ function resolvePortalImpersonationUserId(role, userId = '') {
     if (typeof getPreferredImpersonationUserForRole === 'function') {
         let preferredFaculty = 'ECON';
         try {
-            preferredFaculty = localStorage.getItem('currentFaculty')
-                || localStorage.getItem('KIU_FACULTY_CONTEXT')
-                || '';
+            preferredFaculty = getKiuTabValue(KIU_TAB_FACULTY_KEY) || '';
         } catch (error) {}
         const persona = getPreferredImpersonationUserForRole(normalizedRole, preferredFaculty);
         if (persona?.id) return String(persona.id).trim();
@@ -848,6 +925,14 @@ async function syncPortalMail(payload = {}) {
     return result || null;
 }
 
+async function refreshPortalMailAfterRealtime() {
+    const payload = await fetchPortalMailBootstrap().catch(() => null);
+    try {
+        window.dispatchEvent(new CustomEvent('kiu:mail-bootstrap-refreshed', { detail: payload || {} }));
+    } catch (error) {}
+    return payload;
+}
+
 function countAdminRegistrationStructureModules(structures, faculty) {
     const bucket = structures?.[faculty];
     if (!bucket || typeof bucket !== 'object') return 0;
@@ -1017,7 +1102,7 @@ function getJsonFootprint(value) {
 function getBestLocalPortalSnapshot(inMemoryState = null) {
     let persisted = null;
     try {
-        persisted = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+        persisted = JSON.parse(localStorage.getItem(getKiuPersistentStateKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
     } catch (error) {
         persisted = null;
     }
@@ -1057,7 +1142,7 @@ function canMergeLocalPortalSnapshot(localSnapshot, ownerAccountId = '') {
 
 function resetPortalLocalStateForAccountChange() {
     try {
-        localStorage.removeItem('KIU_PERSISTENT_STATE');
+        localStorage.removeItem(getKiuPersistentStateKey());
     } catch (error) {}
     if (typeof KIU_STATE !== 'undefined' && typeof createFreshKiuState === 'function') {
         KIU_STATE = createFreshKiuState();
@@ -1157,7 +1242,7 @@ function applyPortalBootstrapState(remoteState, options = {}) {
 
     const storedRole = (() => {
         try {
-            return String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
+            return String(getKiuTabValue(PENDING_ROLE_SWITCH_KEY) || getKiuTabValue(KIU_TAB_ROLE_KEY) || '').trim().toLowerCase();
         } catch (error) {
             return '';
         }
@@ -1174,7 +1259,7 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         } catch (error) {}
         if (allowLocalMerge) {
             try {
-                const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+                const persistedState = JSON.parse(localStorage.getItem(getKiuPersistentStateKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
                 const persistedUserId = persistedState?.auth?.activeUserId;
                 if (persistedUserId) return String(persistedUserId);
             } catch (error) {}
@@ -1182,7 +1267,7 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         if (currentUser?.role === USER_ROLES.ADMIN && effectiveRole && effectiveRole !== USER_ROLES.ADMIN) {
             try {
                 const preferredFaculty = normalizeFacultyCode(
-                    localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON',
+                    getKiuTabValue(KIU_TAB_FACULTY_KEY) || currentUser?.facultyCode || currentUser?.faculty || 'ECON',
                     'ECON'
                 );
                 if (typeof getPreferredImpersonationUserForRole === 'function') {
@@ -1251,13 +1336,13 @@ function applyPortalBootstrapState(remoteState, options = {}) {
             setActiveSessionUserByRole(effectiveRole);
         }
         try {
-            localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(buildPortalPersistableState(KIU_STATE)));
+            localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(buildPortalPersistableState(KIU_STATE)));
         } catch (error) {
             console.warn('Could not refresh cached portal bootstrap state.', error);
         }
     } else {
         try {
-            localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(buildPortalPersistableState(KIU_STATE)));
+            localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(buildPortalPersistableState(KIU_STATE)));
         } catch (error) {
             console.warn('Could not cache portal bootstrap state.', error);
         }
@@ -1310,7 +1395,7 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         }
         if (!bootstrapFaculty) {
             try {
-                bootstrapFaculty = localStorage.getItem('currentFaculty') || '';
+                bootstrapFaculty = getKiuTabValue(KIU_TAB_FACULTY_KEY) || '';
             } catch (error) {}
         }
         if (!bootstrapFaculty && typeof getCurrentFaculty === 'function') {

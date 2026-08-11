@@ -92,8 +92,7 @@
     }
 
     function isSurveysSurfaceReady() {
-        const section = getSurveysSection();
-        return Boolean(section && section.dataset.socialSurveysAssemblyRoot === '1');
+        return Boolean(getSurveysSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -182,6 +181,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialSurveysAssemblyState;
         section.dataset.socialSurveysAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

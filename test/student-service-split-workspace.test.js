@@ -184,7 +184,7 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).toContain('assets/css/lux-page-bare-lite.css');
         expectRetiredCss('student-service-route.css');
         expect(studentServiceHtml).toContain('assets/js/shared/lux-scroll-rail.js?v=20260608-scrollrail2');
-        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260808-loadreveal1');
+        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260810-socialbootveil2');
         expect(studentServiceHtml).toContain('assets/js/shared/student-service-api-paths.js?v=20260626-ssvc-inbox-filters');
         expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260728-ssrender6');
         expect(studentServiceHtml).toContain('student-service-bootstrap-runtime.js?v=20260729-ssmerge1');

@@ -4376,7 +4376,21 @@ class PlatformStore {
         this.state.portal.liveQuizWorkspaces = this.state.portal.liveQuizWorkspaces && typeof this.state.portal.liveQuizWorkspaces === 'object'
             ? this.state.portal.liveQuizWorkspaces
             : {};
-        const workspace = clone(this.state.portal.liveQuizWorkspaces[key] || null);
+        let workspace = clone(this.state.portal.liveQuizWorkspaces[key] || null);
+        if (!workspace) {
+            const parts = key.split('::');
+            const targetCourse = String(parts.shift() || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+            const targetGroup = String(parts.join('::') || '').replace(/__lmssec_[^:]+$/i, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+            const aliases = Object.entries(this.state.portal.liveQuizWorkspaces)
+                .filter(([candidateKey]) => {
+                    const candidateParts = String(candidateKey || '').split('::');
+                    const candidateCourse = String(candidateParts.shift() || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+                    const candidateGroup = String(candidateParts.join('::') || '').replace(/__lmssec_[^:]+$/i, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+                    return candidateCourse === targetCourse && candidateGroup === targetGroup;
+                })
+                .sort(([, left], [, right]) => String(right?.updatedAt || '').localeCompare(String(left?.updatedAt || '')));
+            workspace = clone(aliases[0]?.[1] || null);
+        }
         if (workspace && typeof workspace === 'object') {
             delete workspace.ui;
         }

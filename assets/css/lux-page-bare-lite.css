@@ -5343,6 +5343,7 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb
 body:is(.lux-route-lms, .lux-route-faculty-gradebook, .lux-route-study-card) .gb-modal-category-latest span {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -11776,6 +11777,7 @@ body.lux-route-timetable .lux-timetable-focus-copy {
     display: block;
     overflow: visible;
     -webkit-line-clamp: unset;
+    line-clamp: unset;
     overflow-wrap: anywhere;
 }
 
@@ -12230,6 +12232,7 @@ body.lux-route-chancellery .lux-chancellery-hero-side :is(.lux-focus-panel__titl
     display: block;
     overflow: visible;
     -webkit-line-clamp: unset;
+    line-clamp: unset;
     overflow-wrap: anywhere;
 }
 
@@ -21176,6 +21179,7 @@ body.lux-route-students-admin #students-content .students-hub-studio-quick-btn{
   line-height: 1.25;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -24890,6 +24894,7 @@ body.lux-route-social .social-neo-research-card-abstract {
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -26593,6 +26598,7 @@ body.lux-route-social .social-project-hub-grid .social-project-card-new-title {
   font-weight: 700;
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -26677,6 +26683,7 @@ body.lux-route-social .social-project-hub-grid .social-project-hub-cta-copy {
   font-size: 11px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -26788,6 +26795,7 @@ body.lux-route-social .social-project-card-new-summary {
   color: var(--lux-text-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -27189,6 +27197,7 @@ body.lux-route-social .social-neo-group-card-desc {
   color: var(--lux-text-muted, var(--lux-text-secondary));
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -27538,6 +27547,7 @@ body.lux-route-social .social-neo-page-card-about-rail .social-neo-page-card-abo
   line-height: 1.5;
   color: var(--lux-text-muted, var(--lux-text-secondary));
   -webkit-line-clamp: unset;
+  line-clamp: unset;
   -webkit-box-orient: unset;
   overflow: visible;
   word-break: break-word;
@@ -27554,6 +27564,7 @@ body.lux-route-social .social-neo-page-card-about:not(:has(.social-neo-page-card
   line-height: 1.5;
   color: var(--lux-text-muted, var(--lux-text-secondary));
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-all;
@@ -34578,6 +34589,7 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .soci
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-card-title {
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     max-height: 2.7em;
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-card-headline {
@@ -34635,6 +34647,7 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .soci
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
     word-break: break-word;
     overflow-wrap: anywhere;
@@ -35501,6 +35514,7 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .soci
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-node.is-compact .social-project-task-graph-node-title {
     font-size: 12px;
     -webkit-line-clamp: 1;
+    line-clamp: 1;
 }
 body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .social-project-task-graph-canvas.is-compact {
     margin: 0 auto;
@@ -37358,6 +37372,7 @@ body.lux-route-social .social-project-task-graph-inspector-description {
     color: var(--lux-text-muted, var(--lux-text-muted));
     display: -webkit-box;
     -webkit-line-clamp: 5;
+    line-clamp: 5;
     -webkit-box-orient: vertical;
     overflow: hidden;
     word-break: break-word;
@@ -37946,6 +37961,7 @@ body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-rail
     body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-card-title {
         font-size: 12px;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
     }
     body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-card-meta .social-project-task-graph-card-actual-cost,
     body.lux-route-social #social-neo-overlay-portal .social-project-task-graph-card-meta .social-project-task-graph-card-actual-time,
@@ -39084,6 +39100,7 @@ body.lux-route-social .spt-desk-card-title {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
     word-break: break-word;
     color: var(--lux-text, #fbfaf6);
@@ -39288,6 +39305,7 @@ body.lux-route-social .spt-desk-card-desc {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
     font-size: 11px;
     line-height: 1.4;
@@ -40695,6 +40713,7 @@ body.lux-route-social .spt-desk--v2 .spt-desk-card-title {
     text-overflow: ellipsis;
     white-space: nowrap;
     -webkit-line-clamp: unset;
+    line-clamp: unset;
 }
 body.lux-route-social .spt-desk--v2 .spt-desk-card-main:hover .spt-desk-card-title {
     color: var(--lux-accent, #e8c48a);
@@ -43023,6 +43042,7 @@ body.lux-route-exams #admin-exams-root .ex2-builder-title {
     line-height: 1.25;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -43166,6 +43186,7 @@ body.lux-route-exams #admin-exams-root .ex2-qnav-input.lux-control {
     padding-inline: 8px;
     text-align: center;
     font-weight: 700;
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
@@ -46265,9 +46286,7 @@ body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-histo
     letter-spacing: 0.04em;
 }
 
-body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-item.is-autosave {
-    /* autosave row — opacity paint in fouc-ht */
-}
+
 
 body.lux-route-lms #lms-personal-dashboard-overlay .lms-personal-dashboard-history-actions {
     display: flex;

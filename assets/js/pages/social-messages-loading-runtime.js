@@ -96,8 +96,7 @@
     }
 
     function isMessagesSurfaceReady() {
-        const section = getMessagesSection();
-        return Boolean(section && section.dataset.socialMessagesAssemblyRoot === '1');
+        return Boolean(getMessagesSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -182,6 +181,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialMessagesAssemblyState;
         section.dataset.socialMessagesAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

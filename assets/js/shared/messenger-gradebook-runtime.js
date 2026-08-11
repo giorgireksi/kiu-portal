@@ -3,6 +3,21 @@
     if (window.__KIU_MESSENGER_GRADEBOOK_LOADED) return;
     window.__KIU_MESSENGER_GRADEBOOK_LOADED = true;
 
+    // Registration and timetable load this roster bridge without the full gradebook
+    // model. Keep the bridge usable there while delegating to the richer model
+    // normalizer whenever that model is present.
+    function ensureGradeRecordHistories(record = {}) {
+        const modelNormalizer = window.ensureGradeRecordHistories;
+        if (typeof modelNormalizer === 'function' && modelNormalizer !== ensureGradeRecordHistories) {
+            return modelNormalizer(record);
+        }
+        const safeRecord = { ...(record || {}) };
+        safeRecord.assessments = safeRecord.assessments && typeof safeRecord.assessments === 'object'
+            ? safeRecord.assessments
+            : {};
+        return safeRecord;
+    }
+
     window.__kiuCreateMessengerGradebookApi = function createKiuMessengerGradebookApi(deps = {}) {
         const d = deps;
         void d;

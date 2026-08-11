@@ -110,8 +110,7 @@
     }
 
     function isProjectsSurfaceReady() {
-        const section = getProjectsSection();
-        return Boolean(section && section.dataset.socialProjectsAssemblyRoot === '1');
+        return Boolean(getProjectsSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -281,6 +280,11 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialProjectsAssemblyState;
         section.dataset.socialProjectsAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            const ok = motion.softRestart(center);
+            if (ok) scheduleProjectSearchIcon(center);
+            return ok;
+        }
         const started = typeof motion.start === 'function' && motion.start(center);
         if (started) scheduleProjectSearchIcon(center);
         return started;

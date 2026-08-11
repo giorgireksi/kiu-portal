@@ -86,8 +86,7 @@
     }
 
     function isAlertsSurfaceReady() {
-        const section = getAlertsSection();
-        return Boolean(section && section.dataset.socialAlertsAssemblyRoot === '1');
+        return Boolean(getAlertsSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -170,6 +169,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialAlertsAssemblyState;
         section.dataset.socialAlertsAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

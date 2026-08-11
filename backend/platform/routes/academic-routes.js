@@ -1,6 +1,7 @@
 function registerAcademicRoutes(app, deps = {}) {
     const {
         canAccessStudentAcademicRecord,
+        broadcastAll,
         getActorUserId,
         getSessionRole,
         getStore,
@@ -10,6 +11,12 @@ function registerAcademicRoutes(app, deps = {}) {
         requireSessionAccount,
         sendError
     } = deps;
+
+    function emitAcademicUpdated() {
+        if (typeof broadcastAll === 'function') {
+            broadcastAll({ type: 'academic:updated', emittedAt: new Date().toISOString() });
+        }
+    }
 
     app.get('/api/catalog/courses', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
@@ -73,6 +80,7 @@ function registerAcademicRoutes(app, deps = {}) {
             sendError(response, result.status || 400, result.error);
             return;
         }
+        emitAcademicUpdated();
         response.json({ ok: true, ...result });
     });
 
@@ -102,6 +110,7 @@ function registerAcademicRoutes(app, deps = {}) {
             sendError(response, result.status || 400, result.error);
             return;
         }
+        emitAcademicUpdated();
         response.json({ ok: true, ...result });
     });
 
@@ -114,6 +123,7 @@ function registerAcademicRoutes(app, deps = {}) {
             sendError(response, 400, 'Exam session could not be synced.');
             return;
         }
+        emitAcademicUpdated();
         response.json({ ok: true, session: examSession });
     });
 }

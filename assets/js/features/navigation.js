@@ -427,7 +427,9 @@ function resolveActiveWorkspaceViewRole(role = getEffectiveUserRole()) {
     if (normalizedRole === USER_ROLES.STUDENT_SERVICE) return USER_ROLES.STUDENT_SERVICE;
     try {
         const pendingRole = String(
-            localStorage.getItem(PENDING_ROLE_SWITCH_KEY)
+            sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE')
+            || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY)
+            || sessionStorage.getItem('KIU_TAB_CURRENT_ROLE')
             || localStorage.getItem('currentUserRole')
             || ''
         ).trim().toLowerCase();
@@ -466,15 +468,16 @@ function syncPortalViewRoleState(role = '', options = {}) {
     const authRole = getNavigationAuthRole();
     currentUserRole = normalizedRole;
     try {
-        localStorage.setItem('currentUserRole', normalizedRole);
+        sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', normalizedRole);
         if (authRole === USER_ROLES.ADMIN && normalizedRole !== USER_ROLES.ADMIN) {
-            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, normalizedRole);
+            sessionStorage.setItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE', normalizedRole);
             sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
             if (options.applySessionUser !== false && typeof setActiveSessionUserByRole === 'function') {
                 setActiveSessionUserByRole(normalizedRole);
             }
         } else if (authRole === USER_ROLES.ADMIN && normalizedRole === USER_ROLES.ADMIN) {
-            localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+            sessionStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+            sessionStorage.removeItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE');
             sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
         }
     } catch (error) {
@@ -1088,6 +1091,15 @@ function startKiuShellReveal({ degraded = false } = {}) {
 window.__kiuStartShellReveal = startKiuShellReveal;
 
 function markPortalShellReady() {
+    // Social / Home first paint is owned by assembly run() → reveal.
+    if (document.body?.classList.contains('lux-route-social')
+        && !window.__kiuSocialShellRevealAllowed) {
+        return;
+    }
+    if (document.body?.classList.contains('lux-route-home')
+        && !window.__kiuHomeShellRevealAllowed) {
+        return;
+    }
     markPortalNavigationIntentForCurrentPage();
     kiuShellRouteReady = true;
     if (getKiuShellLoadState().phase === 'ready') return;
@@ -1099,6 +1111,15 @@ __kiuNavExpose({
 });
 
 function schedulePortalShellReadyReveal() {
+    // Social / Home own shell reveal after assembly run() — never uncover early from standalone boot.
+    if (document.body?.classList.contains('lux-route-social')
+        && !window.__kiuSocialShellRevealAllowed) {
+        return;
+    }
+    if (document.body?.classList.contains('lux-route-home')
+        && !window.__kiuHomeShellRevealAllowed) {
+        return;
+    }
     const reveal = () => markPortalShellReady();
     if (typeof window.requestAnimationFrame === 'function') {
         window.requestAnimationFrame(() => {
@@ -1487,7 +1508,8 @@ __kiuNavExpose({
 
 function autoBootStandaloneDesktopRoute() {
     const entryId = normalizeStandaloneActivePageId(getStandaloneEntryPageId());
-    if (!entryId || entryId === 'index' || entryId === 'lms' || entryId === 'student-service' || entryId === 'exams' || entryId === 'orders' || entryId === 'library') return;
+    // Social boots via social-page.js (assembly must own first reveal).
+    if (!entryId || entryId === 'index' || entryId === 'lms' || entryId === 'social' || entryId === 'student-service' || entryId === 'exams' || entryId === 'orders' || entryId === 'library') return;
     if (window.__kiuStandaloneDesktopRouteBootKey) return;
     bootStandaloneDesktopRoute({
         entryId,
@@ -1914,7 +1936,9 @@ function persistNavigationAuthSnapshot() {
     let snapshotRole = '';
     try {
         snapshotRole = String(
-            localStorage.getItem(PENDING_ROLE_SWITCH_KEY)
+            sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE')
+            || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY)
+            || sessionStorage.getItem('KIU_TAB_CURRENT_ROLE')
             || localStorage.getItem('currentUserRole')
             || (typeof resolveStoredWorkspaceRole === 'function' ? resolveStoredWorkspaceRole() : '')
             || ''
@@ -1927,7 +1951,7 @@ function persistNavigationAuthSnapshot() {
             || null;
         const activeUser = authenticatedUser || (typeof getCurrentUser === 'function' ? getCurrentUser() : null) || null;
         if (!authenticatedUser?.id || !authenticatedUser?.role) return;
-        localStorage.setItem('KIU_AUTH_STATE', JSON.stringify({
+        sessionStorage.setItem('KIU_TAB_AUTH_STATE', JSON.stringify({
             id: authenticatedUser.id,
             name: authenticatedUser.name || authenticatedUser.displayName || '',
             nameEn: authenticatedUser.nameEn || authenticatedUser.name || '',
@@ -1940,12 +1964,12 @@ function persistNavigationAuthSnapshot() {
             ? getEffectiveUserRole()
             : (snapshotRole || currentUserRole || activeUser?.role || authenticatedUser.role);
         if (effectiveRole) {
-            localStorage.setItem('currentUserRole', effectiveRole);
+            sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', effectiveRole);
             if (
                 String(authenticatedUser.role || '').trim().toLowerCase() === USER_ROLES.ADMIN
                 && effectiveRole !== USER_ROLES.ADMIN
             ) {
-                localStorage.setItem(PENDING_ROLE_SWITCH_KEY, effectiveRole);
+                sessionStorage.setItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE', effectiveRole);
                 sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
             }
         }

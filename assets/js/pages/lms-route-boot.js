@@ -400,8 +400,14 @@
         if (document.body) document.body.dataset.lmsDelegatedActionsBound = '1';
         const warmLmsTabRuntime = (event) => {
             const tabButton = event.target?.closest?.('[data-lms-tab]');
-            if (!tabButton || typeof window.preloadLmsRuntimeForTab !== 'function') return;
-            window.preloadLmsRuntimeForTab(tabButton.dataset.lmsTab);
+            if (!tabButton) return;
+            // Pointer/focus/touch are intent hints, not activation. Use prefetch
+            // here so abandoned hovers do not emit unused preload warnings.
+            const warm = typeof window.prefetchLmsRuntimeForTab === 'function'
+                ? window.prefetchLmsRuntimeForTab
+                : window.preloadLmsRuntimeForTab;
+            if (typeof warm !== 'function') return;
+            warm(tabButton.dataset.lmsTab);
         };
         document.addEventListener('pointerover', warmLmsTabRuntime, { passive: true });
         document.addEventListener('focusin', warmLmsTabRuntime, { passive: true });

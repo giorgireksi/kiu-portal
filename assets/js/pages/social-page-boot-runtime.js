@@ -253,6 +253,29 @@
             if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(message, 'danger');
             if (typeof renderSocialPageNow === 'function') renderSocialPageNow('pin-api-health');
         }
+        function ensureActivePanelModule(panel) {
+            const id = text(panel || 'feed') || 'feed';
+            const ensureByPanel = {
+                feed: ensureSocialFeedModule,
+                community: ensureSocialCommunityModule,
+                groups: ensureSocialGroupsModule,
+                workspace: ensureSocialWorkspaceModule,
+                projects: ensureSocialWorkspaceModule,
+                research: ensureSocialResearchModule,
+                pages: ensureSocialPagesModule,
+                events: ensureSocialEventsModule,
+                'lost-and-found': ensureSocialLostFoundModule,
+                messages: ensureSocialMessagesModule,
+                alerts: ensureSocialAlertsModule,
+                surveys: ensureSocialSurveysModule,
+                photography: ensureSocialPhotographyModule,
+                profile: ensureSocialProfileModule
+            };
+            const ensure = ensureByPanel[id];
+            return typeof ensure === 'function'
+                ? Promise.resolve(ensure()).catch(() => null)
+                : Promise.resolve(null);
+        }
         async function boot() {
             ensureSocialRouteHost();
             bindEvents();
@@ -271,6 +294,10 @@
             if (runHydrate) await runHydrate();
             await warnIfPinApiUnavailable();
             await pruneExpiredLostFoundItems().catch(() => null);
+            // Preload the restored active panel so boot paints a real shell
+            // (not social-neo-module-loading) and assembly intro can start.
+            const activePanel = text(state()?.ui?.activePanel || 'feed') || 'feed';
+            await ensureActivePanelModule(activePanel);
             window.requestAnimationFrame(renderOrRetry);
         }
 

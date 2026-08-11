@@ -12,7 +12,16 @@ function createFreshKiuState() {
 }
 
 // --- READABILITY: Persist ---
-let KIU_STATE = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || createFreshKiuState();
+function getKiuStatePersistenceKey() {
+    if (typeof getKiuPersistentStateKey === 'function') return getKiuPersistentStateKey();
+    try {
+        const userId = sessionStorage.getItem('KIU_ACTIVE_SESSION_USER_ID') || '';
+        return userId ? `KIU_PERSISTENT_STATE::${userId}` : 'KIU_PERSISTENT_STATE';
+    } catch (error) {
+        return 'KIU_PERSISTENT_STATE';
+    }
+}
+let KIU_STATE = JSON.parse(localStorage.getItem(getKiuStatePersistenceKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || createFreshKiuState();
 if (typeof window !== 'undefined') {
     window.__KIU_PORTAL_BOOTSTRAP_PENDING = true;
 }
@@ -59,7 +68,7 @@ try {
             localStorage.removeItem('currentUserRole');
             localStorage.removeItem('KIU_DELETED_STAFF_REGISTRY');
         } catch (storageError) {}
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(KIU_STATE));
+        localStorage.setItem(getKiuStatePersistenceKey(), JSON.stringify(KIU_STATE));
         localStorage.setItem(REAL_TESTING_CLEANUP_FLAG, requiredCleanupVersion);
     }
 } catch (e) {
@@ -230,7 +239,7 @@ function queueKiuUiRefresh(snapshot) {
                 const fac = normalizeFacultyCode(
                     (typeof getAdminCmsWriteFaculty === 'function' ? getAdminCmsWriteFaculty() : '')
                     || (typeof getAdminRegistrationFaculty === 'function' ? getAdminRegistrationFaculty() : '')
-                    || ((typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '') || localStorage.getItem('currentFaculty') || 'ECON'),
+                    || ((typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '') || sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || 'ECON'),
                     'ECON'
                 );
                 adminContainer.dataset.cmsFaculty = fac;
@@ -281,6 +290,7 @@ function saveState() {
                 ? getAdminRegistrationFaculty()
                 : '')
             || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '')
+            || sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY')
             || localStorage.getItem('currentFaculty')
             || 'ECON',
             'ECON'
@@ -326,7 +336,7 @@ function saveState() {
     delete persisted.auth;
     delete persisted.lmsLiveQuizzes;
     delete persisted.lmsWhiteboards;
-    localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persisted));
+    localStorage.setItem(getKiuStatePersistenceKey(), JSON.stringify(persisted));
     if (KIU_STATE.meta.registrationCmsRevision !== previousRegistrationCmsRevision) {
         try {
             window.dispatchEvent(new CustomEvent('kiu:registration-cms-changed', {
@@ -545,7 +555,7 @@ function getCurrentUserFromState(state) {
 
     const storedAuthenticatedRole = (() => {
         try {
-            const parsed = JSON.parse(localStorage.getItem('KIU_AUTH_STATE') || 'null');
+            const parsed = JSON.parse(sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE') || 'null');
             return String(parsed?.role || '').trim().toLowerCase();
         } catch (error) {
             return '';
@@ -553,7 +563,7 @@ function getCurrentUserFromState(state) {
     })();
     const storedImpersonatedRole = (() => {
         try {
-            return String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
+            return String(sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE') || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY) || sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
         } catch (error) {
             return '';
         }
@@ -569,7 +579,8 @@ function getCurrentUserFromState(state) {
 
     try {
         const preferredFaculty = normalizeFacultyCode(
-            localStorage.getItem('currentFaculty')
+            sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY')
+            || localStorage.getItem('currentFaculty')
             || currentUser?.facultyCode
             || currentUser?.faculty
             || 'ECON',
@@ -863,14 +874,14 @@ function pickImpersonationPersonaForFaculty(candidates = [], preferredFaculty = 
     )) || candidates[0];
 }
 
-function getPreferredImpersonationUserForRole(role, preferredFaculty = localStorage.getItem('currentFaculty') || '') {
+function getPreferredImpersonationUserForRole(role, preferredFaculty = sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || '') {
     const normalizedRole = String(role || '').trim().toLowerCase();
     if (!normalizedRole) return null;
     const candidates = collectImpersonationCandidatesForRole(normalizedRole);
     return pickImpersonationPersonaForFaculty(candidates, preferredFaculty);
 }
 
-function hasImpersonationPersonaForRole(role, preferredFaculty = localStorage.getItem('currentFaculty') || '') {
+function hasImpersonationPersonaForRole(role, preferredFaculty = sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || '') {
     return Boolean(getPreferredImpersonationUserForRole(role, preferredFaculty)?.id);
 }
 
@@ -1051,7 +1062,7 @@ function ensureCanonicalState() {
         activeUserId = currentUser.id;
     }
     if (!activeUserId || !KIU_STATE.users.some(user => user.id === activeUserId)) {
-        const preferredFaculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '';
+        const preferredFaculty = sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '';
         const normalizedPreferredFaculty = normalizeFacultyCode(preferredFaculty || '', '');
         const fallbackRole = (impersonationEnabled ? currentUserRole : currentUser?.role) || currentUserRole;
         const scopedRoleFallback = KIU_STATE.users.find(user => (
@@ -1424,7 +1435,7 @@ function setActiveSessionUser(userId) {
     const activeUser = getCurrentUserFromState(KIU_STATE);
     currentUserRole = activeUser?.role || currentUserRole;
     try {
-        localStorage.setItem('currentUserRole', currentUserRole);
+        sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', currentUserRole);
         if (currentUser?.role !== USER_ROLES.ADMIN) {
             sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
         }
@@ -1443,7 +1454,7 @@ function setActiveSessionUserByRole(role) {
         return currentUser || getCurrentUserFromState(KIU_STATE);
     }
     const normalizedRole = String(role || currentUserRole || currentUser?.role || USER_ROLES.STUDENT).trim().toLowerCase();
-    const preferredFaculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '';
+    const preferredFaculty = sessionStorage.getItem('KIU_TAB_CURRENT_FACULTY') || localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '';
     const targetUser = (currentUser && String(currentUser.role || '').trim().toLowerCase() === normalizedRole)
         ? currentUser
         : getPreferredImpersonationUserForRole(normalizedRole, preferredFaculty);
@@ -1453,12 +1464,12 @@ function setActiveSessionUserByRole(role) {
     sessionStorage.setItem(ACTIVE_SESSION_KEY, targetUser.id);
     currentUserRole = normalizedRole;
     try {
-        localStorage.setItem('currentUserRole', normalizedRole);
+        sessionStorage.setItem('KIU_TAB_CURRENT_ROLE', normalizedRole);
         if (normalizedRole === USER_ROLES.ADMIN) {
-            localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+            sessionStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
             sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
         } else {
-            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, normalizedRole);
+            sessionStorage.setItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE', normalizedRole);
             sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
         }
     } catch (e) {

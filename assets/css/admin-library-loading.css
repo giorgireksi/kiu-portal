@@ -1,0 +1,77 @@
+/*
+ * Admin library loading motion only.
+ * Shared admin library paint, panels, controls, and theme tokens remain unchanged.
+ */
+body.admin-library-assembly-active #page-library .kiu-admin-library-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* Stage component surfaces — not nested cell chrome. */
+body.admin-library-assembly-active #page-library :is(
+  [data-admin-library-shell="1"],
+  .alib-panel--entry,
+  .alib-panel--filters,
+  .admin-library-metric-card,
+  .admin-library-catalog-card,
+  .admin-library-catalog-head,
+  .admin-library-scroll-wrap,
+  .admin-library-catalog-table thead tr,
+  .admin-library-catalog-row,
+  .admin-library-empty-row,
+  .admin-library-catalog-foot
+) {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.admin-library-assembly-active #page-library .kiu-admin-library-assembly-structure {
+  opacity: 0;
+}
+
+body.admin-library-assembly-active #page-library .kiu-admin-library-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.admin-library-assembly-ready #page-library .kiu-admin-library-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.admin-library-assembly-ready #page-library .kiu-admin-library-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.admin-library-assembly-active #page-library .kiu-admin-library-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.admin-library-assembly-active #page-library :is(
+    [data-admin-library-shell="1"],
+    .alib-panel--entry,
+    .alib-panel--filters,
+    .admin-library-metric-card,
+    .admin-library-catalog-card,
+    .admin-library-catalog-head,
+    .admin-library-scroll-wrap,
+    .admin-library-catalog-table thead tr,
+    .admin-library-catalog-row,
+    .admin-library-empty-row,
+    .admin-library-catalog-foot
+  ) {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.admin-library-assembly-active #page-library .kiu-admin-library-assembly-structure {
+    opacity: 1;
+  }
+}

@@ -108,6 +108,33 @@ function isAssignedViaLmsLiveQuizGroupRoster(courseId = '', groupId = '', userId
     });
 }
 
+function isAdminTestingPersonaStaffForLmsLiveQuiz(courseId = '', userId = '', role = '') {
+    const normalizedUserId = String(userId || '').trim().toLowerCase();
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (!normalizedUserId.startsWith('admin-testing-') || !['professor', 'ta'].includes(normalizedRole)) return false;
+    const personaFaculty = String(normalizedUserId.split('-')[2] || '').trim().toUpperCase();
+    const coursePrefix = String(courseId || '').trim().split('-')[0].toUpperCase();
+    if (!personaFaculty || coursePrefix !== personaFaculty) return false;
+    return normalizedUserId.endsWith(`-${normalizedRole}`);
+}
+
+function isAdminTestingPersonaStudentForLmsLiveQuiz(courseId = '', userId = '') {
+    const normalizedUserId = String(userId || '').trim().toLowerCase();
+    if (!normalizedUserId.startsWith('admin-testing-') || !String(courseId || '').trim()) return false;
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    if (String(user?.role || '').trim().toLowerCase() !== USER_ROLES.STUDENT) return false;
+    const parts = normalizedUserId.split('-');
+    const personaFaculty = String(parts[2] || '').trim().toUpperCase();
+    if (!personaFaculty) return false;
+    const coursePrefix = String(courseId || '').trim().split('-')[0].toUpperCase();
+    if (coursePrefix && coursePrefix === personaFaculty) return true;
+    const profile = KIU_STATE?.facultyProfiles?.[personaFaculty];
+    return (Array.isArray(profile?.curriculum) ? profile.curriculum : []).some(subject =>
+        normalizeLmsLiveQuizScopeKey(subject?.id || subject?.subjectId || '')
+        === normalizeLmsLiveQuizScopeKey(courseId)
+    );
+}
+
 function canAccessLmsLiveQuizScope(resourceKey = currentCourseId) {
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     if (!canonicalKey) return false;
@@ -121,7 +148,8 @@ function canAccessLmsLiveQuizScope(resourceKey = currentCourseId) {
         : '';
     const userId = String((typeof getCurrentUserId === 'function' ? getCurrentUserId() : '') || '').trim();
     if ([USER_ROLES.ADMIN, USER_ROLES.PROFESSOR, USER_ROLES.TA].includes(role)) {
-        return isPortalCurriculumStaffForLmsLiveQuiz(courseId, groupId, userId, role)
+        return isAdminTestingPersonaStaffForLmsLiveQuiz(courseId, userId, role)
+            || isPortalCurriculumStaffForLmsLiveQuiz(courseId, groupId, userId, role)
             || isAssignedViaLmsLiveQuizGroupRoster(courseId, groupId, userId, role)
             || isAssignedViaLmsLiveQuizGroupRoster(courseId, null, userId, role)
             || isStaffForLmsLiveQuizPortalSections(canonicalKey, userId, role)
@@ -136,6 +164,7 @@ function canAccessLmsLiveQuizScope(resourceKey = currentCourseId) {
         )) {
             return true;
         }
+        if (isAdminTestingPersonaStudentForLmsLiveQuiz(courseId, userId)) return true;
         if (userId && typeof getLmsQuizEligibleStudents === 'function') {
             const roster = getLmsQuizEligibleStudents(canonicalKey, { strictRoster: true });
             if (roster.some(student => String(student?.id || '').trim() === userId)) {

@@ -145,7 +145,7 @@ function buildPortalBackendPersistableState(source = (typeof KIU_STATE !== 'unde
 
 function getPortalSessionToken() {
     try {
-        return String(localStorage.getItem(KIU_PORTAL_SESSION_TOKEN_KEY) || '').trim();
+        return String(sessionStorage.getItem('KIU_TAB_PORTAL_SESSION_TOKEN') || '').trim();
     } catch (error) {
         return '';
     }

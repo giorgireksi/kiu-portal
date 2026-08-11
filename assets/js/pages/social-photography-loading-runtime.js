@@ -108,8 +108,7 @@
     }
 
     function isPhotographySurfaceReady() {
-        const section = getPhotographySection();
-        return Boolean(section && section.dataset.socialPhotographyAssemblyRoot === '1');
+        return Boolean(getPhotographySection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -201,6 +200,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialPhotographyAssemblyState;
         section.dataset.socialPhotographyAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

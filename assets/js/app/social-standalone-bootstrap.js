@@ -28,9 +28,9 @@ const PERMISSION_MATRIX = {
 
 let currentUserRole = (() => {
     try {
-        const storedRole = localStorage.getItem('currentUserRole');
-        const pendingRole = localStorage.getItem(PENDING_ROLE_SWITCH_KEY);
-        const rawAuthState = localStorage.getItem('KIU_AUTH_STATE');
+        const storedRole = sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole');
+        const pendingRole = sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE') || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem(PENDING_ROLE_SWITCH_KEY);
+        const rawAuthState = sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE');
         const authState = rawAuthState ? JSON.parse(rawAuthState) : null;
         const authenticatedRole = String(authState?.role || '').trim().toLowerCase();
         if (authenticatedRole && authenticatedRole !== USER_ROLES.ADMIN) return authenticatedRole;
@@ -58,8 +58,8 @@ function isRoleImpersonationEnabled() {
         if (sessionStorage.getItem(ACTIVE_ROLE_IMPERSONATION_KEY) === '1') return true;
     } catch (error) {}
     try {
-        const storedRole = localStorage.getItem('currentUserRole');
-        const pendingRole = localStorage.getItem(PENDING_ROLE_SWITCH_KEY);
+        const storedRole = sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole');
+        const pendingRole = sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE') || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem(PENDING_ROLE_SWITCH_KEY);
         const effectiveStoredRole = Object.values(USER_ROLES).includes(storedRole) ? storedRole : pendingRole;
         return Boolean(
             authenticatedRole

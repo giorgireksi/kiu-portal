@@ -63,7 +63,7 @@ const LMS_CALLS_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1'
 ]);
 const LMS_INTERACTION_MODULE_URLS = Object.freeze([
-    'assets/js/shared/messenger-gradebook-runtime.js?v=20260720-msgrgb1',
+    'assets/js/shared/messenger-gradebook-runtime.js?v=20260810-msgrgb2',
     'assets/js/shared/messenger-chrome-runtime.js?v=20260720-w18',
     'assets/js/shared/messenger.js?v=20260720-msgrgb1',
     'assets/js/pages/lms-interaction-messages-runtime.js?v=20260714-lmspro2'

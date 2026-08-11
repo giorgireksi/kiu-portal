@@ -1541,6 +1541,19 @@ function isAdminTestingPersonaCourseInFacultyScope(courseId = '', personaFaculty
     return Boolean(courseFaculty && courseFaculty === personaFaculty);
 }
 
+function isAdminTestingPersonaStudentForLiveQuiz(userId = '', courseId = '') {
+    if (!isAdminTestingPersonaUserId(userId) || !courseId) return false;
+    const account = store.getAccountById(userId);
+    if (String(account?.role || '').trim().toLowerCase() !== 'student') return false;
+    const personaFaculty = getAdminTestingPersonaFacultyCode(userId);
+    if (!personaFaculty) return false;
+    const portalState = store.state.portal?.state && typeof store.state.portal.state === 'object'
+        ? store.state.portal.state
+        : {};
+    const profile = portalState.facultyProfiles?.[personaFaculty];
+    return isAdminTestingPersonaCourseInFacultyScope(courseId, personaFaculty, profile, portalState);
+}
+
 function isAdminTestingPersonaStaffForLiveQuiz(userId = '', role = '', courseId = '') {
     if (!isAdminTestingPersonaUserId(userId) || !courseId) return false;
     const personaFaculty = getAdminTestingPersonaFacultyCode(userId);
@@ -1679,9 +1692,16 @@ function requireLmsLiveQuizWorkspaceAccess(request, response, resourceKey, actio
     }
     if (actor.actorRole === 'student') {
         const enrollments = store.getStudentEnrollments(actor.actorUserId);
+        const existingWorkspace = store.getLmsLiveQuizWorkspace(parsedResourceKey.resourceKey || resourceKey) || {};
+        const isExplicitWorkspaceParticipant = asArray(existingWorkspace.sessions).some(session => (
+            session?.participants
+            && Object.prototype.hasOwnProperty.call(session.participants, actor.actorUserId)
+        ));
         const canAccess = enrollments.some(enrollment =>
             enrollmentMatchesLmsLiveQuizGroup(enrollment, courseId, groupId)
-        ) || isStudentViaLmsLiveQuizPortalSchedule(actor.actorUserId, courseId, groupId);
+        ) || isStudentViaLmsLiveQuizPortalSchedule(actor.actorUserId, courseId, groupId)
+            || isExplicitWorkspaceParticipant
+            || isAdminTestingPersonaStudentForLiveQuiz(actor.actorUserId, courseId);
         if (!canAccess) {
             sendError(response, 403, 'You are not assigned to this course scope.');
             return null;
@@ -2487,6 +2507,7 @@ registerMailRoutes(app, {
     getMicrosoftMailConfig,
     getSessionRole,
     getStore: () => store,
+    pushEvent,
     normalizeMailReturnTo,
     requireSessionAccount,
     sendError,
@@ -2614,6 +2635,7 @@ registerOrdersRoutes(app, {
     getActorUserId,
     getActualSessionRole,
     getStore: () => store,
+    pushEvent,
     requireSessionAccount,
     sendError
 });
@@ -2737,6 +2759,7 @@ registerMessengerCallsRoutes(app, {
 
 registerAcademicRoutes(app, {
     canAccessStudentAcademicRecord,
+    broadcastAll,
     getActorUserId,
     getSessionRole,
     getStore: () => store,

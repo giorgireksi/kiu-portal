@@ -131,7 +131,8 @@ describe('admin-tools loading animation', () => {
         [
             "hiddenSelector: '[hidden], [aria-hidden=\"true\"], #kiu-subject-builder-modal'",
             "root.dataset[rootStateDataset] = 'ready'",
-            "if (state.root === root && root.dataset[rootStateDataset]) return true",
+            "state.phase === 'ready'",
+            "function abort()",
             "startLateNodes(state.root, state.generation)"
         ].forEach((contract) => expect(runtime).toContain(contract));
     });

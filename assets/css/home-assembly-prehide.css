@@ -1,0 +1,9 @@
+/*
+ * Hide Home dashboard children before assembly staging tags exist.
+ * Cleared when Home motion run() applies home-assembly-active / clears prehide.
+ */
+body.lux-route-home.home-shell-assembly-prehide #lux-home-shell > * {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

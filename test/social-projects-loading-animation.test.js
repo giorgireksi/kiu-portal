@@ -11,12 +11,12 @@ describe('Social Projects workspace loading animation', () => {
 
     it('loads Projects motion before Social boot', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260809-assembly17');
-        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260809-socialpopup1');
-        const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260809-socialpopup1');
-        const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260809-socialpopup1');
-        const projectsIndex = html.indexOf('social-projects-loading-runtime.js?v=20260809-socialpopup1');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
+        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260810-socialhomeanim5');
+        const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260810-socialbootveil2');
+        const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260810-socialbootveil2');
+        const projectsIndex = html.indexOf('social-projects-loading-runtime.js?v=20260810-socialbootveil2');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
         expect(html).toContain('social-projects-loading.css?v=20260809-socialpopup1');
         expect(sharedIndex).toBeGreaterThan(-1);
@@ -54,6 +54,11 @@ describe('Social Projects workspace loading animation', () => {
         expect(interactions).toContain('function queueSocialProjectsMotion(center, activePanel, reason)');
         expect(interactions).toContain("reason === 'workspace-module'");
         expect(interactions).toContain("reason === 'panel-workspace'");
+        const workspaceGate = interactions.match(
+            /function queueSocialProjectsMotion[\s\S]*?function queueSocialPortfolioMotion/
+        )?.[0] || '';
+        expect(workspaceGate).toContain("reason === 'boot'");
+        expect(interactions).toContain('Start sync in this turn');
         expect(interactions).not.toContain("section.dataset.socialProjectsAssemblyRoot = '1'");
         expect(interactions).toContain("[data-social-projects-assembly-root]");
         expect(interactions).toContain('window.__kiuStartSocialProjectsLoadingMotion');
@@ -129,8 +134,8 @@ describe('Social Projects workspace loading animation', () => {
 
     it('cache-busts the Projects workspace assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
         expect(sw).toContain('social-projects-loading.css?v=20260809-socialpopup1');
-        expect(sw).toContain('social-projects-loading-runtime.js?v=20260809-socialpopup1');
+        expect(sw).toContain('social-projects-loading-runtime.js?v=20260810-socialbootveil2');
     });
 });

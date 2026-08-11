@@ -11,9 +11,9 @@ describe('Social Events loading animation', () => {
 
     it('loads Events motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260809-assembly17');
-        const eventsIndex = html.indexOf('social-events-loading-runtime.js?v=20260809-socialevents1');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
+        const eventsIndex = html.indexOf('social-events-loading-runtime.js?v=20260810-socialbootveil2');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
         expect(html).toContain('social-events-loading.css?v=20260809-socialevents1');
         expect(sharedIndex).toBeGreaterThan(-1);
@@ -213,9 +213,9 @@ describe('Social Events loading animation', () => {
 
     it('cache-busts Events assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
         expect(sw).toContain('social-events-loading.css?v=20260809-socialevents1');
-        expect(sw).toContain('social-events-loading-runtime.js?v=20260809-socialevents1');
-        expect(sw).toContain('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        expect(sw).toContain('social-events-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
     });
 });

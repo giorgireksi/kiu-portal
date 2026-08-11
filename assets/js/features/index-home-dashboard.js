@@ -1,3 +1,4 @@
+/* FINDABILITY: index home dashboard hub — see docs/findability-index.md#index-home-dashboard */
 (function registerLuxuryHomeDashboardChunk() {
     if (typeof window.__kiuRegisterLuxuryHomeChunkUrl === 'function') {
         window.__kiuRegisterLuxuryHomeChunkUrl('assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2');

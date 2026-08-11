@@ -15,6 +15,7 @@ function registerMailRoutes(app, deps = {}) {
         getMicrosoftMailConfig,
         getSessionRole,
         getStore,
+        pushEvent,
         normalizeMailReturnTo,
         requireSessionAccount,
         sendError,
@@ -23,6 +24,11 @@ function registerMailRoutes(app, deps = {}) {
         exchangeMicrosoftAuthorizationCode,
         uniqueStrings
     } = deps;
+
+    function emitMailUpdated(userId) {
+        if (typeof pushEvent !== 'function' || !userId) return;
+        pushEvent([userId], { type: 'mail:updated', emittedAt: new Date().toISOString() });
+    }
 
     app.get('/api/mail/bootstrap', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
@@ -207,6 +213,7 @@ function registerMailRoutes(app, deps = {}) {
             beforeState: beforeConnection,
             afterState: connection
         });
+        emitMailUpdated(actualUserId);
         response.json({
             ok: true,
             connection,
@@ -236,6 +243,7 @@ function registerMailRoutes(app, deps = {}) {
                 search: String(request.body?.search || '').trim(),
                 limit: Number(request.body?.limit || 20)
             });
+            emitMailUpdated(actualUserId);
             response.json({
                 ok: true,
                 cache,
@@ -435,6 +443,7 @@ function registerMailRoutes(app, deps = {}) {
                     outlookAttachmentCount
                 }
             });
+            emitMailUpdated(actualUserId);
             response.json({
                 ok: true,
                 mirroredPortalToOutlook,
@@ -503,6 +512,7 @@ function registerMailRoutes(app, deps = {}) {
             buildMailAuditEvent(actualUserId, actorRole, 'reply-sent', 'mail-message', String(request.params.id || '').trim(), {
                 afterState: { replyLength: comment.length, portalReply: true, mirroredPortalToOutlook }
             });
+            emitMailUpdated(actualUserId);
             response.json({
                 ok: true,
                 mirroredPortalToOutlook,
@@ -528,6 +538,7 @@ function registerMailRoutes(app, deps = {}) {
                 syncScope: 'reply-message',
                 limit: 20
             }).catch(() => null);
+            emitMailUpdated(actualUserId);
             response.json({ ok: true, summary: store.getMailSummaryForUser(actualUserId) });
         } catch (error) {
             sendError(response, 502, error?.message || 'Outlook reply could not be sent.');
@@ -542,6 +553,7 @@ function registerMailRoutes(app, deps = {}) {
         const isRead = request.body?.isRead === true || String(request.body?.isRead || '').trim().toLowerCase() === 'true';
         const portalMessage = store.setPortalMailReadState(actualUserId, request.params.id, isRead);
         if (portalMessage) {
+            emitMailUpdated(actualUserId);
             response.json({
                 ok: true,
                 message: portalMessage,
@@ -577,6 +589,7 @@ function registerMailRoutes(app, deps = {}) {
                 syncScope: 'read-state',
                 limit: 20
             }).catch(() => null);
+            emitMailUpdated(actualUserId);
             response.json({ ok: true, summary: store.getMailSummaryForUser(actualUserId) });
         } catch (error) {
             sendError(response, 502, error?.message || 'Outlook read state could not be updated.');

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1';
+const CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -26,7 +26,8 @@ const SHELL_ASSETS = [
   '/assets/css/lux-fouc-ht.css?v=20260806-hidetopbar2',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260806-hidetopbar2',
-  '/assets/css/social-home-loading.css?v=20260809-socialpopup1',
+  '/assets/css/social-assembly-prehide.css?v=20260810-socialbootveil2',
+  '/assets/css/social-home-loading.css?v=20260810-socialhomeanim5',
   '/assets/css/social-community-loading.css?v=20260809-socialpopup1',
   '/assets/css/social-groups-loading.css?v=20260809-socialpopup1',
   '/assets/css/social-projects-loading.css?v=20260809-socialpopup1',
@@ -45,12 +46,13 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-layout.css?v=20260806-studentboard11',
   '/assets/css/index-home-widgets.css?v=20260806-studentboard11',
   '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
-  '/assets/css/index-home-loading.css?v=20260809-homeassembly2',
-  '/assets/js/theme-primer.js?v=20260808-loadreveal1',
-  '/assets/js/features/navigation.js?v=20260808-loadreveal1',
+  '/assets/css/index-home-loading.css?v=20260810-homeassembly5',
+  '/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5',
+  '/assets/js/theme-primer.js?v=20260810-homebootveil1',
+  '/assets/js/features/navigation.js?v=20260810-homebootveil1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
-  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260809-assembly17',
-  '/assets/js/features/luxury-index-runtime.js?v=20260809-homeassembly2',
+  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly26',
+  '/assets/js/features/luxury-index-runtime.js?v=20260810-homeassembly6',
   '/assets/js/features/luxury-index-home-shell-runtime.js?v=20260720-w18',
   '/assets/js/features/luxury-shell-motion-runtime.js?v=20260725-glassblur1',
   '/assets/js/features/index-luxury.js?v=20260808-galleryfouc1',
@@ -59,23 +61,23 @@ const SHELL_ASSETS = [
   '/assets/js/features/home-dashboard-widget-data-runtime.js?v=20260806-studentboard11',
   '/assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2',
   '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
-  '/assets/js/pages/home-loading-runtime.js?v=20260809-homeassembly2',
+  '/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
-  '/assets/js/pages/social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1',
-  '/assets/js/pages/social-page-boot-runtime.js?v=20260809-socialloading2',
-  '/assets/js/pages/social-home-loading-runtime.js?v=20260809-socialpopup1',
-  '/assets/js/pages/social-community-loading-runtime.js?v=20260809-socialpopup1',
-  '/assets/js/pages/social-groups-loading-runtime.js?v=20260809-socialpopup1',
-  '/assets/js/pages/social-projects-loading-runtime.js?v=20260809-socialpopup1',
-  '/assets/js/pages/social-portfolio-loading-runtime.js?v=20260809-socialpopup1',
-  '/assets/js/pages/social-research-loading-runtime.js?v=20260809-socialpopup1',
-  '/assets/js/pages/social-pages-loading-runtime.js?v=20260809-socialpopup1',
-  '/assets/js/pages/social-events-loading-runtime.js?v=20260809-socialevents1',
-  '/assets/js/pages/social-surveys-loading-runtime.js?v=20260809-socialsurveys1',
-  '/assets/js/pages/social-photography-loading-runtime.js?v=20260809-socialassemblyreplay1',
-  '/assets/js/pages/social-lost-found-loading-runtime.js?v=20260809-socialassemblyreplay1',
-  '/assets/js/pages/social-messages-loading-runtime.js?v=20260809-socialassemblyreplay1',
-  '/assets/js/pages/social-alerts-loading-runtime.js?v=20260809-socialassemblyreplay1',
+  '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-page-boot-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-home-loading-runtime.js?v=20260810-socialhomeanim5',
+  '/assets/js/pages/social-community-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-groups-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-projects-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-portfolio-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-research-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-pages-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-events-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-surveys-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-photography-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-lost-found-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-messages-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-alerts-loading-runtime.js?v=20260810-socialbootveil2',
 ];
 
 function isVersionedAssetUrl(url) {
@@ -94,10 +96,10 @@ async function deleteLegacyPortalCaches() {
 }
 
 function buildOfflineApiResponse(request) {
-    const acceptsJson = String(request.headers.get('accept') || '').toLowerCase().includes('application/json');
+    const isApiRequest = String(request.url || '').includes('/api/');
     const payload = {
         ok: false,
-        error: acceptsJson ? 'The portal API is offline right now.' : 'Offline',
+        error: isApiRequest ? 'The portal API is offline right now.' : 'Offline',
     code: 'offline'
   };
   return new Response(JSON.stringify(payload), {

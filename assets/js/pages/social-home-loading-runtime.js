@@ -8,54 +8,36 @@
         return;
     }
 
+    // Region shells only — leaf tags ride parent opacity (match Community nesting, not leaf explode).
     const feedRegions = [
         '[data-social-home-assembly-root="1"]',
         '.social-neo-feed-shell',
+        '.social-neo-feed-header-card',
         '.social-neo-feed-mobile-stack',
         '.social-neo-feed-composer-zone',
-        '.social-neo-composer-card',
-        '.social-neo-composer-cta-card',
-        '.social-neo-composer-cta',
-        '.social-neo-avatar',
-        '.social-neo-composer-cta-copy',
-        '.social-neo-composer-cta-btn',
         '.social-neo-feed-hero',
         '.social-neo-feed-hero-head',
         '.social-neo-feed-hero-actions',
         '.social-neo-hero-faculty',
         '.lux-picker-field',
-        '.lux-picker-copy',
-        '.lux-picker-value',
-        '.social-neo-select',
-        '.social-neo-feed-hero-action-btn',
-        '.social-neo-feed-hero-action-label',
         '.social-neo-feed-hero-stats',
         '.social-neo-feed-hero-stat',
         '.social-neo-feed-hero-grid',
         '.social-neo-feed-hero-tab',
-        '.social-neo-feed-hero-tab-icon',
-        '.social-neo-feed-hero-tab-copy',
         '.social-neo-feed-hero-scope',
-        '.social-neo-feed-hero-scope-field',
-        '.social-neo-feed-hero-scope-label',
-        '.social-neo-feed-hero-scope-select',
-        '.social-neo-feed-header-divider',
         '.social-neo-stack',
         '.social-neo-empty',
-        '.social-neo-card',
-        '.lux-card',
-        '.lux-section-card',
-        '.lux-soft-chrome',
-        '.home-hover-chip',
-        '[data-lux-observed-surface="1"]',
-        'h1, h2, h3, h4, h5, h6',
-        'p',
-        'strong',
-        'span',
-        'small',
-        'label',
-        'li',
-        'i'
+        '.social-neo-post-card',
+        '.social-neo-post-head',
+        '.social-neo-post-body',
+        '.social-neo-post-actions',
+        '.social-neo-media',
+        '.social-neo-file',
+        '.social-neo-post-entity-links',
+        '.social-neo-shared',
+        '.social-neo-post-metrics',
+        '.social-neo-inline-metrics',
+        '.social-pagination-controls'
     ];
 
     const controls = [
@@ -86,12 +68,7 @@
     }
 
     function isFeedSurfaceReady() {
-        const center = getFeedCenter();
-        const section = getFeedSection(center);
-        return Boolean(
-            section
-            && section.dataset.socialHomeAssemblyRoot === '1'
-        );
+        return Boolean(getFeedSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -123,7 +100,8 @@
         hierarchySelector: [
             '[data-social-home-assembly-root="1"]',
             '.social-neo-feed-shell',
-            '.social-neo-card',
+            '.social-neo-feed-header-card',
+            '.social-neo-feed-mobile-stack',
             '.social-neo-feed-composer-zone',
             '.social-neo-feed-hero',
             '.social-neo-feed-hero-head',
@@ -132,8 +110,7 @@
             '.social-neo-feed-hero-grid',
             '.social-neo-feed-hero-scope',
             '.social-neo-stack',
-            '.lux-card',
-            '.lux-section-card'
+            '.social-neo-post-card'
         ],
         flattenInnerTargets: false,
         granularSelector: feedRegions,
@@ -174,13 +151,15 @@
         const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
         const section = getFeedSection(center);
         if (activePanel !== 'feed' || !section) return false;
-        const isNewSection = section.dataset.socialHomeAssemblyRoot !== '1';
         const phase = motion.getState?.().phase;
         // Observer (no force) only kickstarts idle → content. Dialog center remounts
         // must not re-enter assembly-active. queueSocialHomeMotion passes { force: true }.
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialHomeAssemblyState;
         section.dataset.socialHomeAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

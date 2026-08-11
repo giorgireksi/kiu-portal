@@ -95,8 +95,7 @@
     }
 
     function isResearchSurfaceReady() {
-        const section = getResearchSection();
-        return Boolean(section && section.dataset.socialResearchAssemblyRoot === '1');
+        return Boolean(getResearchSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -196,6 +195,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialResearchAssemblyState;
         section.dataset.socialResearchAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

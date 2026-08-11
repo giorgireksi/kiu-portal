@@ -101,8 +101,7 @@
     }
 
     function isPagesSurfaceReady() {
-        const section = getPagesSection();
-        return Boolean(section && section.dataset.socialPagesAssemblyRoot === '1');
+        return Boolean(getPagesSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -197,6 +196,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialPagesAssemblyState;
         section.dataset.socialPagesAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 

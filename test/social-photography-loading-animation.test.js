@@ -11,9 +11,9 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('loads photography motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260809-assembly17');
-        const photoIndex = html.indexOf('social-photography-loading-runtime.js?v=20260809-socialassemblyreplay1');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
+        const photoIndex = html.indexOf('social-photography-loading-runtime.js?v=20260810-socialbootveil2');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
         expect(html).toContain('social-photography-loading.css?v=20260809-socialassemblyreplay1');
         expect(sharedIndex).toBeGreaterThan(-1);
@@ -239,9 +239,9 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('cache-busts photography assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260809-socialassemblyreplay1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
         expect(sw).toContain('social-photography-loading.css?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-photography-loading-runtime.js?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-page-interactions-runtime.js?v=20260809-socialassemblyreplay1');
+        expect(sw).toContain('social-photography-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
     });
 });

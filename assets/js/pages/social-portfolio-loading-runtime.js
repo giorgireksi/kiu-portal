@@ -100,8 +100,7 @@
     }
 
     function isPortfolioSurfaceReady() {
-        const section = getPortfolioSection();
-        return Boolean(section && section.dataset.socialPortfolioAssemblyRoot === '1');
+        return Boolean(getPortfolioSection());
     }
 
     const motion = createAssemblyLoadingMotion({
@@ -197,6 +196,9 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialPortfolioAssemblyState;
         section.dataset.socialPortfolioAssemblyRoot = '1';
+        if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
+            return motion.softRestart(center);
+        }
         return typeof motion.start === 'function' && motion.start(center);
     }
 
