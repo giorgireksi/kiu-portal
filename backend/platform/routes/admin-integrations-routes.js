@@ -28,6 +28,7 @@ function registerAdminIntegrationsRoutes(app, deps = {}) {
             return;
         }
         pushEvent([account.id], { type: 'account:upsert', account });
+        broadcastAll({ type: 'accounts:directory-updated', emittedAt: new Date().toISOString() });
         response.json({ ok: true, account });
     });
 

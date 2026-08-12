@@ -1128,6 +1128,11 @@ function handleKiuRealtimeEventPayload(payload) {
                 }
             }
             break;
+        case 'accounts:directory-updated':
+            if (typeof window.loadPortalSocialDirectory === 'function') {
+                window.loadPortalSocialDirectory(true).catch(() => null);
+            }
+            break;
         case 'chat:upsert':
             if (payload.chat) {
                 const latestMessage = Array.isArray(payload.chat.messages) ? payload.chat.messages[payload.chat.messages.length - 1] : null;

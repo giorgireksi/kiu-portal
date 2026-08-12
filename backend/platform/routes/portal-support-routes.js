@@ -211,10 +211,11 @@ function registerPortalSupportRoutes(app, deps = {}) {
                 || ''
         ).trim();
         const hasIds = String(request.query?.ids || '').trim().length > 0;
+        const campusScope = String(request.query?.scope || '').trim().toLowerCase() === 'campus';
         const query = {
             ...request.query,
-            ...(facultyCode || hasIds ? {} : { facultyCode: '__no_faculty_scope__' }),
-            ...(facultyCode ? { facultyCode } : {})
+            ...(campusScope || facultyCode || hasIds ? {} : { facultyCode: '__no_faculty_scope__' }),
+            ...(campusScope || hasIds ? {} : (facultyCode ? { facultyCode } : {}))
         };
         const listing = store.listAccounts(query);
         response.json({

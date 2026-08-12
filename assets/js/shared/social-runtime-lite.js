@@ -1017,21 +1017,34 @@ Publishes only the host/runtime contract consumed by its loader.
         if (!user?.id) return [];
         const requestUserId = text(user.id);
         if (runtime.directoryPromise && !force) return runtime.directoryPromise;
-        const query = new URLSearchParams({
-            limit: runtime.ui.directorySearch ? '36' : '24',
+        const baseQuery = new URLSearchParams({
+            limit: '200',
+            offset: '0',
+            scope: 'campus',
             search: runtime.ui.directorySearch || ''
         });
-        if (runtime.ui.directoryRole && runtime.ui.directoryRole !== 'all') query.set('role', runtime.ui.directoryRole);
-        if (!runtime.ui.directorySearch && user.role !== 'admin') query.set('facultyCode', currentFacultyCode());
-        runtime.directoryPromise = portalRequest(`/api/accounts/directory?${query.toString()}`)
-            .then((payload) => {
-                if (text(currentUserId()) !== requestUserId) return runtime.directory;
-                const items = Array.isArray(payload?.items) ? payload.items : [];
-                mergeAccounts(items);
-                runtime.directory = items.filter((account) => text(account.id) !== text(user.id));
-                queueRender('directory');
-                return runtime.directory;
-            })
+        if (runtime.ui.directoryRole && runtime.ui.directoryRole !== 'all') baseQuery.set('role', runtime.ui.directoryRole);
+        runtime.directoryPromise = (async () => {
+            const items = [];
+            let offset = 0;
+            let total = Infinity;
+            while (offset < total && offset < 10000) {
+                const query = new URLSearchParams(baseQuery);
+                query.set('offset', String(offset));
+                const payload = await portalRequest(`/api/accounts/directory?${query.toString()}`);
+                const page = Array.isArray(payload?.items) ? payload.items : [];
+                items.push(...page);
+                total = Number(payload?.total || items.length);
+                if (!page.length) break;
+                offset += page.length;
+                if (page.length < 200) break;
+            }
+            if (text(currentUserId()) !== requestUserId) return runtime.directory;
+            mergeAccounts(items);
+            runtime.directory = items.filter((account) => text(account.id) !== text(user.id));
+            queueRender('directory');
+            return runtime.directory;
+        })()
             .catch((error) => {
                 if (text(currentUserId()) !== requestUserId) return runtime.directory;
                 runtime.error = text(error?.message || 'Directory could not be loaded.');
