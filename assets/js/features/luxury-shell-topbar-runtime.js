@@ -73,13 +73,14 @@ function syncRolePickerVisibility() {
     const wrapper = button?.closest('[data-picker-wrap="role"]');
     const panel = document.getElementById('lux-role-picker-panel');
     const allowed = isAuthenticatedAdminForRolePicker();
-    if (wrapper) wrapper.hidden = !allowed;
     if (!allowed) {
         panel?.classList.remove('is-open', 'is-closing');
         panel?.remove();
-        button?.setAttribute('aria-expanded', 'false');
+        wrapper?.remove();
+        return false;
     }
-    return allowed;
+    if (wrapper) wrapper.hidden = false;
+    return true;
 }
 
 function roleSwitcherHasPersona(roleKey, preferredFaculty = '') {
