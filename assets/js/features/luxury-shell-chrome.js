@@ -1717,6 +1717,7 @@ function bindTopbarControls() {
     }
 
     const roleButton = document.getElementById('lux-role-picker-btn');
+    if (typeof window.syncRolePickerVisibility === 'function') window.syncRolePickerVisibility();
     if (roleButton && !roleButton.dataset.bound) {
         roleButton.addEventListener('click', (event) => {
             event.stopPropagation();

@@ -859,6 +859,7 @@ window.closePickerPanels = closePickerPanels;
 window.togglePickerPanel = togglePickerPanel;
 
 function openRoleSwitcherPanel() {
+    if (typeof window.isAuthenticatedAdminForRolePicker === 'function' && !window.isAuthenticatedAdminForRolePicker()) return false;
     const roleButton = document.getElementById('lux-role-picker-btn');
     const rolePanel = ensureShellPickerPanel('lux-role-picker-panel');
     if (!roleButton || !rolePanel) return false;

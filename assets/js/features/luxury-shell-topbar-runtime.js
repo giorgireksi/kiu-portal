@@ -61,6 +61,27 @@ function populateFacultySwitcher(options = {}) {
     }
 }
 
+function isAuthenticatedAdminForRolePicker() {
+    const role = typeof currentUser !== 'undefined'
+        ? String(currentUser?.role || '').trim().toLowerCase()
+        : (typeof getCurrentUser === 'function' ? String(getCurrentUser()?.role || '').trim().toLowerCase() : '');
+    return role === 'admin';
+}
+
+function syncRolePickerVisibility() {
+    const button = document.getElementById('lux-role-picker-btn');
+    const wrapper = button?.closest('[data-picker-wrap="role"]');
+    const panel = document.getElementById('lux-role-picker-panel');
+    const allowed = isAuthenticatedAdminForRolePicker();
+    if (wrapper) wrapper.hidden = !allowed;
+    if (!allowed) {
+        panel?.classList.remove('is-open', 'is-closing');
+        panel?.remove();
+        button?.setAttribute('aria-expanded', 'false');
+    }
+    return allowed;
+}
+
 function roleSwitcherHasPersona(roleKey, preferredFaculty = '') {
     if (roleKey === 'admin') return true;
     const faculty = preferredFaculty
@@ -75,6 +96,7 @@ function roleSwitcherHasPersona(roleKey, preferredFaculty = '') {
 }
 
 function populateRoleSwitcher(options = {}) {
+    if (!syncRolePickerVisibility()) return;
     const button = document.getElementById('lux-role-picker-btn');
     const value = document.getElementById('lux-role-picker-value');
     let panel = document.getElementById('lux-role-picker-panel');
@@ -318,6 +340,7 @@ function syncTopbar() {
     ) {
         window.ensureAdminLibraryRouteVisualState();
     }
+    syncRolePickerVisibility();
     populateRoleSwitcher();
     syncChromeBottom();
     ensureChromeBottomResizeListener();
@@ -326,6 +349,8 @@ function syncTopbar() {
         const api = {
             populateFacultySwitcher,
             populateRoleSwitcher,
+            isAuthenticatedAdminForRolePicker,
+            syncRolePickerVisibility,
             ensureChromeBottomResizeListener,
             syncChromeBottom,
             syncTopbar,
