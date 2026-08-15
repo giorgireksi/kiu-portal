@@ -272,5 +272,7 @@ describe('lms route regressions (retired skins purged)', () => {
         expect(js).not.toContain('lms-clean-card-meta is-compact');
         expect(js).toContain('lux-empty-state__title lms-route-empty-title');
         expect(js).toContain('lux-empty-state__copy lms-route-empty-copy');
+        expect(js).toContain("kiu:portal-bootstrap-complete");
+        expect(js).toContain('availableGroups/curriculum');
     });
 });

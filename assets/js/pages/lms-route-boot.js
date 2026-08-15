@@ -103,10 +103,16 @@
     }
     function getLmsActiveFacultyCode() {
         const storedFaculty = localStorage.getItem('currentFaculty');
+        const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+        const role = String(currentUser?.role || (typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : '') || '').trim().toLowerCase();
         const fallback = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
+        // Only admins may use the global faculty switcher. Staff accounts must
+        // stay in their own faculty, otherwise a stale localStorage value hides
+        // every assigned LMS subject after switching accounts.
+        const preferred = role === 'admin' ? (storedFaculty || fallback) : fallback;
         return typeof normalizeFacultyCode === 'function'
-            ? normalizeFacultyCode(storedFaculty || fallback, fallback)
-            : (storedFaculty || fallback || 'ECON');
+            ? normalizeFacultyCode(preferred, fallback)
+            : (preferred || fallback || 'ECON');
     }
     function lmsScheduleLabel(value, fallback = '') {
         if (typeof window.formatStudyCardLabel === 'function') {
@@ -164,8 +170,44 @@
             ? window.KIU_STATE.facultyProfiles[normalizedFaculty].curriculum.filter(matchesFaculty)
             : [];
         const merged = [].concat(facultyCurriculum, flatCurriculum, profileCurriculum);
+        const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+        const currentRole = String(currentUser?.role || (typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : '') || '').trim().toLowerCase();
+        const currentUserId = String(currentUser?.id || currentUser?.userId || currentUser?.accountId || '').trim();
+        const currentNames = new Set([
+            currentUser?.name,
+            currentUser?.nameEn,
+            currentUser?.displayName,
+            currentUser?.email
+        ].map(value => String(value || '').trim().toLowerCase()).filter(Boolean));
+        const assignedSubjects = [];
+        if (['professor', 'ta'].includes(currentRole)) {
+            Object.entries(window.KIU_STATE?.availableGroups || {}).forEach(([subjectId, groups]) => {
+                const groupList = Array.isArray(groups) ? groups : [];
+                const assigned = groupList.some(group => {
+                    const ids = currentRole === 'professor'
+                        ? [group?.profId, group?.professorId, group?.professorUserId, group?.instructorUserId]
+                        : [group?.taId, group?.assistantId, group?.assistantUserId, group?.taUserId, ...(Array.isArray(group?.taIds) ? group.taIds : [])];
+                    const names = currentRole === 'professor' ? [group?.prof] : [group?.ta];
+                    return (currentUserId && ids.some(value => String(value || '').trim() === currentUserId))
+                        || names.some(value => currentNames.has(String(value || '').trim().toLowerCase()));
+                });
+                if (!assigned) return;
+                const curriculumSubject = typeof findCurriculumSubjectByIdOrTitle === 'function'
+                    ? findCurriculumSubjectByIdOrTitle(subjectId, '', normalizedFaculty)
+                    : null;
+                const groupFacultyRecord = groupList.find(group => group?.faculty || group?.facultyCode) || {};
+                const groupFaculty = groupFacultyRecord.faculty || groupFacultyRecord.facultyCode || '';
+                const subject = curriculumSubject || {
+                    id: subjectId,
+                    name: subjectId,
+                    title: subjectId,
+                    faculty: groupFaculty || (typeof deriveFacultyFromSubjectId === 'function' ? deriveFacultyFromSubjectId(subjectId) : normalizedFaculty)
+                };
+                if (matchesFaculty(subject)) assignedSubjects.push({ ...subject, groups: groupList });
+            });
+        }
         const seen = new Set();
-        return merged.filter((subject, index) => {
+        return merged.concat(assignedSubjects).filter((subject, index) => {
             if (!matchesFaculty(subject)) return false;
             const subjectId = getLmsSubjectId(subject, index);
             if (seen.has(subjectId)) return false;
@@ -541,7 +583,7 @@
             document.body.dataset.luxBackgroundAnimation = window.areBackgroundAnimationsEnabled() ? 'on' : 'off';
         }
         if (typeof window.updateTransparency === 'function') {
-            const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
+            const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
             if (!Number.isNaN(savedTransparency)) {
                 window.updateTransparency(savedTransparency, { persist: false });
             }
@@ -611,6 +653,16 @@
     window.refreshStandaloneDesktopShellChrome = function refreshStandaloneDesktopShellChrome() {
         refreshStandaloneLmsShellContext({ refreshSubjectDeck: false });
     };
+
+    // The first LMS render can occur before the server bootstrap hydrates
+    // availableGroups/curriculum. Rebuild the subject deck after the
+    // PostgreSQL-authoritative snapshot arrives so newly assigned TA subjects
+    // are visible without a manual route reload.
+    window.addEventListener('kiu:portal-bootstrap-complete', () => {
+        if (!isLmsSubjectDeckVisible()) return;
+        renderLmsSubjectDeck({ force: true });
+        scheduleLmsVisualShellSync();
+    });
 
     function revealLmsShellIfLoading() {
         if (typeof schedulePortalShellReadyReveal === 'function') {

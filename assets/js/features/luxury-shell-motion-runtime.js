@@ -77,7 +77,7 @@
         if (motionRefCount > 0 || performance.now() < motionDeadline) return;
         syncLuxIsAnimatingFlag();
         if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            const pct = window.__currentTransparency ?? 13;
+            const pct = window.__currentTransparency ?? 70;
             window.queueLuxuryTransparencyRefresh(pct);
         }
     }

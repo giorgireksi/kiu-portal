@@ -136,6 +136,7 @@ describe('admin orders route regressions.test', () => {
         expect(workspace).toContain('lux-picker-field orders-inbox-layout-filter');
         expect(workspace).not.toContain('orders-admin-filter-grid--layout');
         expect(workspace).toContain('data-admin-orders-audience-role');
+        expect(workspace).toContain('syncAdminOrdersSentInboxChange();\n            fetchOrdersRecipientFilterLayout');
         expect(workspace).toContain('countAdminAudienceNotifications');
         expect(workspace).not.toContain("data-admin-orders-sent-filter=\"type\"");
         expect(workspace).not.toContain("data-admin-orders-sent-filter=\"kind\"");

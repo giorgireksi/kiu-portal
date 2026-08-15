@@ -569,4 +569,9 @@
     window.syncStudentEducationalProgramSearchQuery = syncStudentEducationalProgramSearchQuery;
     window.setStudentEducationalProgramModuleSelection = setStudentEducationalProgramModuleSelection;
     window.renderStudentEducationalProgramPage = renderStudentEducationalProgramPage;
+    // Standalone programs initially renders before PostgreSQL bootstrap. Refresh
+    // after the authoritative catalog arrives so it does not remain empty.
+    window.addEventListener('kiu:portal-bootstrap-complete', () => {
+        renderStudentEducationalProgramPage();
+    });
 })();

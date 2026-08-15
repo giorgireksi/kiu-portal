@@ -387,5 +387,5 @@ const KIU_EMPTY_STATE = sanitizeStateForManualTesting({
     examTemplateLinksByTemplateId: {},
     examSessionsById: {},
     examPortalAuthSession: {},
-    users: []
 });
+if (typeof window !== 'undefined') window.KIU_EMPTY_STATE = KIU_EMPTY_STATE;

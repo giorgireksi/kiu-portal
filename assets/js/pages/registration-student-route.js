@@ -236,7 +236,7 @@ function bootStudentRegistrationRoute() {
     updateEctsProgress();
     refreshRegistrationUI();
     if (typeof updateTransparency === 'function') {
-        const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
+        const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
         if (!Number.isNaN(savedTransparency)) {
             updateTransparency(savedTransparency);
         }

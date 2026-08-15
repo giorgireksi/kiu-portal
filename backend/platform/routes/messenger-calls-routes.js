@@ -96,8 +96,11 @@ function registerMessengerCallsRoutes(app, deps = {}) {
             chatId = String(request.params.chatId || '').trim();
         }
         const chat = store.markChatMessagesRead(chatId, actorUserId);
+        // Read acknowledgements are intentionally idempotent. A browser can
+        // retain a chat id after a stale local snapshot or after the other
+        // participant was archived; that must not surface as a network error.
         if (!chat) {
-            sendError(response, 400, 'Chat could not be marked read.');
+            response.json({ ok: true, chat: null, ignored: true });
             return;
         }
         pushEvent(chat.members, { type: 'chat:upsert', chat });

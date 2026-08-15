@@ -13,9 +13,9 @@
     var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1';
     var LUXURY_VISUAL_DEFAULTS_VERSION_KEY = 'KIU_LUXURY_VISUAL_DEFAULTS_VERSION';
     // Keep in sync with FORCED_LUXURY_VISUAL_DEFAULTS_VERSION in index-luxury.js.
-    var LUXURY_VISUAL_DEFAULTS_VERSION = '20260723-adaptive-render-defaults1';
+    var LUXURY_VISUAL_DEFAULTS_VERSION = '20260815-opacity70-v2';
     var DEFAULT_LUXURY_THEME_MODE = 'dark';
-    var DEFAULT_LUXURY_SURFACE_TRANSPARENCY = '13';
+    var DEFAULT_LUXURY_SURFACE_TRANSPARENCY = '70';
     var DEFAULT_LUXURY_PALETTE = 'ocean-teal';
 
     function parseJson(raw) {
@@ -779,33 +779,31 @@
         var revealDeadlineMs = 1400;
         var revealElapsedMs = 0;
         function forceRevealPage() {
+            window.__kiuSocialShellRevealAllowed = true;
+            window.__kiuHomeShellRevealAllowed = true;
             if (typeof window.__kiuStartShellReveal === 'function') {
-                window.__kiuStartShellReveal({ degraded: true });
-                return;
+                try { window.__kiuStartShellReveal({ degraded: true }); } catch (_e) {}
             }
             setShellLoadState({ phase: 'degraded', stage: 'ready', degraded: true });
             root.classList.add('kiu-shell-ready');
             root.classList.remove('kiu-shell-loading');
             if (document.body) {
                 document.body.classList.add('kiu-shell-ready');
-                document.body.classList.remove('kiu-shell-loading');
+                document.body.classList.remove('kiu-shell-loading', 'social-center-assembly-prehide', 'home-shell-assembly-prehide');
                 document.body.removeAttribute('aria-busy');
+            }
+            var appContent = document.getElementById('app-content');
+            if (appContent) appContent.style.opacity = '1';
+            if (typeof window.markPortalShellReady === 'function') {
+                try { window.markPortalShellReady(); } catch (_e) {}
             }
         }
         function tryRevealPageEarly() {
             if (shellLoadState.phase !== 'loading') return;
-            var body = document.body;
-            // Social / Home own reveal via assembly run — do not uncover early.
-            if (body && body.classList.contains('lux-route-social')) return;
-            if (body && body.classList.contains('lux-route-home')) return;
-            var navRoot = document.getElementById('lux-nav');
-            var canRevealFromNav = body && body.classList.contains('lux-full-paint');
-            if (canRevealFromNav && navRoot && navRoot.children && navRoot.children.length > 0) {
-                forceRevealPage();
-                return;
-            }
             revealElapsedMs += revealPollMs;
-            if (revealElapsedMs >= revealDeadlineMs) {
+            var isSocial = b.classList.contains('lux-route-social');
+            var limit = isSocial ? 2200 : 1400;
+            if (revealElapsedMs >= limit) {
                 forceRevealPage();
                 return;
             }

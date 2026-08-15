@@ -49,7 +49,7 @@
         document.addEventListener('input', (event) => {
             if (event.target.matches('[data-admin-orders-transparency]') && typeof window.updateTransparency === 'function') {
                 if (typeof window.setDashboardVisuals === 'function') {
-                    window.setDashboardVisuals({ surfaceTransparency: String(event.target.value || '13') });
+                    window.setDashboardVisuals({ surfaceTransparency: String(event.target.value || '70') });
                 }
                 window.updateTransparency(event.target.value);
             }

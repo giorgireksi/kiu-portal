@@ -596,6 +596,9 @@ function syncGroupsForStaff(nextRecord, previousRecord = null) {
     const assignmentKey = nextRecord.platformRole === 'ta' ? 'ta' : 'prof';
     const previousName = normalizeText(previousRecord?.name || '');
     const nextName = normalizeText(nextRecord.name || '');
+    const assignmentIdKey = assignmentKey === 'ta' ? 'taId' : 'profId';
+    const previousId = normalizeText(previousRecord?.id || '');
+    const nextId = normalizeText(nextRecord.id || '');
     Object.keys(KIU_STATE.availableGroups || {}).forEach((courseId) => {
         const courseFaculty = typeof deriveFacultyFromSubjectId === 'function'
             ? deriveFacultyFromSubjectId(courseId)
@@ -607,11 +610,34 @@ function syncGroupsForStaff(nextRecord, previousRecord = null) {
         const shouldOwnCourse = (nextRecord.subjects || []).includes(normalizeText(courseId));
         KIU_STATE.availableGroups[courseId] = (KIU_STATE.availableGroups[courseId] || []).map((group) => {
             const currentName = normalizeText(group?.[assignmentKey] || '');
-            if (shouldOwnCourse && (!currentName || currentName === 'TBD' || currentName === 'Assigned Professor' || currentName === 'Assigned Teaching Assistant' || currentName === previousName)) {
-                return { ...group, [assignmentKey]: nextName };
+            const currentId = normalizeText(group?.[assignmentIdKey] || '');
+            const currentTaIds = Array.isArray(group?.taIds)
+                ? group.taIds.map((value) => normalizeText(value)).filter(Boolean)
+                : [];
+            if (shouldOwnCourse && assignmentKey === 'ta' && nextId && currentId && currentId !== nextId) {
+                return {
+                    ...group,
+                    taIds: Array.from(new Set([...currentTaIds, currentId, nextId]))
+                };
             }
-            if (!shouldOwnCourse && currentName === previousName) {
-                return { ...group, [assignmentKey]: assignmentKey === 'prof' ? 'Assigned Professor' : 'Assigned Teaching Assistant' };
+            if (shouldOwnCourse && (!currentName || currentName === 'TBD' || currentName === 'Assigned Professor' || currentName === 'Assigned Teaching Assistant' || currentName === previousName || currentId === previousId)) {
+                return {
+                    ...group,
+                    [assignmentKey]: nextName,
+                    [assignmentIdKey]: nextId,
+                    ...(assignmentKey === 'ta' && nextId ? { taIds: Array.from(new Set([...currentTaIds, nextId])) } : {})
+                };
+            }
+            if (!shouldOwnCourse && (currentName === previousName || currentId === previousId || currentId === nextId || currentTaIds.includes(previousId) || currentTaIds.includes(nextId))) {
+                const remainingTaIds = assignmentKey === 'ta'
+                    ? currentTaIds.filter((value) => value !== previousId && value !== nextId)
+                    : [];
+                return {
+                    ...group,
+                    [assignmentKey]: assignmentKey === 'prof' ? 'Assigned Professor' : 'Assigned Teaching Assistant',
+                    [assignmentIdKey]: assignmentKey === 'ta' ? (remainingTaIds[0] || '') : '',
+                    ...(assignmentKey === 'ta' ? { taIds: remainingTaIds } : {})
+                };
             }
             return group;
         });
@@ -640,6 +666,8 @@ function upsertUserRecord(nextRecord, existingUser, options = {}) {
         faculty: nextRecord.facultyCode,
         facultyCode: nextRecord.facultyCode,
         status: nextRecord.status,
+        accountStatus: nextRecord.accountStatus,
+        activationRequired: ['not invited', 'pending-activation'].includes(String(nextRecord.accountStatus || '').trim().toLowerCase()),
         photo: nextRecord.photo,
         avatar: typeof getInitialsAvatar === 'function'
             ? getInitialsAvatar(nextRecord.nameEn || nextRecord.name)
@@ -687,7 +715,9 @@ function syncScheduleSessions(nextRecord, options = {}) {
             room: normalizeText(session.room || 'TBD', 'TBD'),
             sessionType: normalizeText(session.sessionType || 'lecture', 'lecture'),
             prof: profRoles.includes(nextRecord.platformRole) ? nextRecord.name : 'TBD',
+            profId: profRoles.includes(nextRecord.platformRole) ? nextRecord.id : '',
             ta: nextRecord.platformRole === 'ta' ? nextRecord.name : 'TBD',
+            taId: nextRecord.platformRole === 'ta' ? nextRecord.id : '',
             faculty: nextRecord.facultyCode,
             semester: 1,
             capacity: Math.max(1, Number(session.capacity || 30)),
@@ -740,6 +770,21 @@ function patchCommandCenterRecord(id, ensureEntry, renderPage, mutator, toastMes
     const entry = ensureEntry(id);
     if (!entry) return null;
     mutator(entry);
+    if (typeof window !== 'undefined' && typeof window.KIU_STATE === 'object') {
+        const user = (window.KIU_STATE.users || []).find((item) => String(item?.id || '') === String(id));
+        if (user) {
+            user.status = entry.status || user.status;
+            if (entry.status === 'Archived') user.accountStatus = 'disabled';
+            else if (entry.accountStatus === 'Login Disabled') user.accountStatus = 'disabled';
+            else if (entry.accountStatus === 'Account Active') user.accountStatus = 'active';
+            if (typeof window.queueRealtimeUserSync === 'function') {
+                window.queueRealtimeUserSync(user, {
+                    syncPortalState: true,
+                    allowAccountStatusChange: true
+                });
+            }
+        }
+    }
     if (typeof saveState === 'function') saveState();
     if (typeof renderPage === 'function') renderPage();
     if (toastMessage) {
@@ -792,24 +837,156 @@ function inviteRecord(id, ensureEntry, renderPage) {
     );
 }
 
-function setRecordArchiveStatus(id, ensureEntry, renderPage, status, entityFallback) {
-    return patchCommandCenterRecord(
-        id,
-        ensureEntry,
-        renderPage,
-        (entry) => {
-            entry.status = status;
-            entry.updatedAt = todayIso();
-            if (!window.KIU_STATE) window.KIU_STATE = {};
-            if (!Array.isArray(KIU_STATE.users)) KIU_STATE.users = [];
-            const user = KIU_STATE.users.find((item) => String(item?.id || '') === String(id));
-            if (user) user.status = status;
-        },
-        (entry) => {
-            const who = entry.name || entityFallback || ccEntity();
-            return status === 'Archived' ? `${who} archived.` : `${who} restored.`;
+let activeArchiveVerification = null;
+
+function closeArchiveVerification() {
+    const root = document.getElementById('kiu-command-center-archive-verification-root');
+    const overlay = root?.querySelector('.lux-glass-dialog-overlay, .lms-glass-dialog-overlay');
+    const finish = () => {
+        if (root) {
+            root.innerHTML = '';
+            root.hidden = true;
         }
-    );
+        activeArchiveVerification = null;
+    };
+    if (overlay && typeof window.closeLuxPortalModal === 'function') {
+        window.closeLuxPortalModal(overlay, { remove: false, scrollLock: true, onDone: finish });
+    } else {
+        finish();
+    }
+}
+
+function renderArchiveVerificationStep() {
+    const verification = activeArchiveVerification;
+    const root = document.getElementById('kiu-command-center-archive-verification-root');
+    if (!verification || !root) return;
+    const name = verification.entry.name || verification.entityFallback || ccEntity();
+    const safeName = escapeHtml(name);
+    const safeId = escapeHtml(verification.entry.id || verification.id);
+    let body = '';
+    if (verification.step === 1) {
+        body = `
+            <p><strong>You are about to archive ${safeName}.</strong></p>
+            <p class="lux-glass-dialog-subtitle">Archived records are hidden from active lists but can be restored later.</p>
+            <div class="lux-data-card"><strong>Record</strong><div>${safeName}</div><small>ID: ${safeId}</small></div>
+            <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                <button type="button" class="lux-secondary-btn" data-archive-verification-action="cancel">Cancel</button>
+                <button type="button" class="lux-primary-btn" data-archive-verification-action="continue">Continue to step 2</button>
+            </div>`;
+    } else if (verification.step === 2) {
+        body = `
+            <p><strong>Step 2 of 3: verify the consequence.</strong></p>
+            <label class="lux-glass-dialog-field" style="display:flex;gap:10px;align-items:flex-start;">
+                <input type="checkbox" data-archive-verification-confirm>
+                <span>I understand that <strong>${safeName}</strong> will be removed from active lists and will require restoration to appear again.</span>
+            </label>
+            <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                <button type="button" class="lux-secondary-btn" data-archive-verification-action="cancel">Cancel</button>
+                <button type="button" class="lux-primary-btn" data-archive-verification-action="continue" disabled>Continue to final step</button>
+            </div>`;
+    } else {
+        body = `
+            <p><strong>Step 3 of 3: final confirmation.</strong></p>
+            <p>Type <strong>ARCHIVE</strong> below to confirm archiving <strong>${safeName}</strong>.</p>
+            <input class="lux-control" type="text" autocomplete="off" spellcheck="false" data-archive-verification-input aria-label="Type ARCHIVE to confirm" placeholder="Type ARCHIVE">
+            <div class="lux-glass-dialog-form-actions lux-glass-dialog-actions">
+                <button type="button" class="lux-secondary-btn" data-archive-verification-action="cancel">Cancel</button>
+                <button type="button" class="lux-primary-btn" data-archive-verification-action="finalize" disabled>Archive record</button>
+            </div>`;
+    }
+    const title = verification.step === 1 ? 'Confirm archive' : `Archive verification · Step ${verification.step} of 3`;
+    const icon = verification.step === 3 ? 'fa-triangle-exclamation' : 'fa-box-archive';
+    const head = typeof window.renderLuxGlassDialogHead === 'function'
+        ? window.renderLuxGlassDialogHead({ title, icon, subtitle: `Three-step protection for ${name}`, closeAttr: 'data-archive-verification-action="cancel"' })
+        : `<div class="lux-glass-dialog-head"><strong class="lux-glass-dialog-title">${title}</strong></div>`;
+    root.innerHTML = `<div class="lux-glass-dialog-overlay lux-hub-dialog-modal-overlay is-open" role="dialog" aria-modal="true" data-lux-transparency-exempt="1"><div class="lux-glass-dialog-card lux-glass-dialog-card--hub-dialog" data-lux-transparency-exempt="1">${head}<div class="lux-glass-dialog-body">${body}</div></div></div>`;
+    const input = root.querySelector('[data-archive-verification-input]');
+    if (input) input.focus();
+}
+
+function openArchiveVerification(id, ensureEntry, renderPage, entityFallback) {
+    if (activeArchiveVerification) return null;
+    const entry = typeof ensureEntry === 'function' ? ensureEntry(id) : null;
+    if (!entry) return null;
+    let root = document.getElementById('kiu-command-center-archive-verification-root');
+    if (!root) {
+        root = document.createElement('div');
+        root.id = 'kiu-command-center-archive-verification-root';
+        root.hidden = true;
+        document.body.appendChild(root);
+    }
+    activeArchiveVerification = { id, entry, ensureEntry, renderPage, entityFallback, step: 1 };
+    root.hidden = false;
+    renderArchiveVerificationStep();
+    const overlay = root.querySelector('.lux-glass-dialog-overlay');
+    if (overlay && typeof window.openLuxPortalModal === 'function') {
+        window.openLuxPortalModal(overlay, { scrollLock: true });
+    }
+    return entry;
+}
+
+function handleArchiveVerificationAction(action, target) {
+    const verification = activeArchiveVerification;
+    if (!verification) return;
+    if (action === 'cancel') {
+        closeArchiveVerification();
+        return;
+    }
+    if (action === 'continue') {
+        if (verification.step === 2 && !target.closest('.lux-glass-dialog-body')?.querySelector('[data-archive-verification-confirm]')?.checked) return;
+        verification.step += 1;
+        renderArchiveVerificationStep();
+        return;
+    }
+    if (action === 'finalize') {
+        const input = document.querySelector('#kiu-command-center-archive-verification-root [data-archive-verification-input]');
+        if (String(input?.value || '').trim().toUpperCase() !== 'ARCHIVE') return;
+        const { id, ensureEntry, renderPage, entityFallback } = verification;
+        closeArchiveVerification();
+        return patchCommandCenterRecord(
+            id,
+            ensureEntry,
+            renderPage,
+            (entry) => {
+                entry.status = 'Archived';
+                entry.updatedAt = todayIso();
+                if (!window.KIU_STATE) window.KIU_STATE = {};
+                if (!Array.isArray(KIU_STATE.users)) KIU_STATE.users = [];
+                const user = KIU_STATE.users.find((item) => String(item?.id || '') === String(id));
+                if (user) user.status = 'Archived';
+            },
+            (entry) => `${entry.name || entityFallback || ccEntity()} archived.`
+        );
+    }
+}
+
+function ensureArchiveVerificationEvents() {
+    if (window.__kiuArchiveVerificationEventsBound) return;
+    window.__kiuArchiveVerificationEventsBound = true;
+    document.addEventListener('click', (event) => {
+        const action = event.target.closest('[data-archive-verification-action]');
+        if (!action) return;
+        event.preventDefault();
+        handleArchiveVerificationAction(action.dataset.archiveVerificationAction, action);
+    });
+    document.addEventListener('change', (event) => {
+        if (!event.target.matches('[data-archive-verification-confirm]')) return;
+        const button = document.querySelector('[data-archive-verification-action="continue"]');
+        if (button) button.disabled = !event.target.checked;
+    });
+    document.addEventListener('input', (event) => {
+        if (!event.target.matches('[data-archive-verification-input]')) return;
+        const button = document.querySelector('[data-archive-verification-action="finalize"]');
+        if (button) button.disabled = String(event.target.value || '').trim().toUpperCase() !== 'ARCHIVE';
+    });
+}
+
+function setRecordArchiveStatus(id, ensureEntry, renderPage, status, entityFallback) {
+    // Archiving is terminal from the command centers. There is intentionally no
+    // restore path; only the three-step archive verification can change status.
+    if (status !== 'Archived') return null;
+    ensureArchiveVerificationEvents();
+    return openArchiveVerification(id, ensureEntry, renderPage, entityFallback);
 }
 
 function openFormSettingsWorkspace(deps = {}) {

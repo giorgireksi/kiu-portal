@@ -62,9 +62,11 @@ function populateFacultySwitcher(options = {}) {
 }
 
 function isAuthenticatedAdminForRolePicker() {
-    const role = typeof currentUser !== 'undefined'
-        ? String(currentUser?.role || '').trim().toLowerCase()
-        : (typeof getCurrentUser === 'function' ? String(getCurrentUser()?.role || '').trim().toLowerCase() : '');
+    const role = typeof getAuthenticatedAccountRole === 'function'
+        ? String(getAuthenticatedAccountRole() || '').trim().toLowerCase()
+        : (typeof currentUser !== 'undefined'
+            ? String(currentUser?.role || '').trim().toLowerCase()
+            : (typeof getCurrentUser === 'function' ? String(getCurrentUser()?.role || '').trim().toLowerCase() : ''));
     return role === 'admin';
 }
 

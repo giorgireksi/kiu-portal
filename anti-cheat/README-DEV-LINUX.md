@@ -34,9 +34,25 @@ Stop everything:
 npm run stop:local
 ```
 
+## Open or stop only the anti-cheat browser
+
+These commands manage the Electron anti-cheat browser without starting or stopping the LMS or backend:
+
+```bash
+npm run open:anti-cheat
+npm run stop:anti-cheat
+```
+
+The same actions are available on Windows with `open-anti-cheat-browser.bat` and
+`stop-anti-cheat-browser.bat`. For Linux desktop menus, copy
+`kiu-open-anti-cheat-browser.desktop` and `kiu-stop-anti-cheat-browser.desktop`
+to `~/.local/share/applications/` and update their `Exec=` and `Path=` lines if
+the repository is in a different directory.
+
 **Desktop shortcut (optional):** copy `kiu-local-lms-anticheat.desktop` to `~/.local/share/applications/`, edit the `Exec=` and `Path=` lines if your repo is not at `/home/reksi/2/asd`, then launch **KIU LMS + Anti-Cheat (Local)** from the app menu.
 
-Logs: `.tmp/local-lms-anticheat/*.log`
+Logs: `.tmp/local-lms-anticheat/*.log` for the combined launcher, or
+`.tmp/anti-cheat-browser/anticheat.log` for the standalone browser launcher.
 
 The launcher starts all three local pieces together:
 

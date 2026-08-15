@@ -618,7 +618,7 @@
             window.__kiuSocialShellRevealAllowed = true;
             window.__kiuSocialBootForceUnveil = false;
             if (typeof markPortalShellReady === 'function') {
-                markPortalShellReady();
+                markPortalShellReady({ force: true });
             } else if (typeof window.__kiuStartShellReveal === 'function') {
                 window.__kiuStartShellReveal({ degraded: true });
             } else {

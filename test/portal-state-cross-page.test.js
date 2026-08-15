@@ -22,11 +22,34 @@ describe('portal state cross-page persistence', () => {
             meta: {
                 portalStateSavedAt: Date.now()
             }
+        }, {
+            allowGlobalWrite: true,
+            effectiveRole: 'admin'
         });
 
         expect(saved.state.adminProgramStructures.ECON.prog).toHaveLength(1);
         expect(saved.state.adminProgramStructures.ECON.prog[0].id).toBe('module-1');
         expect(store.state.portal.state.adminProgramStructures.ECON.prog).toHaveLength(1);
+    });
+
+    it('exposes admin-authored academic catalog data in non-admin bootstrap views', () => {
+        const store = new PlatformStore();
+        store.state.portal.state = {
+            curriculum: [{ id: 'ECON-01-001', faculty: 'ECON', name: 'Intro' }],
+            adminProgramStructures: { ECON: { prog: [{ id: 'module-1' }] } },
+            curriculumLibraryModulesByFaculty: { ECON: [{ id: 'CLM-1', subjectIds: ['ECON-01-001'] }] },
+            facultyProfiles: { ECON: { curriculum: [{ id: 'ECON-01-001' }], tas: [{ id: 'secret-ta' }] } }
+        };
+        const bootstrap = store.createPortalBootstrap({
+            viewerUserId: 'student-1',
+            effectiveRole: 'student',
+            actualRole: 'student'
+        });
+
+        expect(bootstrap.state.adminProgramStructures.ECON.prog[0].id).toBe('module-1');
+        expect(bootstrap.state.curriculumLibraryModulesByFaculty.ECON[0].id).toBe('CLM-1');
+        expect(bootstrap.state.curriculum).toHaveLength(1);
+        expect(bootstrap.state.facultyProfiles).toBeUndefined();
     });
 
     it('stores portalStateSavedAt on server portal meta during save', () => {

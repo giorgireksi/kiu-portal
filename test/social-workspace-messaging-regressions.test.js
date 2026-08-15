@@ -73,6 +73,7 @@ describe('social workspace messaging regressions', () => {
         expect(routeModule).toContain("app.post('/api/messenger/chats/:chatId/read'");
         expect(routeModule).toContain('decodeURIComponent(chatId)');
         expect(routeModule).toContain('store.markChatMessagesRead');
+        expect(routeModule).toContain('ignored: true');
         expect(store).toContain('markChatMessagesRead(chatId, userId)');
         expect(store).toContain('repairSocialGroupChatMembership(chatId, userId)');
     });

@@ -63,10 +63,10 @@ const LMS_CALLS_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1'
 ]);
 const LMS_INTERACTION_MODULE_URLS = Object.freeze([
-    'assets/js/shared/messenger-gradebook-runtime.js?v=20260810-msgrgb2',
+    'assets/js/shared/messenger-gradebook-runtime.js?v=20260815-lmsroster3',
     'assets/js/shared/messenger-chrome-runtime.js?v=20260720-w18',
-    'assets/js/shared/messenger.js?v=20260720-msgrgb1',
-    'assets/js/pages/lms-interaction-messages-runtime.js?v=20260714-lmspro2'
+    'assets/js/shared/messenger.js?v=20260815-authoritative-send2',
+    'assets/js/pages/lms-interaction-messages-runtime.js?v=20260816-lmssocialstructure10'
 ]);
 const LMS_CONTENT_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-file-storage-runtime.js?v=20260729-lmsmatupload1',
@@ -1332,8 +1332,36 @@ function renderLmsMembersSection(courseId) {
         .find(item => canonicalCourseKey(item?.id) === groupId) || null;
     const students = getEnrolledStudentsForGroup(parsed.courseId, parsed.groupId);
     const currentViewerId = String(getCurrentUserId() || '');
-    const professorUser = resolveUserFromName(domain?.usersById, group?.prof);
-    const taUser = resolveUserFromName(domain?.usersById, group?.ta);
+    const resolveMemberAccount = (id, fallbackName) => {
+        const normalizedId = String(id || '').trim();
+        let realtimeAccount = null;
+        try {
+            realtimeAccount = typeof ensureKiuRealtimeRuntime === 'function'
+                ? ensureKiuRealtimeRuntime().accountsById?.[normalizedId]
+                : null;
+        } catch (error) {}
+        return realtimeAccount
+            || domain?.usersById?.[normalizedId]
+            || (Array.isArray(KIU_STATE?.users) ? KIU_STATE.users.find(user => String(user?.id || '').trim() === normalizedId) : null)
+            || resolveUserFromName(domain?.usersById, fallbackName);
+    };
+    const isActiveMember = (member, role) => {
+        const id = String(member?.id || '').trim();
+        const directory = role === USER_ROLES.STUDENT
+            ? (KIU_STATE.studentAdminProfiles || KIU_STATE.portal?.state?.studentAdminProfiles || {})
+            : (KIU_STATE.staffDirectoryRecords || KIU_STATE.portal?.state?.staffDirectoryRecords || {});
+        const record = directory?.[id];
+        if (!record || typeof record !== 'object') return false;
+        const accountStatuses = [member?.accountStatus, member?.status, record.accountStatus, record.status]
+            .map(value => String(value || '').trim().toLowerCase())
+            .filter(Boolean);
+        if (accountStatuses.some(status => ['disabled', 'archived', 'suspended', 'inactive', 'deleted', 'testing', 'not invited'].includes(status))) return false;
+        return !accountStatuses.length || accountStatuses.includes('active');
+    };
+    const professorUser = resolveMemberAccount(group?.profId, group?.prof);
+    const taUser = resolveMemberAccount(group?.taId || group?.taIds?.[0], group?.ta);
+    const activeProfessorUser = professorUser && isActiveMember(professorUser, USER_ROLES.PROFESSOR) ? professorUser : null;
+    const activeTaUser = taUser && isActiveMember(taUser, USER_ROLES.TA) ? taUser : null;
     const canViewMemberDetails = typeof canManageLmsGroupContent === 'function' && canManageLmsGroupContent();
 
     const buildRolePill = (label, tone) => `
@@ -1379,7 +1407,12 @@ function renderLmsMembersSection(courseId) {
         `;
     };
 
-    const sortedStudents = [...students].sort((left, right) => {
+    const activeStudents = students.filter(student => {
+        const studentId = String(student?.id || '').trim();
+        const studentUser = resolveMemberAccount(studentId, student?.name);
+        return studentUser && isActiveMember({ ...studentUser, id: studentId }, USER_ROLES.STUDENT);
+    });
+    const sortedStudents = [...activeStudents].sort((left, right) => {
         const leftName = String(left?.name || left?.nameEn || '').trim();
         const rightName = String(right?.name || right?.nameEn || '').trim();
         return leftName.localeCompare(rightName, undefined, { sensitivity: 'base' });
@@ -1387,9 +1420,9 @@ function renderLmsMembersSection(courseId) {
 
     const studentRows = sortedStudents.length
         ? sortedStudents.map(student => {
-            const studentUser = domain?.usersById?.[student.id] || null;
+            const studentUser = resolveMemberAccount(student.id, student.name);
             return buildMemberRow(
-                studentUser ? { ...studentUser, id: student.id } : { id: student.id, name: student.name },
+                { ...studentUser, id: student.id },
                 'Student',
                 'is-student',
                 student.name
@@ -1397,13 +1430,13 @@ function renderLmsMembersSection(courseId) {
         }).join('')
         : '<div class="lms-member-empty-note"><i class="fas fa-user-graduate"></i> No students are enrolled in this group yet.</div>';
 
-    const professorRow = group?.prof
-        ? buildMemberRow(professorUser, 'Professor', 'is-professor', group.prof || 'Professor')
-        : '<div class="lms-member-empty-note"><i class="fas fa-user-tie"></i> No professor is assigned to this group yet.</div>';
+    const professorRow = activeProfessorUser
+        ? buildMemberRow(activeProfessorUser, 'Professor', 'is-professor', activeProfessorUser.name || group.prof || 'Professor')
+        : '<div class="lms-member-empty-note"><i class="fas fa-user-tie"></i> No active professor is assigned to this group yet.</div>';
 
-    const taRow = group?.ta
-        ? buildMemberRow(taUser, 'Teaching Assistant', 'is-ta', group.ta)
-        : '<div class="lms-member-empty-note"><i class="fas fa-user-plus"></i> No teaching assistant is assigned to this group yet.</div>';
+    const taRow = activeTaUser
+        ? buildMemberRow(activeTaUser, 'Teaching Assistant', 'is-ta', activeTaUser.name || group.ta || 'Teaching Assistant')
+        : '<div class="lms-member-empty-note"><i class="fas fa-user-plus"></i> No active teaching assistant is assigned to this group yet.</div>';
 
     const studentSectionCopy = canViewMemberDetails
         ? 'Roster for admin, professor, TA, and student group views.'
@@ -1421,7 +1454,7 @@ function renderLmsMembersSection(courseId) {
                         </div>
                     </div>
                     <div class="lms-route-actions lms-member-overview-actions">
-                        <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-user-graduate"></i> ${students.length} students</span>
+                        <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-user-graduate"></i> ${activeStudents.length} students</span>
                         <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-door-open"></i> ${escapeHtml(group?.room || 'TBD')}</span>
                     </div>
                 </div>
@@ -1444,7 +1477,7 @@ function renderLmsMembersSection(courseId) {
                         <div class="lms-member-section-title">Students in This Group</div>
                         <div class="lms-route-copy lms-member-section-copy">${escapeHtml(studentSectionCopy)}</div>
                     </div>
-                    <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-users"></i> ${students.length} student${students.length === 1 ? '' : 's'}</span>
+                    <span class="lms-route-pill lux-pill home-hover-chip"><i class="fas fa-users"></i> ${activeStudents.length} student${activeStudents.length === 1 ? '' : 's'}</span>
                 </div>
                 <div class="lms-member-row-list">
                     ${studentRows}

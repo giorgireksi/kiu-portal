@@ -9,6 +9,8 @@ const DIRECTORY_ACCOUNT_FIELDS = [
     'facultyCode',
     'avatar',
     'photo',
+    'accountStatus',
+    'status',
     'interests',
     'online',
     'lastSeenAt',
@@ -98,8 +100,16 @@ function registerPortalSupportRoutes(app, deps = {}) {
             await store.flushPendingWrites();
             // Live-push: notify other open sessions to re-pull the shared state.
             // ponytail: coarse — every save pings all clients; scope to changed shared keys / per-faculty rooms if load matters.
+            // sessionToken lets each client ignore its OWN save's echo, breaking the
+            // self-re-bootstrap loop that overwrote freshly created records with a
+            // stale snapshot (registration/creation data loss). Other tabs/sessions
+            // (different token) still re-sync.
             if (typeof broadcastAll === 'function') {
-                broadcastAll({ type: 'portal:state-upsert', emittedAt: new Date().toISOString() });
+                broadcastAll({
+                    type: 'portal:state-upsert',
+                    emittedAt: new Date().toISOString(),
+                    sessionToken: String(sessionAccount?.token || '').trim()
+                });
             }
             if (typeof store.addAuditEvent === 'function') {
                 const actorUserId = typeof getActorUserId === 'function' ? getActorUserId(sessionAccount) : '';
@@ -116,7 +126,7 @@ function registerPortalSupportRoutes(app, deps = {}) {
                     }
                 }, { skipPersist: true });
             }
-            response.json({ ok: true, saved: true, bootstrapStateKeys: Object.keys(savedState?.state && typeof savedState.state === 'object' ? savedState.state : {}) });
+            response.json({ ok: true, saved: true, bootstrapStateKeys: Object.keys(savedState?.state && typeof savedState.state === 'object' ? savedState.state : {}), droppedKeys: Array.isArray(savedState?.droppedKeys) ? savedState.droppedKeys : [] });
         } catch (error) {
             if (Number(error?.statusCode) === 400) {
                 sendError(response, 400, error.message || 'Invalid portal state.');
@@ -211,13 +221,16 @@ function registerPortalSupportRoutes(app, deps = {}) {
                 || ''
         ).trim();
         const hasIds = String(request.query?.ids || '').trim().length > 0;
-        const campusScope = String(request.query?.scope || '').trim().toLowerCase() === 'campus';
+        const requestedScope = String(request.query?.scope || '').trim().toLowerCase();
+        const campusScope = requestedScope === 'campus' || requestedScope === 'social';
         const query = {
             ...request.query,
             ...(campusScope || facultyCode || hasIds ? {} : { facultyCode: '__no_faculty_scope__' }),
             ...(campusScope || hasIds ? {} : (facultyCode ? { facultyCode } : {}))
         };
-        const listing = store.listAccounts(query);
+        const listing = String(request.query?.scope || '').trim().toLowerCase() === 'social'
+            ? store.listSocialAccounts(query)
+            : store.listAccounts(query);
         response.json({
             ok: true,
             ...listing,
@@ -225,7 +238,7 @@ function registerPortalSupportRoutes(app, deps = {}) {
         });
     });
 
-    app.post('/api/accounts/upsert', (request, response) => {
+    app.post('/api/accounts/upsert', async (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
@@ -239,14 +252,27 @@ function registerPortalSupportRoutes(app, deps = {}) {
             sendError(response, 403, 'You can only update your own account.');
             return;
         }
-        const account = store.upsertAccount(actualAdmin
-            ? payload
-            : buildSelfServiceAccountPayload(payload, sessionAccount));
+        const account = store.upsertAccount(
+            actualAdmin ? payload : buildSelfServiceAccountPayload(payload, sessionAccount),
+            { allowAccountStatusChange: request.body?.allowAccountStatusChange === true }
+        );
         if (!account) {
             sendError(response, 400, 'Invalid account payload.');
             return;
         }
+        await store.flushPendingWrites();
         pushEvent([account.id], { type: 'account:upsert', account });
+        // Directory/profile edits also update portal.state mirrors in the account
+        // service. Tell other sessions to pull the same authoritative snapshot;
+        // the originating token is ignored by the browser to avoid self-echo loss.
+        const shouldBroadcastPortalState = request.body?.syncPortalState === true;
+        if (shouldBroadcastPortalState && typeof broadcastAll === 'function') {
+            broadcastAll({
+                type: 'portal:state-upsert',
+                emittedAt: new Date().toISOString(),
+                sessionToken: String(sessionAccount?.token || '').trim()
+            });
+        }
         response.json({ ok: true, account });
     });
 

@@ -19,7 +19,10 @@
                 '.staff-hub-shell, .staff-hub-profile, .staff-hub-form-settings'
             ));
         },
-        animateLateAfterReady: true,
+        // Animate the initial page assembly only. Internal directory/profile
+        // rerenders must not replay the loading motion.
+        animateLateAfterReady: false,
+        autoReplayLateMutations: false,
         lateReadyWindowMs: 4000,
         lateReplaySelector: [
             '.staff-hub-shell',

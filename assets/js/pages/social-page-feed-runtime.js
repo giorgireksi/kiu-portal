@@ -386,7 +386,7 @@
         let socialVisualShellSynced = false;
         function syncSocialVisualShell() {
             if (typeof window.updateTransparency !== 'function') return;
-            const saved = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
+            const saved = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
             if (!Number.isNaN(saved)) {
                 window.updateTransparency(saved, { persist: false });
             }

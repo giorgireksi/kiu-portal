@@ -67,4 +67,46 @@ describe('lms course store domain split', () => {
         expect(store.isCourseTeachingStaff('COURSE-1', 'prof-1', 'professor')).toBe(true);
         expect(store.isCourseTeachingStaff('COURSE-1', 'ta-1', 'ta')).toBe(true);
     });
+
+    it('recognizes portal scheduler assignments by staff id, including duplicate display names', () => {
+        const store = new PlatformStore({});
+        store.state.accounts['ta-2'] = {
+            id: 'ta-2',
+            role: 'ta',
+            displayName: 'New staff',
+            email: 'ta-2@example.test'
+        };
+        store.state.portal.state.availableGroups = {
+            'COURSE-2': [{
+                id: 'g1',
+                ta: 'New staff',
+                taId: 'ta-1',
+                taIds: ['ta-1', 'ta-2']
+            }]
+        };
+
+        expect(store.isCourseTeachingStaff('COURSE-2', 'ta-2', 'ta')).toBe(true);
+    });
+
+    it('creates and delivers LMS group chat messages to the active roster', () => {
+        const store = new PlatformStore({});
+        store.state.accounts = {
+            'ta-1': { id: 'ta-1', role: 'ta', accountStatus: 'active', email: 'ta-1@kiu.edu.ge', displayName: 'Active TA' },
+            'student-1': { id: 'student-1', role: 'student', accountStatus: 'active', email: 'student-1@kiu.edu.ge', displayName: 'Active Student' }
+        };
+        store.state.portal.state = {
+            availableGroups: { 'COURSE-2': [{ id: 'g1', taId: 'ta-1', taIds: ['ta-1'], profId: '' }] },
+            staffDirectoryRecords: { 'ta-1': { id: 'ta-1', status: 'Active', accountStatus: 'active' } },
+            studentAdminProfiles: { 'student-1': { id: 'student-1', status: 'Active', accountStatus: 'active' } },
+            studentSchedulesByStudent: { 'student-1': [{ courseId: 'COURSE-2', groupId: 'g1' }] }
+        };
+        const chat = store.ensureLmsGroupChat('lms-group::COURSE-2::g1', 'ta-1');
+        expect(chat?.members.sort()).toEqual(['student-1', 'ta-1']);
+        const delivered = store.appendMessage({
+            chatId: 'lms-group::COURSE-2::g1',
+            senderId: 'ta-1',
+            message: { id: 'message-1', text: 'Hello group' }
+        });
+        expect(delivered?.messages.at(-1)?.text).toBe('Hello group');
+    });
 });

@@ -727,17 +727,16 @@ function installPortalCallGlobalListeners() {
 // --- READABILITY: Send ---
 async function sendPortalMessengerMessage(chatId, inputId = 'portal-messenger-message-input') {
     const currentUser = getCurrentUser();
-    if (!currentUser) return;
+    if (!currentUser) return null;
     ensurePortalMessengerState();
     const chat = KIU_STATE.portalMessengerChats?.[chatId];
-    if (!chat || !(chat.members || []).includes(String(currentUser.id))) return;
+    if (!chat || !(chat.members || []).includes(String(currentUser.id))) return null;
     const input = document.getElementById(inputId);
     const text = input?.value.trim() || '';
     const file = getPortalMessengerDraftFile(chatId);
     const replyToMessageId = getPortalMessengerReplyTarget(chatId);
-    if (!text && !file) return;
+    if (!text && !file) return null;
     const persistedFile = file ? await persistPortalMessengerDraftFile(file) : null;
-    chat.messages = chat.messages || [];
     const message = {
         id: `portal_msg_${Date.now()}`,
         senderId: String(currentUser.id),
@@ -750,50 +749,49 @@ async function sendPortalMessengerMessage(chatId, inputId = 'portal-messenger-me
         seenBy: [String(currentUser.id)],
         seenAtByUser: { [String(currentUser.id)]: new Date().toISOString() }
     };
-    chat.messages.push(message);
-    if (chat.type === 'direct') {
-        chat.requestStateByUser = chat.requestStateByUser || {};
-        const recipientId = (chat.members || []).find(memberId => String(memberId) !== String(currentUser.id));
-        if (recipientId && !chat.requestStateByUser[String(recipientId)]) {
-            chat.requestStateByUser[String(recipientId)] = 'pending';
-            chat.requestStateByUser[String(currentUser.id)] = 'accepted';
-        }
-    }
-    (chat.members || []).forEach(memberId => unhidePortalMessengerChatForUser(chat.id, memberId));
-    if (input) input.value = '';
-    clearPortalMessengerDraftFile(chatId);
-    clearPortalMessengerReplyTarget(chatId);
-    saveState();
-    if (typeof recordPortalAudit === 'function') {
-        recordPortalAudit('messaging', 'message-sent', 'chat-message', message.id, {
-            afterState: {
+    try {
+        // The LMS composer must not claim success before PostgreSQL acknowledges
+        // the message. The old optimistic-only path could show a local bubble
+        // while the recipient never received anything.
+        const payload = await kiuRealtimeFetch('/api/messenger/message', {
+            method: 'POST',
+            body: {
                 chatId: String(chat.id),
-                chatType: chat.type || 'direct',
+                type: chat.type || 'direct',
+                members: chat.members || [],
+                name: chat.name || '',
+                createdBy: chat.createdBy || String(currentUser.id),
+                createdAt: chat.createdAt || new Date().toISOString(),
                 senderId: String(currentUser.id),
-                hasAttachment: Boolean(message.file),
-                replyToMessageId: replyToMessageId || ''
+                message
             }
         });
+        if (!payload?.chat) return null;
+        if (input) input.value = '';
+        clearPortalMessengerDraftFile(chatId);
+        clearPortalMessengerReplyTarget(chatId);
+        upsertPortalMessengerChatFromRealtime(payload.chat, true);
+        if (typeof recordPortalAudit === 'function') {
+            recordPortalAudit('messaging', 'message-sent', 'chat-message', message.id, {
+                afterState: {
+                    chatId: String(chat.id),
+                    chatType: chat.type || 'direct',
+                    senderId: String(currentUser.id),
+                    hasAttachment: Boolean(message.file),
+                    replyToMessageId: replyToMessageId || ''
+                }
+            });
+        }
+        if (typeof renderPortalMessengerWorkspace === 'function') renderPortalMessengerWorkspace();
+        return payload.chat;
+    } catch (error) {
+        if (input) {
+            input.value = text;
+            input.setAttribute('aria-invalid', 'true');
+            window.setTimeout(() => input.removeAttribute('aria-invalid'), 2500);
+        }
+        return null;
     }
-    renderPortalMessengerWorkspace();
-    kiuRealtimeFetch('/api/messenger/message', {
-        method: 'POST',
-        body: {
-            chatId: String(chat.id),
-            type: chat.type || 'direct',
-            members: chat.members || [],
-            name: chat.name || '',
-            createdBy: chat.createdBy || String(currentUser.id),
-            createdAt: chat.createdAt || new Date().toISOString(),
-            senderId: String(currentUser.id),
-            message
-        }
-    }).then(payload => {
-        if (payload?.chat) {
-            upsertPortalMessengerChatFromRealtime(payload.chat, true);
-            if (typeof renderPortalMessengerWorkspace === 'function') renderPortalMessengerWorkspace();
-        }
-    }).catch(() => {});
 }
 function buildPortalMessengerParticipantSummary(chat, currentUserId) {
     return (chat?.members || []).map(memberId => {

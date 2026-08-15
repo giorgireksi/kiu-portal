@@ -1090,15 +1090,29 @@ function startKiuShellReveal({ degraded = false } = {}) {
 
 window.__kiuStartShellReveal = startKiuShellReveal;
 
-function markPortalShellReady() {
-    // Social / Home first paint is owned by assembly run() → reveal.
-    if (document.body?.classList.contains('lux-route-social')
-        && !window.__kiuSocialShellRevealAllowed) {
-        return;
-    }
-    if (document.body?.classList.contains('lux-route-home')
-        && !window.__kiuHomeShellRevealAllowed) {
-        return;
+function markPortalShellReady(options = {}) {
+    const force = options?.force === true;
+    if (!force) {
+        if (document.body?.classList.contains('lux-route-home')
+            && !window.__kiuHomeShellRevealAllowed) {
+            if (!window.__kiuHomeRevealFailSafe) {
+                window.__kiuHomeRevealFailSafe = window.setTimeout(() => {
+                    window.__kiuHomeShellRevealAllowed = true;
+                    markPortalShellReady({ force: true });
+                }, 1200);
+            }
+            return;
+        }
+        if (document.body?.classList.contains('lux-route-social')
+            && !window.__kiuSocialShellRevealAllowed) {
+            if (!window.__kiuSocialRevealFailSafe) {
+                window.__kiuSocialRevealFailSafe = window.setTimeout(() => {
+                    window.__kiuSocialShellRevealAllowed = true;
+                    markPortalShellReady({ force: true });
+                }, 1200);
+            }
+            return;
+        }
     }
     markPortalNavigationIntentForCurrentPage();
     kiuShellRouteReady = true;
@@ -1111,13 +1125,12 @@ __kiuNavExpose({
 });
 
 function schedulePortalShellReadyReveal() {
-    // Social / Home own shell reveal after assembly run() — never uncover early from standalone boot.
-    if (document.body?.classList.contains('lux-route-social')
-        && !window.__kiuSocialShellRevealAllowed) {
-        return;
-    }
     if (document.body?.classList.contains('lux-route-home')
         && !window.__kiuHomeShellRevealAllowed) {
+        return;
+    }
+    if (document.body?.classList.contains('lux-route-social')
+        && !window.__kiuSocialShellRevealAllowed) {
         return;
     }
     const reveal = () => markPortalShellReady();
@@ -1270,7 +1283,7 @@ function syncStandaloneDesktopRouteVisualShell(config = {}) {
         return;
     }
     if (typeof window.updateTransparency === 'function') {
-        const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
+        const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
         if (!Number.isNaN(savedTransparency)) {
             window.updateTransparency(savedTransparency, config.transparencyOptions || undefined);
         }

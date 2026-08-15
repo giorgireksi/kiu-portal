@@ -25,7 +25,7 @@
         '.social-neo-feed-hero-grid',
         '.social-neo-feed-hero-tab',
         '.social-neo-feed-hero-scope',
-        '.social-neo-stack',
+        '.social-neo-feed-shell .social-neo-stack',
         '.social-neo-empty',
         '.social-neo-post-card',
         '.social-neo-post-head',
@@ -60,6 +60,7 @@
     function getFeedSection(center = getFeedCenter()) {
         const section = center?.firstElementChild;
         if (!section
+            || !section.matches('.social-neo-feed-shell, [data-social-home-assembly-root="1"]')
             || section.matches('.social-neo-card.sn-mat-soft, .social-neo-module-loading, [aria-busy="true"]')
             || section.querySelector('[aria-busy="true"]')) {
             return null;
@@ -78,7 +79,7 @@
         getPageRoot: getFeedCenter,
         getObserverRoot: getFeedCenter,
         isContentReady: isFeedSurfaceReady,
-        autoStart: false,
+        autoStart: true,
         animateLateAfterReady: true,
         autoReplayLateMutations: false,
         unlimitedLateReplay: true,
@@ -95,8 +96,24 @@
             '#social-neo-call-overlay',
             '#mobile-action-sheet'
         ],
-        outerSelectors: ['[data-social-home-assembly-root="1"]'],
-        outerFlightSelector: ['[data-social-home-assembly-root="1"]'],
+        outerSelectors: [
+            '[data-social-home-assembly-root="1"]',
+            '.social-neo-feed-shell',
+            '.social-neo-feed-header-card',
+            '.social-neo-feed-mobile-stack',
+            '.social-neo-feed-composer-zone',
+            '.social-neo-feed-hero',
+            '.social-neo-feed-shell .social-neo-stack',
+            '.social-neo-post-card'
+        ],
+        outerFlightSelector: [
+            '[data-social-home-assembly-root="1"]',
+            '.social-neo-feed-shell',
+            '.social-neo-feed-header-card',
+            '.social-neo-feed-composer-zone',
+            '.social-neo-feed-hero',
+            '.social-neo-post-card'
+        ],
         hierarchySelector: [
             '[data-social-home-assembly-root="1"]',
             '.social-neo-feed-shell',
@@ -109,10 +126,10 @@
             '.social-neo-feed-hero-stats',
             '.social-neo-feed-hero-grid',
             '.social-neo-feed-hero-scope',
-            '.social-neo-stack',
+            '.social-neo-feed-shell .social-neo-stack',
             '.social-neo-post-card'
         ],
-        flattenInnerTargets: false,
+        flattenInnerTargets: true,
         granularSelector: feedRegions,
         controlSelector: controls,
         transformSafeSelector: [],
@@ -127,14 +144,14 @@
             staging: 'is-social-home-assembly-staging'
         },
         flightTiming: {
-            outerDurationMs: 360,
-            innerDurationMs: 240,
-            innerMinDurationMs: 170,
+            outerDurationMs: 320,
+            innerDurationMs: 220,
+            innerMinDurationMs: 160,
             innerDepthStepMs: 12,
-            outerStaggerMs: 18,
-            innerStaggerMs: 10,
-            outerMaxDelayMs: 56,
-            innerMaxDelayMs: 72
+            outerStaggerMs: 16,
+            innerStaggerMs: 8,
+            outerMaxDelayMs: 48,
+            innerMaxDelayMs: 64
         },
         timing: {
             maxShellWaitMs: 900,
@@ -172,9 +189,13 @@
         }
         const observer = new MutationObserver(() => {
             if (feedObserverFrame) return;
+            const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
+            if (activePanel && activePanel !== 'feed') return;
             const run = () => {
                 feedObserverFrame = 0;
-                startCurrentFeedMotion(getFeedCenter());
+                startCurrentFeedMotion(getFeedCenter(), {
+                    force: Boolean(window.__kiuSocialBootAwaitingAssemblyReveal || document.body?.classList.contains('kiu-shell-loading'))
+                });
             };
             feedObserverFrame = typeof window.requestAnimationFrame === 'function'
                 ? window.requestAnimationFrame(run)

@@ -9,12 +9,12 @@ function readSource(relativePath) {
 describe('admin orders loading animation', () => {
     it('loads admin orders motion assets and the shared engine', () => {
         const html = readSource('admin-orders.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const runtimeIndex = html.indexOf('admin-orders-loading-runtime.js?v=20260810-aordersassembly1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260811-assembly27');
+        const runtimeIndex = html.indexOf('admin-orders-loading-runtime.js?v=20260811-aordersfilter1');
 
         expect(html).toContain('assets/css/admin-orders-loading.css?v=20260810-aordersassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        expect(html).toContain('assets/js/pages/admin-orders-loading-runtime.js?v=20260810-aordersassembly1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260811-assembly27');
+        expect(html).toContain('assets/js/pages/admin-orders-loading-runtime.js?v=20260811-aordersfilter1');
         expect(html).toContain('admin-orders.js');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(runtimeIndex).toBeGreaterThan(sharedIndex);
@@ -36,7 +36,8 @@ describe('admin orders loading animation', () => {
         expect(runtime).toContain('#admin-orders-command-panel');
         expect(runtime).toContain('#admin-orders-table-panel');
         expect(runtime).toContain('#admin-orders-detail-panel');
-        expect(runtime).toContain('animateLateAfterReady: true');
+        expect(runtime).toContain('animateLateAfterReady: false');
+        expect(runtime).toContain('autoReplayLateMutations: false');
         expect(runtime).toContain('lateReplaySelector:');
         expect(runtime).toContain('kiuAdminOrdersAssemblyState');
         expect(runtime).toContain('kiu-admin-orders-assembly-target');

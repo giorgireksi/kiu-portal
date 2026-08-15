@@ -1169,7 +1169,7 @@ function setInterfaceMode(mode) {
 
     // Re-apply transparency when the optional engine is ready. Its script may
     // load after this shared utility on legacy/deferred entry points.
-    const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '13';
+    const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '70';
     if (typeof window.refreshLuxuryTransparencySurfaces === 'function') {
         window.refreshLuxuryTransparencySurfaces(parseInt(saved, 10));
     } else if (typeof window.scheduleLuxuryTransparencyBootRefresh === 'function') {
@@ -1332,7 +1332,7 @@ window.addEventListener('load', function() {
 
 window.addEventListener('pageshow', function() {
     var _saved = localStorage.getItem('kiuLuxurySurfaceTransparency');
-    var _pct = parseInt(_saved || window.__currentTransparency || '13', 10);
+    var _pct = parseInt(_saved || window.__currentTransparency || '70', 10);
     if (_pct > 0 && typeof scheduleLuxuryTransparencyBootRefresh === 'function') {
         scheduleLuxuryTransparencyBootRefresh(_pct);
     }

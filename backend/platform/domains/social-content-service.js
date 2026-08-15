@@ -368,6 +368,13 @@ function getSocialEventEditorIds(event) {
     return socialIdArray(event?.editorIds || []).filter((editorId) => editorId && editorId !== creatorId);
 }
 
+function getSocialEligibleEventEditorIds(context, event) {
+    return getSocialEventEditorIds(event).filter((editorId) => (
+        typeof context?.isSocialEligibleAccount !== 'function'
+        || context.isSocialEligibleAccount(editorId)
+    ));
+}
+
 function canDeleteSocialEvent(event, userId) {
     const normalizedUserId = socialText(userId);
     if (!normalizedUserId || !event) return false;
@@ -1063,7 +1070,7 @@ function updateSocialPage(pageId, payload = {}, actorId = '') {
         const ownerUserId = socialText(page.ownerUserId || page.ownerId || '');
         page.adminIds = socialIdArray(payload.adminIds || payload.admins || [])
             .filter((id) => socialText(id) && socialText(id) !== ownerUserId)
-            .filter((id) => Boolean(getSocialAccount.call(this, id)));
+            .filter((id) => typeof this.isSocialEligibleAccount !== 'function' || this.isSocialEligibleAccount(id));
     }
     page.updatedAt = nowIso();
     this.saveSocialMutation(normalizedActorId, 'page-updated', 'social-page', socialText(page.id), beforeState, page);
@@ -1085,7 +1092,8 @@ function updateSocialGroup(groupId, payload = {}, actorId = '') {
         group.bannerImage = socialText(payload.bannerImage || payload.banner || '');
     }
     if (Object.prototype.hasOwnProperty.call(payload, 'adminIds') || Object.prototype.hasOwnProperty.call(payload, 'admins')) {
-        group.adminIds = socialIdArray(payload.adminIds || payload.admins || []);
+        group.adminIds = socialIdArray(payload.adminIds || payload.admins || [])
+            .filter((id) => typeof this.isSocialEligibleAccount !== 'function' || this.isSocialEligibleAccount(id));
     }
     if (Object.prototype.hasOwnProperty.call(payload, 'notificationPreference') && normalizedActorId) {
         group.notificationPreferenceByUser = group.notificationPreferenceByUser && typeof group.notificationPreferenceByUser === 'object'
@@ -1114,6 +1122,9 @@ function setSocialGroupMembership(groupId, userId, action = 'join', actorId = ''
     const group = getSocialGroupRecord.call(this, groupId);
     const normalizedUserId = socialText(userId);
     if (!group || !normalizedUserId) return null;
+    const existingMember = getSocialGroupMemberIds.call(this, group).includes(normalizedUserId)
+        || getSocialGroupPendingIds.call(this, group).includes(normalizedUserId);
+    if (action !== 'leave' && !existingMember && typeof this.isSocialEligibleAccount === 'function' && !this.isSocialEligibleAccount(normalizedUserId)) return null;
     const beforeState = clone(group);
     normalizeSocialGroupState.call(this, group);
     if (action === 'leave') {
@@ -1226,6 +1237,7 @@ function respondSocialGroupMembership(groupId, memberId, accept = true, actorId 
     const normalizedActorId = socialText(actorId);
     const normalizedMemberId = socialText(memberId);
     if (!group || !normalizedMemberId || !canManageSocialGroup.call(this, group, normalizedActorId)) return null;
+    if (typeof this.isSocialEligibleAccount === 'function' && !this.isSocialEligibleAccount(normalizedMemberId)) return null;
     const beforeState = clone(group);
     normalizeSocialGroupState.call(this, group);
     group.pendingMemberIds = getSocialGroupPendingIds.call(this, group).filter(item => item !== normalizedMemberId);
@@ -1322,6 +1334,7 @@ function inviteSocialGroupMember(groupId, memberId, actorId = '', note = '') {
         || canManageSocialGroup.call(this, group, normalizedActorId)
         || isSocialGroupMember.call(this, group, normalizedActorId);
     if (!canInvite || !getSocialAccount.call(this, normalizedMemberId)) return null;
+    if (typeof this.isSocialEligibleAccount === 'function' && !this.isSocialEligibleAccount(normalizedMemberId)) return null;
     if (getSocialGroupMemberIds.call(this, group).includes(normalizedMemberId)) return null;
     if (getSocialGroupPendingIds.call(this, group).includes(normalizedMemberId)) return null;
     const actorName = getSocialActorDisplayName.call(this, normalizedActorId);
@@ -1632,7 +1645,7 @@ function createSocialEvent(payload = {}, actorId = '') {
         isRecurring: Boolean(payload.isRecurring),
         imageUrl: socialText(payload.imageUrl || ''),
         maxSeats: Math.max(0, safeNumber(payload.maxSeats ?? payload.capacity, 0)),
-        editorIds: getSocialEventEditorIds({ createdById: creatorId, editorIds: payload.editorIds }),
+        editorIds: getSocialEligibleEventEditorIds(this, { createdById: creatorId, editorIds: payload.editorIds }),
         createdAt: socialText(payload.createdAt || nowIso()),
         updatedAt: socialText(payload.updatedAt || nowIso())
     };
@@ -1696,7 +1709,7 @@ function updateSocialEvent(eventId, payload = {}, actorId = '') {
     }
     if (Object.prototype.hasOwnProperty.call(payload, 'editorIds')) {
         if (canManageSocialEventEditors.call(this, event, normalizedActorId)) {
-            event.editorIds = getSocialEventEditorIds({ createdById: event.createdById, editorIds: payload.editorIds });
+            event.editorIds = getSocialEligibleEventEditorIds(this, { createdById: event.createdById, editorIds: payload.editorIds });
         }
     }
     event.updatedAt = nowIso();

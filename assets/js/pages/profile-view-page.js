@@ -48,6 +48,40 @@ function escapeProfileViewText(value) {
     })[character]);
 }
 
+function profileViewStaffId(person = {}) {
+    return String(person?.id || person?.userId || person?.accountId || person?.staffId || '').trim();
+}
+
+function profileViewStaffLabel(person = {}) {
+    return String(person?.name || person?.nameEn || person?.displayName || person?.email || '').trim();
+}
+
+function profileViewStaffOptions(type, selectedId = '', selectedName = '') {
+    const role = type === 'ta' ? 'tas' : 'professors';
+    const people = typeof getAllStaff === 'function' ? getAllStaff(role, 'all') : [];
+    const options = people.map((person) => {
+        const id = profileViewStaffId(person);
+        const label = profileViewStaffLabel(person);
+        if (!id || !label) return '';
+        const selected = String(selectedId || '') === id || (!selectedId && selectedName && selectedName === label);
+        const suffix = person.email && person.email !== label ? ` · ${person.email}` : '';
+        return `<option value="${escapeProfileViewText(id)}" data-profile-staff-label="${escapeProfileViewText(label)}"${selected ? ' selected' : ''}>${escapeProfileViewText(label + suffix)}</option>`;
+    }).filter(Boolean).join('');
+    return `<option value="">${type === 'ta' ? 'No teaching assistant' : 'No professor'}</option>${options}`;
+}
+
+function profileViewSelectedStaff(selectId, fallbackName = '') {
+    const select = document.getElementById(selectId);
+    const option = select?.selectedOptions?.[0];
+    const id = String(select?.value || '').trim();
+    return {
+        id,
+        name: id
+            ? String(option?.dataset?.profileStaffLabel || option?.textContent || fallbackName || '').split(' · ')[0].trim()
+            : ''
+    };
+}
+
 function renderProfileViewEmptyState(title, copy = '', actionMarkup = '') {
     const safeTitle = escapeProfileViewText(title);
     const copyMarkup = copy
@@ -1299,9 +1333,6 @@ function openProfileSessionModal(type, id, facCode, prefillDay, prefillTime) {
         ? subjects.map(s => `<option value="${s.id}">${s.id} &middot; ${s.name}</option>`).join('')
         : '<option value="">No subjects available</option>';
 
-    // Get all staff names for autocomplete
-    const allProfs = getAllStaff('professors').map(p => `<option value="${p.name}">`).join('');
-    const allTAs = getAllStaff('tas').map(p => `<option value="${p.name}">`).join('');
 
     const modal = mountProfileViewModal('pv-session-modal-template');
     if (!modal) return;
@@ -1316,11 +1347,9 @@ function openProfileSessionModal(type, id, facCode, prefillDay, prefillTime) {
     modal.querySelector('#pvs-subject').innerHTML = subjectOpts;
     modal.querySelector('#pvs-day').innerHTML = PROFILE_VIEW_DAY_NAMES.map((day) => `<option ${day===prefillDay?'selected':''}>${day}</option>`).join('');
     modal.querySelector('#pvs-endtime').innerHTML = PROFILE_VIEW_END_TIME_OPTIONS.map((time) => `<option>${time}</option>`).join('');
-    modal.querySelector('#pvs-profs-dl').innerHTML = allProfs;
-    modal.querySelector('#pvs-tas-dl').innerHTML = allTAs;
+    modal.querySelector('#pvs-prof').innerHTML = profileViewStaffOptions('professor', type === 'professor' ? profileViewStaffId(person) : '', type === 'professor' ? profileViewStaffLabel(person) : '');
+    modal.querySelector('#pvs-ta').innerHTML = profileViewStaffOptions('ta', type === 'ta' ? profileViewStaffId(person) : '', type === 'ta' ? profileViewStaffLabel(person) : '');
     modal.querySelector('#pvs-time').value = normalizeTimeString(prefillTime || '09:00', '09:00');
-    modal.querySelector('#pvs-prof').value = type === 'professor' ? person.name : '';
-    modal.querySelector('#pvs-ta').value = type === 'ta' ? person.name : '';
     modal.querySelector('#pvs-faculty-name').value = fp.name || facCode;
     pvsCalcEnd();
 }
@@ -1371,8 +1400,14 @@ function pvCreateSession() {
     const room = document.getElementById('pvs-room')?.value?.trim() || 'TBD';
     const time = normalizeTimeString(document.getElementById('pvs-time')?.value, '09:00');
     const endTimeVal = normalizeTimeString(document.getElementById('pvs-endtime')?.value || '', '');
-    const prof = document.getElementById('pvs-prof')?.value?.trim() || (type==='professor' ? personName : 'TBD');
-    const ta = document.getElementById('pvs-ta')?.value?.trim() || (type==='ta' ? personName : '');
+    const selectedProf = profileViewSelectedStaff('pvs-prof', type === 'professor' ? personName : '');
+    const selectedTa = profileViewSelectedStaff('pvs-ta', type === 'ta' ? personName : '');
+    const profPerson = type === 'professor' ? getAllStaff('professors', 'all').find((person) => String(person.id) === String(id)) : null;
+    const taPerson = type === 'ta' ? getAllStaff('tas', 'all').find((person) => String(person.id) === String(id)) : null;
+    const prof = selectedProf.name || (profPerson ? profileViewStaffLabel(profPerson) : 'TBD');
+    const ta = selectedTa.name || (taPerson ? profileViewStaffLabel(taPerson) : '');
+    const profId = selectedProf.id || (profPerson ? profileViewStaffId(profPerson) : '');
+    const taId = selectedTa.id || (taPerson ? profileViewStaffId(taPerson) : '');
     const capacity = parseInt(document.getElementById('pvs-capacity')?.value || 40);
 
     // Calculate duration from start and end time
@@ -1405,7 +1440,7 @@ function pvCreateSession() {
         KIU_STATE.availableGroups[courseId].push({
             id: groupId.toLowerCase(), name: groupId, faculty: facCode,
             day, time, room, duration: `${duration}min`,
-            prof, ta, capacity, registered: 0
+            prof, profId, ta, taId, taIds: taId ? [taId] : [], capacity, registered: 0
         });
 
         // Update person's subjects
@@ -1482,8 +1517,8 @@ function pvEditGroup(courseId, groupId, type, personId, facCode) {
     modal.querySelector('#peg-endtime').innerHTML = PROFILE_VIEW_END_TIME_OPTIONS.map((time) => `<option${time===bestEndOpt?' selected':''}>${time}</option>`).join('');
     modal.querySelector('#peg-room').value = group.room || '';
     modal.querySelector('#peg-cap').value = String(group.capacity || 40);
-    modal.querySelector('#peg-prof').value = group.prof || '';
-    modal.querySelector('#peg-ta').value = group.ta || '';
+    modal.querySelector('#peg-prof').innerHTML = profileViewStaffOptions('professor', group.profId || group.professorId || '', group.prof || '');
+    modal.querySelector('#peg-ta').innerHTML = profileViewStaffOptions('ta', group.taId || group.assistantId || '', group.ta || '');
 }
 
 function pvSaveGroupEdit() {
@@ -1503,8 +1538,13 @@ function pvSaveGroupEdit() {
     group.time = document.getElementById('peg-time')?.value;
     group.room = document.getElementById('peg-room')?.value?.trim() || '';
     group.capacity = parseInt(document.getElementById('peg-cap')?.value || 40);
-    group.prof = document.getElementById('peg-prof')?.value?.trim() || '';
-    group.ta = document.getElementById('peg-ta')?.value?.trim() || '';
+    const selectedProf = profileViewSelectedStaff('peg-prof', group.prof || '');
+    const selectedTa = profileViewSelectedStaff('peg-ta', group.ta || '');
+    group.prof = selectedProf.name;
+    group.profId = selectedProf.id;
+    group.ta = selectedTa.name;
+    group.taId = selectedTa.id;
+    group.taIds = selectedTa.id ? [selectedTa.id] : [];
     
     // Compute duration from start + end time
     const endTimeVal = document.getElementById('peg-endtime')?.value;

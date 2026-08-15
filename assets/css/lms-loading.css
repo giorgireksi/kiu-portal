@@ -1,0 +1,82 @@
+/* LMS assembly loading motion only. */
+body.lms-assembly-active #app-content .kiu-lms-assembly-target,
+body.lms-assembly-active #page-lms .kiu-lms-assembly-target,
+body.lms-assembly-active #page-lms-groups .kiu-lms-assembly-target,
+body.lms-assembly-active #page-lms-inner .kiu-lms-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* Stage LMS components without changing their existing surfaces. */
+body.lms-assembly-active :is(
+  .lux-lms-hero,
+  .lms-clean-subjects,
+  .lms-clean-kicker,
+  #lms-subjects-section-title,
+  #lms-subjects-section-copy,
+  #lms-lane-chip,
+  #lms-subject-grid,
+  .lms-subject-card,
+  .lms-subject-row,
+  .lms-route-panel,
+  .lms-clean-group-grid,
+  .lms-clean-group-card,
+  .lms-route-workspace-chrome,
+  .lms-route-tab-strip,
+  .lms-route-tab,
+  #lms-content-area
+) {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.lms-assembly-active .kiu-lms-assembly-structure {
+  opacity: 0;
+}
+
+body.lms-assembly-active .kiu-lms-assembly-target.is-flight,
+body.lms-assembly-ready .kiu-lms-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.lms-assembly-ready .kiu-lms-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.lms-assembly-active .kiu-lms-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.lms-assembly-active :is(
+    .lux-lms-hero,
+    .lms-clean-subjects,
+    .lms-clean-kicker,
+    #lms-subjects-section-title,
+    #lms-subjects-section-copy,
+    #lms-lane-chip,
+    #lms-subject-grid,
+    .lms-subject-card,
+    .lms-subject-row,
+    .lms-route-panel,
+    .lms-clean-group-grid,
+    .lms-clean-group-card,
+    .lms-route-workspace-chrome,
+    .lms-route-tab-strip,
+    .lms-route-tab,
+    #lms-content-area
+  ) {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.lms-assembly-active .kiu-lms-assembly-structure {
+    opacity: 1;
+  }
+}

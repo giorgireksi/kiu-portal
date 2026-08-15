@@ -24,7 +24,8 @@
                 && detailPanel?.children.length
             );
         },
-        animateLateAfterReady: true,
+        animateLateAfterReady: false,
+        autoReplayLateMutations: false,
         lateReadyWindowMs: 4000,
         lateReplaySelector: [
             '[data-admin-orders-shell="1"]',

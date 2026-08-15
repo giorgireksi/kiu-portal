@@ -1020,7 +1020,7 @@ Publishes only the host/runtime contract consumed by its loader.
         const baseQuery = new URLSearchParams({
             limit: '200',
             offset: '0',
-            scope: 'campus',
+            scope: 'social',
             search: runtime.ui.directorySearch || ''
         });
         if (runtime.ui.directoryRole && runtime.ui.directoryRole !== 'all') baseQuery.set('role', runtime.ui.directoryRole);
@@ -1331,9 +1331,50 @@ Publishes only the host/runtime contract consumed by its loader.
         return true;
     }
 
+    let socialMessengerPollTimer = 0;
+    let socialMessengerPollInFlight = false;
+
+    function stopSocialMessengerPoll() {
+        if (socialMessengerPollTimer) {
+            window.clearInterval(socialMessengerPollTimer);
+            socialMessengerPollTimer = 0;
+        }
+    }
+
+    async function refreshSocialMessengerSnapshot() {
+        if (socialMessengerPollInFlight || runtime.ui.activePanel !== 'messages') return;
+        const userId = currentUserId();
+        if (!userId) return;
+        socialMessengerPollInFlight = true;
+        try {
+            const before = runtime.chats.map(chat => `${text(chat.id)}:${text(chat.updatedAt)}:${chat.messages?.length || 0}`).join('|');
+            const payload = await portalRequest(`/api/messenger/snapshot?userId=${encodeURIComponent(userId)}`);
+            (Array.isArray(payload?.chats) ? payload.chats : []).forEach(chat => upsertChat(chat, false));
+            const after = runtime.chats.map(chat => `${text(chat.id)}:${text(chat.updatedAt)}:${chat.messages?.length || 0}`).join('|');
+            if (before !== after) queueRender('messenger-live-poll');
+        } catch (error) {
+            // Realtime SSE remains primary; this is a quiet recovery path.
+        } finally {
+            socialMessengerPollInFlight = false;
+        }
+    }
+
+    function startSocialMessengerPoll() {
+        if (socialMessengerPollTimer) return;
+        socialMessengerPollTimer = window.setInterval(() => {
+            if (runtime.ui.activePanel !== 'messages') {
+                stopSocialMessengerPoll();
+                return;
+            }
+            refreshSocialMessengerSnapshot();
+        }, 1500);
+    }
+
     function setPanel(panel) {
         runtime.ui.activePanel = ['feed', 'community', 'projects', 'research', 'events', 'photography', 'lost-and-found', 'surveys', 'messages', 'alerts', 'profile'].includes(text(panel)) ? text(panel) : 'feed';
         writeStore(PANEL_KEY, runtime.ui.activePanel);
+        if (runtime.ui.activePanel === 'messages') startSocialMessengerPoll();
+        else stopSocialMessengerPoll();
         queueRender('panel');
     }
 
@@ -1847,6 +1888,18 @@ Publishes only the host/runtime contract consumed by its loader.
         await fetchAccountsByIds([normalizedId]).catch(() => null);
     }
 
+    if (!window.__KIU_SOCIAL_MESSENGER_EVENT_BOUND) {
+        window.__KIU_SOCIAL_MESSENGER_EVENT_BOUND = true;
+        window.addEventListener('kiu:messenger-chat-updated', (event) => {
+            const chat = event?.detail?.chat;
+            if (!chat || !text(chat.id)) return;
+            upsertChat(chat, true);
+            if (getCurrentUserId() && Array.isArray(chat.members) && chat.members.map(text).includes(getCurrentUserId())) {
+                unhideChatForUser(chat.id, getCurrentUserId());
+            }
+        });
+    }
+
     /* Wave 18: social-lite-invite-runtime.js */
     const __w18Deps = {
         text, currentUserId, portalRequest, runtime, getProfileById,
@@ -2009,6 +2062,7 @@ Publishes only the host/runtime contract consumed by its loader.
     runtime.ui.activePanel = text(readStore(PANEL_KEY, 'feed')) || 'feed';
     if (runtime.ui.activePanel === 'lost-found') runtime.ui.activePanel = 'lost-and-found';
     runtime.ui.activeChatId = text(readStore(CHAT_KEY, ''));
+    if (runtime.ui.activePanel === 'messages') startSocialMessengerPoll();
     window.__kiuMarkSocialFileUnavailable = markSocialFileUnavailable;
     window.__kiuIsSocialFileUnavailable = isSocialFileUnavailable;
     window.__KIU_SOCIAL_RUNTIME_READY = true;

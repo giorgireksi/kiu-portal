@@ -21,7 +21,7 @@
         lineColor: '',
         glowColor: '',
         hazeColor: '',
-        surfaceTransparency: '13',
+        surfaceTransparency: '70',
         glassBlurQuality: 'high'
     };
     const HOME_WIDGET_CONTEXT_CACHE = new WeakMap();
@@ -584,7 +584,7 @@
         root.style.setProperty('--lux-topbar-raised-alpha', String(topbarRaisedMin));
         root.style.setProperty('--lux-button-glow', glowConfig.buttonGlow);
         /* PERF/FIX: Respect saved transparency instead of hardcoding 0.03 */
-        var _savedTransVal = parseInt(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
+        var _savedTransVal = parseInt(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
         var _panelA = _savedTransVal >= 95 ? (lightMode ? 0.95 : 0.92) : Math.max(0.03, _savedTransVal / 100 * 0.92);
         root.style.setProperty('--lux-panel-glow', glowConfig.panelGlow);
         root.style.setProperty('--lux-glow-scale', glowConfig.glowScale);

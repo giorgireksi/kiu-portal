@@ -6,15 +6,26 @@ services:
     environment:
       KIU_PUBLIC_HOSTNAME: ${KIU_PUBLIC_HOSTNAME:?KIU_PUBLIC_HOSTNAME is required}
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:${KIU_WEB_PORT:-8900}:80"
     volumes:
       - ./:/srv:ro
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - portal-backend
+      portal-backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
 
   portal-backend:
     build:
@@ -25,15 +36,13 @@ services:
     restart: unless-stopped
     init: true
     working_dir: /app
-    command: ["sh", "-c", "node tools/migrate-postgres.js && exec node backend/platform/server.js"]
+    command: ["sh", "-c", "node tools/check-production-readiness.js && node tools/migrate-postgres.js && exec node backend/platform/server.js"]
     env_file:
       - .env.production
     expose:
       - "47833"
     volumes:
       - portal_uploads:/app/kiu-realtime-bridge/uploads
-    secrets:
-      - firebase_service_account
     read_only: true
     cap_drop:
       - ALL
@@ -50,6 +59,11 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "5"
 
   postgres:
     image: postgres:16-alpine
@@ -59,51 +73,23 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    shm_size: 256m
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "5"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  coturn:
-    image: coturn/coturn:4.7
-    container_name: kiu-portal-coturn
-    restart: unless-stopped
-    network_mode: host
-    environment:
-      KIU_TURN_USERNAME: ${KIU_TURN_USERNAME:?KIU_TURN_USERNAME is required}
-      KIU_TURN_CREDENTIAL: ${KIU_TURN_CREDENTIAL:?KIU_TURN_CREDENTIAL is required}
-      KIU_TURN_REALM: ${KIU_TURN_REALM:?KIU_TURN_REALM is required}
-      KIU_TURN_SERVER_NAME: ${KIU_TURN_SERVER_NAME:?KIU_TURN_SERVER_NAME is required}
-      KIU_TURN_EXTERNAL_IP: ${KIU_TURN_EXTERNAL_IP:?KIU_TURN_EXTERNAL_IP is required}
-    volumes:
-      - ./infra/coturn/turnserver.conf.template:/etc/coturn/turnserver.conf.template:ro
-      - ${KIU_TURN_CERT_HOST_PATH:?KIU_TURN_CERT_HOST_PATH is required}:/etc/coturn/turn-cert.pem:ro
-      - ${KIU_TURN_KEY_HOST_PATH:?KIU_TURN_KEY_HOST_PATH is required}:/etc/coturn/turn-key.pem:ro
-    command:
-      - /bin/sh
-      - -c
-      - >
-        sed
-        -e "s|__TURN_USERNAME__|$${KIU_TURN_USERNAME}|g"
-        -e "s|__TURN_CREDENTIAL__|$${KIU_TURN_CREDENTIAL}|g"
-        -e "s|__TURN_REALM__|$${KIU_TURN_REALM}|g"
-        -e "s|__TURN_SERVER_NAME__|$${KIU_TURN_SERVER_NAME}|g"
-        -e "s|__TURN_EXTERNAL_IP__|$${KIU_TURN_EXTERNAL_IP}|g"
-        -e "s|__TURN_CERT_FILE__|/etc/coturn/turn-cert.pem|g"
-        -e "s|__TURN_KEY_FILE__|/etc/coturn/turn-key.pem|g"
-        /etc/coturn/turnserver.conf.template > /tmp/turnserver.conf
-        && turnserver -c /tmp/turnserver.conf
-
 volumes:
   caddy_data:
   caddy_config:
   pg_data:
   portal_uploads:
-
-secrets:
-  firebase_service_account:
-    file: ${KIU_FIREBASE_SERVICE_ACCOUNT_HOST_PATH:?KIU_FIREBASE_SERVICE_ACCOUNT_HOST_PATH is required}

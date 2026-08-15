@@ -8,7 +8,8 @@ function __kiuStateExpose(map){Object.keys(map).forEach((k)=>{__kiuStateApi[k]=m
 
 // --- READABILITY: Helpers ---
 function createFreshKiuState() {
-    return JSON.parse(JSON.stringify(KIU_EMPTY_STATE));
+    const empty = typeof KIU_EMPTY_STATE !== 'undefined' ? KIU_EMPTY_STATE : (typeof window !== 'undefined' ? window.KIU_EMPTY_STATE : null);
+    return empty ? JSON.parse(JSON.stringify(empty)) : {};
 }
 
 // --- READABILITY: Persist ---
@@ -21,9 +22,17 @@ function getKiuStatePersistenceKey() {
         return 'KIU_PERSISTENT_STATE';
     }
 }
-let KIU_STATE = JSON.parse(localStorage.getItem(getKiuStatePersistenceKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || createFreshKiuState();
+const KIU_REMOTE_AUTHORITATIVE_RUNTIME = typeof isKiuRemoteProductionRuntime === 'function' && isKiuRemoteProductionRuntime();
+let KIU_STATE = KIU_REMOTE_AUTHORITATIVE_RUNTIME
+    ? createFreshKiuState()
+    : (JSON.parse(localStorage.getItem(getKiuStatePersistenceKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || createFreshKiuState());
 if (typeof window !== 'undefined') {
     window.__KIU_PORTAL_BOOTSTRAP_PENDING = true;
+    // The shared page scripts (command-center, lms, social, profile, ...) read and
+    // write the portal state through `window.KIU_STATE`. It must always point at the
+    // SAME object as the module-level `KIU_STATE`, otherwise mutations (e.g. creating
+    // a student) land in a throwaway `{}` and never persist to the server.
+    window.KIU_STATE = KIU_STATE;
 }
 if (KIU_STATE && typeof KIU_STATE === 'object') {
     delete KIU_STATE.lmsLiveQuizzes;
@@ -44,6 +53,7 @@ try {
             registrationCmsSavedAt: KIU_STATE?.meta?.registrationCmsSavedAt
         };
         KIU_STATE = createFreshKiuState();
+        if (typeof window !== 'undefined') window.KIU_STATE = KIU_STATE;
         if (preservedRegistrationCms.adminProgramStructures && typeof preservedRegistrationCms.adminProgramStructures === 'object') {
             KIU_STATE.adminProgramStructures = JSON.parse(JSON.stringify(preservedRegistrationCms.adminProgramStructures));
         }
@@ -336,7 +346,9 @@ function saveState() {
     delete persisted.auth;
     delete persisted.lmsLiveQuizzes;
     delete persisted.lmsWhiteboards;
-    localStorage.setItem(getKiuStatePersistenceKey(), JSON.stringify(persisted));
+    if (!KIU_REMOTE_AUTHORITATIVE_RUNTIME) {
+        localStorage.setItem(getKiuStatePersistenceKey(), JSON.stringify(persisted));
+    }
     if (KIU_STATE.meta.registrationCmsRevision !== previousRegistrationCmsRevision) {
         try {
             window.dispatchEvent(new CustomEvent('kiu:registration-cms-changed', {
@@ -662,7 +674,15 @@ function getFacultyCurriculumFromProfiles(facultyFilter) {
         return Object.keys(KIU_STATE.facultyProfiles || {}).flatMap(code => getFacultyCurriculumFromProfiles(code));
     }
     const profile = getFacultyProfile(normalizedFaculty);
-    const curriculum = Array.isArray(profile?.curriculum) ? profile.curriculum : [];
+    const profileCurriculum = Array.isArray(profile?.curriculum) ? profile.curriculum : [];
+    // Non-admin bootstrap intentionally omits staff-bearing facultyProfiles.
+    // The server still provides the public curriculum catalog, so do not turn
+    // that authoritative catalog into [] during client canonicalization.
+    const curriculum = profileCurriculum.length
+        ? profileCurriculum
+        : (Array.isArray(KIU_STATE.curriculum)
+            ? KIU_STATE.curriculum.filter(subject => normalizeFacultyCode(subject?.faculty || normalizedFaculty, '') === normalizedFaculty)
+            : []);
     return curriculum
         .filter(Boolean)
         .map(subject => ({
@@ -683,11 +703,22 @@ function getAllCurriculumSubjects() {
             }
         });
     });
+    // Include public curriculum subjects even when no faculty profile was sent.
+    (Array.isArray(KIU_STATE.curriculum) ? KIU_STATE.curriculum : []).forEach(subject => {
+        if (!subjects.some(existing => canonicalCourseKey(existing?.id) === canonicalCourseKey(subject?.id))) {
+            subjects.push(subject);
+        }
+    });
     return subjects;
 }
 
 function syncCanonicalCurriculumState() {
-    KIU_STATE.curriculum = getAllCurriculumSubjects();
+    const canonicalSubjects = getAllCurriculumSubjects();
+    // Preserve a public server catalog when the viewer has no staff-bearing
+    // facultyProfiles; otherwise use the richer profile-derived canonical list.
+    if (canonicalSubjects.length || !Array.isArray(KIU_STATE.curriculum) || !KIU_STATE.curriculum.length) {
+        KIU_STATE.curriculum = canonicalSubjects;
+    }
     return KIU_STATE.curriculum;
 }
 

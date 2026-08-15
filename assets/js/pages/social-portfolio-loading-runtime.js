@@ -149,7 +149,7 @@
             '.portfolio-basics-card',
             '.portfolio-publish-panel'
         ],
-        flattenInnerTargets: false,
+        flattenInnerTargets: true,
         granularSelector: portfolioRegions,
         controlSelector: controls,
         transformSafeSelector: [],
@@ -164,14 +164,14 @@
             staging: 'is-social-portfolio-assembly-staging'
         },
         flightTiming: {
-            outerDurationMs: 360,
-            innerDurationMs: 240,
-            innerMinDurationMs: 170,
+            outerDurationMs: 320,
+            innerDurationMs: 220,
+            innerMinDurationMs: 160,
             innerDepthStepMs: 12,
-            outerStaggerMs: 18,
-            innerStaggerMs: 10,
-            outerMaxDelayMs: 56,
-            innerMaxDelayMs: 72
+            outerStaggerMs: 16,
+            innerStaggerMs: 8,
+            outerMaxDelayMs: 48,
+            innerMaxDelayMs: 64
         },
         timing: {
             maxShellWaitMs: 900,
@@ -211,6 +211,8 @@
         }
         const observer = new MutationObserver(() => {
             if (observerFrame) return;
+            const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
+            if (activePanel && activePanel !== 'workspace' && activePanel !== 'projects') return;
             const run = () => {
                 observerFrame = 0;
                 startCurrentPortfolioMotion(getCenter());

@@ -30,8 +30,20 @@
             }
 
             const room = el('sch-room')?.value?.trim() || 'TBD';
-            const professor = el('sch-prof')?.value?.trim() || 'TBD';
-            const ta = el('sch-ta')?.value?.trim() || '';
+            const professorSelect = el('sch-prof');
+            const taSelect = el('sch-ta');
+            const professorValue = professorSelect?.value?.trim() || '';
+            const taValue = taSelect?.value?.trim() || '';
+            const professor = professorSelect?.dataset?.schedulerStaffLabel?.trim()
+                || professorSelect?.selectedOptions?.[0]?.dataset?.schedulerStaffLabel?.trim()
+                || professorSelect?.selectedOptions?.[0]?.textContent?.trim()
+                || professorValue || 'TBD';
+            const ta = taSelect?.dataset?.schedulerStaffLabel?.trim()
+                || taSelect?.selectedOptions?.[0]?.dataset?.schedulerStaffLabel?.trim()
+                || taSelect?.selectedOptions?.[0]?.textContent?.trim()
+                || taValue;
+            const professorId = String(professorSelect?.dataset?.schedulerStaffId || (professorSelect?.selectedOptions?.[0]?.dataset?.schedulerStaffLabel ? professorValue : '')).trim();
+            const taId = String(taSelect?.dataset?.schedulerStaffId || (taSelect?.selectedOptions?.[0]?.dataset?.schedulerStaffLabel ? taValue : '')).trim();
             const sessionType = typeof inferSchedulerSessionType === 'function'
                 ? inferSchedulerSessionType(professor, ta, el('sch-session-type')?.value || 'lecture')
                 : (String(el('sch-session-type')?.value || 'lecture').toLowerCase() === 'seminar' ? 'seminar' : 'lecture');
@@ -80,7 +92,10 @@
                 time,
                 endTime,
                 prof: professor,
+                profId: professorId,
                 ta,
+                taId,
+                taIds: taId ? [taId] : [],
                 room,
                 duration: `${durationMinutes}min`,
                 sessionType,

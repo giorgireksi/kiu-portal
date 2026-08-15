@@ -33,6 +33,17 @@ function socialIdArray(values) {
     );
 }
 
+function isSocialEligibleTarget(context, userId = '') {
+    const normalized = socialText(userId);
+    return !normalized
+        || typeof context?.isSocialEligibleAccount !== 'function'
+        || context.isSocialEligibleAccount(normalized);
+}
+
+function filterSocialEligibleTargets(context, values = []) {
+    return socialIdArray(values).filter((id) => isSocialEligibleTarget(context, id));
+}
+
 function normalizeProjectStatus(value) {
     const normalized = socialText(value).toLowerCase();
     if (['idea', 'active', 'review', 'completed', 'draft', 'published'].includes(normalized)) return normalized;
@@ -765,12 +776,12 @@ function createSocialProject(payload = {}, actorId = '') {
         externalLinks: normalizePortfolioLinks.call(this, payload.externalLinks || payload.links || []),
         visibleRoles: socialIdArray(payload.visibleRoles || []).map((role) => socialText(role).toLowerCase()),
         visibleFacultyCodes: socialIdArray(payload.visibleFacultyCodes || []).map((code) => normalizeCode(code || '')),
-        visibleUserIds: socialIdArray(payload.visibleUserIds || []),
-        hiddenUserIds: socialIdArray(payload.hiddenUserIds || []),
+        visibleUserIds: filterSocialEligibleTargets(this, payload.visibleUserIds || []),
+        hiddenUserIds: filterSocialEligibleTargets(this, payload.hiddenUserIds || []),
         courseTag: socialText(payload.courseTag || payload.courseCode || ''),
         ownerUserId,
-        advisorUserId: socialText(payload.advisorUserId || ''),
-        instructorViewerIds: socialIdArray(payload.instructorViewerIds || []),
+        advisorUserId: isSocialEligibleTarget(this, payload.advisorUserId) ? socialText(payload.advisorUserId || '') : '',
+        instructorViewerIds: filterSocialEligibleTargets(this, payload.instructorViewerIds || []),
         memberRolesByUser: {
             [ownerUserId]: 'owner'
         },
@@ -797,7 +808,7 @@ function createSocialProject(payload = {}, actorId = '') {
     //  - Students can only invite; invitees stay pending until they accept.
     const creatorRole = socialText(this.getSocialAccount(ownerUserId)?.role).toLowerCase();
     const isTeacherFlow = ['professor', 'ta', 'admin'].includes(creatorRole);
-    const inviteIds = socialIdArray(payload.inviteeIds || payload.memberIds || payload.members || []);
+    const inviteIds = filterSocialEligibleTargets(this, payload.inviteeIds || payload.memberIds || payload.members || []);
     inviteIds.forEach((memberId) => {
         if (!memberId || memberId === ownerUserId) return;
         const desiredRole = normalizeProjectRole(
@@ -884,10 +895,10 @@ function updateSocialProject(projectId, payload = {}, actorId = '') {
     if (Object.prototype.hasOwnProperty.call(payload, 'visibleFacultyCodes')) {
         project.visibleFacultyCodes = socialIdArray(payload.visibleFacultyCodes || []).map((code) => normalizeCode(code || ''));
     }
-    if (Object.prototype.hasOwnProperty.call(payload, 'visibleUserIds')) project.visibleUserIds = socialIdArray(payload.visibleUserIds || []);
-    if (Object.prototype.hasOwnProperty.call(payload, 'hiddenUserIds')) project.hiddenUserIds = socialIdArray(payload.hiddenUserIds || []);
-    if (Object.prototype.hasOwnProperty.call(payload, 'advisorUserId')) project.advisorUserId = socialText(payload.advisorUserId || '');
-    if (Object.prototype.hasOwnProperty.call(payload, 'instructorViewerIds')) project.instructorViewerIds = socialIdArray(payload.instructorViewerIds || []);
+    if (Object.prototype.hasOwnProperty.call(payload, 'visibleUserIds')) project.visibleUserIds = filterSocialEligibleTargets(this, payload.visibleUserIds || []);
+    if (Object.prototype.hasOwnProperty.call(payload, 'hiddenUserIds')) project.hiddenUserIds = filterSocialEligibleTargets(this, payload.hiddenUserIds || []);
+    if (Object.prototype.hasOwnProperty.call(payload, 'advisorUserId')) project.advisorUserId = isSocialEligibleTarget(this, payload.advisorUserId) ? socialText(payload.advisorUserId || '') : '';
+    if (Object.prototype.hasOwnProperty.call(payload, 'instructorViewerIds')) project.instructorViewerIds = filterSocialEligibleTargets(this, payload.instructorViewerIds || []);
     if (Object.prototype.hasOwnProperty.call(payload, 'showcaseEnabled')) project.showcaseEnabled = Boolean(payload.showcaseEnabled);
     if (Object.prototype.hasOwnProperty.call(payload, 'showcaseSummary')) project.showcaseSummary = socialText(payload.showcaseSummary || '');
     if (Object.prototype.hasOwnProperty.call(payload, 'scheduleStartAt')) project.scheduleStartAt = normalizeScheduleStartAt(payload.scheduleStartAt);
@@ -997,6 +1008,7 @@ function inviteSocialProjectMember(projectId, memberId, role = 'member', actorId
     const normalizedActorId = socialText(actorId);
     const normalizedMemberId = socialText(memberId);
     if (!project || !normalizedMemberId || !canManageSocialProject.call(this, project, normalizedActorId)) return null;
+    if (!isSocialEligibleTarget(this, normalizedMemberId)) return null;
     const normalizedRole = normalizeProjectRole(role);
     if (!project.memberRolesByUser || typeof project.memberRolesByUser !== 'object') project.memberRolesByUser = {};
     project.memberRolesByUser[normalizedMemberId] = normalizedRole;
@@ -1049,6 +1061,7 @@ function updateSocialProjectMemberRole(projectId, memberId, role = 'member', act
     const normalizedActorId = socialText(actorId);
     const normalizedMemberId = socialText(memberId);
     if (!project || !normalizedMemberId || !canManageSocialProject.call(this, project, normalizedActorId)) return null;
+    if (!isSocialEligibleTarget(this, normalizedMemberId)) return null;
     if (normalizedMemberId === socialText(project.ownerUserId || '')) return decorateSocialProject.call(this, project, normalizedActorId);
     const beforeState = clone(project);
     const normalizedRole = normalizeProjectRole(role);
@@ -1173,7 +1186,7 @@ function createSocialProjectTask(projectId, payload = {}, actorId = '') {
         title: normalizeTaskTitle(payload.title),
         description: normalizeTaskDescription(payload.description || ''),
         status: normalizeTaskStatus(payload.status || 'todo'),
-        assigneeUserId: socialText(payload.assigneeUserId || ''),
+        assigneeUserId: isSocialEligibleTarget(this, payload.assigneeUserId) ? socialText(payload.assigneeUserId || '') : '',
         startAt: socialText(payload.startAt || ''),
         dueAt: socialText(payload.dueAt || ''),
         priority,
@@ -1224,7 +1237,11 @@ function updateSocialProjectTask(projectId, taskId, payload = {}, actorId = '') 
     if (Object.prototype.hasOwnProperty.call(payload, 'title')) task.title = normalizeTaskTitle(payload.title || task.title);
     if (Object.prototype.hasOwnProperty.call(payload, 'description')) task.description = normalizeTaskDescription(payload.description || '');
     if (Object.prototype.hasOwnProperty.call(payload, 'status')) task.status = normalizeTaskStatus(payload.status || task.status);
-    if (Object.prototype.hasOwnProperty.call(payload, 'assigneeUserId')) task.assigneeUserId = socialText(payload.assigneeUserId || '');
+    if (Object.prototype.hasOwnProperty.call(payload, 'assigneeUserId')) {
+        task.assigneeUserId = isSocialEligibleTarget(this, payload.assigneeUserId)
+            ? socialText(payload.assigneeUserId || '')
+            : '';
+    }
     if (Object.prototype.hasOwnProperty.call(payload, 'startAt')) task.startAt = socialText(payload.startAt || '');
     if (Object.prototype.hasOwnProperty.call(payload, 'dueAt')) task.dueAt = socialText(payload.dueAt || '');
     if (Object.prototype.hasOwnProperty.call(payload, 'priority')) task.priority = normalizeTaskPriority(payload.priority || task.priority);

@@ -12,6 +12,9 @@ describe('admin-only role picker', () => {
         expect(topbar).toContain('wrapper?.remove()');
         expect(topbar).toContain('if (wrapper) wrapper.hidden = false;');
         expect(topbar).toContain('if (!syncRolePickerVisibility()) return;');
+        const shell = read('assets/js/features/index-luxury.js');
+        expect(shell).toContain('const rolePickerMarkup =');
+        expect(shell).toContain('window.isAuthenticatedAdminForRolePicker()');
         expect(picker).toContain('window.isAuthenticatedAdminForRolePicker');
         expect(chrome).toContain('window.syncRolePickerVisibility()');
     });

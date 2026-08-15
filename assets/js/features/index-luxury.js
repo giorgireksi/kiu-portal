@@ -125,7 +125,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         { key: 'white', label: 'White', icon: 'fas fa-sun' },
         { key: 'gallery', label: 'Gallery', icon: 'fas fa-images' }
     ];
-    const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260723-adaptive-render-defaults1';
+    const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260815-opacity70-v2';
     const GLOBAL_LUXURY_PALETTE_SCOPE = '*';
     const DEFAULT_HOME_VISUALS = {
         themeMode: 'dark',
@@ -143,7 +143,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         paletteKey: 'ocean-teal',
         paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
         customPalette: null,
-        surfaceTransparency: '13',
+        surfaceTransparency: '70',
         fogSettings: { ...DEFAULT_FOG_SETTINGS }
     };
     const HOME_EDITOR_STATE = {
@@ -494,7 +494,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         lineColor: '',
         glowColor: '',
         hazeColor: '',
-        surfaceTransparency: '13',
+        surfaceTransparency: '70',
         fogSettings: { ...DEFAULT_FOG_SETTINGS }
     };
     function buildAdvancedDefaultVisuals() {
@@ -1022,9 +1022,33 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         document.getElementById('lux-user-menu')?.remove();
     }
 
+        const isAdminAccountForRolePicker = () => {
+            if (typeof window.isAuthenticatedAdminForRolePicker === 'function') {
+                return window.isAuthenticatedAdminForRolePicker();
+            }
+            if (typeof getAuthenticatedAccountRole === 'function') {
+                return String(getAuthenticatedAccountRole() || '').trim().toLowerCase() === 'admin';
+            }
+            try {
+                const raw = sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE');
+                return String(JSON.parse(raw || '{}')?.role || '').trim().toLowerCase() === 'admin';
+            } catch (error) {
+                return false;
+            }
+        };
         if (!document.getElementById('lux-topbar')) {
             const topbar = document.createElement('div');
             topbar.id = 'lux-topbar';
+            const rolePickerMarkup = isAdminAccountForRolePicker()
+                ? `
+                        <div class="lux-picker-wrap" data-picker-wrap="role">
+                            <button class="lux-picker-btn" id="lux-role-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                                <span class="lux-picker-caption">View</span>
+                                <strong id="lux-role-picker-value">Workspace</strong>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>`
+                : '';
             topbar.innerHTML = `
                 <div class="lux-topbar-shell lux-soft-chrome">
                     <div class="lux-topbar-main">
@@ -1043,13 +1067,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                                 <i class="fas fa-chevron-down"></i>
                             </button>
                         </div>
-                        <div class="lux-picker-wrap" data-picker-wrap="role">
-                            <button class="lux-picker-btn" id="lux-role-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                                <span class="lux-picker-caption">View</span>
-                                <strong id="lux-role-picker-value">Workspace</strong>
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
+                        ${rolePickerMarkup}
                         <button class="lux-secondary-btn lux-topbar-editor-btn" id="lux-dashboard-edit-btn" type="button" hidden title="Customize the home dashboard">
                             <i class="fas fa-sliders-h"></i>
                             <span id="lux-dashboard-edit-label">Customize</span>
@@ -1726,7 +1744,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                 }
                 if (typeof window.scheduleLuxuryTransparencyBootRefresh === 'function') {
                     window.scheduleLuxuryTransparencyBootRefresh(
-                        getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || 13
+                        getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || 70
                     );
                 }
                 const scheduleParticleInit = () => {

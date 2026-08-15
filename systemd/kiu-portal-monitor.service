@@ -1,0 +1,10 @@
+[Unit]
+Description=Check KIU Portal and Tailscale Funnel health
+After=kiu-portal-production.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=@KIU_ROOT@
+Environment=KIU_DOCKER_BIN=@DOCKER_BIN@
+Environment=DOCKER_CONFIG=@DOCKER_CONFIG@
+ExecStart=@KIU_ROOT@/tools/monitor-selfhosted-production.sh

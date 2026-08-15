@@ -51,6 +51,7 @@ const ALLOW_LOCAL_PLATFORM_FALLBACK = String(process.env.KIU_ALLOW_LOCAL_PLATFOR
     ? !['0', 'false', 'no', 'off'].includes(String(process.env.KIU_ALLOW_LOCAL_PLATFORM_FALLBACK || '').trim().toLowerCase())
     : ['development', 'dev', 'local', 'test'].includes(String(process.env.KIU_ENVIRONMENT || process.env.NODE_ENV || 'development').trim().toLowerCase());
 const MAIL_TOKEN_ENCRYPTION_KEY = String(process.env.KIU_MICROSOFT_TOKEN_ENCRYPTION_KEY || '').trim();
+const CORE_ONLY_MODE = ['1', 'true', 'yes', 'on'].includes(String(process.env.KIU_CORE_ONLY_MODE || '').trim().toLowerCase());
 const STAFF_ROLES = new Set(['admin', 'professor', 'ta']);
 const ADMIN_ROLES = new Set(['admin']);
 const INTEGRATION_ADMIN_ROLES = new Set(['admin']);
@@ -1119,21 +1120,22 @@ function buildProductionReadinessStatus() {
         usingHttpsApp
         && usingHttpsBackend
         && usingDatabase
-        && turnConfigured
-        && microsoftMailConfigured
-        && webPushConfig.enabled
-        && !ALLOW_LOCAL_PLATFORM_FALLBACK;
+        && !ALLOW_LOCAL_PLATFORM_FALLBACK
+        && (CORE_ONLY_MODE || (turnConfigured && microsoftMailConfigured && webPushConfig.enabled));
     const blockers = [];
     if (!usingHttpsApp) blockers.push('KIU_PUBLIC_APP_URL is not HTTPS.');
     if (!usingHttpsBackend) blockers.push('KIU_PUBLIC_BACKEND_URL is not HTTPS.');
     if (!usingDatabase) blockers.push('PostgreSQL runtime storage is not fully configured.');
     if (ALLOW_LOCAL_PLATFORM_FALLBACK) blockers.push('Local platform fallback is enabled.');
-    if (!turnConfigured) blockers.push('TURN server credentials are missing for reliable video/audio calls.');
-    if (!microsoftAppConfigured) blockers.push('Microsoft sign-in OAuth is not fully configured.');
-    if (!microsoftMailConfigured) blockers.push('Outlook mail OAuth or token encryption is not fully configured.');
-    if (!webPushConfig.enabled) blockers.push('Web push VAPID keys are not configured.');
+    if (!CORE_ONLY_MODE) {
+        if (!turnConfigured) blockers.push('TURN server credentials are missing for reliable video/audio calls.');
+        if (!microsoftAppConfigured) blockers.push('Microsoft sign-in OAuth is not fully configured.');
+        if (!microsoftMailConfigured) blockers.push('Outlook mail OAuth or token encryption is not fully configured.');
+        if (!webPushConfig.enabled) blockers.push('Web push VAPID keys are not configured.');
+    }
     return {
         environment: CURRENT_ENVIRONMENT,
+        coreOnlyMode: CORE_ONLY_MODE,
         productionReady,
         blockers,
         checks: {
@@ -2727,6 +2729,7 @@ registerAdminSupportRoutes(app, {
     getSessionActor,
     getStore: () => store,
     requireActualSessionRole,
+    requireSessionAccount,
     sendError
 });
 

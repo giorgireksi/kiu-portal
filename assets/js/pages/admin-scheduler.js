@@ -46,6 +46,12 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         profileSectionsByType: new Map(),
         profileMarkup: new Map()
     };
+    // Scheduler assignments are account-ID based. Keep a short-lived live
+    // account directory beside the legacy profile mirrors so stale names,
+    // statuses, and incomplete form records cannot drive assignment choices.
+    let schedulerLiveStaffAccounts = new Map();
+    let schedulerLiveStaffRefreshPromise = null;
+    let schedulerLiveStaffRefreshedAt = 0;
 // --- READABILITY: Grid ---
     let schedulerRefreshQueued = { palette: false, grid: false, paletteSearchOnly: false };
     function el(id) {
@@ -647,9 +653,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             : [];
 
         if (profFilter !== 'all') {
-            sessions = sessions.filter((session) => session.prof === profFilter);
+            sessions = sessions.filter((session) => String(session.profId || session.professorId || session.professorUserId || session.instructorUserId || '').trim() === profFilter || (!session.profId && session.prof === profFilter));
         } else if (taFilter !== 'all') {
-            sessions = sessions.filter((session) => session.ta === taFilter);
+            sessions = sessions.filter((session) => String(session.taId || session.assistantId || session.assistantUserId || session.taUserId || '').trim() === taFilter || (!session.taId && session.ta === taFilter));
         }
 
         return sessions;
@@ -720,26 +726,161 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     }
 
     function schedulerStaffPickerRecordKey(person) {
-        return String(person?.id || schedulerRosterDisplayName(person)).trim();
+        return schedulerStaffPickerRecordId(person) || schedulerRosterDisplayName(person);
+    }
+
+    function isSchedulerAssignableStaff(person) {
+        if (!person || !schedulerStaffPickerRecordId(person)) return false;
+        const statuses = [person.status, person.accountStatus]
+            .map((value) => String(value || '').trim().toLowerCase())
+            .filter(Boolean);
+        if (statuses.some((status) => ['archived', 'suspended', 'inactive', 'deleted', 'disabled', 'pending-activation', 'not invited'].includes(status))) return false;
+        // Scheduler assignment must use real accounts, never view/test personas.
+        if (typeof isDemoOrTestingUserRecord === 'function' && isDemoOrTestingUserRecord(person, { retainAdminTestingPersonas: false })) return false;
+        // Incomplete profile mirrors created without an institutional account are
+        // not assignable. They remain in storage for later maintenance/audit.
+        const email = String(person.email || person.emailAddress || '').trim().toLowerCase();
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    async function fetchSchedulerLiveStaffAccountsByRole(role) {
+        // The backend clamps list requests to 200 items sorted alphabetically
+        // across every role, so an unscoped fetch can silently drop staff
+        // accounts. Page through role-scoped results instead.
+        const pageSize = 200;
+        const collected = [];
+        for (let offset = 0; offset < 5000; offset += pageSize) {
+            const payload = await kiuPortalFetch(`/api/accounts?role=${encodeURIComponent(role)}&limit=${pageSize}&offset=${offset}`);
+            const accounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
+            collected.push(...accounts);
+            if (!accounts.length || collected.length >= (Number(payload?.total) || 0)) break;
+        }
+        return collected;
+    }
+
+    async function refreshSchedulerLiveStaffAccounts(force = false) {
+        if (typeof kiuPortalFetch !== 'function') return [];
+        if (!force && schedulerLiveStaffRefreshPromise) return schedulerLiveStaffRefreshPromise;
+        if (!force && Date.now() - schedulerLiveStaffRefreshedAt < 15000) return [...schedulerLiveStaffAccounts.values()];
+        schedulerLiveStaffRefreshPromise = Promise.all([
+            fetchSchedulerLiveStaffAccountsByRole('professor'),
+            fetchSchedulerLiveStaffAccountsByRole('ta')
+        ])
+            .then((pages) => {
+                const accounts = pages.flat();
+                schedulerLiveStaffAccounts = new Map(
+                    accounts
+                        .filter((account) => ['professor', 'ta'].includes(String(account?.role || '').trim().toLowerCase()))
+                        .map((account) => [String(account.id || '').trim(), account])
+                        .filter(([id]) => Boolean(id))
+                );
+                schedulerLiveStaffRefreshedAt = Date.now();
+                return [...schedulerLiveStaffAccounts.values()];
+            })
+            .catch(() => [])
+            .finally(() => {
+                schedulerLiveStaffRefreshPromise = null;
+            });
+        return schedulerLiveStaffRefreshPromise;
+    }
+
+    function schedulerLiveStaffRecord(account, facultyFilter) {
+        if (!account) return null;
+        const facultyCode = normalizeFacultyCode(account.facultyCode || account.faculty || '', '');
+        if (facultyFilter && facultyFilter !== 'all' && facultyCode !== facultyFilter) return null;
+        return {
+            ...account,
+            id: String(account.id || '').trim(),
+            facultyCode,
+            faculty: facultyCode,
+            facultyName: typeof getFacultyLabel === 'function' ? getFacultyLabel(facultyCode) : facultyCode,
+            staffTypeId: account.role === 'ta' ? 'ta' : 'professor',
+            title: account.role === 'ta' ? 'Teaching Assistant' : 'Professor',
+            department: account.department || (facultyCode === 'ECON' ? 'Business Management' : facultyCode),
+            status: account.accountStatus === 'active-temp-password' ? 'Active' : 'Active',
+            accountStatus: account.accountStatus
+        };
+    }
+
+    function mergeSchedulerStaffDirectoryRecord(person, role) {
+        const id = schedulerStaffPickerRecordId(person);
+        const stored = typeof KIU_STATE !== 'undefined'
+            ? (KIU_STATE.staffDirectoryRecords?.[id] || {})
+            : {};
+        const live = schedulerLiveStaffAccounts.get(id);
+        const expectedRole = role === 'ta' ? 'ta' : 'professor';
+        // staff.html builds its cards from this same staffDirectoryRecords
+        // namespace, while the account mirror supplies authoritative identity
+        // and status. Keep the rich staff-page fields and replace only identity
+        // fields with the live account values.
+        return {
+            ...person,
+            ...stored,
+            id,
+            platformRole: expectedRole,
+            role: expectedRole,
+            staffTypeId: stored.staffTypeId || (role === 'ta' ? 'ta' : 'professor'),
+            name: stored.name || live?.name || person?.name,
+            nameEn: stored.nameEn || live?.nameEn || person?.nameEn,
+            email: live?.email || stored.email || person?.email,
+            facultyCode: live?.facultyCode || stored.facultyCode || person?.facultyCode,
+            faculty: stored.faculty || live?.faculty || person?.faculty,
+            accountStatus: live?.accountStatus || stored.accountStatus || person?.accountStatus,
+            status: stored.status || person?.status || live?.status,
+            photo: stored.photo || live?.photo || person?.photo,
+            avatar: stored.avatar || live?.avatar || person?.avatar
+        };
     }
 
     function getSchedulerStaffPickerRecords(role) {
         const facultyValue = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
         const facultyFilter = facultyValue === 'all' ? null : normalizeFacultyCode(facultyValue, getCurrentFaculty());
-        return (typeof getAllStaff === 'function'
-            ? getAllStaff(role === 'ta' ? 'tas' : 'professors', facultyFilter)
-            : []
-        ).filter((person) => schedulerRosterDisplayName(person)).map((person) => {
-            const staffTypeId = person.staffTypeId || (role === 'ta' ? 'ta' : 'professor');
-            const fieldValues = typeof hydrateFieldValuesFromRecord === 'function'
-                ? hydrateFieldValuesFromRecord(person, staffTypeId)
-                : (person.fieldValues && typeof person.fieldValues === 'object' ? person.fieldValues : {});
-            return { ...person, staffTypeId, fieldValues };
+        const expectedRole = role === 'ta' ? 'ta' : 'professor';
+        const mirrored = typeof getAllStaff === 'function'
+            ? getAllStaff(expectedRole === 'ta' ? 'tas' : 'professors', facultyFilter)
+            : [];
+        const byId = new Map(
+            mirrored
+                .map((person) => mergeSchedulerStaffDirectoryRecord(person, role))
+                .map((person) => [schedulerStaffPickerRecordId(person), person])
+                .filter(([id]) => Boolean(id))
+        );
+        schedulerLiveStaffAccounts.forEach((account, id) => {
+            if (String(account?.role || '').trim().toLowerCase() !== expectedRole) return;
+            const live = schedulerLiveStaffRecord(account, facultyFilter);
+            if (live) byId.set(id, mergeSchedulerStaffDirectoryRecord(live, role));
         });
+        return [...byId.values()]
+            .filter((person) => String(person?.platformRole || person?.role || expectedRole).trim().toLowerCase() === expectedRole)
+            .filter(isSchedulerAssignableStaff)
+            .map((person) => {
+                const staffTypeId = person.staffTypeId || (role === 'ta' ? 'ta' : 'professor');
+                const fieldValues = typeof hydrateFieldValuesFromRecord === 'function'
+                    ? hydrateFieldValuesFromRecord(person, staffTypeId)
+                    : (person.fieldValues && typeof person.fieldValues === 'object' ? person.fieldValues : {});
+                return { ...person, staffTypeId, fieldValues };
+            });
+    }
+
+    function schedulerStaffPickerDisplayName(person) {
+        const name = schedulerRosterDisplayName(person);
+        const email = String(person?.email || person?.emailAddress || '').trim();
+        const staffId = schedulerStaffPickerRecordId(person);
+        return !name || /^new staff$/i.test(name)
+            ? (email || staffId || name)
+            : name;
     }
 
     function schedulerStaffPickerFieldValue(person, role) {
-        return schedulerRosterDisplayName(person) || (role === 'ta' ? 'No TA' : 'No professor');
+        return schedulerStaffPickerDisplayName(person) || (role === 'ta' ? 'No TA' : 'No professor');
+    }
+
+    function schedulerStaffPickerRecordId(person) {
+        return String(person?.id || person?.userId || person?.accountId || person?.staffId || '').trim();
+    }
+
+    function schedulerStaffPickerOptionValue(person, role) {
+        return schedulerStaffPickerRecordId(person) || schedulerStaffPickerFieldValue(person, role);
     }
 
     function schedulerStaffPickerValue(value, emptyLabel) {
@@ -751,7 +892,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             return '<div class="sch-staff-picker-empty"><i class="fas fa-user-slash"></i><strong>Select a staff member</strong><span>Review their profile details before assigning them.</span></div>';
         }
         const role = schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role);
-        const name = schedulerRosterDisplayName(person);
+        const name = schedulerStaffPickerDisplayName(person);
         const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'ST';
         const details = [
             ['Role', person.title || role],
@@ -886,9 +1027,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (!person) return renderSchedulerStaffPickerProfileFallback(person);
         const recordKey = schedulerStaffPickerRecordKey(person);
         const role = schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role);
-        const name = schedulerRosterDisplayName(person);
+        const name = schedulerStaffPickerDisplayName(person);
         const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'ST';
-        const sections = getSchedulerStaffPickerProfileSections(person);
+        const sections = [{ id: 'account-identity', title: 'Account identity', fields: [] }];
         const hasBlueprintSections = sections.some((section) => (section.fields || []).length);
         const activeSection = sections.find((section) => section.id === schedulerStaffPickerState.activeSectionId) || sections[0];
         if (activeSection) schedulerStaffPickerState.activeSectionId = activeSection.id;
@@ -899,10 +1040,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             .filter(Boolean)
             .map((value) => `<span class="staff-hub-chip lux-status-pill">${escapeSchedulerStaffPickerHtml(value)}</span>`)
             .join('');
-        const sectionBody = activeSection && typeof renderStaffBlueprintProfileView === 'function'
-            && hasBlueprintSections
-            ? renderStaffBlueprintProfileView(person.staffTypeId, person, { activeSectionId: activeSection.id })
-            : renderSchedulerStaffPickerLegacySection(person, activeSection || { id: 'overview', title: 'Overview' });
+        // This is an account-assignment review, not a form editor. Use the
+        // authoritative account fields instead of stale/custom blueprint data.
+        const sectionBody = renderSchedulerStaffPickerLegacySection(person, { id: 'overview', title: 'Account identity' });
         const markup = `
             <div class="sch-staff-picker-profile-head staff-hub-profile-head">
                 <div class="sch-staff-picker-avatar staff-hub-avatar is-large">${schedulerStaffPickerAvatarSource(person.photo) ? `<img src="${escapeSchedulerStaffPickerHtml(schedulerStaffPickerAvatarSource(person.photo))}" alt="">` : initials}</div>
@@ -930,8 +1070,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const query = schedulerStaffPickerState.query.toLowerCase();
         return schedulerStaffPickerState.records.filter((person) => {
             const haystack = [
-                schedulerRosterDisplayName(person),
+                schedulerStaffPickerDisplayName(person),
                 person.nameEn,
+                person.email,
                 person.staffId,
                 person.department,
                 person.title,
@@ -949,8 +1090,11 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         list.innerHTML = visibleRecords.length
             ? visibleRecords.map((person) => {
                 const key = schedulerStaffPickerRecordKey(person);
-                const name = schedulerRosterDisplayName(person);
-                return `<button type="button" class="sch-staff-picker-person${key === schedulerStaffPickerState.selectedId ? ' is-selected' : ''}" aria-pressed="${key === schedulerStaffPickerState.selectedId ? 'true' : 'false'}" data-scheduler-staff-picker-person="${escapeSchedulerStaffPickerHtml(key)}"><strong>${escapeSchedulerStaffPickerHtml(name)}</strong><span>${escapeSchedulerStaffPickerHtml(person.department || person.facultyName || schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role))}</span></button>`;
+                const name = schedulerStaffPickerDisplayName(person);
+                const staffId = schedulerStaffPickerRecordId(person);
+                const email = String(person.email || person.emailAddress || '').trim();
+                const subtitle = [email, person.department || person.facultyName || schedulerStaffPickerRoleLabel(schedulerStaffPickerState.role), staffId].filter(Boolean).join(' · ');
+                return `<button type="button" class="sch-staff-picker-person${key === schedulerStaffPickerState.selectedId ? ' is-selected' : ''}" aria-pressed="${key === schedulerStaffPickerState.selectedId ? 'true' : 'false'}" data-scheduler-staff-picker-person="${escapeSchedulerStaffPickerHtml(key)}"><strong>${escapeSchedulerStaffPickerHtml(name)}</strong><span>${escapeSchedulerStaffPickerHtml(subtitle)}</span></button>`;
             }).join('')
             : '<div class="sch-staff-picker-empty">No matching staff members.</div>';
     }
@@ -1031,9 +1175,10 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         }
     }
 
-    function openSchedulerStaffPicker(targetId, role) {
+    async function openSchedulerStaffPicker(targetId, role) {
         const overlay = ensureSchedulerStaffPicker();
         const target = el(targetId);
+        await refreshSchedulerLiveStaffAccounts();
         const records = getSchedulerStaffPickerRecords(role);
         schedulerStaffPickerState = {
             role,
@@ -1050,7 +1195,11 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             getSchedulerStaffPickerProfileSections(person);
         });
         const currentValue = target?.value || '';
-        const selected = schedulerStaffPickerState.records.find((person) => schedulerStaffPickerFieldValue(person, role) === currentValue);
+        const currentStaffId = String(target?.dataset?.schedulerStaffId || '').trim();
+        const selected = schedulerStaffPickerState.records.find((person) =>
+            (currentStaffId && schedulerStaffPickerRecordId(person) === currentStaffId)
+            || (!currentStaffId && (schedulerStaffPickerOptionValue(person, role) === currentValue || schedulerStaffPickerFieldValue(person, role) === currentValue))
+        );
         schedulerStaffPickerState.selectedId = selected ? schedulerStaffPickerRecordKey(selected) : '';
         const search = overlay.querySelector('#sch-staff-picker-search');
         if (search) search.value = '';
@@ -1061,10 +1210,17 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         });
     }
 
-    function applySchedulerStaffPickerValue(value) {
+    function applySchedulerStaffPickerValue(value, person = null) {
         const target = el(schedulerStaffPickerState.targetId);
         if (!target) return;
         target.value = value;
+        if (person) {
+            target.dataset.schedulerStaffId = schedulerStaffPickerRecordId(person);
+            target.dataset.schedulerStaffLabel = schedulerRosterDisplayName(person);
+        } else {
+            delete target.dataset.schedulerStaffId;
+            delete target.dataset.schedulerStaffLabel;
+        }
         syncSchedulerPickerSelect(schedulerStaffPickerState.targetId);
         if (schedulerStaffPickerState.targetId.startsWith('admin-tt-')) {
             queueSchedulerRefresh({ grid: true });
@@ -1118,7 +1274,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             }
             if (event.target.closest?.('[data-scheduler-staff-picker-choose]')) {
                 const selected = schedulerStaffPickerState.records.find((person) => schedulerStaffPickerRecordKey(person) === schedulerStaffPickerState.selectedId);
-                if (selected) applySchedulerStaffPickerValue(schedulerStaffPickerFieldValue(selected, schedulerStaffPickerState.role));
+                if (selected) applySchedulerStaffPickerValue(schedulerStaffPickerOptionValue(selected, schedulerStaffPickerState.role), selected);
             }
         }, true);
         document.addEventListener('input', (event) => {
@@ -1131,17 +1287,21 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     function populateProfList() {
         const facultyValue = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
         const facultyFilter = facultyValue === 'all' ? null : normalizeFacultyCode(facultyValue, getCurrentFaculty());
-        const professors = getAllStaff('professors', facultyFilter);
-        const tas = getAllStaff('tas', facultyFilter);
+        const professors = getSchedulerStaffPickerRecords('professor');
+        const tas = getSchedulerStaffPickerRecords('ta');
         const profSelect = el('admin-tt-prof');
         if (profSelect) {
             const currentValue = profSelect.value || 'all';
+            const currentStaffId = String(profSelect.dataset.schedulerStaffId || '').trim();
             profSelect.innerHTML = '<option value="all">All professors</option>'
                 + professors.map((person) => {
-                    const label = schedulerRosterDisplayName(person);
-                    return `<option value="${label}">${label}</option>`;
+                    const label = schedulerStaffPickerDisplayName(person);
+                    const value = schedulerStaffPickerOptionValue(person, 'professor');
+                    return `<option value="${escapeSchedulerStaffPickerHtml(value)}" data-scheduler-staff-label="${escapeSchedulerStaffPickerHtml(label)}">${escapeSchedulerStaffPickerHtml(label)}</option>`;
                 }).join('');
-            profSelect.value = [...profSelect.options].some((option) => option.value === currentValue) ? currentValue : 'all';
+            profSelect.value = [...profSelect.options].some((option) => option.value === currentStaffId)
+                ? currentStaffId
+                : ([...profSelect.options].some((option) => option.value === currentValue) ? currentValue : 'all');
             profSelect.removeAttribute('size');
             profSelect.size = 0;
         }
@@ -1149,12 +1309,16 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const taSelect = el('admin-tt-ta');
         if (taSelect) {
             const currentValue = taSelect.value || 'all';
+            const currentStaffId = String(taSelect.dataset.schedulerStaffId || '').trim();
             taSelect.innerHTML = '<option value="all">All teaching assistants</option>'
                 + tas.map((person) => {
-                    const label = schedulerRosterDisplayName(person);
-                    return `<option value="${label}">${label}</option>`;
+                    const label = schedulerStaffPickerDisplayName(person);
+                    const value = schedulerStaffPickerOptionValue(person, 'ta');
+                    return `<option value="${escapeSchedulerStaffPickerHtml(value)}" data-scheduler-staff-label="${escapeSchedulerStaffPickerHtml(label)}">${escapeSchedulerStaffPickerHtml(label)}</option>`;
                 }).join('');
-            taSelect.value = [...taSelect.options].some((option) => option.value === currentValue) ? currentValue : 'all';
+            taSelect.value = [...taSelect.options].some((option) => option.value === currentStaffId)
+                ? currentStaffId
+                : ([...taSelect.options].some((option) => option.value === currentValue) ? currentValue : 'all');
             taSelect.removeAttribute('size');
             taSelect.size = 0;
         }
@@ -1162,14 +1326,16 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const modalProf = el('sch-prof');
         if (modalProf && modalProf.tagName === 'SELECT') {
             const currentValue = modalProf.value || '';
-            const normalizedCurrent = currentValue === 'TBD' ? '' : currentValue;
+            const currentStaffId = String(modalProf.dataset.schedulerStaffId || '').trim();
+            const normalizedCurrent = currentStaffId || (currentValue === 'TBD' ? '' : currentValue);
             modalProf.innerHTML = '<option value="">No professor</option>'
                 + professors.map((person) => {
-                    const label = schedulerRosterDisplayName(person);
-                    return `<option value="${label}">${label}</option>`;
+                    const label = schedulerStaffPickerDisplayName(person);
+                    const value = schedulerStaffPickerOptionValue(person, 'professor');
+                    return `<option value="${escapeSchedulerStaffPickerHtml(value)}" data-scheduler-staff-label="${escapeSchedulerStaffPickerHtml(label)}">${escapeSchedulerStaffPickerHtml(label)}</option>`;
                 }).join('');
             if (normalizedCurrent && ![...modalProf.options].some((option) => option.value === normalizedCurrent)) {
-                modalProf.insertAdjacentHTML('beforeend', `<option value="${normalizedCurrent}">${normalizedCurrent}</option>`);
+                modalProf.insertAdjacentHTML('beforeend', `<option value="${escapeSchedulerStaffPickerHtml(normalizedCurrent)}" data-scheduler-staff-label="${escapeSchedulerStaffPickerHtml(modalProf.dataset.schedulerStaffLabel || currentValue)}">${escapeSchedulerStaffPickerHtml(modalProf.dataset.schedulerStaffLabel || currentValue)}</option>`);
             }
             modalProf.value = [...modalProf.options].some((option) => option.value === normalizedCurrent)
                 ? normalizedCurrent
@@ -1181,15 +1347,18 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const modalTa = el('sch-ta');
         if (modalTa && modalTa.tagName === 'SELECT') {
             const currentValue = modalTa.value || '';
+            const currentStaffId = String(modalTa.dataset.schedulerStaffId || '').trim();
+            const normalizedCurrent = currentStaffId || currentValue;
             modalTa.innerHTML = '<option value="">No TA</option>'
                 + tas.map((person) => {
-                    const label = schedulerRosterDisplayName(person);
-                    return `<option value="${label}">${label}</option>`;
+                    const label = schedulerStaffPickerDisplayName(person);
+                    const value = schedulerStaffPickerOptionValue(person, 'ta');
+                    return `<option value="${escapeSchedulerStaffPickerHtml(value)}" data-scheduler-staff-label="${escapeSchedulerStaffPickerHtml(label)}">${escapeSchedulerStaffPickerHtml(label)}</option>`;
                 }).join('');
-            if (currentValue && ![...modalTa.options].some((option) => option.value === currentValue)) {
-                modalTa.insertAdjacentHTML('beforeend', `<option value="${currentValue}">${currentValue}</option>`);
+            if (normalizedCurrent && ![...modalTa.options].some((option) => option.value === normalizedCurrent)) {
+                modalTa.insertAdjacentHTML('beforeend', `<option value="${escapeSchedulerStaffPickerHtml(normalizedCurrent)}">${escapeSchedulerStaffPickerHtml(modalTa.dataset.schedulerStaffLabel || currentValue)}</option>`);
             }
-            modalTa.value = [...modalTa.options].some((option) => option.value === currentValue) ? currentValue : '';
+            modalTa.value = [...modalTa.options].some((option) => option.value === normalizedCurrent) ? normalizedCurrent : '';
             modalTa.removeAttribute('size');
             modalTa.size = 0;
         }
@@ -1420,8 +1589,28 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
         const profFilter = el('admin-tt-prof')?.value;
         const taFilter = el('admin-tt-ta')?.value;
-        if (el('sch-prof')) el('sch-prof').value = profFilter && profFilter !== 'all' ? profFilter : '';
-        if (el('sch-ta')) el('sch-ta').value = taFilter && taFilter !== 'all' ? taFilter : '';
+        if (el('sch-prof')) {
+            el('sch-prof').value = profFilter && profFilter !== 'all' ? profFilter : '';
+            const selectedProfOption = el('admin-tt-prof')?.selectedOptions?.[0];
+            if (profFilter && profFilter !== 'all') {
+                el('sch-prof').dataset.schedulerStaffId = profFilter;
+                el('sch-prof').dataset.schedulerStaffLabel = selectedProfOption?.dataset?.schedulerStaffLabel || selectedProfOption?.textContent?.trim() || '';
+            } else {
+                delete el('sch-prof').dataset.schedulerStaffId;
+                delete el('sch-prof').dataset.schedulerStaffLabel;
+            }
+        }
+        if (el('sch-ta')) {
+            el('sch-ta').value = taFilter && taFilter !== 'all' ? taFilter : '';
+            const selectedTaOption = el('admin-tt-ta')?.selectedOptions?.[0];
+            if (taFilter && taFilter !== 'all') {
+                el('sch-ta').dataset.schedulerStaffId = taFilter;
+                el('sch-ta').dataset.schedulerStaffLabel = selectedTaOption?.dataset?.schedulerStaffLabel || selectedTaOption?.textContent?.trim() || '';
+            } else {
+                delete el('sch-ta').dataset.schedulerStaffId;
+                delete el('sch-ta').dataset.schedulerStaffLabel;
+            }
+        }
         if (el('sch-session-type')) {
             el('sch-session-type').value = 'lecture';
             el('sch-session-type').dataset.userSet = '0';
@@ -1478,8 +1667,18 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (el('sch-day')) el('sch-day').value = normalizeSchedulerDayLabel(session.day, 'en') || el('sch-day').value;
         if (el('sch-time')) el('sch-time').value = normalizeTimeString(session.time || '', '09:00');
         if (el('sch-room')) el('sch-room').value = roomValue;
-        if (el('sch-prof')) el('sch-prof').value = session.prof && session.prof !== 'TBD' ? session.prof : '';
-        if (el('sch-ta')) el('sch-ta').value = session.ta || '';
+        if (el('sch-prof')) {
+            el('sch-prof').value = session.prof && session.prof !== 'TBD' ? session.prof : '';
+            if (session.profId) el('sch-prof').dataset.schedulerStaffId = session.profId;
+            else delete el('sch-prof').dataset.schedulerStaffId;
+            el('sch-prof').dataset.schedulerStaffLabel = session.prof && session.prof !== 'TBD' ? session.prof : '';
+        }
+        if (el('sch-ta')) {
+            el('sch-ta').value = session.ta || '';
+            if (session.taId) el('sch-ta').dataset.schedulerStaffId = session.taId;
+            else delete el('sch-ta').dataset.schedulerStaffId;
+            el('sch-ta').dataset.schedulerStaffLabel = session.ta || '';
+        }
         populateProfList();
         if (el('sch-session-type')) {
             const sessionType = String(session.sessionType || '').toLowerCase() === 'seminar' ? 'seminar' : 'lecture';
@@ -2127,7 +2326,12 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         }
 
         bindSchedulerListeners();
+        window.addEventListener('kiu:portal-bootstrap-complete', () => {
+            refreshSchedulerLiveStaffAccounts(true).then(() => populateProfList());
+            queueSchedulerRefresh({ palette: true, grid: true });
+        }, { once: true });
         populateProfList();
+        refreshSchedulerLiveStaffAccounts(true).then(() => populateProfList());
         queueSchedulerRefresh({ palette: true, grid: true, revealShell: true });
     }
 

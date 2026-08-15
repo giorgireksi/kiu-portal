@@ -4,6 +4,7 @@ function registerAdminSupportRoutes(app, deps = {}) {
         getSessionActor,
         getStore,
         requireActualSessionRole,
+        requireSessionAccount,
         sendError
     } = deps;
 
@@ -15,7 +16,10 @@ function registerAdminSupportRoutes(app, deps = {}) {
     });
 
     app.post('/api/audit/events', (request, response) => {
-        const sessionAccount = requireActualSessionRole(request, response, adminRoles);
+        // Client annotations are submitted by authenticated users; the GET
+        // audit feed remains administrator-only. The session actor is always
+        // authoritative, so clients cannot impersonate another auditor.
+        const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
         const submitted = request.body?.event || request.body || {};

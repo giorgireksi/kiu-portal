@@ -46,7 +46,14 @@ describe('admin scheduler route regressions.test', () => {
         expect(js).toContain('schStaffPickerOverlay');
         expect(js).toContain('data-scheduler-staff-picker-person');
         expect(js).toContain('data-scheduler-staff-picker-choose');
-        expect(js).toContain('getAllStaff(role === \'ta\' ? \'tas\' : \'professors\'');
+        expect(js).toContain('getAllStaff(expectedRole === \'ta\' ? \'tas\' : \'professors\'');
+        // Live staff fetch must be role-scoped and paginated: the backend
+        // clamps unscoped listings to 200 alphabetical accounts, which can
+        // silently drop newly provisioned TAs/professors from the picker.
+        expect(js).toContain('kiuPortalFetch(`/api/accounts?role=${encodeURIComponent(role)}&limit=${pageSize}&offset=${offset}`)');
+        expect(js).toContain("fetchSchedulerLiveStaffAccountsByRole('ta')");
+        expect(js).toContain("fetchSchedulerLiveStaffAccountsByRole('professor')");
+        expect(js).toContain('Account identity');
         expect(js).toContain('Profile details');
         expect(js).toContain('lux-glass-dialog-overlay sch-staff-picker-overlay');
         expect(js).toContain('lux-glass-dialog-card lux-glass-dialog-card--hub-dialog sch-staff-picker');
@@ -211,7 +218,7 @@ describe('admin scheduler route regressions.test', () => {
         expect(html).not.toContain('lux-timetable-stage');
         expect(html).toContain('defer src="assets/js/pages/admin-scheduler.js');
         expect(html).toContain('assets/css/lux-fouc-ht.css?v=20260806-hidetopbar2');
-        expect(html).toContain('assets/js/pages/admin-scheduler.js?v=20260806-backdropclose1');
+        expect(html).toContain('assets/js/pages/admin-scheduler.js?v=20260815-staff-directory-picker5');
         expect(html).toContain('defer src="assets/js/features/index-luxury.js');
         expect(js).toContain("card.className = `palette-card lux-strip-card lux-soft-chrome home-hover-chip${isActive ? ' selected' : ''}`");
         expect(js).toContain("state.className = 'sch-empty-state lux-soft-chrome'");

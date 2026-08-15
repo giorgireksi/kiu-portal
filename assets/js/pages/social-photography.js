@@ -910,7 +910,7 @@
                                 ${commentAuthor ? avatar(commentAuthor, 'social-neo-avatar-sm') : ''}
                                 <div class="lux-glass-dialog-comment-compose-main">
                                     <div class="social-neo-inline social-neo-comment-compose-row">
-                                        <input class="social-neo-input lux-control" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="Add a comment..." aria-label="Add a comment" value="${escape(dialogCommentDraft)}">
+                                        <input class="social-neo-input lux-control" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="Add a comment..." aria-label="Add a comment" value="${escape(dialogCommentDraft)}" autocomplete="off">
                                         <button class="lux-primary-btn" type="submit">Post</button>
                                     </div>
                                 </div>

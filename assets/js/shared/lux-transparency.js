@@ -705,7 +705,7 @@ function clampLuxuryTransparencyPercentage(value, fallback = 70) {
 }
 
 function mapLuxuryTransparencyFillRatio(value) {
-    const percentage = clampLuxuryTransparencyPercentage(value, 0);
+    const percentage = clampLuxuryTransparencyPercentage(value, 70);
     return (percentage + 1) / 101;
 }
 
@@ -1437,14 +1437,14 @@ function setupTransparencyObserver() {
 
 function setTransparency(mode) {
     if (mode === 'on') {
-        updateTransparency(13); // Default to 13%
+        updateTransparency(70); // Default to 70%
     } else {
         updateTransparency(0);
     }
 }
 
 function refreshLuxuryTransparencySurfaces(value, options = {}) {
-    const savedValue = value ?? localStorage.getItem('kiuLuxurySurfaceTransparency') ?? window.__currentTransparency ?? 13;
+    const savedValue = value ?? localStorage.getItem('kiuLuxurySurfaceTransparency') ?? window.__currentTransparency ?? 70;
     const percentage = parseInt(savedValue, 10);
     if (!Number.isFinite(percentage)) return;
     const scopedRoots = normalizeTransparencyRoots(options?.roots);
@@ -1536,7 +1536,7 @@ function flushLuxuryTransparencyAfterScroll() {
     window.__luxPendingScrollTransparencyFlush = false;
     const pendingRoots = window.__luxPendingScrollTransparencyRoots;
     window.__luxPendingScrollTransparencyRoots = null;
-    const value = window.__luxPendingScrollTransparencyValue ?? window.__currentTransparency ?? 13;
+    const value = window.__luxPendingScrollTransparencyValue ?? window.__currentTransparency ?? 70;
     const options = pendingRoots?.length
         ? { roots: pendingRoots, force: false, persist: false }
         : { force: false, persist: false };
@@ -1583,7 +1583,7 @@ function syncLuxuryOffscreenBackdrop(el) {
         return;
     }
     delete el.dataset.luxTransparencySignature;
-    queueLuxuryTransparencyRefresh(window.__currentTransparency ?? 13, { roots: [el], force: false });
+    queueLuxuryTransparencyRefresh(window.__currentTransparency ?? 70, { roots: [el], force: false });
 }
 
 if (typeof window.onLuxGovernorStateChange === 'function') {
@@ -1606,7 +1606,7 @@ window.clampLuxuryTransparencyPercentage = clampLuxuryTransparencyPercentage;
     try {
         if (typeof setupTransparencyObserver === 'function') setupTransparencyObserver();
         const saved = localStorage.getItem('kiuLuxurySurfaceTransparency');
-        const pct = parseInt(saved || window.__currentTransparency || '13', 10);
+        const pct = parseInt(saved || window.__currentTransparency || '70', 10);
         if (pct > 0 && typeof scheduleLuxuryTransparencyBootRefresh === 'function') {
             scheduleLuxuryTransparencyBootRefresh(pct);
         }

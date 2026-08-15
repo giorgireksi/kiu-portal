@@ -19,6 +19,20 @@ function getKiuPortalBackendDefaultUrl() {
     return `http://${KIU_PORTAL_LOCAL_BACKEND_HOST}:${KIU_PORTAL_BACKEND_PORT}`;
 }
 var KIU_PORTAL_BACKEND_DEFAULT_URL = getKiuPortalBackendDefaultUrl();
+
+// Public deployments are server-authoritative. Browser storage may retain
+// harmless UI preferences, but it must never provide LMS/domain data or an
+// authenticated identity when the backend is unavailable.
+function isKiuRemoteProductionRuntime() {
+    try {
+        const protocol = String(window.location?.protocol || '').toLowerCase();
+        const hostname = String(window.location?.hostname || '').toLowerCase();
+        return protocol === 'https:' && !/^(127\.0\.0\.1|localhost|::1)$/.test(hostname);
+    } catch (error) {
+        return false;
+    }
+}
+
 var KIU_PORTAL_SESSION_TOKEN_KEY = 'KIU_PORTAL_SESSION_TOKEN';
 var KIU_TAB_AUTH_STATE_KEY = 'KIU_TAB_AUTH_STATE';
 var KIU_TAB_SESSION_TOKEN_KEY = 'KIU_TAB_PORTAL_SESSION_TOKEN';
@@ -296,7 +310,9 @@ function ensurePortalBackendRuntime() {
         mailSummary: null,
         backendUnavailableUntil: 0,
         lastBackendError: '',
-        diagnostic: null
+        lastDroppedKeyWarningSignature: '',
+        diagnostic: null,
+        portalRefreshPromise: null
     };
     return window.__kiuPortalBackendRuntime;
 }
@@ -547,10 +563,12 @@ function storePortalBackendAuth(account, session) {
     }
 
     let persistedState = null;
-    try {
-        persistedState = JSON.parse(localStorage.getItem(getKiuPersistentStateKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
-    } catch (error) {
-        persistedState = null;
+    if (!isKiuRemoteProductionRuntime()) {
+        try {
+            persistedState = JSON.parse(localStorage.getItem(getKiuPersistentStateKey()) || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+        } catch (error) {
+            persistedState = null;
+        }
     }
     const priorOwnerAccountId = String(persistedState?.meta?.portalStateOwnerAccountId || persistedState?.auth?.activeUserId || '').trim();
     const nextOwnerAccountId = String(normalizedAuth.id || '').trim();
@@ -561,7 +579,7 @@ function storePortalBackendAuth(account, session) {
     if (!persistedState && typeof KIU_EMPTY_STATE !== 'undefined') {
         persistedState = JSON.parse(JSON.stringify(KIU_EMPTY_STATE));
     }
-    if (persistedState) {
+    if (persistedState && !isKiuRemoteProductionRuntime()) {
         persistedState.meta = persistedState.meta && typeof persistedState.meta === 'object' ? persistedState.meta : {};
         persistedState.meta.portalStateOwnerAccountId = nextOwnerAccountId;
         localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(persistedState));
@@ -1146,6 +1164,7 @@ function resetPortalLocalStateForAccountChange() {
     } catch (error) {}
     if (typeof KIU_STATE !== 'undefined' && typeof createFreshKiuState === 'function') {
         KIU_STATE = createFreshKiuState();
+        if (typeof window !== 'undefined') window.KIU_STATE = KIU_STATE;
     }
 }
 
@@ -1234,7 +1253,8 @@ function applyPortalBootstrapState(remoteState, options = {}) {
     );
     const serverMeta = options.serverMeta && typeof options.serverMeta === 'object' ? options.serverMeta : {};
     const localSnapshotSavedAt = getPortalStateSavedAtMs(localSnapshot);
-    const allowLocalMerge = canMergeLocalPortalSnapshot(localSnapshot, ownerAccountId);
+    const allowLocalMerge = !isKiuRemoteProductionRuntime()
+        && canMergeLocalPortalSnapshot(localSnapshot, ownerAccountId);
     const forcePreferLocal = allowLocalMerge && localSnapshotSavedAt > getPortalStateSavedAtMs(serverMeta);
     const freshLocalClient = localSnapshotSavedAt === 0;
     const localHadRegistrationCms = !isRegistrationCmsEmptyAcrossFaculties(localSnapshot);
@@ -1310,6 +1330,7 @@ function applyPortalBootstrapState(remoteState, options = {}) {
 
     delete nextState.studentServiceArticles;
     KIU_STATE = nextState;
+    if (typeof window !== 'undefined') window.KIU_STATE = nextState;
     if (typeof window !== 'undefined' && typeof window.invalidateCanonicalState === 'function') {
         window.invalidateCanonicalState();
     }
@@ -1335,16 +1356,20 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         if (currentUser?.role === USER_ROLES.ADMIN && effectiveRole && effectiveRole !== USER_ROLES.ADMIN && typeof setActiveSessionUserByRole === 'function') {
             setActiveSessionUserByRole(effectiveRole);
         }
-        try {
-            localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(buildPortalPersistableState(KIU_STATE)));
-        } catch (error) {
-            console.warn('Could not refresh cached portal bootstrap state.', error);
+        if (!isKiuRemoteProductionRuntime()) {
+            try {
+                localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(buildPortalPersistableState(KIU_STATE)));
+            } catch (error) {
+                console.warn('Could not refresh cached portal bootstrap state.', error);
+            }
         }
     } else {
-        try {
-            localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(buildPortalPersistableState(KIU_STATE)));
-        } catch (error) {
-            console.warn('Could not cache portal bootstrap state.', error);
+        if (!isKiuRemoteProductionRuntime()) {
+            try {
+                localStorage.setItem(getKiuPersistentStateKey(), JSON.stringify(buildPortalPersistableState(KIU_STATE)));
+            } catch (error) {
+                console.warn('Could not cache portal bootstrap state.', error);
+            }
         }
     }
     if (document.getElementById('admin-library-catalog-tabs')) {
@@ -1406,11 +1431,44 @@ function applyPortalBootstrapState(remoteState, options = {}) {
     return true;
 }
 
-async function persistPortalStateToBackend(reason = 'saveState') {
+async function persistPortalStateToBackend(reason = 'saveState', options = {}) {
     if (isStandaloneSocialRoute()) return null;
+    if (isKiuRemoteProductionRuntime() && typeof window !== 'undefined' && window.__KIU_PORTAL_BOOTSTRAP_PENDING) {
+        const runtime = ensurePortalBackendRuntime();
+        runtime.pendingSyncReason = reason;
+        return null;
+    }
     const runtime = ensurePortalBackendRuntime();
-    if (typeof KIU_STATE === 'undefined') return null;
-    if (runtime.syncPromise) return runtime.syncPromise;
+    const canonicalState = typeof window !== 'undefined' && window.KIU_STATE && typeof window.KIU_STATE === 'object'
+        ? window.KIU_STATE
+        : (typeof KIU_STATE !== 'undefined' ? KIU_STATE : null);
+    if (!canonicalState) return null;
+    // Persist the object used by page mutations, not a stale pre-bootstrap
+    // lexical reference.
+    if (typeof KIU_STATE !== 'undefined' && KIU_STATE !== canonicalState) KIU_STATE = canonicalState;
+    if (runtime.syncPromise) {
+        if (options.forceLatest === true) {
+            // A form submission needs the snapshot containing its record, not the
+            // older request that happened to start during bootstrap. Wait for that
+            // request to finish, then send the current canonical state below.
+            await runtime.syncPromise.catch(() => null);
+        } else {
+            // A save is already in flight. Never silently drop this newer state: flag a
+            // follow-up so the latest snapshot is sent once the in-flight sync settles.
+            runtime.pendingSaveAfterSync = true;
+            runtime.dirtySinceLastSync = true;
+            // Watchdog: if the in-flight sync has been stuck too long (slow/overloaded
+            // backend), abandon it so the latest state can be sent instead of blocking
+            // all subsequent saves indefinitely.
+            if (Date.now() - (runtime.syncStartedAt || 0) > 10000) {
+                runtime.syncStartedAt = Date.now();
+                runtime.syncPromise = null;
+                runtime.syncing = false;
+            } else {
+                return runtime.syncPromise;
+            }
+        }
+    }
     const token = getPortalSessionToken();
     if (!token) return null;
     const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
@@ -1418,20 +1476,54 @@ async function persistPortalStateToBackend(reason = 'saveState') {
         ? getEffectiveUserRole()
         : (activeUser?.role || currentUserRole || '');
     runtime.syncing = true;
+    runtime.syncStartedAt = Date.now();
     runtime.syncPromise = (async () => {
         try {
             const payload = await kiuPortalFetch('/api/portal/state', {
                 method: 'POST',
-                timeoutMs: 15000,
+                timeoutMs: 30000,
                 body: JSON.stringify({
                     reason,
                     token,
                     actorId: activeUser?.id || '',
                     actorRole,
-                    state: buildPortalBackendPersistableState(KIU_STATE)
+                    state: buildPortalBackendPersistableState(canonicalState)
                 })
             });
             runtime.online = true;
+            // A successfully acknowledged write means the client no longer has
+            // unsaved changes to carry across unload.
+            if (payload && payload.saved) {
+                runtime.dirtySinceLastSync = false;
+            }
+            if (payload && Array.isArray(payload.droppedKeys) && payload.droppedKeys.length && actorRole !== 'student') {
+                // The session role could not persist these keys. Surface it so staff
+                // noticeably-structured workflows are not silently lost again.
+                runtime.lastDroppedKeys = payload.droppedKeys.slice();
+                const droppedKeySignature = `${actorRole}:${runtime.lastDroppedKeys.join(',')}`;
+                const shouldWarnDroppedKeys = runtime.lastDroppedKeyWarningSignature !== droppedKeySignature;
+                runtime.lastDroppedKeyWarningSignature = droppedKeySignature;
+                if (typeof setPortalRuntimeDiagnostic === 'function') {
+                    setPortalRuntimeDiagnostic({
+                        kind: 'portal-role-write-dropped',
+                        code: 'KIU_PORTAL_DROPPED_KEYS',
+                        path: '/api/portal/state',
+                        message: `Portal state keys were not saved for role ${actorRole}: ${payload.droppedKeys.join(', ')}`,
+                        status: 200
+                    });
+                }
+                if (shouldWarnDroppedKeys) {
+                    try {
+                        console.warn('[kiu] portal-state write dropped keys for role', actorRole, payload.droppedKeys);
+                    } catch (warnError) {}
+                }
+            } else {
+                // Student bootstrap writes intentionally carry read-only cache
+                // fields; those drops are expected and should not look like an
+                // application error in the console.
+                runtime.lastDroppedKeys = [];
+                runtime.lastDroppedKeyWarningSignature = '';
+            }
             return payload;
         } catch (error) {
             runtime.online = false;
@@ -1444,16 +1536,27 @@ async function persistPortalStateToBackend(reason = 'saveState') {
         return await runtime.syncPromise;
     } finally {
         runtime.syncPromise = null;
+        // If state changed while the previous sync was in flight, send it now instead
+        // of dropping it (the dropped save previously erased created/edited records).
+        if (runtime.pendingSaveAfterSync && runtime.dirtySinceLastSync && !runtime.syncing) {
+            runtime.pendingSaveAfterSync = false;
+            setTimeout(() => persistPortalStateToBackend('follow-up').catch(() => null), 0);
+        } else {
+            runtime.pendingSaveAfterSync = false;
+        }
     }
 }
 
-function flushPortalStateSync() {
+function flushPortalStateSync(options = {}) {
     if (isStandaloneSocialRoute()) return null;
     const runtime = ensurePortalBackendRuntime();
     runtime.lastSyncReason = runtime.lastSyncReason || 'saveState';
     if (runtime.syncTimer) {
         clearTimeout(runtime.syncTimer);
         runtime.syncTimer = null;
+    }
+    if (options.forceLatest === true) {
+        return persistPortalStateToBackend(runtime.lastSyncReason || 'saveState', { forceLatest: true });
     }
     if (!runtime.syncPromise) {
         runtime.syncPromise = persistPortalStateToBackend(runtime.lastSyncReason || 'saveState');
@@ -1463,12 +1566,45 @@ function flushPortalStateSync() {
 
 function sendPortalStateKeepalive() {
     if (isStandaloneSocialRoute()) return;
+    const runtime = ensurePortalBackendRuntime();
+    if (isKiuRemoteProductionRuntime() && typeof window !== 'undefined' && window.__KIU_PORTAL_BOOTSTRAP_PENDING) {
+        runtime.pendingSyncReason = 'beforeunload';
+        return;
+    }
+    // Do not push a redundant full snapshot on every pagehide when nothing changed.
+    if (!runtime.dirtySinceLastSync) return;
+    const canonicalState = typeof window !== 'undefined' && window.KIU_STATE && typeof window.KIU_STATE === 'object'
+        ? window.KIU_STATE
+        : (typeof KIU_STATE !== 'undefined' ? KIU_STATE : null);
     const token = getPortalSessionToken();
-    if (!token || typeof KIU_STATE === 'undefined' || shouldBypassPortalBackendFetch()) return;
+    if (!token || !canonicalState || shouldBypassPortalBackendFetch()) return;
     const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
     const actorRole = typeof getEffectiveUserRole === 'function'
         ? getEffectiveUserRole()
         : (activeUser?.role || currentUserRole || '');
+    let bodyText = '';
+    try {
+        bodyText = JSON.stringify({
+            reason: 'beforeunload',
+            token,
+            actorId: activeUser?.id || '',
+            actorRole,
+            state: buildPortalBackendPersistableState(canonicalState)
+        });
+    } catch (error) {
+        return;
+    }
+    // The backend authenticates from request.body.token (server.js), so sendBeacon's
+    // inability to set custom headers is fine. sendBeacon is the most reliable
+    // fire-and-forget transport during unload; fall back to fetch keepalive.
+    try {
+        if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+            const blob = new Blob([bodyText], { type: 'application/json' });
+            if (navigator.sendBeacon(`${getKiuPortalBackendUrl()}/api/portal/state`, blob)) {
+                return;
+            }
+        }
+    } catch (error) {}
     try {
         fetch(`${getKiuPortalBackendUrl()}/api/portal/state`, {
             method: 'POST',
@@ -1476,19 +1612,17 @@ function sendPortalStateKeepalive() {
                 'Content-Type': 'application/json',
                 'X-Portal-Session': token
             },
-            body: JSON.stringify({
-                reason: 'beforeunload',
-                token,
-                actorId: activeUser?.id || '',
-                actorRole,
-                state: buildPortalBackendPersistableState(KIU_STATE)
-            }),
+            body: bodyText,
             keepalive: true
         }).catch(() => null);
     } catch (error) {}
 }
 
 function flushPortalStateBeforeNavigation(options = {}) {
+    if (isKiuRemoteProductionRuntime() && typeof window !== 'undefined' && window.__KIU_PORTAL_BOOTSTRAP_PENDING) {
+        ensurePortalBackendRuntime().pendingSyncReason = 'navigation-before-bootstrap';
+        return Promise.resolve(null);
+    }
     if (typeof flushAdminRegistrationStateSave === 'function') {
         try {
             flushAdminRegistrationStateSave(options);
@@ -1498,6 +1632,13 @@ function flushPortalStateBeforeNavigation(options = {}) {
         try {
             saveState();
         } catch (error) {}
+    }
+    const runtime = ensurePortalBackendRuntime();
+    // Cancel the coalescing timer: navigation teardown must not destroy a pending
+    // write that would otherwise never fire. The keepalive/sync below sends now.
+    if (runtime.syncTimer) {
+        clearTimeout(runtime.syncTimer);
+        runtime.syncTimer = null;
     }
     const liveQuizFlush = typeof window.flushLmsLiveQuizSync === 'function'
         ? window.flushLmsLiveQuizSync()
@@ -1517,13 +1658,20 @@ function flushPortalStateBeforeNavigation(options = {}) {
 
 function queuePortalStateSync(reason = 'saveState') {
     if (isStandaloneSocialRoute()) return;
+    if (isKiuRemoteProductionRuntime() && typeof window !== 'undefined' && window.__KIU_PORTAL_BOOTSTRAP_PENDING) {
+        ensurePortalBackendRuntime().pendingSyncReason = reason;
+        return;
+    }
     const runtime = ensurePortalBackendRuntime();
+    runtime.dirtySinceLastSync = true;
     runtime.lastSyncReason = reason;
     if (runtime.syncTimer) clearTimeout(runtime.syncTimer);
+    // Short coalescing window: long enough to batch a burst of edits on one page,
+    // short enough that a refresh right after an edit still flushes the write.
     runtime.syncTimer = setTimeout(() => {
         runtime.syncTimer = null;
         persistPortalStateToBackend(runtime.lastSyncReason || 'saveState');
-    }, 180);
+    }, 50);
 }
 
 async function bootstrapPortalBackendState(force = false) {
@@ -1613,12 +1761,82 @@ async function bootstrapPortalBackendState(force = false) {
         runtime.online = false;
         return null;
     }).finally(() => {
-        if (typeof window !== 'undefined') {
-            window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+        const hadToken = Boolean(typeof getPortalSessionToken === 'function' ? getPortalSessionToken() : '');
+        if (runtime.online && hadToken) {
+            // Successful hydration: unblock saves and flush anything deferred while
+            // bootstrapping, using the now-hydrated server state.
+            if (typeof window !== 'undefined') {
+                window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+            }
+            const pendingSyncReason = runtime.pendingSyncReason;
+            runtime.pendingSyncReason = '';
+            if (pendingSyncReason) {
+                setTimeout(() => queuePortalStateSync(pendingSyncReason), 0);
+            }
+            try {
+                window.dispatchEvent(new CustomEvent('kiu:portal-bootstrap-complete'));
+            } catch (error) {}
+        } else if (hadToken) {
+            // Authenticated but bootstrap failed: keep blocking saves so the empty
+            // page can never clobber server state, and retry with backoff.
+            if (typeof window !== 'undefined') {
+                window.__KIU_PORTAL_BOOTSTRAP_PENDING = true;
+            }
+            if (typeof window !== 'undefined' && !window.__kiuBootstrapRetryScheduled) {
+                window.__kiuBootstrapRetryScheduled = true;
+                setTimeout(() => {
+                    window.__kiuBootstrapRetryScheduled = false;
+                    bootstrapPortalBackendState(true).catch(() => null);
+                }, 3000);
+            }
+        } else {
+            // No session token: nothing server-side to protect.
+            if (typeof window !== 'undefined') {
+                window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+            }
         }
         runtime.bootstrapPromise = null;
     });
     return runtime.bootstrapPromise;
+}
+
+function schedulePortalStateRefreshFromRealtime(payload = {}) {
+    if (isStandaloneSocialRoute()) return Promise.resolve(null);
+    const runtime = ensurePortalBackendRuntime();
+    const sourceToken = String(payload?.sessionToken || '').trim();
+    const currentToken = String(getPortalSessionToken() || '').trim();
+    // The saving session already has the authoritative local state. Refresh only
+    // other sessions; otherwise the save echo can replace a form while it is open.
+    if (sourceToken && currentToken && sourceToken === currentToken) return Promise.resolve(null);
+    if (runtime.portalRefreshPromise) return runtime.portalRefreshPromise;
+
+    runtime.portalRefreshPromise = (async () => {
+        // Finish the initial hydration before applying a realtime refresh. Never
+        // let an event race the first server snapshot.
+        if (runtime.bootstrapPromise) {
+            await runtime.bootstrapPromise.catch(() => null);
+        }
+        if (typeof window !== 'undefined' && window.__KIU_PORTAL_BOOTSTRAP_PENDING) {
+            await bootstrapPortalBackendState(false);
+        }
+
+        // A refresh must not erase edits which have not reached PostgreSQL. Flush
+        // them first, and abort the refresh if the write was not acknowledged.
+        if (runtime.syncTimer) {
+            clearTimeout(runtime.syncTimer);
+            runtime.syncTimer = null;
+        }
+        if (runtime.dirtySinceLastSync) {
+            const saved = await flushPortalStateSync({ forceLatest: true }).catch(() => null);
+            if (!saved?.saved || runtime.dirtySinceLastSync) return null;
+        } else if (runtime.syncPromise) {
+            await runtime.syncPromise.catch(() => null);
+        }
+        return bootstrapPortalBackendState(true);
+    })().finally(() => {
+        runtime.portalRefreshPromise = null;
+    });
+    return runtime.portalRefreshPromise;
 }
 
 function schedulePortalBackendBootstrap(force = false) {
@@ -1626,9 +1844,19 @@ function schedulePortalBackendBootstrap(force = false) {
         if (typeof window !== 'undefined') {
             window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
         }
+        // Standalone Social skips the large portal-state bootstrap, but it still
+        // needs the authenticated messenger SSE bridge for immediate chat updates.
+        if (typeof scheduleKiuRealtimeBootstrap === 'function') {
+            scheduleKiuRealtimeBootstrap(force);
+        }
         return;
     }
-    if (!force && typeof window !== 'undefined' && window.__KIU_PORTAL_BOOTSTRAP_PENDING) {
+    // NOTE: __KIU_PORTAL_BOOTSTRAP_PENDING is set to true at script load, before any
+    // bootstrap has been scheduled. Dedupe on the *actual* in-flight bootstrap (or a
+    // bootstrap already scheduled on this tick) instead of the sticky flag, otherwise a
+    // refreshed authenticated page never hydrates from the server.
+    const runtime = ensurePortalBackendRuntime();
+    if (!force && (runtime.bootstrapPromise || runtime.bootstrapScheduled)) {
         return;
     }
     if (!getPortalSessionToken()) {
@@ -1637,7 +1865,12 @@ function schedulePortalBackendBootstrap(force = false) {
         }
         return;
     }
+    if (typeof window !== 'undefined') {
+        window.__KIU_PORTAL_BOOTSTRAP_PENDING = true;
+    }
+    runtime.bootstrapScheduled = true;
     setTimeout(() => {
+        runtime.bootstrapScheduled = false;
         bootstrapPortalBackendState(force).catch(() => null);
     }, 0);
 }

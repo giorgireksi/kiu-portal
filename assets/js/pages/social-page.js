@@ -152,7 +152,7 @@ Publishes only the host/runtime contract consumed by its loader.
         ].filter((ms) => Number.isFinite(ms));
         return candidates.length ? Math.max(...candidates) : 0;
     }
-    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260807-socialtopnav34';
+    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260815-staff-student-directory1';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
     const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260807-socialtopnav34';
     const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260807-socialtopnav34';
@@ -161,7 +161,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_RESEARCH_MODULE_URL = 'assets/js/pages/social-research.js?v=20260807-socialtopnav34';
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
-    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260807-socialtopnav34';
+    const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260816-customscroll4';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
     const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260807-socialtopnav34';
     const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260807-socialtopnav34';
@@ -183,7 +183,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_WORKSPACE_TAB_RUNTIME_URL = 'assets/js/pages/social-workspace-tab-runtime.js?v=20260726-socfix42';
     const SOCIAL_WORKSPACE_EVENTS_INPUT_URL = 'assets/js/pages/social-workspace-events-input-runtime.js?v=20260807-socialtopnav34';
     const SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL = 'assets/js/pages/social-workspace-events-submit-runtime.js?v=20260807-socialtopnav34';
-    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260805-health-scroll2';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
     const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260807-socialtopnav34';
@@ -193,7 +193,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_WORKSPACE_TASK_UI_URL = 'assets/js/pages/social-workspace-task-ui.js?v=20260807-socialsurface1';
     const SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL = 'assets/js/pages/social-workspace-portfolio-runtime.js?v=20260802-portfolio-viewer1';
     const SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL = 'assets/js/pages/social-workspace-portfolio-editor.js?v=20260802-portfolio-viewer3';
-    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_PORTFOLIO_UI_URL = 'assets/js/pages/social-workspace-portfolio-ui.js?v=20260802-pincss1';
     const SOCIAL_WORKSPACE_PROJECT_CHROME_URL = 'assets/js/pages/social-workspace-project-chrome.js?v=20260807-socialsurface1';
     const SOCIAL_WORKSPACE_DIALOG_ROUTE_URL = 'assets/js/pages/social-workspace-dialog-route.js?v=20260807-graphstack1';
     const SOCIAL_WORKSPACE_MODULE_URL = 'assets/js/pages/social-workspace.js?v=20260807-runtimefix1';
@@ -1509,6 +1509,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const getCategoryUnreadCounts = window.getCategoryUnreadCounts || (window.KiuSocialAlertsModel || {}).getCategoryUnreadCounts;
     const filterNotificationsByView = window.filterNotificationsByView || (window.KiuSocialAlertsModel || {}).filterNotificationsByView;
     const lostFoundItems = window.lostFoundItems || (window.KiuSocialFormModel || {}).lostFoundItems;
+    const filePreview = window.filePreview || (window.KiuSocialFormModel || {}).filePreview;
     const LOST_FOUND_DEFAULT_LISTING_DAYS = 90;
     const resolveLostFoundStatus = window.resolveLostFoundStatus || (window.KiuSocialFormModel || {}).resolveLostFoundStatus;
     const defaultLostFoundExpiresAt = window.defaultLostFoundExpiresAt || (window.KiuSocialFormModel || {}).defaultLostFoundExpiresAt;
@@ -1588,6 +1589,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const postEntityLinks = window.postEntityLinks || (window.KiuSocialEntityModel || {}).postEntityLinks;
     const resolveEntityLinkMeta = window.resolveEntityLinkMeta || (window.KiuSocialEntityModel || {}).resolveEntityLinkMeta;
     const listAttachableEntities = window.listAttachableEntities || (window.KiuSocialEntityModel || {}).listAttachableEntities;
+    const entityLinkIcon = window.entityLinkIcon || (window.KiuSocialEntityModel || {}).entityLinkIcon;
     const __socialFeedDeps = window.__kiuSocialPageFeedDeps = {
         accountSubtitle, activeDialog, activeNavPanels, avatar, buildProjectCreateContext,
         buildProjectHealthPlanPickModel, clearProjectTabPaneCache, clearSurveyFlowState,
@@ -1694,7 +1696,7 @@ Publishes only the host/runtime contract consumed by its loader.
         syncPortfolioEditorInput, patchEventRsvpButtons, getSocialPageRecord, pageFollowerIdsFor,
         pageAdminIdsFor, buildPageMembersList, shouldPatchPageComposeBlock, patchSocialFlash,
         patchPageFollowState, patchPageComposeBlock, patchPostReactions, patchCommentReactionsByIds,
-        deleteCommentInline, readFileAsDataUrl,
+        deleteCommentInline, readFileAsDataUrl, optimizeEventCoverFile,
         setPanel, finalizeSetPanel, setActiveChat, focusFeed,
         focusRestoreSelector, rememberInteractionAnchor, interactionAnchorNode, socialScrollLockMedia,
         isSocialRouteDesktopScroll, socialScrollLockActive, getSocialCenterScroller, scrollSocialCenterTo,

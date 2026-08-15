@@ -335,10 +335,21 @@ function getSession(token) {
         currentRole
         && String(session.actualRole || '').trim().toLowerCase() !== currentRole
     );
-    if (accountInactive || roleChanged) {
-        revokeSessionsForUser.call(this, session.userId, roleChanged ? 'role-changed' : 'account-state-changed');
+    if (accountInactive) {
+        revokeSessionsForUser.call(this, session.userId, 'account-state-changed');
         this.save();
         return null;
+    }
+    // Role changes are authoritative account updates. Refresh the existing
+    // session in place instead of ejecting the user; this is especially
+    // important when an account was provisioned with a stale role and then
+    // repaired by the server mirror synchronizer.
+    if (roleChanged) {
+        session.actualRole = currentRole;
+        session.faculty = account.facultyCode || account.faculty || '';
+        session.impersonatedRole = '';
+        session.impersonatedUserId = '';
+        session.updatedAt = nowIso();
     }
     session.updatedAt = nowIso();
     session.lastSeenAt = nowIso();

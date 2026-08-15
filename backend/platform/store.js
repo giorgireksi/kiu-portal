@@ -86,9 +86,12 @@ const {
 } = require('./domains/chancellery-document-service');
 const {
     ensurePersonFromAccount,
+    syncAccountToPortalState,
     getAccountByEmail,
     getAccountById,
+    isSocialEligibleAccount,
     listAccounts,
+    listSocialAccounts,
     upsertAccount
 } = require('./domains/accounts-service');
 const {
@@ -383,6 +386,27 @@ const STAFF_WRITABLE_PORTAL_STATE_KEYS = new Set([
     'studentGrades'
 ]);
 
+/**
+ * Authored catalogs that professor/TA/admin may persist (scheduler, timetable,
+ * assignments, groups). Students must never overwrite these. Without this
+ * allow-list the server silently dropped these keys for non-admin sessions
+ * while still returning saved:true, so staff edits vanished on reload.
+ */
+const PORTAL_STAFF_AUTHORED_GLOBAL_KEYS = new Set([
+    'timetable',
+    'curriculum',
+    'assignments',
+    'availableGroups',
+    'lmsCourses'
+]);
+// Schedule/catalog state is authored by the admin scheduler. A TA browser may
+// read it, but must not replace it with an empty or stale bootstrap snapshot.
+const PORTAL_ADMIN_AUTHORED_SCHEDULE_KEYS = new Set([
+    'timetable',
+    'curriculum',
+    'availableGroups'
+]);
+
 const STAFF_PORTAL_WRITE_ROLES = new Set(['professor', 'ta', 'admin']);
 
 const PORTAL_STUDENT_KEYED_STATE_KEYS = new Set([
@@ -398,6 +422,13 @@ const PORTAL_GLOBAL_ADMIN_ONLY_KEYS = new Set([
     'facultyProfiles',
     'curriculumLibraryModulesByFaculty',
     'adminLibrary'
+]);
+// These records are authored by admin but are read-only academic catalog data
+// for every authenticated portal account (programs/registration pages).
+const PORTAL_PUBLIC_ACADEMIC_BOOTSTRAP_KEYS = new Set([
+    'adminProgramStructures',
+    'registrationCMSByFaculty',
+    'curriculumLibraryModulesByFaculty'
 ]);
 
 const ADMIN_LIBRARY_UI_ONLY_KEYS = [
@@ -525,6 +556,22 @@ function mergeKeyedPortalStateMap(existingMap = {}, incomingMap = {}, actorUserI
     return merged;
 }
 
+function mergeAvailableGroupsSnapshot(existingMap = {}, incomingMap = {}) {
+    const existing = existingMap && typeof existingMap === 'object' ? existingMap : {};
+    const incoming = incomingMap && typeof incomingMap === 'object' ? incomingMap : {};
+    const merged = clone(incoming);
+    // A browser can legitimately send an older snapshot with an empty subject
+    // bucket while it is hydrating. Never interpret that as an instruction to
+    // delete an already-authored server schedule.
+    Object.entries(existing).forEach(([subjectId, existingGroups]) => {
+        if (!Array.isArray(existingGroups) || existingGroups.length === 0) return;
+        if (!Array.isArray(incoming[subjectId]) || incoming[subjectId].length === 0) {
+            merged[subjectId] = clone(existingGroups);
+        }
+    });
+    return merged;
+}
+
 function mergeScopedStudentGrades(existingMap = {}, incomingMap = {}, canWriteRoster = () => false) {
     const existing = existingMap && typeof existingMap === 'object' ? existingMap : {};
     const incoming = incomingMap && typeof incomingMap === 'object' ? incomingMap : {};
@@ -558,6 +605,7 @@ function mergeIncomingPortalState(existingState = {}, incomingState = {}, option
     const allowGlobalWrite = options.allowGlobalWrite === true;
     const effectiveRole = String(options.effectiveRole || '').trim().toLowerCase();
     const canWriteStaffPortalKeys = allowGlobalWrite || STAFF_PORTAL_WRITE_ROLES.has(effectiveRole);
+    const droppedKeys = Array.isArray(options.droppedKeys) ? options.droppedKeys : [];
 
     Object.entries(incoming).forEach(([key, value]) => {
         if (value === undefined || PORTAL_STATE_SERVER_STRIP_KEYS.has(key)) return;
@@ -569,6 +617,22 @@ function mergeIncomingPortalState(existingState = {}, incomingState = {}, option
 
         if (PORTAL_GLOBAL_ADMIN_ONLY_KEYS.has(key)) {
             if (allowGlobalWrite) merged[key] = clone(value);
+            else droppedKeys.push(key);
+            return;
+        }
+
+        if (PORTAL_STAFF_AUTHORED_GLOBAL_KEYS.has(key)) {
+            if (!canWriteStaffPortalKeys) {
+                droppedKeys.push(key);
+                return;
+            }
+            if (PORTAL_ADMIN_AUTHORED_SCHEDULE_KEYS.has(key) && !allowGlobalWrite) {
+                droppedKeys.push(key);
+                return;
+            }
+            merged[key] = key === 'availableGroups'
+                ? mergeAvailableGroupsSnapshot(existing[key], value)
+                : clone(value);
             return;
         }
 
@@ -577,12 +641,22 @@ function mergeIncomingPortalState(existingState = {}, incomingState = {}, option
                 merged[key] = allowGlobalWrite || effectiveRole === 'admin'
                     ? clone(value)
                     : mergeScopedStudentGrades(existing[key], value, options.canWriteStudentGradesRoster);
+            } else {
+                droppedKeys.push(key);
             }
             return;
         }
 
         if (CLIENT_OWNED_PORTAL_STATE_KEYS.has(key) || allowGlobalWrite) {
             merged[key] = clone(value);
+        } else if (canWriteStaffPortalKeys) {
+            // Professor/TA/admin author portal content (syllabus, assignments,
+            // submissions, attendance, messages, LMS workspaces, ...). Without this
+            // branch every staff-authored key was silently discarded while the API
+            // still reported saved:true, so staff data vanished on reload.
+            merged[key] = clone(value);
+        } else {
+            droppedKeys.push(key);
         }
     });
 
@@ -593,6 +667,7 @@ const PORTAL_STATE_SERVER_STRIP_KEYS = new Set([
     'auth',
     'domain',
     'lmsLiveQuizzes',
+    'lmsGroupRosterStudentIds',
     'studentServiceAnswers',
     'studentServiceQuestions',
     'studentServiceArticles'
@@ -981,6 +1056,12 @@ class PlatformStore {
             throw new Error(`Unsupported storage driver "${this.storageDriver}". Use "postgres" or "local-json".`);
         }
         this.ensureBootstrapAdmin();
+        // Repair legacy split-brain records once at startup: account identity is
+        // authoritative, and the portal directory mirrors must match it before
+        // any account receives a bootstrap snapshot.
+        Object.values(this.state.accounts || {}).forEach((account) => {
+            syncAccountToPortalState.call(this, account);
+        });
         try {
             const healed = this.healAllStoredFilePaths();
             if (healed) {
@@ -1111,7 +1192,14 @@ class PlatformStore {
             : {};
         delete state.portal.legacyState;
         migrateLostFoundSocialState(state);
-        ensureAdminTestingPersonaAccounts(state);
+        // Demo/view personas must not be auto-recreated in production. Gate them
+        // behind an explicit opt-in or a non-production environment; otherwise the
+        // admin-testing-* accounts resurrect themselves on every state load even
+        // after being removed.
+        const personasEnabled = String(process.env.KIU_ENABLE_ADMIN_TESTING_PERSONAS || '').trim().toLowerCase();
+        if (personasEnabled === 'true' || personasEnabled === '1' || this.environment !== 'production') {
+            ensureAdminTestingPersonaAccounts(state);
+        }
         migrateBackgroundGalleryUserItemsFromPortalPrefs(state);
         return state;
     }
@@ -1140,6 +1228,19 @@ class PlatformStore {
             { portal: this.state.portal },
             { fullState: this.state }
         ));
+    }
+
+    saveAccountIdentity() {
+        if (!this.recordStore || typeof this.recordStore.writeNamespaces !== 'function') {
+            return this.save();
+        }
+        return this.queueRecordStoreWrite(() => this.recordStore.writeNamespaces({
+            accounts: this.state.accounts,
+            people: this.state.people,
+            authCredentials: this.state.authCredentials,
+            sessions: this.state.sessions,
+            portal: this.state.portal
+        }, { fullState: this.state }));
     }
 
     async flushPendingWrites() {
@@ -2727,6 +2828,14 @@ class PlatformStore {
         return listAccounts.call(this, filters);
     }
 
+    listSocialAccounts(filters = {}) {
+        return listSocialAccounts.call(this, filters);
+    }
+
+    isSocialEligibleAccount(userId = '') {
+        return isSocialEligibleAccount.call(this, userId);
+    }
+
     getAccountById(userId) {
         return getAccountById.call(this, userId);
     }
@@ -2755,8 +2864,8 @@ class PlatformStore {
         return createSessionByMicrosoftIdentity.call(this, identity);
     }
 
-    upsertAccount(payload = {}) {
-        return upsertAccount.call(this, payload);
+    upsertAccount(payload = {}, options = {}) {
+        return upsertAccount.call(this, payload, options);
     }
 
     activateAccount(userId, newPassword, activationToken) {
@@ -4162,11 +4271,38 @@ class PlatformStore {
             return accumulator;
         }, {});
         portalState.lmsLiveQuizzes = liveQuizWorkspaces;
+        // Staff need the active student IDs for the LMS groups they can access,
+        // while ordinary student bootstrap must remain limited to that student's
+        // own schedule. This projection avoids exposing every student's full
+        // schedule and lets LMS rosters stay server-authoritative.
+        if (viewerUserId && (unscopedAdmin || ['professor', 'ta'].includes(effectiveRole))) {
+            const rosterByCourse = {};
+            const schedulesByStudent = this.state.portal.state?.studentSchedulesByStudent;
+            Object.entries(schedulesByStudent && typeof schedulesByStudent === 'object' ? schedulesByStudent : {}).forEach(([studentId, schedule]) => {
+                if (!this.isSocialEligibleAccount(studentId)) return;
+                const entries = Array.isArray(schedule)
+                    ? schedule
+                    : schedule && typeof schedule === 'object'
+                        ? Object.entries(schedule).map(([courseId, groupId]) => ({ courseId, groupId }))
+                        : [];
+                entries.forEach((entry) => {
+                    const courseId = String(entry?.courseId || entry?.sourceCourseId || '').trim();
+                    const groupId = String(entry?.groupId || entry?.groupName || '').trim();
+                    if (!courseId || !groupId) return;
+                    if (!unscopedAdmin && !this.canAccessGradebookCourse(courseId, viewerUserId, effectiveRole, 'read')) return;
+                    const key = `${courseId}::${groupId}`;
+                    rosterByCourse[key] = Array.isArray(rosterByCourse[key]) ? rosterByCourse[key] : [];
+                    if (!rosterByCourse[key].includes(studentId)) rosterByCourse[key].push(studentId);
+                });
+            });
+            portalState.lmsGroupRosterStudentIds = rosterByCourse;
+        }
         if (viewerUserId && !unscopedAdmin) {
             [
-                ...PORTAL_GLOBAL_ADMIN_ONLY_KEYS,
-                'studentGrades'
-            ].forEach(key => delete portalState[key]);
+                ...PORTAL_GLOBAL_ADMIN_ONLY_KEYS
+            ].filter(key => !PORTAL_PUBLIC_ACADEMIC_BOOTSTRAP_KEYS.has(key))
+                .concat('studentGrades')
+                .forEach(key => delete portalState[key]);
             PORTAL_STUDENT_KEYED_STATE_KEYS.forEach((key) => {
                 if (!portalState[key] || typeof portalState[key] !== 'object') return;
                 portalState[key] = Object.prototype.hasOwnProperty.call(portalState[key], viewerUserId)
@@ -4318,11 +4454,13 @@ class PlatformStore {
         const actorUserId = String(options.actorUserId || '').trim();
         const allowGlobalWrite = options.allowGlobalWrite === true;
         const effectiveRole = String(options.effectiveRole || '').trim().toLowerCase();
+        const droppedKeys = [];
         if (allowGlobalWrite || actorUserId) {
             this.state.portal.state = mergeIncomingPortalState(existingState, sanitizedIncoming, {
                 actorUserId,
                 allowGlobalWrite,
                 effectiveRole,
+                droppedKeys,
                 canWriteStudentGradesRoster: (rosterKey) => (
                     allowGlobalWrite
                     || effectiveRole === 'admin'
@@ -4333,10 +4471,15 @@ class PlatformStore {
                 )
             });
         } else {
-            this.state.portal.state = {
-                ...clone(existingState),
-                ...sanitizedIncoming
-            };
+            // Never let an unauthenticated/actorless state write replace the
+            // server snapshot. The old spread fallback allowed an early stale
+            // browser save to erase availableGroups before bootstrap completed.
+            this.state.portal.state = mergeIncomingPortalState(existingState, sanitizedIncoming, {
+                actorUserId: '',
+                allowGlobalWrite: false,
+                effectiveRole: '',
+                droppedKeys
+            });
         }
         const incomingMeta = sanitizedIncoming.meta && typeof sanitizedIncoming.meta === 'object'
             ? sanitizedIncoming.meta
@@ -4350,7 +4493,9 @@ class PlatformStore {
             this.state.portal.meta.registrationCmsRevision = incomingMeta.registrationCmsRevision;
         }
         this.savePortal();
-        return this.createPortalStateSaveSnapshot();
+        const snapshot = this.createPortalStateSaveSnapshot();
+        snapshot.droppedKeys = Array.from(new Set(droppedKeys));
+        return snapshot;
     }
 
     createPortalStateSaveSnapshot() {
@@ -4459,6 +4604,64 @@ class PlatformStore {
         };
         this.state.chats[chatId] = next;
         return next;
+    }
+
+    getActiveLmsGroupRoster(courseId = '', groupId = '') {
+        const normalizedCourseId = String(courseId || '').trim();
+        const normalizedGroupId = String(groupId || '').trim();
+        if (!normalizedCourseId || !normalizedGroupId) return [];
+        const availableGroups = this.state.portal?.state?.availableGroups || {};
+        const groups = availableGroups[normalizedCourseId]
+            || Object.entries(availableGroups).find(([key]) => String(key).trim().toLowerCase() === normalizedCourseId.toLowerCase())?.[1]
+            || [];
+        const group = asArray(groups).find(item => String(item?.id || item?.groupId || item?.name || '').trim().toLowerCase() === normalizedGroupId.toLowerCase());
+        if (!group) return [];
+        const members = [];
+        const addActive = (id, role) => {
+            const normalizedId = String(id || '').trim();
+            if (!normalizedId || members.includes(normalizedId)) return;
+            const account = this.getAccountById(normalizedId);
+            if (!account || String(account.role || '').trim().toLowerCase() !== role) return;
+            if (!this.isSocialEligibleAccount(normalizedId)) return;
+            members.push(normalizedId);
+        };
+        addActive(group.profId, 'professor');
+        [...asArray(group.taIds), group.taId].forEach(id => addActive(id, 'ta'));
+        const schedulesByStudent = this.state.portal?.state?.studentSchedulesByStudent || {};
+        Object.entries(schedulesByStudent && typeof schedulesByStudent === 'object' ? schedulesByStudent : {}).forEach(([studentId, schedule]) => {
+            const entries = Array.isArray(schedule)
+                ? schedule
+                : schedule && typeof schedule === 'object'
+                    ? Object.entries(schedule).map(([courseKey, groupKey]) => ({ courseId: courseKey, groupId: groupKey }))
+                    : [];
+            if (entries.some(entry => (
+                String(entry?.courseId || entry?.sourceCourseId || '').trim().toLowerCase() === normalizedCourseId.toLowerCase()
+                && String(entry?.groupId || entry?.groupName || '').trim().toLowerCase() === normalizedGroupId.toLowerCase()
+            ))) addActive(studentId, 'student');
+        });
+        return members;
+    }
+
+    ensureLmsGroupChat(chatId, actorUserId) {
+        const normalizedChatId = String(chatId || '').trim();
+        const prefix = 'lms-group::';
+        if (!normalizedChatId.toLowerCase().startsWith(prefix)) return null;
+        const [courseId, groupId] = normalizedChatId.slice(prefix.length).split('::');
+        const members = this.getActiveLmsGroupRoster(courseId, groupId);
+        const normalizedActorId = String(actorUserId || '').trim();
+        if (!members.includes(normalizedActorId)) return null;
+        const existing = this.state.chats[normalizedChatId];
+        const chat = this.ensureChatBase({
+            id: normalizedChatId,
+            type: 'group',
+            members,
+            name: existing?.name || `${groupId || 'Class'} Class Chat`,
+            createdBy: existing?.createdBy || normalizedActorId,
+            createdAt: existing?.createdAt || nowIso()
+        });
+        chat.members = members;
+        chat.type = 'group';
+        return chat;
     }
 
     ensureDirectChat(userA, userB) {
@@ -4614,7 +4817,10 @@ class PlatformStore {
         const chatId = String(payload.chatId || '').trim();
         const senderId = String(payload.senderId || '').trim();
         if (!chatId || !senderId) return null;
-        const chat = this.state.chats[chatId];
+        let chat = this.state.chats[chatId];
+        if (String(chatId).toLowerCase().startsWith('lms-group::')) {
+            chat = this.ensureLmsGroupChat(chatId, senderId);
+        }
         if (!chat || !asArray(chat.members).includes(senderId)) return null;
         chat.hiddenByUser = chat.hiddenByUser && typeof chat.hiddenByUser === 'object' ? chat.hiddenByUser : {};
         chat.members.forEach((memberId) => {

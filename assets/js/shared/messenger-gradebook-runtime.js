@@ -74,6 +74,23 @@ function getEnrolledStudentsForGroup(courseId, groupId) {
     const targetGroup = (typeof getAvailableGroupsForSubject === 'function' ? getAvailableGroupsForSubject(courseId) : (KIU_STATE.availableGroups?.[courseId] || []))
         .find(group => canonicalCourseKey(group?.id || group?.groupId || group?.name || '') === normalizedGroupId);
     const targetFaculty = normalizeFacultyCode(targetGroup?.faculty || (typeof deriveFacultyFromSubjectId === 'function' ? deriveFacultyFromSubjectId(courseId) : '') || '', '');
+    const rosterProjection = KIU_STATE.lmsGroupRosterStudentIds && typeof KIU_STATE.lmsGroupRosterStudentIds === 'object'
+        ? (KIU_STATE.lmsGroupRosterStudentIds[`${courseId}::${groupId}`]
+            || KIU_STATE.lmsGroupRosterStudentIds[`${normalizedCourseId}::${normalizedGroupId}`]
+            || [])
+        : [];
+    if (Array.isArray(rosterProjection) && rosterProjection.length) {
+        rosterProjection.forEach((studentId) => {
+            if (seen.has(studentId)) return;
+            const student = domain.usersById?.[studentId]
+                || (typeof getAllStudents === 'function' ? getAllStudents(targetFaculty || 'all').find(item => item.id === studentId) : null)
+                || KIU_STATE.studentAdminProfiles?.[studentId]
+                || null;
+            students.push({ id: studentId, name: student?.name || student?.nameEn || `Student ${studentId}` });
+            seen.add(studentId);
+        });
+        return students.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    }
     Object.entries(KIU_STATE.studentSchedulesByStudent || {}).forEach(([studentId, schedule]) => {
         const scheduleEntries = resolveStudentScheduleEntries(schedule);
         const isEnrolled = scheduleEntries.some(item => (
@@ -83,7 +100,8 @@ function getEnrolledStudentsForGroup(courseId, groupId) {
         ));
         if (!isEnrolled || seen.has(studentId)) return;
         const student = domain.usersById?.[studentId] || getAllStudents(targetFaculty || 'all').find(item => item.id === studentId);
-        if (targetFaculty && normalizeFacultyCode(student?.facultyCode || student?.faculty || '', '') !== targetFaculty) return;
+        const studentFaculty = normalizeFacultyCode(student?.facultyCode || student?.faculty || '', '');
+        if (targetFaculty && studentFaculty && studentFaculty !== targetFaculty) return;
         students.push({
             id: studentId,
             name: student?.name || student?.nameEn || `Student ${studentId}`

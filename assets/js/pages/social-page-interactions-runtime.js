@@ -196,10 +196,23 @@
 
         function shouldPrehideCenterForAssembly(reason) {
             const r = text(reason || '');
+            if (window.__kiuSocialBootAwaitingAssemblyReveal || document.body?.classList.contains('kiu-shell-loading')) return true;
             if (!r) return false;
-            if (r === 'boot' || r === 'panel') return true;
+            if (r === 'boot' || r === 'social-bootstrap' || r === 'panel' || r === 'pin-api-health' || r === 'auth-sync') return true;
             if (/^panel-/.test(r) || /-module$/.test(r)) return true;
-            return /^(feed-tab|community-tab|groups-tab|pages-tab|events-tab|surveys-tab|research-tab|photography-tab|portfolio-panel-tab|surveys-lane|survey-take-open|survey-take-close|lost-found-tab|messages-filter)$/.test(r);
+            return /^(feed-tab|community-tab|groups-tab|pages-tab|events-tab|surveys-tab|research-tab|photography-tab|portfolio-panel-tab|surveys-lane|survey-take-open|survey-take-close|lost-found-tab|messages-filter|feed-module|community-module|groups-module|pages-module|events-module|surveys-module|research-module|photography-module|messages-module|alerts-module|lost-found-module|workspace-module)$/.test(r);
+        }
+
+        function shouldAnimateSocialPanelMotion(targetPanel, activePanel, reason, extraCheck = null) {
+            const target = text(targetPanel || '').trim();
+            const current = text(activePanel || '').trim();
+            if (!target || target !== current) return false;
+            if (typeof extraCheck === 'function' && extraCheck()) return true;
+            if (window.__kiuSocialBootAwaitingAssemblyReveal || document.body?.classList.contains('kiu-shell-loading')) return true;
+            const r = text(reason || '');
+            if (r === 'boot' || r === 'social-bootstrap' || r === 'panel' || r === 'pin-api-health' || r === 'auth-sync') return true;
+            if (r === `panel-${target}` || r === `${target}-module` || r === `${target}-tab`) return true;
+            return shouldPrehideCenterForAssembly(reason);
         }
 
         function clearSocialCenterAssemblyPrehide() {
@@ -219,8 +232,7 @@
 
         function queueSocialHomeMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'feed'
-                && (reason === 'boot' || reason === 'panel' || reason === 'feed-module' || reason === 'panel-feed' || reason === 'feed-tab');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('feed', activePanel, reason);
             if (!shouldAnimate) {
                 if (panel !== 'feed') {
                     abortSocialSectionMotion('__kiuSocialHomeLoadingMotion');
@@ -299,8 +311,7 @@
 
         function queueSocialCommunityMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'community'
-                && (reason === 'boot' || reason === 'panel' || reason === 'community-module' || reason === 'panel-community' || reason === 'community-tab');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('community', activePanel, reason);
             if (!shouldAnimate) {
                 if (panel !== 'community') {
                     abortSocialSectionMotion('__kiuSocialCommunityLoadingMotion');
@@ -379,8 +390,7 @@
 
         function queueSocialGroupsMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'groups'
-                && (reason === 'boot' || reason === 'panel' || reason === 'groups-module' || reason === 'panel-groups' || reason === 'groups-tab');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('groups', activePanel, reason);
             if (!shouldAnimate) {
                 if (panel !== 'groups') {
                     abortSocialSectionMotion('__kiuSocialGroupsLoadingMotion');
@@ -459,8 +469,7 @@
 
         function queueSocialProjectsMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'workspace'
-                && (reason === 'boot' || reason === 'panel' || reason === 'workspace-module' || reason === 'panel-workspace');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('workspace', activePanel, reason);
             if (!shouldAnimate) {
                 if (panel !== 'workspace') {
                     abortSocialSectionMotion('__kiuSocialProjectsLoadingMotion');
@@ -540,8 +549,7 @@
 
         function queueSocialPortfolioMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'projects'
-                && (reason === 'boot' || reason === 'panel' || reason === 'workspace-module' || reason === 'portfolio-panel-tab' || reason === 'panel-projects');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('projects', activePanel, reason);
             if (!shouldAnimate) {
                 if (panel !== 'projects') {
                     abortSocialSectionMotion('__kiuSocialPortfolioLoadingMotion');
@@ -592,7 +600,7 @@
                 const generation = socialPortfolioMotionGeneration;
                 let attempts = 0;
                 const run = () => {
-                    socialPortfolioMotionFrame = 0;
+                    socialProjectsMotionFrame = 0;
                     if (generation !== socialPortfolioMotionGeneration
                         || text(state().ui?.activePanel || '') !== 'projects'
                         || center?.firstElementChild !== section
@@ -621,14 +629,7 @@
 
         function queueSocialResearchMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'research'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'research-module'
-                    || reason === 'research-tab'
-                    || reason === 'panel-research'
-                    || reason === 'research-reader-open'
-                    || reason === 'research-reader-close');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('research', activePanel, reason, () => reason === 'research-reader-open' || reason === 'research-reader-close');
             if (!shouldAnimate) {
                 if (panel !== 'research') {
                     abortSocialSectionMotion('__kiuSocialResearchLoadingMotion');
@@ -707,15 +708,7 @@
 
         function queueSocialPagesMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'pages'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'pages-module'
-                    || reason === 'pages-tab'
-                    || reason === 'panel-pages'
-                    || reason === 'page-open-profile'
-                    || reason === 'page-profile-back'
-                    || reason === 'page-profile-tab');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('pages', activePanel, reason, () => reason === 'page-open-profile' || reason === 'page-profile-back' || reason === 'page-profile-tab');
             if (!shouldAnimate) {
                 if (panel !== 'pages') {
                     abortSocialSectionMotion('__kiuSocialPagesLoadingMotion');
@@ -794,12 +787,7 @@
 
         function queueSocialEventsMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'events'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'events-module'
-                    || reason === 'events-tab'
-                    || reason === 'panel-events');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('events', activePanel, reason);
             if (!shouldAnimate) {
                 if (panel !== 'events') {
                     abortSocialSectionMotion('__kiuSocialEventsLoadingMotion');
@@ -878,12 +866,7 @@
 
         function queueSocialLostFoundMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'lost-and-found'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'lost-found-module'
-                    || reason === 'lost-found-tab'
-                    || reason === 'panel-lost-and-found');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('lost-and-found', activePanel, reason);
             if (!shouldAnimate) {
                 if (panel !== 'lost-and-found') {
                     abortSocialSectionMotion('__kiuSocialLostFoundLoadingMotion');
@@ -966,13 +949,7 @@
             // Replay only while intro is in flight — not after ready (avoids re-animating receipts).
             const assemblyInFlight = document.body?.classList.contains('social-messages-assembly-active')
                 || ['pending', 'active'].includes(text(center?.dataset?.socialMessagesAssemblyState || ''));
-            const shouldAnimate = panel === 'messages'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'messages-module'
-                    || reason === 'messages-filter'
-                    || reason === 'panel-messages'
-                    || ((reason === 'chat-read' || reason === 'chat-upsert') && assemblyInFlight));
+            const shouldAnimate = shouldAnimateSocialPanelMotion('messages', activePanel, reason, () => ((reason === 'chat-read' || reason === 'chat-upsert') && assemblyInFlight));
             // Only invalidate in-flight starts when leaving Messages.
             // chat-read / chat-upsert while ready must not cancel a completed intro.
             if (!shouldAnimate) {
@@ -1058,14 +1035,7 @@
             const assemblyInFlight = document.body?.classList.contains('social-alerts-assembly-active')
                 || ['pending', 'active'].includes(text(center?.dataset?.socialAlertsAssemblyState || ''));
             // Category filter tab switches repaint the list only — no assembly replay.
-            const shouldAnimate = panel === 'alerts'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'alerts-module'
-                    || reason === 'panel-alerts'
-                    || ((reason === 'notifications-refresh'
-                        || reason === 'notification-read'
-                        || reason === 'notification-removed') && assemblyInFlight));
+            const shouldAnimate = shouldAnimateSocialPanelMotion('alerts', activePanel, reason, () => ((reason === 'notifications-refresh' || reason === 'notification-read' || reason === 'notification-removed') && assemblyInFlight));
             // Only invalidate in-flight starts when leaving Alerts.
             if (!shouldAnimate) {
                 if (panel !== 'alerts') {
@@ -1144,15 +1114,7 @@
 
         function queueSocialSurveysMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'surveys'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'surveys-module'
-                    || reason === 'surveys-tab'
-                    || reason === 'panel-surveys'
-                    || reason === 'surveys-lane'
-                    || reason === 'survey-take-open'
-                    || reason === 'survey-take-close');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('surveys', activePanel, reason, () => reason === 'surveys-lane' || reason === 'survey-take-open' || reason === 'survey-take-close');
             if (!shouldAnimate) {
                 if (panel !== 'surveys') {
                     abortSocialSectionMotion('__kiuSocialSurveysLoadingMotion');
@@ -1231,16 +1193,7 @@
 
         function queueSocialPhotographyMotion(center, activePanel, reason) {
             const panel = text(activePanel || '');
-            const shouldAnimate = panel === 'photography'
-                && (reason === 'boot'
-                    || reason === 'panel'
-                    || reason === 'photography-module'
-                    || reason === 'photography-tab'
-                    || reason === 'panel-photography'
-                    || reason === 'photography-my-profile'
-                    || reason === 'photography-my-profile-tab'
-                    || reason === 'photography-view-profile'
-                    || reason === 'photography-profile-back');
+            const shouldAnimate = shouldAnimateSocialPanelMotion('photography', activePanel, reason, () => reason === 'photography-my-profile' || reason === 'photography-my-profile-tab' || reason === 'photography-view-profile' || reason === 'photography-profile-back');
             // Only invalidate in-flight starts when leaving Exposé or replaying.
             // Bumping generation on every photography center render canceled the
             // queued start and left the shell without assembly.
@@ -2363,19 +2316,50 @@ function renderSocialPageNow(reason = 'manual') {
             if (deferBootReveal) {
                 window.__kiuSocialBootAwaitingAssemblyReveal = true;
             }
-            queueSocialHomeMotion(shell.center, activePanel, reason);
-            queueSocialCommunityMotion(shell.center, activePanel, reason);
-            queueSocialGroupsMotion(shell.center, activePanel, reason);
-            queueSocialProjectsMotion(shell.center, activePanel, reason);
-            queueSocialPortfolioMotion(shell.center, activePanel, reason);
-            queueSocialResearchMotion(shell.center, activePanel, reason);
-            queueSocialPagesMotion(shell.center, activePanel, reason);
-            queueSocialEventsMotion(shell.center, activePanel, reason);
-            queueSocialLostFoundMotion(shell.center, activePanel, reason);
-            queueSocialMessagesMotion(shell.center, activePanel, reason);
-            queueSocialAlertsMotion(shell.center, activePanel, reason);
-            queueSocialSurveysMotion(shell.center, activePanel, reason);
-            queueSocialPhotographyMotion(shell.center, activePanel, reason);
+            switch (text(activePanel || '')) {
+                case 'feed':
+                    queueSocialHomeMotion(shell.center, activePanel, reason);
+                    break;
+                case 'community':
+                    queueSocialCommunityMotion(shell.center, activePanel, reason);
+                    break;
+                case 'groups':
+                    queueSocialGroupsMotion(shell.center, activePanel, reason);
+                    break;
+                case 'projects':
+                    queueSocialProjectsMotion(shell.center, activePanel, reason);
+                    break;
+                case 'workspace':
+                    queueSocialPortfolioMotion(shell.center, activePanel, reason);
+                    break;
+                case 'research':
+                    queueSocialResearchMotion(shell.center, activePanel, reason);
+                    break;
+                case 'pages':
+                    queueSocialPagesMotion(shell.center, activePanel, reason);
+                    break;
+                case 'events':
+                    queueSocialEventsMotion(shell.center, activePanel, reason);
+                    break;
+                case 'lost-and-found':
+                    queueSocialLostFoundMotion(shell.center, activePanel, reason);
+                    break;
+                case 'messages':
+                    queueSocialMessagesMotion(shell.center, activePanel, reason);
+                    break;
+                case 'alerts':
+                    queueSocialAlertsMotion(shell.center, activePanel, reason);
+                    break;
+                case 'surveys':
+                    queueSocialSurveysMotion(shell.center, activePanel, reason);
+                    break;
+                case 'photography':
+                    queueSocialPhotographyMotion(shell.center, activePanel, reason);
+                    break;
+                default:
+                    revealShell();
+                    break;
+            }
             // Boot: keep veil until assembly run() calls __kiuSocialRevealShellNow.
             if (!deferBootReveal) {
                 revealShell();

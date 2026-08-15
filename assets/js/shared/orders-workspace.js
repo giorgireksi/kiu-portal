@@ -1212,6 +1212,10 @@ function bindOrdersWorkspaceDelegates() {
         const audienceTab = event.target.closest('[data-admin-orders-audience-role]');
         if (audienceTab) {
             const nextRole = setAdminAudienceRole(audienceTab.dataset.adminOrdersAudienceRole || USER_ROLES.STUDENT);
+            // Switch the visible audience and cached order list immediately. The
+            // layout request only refreshes role-specific filter controls after
+            // the fast local update has already settled.
+            syncAdminOrdersSentInboxChange();
             fetchOrdersRecipientFilterLayout(getCurrentFaculty(), nextRole).finally(() => {
                 syncAdminOrdersSentInboxChange();
             });

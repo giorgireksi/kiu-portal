@@ -40,7 +40,33 @@ describe('admin and integrations route split', () => {
         expect(routeModule).toContain("eventType: 'system-upserted'");
         expect(routeModule).toContain("eventType: 'sync-run-created'");
         expect(routeModule).toContain("eventType: 'sync-conflict-upserted'");
-        expect(socialRuntime).toContain("if (!runtime.ui.directorySearch && user.role !== 'admin') query.set('facultyCode', currentFacultyCode());");
+        expect(socialRuntime).toContain("scope: 'social'");
+    });
+
+    it('routes the Social directory scope through the active staff/student source', () => {
+        const { registerPortalSupportRoutes } = require('../backend/platform/routes/portal-support-routes.js');
+        const handlers = {};
+        let receivedQuery = null;
+        const app = {
+            get(path, handler) { handlers[path] = handler; },
+            post() {}
+        };
+        registerPortalSupportRoutes(app, {
+            getStore: () => ({
+                listSocialAccounts(query) {
+                    receivedQuery = query;
+                    return { items: [], total: 0, limit: 200, offset: 0 };
+                },
+                listAccounts() { throw new Error('general account directory must not serve Social'); }
+            }),
+            requireSessionAccount: () => ({ account: { role: 'student', facultyCode: 'ECON' }, session: { actualRole: 'student' } })
+        });
+        handlers['/api/accounts/directory'](
+            { query: { scope: 'social', limit: '200' } },
+            { json() {} }
+        );
+        expect(receivedQuery.scope).toBe('social');
+        expect(receivedQuery.facultyCode).toBeUndefined();
     });
 
     it('scopes the mobile directory lookup and returns only directory-safe account fields', () => {

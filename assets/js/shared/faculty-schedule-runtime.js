@@ -257,7 +257,13 @@ function normalizeScheduleGroup(subjectId, group) {
         time: normalizeTimeString(group.time || group.startTime || extractScheduleTime(group.timeDay), '') || repairScheduleDisplayText(group.time || group.startTime || '', ''),
         room: repairScheduleDisplayText(group.room || '', ''),
         prof: repairScheduleDisplayText(group.prof || '', ''),
+        profId: String(group.profId || group.professorId || group.professorUserId || group.instructorUserId || '').trim(),
         ta: repairScheduleDisplayText(group.ta || '', ''),
+        taId: String(group.taId || group.assistantId || group.assistantUserId || group.taUserId || '').trim(),
+        taIds: Array.from(new Set([
+            ...(Array.isArray(group.taIds) ? group.taIds : []),
+            group.taId || group.assistantId || ''
+        ].map((value) => String(value || '').trim()).filter(Boolean))),
         startWeek: group.startWeek ? formatLocalDateISO(getWeekStartDate(group.startWeek)) : null,
         endWeek: group.endWeek ? formatLocalDateISO(getWeekStartDate(group.endWeek)) : null,
         weekOverrides

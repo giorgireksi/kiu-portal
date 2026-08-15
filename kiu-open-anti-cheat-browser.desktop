@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Open KIU Anti-Cheat Browser
+Comment=Open only the KIU anti-cheat browser
+Exec=env KIU_LAUNCHER_IN_TERMINAL=1 bash /home/reksi/2/ff/asd26/open-anti-cheat-browser.sh
+Path=/home/reksi/2/ff/asd26
+Icon=application-x-executable
+Terminal=true
+Categories=Education;Security;
+StartupNotify=true

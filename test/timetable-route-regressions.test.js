@@ -41,7 +41,7 @@ describe('timetable route regressions', () => {
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).toContain('lux-page-bare-lite.css');
         expect(html).toContain('assets/js/shared/utilities.js?v=');
-        expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260806-tttoolscollapse1');
+        expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260815-bootstrap-schedule2');
         expect(html).toContain('data-timetable-toggle-command');
         expect(html).toContain('id="timetable-command-collapse"');
         expect(html).toContain('class="lux-timetable-command-collapse"');
@@ -304,6 +304,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('data-lux-layout-only="1"');
         expect(html).toMatch(/lux-timetable-stage[\s\S]*data-lux-glass-root="1"/);
         expect(runtime).toContain("shell.dataset.luxGlassRoot = '1'");
+        expect(runtime).toContain("kiu:portal-bootstrap-complete");
     });
 
     it('uses shared layout primitives and typography in static shell', () => {

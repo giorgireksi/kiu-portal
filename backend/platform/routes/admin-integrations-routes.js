@@ -22,7 +22,7 @@ function registerAdminIntegrationsRoutes(app, deps = {}) {
         const sessionAccount = requireActualSessionRole(request, response, new Set(['admin']));
         if (!sessionAccount) return;
         const store = getStore();
-        const account = store.upsertAccount(request.body || {});
+        const account = store.upsertAccount(request.body || {}, { allowAccountStatusChange: true });
         if (!account) {
             sendError(response, 400, 'Invalid account payload.');
             return;

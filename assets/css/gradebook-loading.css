@@ -1,0 +1,138 @@
+/* Gradebook & Faculty Assessment assembly motion only. */
+body.gradebook-assembly-active #page-faculty-gradebook .kiu-gradebook-assembly-target,
+body.faculty-gradebook-assembly-active #page-faculty-gradebook .kiu-faculty-gradebook-assembly-target {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+/* Stage gradebook components without changing their existing surfaces. */
+body.gradebook-assembly-active #page-faculty-gradebook :is(
+  .lux-faculty-command-deck,
+  .lux-fg-toolbar,
+  .lux-fg-intro,
+  .lux-fg-scope,
+  .lux-status-pill,
+  .lux-fg-control-band,
+  .lux-fg-filters,
+  .lux-field-stack,
+  .lux-fg-assessment-controls,
+  .lux-fg-action-band,
+  .gb-staff-actions,
+  .lux-fg-ops-panel,
+  .lux-fg-ops-head,
+  .lux-fg-ops-grid,
+  .lux-fg-ops-tile,
+  .lux-fg-workspace,
+  #gradebook-faculty-staff-workspace,
+  .gb-lms-staff-workspace,
+  .gb-staff-sheet,
+  .gb-staff-table,
+  .gb-staff-row,
+  .gb-staff-card
+),
+body.faculty-gradebook-assembly-active #page-faculty-gradebook :is(
+  .lux-faculty-command-deck,
+  .lux-fg-toolbar,
+  .lux-fg-intro,
+  .lux-fg-scope,
+  .lux-status-pill,
+  .lux-fg-control-band,
+  .lux-fg-filters,
+  .lux-field-stack,
+  .lux-fg-assessment-controls,
+  .lux-fg-action-band,
+  .gb-staff-actions,
+  .lux-fg-ops-panel,
+  .lux-fg-ops-head,
+  .lux-fg-ops-grid,
+  .lux-fg-ops-tile,
+  .lux-fg-workspace,
+  #gradebook-faculty-staff-workspace,
+  .gb-lms-staff-workspace,
+  .gb-staff-sheet,
+  .gb-staff-table,
+  .gb-staff-row,
+  .gb-staff-card
+) {
+  opacity: 0;
+  transform-origin: left center;
+}
+
+body.gradebook-assembly-active #page-faculty-gradebook .kiu-gradebook-assembly-structure,
+body.faculty-gradebook-assembly-active #page-faculty-gradebook .kiu-faculty-gradebook-assembly-structure {
+  opacity: 0;
+}
+
+body.gradebook-assembly-active #page-faculty-gradebook .kiu-gradebook-assembly-target.is-flight,
+body.gradebook-assembly-ready #page-faculty-gradebook .kiu-gradebook-assembly-target.is-flight,
+body.faculty-gradebook-assembly-active #page-faculty-gradebook .kiu-faculty-gradebook-assembly-target.is-flight,
+body.faculty-gradebook-assembly-ready #page-faculty-gradebook .kiu-faculty-gradebook-assembly-target.is-flight {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.gradebook-assembly-ready #page-faculty-gradebook .kiu-gradebook-assembly-target,
+body.faculty-gradebook-assembly-ready #page-faculty-gradebook .kiu-faculty-gradebook-assembly-target {
+  opacity: 1;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.gradebook-assembly-active #page-faculty-gradebook .kiu-gradebook-assembly-target,
+  body.faculty-gradebook-assembly-active #page-faculty-gradebook .kiu-faculty-gradebook-assembly-target {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    will-change: auto;
+  }
+
+  body.gradebook-assembly-active #page-faculty-gradebook :is(
+    .lux-faculty-command-deck,
+    .lux-fg-toolbar,
+    .lux-fg-intro,
+    .lux-fg-scope,
+    .lux-status-pill,
+    .lux-fg-control-band,
+    .lux-fg-filters,
+    .lux-field-stack,
+    .lux-fg-assessment-controls,
+    .lux-fg-action-band,
+    .gb-staff-actions,
+    .lux-fg-ops-panel,
+    .lux-fg-ops-head,
+    .lux-fg-ops-grid,
+    .lux-fg-ops-tile,
+    .lux-fg-workspace,
+    #gradebook-faculty-staff-workspace,
+    .gb-lms-staff-workspace
+  ),
+  body.faculty-gradebook-assembly-active #page-faculty-gradebook :is(
+    .lux-faculty-command-deck,
+    .lux-fg-toolbar,
+    .lux-fg-intro,
+    .lux-fg-scope,
+    .lux-status-pill,
+    .lux-fg-control-band,
+    .lux-fg-filters,
+    .lux-field-stack,
+    .lux-fg-assessment-controls,
+    .lux-fg-action-band,
+    .gb-staff-actions,
+    .lux-fg-ops-panel,
+    .lux-fg-ops-head,
+    .lux-fg-ops-grid,
+    .lux-fg-ops-tile,
+    .lux-fg-workspace,
+    #gradebook-faculty-staff-workspace,
+    .gb-lms-staff-workspace
+  ) {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.gradebook-assembly-active #page-faculty-gradebook .kiu-gradebook-assembly-structure,
+  body.faculty-gradebook-assembly-active #page-faculty-gradebook .kiu-faculty-gradebook-assembly-structure {
+    opacity: 1;
+  }
+}

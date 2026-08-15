@@ -143,6 +143,11 @@ function refreshScheduleSurfaces() {
     }
 }
 
+// Timetable initially paints before the server bootstrap on a fresh public
+// browser. Re-render when the PostgreSQL-authoritative groups arrive so TA and
+// professor assignments appear without navigating away and back.
+window.addEventListener('kiu:portal-bootstrap-complete', refreshScheduleSurfaces);
+
 function getStudentAdminScheduleWeekKey(studentId) {
     const safeId = String(studentId || '').replace(/[^a-z0-9_-]+/gi, '_');
     return `${STUDENT_ADMIN_SCHEDULE_WEEK_STORAGE_KEY}_${safeId}`;
@@ -528,12 +533,21 @@ function getCurrentFacultyScheduleItemsForWeek(weekStart, options = {}) {
         : (currentUserRole || currentUser?.role || USER_ROLES.STUDENT);
     if (!currentUser || ![USER_ROLES.PROFESSOR, USER_ROLES.TA].includes(effectiveRole)) return [];
     const targetSemester = options.semester ? parseInt(options.semester, 10) : null;
+    const normalizedUserId = String(currentUser?.id || '').trim();
     const normalizedUserName = normalizeScheduleActorMatch(currentUser?.name || currentUser?.nameEn || '');
-    return getAvailableScheduleItemsForWeek(weekStart, { semester: targetSemester }).filter(item => {
-        return normalizeScheduleActorMatch(item.prof) === normalizedUserName || normalizeScheduleActorMatch(item.ta) === normalizedUserName;
-    }).map(item => ({
+    const isProfessor = effectiveRole === USER_ROLES.PROFESSOR;
+    const assignmentMatches = (item) => {
+        const assignedIds = isProfessor
+            ? [item.profId || item.professorId || item.professorUserId || item.instructorUserId]
+            : [item.taId || item.assistantId || item.assistantUserId || item.taUserId, ...(Array.isArray(item.taIds) ? item.taIds : [])];
+        const normalizedAssignedIds = assignedIds.map((value) => String(value || '').trim()).filter(Boolean);
+        if (normalizedUserId && normalizedAssignedIds.length) return normalizedAssignedIds.includes(normalizedUserId);
+        const assignedName = normalizeScheduleActorMatch(isProfessor ? item.prof : item.ta);
+        return assignedName === normalizedUserName;
+    };
+    return getAvailableScheduleItemsForWeek(weekStart, { semester: targetSemester }).filter(assignmentMatches).map(item => ({
         ...item,
-        roleLabel: normalizeScheduleActorMatch(item.prof) === normalizedUserName ? 'Professor' : 'Teaching Assistant',
+        roleLabel: isProfessor ? 'Professor' : 'Teaching Assistant',
         subjectName: item.courseName || item.subjectName || item.courseId
     }));
 }
@@ -1230,7 +1244,7 @@ function renderTimetable() {
     if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
         window.queueLuxuryTransparencyRefresh(undefined, gridShell ? { roots: [gridShell] } : undefined);
     } else if (typeof window.updateTransparency === 'function') {
-        const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
+        const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
         if (!Number.isNaN(savedTransparency)) {
             window.updateTransparency(savedTransparency, { force: true, persist: false, roots: gridShell ? [gridShell] : undefined });
         }

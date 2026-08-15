@@ -257,7 +257,7 @@
                         <option value="student" ${text(runtime.ui?.directoryRole) === 'student' ? 'selected' : ''}>Students</option>
                         <option value="professor" ${text(runtime.ui?.directoryRole) === 'professor' ? 'selected' : ''}>Professors</option>
                         <option value="ta" ${text(runtime.ui?.directoryRole) === 'ta' ? 'selected' : ''}>Teaching Assistants</option>
-                        <option value="admin" ${text(runtime.ui?.directoryRole) === 'admin' ? 'selected' : ''}>Admins</option>
+                        <option value="student_service" ${text(runtime.ui?.directoryRole) === 'student_service' ? 'selected' : ''}>Student Service</option>
                     </select>
                 </div>
             </div>

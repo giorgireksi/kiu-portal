@@ -15,11 +15,15 @@ function ensureLmsInteractionUiState() {
             composeSearch: '',
             resourceKey: '',
             mobileView: 'rail',
-            composeOpen: false
+            composeOpen: false,
+            messageDraftByChat: {}
         };
     }
     if (window.__lmsInteractionUi.composeOpen == null) window.__lmsInteractionUi.composeOpen = false;
     if (window.__lmsInteractionUi.composeSearch == null) window.__lmsInteractionUi.composeSearch = '';
+    if (!window.__lmsInteractionUi.messageDraftByChat || typeof window.__lmsInteractionUi.messageDraftByChat !== 'object') {
+        window.__lmsInteractionUi.messageDraftByChat = {};
+    }
     return window.__lmsInteractionUi;
 }
 
@@ -68,6 +72,62 @@ function resolveLmsInteractionResourceKeyFromTarget(target) {
     return resolveCanonicalLmsResourceKey(ui.resourceKey || currentCourseId || '');
 }
 
+function getLmsInteractionAccountById(usersById = {}, id = '') {
+    const normalizedId = String(id || '').trim();
+    if (!normalizedId) return null;
+    try {
+        const realtimeAccount = typeof ensureKiuRealtimeRuntime === 'function'
+            ? ensureKiuRealtimeRuntime().accountsById?.[normalizedId]
+            : null;
+        if (realtimeAccount) return realtimeAccount;
+    } catch (error) {}
+    return usersById?.[normalizedId]
+        || (Array.isArray(KIU_STATE?.users) ? KIU_STATE.users.find(user => String(user?.id || '').trim() === normalizedId) : null)
+        || null;
+}
+
+function isActiveLmsInteractionDirectoryMember(id = '', role = '', account = null) {
+    const normalizedId = String(id || '').trim();
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (!normalizedId) return false;
+    const portalState = KIU_STATE?.staffDirectoryRecords || KIU_STATE?.portal?.state?.staffDirectoryRecords
+        ? (KIU_STATE.staffDirectoryRecords || KIU_STATE.portal?.state?.staffDirectoryRecords)
+        : {};
+    const studentProfiles = KIU_STATE?.studentAdminProfiles || KIU_STATE?.portal?.state?.studentAdminProfiles
+        ? (KIU_STATE.studentAdminProfiles || KIU_STATE.portal?.state?.studentAdminProfiles)
+        : {};
+    const record = normalizedRole === USER_ROLES.STUDENT
+        ? studentProfiles?.[normalizedId]
+        : portalState?.[normalizedId];
+    if (!record || typeof record !== 'object') return false;
+    const resolvedAccount = account || getLmsInteractionAccountById({}, normalizedId);
+    if (!resolvedAccount || typeof resolvedAccount !== 'object') return false;
+    const accountRole = String(resolvedAccount.role || '').trim().toLowerCase();
+    const acceptedRoles = normalizedRole === USER_ROLES.STUDENT
+        ? [USER_ROLES.STUDENT]
+        : normalizedRole === USER_ROLES.PROFESSOR
+            ? [USER_ROLES.PROFESSOR]
+            : [USER_ROLES.TA];
+    if (accountRole && !acceptedRoles.includes(accountRole)) return false;
+    const accountStatuses = [resolvedAccount.accountStatus, resolvedAccount.status]
+        .map(value => String(value || '').trim().toLowerCase())
+        .filter(Boolean);
+    if (accountStatuses.some(status => ['disabled', 'archived', 'suspended', 'inactive', 'deleted', 'testing', 'not invited'].includes(status))) return false;
+    if (accountStatuses.length && !accountStatuses.includes('active')) return false;
+    const statuses = [record.status, record.accountStatus]
+        .map(value => String(value || '').trim().toLowerCase())
+        .filter(Boolean);
+    if (statuses.some(status => ['disabled', 'archived', 'suspended', 'inactive', 'deleted', 'testing', 'not invited'].includes(status))) return false;
+    return statuses.length === 0 || statuses.includes('active');
+}
+
+function resolveLmsInteractionUser(usersById = {}, id = '', fallbackName = '') {
+    const normalizedId = String(id || '').trim();
+    const direct = getLmsInteractionAccountById(usersById, normalizedId);
+    if (direct) return { ...direct, id: normalizedId || direct.id };
+    return resolveUserFromName(usersById, fallbackName);
+}
+
 function getLmsInteractionRoster(resourceKey) {
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     const parsed = parseLmsCourseKey(canonicalKey);
@@ -79,14 +139,16 @@ function getLmsInteractionRoster(resourceKey) {
     const students = parsed.courseId && parsed.groupId
         ? getEnrolledStudentsForGroup(parsed.courseId, parsed.groupId)
         : [];
-    const professorUser = resolveUserFromName(domain?.usersById, group?.prof);
-    const taUser = resolveUserFromName(domain?.usersById, group?.ta);
+    const professorId = group?.profId || group?.profIds?.[0] || '';
+    const taId = group?.taId || group?.taIds?.[0] || '';
+    const professorUser = resolveLmsInteractionUser(domain?.usersById, professorId, group?.prof);
+    const taUser = resolveLmsInteractionUser(domain?.usersById, taId, group?.ta);
     const roster = [];
     const seen = new Set();
 
     const addMember = (user, roleLabel, tone, fallbackRole = USER_ROLES.STUDENT) => {
         const id = String(user?.id || '').trim();
-        if (!id || seen.has(id)) return;
+        if (!id || seen.has(id) || !isActiveLmsInteractionDirectoryMember(id, fallbackRole, user)) return;
         seen.add(id);
         const displayName = typeof cleanupEncodingArtifacts === 'function'
             ? cleanupEncodingArtifacts(toEnglishText(user?.nameEn || user?.name || user?.email || id))
@@ -104,9 +166,10 @@ function getLmsInteractionRoster(resourceKey) {
     if (professorUser) addMember(professorUser, 'Professor', 'is-professor', USER_ROLES.PROFESSOR);
     if (taUser) addMember(taUser, 'Teaching Assistant', 'is-ta', USER_ROLES.TA);
     students.forEach(student => {
-        const studentUser = domain?.usersById?.[student.id] || null;
+        const studentId = String(student?.id || '').trim();
+        const studentUser = resolveLmsInteractionUser(domain?.usersById, studentId, student?.name);
         addMember(
-            studentUser ? { ...studentUser, id: student.id } : { id: student.id, name: student.name },
+            studentUser ? { ...studentUser, id: studentId } : { id: studentId, name: student.name },
             'Student',
             'is-student',
             USER_ROLES.STUDENT
@@ -169,10 +232,9 @@ function ensureLmsInteractionGroupChat(resourceKey) {
             requestStateByUser: {}
         };
     } else {
-        const nextMembers = [...new Set([
-            ...(existingChat.members || []).map(member => String(member)),
-            ...rosterMemberIds
-        ])];
+        // Reconcile against the authoritative active roster. Do not retain
+        // archived/disabled people from an old browser-local group snapshot.
+        const nextMembers = [...new Set(rosterMemberIds)];
         const nextName = getLmsInteractionGroupChatLabel(canonicalKey);
         if (JSON.stringify(nextMembers) !== JSON.stringify((existingChat.members || []).map(member => String(member)))) {
             changed = true;
@@ -491,23 +553,23 @@ function renderLmsInteractionDirectMessageList(activeChat, currentUserId, resour
     return activeChat.messages.map(message => {
         const mine = String(message.senderId) === String(currentUserId);
         const seenLabel = !isGroup && mine && ensureArray(message.seenBy).some(id => String(id) !== String(currentUserId))
-            ? '<div class="lms-interaction-direct__seen">Seen</div>'
+            ? ' • Seen'
             : '';
         const attachmentHtml = message.file ? renderLmsInteractionDirectAttachmentHtml(message.file) : '';
         const senderMeta = isGroup && !mine
             ? getLmsInteractionMessageRoleMeta(canonicalKey, message, currentUserId)
             : (mine ? 'You' : escapeHtml(message.senderName || message.senderId));
         return `
-            <article class="lms-interaction-direct__bubble-row ${mine ? 'is-me' : ''} ${isGroup ? 'is-group-message' : ''}">
-                <div class="lms-interaction-direct__bubble-meta">
-                    ${senderMeta}
-                    &middot; ${escapeHtml(formatLmsDateTime(message.sentAt))}
+            <article class="social-neo-message ${mine ? 'is-own' : ''}" id="lms-message-${escapeHtml(toDomToken(activeChat.id))}-${escapeHtml(toDomToken(message.id || 'message'))}" data-msg-id="${escapeHtml(message.id || '')}">
+                <div class="social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-msg-card-head">
+                    <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-msg-card-meta">
+                        <strong class="social-neo-message__sender">${senderMeta}</strong>
+                    </div>
+                    ${mine ? `<button class="social-neo-link-btn social-neo-message__remove" type="button" data-lms-interaction-action="delete-message" data-lms-interaction-chat-id="${escapeHtml(activeChat.id)}" data-lms-interaction-message-id="${escapeHtml(message.id || '')}" aria-label="Remove message"><i class="fas fa-trash"></i></button>` : ''}
                 </div>
-                <div class="lms-interaction-direct__bubble ${mine ? 'is-me' : ''}">
-                    ${message.text ? `<div class="lms-interaction-direct__bubble-text">${escapeHtml(message.text)}</div>` : ''}
-                    ${attachmentHtml}
-                    ${seenLabel}
-                </div>
+                ${message.text ? `<p>${escapeHtml(message.text)}</p>` : ''}
+                ${attachmentHtml}
+                <span>${escapeHtml(formatLmsDateTime(message.sentAt))}${seenLabel}</span>
             </article>
         `;
     }).join('');
@@ -685,7 +747,7 @@ function renderLmsInteractionInboxMarkup(resourceKey, currentUserId, activeChatI
         ? `<div class="lms-interaction-direct__inbox-section is-primary">${groupCard}</div>`
         : '';
     const membersBody = memberItems
-        || `<div class="lms-interaction-direct__empty">No classmates available in this group.</div>`;
+        || `<div class="lms-interaction-direct__empty">No other active classmates are enrolled in this group.</div>`;
     const membersSection = `
         <div class="lms-interaction-direct__inbox-section is-directory">
             <header class="lms-interaction-direct__inbox-section-head">
@@ -818,63 +880,102 @@ function renderLmsInteractionDirectThreadMarkup(resourceKey, activeChat, current
         ? `${memberCount} members · everyone in this group`
         : (partner?.roleLabel || 'Class member');
     const partnerInitial = String(displayName || '?').trim().charAt(0).toUpperCase() || '?';
+    const groupInitials = String(displayName || 'Class').trim().split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase() || 'C';
     const threadAvatar = isGroup
-        ? '<div class="lms-interaction-direct__thread-avatar lms-interaction-direct__group-icon" aria-hidden="true"><i class="fas fa-users"></i></div>'
-        : `<div class="lms-interaction-direct__thread-avatar lms-interaction-avatar lms-route-avatar ${escapeHtml(partner?.tone || '')}" aria-hidden="true">${escapeHtml(partnerInitial)}</div>`;
+        ? `<span class="social-neo-avatar social-neo-group-avatar social-neo-avatar-md is-fallback" aria-hidden="true">${escapeHtml(groupInitials)}</span>`
+        : `<span class="social-neo-avatar social-neo-avatar-md is-fallback lms-interaction-avatar lms-route-avatar ${escapeHtml(partner?.tone || '')}" aria-hidden="true">${escapeHtml(partnerInitial)}</span>`;
     const inputId = `lms-interaction-direct-input-${toDomToken(activeChat.id)}`;
+    const messageDraft = ensureLmsInteractionUiState().messageDraftByChat?.[activeChat.id] || '';
     const draft = typeof getPortalMessengerDraftFile === 'function' ? getPortalMessengerDraftFile(activeChat.id) : null;
     const draftPreview = draft
         ? (typeof isPortalMessengerImageFile === 'function' && isPortalMessengerImageFile(draft) && draft.dataUrl
             ? `<img class="lms-interaction-direct__draft-image" src="${draft.dataUrl}" alt="${escapeHtml(draft.name || 'Draft image')}">`
             : `<span><i class="fas fa-paperclip"></i> ${escapeHtml(draft.name || 'Attachment ready')}</span>`)
         : '';
-    const draftClass = draft ? 'lms-interaction-direct__draft' : 'lms-interaction-direct__draft is-empty';
+    const draftClass = draft ? 'social-neo-message-draft' : 'social-neo-message-draft is-empty';
     const messagePlaceholder = isGroup ? 'Message the class…' : 'Write a message…';
     const ui = ensureLmsInteractionUiState();
     const withRail = ui.mobileView !== 'thread';
-    const threadHeadRailClass = withRail ? ' lms-interaction-direct__thread-head--with-rail' : '';
     const isLogEmpty = !(activeChat?.messages || []).length;
+    const threadPanels = [
+        ['search', 'search', 'Search'],
+        ['media', 'image', 'Media'],
+        ['members', 'users', 'Members'],
+        ['files', 'folder-open', 'Files'],
+        ['links', 'link', 'Links'],
+        ['invite', 'user-plus', 'Invite'],
+        ['settings', 'sliders', 'Settings']
+    ];
 
     return `
-        <header class="lms-interaction-direct__thread-head ${isGroup ? 'is-group' : ''}${threadHeadRailClass}">
-            <button type="button" class="lms-interaction-direct__back lux-secondary-btn" data-lms-interaction-action="show-rail" aria-label="Back to conversations">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            ${threadAvatar}
-            <div class="lms-interaction-direct__thread-title-wrap">
-                <div class="lms-interaction-direct__thread-title">${escapeHtml(displayName)}</div>
-                <div class="lms-interaction-direct__thread-copy">${escapeHtml(threadCopy)}</div>
+        <section class="social-neo-messages__thread-shell" data-lms-interaction-region="direct-thread">
+        <div class="social-neo-messages__thread-chrome">
+        <div class="social-neo-thread-head social-neo-messages__thread-head ${isGroup ? 'is-group' : 'is-direct'}">
+            <div class="social-neo-thread-head__main">
+                <div class="social-neo-person">
+                    <button type="button" class="lms-interaction-direct__back social-neo-btn social-neo-btn-ghost social-neo-btn-sm" data-lms-interaction-action="show-rail" aria-label="Back to conversations">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    ${threadAvatar}
+                    <div class="social-neo-thread-head__meta">
+                        <strong>${escapeHtml(displayName)}</strong>
+                        <span class="social-neo-thread-head__subtitle">${escapeHtml(threadCopy)}</span>
+                    </div>
+                </div>
+                <div class="social-neo-inline social-neo-messages__thread-actions">
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-lms-interaction-action="thread-jump-latest" data-lms-interaction-chat-id="${escapeHtml(activeChat.id)}" aria-label="Jump to latest message" title="Jump to latest"><i class="fas fa-arrow-down"></i></button>
+                    ${isGroup ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-lms-interaction-action="open-calls" aria-label="Call" title="Call"><i class="fas fa-video"></i> Call</button>` : ''}
+                </div>
             </div>
-        </header>
-        <div class="lms-interaction-direct__log${isLogEmpty ? ' lms-interaction-direct__log--empty' : ''}" data-lms-interaction-region="direct-log">
-            ${renderLmsInteractionDirectMessageList(activeChat, currentUserId, canonicalKey)}
         </div>
-        <div class="lms-interaction-direct__composer" data-lms-interaction-drop-chat="${escapeHtml(activeChat.id)}">
-            <div class="lms-interaction-compose-row">
+        <div class="social-neo-group-thread-toolbar is-compact" role="toolbar" aria-label="Conversation tools">
+            ${threadPanels.map(([panel, icon, title]) => `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-lms-interaction-action="thread-panel" data-lms-interaction-panel="${panel}" data-lms-interaction-chat-id="${escapeHtml(activeChat.id)}" aria-label="${title}" title="${title}"><i class="fas fa-${icon}"></i></button>`).join('')}
+        </div>
+        </div>
+        <div class="social-neo-messages__thread-scroll${isLogEmpty ? ' is-empty' : ''}" data-lms-interaction-region="direct-log">
+            <div class="social-neo-thread-messages social-neo-messages__thread-stream">
+                ${renderLmsInteractionDirectMessageList(activeChat, currentUserId, canonicalKey)}
+            </div>
+        </div>
+        <form class="social-neo-messages__composer social-neo-thread-compose" data-lms-interaction-drop-chat="${escapeHtml(activeChat.id)}" data-form="send-message" data-chat-id="${escapeHtml(activeChat.id)}" autocomplete="off">
+            <div class="social-neo-comment-compose social-neo-msg-compose-row">
                 <button
-                    class="lms-interaction-compose-attach lux-secondary-btn"
+                    class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm"
                     type="button"
                     title="Attach file or picture"
+                    aria-label="Attach file or picture"
                     data-lms-interaction-action="pick-file"
                     data-lms-interaction-chat-id="${escapeHtml(activeChat.id)}"
                 ><i class="fas fa-paperclip"></i></button>
                 <input
                     id="${inputId}"
-                    class="lms-interaction-compose-input"
+                    class="social-neo-input social-neo-input-flex-1-180 social-neo-msg-compose-input lux-control"
                     type="text"
-                    placeholder="${messagePlaceholder}"
+                    name="social_msg_${toDomToken(activeChat.id)}"
+                    placeholder="Aa"
+                    value="${escapeHtml(messageDraft)}"
+                    autocomplete="one-time-code"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-form-type="other"
                     data-lms-interaction-message-input="${escapeHtml(activeChat.id)}"
                 >
                 <button
-                    class="lms-interaction-compose-send"
+                    class="social-neo-btn social-neo-btn-primary social-neo-btn-sm"
                     type="button"
+                    aria-label="Send message"
                     data-lms-interaction-action="send-message"
                     data-lms-interaction-chat-id="${escapeHtml(activeChat.id)}"
                     data-lms-interaction-input-id="${escapeHtml(inputId)}"
-                ><i class="fas fa-paper-plane"></i> Send</button>
+                ><i class="fas fa-paper-plane"></i></button>
             </div>
             <div class="${draftClass}">${draftPreview}</div>
-        </div>
+            <input id="lms-interaction-message-file-${toDomToken(activeChat.id)}" name="messageFile" type="file" hidden>
+        </form>
+        </section>
     `;
 }
 
@@ -882,14 +983,15 @@ function renderLmsInteractionMessagesPane(resourceKey) {
     ensurePortalMessengerState();
     const ui = ensureLmsInteractionUiState();
     ui.resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+    if (getLmsInteractionMode() === 'messages') startLmsInteractionRealtimePoll();
     const currentUserId = String(getCurrentUserId?.() || getCurrentUser()?.id || '');
     const activeChat = getLmsInteractionActiveChat(ui.resourceKey);
     if (activeChat?.id) ui.activeChatId = activeChat.id;
     const mobileView = ui.mobileView === 'thread' && activeChat ? 'thread' : 'rail';
 
     return `
-        <div class="lms-interaction-direct ${mobileView === 'thread' ? 'is-thread-view' : 'is-rail-view'} ${ui.composeOpen ? 'is-compose-open' : ''}" data-lms-interaction-region="direct">
-            <aside class="lms-interaction-direct__rail" data-lms-interaction-region="direct-rail">
+        <div class="lms-interaction-direct social-neo-messages ${mobileView === 'thread' ? 'is-thread-view is-thread-open' : 'is-rail-view'} ${ui.composeOpen ? 'is-compose-open' : ''}" data-lms-interaction-region="direct">
+            <aside class="lms-interaction-direct__rail social-neo-messages__inbox" data-lms-interaction-region="direct-rail">
                 ${renderLmsInteractionRailHead(ui)}
                 <div class="lms-interaction-direct__rail-body">
                     <div class="lms-interaction-direct__inbox" data-lms-interaction-region="direct-inbox">
@@ -898,9 +1000,7 @@ function renderLmsInteractionMessagesPane(resourceKey) {
                     ${renderLmsInteractionComposeRail(ui.resourceKey, ui.composeSearch || '')}
                 </div>
             </aside>
-            <div class="lms-interaction-direct__thread" data-lms-interaction-region="direct-thread">
-                ${renderLmsInteractionDirectThreadMarkup(ui.resourceKey, activeChat, currentUserId)}
-            </div>
+            ${renderLmsInteractionDirectThreadMarkup(ui.resourceKey, activeChat, currentUserId)}
         </div>
     `;
 }
@@ -914,7 +1014,7 @@ function bindLmsInteractionDelegatedEvents(contentArea = document.getElementById
     if (!contentArea || contentArea.dataset.lmsInteractionDelegatedBound === '1') return;
     contentArea.dataset.lmsInteractionDelegatedBound = '1';
 
-    contentArea.addEventListener('click', event => {
+    contentArea.addEventListener('click', async event => {
         const modeButton = event.target.closest('[data-lms-interaction-mode]');
         if (modeButton && contentArea.contains(modeButton)) {
             const resourceKey = resolveLmsInteractionResourceKeyFromTarget(modeButton);
@@ -963,18 +1063,64 @@ function bindLmsInteractionDelegatedEvents(contentArea = document.getElementById
             pickLmsInteractionFile(actionEl.dataset.lmsInteractionChatId || '', canonicalKey);
             return;
         }
+        if (action === 'thread-jump-latest') {
+            const log = contentArea.querySelector('[data-lms-interaction-region="direct-log"]');
+            scrollLmsInteractionDirectLogToBottom(log);
+            return;
+        }
+        if (action === 'delete-message') {
+            const chatId = actionEl.dataset.lmsInteractionChatId || '';
+            const messageId = actionEl.dataset.lmsInteractionMessageId || '';
+            if (!chatId || !messageId || !window.confirm('Remove this message?')) return;
+            if (typeof deletePortalChatMessage === 'function') {
+                await deletePortalChatMessage(chatId, messageId);
+            } else if (typeof removePortalMessengerMessage === 'function') {
+                removePortalMessengerMessage(chatId, messageId);
+            }
+            updateLmsInteractionMessagesUi(canonicalKey);
+            return;
+        }
+        if (action === 'open-calls') {
+            if (typeof window.switchLMSTab === 'function') window.switchLMSTab('sessions');
+            return;
+        }
+        if (action === 'thread-panel') {
+            const thread = actionEl.closest('[data-lms-interaction-region="direct-thread"]');
+            const current = thread?.querySelector('[data-lms-active-thread-panel]');
+            if (current) current.remove();
+            const panel = actionEl.dataset.lmsInteractionPanel || '';
+            if (thread && panel) {
+                const panelEl = document.createElement('div');
+                panelEl.className = 'social-neo-group-thread-panel';
+                panelEl.dataset.lmsActiveThreadPanel = panel;
+                panelEl.textContent = `${panel.charAt(0).toUpperCase()}${panel.slice(1)} is managed by the LMS course workspace.`;
+                thread.querySelector('.social-neo-messages__thread-chrome')?.append(panelEl);
+            }
+            return;
+        }
         if (action === 'send-message') {
-            sendLmsInteractionDirectMessage(
-                canonicalKey,
-                actionEl.dataset.lmsInteractionChatId || '',
-                actionEl.dataset.lmsInteractionInputId || ''
-            );
+            actionEl.disabled = true;
+            try {
+                await sendLmsInteractionDirectMessage(
+                    canonicalKey,
+                    actionEl.dataset.lmsInteractionChatId || '',
+                    actionEl.dataset.lmsInteractionInputId || ''
+                );
+            } finally {
+                if (actionEl.isConnected) actionEl.disabled = false;
+            }
         }
     });
 
     let interactionSearchDebounceTimer = 0;
 
     contentArea.addEventListener('input', event => {
+        const messageDraftInput = event.target.closest('[data-lms-interaction-message-input]');
+        if (messageDraftInput && contentArea.contains(messageDraftInput)) {
+            const draftUi = ensureLmsInteractionUiState();
+            draftUi.messageDraftByChat[messageDraftInput.dataset.lmsInteractionMessageInput || ''] = messageDraftInput.value || '';
+            return;
+        }
         const inputEl = event.target.closest('[data-lms-interaction-input]');
         if (!inputEl || !contentArea.contains(inputEl)) return;
         const inputType = String(inputEl.dataset.lmsInteractionInput || '').trim();
@@ -1053,10 +1199,13 @@ function bindLmsInteractionDelegatedEvents(contentArea = document.getElementById
     });
 }
 
-function updateLmsInteractionMessagesUi(resourceKey) {
+function updateLmsInteractionMessagesUi(resourceKey, options = {}) {
     const contentArea = document.getElementById('lms-content-area');
     const directRegion = contentArea?.querySelector('[data-lms-interaction-region="direct"]');
     if (!directRegion) return false;
+    const focusedMessageInput = document.activeElement?.matches?.('[data-lms-interaction-message-input]')
+        && directRegion.contains(document.activeElement);
+    if (focusedMessageInput && options.force !== true) return true;
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     const ui = ensureLmsInteractionUiState();
     const currentUserId = String(getCurrentUserId?.() || getCurrentUser()?.id || '');
@@ -1095,7 +1244,10 @@ function updateLmsInteractionMessagesUi(resourceKey) {
 
     const thread = directRegion.querySelector('[data-lms-interaction-region="direct-thread"]');
     if (thread) {
-        thread.innerHTML = renderLmsInteractionDirectThreadMarkup(canonicalKey, activeChat, currentUserId);
+        const template = document.createElement('template');
+        template.innerHTML = renderLmsInteractionDirectThreadMarkup(canonicalKey, activeChat, currentUserId).trim();
+        const nextThread = template.content.firstElementChild;
+        if (nextThread) thread.replaceWith(nextThread);
     }
 
     const nextLog = directRegion.querySelector('[data-lms-interaction-region="direct-log"]');
@@ -1143,11 +1295,56 @@ function getLmsInteractionHeaderCopy(mode) {
 }
 
 let lmsInteractionRefreshDebounceTimer = 0;
+let lmsInteractionRealtimePollTimer = 0;
+let lmsInteractionRealtimePollInFlight = false;
+
+function stopLmsInteractionRealtimePoll() {
+    if (lmsInteractionRealtimePollTimer) {
+        window.clearInterval(lmsInteractionRealtimePollTimer);
+        lmsInteractionRealtimePollTimer = 0;
+    }
+}
+
+async function refreshLmsInteractionMessagesFromServer() {
+    if (lmsInteractionRealtimePollInFlight || typeof kiuRealtimeFetch !== 'function') return;
+    const userId = String(getCurrentUserId?.() || getCurrentUser()?.id || '').trim();
+    if (!userId) return;
+    lmsInteractionRealtimePollInFlight = true;
+    try {
+        const payload = await kiuRealtimeFetch(`/api/messenger/snapshot?userId=${encodeURIComponent(userId)}`);
+        (Array.isArray(payload?.chats) ? payload.chats : []).forEach(chat => {
+            if (typeof upsertPortalMessengerChatFromRealtime === 'function') {
+                upsertPortalMessengerChatFromRealtime(chat, false);
+            }
+        });
+        refreshLmsInteractionMessagesIfActive();
+    } catch (error) {
+        // SSE remains the primary path; polling is only a quiet fallback.
+    } finally {
+        lmsInteractionRealtimePollInFlight = false;
+    }
+}
+
+function startLmsInteractionRealtimePoll() {
+    if (lmsInteractionRealtimePollTimer) return;
+    lmsInteractionRealtimePollTimer = window.setInterval(() => {
+        const contentArea = document.getElementById('lms-content-area');
+        if (!contentArea || contentArea.dataset.activeLmsTab !== 'interaction' || getLmsInteractionMode() !== 'messages') {
+            stopLmsInteractionRealtimePoll();
+            return;
+        }
+        refreshLmsInteractionMessagesFromServer();
+    }, 1500);
+}
 
 function refreshLmsInteractionMessagesIfActive() {
     const contentArea = document.getElementById('lms-content-area');
     if (!contentArea || contentArea.dataset.activeLmsTab !== 'interaction') return;
-    if (typeof getLmsInteractionMode === 'function' && getLmsInteractionMode() !== 'messages') return;
+    if (typeof getLmsInteractionMode === 'function' && getLmsInteractionMode() !== 'messages') {
+        stopLmsInteractionRealtimePoll();
+        return;
+    }
+    startLmsInteractionRealtimePoll();
     const ui = ensureLmsInteractionUiState();
     const resourceKey = ui.resourceKey || currentCourseId || '';
     window.clearTimeout(lmsInteractionRefreshDebounceTimer);
@@ -1163,11 +1360,22 @@ async function sendLmsInteractionDirectMessage(resourceKey, chatId, inputId = ''
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     const normalizedChatId = String(chatId || '').trim();
     if (!canonicalKey || !normalizedChatId) return;
-    const resolvedInputId = inputId || `lms-interaction-direct-input-${toDomToken(normalizedChatId)}`;
-    if (typeof sendPortalMessengerMessage === 'function') {
-        await sendPortalMessengerMessage(normalizedChatId, resolvedInputId);
+    const inFlight = window.__lmsInteractionMessageSends || (window.__lmsInteractionMessageSends = new Set());
+    if (inFlight.has(normalizedChatId)) return;
+    inFlight.add(normalizedChatId);
+    try {
+        const resolvedInputId = inputId || `lms-interaction-direct-input-${toDomToken(normalizedChatId)}`;
+        let persistedChat = null;
+        if (typeof sendPortalMessengerMessage === 'function') {
+            persistedChat = await sendPortalMessengerMessage(normalizedChatId, resolvedInputId);
+        }
+        if (persistedChat) {
+            delete ensureLmsInteractionUiState().messageDraftByChat[normalizedChatId];
+        }
+        updateLmsInteractionMessagesUi(canonicalKey, { force: true });
+    } finally {
+        inFlight.delete(normalizedChatId);
     }
-    updateLmsInteractionMessagesUi(canonicalKey);
 }
 
 // Public cross-tab / tab-chrome contracts only. Directory getters and internal

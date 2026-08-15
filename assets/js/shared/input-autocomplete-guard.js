@@ -37,11 +37,14 @@
         if (!root || typeof root.querySelectorAll !== 'function') return;
         root.querySelectorAll('input, textarea, select').forEach((el) => {
             if (shouldSkipControl(el)) return;
-            if (el.hasAttribute('autocomplete')) return;
             el.setAttribute('autocomplete', 'off');
+            if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'search' || !el.type)) {
+                el.setAttribute('autocorrect', 'off');
+                el.setAttribute('autocapitalize', 'off');
+            }
         });
         root.querySelectorAll('form').forEach((form) => {
-            if (form.hasAttribute('autocomplete')) return;
+            if (form.closest('[data-kiu-preserve-autocomplete="true"]')) return;
             form.setAttribute('autocomplete', 'off');
         });
     }
@@ -59,6 +62,23 @@
         window.__kiuInputAutocompleteGuardInstalled = true;
 
         applyAutocompleteOff(document);
+
+        document.addEventListener('focusin', (e) => {
+            const el = e.target;
+            if (el && typeof el.matches === 'function' && el.matches('input, textarea, select')) {
+                if (!shouldSkipControl(el)) {
+                    el.setAttribute('autocomplete', 'off');
+                    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'search' || !el.type)) {
+                        el.setAttribute('autocorrect', 'off');
+                        el.setAttribute('autocapitalize', 'off');
+                    }
+                    const form = el.form || el.closest('form');
+                    if (form && !form.closest('[data-kiu-preserve-autocomplete="true"]')) {
+                        form.setAttribute('autocomplete', 'off');
+                    }
+                }
+            }
+        }, true);
 
         if (!window.MutationObserver || !document.body) return;
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5';
+const CACHE_NAME = 'kiu-portal-shell-v20260816-lms-clean1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';

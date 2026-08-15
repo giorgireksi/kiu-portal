@@ -2,6 +2,7 @@ const { URL } = require('url');
 
 const env = process.env;
 const environment = String(env.KIU_ENVIRONMENT || env.NODE_ENV || '').trim().toLowerCase();
+const coreOnlyMode = ['1', 'true', 'yes', 'on'].includes(String(env.KIU_CORE_ONLY_MODE || '').trim().toLowerCase());
 const PLACEHOLDER_RE = /(?:replace-with|change-me|youruniversity|example\.com|203\.0\.113\.)/i;
 const WEAK_SECRET_RE = /(?:password|admin|staging|changeme|change-me|secret|default|qwerty)/i;
 
@@ -36,22 +37,24 @@ const required = [
     ['KIU_PUBLIC_BACKEND_URL', isHttpsUrl(env.KIU_PUBLIC_BACKEND_URL)],
     ['KIU_PUBLIC_APP_URL and KIU_PUBLIC_BACKEND_URL share one origin', sameOrigin(env.KIU_PUBLIC_APP_URL, env.KIU_PUBLIC_BACKEND_URL)],
     ['KIU_TRUST_PROXY_HOPS is configured for the HTTPS proxy', Number(env.KIU_TRUST_PROXY_HOPS) >= 1],
-    ['KIU_MICROSOFT_TENANT_ID', hasConfiguredValue(env.KIU_MICROSOFT_TENANT_ID)],
-    ['KIU_MICROSOFT_CLIENT_ID', hasConfiguredValue(env.KIU_MICROSOFT_CLIENT_ID)],
-    ['KIU_MICROSOFT_CLIENT_SECRET', hasConfiguredValue(env.KIU_MICROSOFT_CLIENT_SECRET)],
-    ['KIU_MICROSOFT_REDIRECT_URI', isHttpsUrl(env.KIU_MICROSOFT_REDIRECT_URI)],
-    ['KIU_MICROSOFT_MAIL_REDIRECT_URI', isHttpsUrl(env.KIU_MICROSOFT_MAIL_REDIRECT_URI)],
-    ['KIU_MICROSOFT_TOKEN_ENCRYPTION_KEY', hasStrongSecret(env.KIU_MICROSOFT_TOKEN_ENCRYPTION_KEY, 32)],
-    ['KIU_VAPID_PUBLIC_KEY', hasConfiguredValue(env.KIU_VAPID_PUBLIC_KEY)],
-    ['KIU_VAPID_PRIVATE_KEY', hasConfiguredValue(env.KIU_VAPID_PRIVATE_KEY)],
-    ['KIU_FIREBASE_PROJECT_ID', hasConfiguredValue(env.KIU_FIREBASE_PROJECT_ID)],
-    ['KIU_FIREBASE_SERVICE_ACCOUNT_FILE or JSON', hasConfiguredValue(env.KIU_FIREBASE_SERVICE_ACCOUNT_FILE || env.KIU_FIREBASE_SERVICE_ACCOUNT_JSON)],
-    ['KIU_FIREBASE_SERVICE_ACCOUNT_HOST_PATH', hasConfiguredValue(env.KIU_FIREBASE_SERVICE_ACCOUNT_HOST_PATH)],
+    ...(coreOnlyMode ? [] : [
+        ['KIU_MICROSOFT_TENANT_ID', hasConfiguredValue(env.KIU_MICROSOFT_TENANT_ID)],
+        ['KIU_MICROSOFT_CLIENT_ID', hasConfiguredValue(env.KIU_MICROSOFT_CLIENT_ID)],
+        ['KIU_MICROSOFT_CLIENT_SECRET', hasConfiguredValue(env.KIU_MICROSOFT_CLIENT_SECRET)],
+        ['KIU_MICROSOFT_REDIRECT_URI', isHttpsUrl(env.KIU_MICROSOFT_REDIRECT_URI)],
+        ['KIU_MICROSOFT_MAIL_REDIRECT_URI', isHttpsUrl(env.KIU_MICROSOFT_MAIL_REDIRECT_URI)],
+        ['KIU_MICROSOFT_TOKEN_ENCRYPTION_KEY', hasStrongSecret(env.KIU_MICROSOFT_TOKEN_ENCRYPTION_KEY, 32)],
+        ['KIU_VAPID_PUBLIC_KEY', hasConfiguredValue(env.KIU_VAPID_PUBLIC_KEY)],
+        ['KIU_VAPID_PRIVATE_KEY', hasConfiguredValue(env.KIU_VAPID_PRIVATE_KEY)],
+        ['KIU_FIREBASE_PROJECT_ID', hasConfiguredValue(env.KIU_FIREBASE_PROJECT_ID)],
+        ['KIU_FIREBASE_SERVICE_ACCOUNT_FILE or JSON', hasConfiguredValue(env.KIU_FIREBASE_SERVICE_ACCOUNT_FILE || env.KIU_FIREBASE_SERVICE_ACCOUNT_JSON)],
+        ['KIU_FIREBASE_SERVICE_ACCOUNT_HOST_PATH', hasConfiguredValue(env.KIU_FIREBASE_SERVICE_ACCOUNT_HOST_PATH)],
+        ['KIU_TURN_URLS', hasConfiguredValue(env.KIU_TURN_URLS)],
+        ['KIU_TURN_USERNAME', hasConfiguredValue(env.KIU_TURN_USERNAME)],
+        ['KIU_TURN_CREDENTIAL', hasStrongSecret(env.KIU_TURN_CREDENTIAL, 16)]
+    ]),
     ['KIU_ADMIN_EMAIL', hasConfiguredValue(env.KIU_ADMIN_EMAIL)],
-    ['KIU_ADMIN_PASSWORD', hasStrongSecret(env.KIU_ADMIN_PASSWORD, 16)],
-    ['KIU_TURN_URLS', hasConfiguredValue(env.KIU_TURN_URLS)],
-    ['KIU_TURN_USERNAME', hasConfiguredValue(env.KIU_TURN_USERNAME)],
-    ['KIU_TURN_CREDENTIAL', hasStrongSecret(env.KIU_TURN_CREDENTIAL, 16)]
+    ['KIU_ADMIN_PASSWORD', hasStrongSecret(env.KIU_ADMIN_PASSWORD, 16)]
 ];
 
 const recommended = [
@@ -92,7 +95,8 @@ printGroup('Recommended production settings', recommended);
 const failedRequired = required.filter(([, ok]) => !ok);
 const failedRecommended = recommended.filter(([, ok]) => !ok);
 
-console.log(`\nSummary: ${required.length - failedRequired.length}/${required.length} required gates passed, ${recommended.length - failedRecommended.length}/${recommended.length} recommendations passed.`);
+console.log(`\nMode: ${coreOnlyMode ? 'core-only self-hosted (OAuth, push, Firebase, and TURN disabled)' : 'full integrations'}`);
+console.log(`Summary: ${required.length - failedRequired.length}/${required.length} required gates passed, ${recommended.length - failedRecommended.length}/${recommended.length} recommendations passed.`);
 
 if (failedRequired.length) {
     console.error('\nProduction readiness failed. Fix every required gate before deploying for real students.');

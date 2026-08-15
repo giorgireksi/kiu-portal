@@ -292,13 +292,14 @@
                     ? () => Promise.resolve(hydratePortalSocialRuntime()).catch(() => null)
                     : null;
             if (runHydrate) await runHydrate();
-            await warnIfPinApiUnavailable();
-            await pruneExpiredLostFoundItems().catch(() => null);
             // Preload the restored active panel so boot paints a real shell
             // (not social-neo-module-loading) and assembly intro can start.
             const activePanel = text(state()?.ui?.activePanel || 'feed') || 'feed';
             await ensureActivePanelModule(activePanel);
-            window.requestAnimationFrame(renderOrRetry);
+            renderOrRetry();
+            // Run background health & maintenance tasks after first paint
+            warnIfPinApiUnavailable().catch(() => null);
+            pruneExpiredLostFoundItems().catch(() => null);
         }
 
         const api = {

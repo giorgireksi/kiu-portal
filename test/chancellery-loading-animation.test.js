@@ -11,8 +11,8 @@ describe('Chancellery loading animation', () => {
         const html = readSource('chancellery.html');
 
         expect(html).toContain('assets/css/chancellery-loading.css?v=20260808-chanassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260809-assembly14');
-        expect(html).toContain('assets/js/pages/chancellery-loading-runtime.js?v=20260808-chanassembly1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260811-assembly27');
+        expect(html).toContain('assets/js/pages/chancellery-loading-runtime.js?v=20260811-chanfilter1');
         expect(html.match(/chancellery-loading\.css/g)).toHaveLength(1);
         expect(html.match(/chancellery-loading-runtime\.js/g)).toHaveLength(1);
         expect(html.match(/lux-assembly-loading-runtime\.js/g)).toHaveLength(1);
@@ -26,7 +26,11 @@ describe('Chancellery loading animation', () => {
         expect(runtime).toContain('[data-chancellery-shell="1"]');
         expect(runtime).toContain('#chancellery-hero-region > *');
         expect(runtime).toContain('#chancellery-content-region > *');
-        expect(runtime).toContain('animateLateAfterReady: true');
+        expect(runtime).toContain('animateLateAfterReady: false');
+        expect(runtime).toContain('autoReplayLateMutations: false');
+        const shared = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
+        expect(shared).toContain('if (state.phase === \'ready\' && state.root) {');
+        expect(shared).toContain('if (animateLateAfterReady && autoReplayLateMutations) {');
         expect(runtime).toContain('lateReplaySelector:');
         expect(runtime).toContain('kiuChancelleryAssemblyState');
         expect(runtime).toContain('kiu-chancellery-assembly-target');
@@ -64,6 +68,9 @@ describe('Chancellery loading animation', () => {
         const runtime = readSource('assets/js/pages/chancellery-loading-runtime.js');
         const shared = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
         const chancellery = readSource('assets/js/pages/chancellery.js');
+
+        expect(chancellery).toContain("if (action === 'set-routing-filter')");
+        expect(chancellery).toContain('syncChancelleryFilterRegions(\'routing\')');
 
         expect(runtime).toContain(
             "hiddenSelector: '[hidden], [aria-hidden=\"true\"], template, #modal-overlay, #mobile-action-sheet, #chancellery-case-overlay, #chancellery-forward-overlay, #chancellery-document-editor-overlay, [role=\"dialog\"]'"

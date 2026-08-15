@@ -89,6 +89,7 @@ function sendSocialConnectionRequest(fromUserId, toUserId) {
     const normalizedFromId = socialText(fromUserId);
     const normalizedToId = socialText(toUserId);
     if (!normalizedFromId || !normalizedToId || normalizedFromId === normalizedToId) return null;
+    if (typeof this.isSocialEligibleAccount === 'function' && !this.isSocialEligibleAccount(normalizedToId)) return null;
     if (!this.state.social || typeof this.state.social !== 'object') this.state.social = {};
     if (!Array.isArray(this.state.social.relationships)) this.state.social.relationships = [];
     if (isSocialConnection.call(this, normalizedFromId, normalizedToId)) return null;

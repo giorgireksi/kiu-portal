@@ -19,7 +19,8 @@
                 && root.querySelector('#chancellery-content-region > *')
             );
         },
-        animateLateAfterReady: true,
+        animateLateAfterReady: false,
+        autoReplayLateMutations: false,
         lateReadyWindowMs: 4000,
         lateReplaySelector: [
             '[data-chancellery-shell="1"]',

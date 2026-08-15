@@ -4,6 +4,7 @@
 const KIU_REALTIME_BRIDGE_TIMEOUT_MS = 4000;
 const KIU_REALTIME_BRIDGE_COOLDOWN_MS = 5000;
 let kiuAuthRestoreInFlight = null;
+var currentUser = null;
 
 function readKiuTabIdentity(key, legacyKey = key) {
     try {
@@ -27,9 +28,14 @@ function writeKiuTabIdentity(key, value) {
 }
 
 function getStoredAuthState() {
+    const remoteRuntime = typeof isKiuRemoteProductionRuntime === 'function' && isKiuRemoteProductionRuntime();
     let rawState = '';
     try {
-        rawState = sessionStorage.getItem('KIU_TAB_AUTH_STATE') || localStorage.getItem('KIU_AUTH_STATE') || '';
+        rawState = sessionStorage.getItem('KIU_TAB_AUTH_STATE')
+            || (typeof isKiuRemoteProductionRuntime === 'function' && isKiuRemoteProductionRuntime()
+                ? ''
+                : localStorage.getItem('KIU_AUTH_STATE'))
+            || '';
     } catch (error) {}
     if (!rawState) return null;
     if (!rawState) return null;
@@ -44,19 +50,25 @@ function getStoredAuthState() {
     }
 
     let persistedAuthState = null;
-    try {
-        persistedAuthState = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
-    } catch (e) {
+    if (typeof isKiuRemoteProductionRuntime === 'function' && isKiuRemoteProductionRuntime()) {
         persistedAuthState = null;
+    } else {
+        try {
+            persistedAuthState = JSON.parse(localStorage.getItem(typeof getKiuPersistentStateKey === 'function' ? getKiuPersistentStateKey() : 'KIU_PERSISTENT_STATE') || localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+        } catch (e) {
+            persistedAuthState = null;
+        }
     }
 
     const fallbackUserId = parsedState?.id
         || sessionStorage.getItem(ACTIVE_SESSION_KEY)
         || persistedAuthState?.auth?.activeUserId
         || '';
-    const fallbackUser = fallbackUserId
-        ? (_findUserById(fallbackUserId)?.user || null)
-        : (parsedState?.email ? _findUserByEmail(parsedState.email) : null);
+    const fallbackUser = remoteRuntime
+        ? null
+        : (fallbackUserId
+            ? (_findUserById(fallbackUserId)?.user || null)
+            : (parsedState?.email ? _findUserByEmail(parsedState.email) : null));
 
     const normalizedState = {
         id: String(parsedState?.id || fallbackUser?.id || '').trim(),
@@ -89,11 +101,18 @@ function getStoredAuthState() {
 
 function loadAuthState() {
     const state = getStoredAuthState();
+    const remoteRuntime = typeof isKiuRemoteProductionRuntime === 'function' && isKiuRemoteProductionRuntime();
+    const hasBackendSession = typeof getPortalSessionToken === 'function' && !!getPortalSessionToken();
+    if (state && remoteRuntime && !hasBackendSession) {
+        currentUser = null;
+        try { sessionStorage.removeItem('KIU_TAB_AUTH_STATE'); } catch (error) {}
+        return null;
+    }
     if (state) {
         try {
-            // Always trust localStorage auth state on load.
-            // If no backend session token exists, skip backend bootstrap
-            // but still load the user. Backend 401s are handled by kiuPortalFetch.
+            // On public HTTPS deployments, identity is accepted only alongside
+            // a backend session token. Local development may still use the
+            // compatibility snapshot while the migration is completed.
             const hasSessionToken = typeof getPortalSessionToken === 'function' && !!getPortalSessionToken();
             currentUser = state;
             const pendingRoleTarget = (() => {
@@ -467,6 +486,15 @@ const KIU_REALTIME_DEFAULT_URL = (typeof getKiuPortalBackendDefaultUrl === 'func
     : `http://127.0.0.1:${typeof KIU_PORTAL_BACKEND_PORT === 'string' ? KIU_PORTAL_BACKEND_PORT : '48933'}`);
 
 function getKiuRealtimeBridgeUrl() {
+    // Public Social must always use the current origin. A stale development
+    // override such as 127.0.0.1 can otherwise disable SSE for real users.
+    try {
+        const protocol = String(window.location?.protocol || '').toLowerCase();
+        const hostname = String(window.location?.hostname || '').toLowerCase();
+        if (protocol === 'https:' && !/^(127\.0\.0\.1|localhost|::1)$/.test(hostname)) {
+            return String(window.location.origin || '').replace(/\/$/, '');
+        }
+    } catch (error) {}
     return (localStorage.getItem(KIU_REALTIME_BRIDGE_KEY) || KIU_REALTIME_DEFAULT_URL).replace(/\/$/, '');
 }
 
@@ -742,6 +770,7 @@ function buildRealtimeAccountPayload(user) {
         temporaryPassword: String(user.temporaryPassword || '').trim(),
         mustChangePassword: Boolean(user.mustChangePassword),
         accountStatus: String(user.accountStatus || 'active').trim(),
+        activationRequired: Boolean(user.activationRequired || String(user.accountStatus || '').trim().toLowerCase() === 'not invited' || String(user.accountStatus || '').trim().toLowerCase() === 'pending-activation'),
         createdAt: String(user.createdAt || new Date().toISOString()),
         isAdminTestingPersona: typeof isAdminTestingPersonaId === 'function'
             ? isAdminTestingPersonaId(user.id)
@@ -977,7 +1006,7 @@ async function fetchRealtimeAccountByEmail(email) {
     }
 }
 
-async function syncUserToRealtimeBridge(user) {
+async function syncUserToRealtimeBridge(user, options = {}) {
     const account = buildRealtimeAccountPayload(user);
     if (!account?.id || !account.email) return null;
     if (
@@ -989,7 +1018,11 @@ async function syncUserToRealtimeBridge(user) {
     try {
         const payload = await kiuRealtimeFetch('/api/accounts/upsert', {
             method: 'POST',
-            body: { account }
+            body: {
+                account,
+                syncPortalState: options.syncPortalState === true,
+                allowAccountStatusChange: options.allowAccountStatusChange === true
+            }
         });
         if (payload?.account) {
             return upsertPortalUserFromRealtime(payload.account);
@@ -1013,10 +1046,10 @@ async function syncKnownUsersToRealtimeBridge(users = []) {
     }
 }
 
-function queueRealtimeUserSync(user) {
+function queueRealtimeUserSync(user, options = {}) {
     if (!user?.id) return;
     setTimeout(() => {
-        syncUserToRealtimeBridge(user);
+        syncUserToRealtimeBridge(user, options);
     }, 0);
 }
 
@@ -1146,6 +1179,7 @@ function handleKiuRealtimeEventPayload(payload) {
                     });
                 }
                 upsertPortalMessengerChatFromRealtime(payload.chat, true);
+                emitWorkspaceEvent('kiu:messenger-chat-updated', { chat: payload.chat });
                 if (getCurrentUserId()) {
                     unhidePortalMessengerChatForUser(payload.chat.id, getCurrentUserId());
                 }
@@ -1194,7 +1228,12 @@ function handleKiuRealtimeEventPayload(payload) {
             }
             break;
         case 'portal:state-upsert':
-            schedulePortalBackendBootstrap(true);
+            // The server broadcasts after a durable portal-state write. Refresh
+            // other accounts/tabs from that snapshot, but keep the originating
+            // session untouched and flush any local edits before replacement.
+            if (typeof schedulePortalStateRefreshFromRealtime === 'function') {
+                schedulePortalStateRefreshFromRealtime(payload).catch(() => null);
+            }
             break;
         case 'lms-live-quiz:updated':
             if (typeof handleLmsLiveQuizRealtimeUpdate === 'function') {
@@ -1483,7 +1522,13 @@ async function bootstrapKiuRealtimeBridge(force = false) {
         runtime.connecting = true;
         runtime.bootstrapScheduledFor = '';
         runtime.lastBootstrapUserId = currentUserId;
-        await syncUserToRealtimeBridge(currentUser);
+        // Standalone Social already has an authenticated server session and must
+        // not block messenger realtime on the optional account mirror write.
+        // The mirror remains synchronized on normal portal/account flows.
+        const standaloneSocial = typeof isStandaloneSocialRoute === 'function' && isStandaloneSocialRoute();
+        if (!standaloneSocial) {
+            await syncUserToRealtimeBridge(currentUser);
+        }
         const snapshot = await kiuRealtimeFetch(`/api/messenger/snapshot?userId=${encodeURIComponent(currentUserId)}`);
         applyKiuRealtimeSnapshot(snapshot, true);
         startKiuMessengerSnapshotFallback();

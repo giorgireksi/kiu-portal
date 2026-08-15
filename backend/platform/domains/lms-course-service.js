@@ -104,13 +104,15 @@ function isCourseTeachingStaff(courseId, userId, role = '') {
         const professorIds = uniqueStrings([
             section.professorId,
             section.instructorUserId,
-            section.instructorId
+            section.instructorId,
+            section.professorUserId
         ]);
         const taIds = uniqueStrings([
             ...(Array.isArray(section.taIds) ? section.taIds : []),
             section.assistantUserId,
             section.assistantId,
-            section.taId
+            section.taId,
+            section.taUserId
         ]);
         if (normalizedRole === 'professor') return professorIds.includes(normalizedUserId);
         if (normalizedRole === 'ta') return taIds.includes(normalizedUserId);
@@ -121,14 +123,42 @@ function isCourseTeachingStaff(courseId, userId, role = '') {
         const lmsCourse = this.state.lmsCourses?.[scopeId] || {};
         return Array.isArray(lmsCourse.teachingTeam) ? lmsCourse.teachingTeam : [];
     });
-    return teachingTeam.some(member => {
+    if (teachingTeam.some(member => {
         if (typeof member === 'string') return member === normalizedUserId;
         const memberId = String(member?.userId || member?.id || '').trim();
         const memberRole = String(member?.role || member?.assignmentRole || '').trim().toLowerCase();
         if (memberId !== normalizedUserId) return false;
         if (!normalizedRole || !memberRole) return true;
         return memberRole === normalizedRole || (normalizedRole === 'professor' && memberRole === 'instructor');
-    });
+    })) return true;
+
+    // Scheduler assignments are persisted in the shared portal state. Keep the
+    // server ACL aligned with that source so staff accounts created or assigned
+    // through the admin UI can access their LMS subject immediately.
+    const portalGroups = this.state.portal?.state?.availableGroups;
+    const account = typeof this.getAccountById === 'function' ? this.getAccountById(normalizedUserId) : null;
+    const identityNames = uniqueStrings([
+        account?.displayName,
+        account?.nameEn,
+        account?.name,
+        account?.email
+    ]);
+    return courseScopeIds.some(scopeId => asArray(portalGroups?.[scopeId]).some(group => {
+        const assignedIds = normalizedRole === 'professor'
+            ? uniqueStrings([group?.profId, group?.professorId, group?.professorUserId, group?.instructorUserId])
+            : uniqueStrings([
+                group?.taId,
+                group?.assistantId,
+                group?.assistantUserId,
+                group?.taUserId,
+                ...(Array.isArray(group?.taIds) ? group.taIds : [])
+            ]);
+        if (assignedIds.includes(normalizedUserId)) return true;
+        const assignedNames = normalizedRole === 'professor'
+            ? [group?.prof]
+            : [group?.ta];
+        return assignedNames.some(name => identityNames.includes(String(name || '').trim()));
+    }));
 }
 
 module.exports = {

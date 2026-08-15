@@ -7,3 +7,12 @@ body.lux-route-social.social-center-assembly-prehide #social-neo-center-region >
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+html.kiu-shell-revealing body.lux-route-social #app-content,
+html.kiu-shell-revealing body.lux-route-social #page-social {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transition: none !important;
+}
+

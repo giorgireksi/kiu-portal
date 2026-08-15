@@ -298,7 +298,7 @@
                 fieldValues: stored.fieldValues && typeof stored.fieldValues === 'object' ? stored.fieldValues : {},
                 profile: profile
             };
-        });
+        }).filter((record) => String(record.status || '').trim().toLowerCase() !== 'archived');
         return { records, unassignedSections, facultyProfile: profile };
     }
 
@@ -382,6 +382,18 @@
         state.filters = cloneDefaultFilters();
         renderStaffPage();
         showToast('Staff filters cleared.');
+    }
+
+    function showAllStaffRecords() {
+        const state = getStaffState();
+        state.filters = {
+            ...cloneDefaultFilters(),
+            archive: 'active',
+            field: {}
+        };
+        renderStaffPage();
+        document.querySelector('.staff-hub-directory-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast('Showing the full staff record list.');
     }
 
     function reviewMissingData() {
@@ -496,7 +508,7 @@
                     <button class="lux-secondary-btn" type="button" data-staff-action="toggle-login" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-power-off"></i> Toggle login</button>
                     <button class="lux-secondary-btn" type="button" data-staff-action="mark-reviewed" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-clipboard-check"></i> Mark reviewed</button>
                     ${record.status === 'Archived'
-                        ? `<button class="lux-primary-btn" type="button" data-staff-action="restore" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-box-open"></i> Restore</button>`
+                        ? renderStatusChip('Archived', 'is-warning')
                         : `<button class="lux-secondary-btn" type="button" data-staff-action="archive" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-box-archive"></i> Archive</button>`}
                     <button class="lux-secondary-btn lux-danger-btn" type="button" data-staff-action="delete" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-user-slash"></i> Delete</button>
                 </div>
@@ -558,7 +570,7 @@
                         ${renderProgress(completion.percent, `${completion.percent}% complete · updated ${escapeHtml(record.updatedAt || 'unknown')}`)}
                         <div class="staff-hub-toolbar-actions">
                             ${record.status === 'Archived'
-                                ? `<button class="lux-primary-btn" type="button" data-staff-action="restore" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-open"></i> Restore</button>`
+                                ? renderStatusChip('Archived', 'is-warning')
                                 : `<button class="lux-secondary-btn" type="button" data-staff-action="archive" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-archive"></i> Archive</button>`}
                         </div>
                     </div>
@@ -624,7 +636,7 @@
                             <button class="lux-primary-btn" type="button" data-staff-action="select" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> View</button>
                             <button class="lux-secondary-btn" type="button" data-staff-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit</button>
                             ${record.status === 'Archived'
-                                ? `<button class="lux-secondary-btn" type="button" data-staff-action="restore" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-open"></i> Restore</button>`
+                                ? renderStatusChip('Archived', 'is-warning')
                                 : `<button class="lux-secondary-btn" type="button" data-staff-action="archive" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-archive"></i> Archive</button>`}
                         </div>
                     </td>
@@ -655,6 +667,7 @@
                     <div class="staff-hub-directory-head">
                         <h2 class="staff-hub-section-title lux-card-title">Records</h2>
                         <div class="staff-hub-inline-actions" data-lux-btn-density="dense">
+                            <button class="lux-secondary-btn" type="button" data-staff-action="show-all-records"><i class="fas fa-list"></i> Show full list</button>
                             <button class="lux-secondary-btn" type="button" data-staff-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
                         </div>
                     </div>
@@ -974,7 +987,7 @@
         return KiuCommandCenterUtils.syncScheduleSessions(nextRecord);
     }
 
-    function persistRecord(nextRecord) {
+    async function persistRecord(nextRecord) {
         const store = ensureStore();
         const current = buildStaffRecords(nextRecord.facultyCode).records.find((record) => record.id === nextRecord.id) || null;
         const existingUser = (KIU_STATE.users || []).find((user) => String(user?.id || '') === String(nextRecord.id)) || null;
@@ -1027,11 +1040,24 @@
         if (typeof saveState === 'function') {
             saveState();
         }
-        if (typeof queueRealtimeUserSync === 'function' && !existingUser) {
-            queueRealtimeUserSync(KIU_STATE.users.find((user) => String(user?.id || '') === String(nextRecord.id)));
+        const accountUser = KIU_STATE.users.find((user) => String(user?.id || '') === String(nextRecord.id));
+        if (typeof syncUserToRealtimeBridge === 'function' && accountUser?.email) {
+            // A staff profile is also an account identity. Wait for the
+            // PostgreSQL acknowledgement so a successful UI save cannot leave
+            // behind a local-only or student-role account.
+            const remoteAccount = await syncUserToRealtimeBridge(accountUser, { syncPortalState: true });
+            if (!remoteAccount) {
+                throw new Error('The staff profile could not be saved to the account server.');
+            }
+            if (typeof upsertPortalUserFromRealtime === 'function') {
+                upsertPortalUserFromRealtime(remoteAccount, false);
+            }
         }
         if (typeof persistPortalStateToBackend === 'function') {
-            persistPortalStateToBackend(existingUser ? 'update-staff-command-center' : 'create-staff-command-center').catch(() => null);
+            const portalAck = await persistPortalStateToBackend(existingUser ? 'update-staff-command-center' : 'create-staff-command-center', { forceLatest: true });
+            if (typeof isKiuRemoteProductionRuntime === 'function' && isKiuRemoteProductionRuntime() && !portalAck?.saved) {
+                throw new Error('The staff directory record was not acknowledged by the server.');
+            }
         }
         return nextRecord;
     }
@@ -1040,9 +1066,6 @@
         KiuCommandCenterUtils.setRecordArchiveStatus(id, ensureRecordEntry, renderStaffPage, 'Archived', 'Staff member');
     }
 
-    function restoreStaff(id) {
-        KiuCommandCenterUtils.setRecordArchiveStatus(id, ensureRecordEntry, renderStaffPage, 'Active', 'Staff member');
-    }
 
     function inviteStaff(id) {
         KiuCommandCenterUtils.inviteRecord(id, ensureRecordEntry, renderStaffPage);
@@ -1315,18 +1338,26 @@
         renderStaffPage();
     }
 
-    function submitForm(event) {
+    async function submitForm(event) {
         event.preventDefault();
         const next = buildFormRecord(false);
         if (!next) return;
         const wasEditing = Boolean(getStaffState().editingId);
-        persistRecord(next);
-        const state = getStaffState();
-        state.selectedId = next.id;
-        state.profileTab = defaultProfileTabForRecord(next);
-        closeModal();
-        renderStaffPage();
-        showToast(`${next.name} ${wasEditing ? 'updated' : 'added'}.`);
+        const submitButton = event.currentTarget?.querySelector('button[type="submit"]');
+        if (submitButton) submitButton.disabled = true;
+        try {
+            await persistRecord(next);
+            const state = getStaffState();
+            state.selectedId = next.id;
+            state.profileTab = defaultProfileTabForRecord(next);
+            closeModal();
+            renderStaffPage();
+            showToast(`${next.name} ${wasEditing ? 'updated' : 'added'}. Account record saved on the server.`);
+        } catch (error) {
+            showToast(error?.message || 'The staff profile could not be saved on the server.');
+        } finally {
+            if (submitButton) submitButton.disabled = false;
+        }
     }
 
     function handleAction(action, element) {
@@ -1349,6 +1380,10 @@
         }
         if (action === 'clear-filters') {
             clearFilters();
+            return;
+        }
+        if (action === 'show-all-records') {
+            showAllStaffRecords();
             return;
         }
         if (action === 'clear-filter-chip') {
@@ -1404,10 +1439,6 @@
             archiveStaff(staffId);
             return;
         }
-        if (action === 'restore') {
-            restoreStaff(staffId);
-            return;
-        }
         if (action === 'invite') {
             inviteStaff(staffId);
             return;
@@ -1423,6 +1454,25 @@
                 id: staffId,
                 ...(record || {}),
                 role: record?.platformRole || record?.role || 'ta'
+            }).then((payload) => {
+                const account = payload?.account;
+                if (!account) return;
+                // The server now holds the activated account; mirror the new
+                // status/email locally so this page (and the scheduler picker,
+                // which reads the same store) stops treating it as Not Invited.
+                const entry = ensureRecordEntry(staffId);
+                if (entry) {
+                    entry.accountStatus = 'Account Active';
+                    if (account.email) entry.email = account.email;
+                    entry.updatedAt = todayIso();
+                }
+                const user = (KIU_STATE.users || []).find((item) => String(item?.id || '') === String(staffId));
+                if (user) {
+                    user.accountStatus = 'active';
+                    if (account.email) user.email = account.email;
+                }
+                if (typeof saveState === 'function') saveState();
+                renderStaffPage();
             }).catch((error) => showToast(error?.message || 'Could not generate login credentials.'));
             return;
         }
@@ -1500,6 +1550,9 @@
     function bindEvents() {
         if (window.__staffCommandBound) return;
         window.__staffCommandBound = true;
+        window.addEventListener('kiu:portal-bootstrap-complete', () => {
+            if (document.getElementById('staff-content')) renderStaffPage();
+        });
         ensureStaffFormBuilderEventsBound();
 
         document.addEventListener('click', (event) => {
@@ -1605,6 +1658,8 @@
         const { records } = buildStaffRecords(facultyCode);
         const container = ensureStaffContentHost();
         if (!container) return;
+        const isInternalRerender = container.__commandCenterHasRendered === true;
+        if (isInternalRerender) container.dataset.commandCenterPainted = '1';
         const state = getStaffState();
         const selected = activeSelection(records);
         if (state.workspace === 'form-settings' && typeof renderStaffFormSettings === 'function') {
@@ -1647,6 +1702,9 @@
         if (typeof queueLuxuryTransparencyRefresh === 'function' && state.workspace !== 'form-settings') {
             queueLuxuryTransparencyRefresh();
         }
+        // Mark this root after its first paint; the next render is then treated
+        // as an internal update and skips loading motion.
+        container.__commandCenterHasRendered = true;
         if (typeof markPortalShellReady === 'function') {
             markPortalShellReady();
         } else if (typeof window.__kiuStartShellReveal === 'function') {

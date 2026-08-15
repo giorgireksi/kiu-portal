@@ -745,9 +745,12 @@
         }
 
         function isAppContentPaintable() {
-            if (document.documentElement?.classList.contains('kiu-shell-ready')
-                || document.body?.classList.contains('kiu-shell-ready')) {
-                return true;
+            const appContent = document.getElementById('app-content');
+            if (appContent && window.getComputedStyle) {
+                try {
+                    const op = parseFloat(window.getComputedStyle(appContent).opacity);
+                    if (Number.isFinite(op) && op >= 0.7) return true;
+                } catch (_e) {}
             }
             const stage = String(document.documentElement?.dataset?.kiuLoadStage || '');
             return stage === 'panel' || stage === 'controls' || stage === 'content';
@@ -757,7 +760,7 @@
         // Starting WAAPI under the veil makes the intro invisible on hard refresh.
         function waitForAppContentPaint(generation, then) {
             const panelMs = Number(global.KIU_SHELL_REVEAL_TIMINGS?.panel);
-            const fallbackMs = Math.min(Math.max((Number.isFinite(panelMs) ? panelMs : 116) + 20, 130), 150);
+            const fallbackMs = Math.min(Math.max((Number.isFinite(panelMs) ? panelMs : 116) + 30, 140), 180);
             const startedAt = Date.now();
             const tick = () => {
                 if (state.generation !== generation) {
@@ -811,9 +814,23 @@
                 } else {
                     global.__kiuHomeShellRevealAllowed = true;
                     if (typeof global.markPortalShellReady === 'function') {
-                        try { global.markPortalShellReady(); } catch (_error) {}
+                        try { global.markPortalShellReady({ force: true }); } catch (_error) {}
                     }
                 }
+            }
+            if (!didBootReveal && isSharedRevealActive()) {
+                if (typeof global.markPortalShellReady === 'function') {
+                    try { global.markPortalShellReady({ force: true }); } catch (_error) {}
+                } else if (typeof global.__kiuStartShellReveal === 'function') {
+                    try { global.__kiuStartShellReveal({ degraded: false }); } catch (_error) {}
+                } else {
+                    document.documentElement?.classList.add('kiu-shell-ready');
+                    document.documentElement?.classList.remove('kiu-shell-loading');
+                    document.body?.classList.add('kiu-shell-ready');
+                    document.body?.classList.remove('kiu-shell-loading');
+                }
+                const appContent = document.getElementById('app-content');
+                if (appContent) appContent.style.opacity = '1';
             }
 
             const beginFlights = () => {
@@ -836,11 +853,13 @@
                     });
             };
 
+            // Social boot reveal triggers #app-content opacity transition;
+            // wait until content is paintable so the flight is visible.
             if (didBootReveal) {
                 waitForAppContentPaint(generation, beginFlights);
-                return;
+            } else {
+                beginFlights();
             }
-            beginFlights();
         }
 
         function waitForShell(root, generation) {
@@ -854,7 +873,8 @@
                     || Boolean(global.__kiuHomeBootAwaitingAssemblyReveal);
                 const canStart = isSharedShellReady()
                     || !isSharedRevealActive()
-                    || bootAwaitingReveal;
+                    || bootAwaitingReveal
+                    || contentReady;
                 const shellTimedOut = elapsed >= timing.maxShellWaitMs;
                 const contentTimedOut = elapsed >= contentWaitMaxMs;
                 if ((canStart || shellTimedOut) && (contentReady || contentTimedOut)) {
@@ -862,7 +882,7 @@
                     run(root, generation);
                     return;
                 }
-                state.waitTimer = window.setTimeout(poll, 32);
+                state.waitTimer = window.setTimeout(poll, 16);
             };
             poll();
         }
@@ -950,12 +970,14 @@
                 startLateNodes(state.root, state.generation);
                 return;
             }
-            if (state.phase === 'ready' && state.root && animateLateAfterReady && autoReplayLateMutations) {
-                if (state.scheduleTimer) {
-                    window.clearTimeout(state.scheduleTimer);
-                    state.scheduleTimer = 0;
+            if (state.phase === 'ready' && state.root) {
+                if (animateLateAfterReady && autoReplayLateMutations) {
+                    if (state.scheduleTimer) {
+                        window.clearTimeout(state.scheduleTimer);
+                        state.scheduleTimer = 0;
+                    }
+                    startReadyLateNodes(state.root, state.generation);
                 }
-                startReadyLateNodes(state.root, state.generation);
                 return;
             }
             if (state.scheduleTimer) return;

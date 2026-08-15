@@ -288,7 +288,7 @@
                     `;
         };
         const directSubtitle = [accountPresenceLabel(peer), accountSubtitle(peer)].filter(Boolean).join(' · ');
-        return `
+        const renderedHtml = `
             <section class="${shellClass}">
                 <div class="social-neo-messages__thread-chrome">
                     <div class="social-neo-thread-head social-neo-messages__thread-head ${isGroupThread ? 'is-group' : 'is-direct'}">
@@ -316,7 +316,7 @@
                                 </div>
                             </div>
                             <div class="social-neo-inline social-neo-messages__thread-actions">
-                                ${activeMessages(chat).length > 8 ? `<button class="${panelBtn()}" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i></button>` : ''}
+                                
                                 ${isGroupThread
                                     ? `<button class="${panelBtn(call && text(call.mode || '') === 'group' && call.active && !inCurrentCall)}" type="button" data-action="${call && text(call.mode || '') === 'group' && call.active && inCurrentCall ? 'group-call-leave' : 'group-call-join'}" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> ${call && text(call.mode || '') === 'group' && call.active ? (inCurrentCall ? 'Leave' : 'Join') : 'Call'}</button>`
                                     : `<button class="${panelBtn()}" type="button" data-action="call-start" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> Call</button>
@@ -334,17 +334,89 @@
                     ${isGroupThread ? renderGroupCallCard() : ''}
                     ${renderDirectCallHint()}
                 </div>
-                <form class="${messageComposeFormClass} social-neo-messages__composer" data-form="send-message" data-chat-id="${escape(text(chat.id))}">
+                <div class="social-neo-messages__custom-scrollbar" data-social-thread-scrollbar aria-hidden="true">
+                    <span class="social-neo-messages__custom-scrollbar-thumb" data-social-thread-scrollbar-thumb></span>
+                </div>
+                <form class="${messageComposeFormClass} social-neo-messages__composer" data-form="send-message" data-chat-id="${escape(text(chat.id))}" autocomplete="off">
                     ${renderFileChip(messageFile)}
                     <div class="${messageComposeRowClass}">
                         <button class="${panelBtn()}" type="button" data-action="message-attach" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-paperclip"></i></button>
-                        <input class="${messageComposeInputClass}" id="${escape(messageBodyId)}" name="messageBody" placeholder="Aa" value="${escape(messageDraft)}">
+                        <input class="${messageComposeInputClass}" id="${escape(messageBodyId)}" name="social_msg_${Date.now()}" placeholder="Aa" value="${escape(messageDraft)}" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly');" onpointerdown="this.removeAttribute('readonly');" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
                         <button class="${primaryBtn()}" type="submit"><i class="fas fa-paper-plane"></i></button>
                     </div>
                     <input id="${escape(messageFileId)}" name="messageFile" type="file" hidden>
                 </form>
             </section>
         `;
+        try {
+            requestAnimationFrame(() => {
+                const scroller = document.querySelector('.social-neo-messages__thread-scroll');
+                if (scroller) {
+                    const rail = scroller.parentElement?.querySelector('[data-social-thread-scrollbar]');
+                    const thumb = rail?.querySelector('[data-social-thread-scrollbar-thumb]');
+                    const syncScrollbar = () => {
+                        if (!thumb || !rail) return;
+                        const shell = scroller.closest('.social-neo-messages__thread-shell');
+                        if (shell) {
+                            const shellRect = shell.getBoundingClientRect();
+                            const scrollRect = scroller.getBoundingClientRect();
+                            rail.style.top = `${scrollRect.top - shellRect.top}px`;
+                            rail.style.height = `${scrollRect.height}px`;
+                            rail.style.bottom = 'auto';
+                        }
+                        const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+                        const visibleRatio = scroller.scrollHeight > 0
+                            ? Math.min(1, scroller.clientHeight / scroller.scrollHeight)
+                            : 1;
+                        const thumbRatio = Math.max(0.12, visibleRatio);
+                        thumb.style.height = `${thumbRatio * 100}%`;
+                        thumb.style.top = `${maxScroll > 0 ? (scroller.scrollTop / maxScroll) * (100 - thumbRatio * 100) : 0}%`;
+                        thumb.style.transform = 'none';
+                    };
+                    scroller.addEventListener('scroll', syncScrollbar, { passive: true });
+                    window.addEventListener('resize', syncScrollbar, { passive: true });
+                    scroller.addEventListener('wheel', (event) => {
+                        const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+                        if (!maxScroll) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        scroller.scrollTop = Math.max(0, Math.min(maxScroll, scroller.scrollTop + event.deltaY));
+                        syncScrollbar();
+                    }, { passive: false });
+                    if (rail) {
+                        rail.style.pointerEvents = 'auto';
+                        rail.addEventListener('pointerdown', (event) => {
+                            event.preventDefault();
+                            const move = (clientY) => {
+                                const rect = rail.getBoundingClientRect();
+                                const thumbHeight = thumb.getBoundingClientRect().height;
+                                const travel = Math.max(1, rect.height - thumbHeight);
+                                const ratio = Math.max(0, Math.min(1, (clientY - rect.top - thumbHeight / 2) / travel));
+                                scroller.scrollTop = ratio * Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+                                syncScrollbar();
+                            };
+                            move(event.clientY);
+                            const onMove = (moveEvent) => move(moveEvent.clientY);
+                            const onUp = () => {
+                                document.removeEventListener('pointermove', onMove);
+                                document.removeEventListener('pointerup', onUp);
+                            };
+                            document.addEventListener('pointermove', onMove);
+                            document.addEventListener('pointerup', onUp, { once: true });
+                        });
+                    }
+                    syncScrollbar();
+                    const jumpEl = scroller.querySelector('.is-highlighted, .is-search-active');
+                    if (jumpEl) {
+                        jumpEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    } else {
+                        scroller.scrollTop = scroller.scrollHeight;
+                    }
+                    syncScrollbar();
+                }
+            });
+        } catch (e) {}
+        return renderedHtml;
     };
 
     window.renderMessagesPanel = function renderMessagesPanel() {
@@ -676,7 +748,8 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
         if (formType === 'send-message') {
             return withBusy(async () => {
                 const chatId = text(form.getAttribute('data-chat-id'));
-                const body = text(form.messageBody?.value || runtime.ui?.messageDraftByChat?.[chatId]);
+                const inputEl = form.querySelector('.social-neo-msg-compose-input') || form.messageBody;
+                const body = text(inputEl?.value || runtime.ui?.messageDraftByChat?.[chatId]);
                 const file = runtime.ui?.messageFileByChat?.[chatId] || null;
                 if (!body && !file) throw new Error('Write a message or attach a file first.');
                 await sendPortalMessage(chatId, body, file);
@@ -726,7 +799,7 @@ window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
     function handleSocialMessagesInput(target, runtime, event) {
         if (!isSocialMessagesInputTarget(target)) return false;
         const messageForm = target.closest('form[data-form="send-message"]');
-        if (messageForm && target.name === 'messageBody') {
+        if (messageForm && (target.classList?.contains('social-neo-msg-compose-input') || target.name === 'messageBody' || target.name?.startsWith('social_msg_'))) {
             runtime.ui.messageDraftByChat = runtime.ui.messageDraftByChat || {};
             runtime.ui.messageDraftByChat[text(messageForm.getAttribute('data-chat-id'))] = target.value;
         }

@@ -276,7 +276,7 @@
                 signals,
                 profile: profile
             };
-        });
+        }).filter((record) => String(record.status || '').trim().toLowerCase() !== 'archived');
         return { records, facultyProfile: profile };
     }
 
@@ -354,6 +354,18 @@
         state.filters = cloneDefaultFilters();
         renderStudentsPage();
         showToast('Student filters cleared.');
+    }
+
+    function showAllStudentRecords() {
+        const state = getStudentsState();
+        state.filters = {
+            ...cloneDefaultFilters(),
+            archive: 'active',
+            field: {}
+        };
+        renderStudentsPage();
+        document.querySelector('.students-hub-directory-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast('Showing the full student record list.');
     }
 
     function reviewMissingData() {
@@ -485,7 +497,7 @@
                     <button class="lux-secondary-btn" type="button" data-student-action="toggle-login" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-power-off"></i> Toggle login</button>
                     <button class="lux-secondary-btn" type="button" data-student-action="mark-reviewed" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-clipboard-check"></i> Mark reviewed</button>
                     ${record.status === 'Archived'
-                        ? `<button class="lux-primary-btn" type="button" data-student-action="restore" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-box-open"></i> Restore</button>`
+                        ? renderStatusChip('Archived', 'is-warning')
                         : `<button class="lux-secondary-btn" type="button" data-student-action="archive" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-box-archive"></i> Archive</button>`}
                     <button class="lux-secondary-btn lux-danger-btn" type="button" data-student-action="delete" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-user-slash"></i> Delete</button>
                 </div>
@@ -567,7 +579,7 @@
                         ${renderProgress(completion.percent, `${completion.percent}% complete · updated ${escapeHtml(record.updatedAt || 'unknown')}`)}
                         <div class="students-hub-toolbar-actions">
                             ${record.status === 'Archived'
-                                ? `<button class="lux-primary-btn" type="button" data-student-action="restore" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-open"></i> Restore</button>`
+                                ? renderStatusChip('Archived', 'is-warning')
                                 : `<button class="lux-secondary-btn" type="button" data-student-action="archive" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-archive"></i> Archive</button>`}
                         </div>
                     </div>
@@ -633,7 +645,7 @@
                             <button class="lux-primary-btn" type="button" data-student-action="select" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> View</button>
                             <button class="lux-secondary-btn" type="button" data-student-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit</button>
                             ${record.status === 'Archived'
-                                ? `<button class="lux-secondary-btn" type="button" data-student-action="restore" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-open"></i> Restore</button>`
+                                ? renderStatusChip('Archived', 'is-warning')
                                 : `<button class="lux-secondary-btn" type="button" data-student-action="archive" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-archive"></i> Archive</button>`}
                         </div>
                     </td>
@@ -663,6 +675,7 @@
                     <div class="students-hub-directory-head">
                         <h2 class="students-hub-section-title lux-card-title">Records</h2>
                         <div class="students-hub-inline-actions" data-lux-btn-density="dense">
+                            <button class="lux-secondary-btn" type="button" data-student-action="show-all-records"><i class="fas fa-list"></i> Show full list</button>
                             <button class="lux-secondary-btn" type="button" data-student-action="clear-filters"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
                         </div>
                     </div>
@@ -963,10 +976,11 @@
 
         const draft = editing || buildStudentDraftRecord(facultyCode, platformRole);
         const actualFacultyCode = draft.facultyCode || facultyCode;
+        const recordId = editing?.id || nextUserId(actualFacultyCode);
         const mapped = typeof mapStudentFieldValuesToLegacyRecord === 'function'
             ? mapStudentFieldValuesToLegacyRecord(staffTypeId, values, {
                 ...draft,
-                id: editing?.id || nextUserId(platformRole, actualFacultyCode),
+                id: recordId,
                 staffId: normalizeText(values.staff_id || editing?.staffId || nextStudentNumber(), nextStudentNumber()),
                 facultyCode: actualFacultyCode,
                 faculty: draft.faculty || humanizeFacultyName(actualFacultyCode),
@@ -985,7 +999,8 @@
                 subjects: editing?.subjects || [],
                 maxHours: Math.max(1, Number(values.max_weekly_hours || editing?.maxHours || (platformRole === 'ta' ? 8 : 15)))
             })
-            : { ...draft, fieldValues: values };
+            : { ...draft, id: recordId, fieldValues: values };
+        mapped.id = mapped.id || recordId;
         mapped.staffTypeId = staffTypeId;
         mapped.fieldValues = { ...(mapped.fieldValues || {}), ...values };
         if (!mapped.name) mapped.name = normalizeText(values.full_name || '', 'New staff');
@@ -1001,11 +1016,26 @@
         return KiuCommandCenterUtils.syncGroupsForStaff(nextRecord, previousRecord);
     }
 
+    function getCanonicalPortalState() {
+        const state = typeof window !== 'undefined' && window.KIU_STATE && typeof window.KIU_STATE === 'object'
+            ? window.KIU_STATE
+            : (typeof KIU_STATE !== 'undefined' && KIU_STATE && typeof KIU_STATE === 'object' ? KIU_STATE : null);
+        if (state && typeof window !== 'undefined') window.KIU_STATE = state;
+        // Keep the global lexical binding aligned when state.js has already
+        // declared it. Command-center helpers must never write to a detached
+        // object that the persistence serializer cannot see.
+        if (state && typeof KIU_STATE !== 'undefined' && KIU_STATE !== state) KIU_STATE = state;
+        return state;
+    }
+
     function upsertFacultyMirror(nextRecord) {
-        if (!KIU_STATE.facultyProfiles[nextRecord.facultyCode]) {
-            KIU_STATE.facultyProfiles[nextRecord.facultyCode] = { professors: [], tas: [], curriculum: [], students: [] };
+        const state = getCanonicalPortalState();
+        if (!state) return null;
+        if (!state.facultyProfiles || typeof state.facultyProfiles !== 'object') state.facultyProfiles = {};
+        if (!state.facultyProfiles[nextRecord.facultyCode]) {
+            state.facultyProfiles[nextRecord.facultyCode] = { professors: [], tas: [], curriculum: [], students: [] };
         }
-        const profile = KIU_STATE.facultyProfiles[nextRecord.facultyCode];
+        const profile = state.facultyProfiles[nextRecord.facultyCode];
         profile.students = (profile.students || []).filter((member) => String(member?.id || '') !== String(nextRecord.id));
         profile.students.push({
             id: nextRecord.id,
@@ -1032,11 +1062,46 @@
         return KiuCommandCenterUtils.syncScheduleSessions(nextRecord, { profPlatformRoles: ['student'] });
     }
 
-    function persistStudentRecord(nextRecord) {
-        const store = ensureStore();
+    async function persistStudentRecord(nextRecord) {
+        const state = getCanonicalPortalState();
+        if (!state) throw new Error('Portal state is unavailable.');
+        if (!Array.isArray(state.users)) state.users = [];
+        if (!state.studentAdminProfiles || typeof state.studentAdminProfiles !== 'object') {
+            state.studentAdminProfiles = {};
+        }
+        const store = state.studentAdminProfiles;
         const current = buildStudentRecords(nextRecord.facultyCode).records.find((record) => record.id === nextRecord.id) || null;
-        const existingUser = (KIU_STATE.users || []).find((user) => String(user?.id || '') === String(nextRecord.id)) || null;
-        upsertUserRecord(nextRecord, existingUser);
+        const existingUser = store[nextRecord.id]?.user
+            || state.users.find((user) => String(user?.id || '') === String(nextRecord.id))
+            || null;
+        const sharedUserRecord = upsertUserRecord(nextRecord, existingUser);
+
+        // The shared helper historically resolved the module-level KIU_STATE
+        // binding, which could differ from window.KIU_STATE after bootstrap.
+        // Write the canonical account explicitly so this creation cannot be
+        // acknowledged while only the faculty mirror was updated.
+        const userRecord = {
+            ...(sharedUserRecord || {}),
+            ...(existingUser || {}),
+            id: nextRecord.id,
+            staffId: nextRecord.staffId,
+            name: nextRecord.name,
+            nameEn: nextRecord.nameEn,
+            email: nextRecord.email,
+            role: 'student',
+            faculty: nextRecord.facultyCode,
+            facultyCode: nextRecord.facultyCode,
+            status: nextRecord.status,
+            accountStatus: nextRecord.accountStatus,
+            photo: nextRecord.photo,
+            avatar: nextRecord.avatar || sharedUserRecord?.avatar || existingUser?.avatar,
+            phone: nextRecord.phone,
+            joinYear: nextRecord.joinYear,
+            lastLogin: nextRecord.lastLogin
+        };
+        const userIndex = state.users.findIndex((user) => String(user?.id || '') === String(nextRecord.id));
+        if (userIndex >= 0) state.users[userIndex] = userRecord;
+        else state.users.push(userRecord);
         upsertFacultyMirror(nextRecord);
         store[nextRecord.id] = {
             id: nextRecord.id,
@@ -1073,14 +1138,24 @@
         if (typeof syncAvailableGroupEnrollmentCounts === 'function') {
             syncAvailableGroupEnrollmentCounts();
         }
-        if (typeof saveState === 'function') {
-            saveState();
+        // Invalidate the canonicalization cache after the explicit mutations,
+        // then flush one awaited server-authoritative write. The UI must not
+        // report success until PostgreSQL has acknowledged the snapshot.
+        if (typeof invalidateCanonicalState === 'function') invalidateCanonicalState();
+        if (typeof saveState === 'function') saveState();
+        let savedPayload = null;
+        if (typeof flushPortalStateSync === 'function') {
+            savedPayload = await flushPortalStateSync({ forceLatest: true });
+        } else if (typeof persistPortalStateToBackend === 'function') {
+            savedPayload = await persistPortalStateToBackend(existingUser ? 'update-students-command-center' : 'create-students-command-center');
         }
-        if (typeof queueRealtimeUserSync === 'function' && !existingUser) {
-            queueRealtimeUserSync(KIU_STATE.users.find((user) => String(user?.id || '') === String(nextRecord.id)));
+        if (!savedPayload?.saved) {
+            throw new Error('The server did not acknowledge the student record.');
         }
-        if (typeof persistPortalStateToBackend === 'function') {
-            persistPortalStateToBackend(existingUser ? 'update-students-command-center' : 'create-students-command-center').catch(() => null);
+        if (typeof queueRealtimeUserSync === 'function') {
+            // Keep the authentication/account record aligned with directory
+            // edits, including updates to an existing student.
+            queueRealtimeUserSync(userRecord, { syncPortalState: true });
         }
         return nextRecord;
     }
@@ -1089,9 +1164,6 @@
         KiuCommandCenterUtils.setRecordArchiveStatus(id, ensureRecordEntry, renderStudentsPage, 'Archived', 'Student');
     }
 
-    function restoreStudent(id) {
-        KiuCommandCenterUtils.setRecordArchiveStatus(id, ensureRecordEntry, renderStudentsPage, 'Active', 'Student');
-    }
 
     function inviteStudent(id) {
         KiuCommandCenterUtils.inviteRecord(id, ensureRecordEntry, renderStudentsPage);
@@ -1391,12 +1463,18 @@
         renderStudentsPage();
     }
 
-    function submitForm(event) {
+    async function submitForm(event) {
         event.preventDefault();
         const next = buildStudentFormRecord(false);
         if (!next) return;
         const wasEditing = Boolean(getStudentsState().editingId);
-        persistStudentRecord(next);
+        try {
+            await persistStudentRecord(next);
+        } catch (error) {
+            console.error('[students-command-center] student save failed', error);
+            showToast('Student could not be saved. Please try again.');
+            return;
+        }
         const state = getStudentsState();
         state.selectedId = next.id;
         state.profileTab = defaultProfileTabForRecord(next);
@@ -1425,6 +1503,10 @@
         }
         if (action === 'clear-filters') {
             clearFilters();
+            return;
+        }
+        if (action === 'show-all-records') {
+            showAllStudentRecords();
             return;
         }
         if (action === 'clear-filter-chip') {
@@ -1480,10 +1562,6 @@
         }
         if (action === 'archive') {
             archiveStudent(staffId);
-            return;
-        }
-        if (action === 'restore') {
-            restoreStudent(staffId);
             return;
         }
         if (action === 'invite') {
@@ -1616,6 +1694,9 @@
     function bindEvents() {
         if (window.__studentsCommandBound) return;
         window.__studentsCommandBound = true;
+        window.addEventListener('kiu:portal-bootstrap-complete', () => {
+            if (document.getElementById('students-content')) renderStudentsPage();
+        });
         ensureStudentFormBuilderEventsBound();
 
         document.addEventListener('click', (event) => {
@@ -1748,6 +1829,8 @@
         const container = document.getElementById('students-content');
         if (!container) return;
         container.classList.add('students-admin-root');
+        const isInternalRerender = container.__commandCenterHasRendered === true;
+        if (isInternalRerender) container.dataset.commandCenterPainted = '1';
         const state = getStudentsState();
         const selected = activeSelection(records);
         if (state.workspace === 'form-settings' && typeof renderStudentFormSettings === 'function') {
@@ -1797,6 +1880,9 @@
                 renderStudentAdminScheduleEmbed(selected.id);
             }
         }
+        // Mark this root after its first paint; the next render is then treated
+        // as an internal update and skips loading motion.
+        container.__commandCenterHasRendered = true;
         if (typeof markPortalShellReady === 'function') {
             markPortalShellReady();
         } else if (typeof window.__kiuStartShellReveal === 'function') {

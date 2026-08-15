@@ -72,6 +72,12 @@ describe('auth session store domain split', () => {
         expect(issued.session.expiresAt).toBeTruthy();
         expect(store.getSession(issued.session.token)?.userId).toBe('student-1');
 
+        store.state.accounts['student-1'].role = 'ta';
+        const refreshedRoleSession = store.getSession(issued.session.token);
+        expect(refreshedRoleSession?.actualRole).toBe('ta');
+        expect(refreshedRoleSession?.active).not.toBe(false);
+
+        store.state.accounts['student-1'].role = 'student';
         const reset = store.requestPasswordReset('student1@example.com');
         expect(reset?.token).toBeTruthy();
         expect(store.resetPassword(reset.token, 'AnotherPassword!456')?.id).toBe('student-1');
