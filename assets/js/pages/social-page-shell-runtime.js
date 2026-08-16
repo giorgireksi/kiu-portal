@@ -603,6 +603,33 @@
                 }
                 if (liveHost && !activeDialog()) liveHost.__kiuForceCenterOnly = true;
                 renderSocialPageNow(renderReason);
+                // A cached dynamic script can fire its load callback one task
+                // before the module export is observable to the first render.
+                // Recover that narrow race once the photography export is live.
+                if (renderReason === 'photography-module') {
+                    window.setTimeout(() => {
+                        const currentHost = root();
+                        const currentCenter = currentHost?.querySelector('#social-neo-center-region');
+                        const currentPanel = text(state()?.ui?.activePanel || '') || 'feed';
+                        const photographyReady = Boolean(
+                            window.__KIU_SOCIAL_PHOTOGRAPHY_MODULE_LOADED
+                            && typeof window.renderPhotographyPanel === 'function'
+                        );
+                        if (currentPanel !== 'photography'
+                            || !photographyReady
+                            || !currentCenter?.firstElementChild?.matches('.social-neo-module-loading')) return;
+                        if (currentHost.__kiuDeferredModuleRecoveryKey === renderKey) return;
+                        currentHost.__kiuDeferredModuleRecoveryKey = renderKey;
+                        delete currentHost.__kiuDeferredModuleRenderKey;
+                        currentHost.__kiuForceCenterOnly = true;
+                        renderSocialPageNow(renderReason);
+                        window.setTimeout(() => {
+                            if (currentHost.__kiuDeferredModuleRecoveryKey === renderKey) {
+                                delete currentHost.__kiuDeferredModuleRecoveryKey;
+                            }
+                        }, 0);
+                    }, 0);
+                }
             };
             if (typeof queueMicrotask === 'function') queueMicrotask(flush);
             else Promise.resolve().then(flush);

@@ -28,12 +28,13 @@ describe('social performance safeguards', () => {
     it('coalesces duplicate deferred module remounts before rendering', () => {
         const html = readSource('social.html');
         const shell = readSource('assets/js/pages/social-page-shell-runtime.js');
-        expect(html).toContain('social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe4');
+        expect(html).toContain('social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe5');
         expect(shell).toContain('const deferredModuleRenderQueue = new Set();');
         expect(shell).toContain('if (deferredModuleRenderQueue.has(renderReason)) return;');
         expect(shell).toContain('queueMicrotask(flush)');
         expect(shell).toContain('__kiuDeferredModuleRenderKey');
         expect(shell).toContain('delete liveHost.__kiuDeferredModuleRenderKey');
+        expect(shell).toContain("renderReason === 'photography-module'");
     });
 
     it('filters route-guardian mutations before scheduling reconciliation', () => {

@@ -13,7 +13,7 @@ describe('Social Portfolio loading animation', () => {
         const html = readSource('social.html');
         const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
         const portfolioIndex = html.indexOf('social-portfolio-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner7');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner8');
 
         expect(html).toContain('social-portfolio-loading.css?v=20260815-socialassemblyclean1');
         expect(sharedIndex).toBeGreaterThan(-1);

@@ -16,7 +16,7 @@ describe('Social Projects workspace loading animation', () => {
         const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const projectsIndex = html.indexOf('social-projects-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner7');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner8');
 
         expect(html).toContain('social-projects-loading.css?v=20260815-socialassemblyclean1');
         expect(sharedIndex).toBeGreaterThan(-1);
