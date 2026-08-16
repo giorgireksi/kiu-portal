@@ -3260,6 +3260,15 @@ html.lux-light-mode body.lux-route-programs #page-programs .lux-program-subject-
 
 /* ── LMS route (lux-route-lms; layout only — paint → lux-fouc-ht / lux-controls) ── */
 
+/* LMS has its own workspace shell. The legacy nav stubs remain in the DOM
+   for shared navigation compatibility, but must never paint over the route. */
+body.lux-route-lms > #top-nav,
+body.lux-route-lms > #prof-nav,
+body.lux-route-lms > #admin-nav,
+body.lux-route-lms > #service-nav {
+    display: none !important;
+}
+
 body.lux-route-lms .lms-route-stage {
     display: grid;
     gap: 14px;
