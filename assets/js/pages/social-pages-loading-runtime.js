@@ -210,6 +210,7 @@
             return;
         }
         const observer = new MutationObserver(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             if (observerFrame) return;
             const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
             if (activePanel && activePanel !== 'pages') return;
@@ -229,5 +230,8 @@
     window.__kiuStartSocialPagesLoadingMotion = startCurrentPagesMotion;
     motion.install();
     observeRenderedPages();
-    window.setTimeout(() => startCurrentPagesMotion(), 0);
+    window.setTimeout(() => {
+        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+        startCurrentPagesMotion();
+    }, 0);
 })();

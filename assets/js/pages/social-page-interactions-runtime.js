@@ -2197,6 +2197,9 @@ const buildPortfolioFingerprint = window.buildPortfolioFingerprint || (window.Ki
 const buildPhotographyUiFingerprint = window.buildPhotographyUiFingerprint || (window.KiuSocialFingerprintModel || {}).buildPhotographyUiFingerprint;
 const buildPagesFingerprint = window.buildPagesFingerprint || (window.KiuSocialFingerprintModel || {}).buildPagesFingerprint;
 function renderSocialPageNow(reason = 'manual') {
+    // Social render orchestration is the single owner of assembly starts.
+    // Section runtimes retain standalone fallbacks but stay passive here.
+    window.__kiuSocialAssemblyMotionOwner = 'render-pipeline';
     clearTimeout(renderDebounceTimer);
     const renderCallback = () => {
         const host = root();

@@ -183,6 +183,7 @@
             return;
         }
         const observer = new MutationObserver(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             if (observerFrame) return;
             const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
             if (activePanel && activePanel !== 'lost-and-found') return;
@@ -202,5 +203,8 @@
     window.__kiuStartSocialLostFoundLoadingMotion = startCurrentLostFoundMotion;
     motion.install();
     observeRenderedLostFound();
-    window.setTimeout(() => startCurrentLostFoundMotion(), 0);
+    window.setTimeout(() => {
+        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+        startCurrentLostFoundMotion();
+    }, 0);
 })();

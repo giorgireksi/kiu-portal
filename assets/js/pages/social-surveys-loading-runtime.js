@@ -195,6 +195,7 @@
             return;
         }
         const observer = new MutationObserver(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             if (observerFrame) return;
             const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
             if (activePanel && activePanel !== 'surveys') return;
@@ -214,5 +215,8 @@
     window.__kiuStartSocialSurveysLoadingMotion = startCurrentSurveysMotion;
     motion.install();
     observeRenderedSurveys();
-    window.setTimeout(() => startCurrentSurveysMotion(), 0);
+    window.setTimeout(() => {
+        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+        startCurrentSurveysMotion();
+    }, 0);
 })();

@@ -183,6 +183,7 @@
             return;
         }
         const observer = new MutationObserver(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             if (observerFrame) return;
             const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
             if (activePanel && activePanel !== 'alerts') return;
@@ -202,5 +203,8 @@
     window.__kiuStartSocialAlertsLoadingMotion = startCurrentAlertsMotion;
     motion.install();
     observeRenderedAlerts();
-    window.setTimeout(() => startCurrentAlertsMotion(), 0);
+    window.setTimeout(() => {
+        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+        startCurrentAlertsMotion();
+    }, 0);
 })();

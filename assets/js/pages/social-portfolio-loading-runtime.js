@@ -210,6 +210,7 @@
             return;
         }
         const observer = new MutationObserver(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             if (observerFrame) return;
             const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
             if (activePanel && activePanel !== 'workspace' && activePanel !== 'projects') return;
@@ -229,5 +230,8 @@
     window.__kiuStartSocialPortfolioLoadingMotion = startCurrentPortfolioMotion;
     motion.install();
     observeRenderedPortfolio();
-    window.setTimeout(() => startCurrentPortfolioMotion(), 0);
+    window.setTimeout(() => {
+        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+        startCurrentPortfolioMotion();
+    }, 0);
 })();

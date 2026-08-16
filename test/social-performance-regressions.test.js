@@ -55,6 +55,10 @@ describe('social performance safeguards', () => {
         expect(runtime).toContain('__kiuAbortAssemblyLoadingMotions');
         expect(readSource('assets/js/pages/social-page-interactions-runtime.js'))
             .toContain('if (panelChanged && typeof window.__kiuAbortAssemblyLoadingMotions === \'function\')');
+        for (const panel of ['home', 'community', 'groups', 'projects', 'portfolio', 'research', 'pages', 'events', 'surveys', 'photography', 'lost-found', 'messages', 'alerts']) {
+            expect(readSource(`assets/js/pages/social-${panel}-loading-runtime.js`))
+                .toContain("window.__kiuSocialAssemblyMotionOwner === 'render-pipeline'");
+        }
     });
 
     it('uses an indexed directory fallback for relationship cards', () => {
