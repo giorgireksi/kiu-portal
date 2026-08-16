@@ -1623,7 +1623,7 @@ function renderLmsInteractionThread(post, resourceKey, currentName) {
                     <i class="fas fa-reply"></i> ${replyLabel}
                 </button>
             </footer>
-            <div class="lms-announcement-replies" data-lms-announcement-replies="${escapeHtml(post.id)}" hidden>
+            <div class="lms-announcement-replies" data-lms-announcement-replies="${escapeHtml(post.id)}"${replies.length ? '' : ' hidden'}>
                 ${replies.map(reply => renderLmsInteractionReply(reply, currentName, resourceKey, 0)).join('')}
             </div>
             ${canReplyToLmsInteractionPost(post) ? `

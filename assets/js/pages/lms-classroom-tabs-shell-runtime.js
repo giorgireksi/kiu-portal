@@ -127,19 +127,18 @@ function toggleLmsInteractionInlineReply(replyId) {
 
 function toggleLmsAnnouncementReplies(postId) {
     const id = String(postId || '').trim();
-    const replies = Array.from(document.querySelectorAll('[data-lms-announcement-replies]'))
-        .find(node => node.getAttribute('data-lms-announcement-replies') === id);
     const composer = Array.from(document.querySelectorAll('[data-lms-interaction-inline-compose]'))
         .find(node => node.getAttribute('data-lms-interaction-inline-compose') === id);
-    if (!replies) return;
-    const shouldOpen = replies.hidden;
-    document.querySelectorAll('[data-lms-announcement-replies]').forEach(node => { node.hidden = true; });
+    if (!composer) return;
+    const shouldOpen = composer.hidden;
     document.querySelectorAll('[data-lms-interaction-inline-compose]').forEach(node => { node.hidden = true; });
-    replies.hidden = !shouldOpen;
-    if (shouldOpen && composer) {
-        composer.hidden = false;
-        composer.querySelector('input')?.focus();
-    }
+    document.querySelectorAll('.lms-announcement-reply-button').forEach(button => {
+        if (button.closest('[data-lms-interaction-thread]')) button.setAttribute('aria-expanded', 'false');
+    });
+    composer.hidden = !shouldOpen;
+    const button = composer.closest('[data-lms-interaction-thread]')?.querySelector('.lms-announcement-actions .lms-announcement-reply-button');
+    if (button) button.setAttribute('aria-expanded', String(shouldOpen));
+    if (shouldOpen) composer.querySelector('input')?.focus();
 }
 
 function sendLmsInteractionReply(resourceKey, parentId) {

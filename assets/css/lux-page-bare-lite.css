@@ -11211,9 +11211,32 @@ body.lux-route-lms .lms-announcement-feed {
     display: grid;
     align-content: start;
     gap: 12px;
+    min-height: 0;
     overflow-y: auto;
     padding: 16px;
     overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+
+body.lux-route-lms .lms-announcement-feed::-webkit-scrollbar {
+    width: 10px;
+}
+
+body.lux-route-lms .lms-announcement-feed::-webkit-scrollbar-track {
+    background: color-mix(in srgb, var(--lux-border) 24%, transparent);
+    border-radius: 999px;
+}
+
+body.lux-route-lms .lms-announcement-feed::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--lux-accent) 58%, var(--lux-border));
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+
+body.lux-route-lms .lms-announcement-inline-composer[hidden],
+body.lux-route-lms .lms-announcement-replies[hidden] {
+    display: none !important;
 }
 
 body.lux-route-lms .lms-announcement-card {
