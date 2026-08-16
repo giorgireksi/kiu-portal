@@ -11058,7 +11058,7 @@ body.lux-route-lms #page-lms-inner .lms-route-panel-compact:has(> #lms-content-a
     width: 100%;
     min-width: 0;
     min-height: calc(100dvh - 200px);
-    padding-bottom: clamp(56px, 12vh, 112px);
+    padding-bottom: clamp(64px, 14vh, 128px);
     box-sizing: border-box;
     align-content: start;
 }
