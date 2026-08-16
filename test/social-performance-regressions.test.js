@@ -19,7 +19,7 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260816-socialperf2');
+        expect(html).toContain('social-page.js?v=20260816-socialperf3');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
         expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
         expect(page).toContain('loadSocialDynamicScript');
@@ -58,6 +58,8 @@ describe('social performance safeguards', () => {
         expect(runtime).toContain('__kiuAbortAssemblyLoadingMotions');
         const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
         expect(interactions).toContain('SOCIAL_PANEL_MOTION_GLOBAL_BY_PANEL');
+        expect(interactions).toContain("projects: '__kiuSocialPortfolioLoadingMotion'");
+        expect(interactions).toContain("workspace: '__kiuSocialProjectsLoadingMotion'");
         expect(interactions).toContain('if (r === `${target}-module`)');
         expect(interactions).toContain('Read receipts and realtime upserts must not restart the visible');
         expect(interactions)
@@ -68,6 +70,10 @@ describe('social performance safeguards', () => {
         }
         expect(readSource('assets/js/pages/social-home-loading-runtime.js')).toContain('autoStart: false');
         expect(readSource('assets/js/pages/social-messages-loading-runtime.js')).toContain('phase === \'ready\' && typeof motion.abort === \'function\'');
+        expect(interactions).toContain('queueSocialPortfolioMotion(shell.center, activePanel, reason);');
+        expect(interactions).toContain('queueSocialProjectsMotion(shell.center, activePanel, reason);');
+        expect(interactions).toContain('socialPortfolioMotionFrame = 0;');
+        expect(readSource('assets/js/pages/social-portfolio-loading-runtime.js')).toContain("activePanel !== 'projects'");
     });
 
     it('fails open when hydration or a dynamic module stalls', () => {
@@ -82,6 +88,7 @@ describe('social performance safeguards', () => {
         expect(interactions).toContain("console.error('[Social] Render degraded:', error);");
         expect(interactions).toContain('social-module-retry');
         expect(page).toContain('__kiuRetrySocialModule');
+        expect(page).toContain("return ['workspace', 'projects'];");
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
         expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');

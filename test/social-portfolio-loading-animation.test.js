@@ -11,11 +11,11 @@ describe('Social Portfolio loading animation', () => {
 
     it('loads Portfolio motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const portfolioIndex = html.indexOf('social-portfolio-loading-runtime.js?v=20260810-socialbootveil2');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
+        const portfolioIndex = html.indexOf('social-portfolio-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner7');
 
-        expect(html).toContain('social-portfolio-loading.css?v=20260809-socialpopup1');
+        expect(html).toContain('social-portfolio-loading.css?v=20260815-socialassemblyclean1');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(portfolioIndex).toBeGreaterThan(sharedIndex);
         expect(interactionsIndex).toBeGreaterThan(portfolioIndex);
@@ -33,7 +33,7 @@ describe('Social Portfolio loading animation', () => {
         expect(runtime).toContain('.social-portfolio-card');
         expect(runtime).toContain('.portfolio-editor-stack');
         expect(runtime).toContain("'[role=\"dialog\"]'");
-        expect(runtime).toContain('flattenInnerTargets: false');
+        expect(runtime).toContain('flattenInnerTargets: true');
         expect(runtime).toContain('socialPortfolioAssemblyState');
         expect(runtime).toContain('observeRenderedPortfolio');
         expect(runtime).toContain('delete center.dataset.socialPortfolioAssemblyState');
@@ -45,7 +45,7 @@ describe('Social Portfolio loading animation', () => {
         expect(runtime).not.toContain("motion.getState?.().phase !== 'idle'");
         expect(interactions).toContain('function queueSocialPortfolioMotion(center, activePanel, reason)');
         expect(interactions).toContain("reason === 'boot'");
-        expect(interactions).toContain("reason === 'portfolio-panel-tab'");
+        expect(interactions).toContain("shouldAnimateSocialPanelMotion('projects', activePanel, reason)");
         expect(interactions).toContain('window.__kiuStartSocialPortfolioLoadingMotion');
         expect(interactions).not.toContain('section.dataset.socialPortfolioAssemblyRoot');
         expect(css).toContain('prefers-reduced-motion');
@@ -229,8 +229,8 @@ describe('Social Portfolio loading animation', () => {
 
     it('cache-busts Portfolio assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
-        expect(sw).toContain('social-portfolio-loading.css?v=20260809-socialpopup1');
-        expect(sw).toContain('social-portfolio-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
+        expect(sw).toContain('social-portfolio-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-portfolio-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
     });
 });

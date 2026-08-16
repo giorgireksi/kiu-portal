@@ -1041,39 +1041,43 @@ Publishes only the host/runtime contract consumed by its loader.
             existing.addEventListener('error', onError);
         });
     }
-    function socialModulePanelForLabel(label) {
+    function socialModulePanelsForLabel(label) {
         const value = String(label || '').toLowerCase();
-        if (value.includes('community')) return 'community';
-        if (value.includes('alerts')) return 'alerts';
-        if (value.includes('lost-found')) return 'lost-and-found';
-        if (value.includes('photography')) return 'photography';
-        if (value.includes('surveys')) return 'surveys';
-        if (value.includes('research')) return 'research';
-        if (value.includes('messages')) return 'messages';
-        if (value.includes('profile')) return 'profile';
-        if (value.includes('events')) return 'events';
-        if (value.includes('groups')) return 'groups';
-        if (value.includes('pages')) return 'pages';
-        if (value.includes('workspace')) return 'workspace';
-        if (value.includes('feed')) return 'feed';
-        return '';
+        if (value.includes('workspace')) return ['workspace', 'projects'];
+        if (value.includes('community')) return ['community'];
+        if (value.includes('alerts')) return ['alerts'];
+        if (value.includes('lost-found')) return ['lost-and-found'];
+        if (value.includes('photography')) return ['photography'];
+        if (value.includes('surveys')) return ['surveys'];
+        if (value.includes('research')) return ['research'];
+        if (value.includes('messages')) return ['messages'];
+        if (value.includes('profile')) return ['profile'];
+        if (value.includes('events')) return ['events'];
+        if (value.includes('groups')) return ['groups'];
+        if (value.includes('pages')) return ['pages'];
+        if (value.includes('feed')) return ['feed'];
+        return [];
     }
     function reportSocialModuleFailure(label, error) {
-        const panel = socialModulePanelForLabel(label);
-        if (!panel) return;
+        const panels = socialModulePanelsForLabel(label);
+        if (!panels.length) return;
         window.__kiuSocialModuleFailures = window.__kiuSocialModuleFailures || {};
-        window.__kiuSocialModuleFailures[panel] = {
-            label: String(label || 'Social module'),
-            message: String(error?.message || `${label} could not be loaded.`)
-        };
+        panels.forEach((panel) => {
+            window.__kiuSocialModuleFailures[panel] = {
+                label: String(label || 'Social module'),
+                message: String(error?.message || `${label} could not be loaded.`)
+            };
+        });
         const activePanel = text(state()?.ui?.activePanel || '') || 'feed';
-        if (activePanel === panel && typeof window.renderSocialPageNow === 'function') {
+        if (panels.includes(activePanel) && typeof window.renderSocialPageNow === 'function') {
             window.setTimeout(() => window.renderSocialPageNow('module-failure'), 0);
         }
     }
     function clearSocialModuleFailure(label) {
-        const panel = socialModulePanelForLabel(label);
-        if (panel && window.__kiuSocialModuleFailures) delete window.__kiuSocialModuleFailures[panel];
+        const panels = socialModulePanelsForLabel(label);
+        if (window.__kiuSocialModuleFailures) {
+            panels.forEach((panel) => delete window.__kiuSocialModuleFailures[panel]);
+        }
     }
     function loadSocialDynamicScript(url, label = 'Social module') {
         const existing = document.querySelector(`script[src="${url}"]`);
@@ -1114,7 +1118,14 @@ Publishes only the host/runtime contract consumed by its loader.
             profile: ensureSocialProfileModule
         };
         const normalizedPanel = text(panel || 'feed') || 'feed';
-        if (window.__kiuSocialModuleFailures) delete window.__kiuSocialModuleFailures[normalizedPanel];
+        const workspaceAlias = normalizedPanel === 'workspace' || normalizedPanel === 'projects';
+        if (window.__kiuSocialModuleFailures) {
+            delete window.__kiuSocialModuleFailures[normalizedPanel];
+            if (workspaceAlias) {
+                delete window.__kiuSocialModuleFailures.workspace;
+                delete window.__kiuSocialModuleFailures.projects;
+            }
+        }
         const ensure = ensureByPanel[normalizedPanel];
         if (typeof ensure !== 'function') return Promise.resolve(false);
         return Promise.resolve(ensure()).then(() => {
@@ -1123,7 +1134,10 @@ Publishes only the host/runtime contract consumed by its loader.
             }
             return true;
         }).catch((error) => {
-            reportSocialModuleFailure(`Social ${normalizedPanel} module`, error);
+            reportSocialModuleFailure(
+                workspaceAlias ? 'Social workspace module' : `Social ${normalizedPanel} module`,
+                error
+            );
             return false;
         });
     };

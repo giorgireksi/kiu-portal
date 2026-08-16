@@ -213,7 +213,7 @@
             if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             if (observerFrame) return;
             const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
-            if (activePanel && activePanel !== 'workspace' && activePanel !== 'projects') return;
+            if (activePanel && activePanel !== 'projects') return;
             const run = () => {
                 observerFrame = 0;
                 startCurrentPortfolioMotion(getCenter());

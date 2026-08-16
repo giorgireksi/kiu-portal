@@ -11,14 +11,14 @@ describe('Social Projects workspace loading animation', () => {
 
     it('loads Projects motion before Social boot', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260810-socialhomeanim5');
-        const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260810-socialbootveil2');
-        const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260810-socialbootveil2');
-        const projectsIndex = html.indexOf('social-projects-loading-runtime.js?v=20260810-socialbootveil2');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
+        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
+        const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        const projectsIndex = html.indexOf('social-projects-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner7');
 
-        expect(html).toContain('social-projects-loading.css?v=20260809-socialpopup1');
+        expect(html).toContain('social-projects-loading.css?v=20260815-socialassemblyclean1');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(homeIndex).toBeGreaterThan(sharedIndex);
         expect(communityIndex).toBeGreaterThan(homeIndex);
@@ -43,7 +43,7 @@ describe('Social Projects workspace loading animation', () => {
         expect(runtime).toContain('.social-project-task-shell');
         expect(runtime).toContain('#social-neo-overlay-portal');
         expect(runtime).toContain('transformSafeSelector: []');
-        expect(runtime).toContain('flattenInnerTargets: false');
+        expect(runtime).toContain('flattenInnerTargets: true');
         expect(runtime).toContain('animateProjectSearchIcon');
         expect(runtime).toContain('scale(.62)');
         expect(runtime).toContain('is-social-project-search-pending');
@@ -52,12 +52,12 @@ describe('Social Projects workspace loading animation', () => {
         expect(runtime).not.toContain('(force && isNewSection)');
         expect(runtime).not.toContain('motion.replay');
         expect(interactions).toContain('function queueSocialProjectsMotion(center, activePanel, reason)');
-        expect(interactions).toContain("reason === 'workspace-module'");
-        expect(interactions).toContain("reason === 'panel-workspace'");
+        expect(interactions).toContain("shouldAnimateSocialPanelMotion('workspace', activePanel, reason)");
+        expect(interactions).toContain("/^panel-/.test(r)");
         const workspaceGate = interactions.match(
             /function queueSocialProjectsMotion[\s\S]*?function queueSocialPortfolioMotion/
         )?.[0] || '';
-        expect(workspaceGate).toContain("reason === 'boot'");
+        expect(workspaceGate).toContain("shouldAnimateSocialPanelMotion('workspace', activePanel, reason)");
         expect(interactions).toContain('Start sync in this turn');
         expect(interactions).not.toContain("section.dataset.socialProjectsAssemblyRoot = '1'");
         expect(interactions).toContain("[data-social-projects-assembly-root]");
@@ -134,8 +134,8 @@ describe('Social Projects workspace loading animation', () => {
 
     it('cache-busts the Projects workspace assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
-        expect(sw).toContain('social-projects-loading.css?v=20260809-socialpopup1');
-        expect(sw).toContain('social-projects-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
+        expect(sw).toContain('social-projects-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-projects-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
     });
 });

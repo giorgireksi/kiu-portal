@@ -207,8 +207,8 @@
             feed: '__kiuSocialHomeLoadingMotion',
             community: '__kiuSocialCommunityLoadingMotion',
             groups: '__kiuSocialGroupsLoadingMotion',
-            projects: '__kiuSocialProjectsLoadingMotion',
-            workspace: '__kiuSocialPortfolioLoadingMotion',
+            projects: '__kiuSocialPortfolioLoadingMotion',
+            workspace: '__kiuSocialProjectsLoadingMotion',
             research: '__kiuSocialResearchLoadingMotion',
             pages: '__kiuSocialPagesLoadingMotion',
             events: '__kiuSocialEventsLoadingMotion',
@@ -622,7 +622,7 @@
                 const generation = socialPortfolioMotionGeneration;
                 let attempts = 0;
                 const run = () => {
-                    socialProjectsMotionFrame = 0;
+                    socialPortfolioMotionFrame = 0;
                     if (generation !== socialPortfolioMotionGeneration
                         || text(state().ui?.activePanel || '') !== 'projects'
                         || center?.firstElementChild !== section
@@ -2380,10 +2380,10 @@ function renderSocialPageNow(reason = 'manual') {
                     queueSocialGroupsMotion(shell.center, activePanel, reason);
                     break;
                 case 'projects':
-                    queueSocialProjectsMotion(shell.center, activePanel, reason);
+                    queueSocialPortfolioMotion(shell.center, activePanel, reason);
                     break;
                 case 'workspace':
-                    queueSocialPortfolioMotion(shell.center, activePanel, reason);
+                    queueSocialProjectsMotion(shell.center, activePanel, reason);
                     break;
                 case 'research':
                     queueSocialResearchMotion(shell.center, activePanel, reason);
