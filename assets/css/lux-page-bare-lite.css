@@ -11056,7 +11056,10 @@ body.lux-route-lms :is(.lux-primary-btn, .lux-secondary-btn, .lux-primary-btn, .
 /* Interaction messenger (retired lms-interaction.css → shared bare-lite layout). */
 body.lux-route-lms #lms-content-area.lms-tab-interaction {
     gap: 0;
+    height: min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px));
+    max-height: min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px));
     min-height: min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px));
+    overflow: hidden;
 }
 
 body.lux-route-lms .lms-interaction-messenger {
