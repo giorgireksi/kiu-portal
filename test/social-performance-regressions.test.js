@@ -23,6 +23,15 @@ describe('social performance safeguards', () => {
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
     });
 
+    it('coalesces duplicate deferred module remounts before rendering', () => {
+        const html = readSource('social.html');
+        const shell = readSource('assets/js/pages/social-page-shell-runtime.js');
+        expect(html).toContain('social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe1');
+        expect(shell).toContain('const deferredModuleRenderQueue = new Set();');
+        expect(shell).toContain('if (deferredModuleRenderQueue.has(renderReason)) return;');
+        expect(shell).toContain('queueMicrotask(flush)');
+    });
+
     it('filters route-guardian mutations before scheduling reconciliation', () => {
         const page = readSource('assets/js/pages/social-page.js');
         expect(page).toContain('const mutationTouchesSocialHost = (mutations) => mutations.some');
@@ -34,9 +43,11 @@ describe('social performance safeguards', () => {
     it('uses the optimized shared assembly runtime on Social', () => {
         const html = readSource('social.html');
         const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-treecache1');
+        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-idempotent1');
         expect(runtime).not.toContain('function getCurrentNode(element, root)');
         expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
+        expect(runtime).toContain("soft-restart-skipped-same-content");
+        expect(runtime).toContain('state.contentRoot === contentRoot');
     });
 
     it('uses an indexed directory fallback for relationship cards', () => {

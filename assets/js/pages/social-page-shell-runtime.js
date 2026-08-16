@@ -57,6 +57,7 @@
         let projectInviteSearchTimer = 0;
         let pageMembersSearchTimer = 0;
         let eventEditorSearchTimer = 0;
+        const deferredModuleRenderQueue = new Set();
 
         function readWorkspaceNavCollapsed() {
             try {
@@ -572,10 +573,21 @@
             return ensureSocialShell(host);
         }
         function queueDeferredModuleRender(reason) {
-            invalidateSocialRenderCache({ center: true });
-            const host = root();
-            if (host && !activeDialog()) host.__kiuForceCenterOnly = true;
-            renderSocialPageNow(reason);
+            const renderReason = text(reason || 'module') || 'module';
+            if (deferredModuleRenderQueue.has(renderReason)) return;
+            deferredModuleRenderQueue.add(renderReason);
+            // Multiple lazy renderer callbacks can resolve in the same microtask
+            // (for example, two renders waiting on one panel module). Collapse
+            // them into one center remount so assembly motion cannot restart.
+            const flush = () => {
+                deferredModuleRenderQueue.delete(renderReason);
+                invalidateSocialRenderCache({ center: true });
+                const host = root();
+                if (host && !activeDialog()) host.__kiuForceCenterOnly = true;
+                renderSocialPageNow(renderReason);
+            };
+            if (typeof queueMicrotask === 'function') queueMicrotask(flush);
+            else Promise.resolve().then(flush);
         }
         function applyShellIdentity(force = false) {
             const signature = shellIdentitySignature();

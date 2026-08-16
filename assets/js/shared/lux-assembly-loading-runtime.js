@@ -89,6 +89,7 @@
         const state = {
             observer: null,
             root: null,
+            contentRoot: null,
             animations: new Set(),
             nodeStatus: new Map(),
             lateRuns: new Set(),
@@ -342,6 +343,7 @@
             document.body?.classList.remove(classes.active, classes.ready);
             stripAssemblyDom(root);
             state.root = null;
+            state.contentRoot = null;
             state.phase = 'idle';
             state.pendingReplay = null;
             state.targetCount = 0;
@@ -898,6 +900,7 @@
             }
 
             state.root = root;
+            state.contentRoot = root.firstElementChild;
             state.generation += 1;
             const generation = state.generation;
             state.phase = 'pending';
@@ -919,6 +922,11 @@
         // between abort() clearing hide classes and start() re-applying them).
         function softRestart(root = getPageRoot()) {
             if (!isRoute() || !root) return false;
+            const contentRoot = root.firstElementChild;
+            if (state.root === root && state.contentRoot === contentRoot && state.phase !== 'idle') {
+                recordEvent('soft-restart-skipped-same-content');
+                return true;
+            }
             const targets = getTargets(root);
             if (!targets.length) return false;
 
@@ -934,6 +942,7 @@
             stripAssemblyDom(root);
 
             state.root = root;
+            state.contentRoot = contentRoot;
             state.generation += 1;
             const generation = state.generation;
             state.phase = 'pending';
