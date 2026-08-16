@@ -67,6 +67,8 @@ describe('social performance safeguards', () => {
         expect(interactions).toContain("projects: '__kiuSocialPortfolioLoadingMotion'");
         expect(interactions).toContain("workspace: '__kiuSocialProjectsLoadingMotion'");
         expect(interactions).toContain('if (r === `${target}-module`)');
+        expect(interactions).toContain("if (fastPath || /-module$/.test(reason)) {");
+        expect(interactions).toContain('renderCallback();');
         expect(interactions).toContain('Read receipts and realtime upserts must not restart the visible');
         expect(interactions)
             .toContain('if (panelChanged && typeof window.__kiuAbortAssemblyLoadingMotions === \'function\')');
