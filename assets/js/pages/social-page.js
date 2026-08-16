@@ -168,7 +168,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
     const SOCIAL_FEED_MODULE_URL = 'assets/js/pages/social-feed.js?v=20260807-socialtopnav34';
     const SOCIAL_PAGES_MODULE_URL = 'assets/js/pages/social-pages.js?v=20260807-socialtopnav34';
-    const SOCIAL_DIALOG_STYLES_URL = 'assets/css/lux-modals.css?v=20260808-loadperf1';
+    const SOCIAL_DIALOG_STYLES_URL = 'assets/css/lux-modals.css?v=20260816-socialmodals1';
     let socialDialogStylesPromise = null;
     let socialDialogStylesReady = false;
     const SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL = 'assets/js/pages/social-workspace-schedule-model.js?v=20260726-socfix16';
@@ -209,7 +209,10 @@ Publishes only the host/runtime contract consumed by its loader.
 
     function ensureSocialDialogStyles() {
         if (socialDialogStylesReady) return Promise.resolve(true);
-        const existing = document.querySelector(`link[data-kiu-social-dialog-styles="${SOCIAL_DIALOG_STYLES_URL}"]`);
+        const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).find((link) =>
+            link.dataset.kiuSocialDialogStyles === SOCIAL_DIALOG_STYLES_URL
+            || link.getAttribute('href') === SOCIAL_DIALOG_STYLES_URL
+        );
         if (existing) {
             if (socialDialogStylesPromise) return socialDialogStylesPromise;
             socialDialogStylesReady = true;
@@ -454,8 +457,17 @@ Publishes only the host/runtime contract consumed by its loader.
             window.setTimeout(() => { guardianRenderInProgress = false; }, 200);
         };
 
-        const observer = new MutationObserver(() => {
-            if (guardianRenderInProgress) return;
+        const mutationTouchesSocialHost = (mutations) => mutations.some((mutation) => {
+            if (mutation.type !== 'childList') return false;
+            // A direct app-content mutation can replace the route host wholesale.
+            if (mutation.target === appContent) return true;
+            return [...mutation.addedNodes, ...mutation.removedNodes].some((node) => {
+                if (node.nodeType !== Node.ELEMENT_NODE) return false;
+                return node.id === ROOT_ID || node.querySelector?.(`#${ROOT_ID}`);
+            });
+        });
+        const observer = new MutationObserver((mutations) => {
+            if (guardianRenderInProgress || !mutationTouchesSocialHost(mutations)) return;
             clearTimeout(guardianReconcileTimer);
             guardianReconcileTimer = setTimeout(reconcile, 150);
         });
@@ -464,7 +476,9 @@ Publishes only the host/runtime contract consumed by its loader.
         window.setTimeout(reconcile, 800);
         window.setTimeout(reconcile, 2000);
         if (socialRouteGuardianInterval) window.clearInterval(socialRouteGuardianInterval);
-        socialRouteGuardianInterval = window.setInterval(() => reconcile(), 500);
+        socialRouteGuardianInterval = window.setInterval(() => {
+            if (!document.getElementById(ROOT_ID)) reconcile();
+        }, 1000);
         window.setTimeout(() => {
             if (socialRouteGuardianInterval) {
                 window.clearInterval(socialRouteGuardianInterval);

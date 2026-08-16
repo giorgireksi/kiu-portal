@@ -139,10 +139,17 @@
             ? chrome.socialMatchesBrowseFaculty
             : () => true;
         const matchesPersonFaculty = (account) => matchesBrowse(account, browseFaculty);
+        // Keep the directory's existing order while making relationship lookups
+        // constant-time during community renders and filter changes.
+        const directoryById = new Map();
+        directory.forEach((entry) => {
+            const id = text(entry?.id);
+            if (id && !directoryById.has(id)) directoryById.set(id, entry);
+        });
         const staff = directory.filter(isStaffAccount).filter(matchesPersonFaculty);
         const connectionAccounts = connections
             .map((relationship) => text(relationship.fromId) === currentUserId() ? text(relationship.toId) : text(relationship.fromId))
-            .map((userId) => accountById(userId) || directory.find((entry) => text(entry.id) === userId) || { id: userId })
+            .map((userId) => accountById(userId) || directoryById.get(userId) || { id: userId })
             .filter(matchesPersonFaculty);
         const peopleDirectory = directory.filter(matchesPersonFaculty);
         const communityStats = {
