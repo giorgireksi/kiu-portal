@@ -240,19 +240,26 @@ async function handleNavigationRequest(request) {
     }
   }
   try {
-    const networkResponse = await fetch(
-      isSocialStandaloneNavigation
-        ? new Request(request, { cache: 'no-store' })
-        : request
-    );
-    return await cacheResponse(request, networkResponse);
+    const buildNavigationRequest = (cacheMode) => isSocialStandaloneNavigation
+      ? new Request(request, { cache: cacheMode })
+      : request;
+    let networkResponse = await fetch(buildNavigationRequest('no-store'));
+    // A transient proxy/tunnel 5xx must not replace a working cached shell.
+    // Retry once before falling back to the route shell.
+    if (!networkResponse?.ok) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+      networkResponse = await fetch(buildNavigationRequest('reload'));
+    }
+    if (networkResponse?.ok) return await cacheResponse(request, networkResponse);
   } catch (error) {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    const shell = await caches.match('/index.html');
-    if (shell) return shell;
-    return buildOfflineNavigationResponse();
+    // Fall through to the cached route shell.
   }
+  const cached = await caches.match(request)
+    || await caches.match(request, { ignoreSearch: true });
+  if (cached) return cached;
+  const shell = await caches.match('/index.html', { ignoreSearch: true });
+  if (shell) return shell;
+  return buildOfflineNavigationResponse();
 }
 
 async function handleRoutePrefetchRequest(request) {

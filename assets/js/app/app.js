@@ -1642,6 +1642,7 @@ enforceSingleRuntimeEntrypoint();
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     const PORTAL_CACHE_RESET_VERSION = '20260808-overallperf1';
+    const PORTAL_SERVICE_WORKER_VERSION = '20260816-navretry1';
 
     async function clearPortalSiteCaches(force = false) {
         try {
@@ -1707,7 +1708,7 @@ enforceSingleRuntimeEntrypoint();
         try {
             await clearPortalSiteCaches(false);
             await ensureManifestLink();
-            await navigator.serviceWorker.register(`service-worker.js?v=${PORTAL_CACHE_RESET_VERSION}`, { scope: './' });
+            await navigator.serviceWorker.register(`service-worker.js?v=${PORTAL_SERVICE_WORKER_VERSION}`, { scope: './' });
         } catch (error) {
             console.warn('Service worker registration failed.', error);
         }
