@@ -152,7 +152,7 @@ Publishes only the host/runtime contract consumed by its loader.
         ].filter((ms) => Number.isFinite(ms));
         return candidates.length ? Math.max(...candidates) : 0;
     }
-    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260815-staff-student-directory1';
+    const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260816-socialperf1';
     const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';
     const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260807-socialtopnav34';
     const SOCIAL_PHOTOGRAPHY_MODULE_URL = 'assets/js/pages/social-photography.js?v=20260807-socialtopnav34';

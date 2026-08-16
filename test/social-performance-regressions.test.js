@@ -16,6 +16,13 @@ describe('social performance safeguards', () => {
         expect(page).not.toContain('lux-modals.css?v=20260808-loadperf1');
     });
 
+    it('cache-busts the optimized route runtimes', () => {
+        const html = readSource('social.html');
+        const page = readSource('assets/js/pages/social-page.js');
+        expect(html).toContain('social-page.js?v=20260816-socialperf1');
+        expect(page).toContain('social-community.js?v=20260816-socialperf1');
+    });
+
     it('filters route-guardian mutations before scheduling reconciliation', () => {
         const page = readSource('assets/js/pages/social-page.js');
         expect(page).toContain('const mutationTouchesSocialHost = (mutations) => mutations.some');
