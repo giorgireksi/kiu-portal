@@ -971,10 +971,16 @@
             // Replay only while intro is in flight — not after ready (avoids re-animating receipts).
             const assemblyInFlight = document.body?.classList.contains('social-messages-assembly-active')
                 || ['pending', 'active'].includes(text(center?.dataset?.socialMessagesAssemblyState || ''));
-            const shouldAnimate = shouldAnimateSocialPanelMotion('messages', activePanel, reason, () => ((reason === 'chat-read' || reason === 'chat-upsert') && assemblyInFlight));
+            const shouldAnimate = shouldAnimateSocialPanelMotion('messages', activePanel, reason);
+            // Read receipts and realtime upserts must not restart the visible
+            // assembly flight; they update the message panel while it is moving.
             // Only invalidate in-flight starts when leaving Messages.
             // chat-read / chat-upsert while ready must not cancel a completed intro.
             if (!shouldAnimate) {
+                if (panel === 'messages' && assemblyInFlight && (reason === 'chat-read' || reason === 'chat-upsert')) {
+                    abortSocialSectionMotion('__kiuSocialMessagesLoadingMotion');
+                    socialMessagesMotionGeneration += 1;
+                }
                 if (panel !== 'messages') {
                     abortSocialSectionMotion('__kiuSocialMessagesLoadingMotion');
                     socialMessagesMotionGeneration += 1;
