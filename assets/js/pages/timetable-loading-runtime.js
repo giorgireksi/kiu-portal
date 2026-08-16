@@ -49,6 +49,9 @@
             'li'
         ];
 
+    const outerSelectors = lowEndTimetableDevice
+        ? ['.lux-timetable-command']
+        : ['.lux-timetable-command', '.lux-timetable-stage'];
     const controlSelector = lowEndTimetableDevice
         ? []
         : [
@@ -71,10 +74,7 @@
         observerSelector: '#page-timetable',
         rootStateDataset: 'kiuTimetableAssemblyState',
         hiddenSelector: '[hidden], [aria-hidden="true"], template, #mobile-action-sheet',
-        outerSelectors: [
-            '.lux-timetable-command',
-            '.lux-timetable-stage'
-        ],
+        outerSelectors,
         granularSelector,
         controlSelector,
         structureSelector: [
