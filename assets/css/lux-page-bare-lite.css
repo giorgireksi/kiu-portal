@@ -11054,12 +11054,26 @@ body.lux-route-lms :is(.lux-primary-btn, .lux-secondary-btn, .lux-primary-btn, .
 
 
 /* Interaction messenger (retired lms-interaction.css → shared bare-lite layout). */
+body.lux-route-lms #page-lms-inner .lms-route-panel-compact:has(> #lms-content-area.lms-tab-interaction) {
+    width: 100%;
+    min-width: 0;
+    min-height: calc(100dvh - 180px);
+}
+
 body.lux-route-lms #lms-content-area.lms-tab-interaction {
+    width: 100%;
+    min-width: 0;
     gap: 0;
     height: min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px));
     max-height: min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px));
     min-height: min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px));
     overflow: hidden;
+}
+
+body.lux-route-lms #lms-content-area.lms-tab-interaction:has(.lms-interaction-messenger.is-messages-mode) {
+    height: min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px));
+    max-height: min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px));
+    min-height: min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px));
 }
 
 body.lux-route-lms .lms-interaction-messenger {
@@ -47364,9 +47378,11 @@ body.lux-route-lms .lms-interaction-messenger.is-messages-mode {
     --lms-messenger-muted: var(--lux-text-muted);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
     min-height: 0;
-    height: min(74vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 84px));
-    max-height: calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 84px);
+    height: 100%;
+    max-height: 100%;
     overflow: hidden;
     border: 1px solid var(--lms-messenger-border);
     border-radius: 22px;
@@ -47389,7 +47405,7 @@ body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-
 body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct {
     height: 100%;
     min-height: 0;
-    grid-template-columns: minmax(250px, 32%) minmax(0, 1fr);
+    grid-template-columns: clamp(280px, 28%, 340px) minmax(0, 1fr);
     background: transparent;
 }
 
@@ -47531,8 +47547,8 @@ body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messa
     }
 
     body.lux-route-lms .lms-interaction-messenger.is-messages-mode {
-        height: min(78vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 52px));
-        max-height: calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 52px);
+        height: 100%;
+        max-height: 100%;
         border-radius: 18px;
     }
 
