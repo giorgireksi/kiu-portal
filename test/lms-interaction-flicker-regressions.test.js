@@ -17,7 +17,7 @@ describe('LMS interaction flicker regressions', () => {
     it('loads the flicker-safe interaction runtime on LMS', () => {
         const tabs = read('assets/js/pages/lms-classroom-tabs-runtime.js');
         const html = read('lms.html');
-        expect(tabs).toContain('lms-interaction-messages-runtime.js?v=20260816-lmsflickerfix4');
-        expect(html).toContain('lms-classroom-tabs-runtime.js?v=20260816-lmsflickerfix4');
+        expect(tabs).toContain('lms-interaction-messages-runtime.js?v=20260816-lmsflickerfix5');
+        expect(html).toContain('lms-classroom-tabs-runtime.js?v=20260816-lmsflickerfix5');
     });
 });

@@ -1210,6 +1210,10 @@ function normalizeLmsInteractionMarkup(markup) {
         })
         .replace(/\s+data-kiu-assembly-phase="[^"]*"/g, '')
         .replace(/\s+data-kiu-assembly-state="[^"]*"/g, '')
+        .replace(/\s+data-lux-observed-surface="[^"]*"/g, '')
+        .replace(/\s+data-lux-offscreen="[^"]*"/g, '')
+        .replace(/\s+data-lux-transparency-signature="[^"]*"/g, '')
+        .replace(/\s+style="backdrop-filter:\s*none\s*!important;?"/g, '')
         // Browser/password-manager enrichment must not make an unchanged
         // messenger subtree look dirty and trigger a replacement.
         .replace(/\s+(?:autocomplete|autocorrect|autocapitalize|spellcheck|data-lpignore|data-1p-ignore|data-form-type)="[^"]*"/g, '')
@@ -1270,17 +1274,21 @@ function updateLmsInteractionMessagesUi(resourceKey, options = {}) {
         }
     }
 
+    let threadChanged = false;
     const thread = directRegion.querySelector('[data-lms-interaction-region="direct-thread"]');
     if (thread) {
         const template = document.createElement('template');
         const nextThreadMarkup = renderLmsInteractionDirectThreadMarkup(canonicalKey, activeChat, currentUserId).trim();
         template.innerHTML = nextThreadMarkup;
         const nextThread = template.content.firstElementChild;
-        if (nextThread && !lmsInteractionMarkupMatches(thread, nextThreadMarkup)) thread.replaceWith(nextThread);
+        if (nextThread && !lmsInteractionMarkupMatches(thread, nextThreadMarkup)) {
+            thread.replaceWith(nextThread);
+            threadChanged = true;
+        }
     }
 
     const nextLog = directRegion.querySelector('[data-lms-interaction-region="direct-log"]');
-    if (atBottom) scrollLmsInteractionDirectLogToBottom(nextLog);
+    if (threadChanged && atBottom) scrollLmsInteractionDirectLogToBottom(nextLog);
     if (typeof syncLmsInteractionTabCacheFromDom === 'function') {
         syncLmsInteractionTabCacheFromDom(canonicalKey);
     }
