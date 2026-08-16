@@ -17,7 +17,10 @@ describe('portal state persistence safety', () => {
         expect(source).toContain('function buildPortalBackendPersistableState');
         expect(source).toContain("'homeDashboardPreferencesByUser'");
         expect(source).toContain("'portalMessengerFavorites'");
-        expect(source).toContain('state: buildPortalBackendPersistableState(KIU_STATE)');
+        expect(source).toContain('state: buildPortalBackendPersistableState(canonicalState, { actorRole })');
+        expect(source).toContain("'timetable'");
+        expect(source).toContain("'adminProgramStructures'");
+        expect(source).toContain("'facultyProfiles'");
         expect(source).not.toContain('state: buildPortalPersistableState(KIU_STATE)');
         expect(source).toMatch(/buildPortalPersistableState[\s\S]*?delete snapshot\.adminLibrary\.catalogPageSize/);
         expect(source).toMatch(/buildPortalPersistableState[\s\S]*?delete snapshot\.adminLibrary\.catalogPageIndex/);
@@ -46,6 +49,8 @@ describe('portal state persistence safety', () => {
             lmsLiveQuizzes: {
                 overwritten: true
             }
+        }, {
+            actorUserId: 'student-1'
         });
 
         expect(saved.state.registrationOpen).toBe(false);

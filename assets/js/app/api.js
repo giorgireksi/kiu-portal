@@ -1499,7 +1499,7 @@ async function persistPortalStateToBackend(reason = 'saveState', options = {}) {
                     token,
                     actorId: activeUser?.id || '',
                     actorRole,
-                    state: buildPortalBackendPersistableState(canonicalState)
+                    state: buildPortalBackendPersistableState(canonicalState, { actorRole })
                 })
             });
             runtime.online = true;
@@ -1601,7 +1601,7 @@ function sendPortalStateKeepalive() {
             token,
             actorId: activeUser?.id || '',
             actorRole,
-            state: buildPortalBackendPersistableState(canonicalState)
+            state: buildPortalBackendPersistableState(canonicalState, { actorRole })
         });
     } catch (error) {
         return;

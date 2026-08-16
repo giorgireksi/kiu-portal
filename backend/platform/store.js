@@ -537,13 +537,24 @@ function mergeUserHomeDashboardPreferences(existingEntry = {}, incomingEntry = {
     return { ...clone(existingEntry), ...clone(incomingEntry) };
 }
 
+function mergeKeyedPortalStateEntry(existingEntry, incomingEntry) {
+    const existingIsObject = existingEntry && typeof existingEntry === 'object' && !Array.isArray(existingEntry);
+    const incomingIsObject = incomingEntry && typeof incomingEntry === 'object' && !Array.isArray(incomingEntry);
+    // Preferences/favorites are object maps and should retain unrelated fields;
+    // balances and other keyed values are scalar records and must be replaced,
+    // not spread into an empty object.
+    return existingIsObject && incomingIsObject
+        ? mergeUserHomeDashboardPreferences(existingEntry, incomingEntry)
+        : clone(incomingEntry);
+}
+
 function mergeKeyedPortalStateMap(existingMap = {}, incomingMap = {}, actorUserId = '', allowGlobalWrite = false) {
     const existing = existingMap && typeof existingMap === 'object' ? existingMap : {};
     const incoming = incomingMap && typeof incomingMap === 'object' ? incomingMap : {};
     if (allowGlobalWrite) {
         const merged = clone(existing);
         Object.keys(incoming).forEach((userId) => {
-            merged[userId] = mergeUserHomeDashboardPreferences(existing[userId], incoming[userId]);
+            merged[userId] = mergeKeyedPortalStateEntry(existing[userId], incoming[userId]);
         });
         return merged;
     }
@@ -551,7 +562,7 @@ function mergeKeyedPortalStateMap(existingMap = {}, incomingMap = {}, actorUserI
     if (!actorId) return clone(existing);
     const merged = clone(existing);
     if (incoming[actorId] !== undefined) {
-        merged[actorId] = mergeUserHomeDashboardPreferences(existing[actorId], incoming[actorId]);
+        merged[actorId] = mergeKeyedPortalStateEntry(existing[actorId], incoming[actorId]);
     }
     return merged;
 }

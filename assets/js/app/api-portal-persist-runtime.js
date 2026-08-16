@@ -134,12 +134,46 @@ function buildPortalPersistableState(source = (typeof KIU_STATE !== 'undefined' 
     return snapshot;
 }
 
-function buildPortalBackendPersistableState(source = (typeof KIU_STATE !== 'undefined' ? KIU_STATE : {})) {
+const PORTAL_BACKEND_READONLY_CATALOG_KEYS = [
+    // These records are returned by bootstrap for every account, but are
+    // authored centrally by administrators. Sending them back from a TA,
+    // professor, or student only causes the backend to reject them and report
+    // a misleading "state was not saved" diagnostic.
+    'timetable',
+    'curriculum',
+    'availableGroups',
+    'adminProgramStructures',
+    'registrationCMSByFaculty',
+    'curriculumLibraryModulesByFaculty',
+    'facultyProfiles',
+    'adminLibrary'
+];
+
+function buildPortalBackendPersistableState(source = (typeof KIU_STATE !== 'undefined' ? KIU_STATE : {}), options = {}) {
     // The platform bootstrap depends on the canonical portal state, including
     // curriculum, groups, LMS data, and role-scoped records. Persist the same
-    // sanitized snapshot we cache locally so backend bootstrap stays complete.
+    // sanitized snapshot we cache locally, but do not echo catalog records that
+    // the current role is not allowed to author.
     const snapshot = buildPortalPersistableState(source);
     delete snapshot.socialHub;
+    const explicitRole = options && typeof options === 'object' ? options.actorRole : '';
+    let actorRole = String(explicitRole || '').trim().toLowerCase();
+    if (!actorRole) {
+        try {
+            actorRole = String(typeof getEffectiveUserRole === 'function'
+                ? getEffectiveUserRole()
+                : (typeof currentUser !== 'undefined' ? currentUser?.role : '') || '')
+                .trim()
+                .toLowerCase();
+        } catch (error) {
+            actorRole = '';
+        }
+    }
+    if (actorRole !== 'admin') {
+        PORTAL_BACKEND_READONLY_CATALOG_KEYS.forEach((key) => {
+            delete snapshot[key];
+        });
+    }
     return snapshot;
 }
 
