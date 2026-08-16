@@ -1764,7 +1764,8 @@ function scheduleParticleBackgroundSelfInit(attempt = 0) {
   if (engineReady) return;
   if (isFogBackgroundMode()) return;
   const shellBooting = document.body?.classList?.contains("kiu-shell-loading");
-  if (shellBooting && attempt < 180) {
+  const assemblyBooting = /(?:^|\s)\S+-assembly-active(?:\s|$)/.test(document.body?.className || '');
+  if ((shellBooting || assemblyBooting) && attempt < 300) {
     window.requestAnimationFrame(() => scheduleParticleBackgroundSelfInit(attempt + 1));
     return;
   }

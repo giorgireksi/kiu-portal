@@ -296,10 +296,15 @@ describe('timetable route regressions', () => {
         expect(runtime).toContain('getCachedTimetableWeekEntries');
         expect(runtime).toContain('const dayIndex = new Map');
         expect(loading).toContain('lowEndTimetableDevice');
+        expect(loading).toContain("document.body?.classList.add('timetable-low-end')");
+        expect(loading).toContain("granularSelector = lowEndTimetableDevice");
+        expect(loading).toContain("['#timetable-master-container']");
+        expect(loading).toContain('timetable-low-end');
         expect(loading).toContain('disableBlur: lowEndTimetableDevice');
         expect(loading).toContain("maxTotalAssemblyMs: lowEndTimetableDevice ? 1400 : 2450");
         expect(assembly).toContain('const disableBlur = options.disableBlur === true;');
         expect(assembly).toContain("filter: disableBlur ? 'none' : 'blur(.5px)'");
+        expect(readSource('assets/js/features/luxury-particle-background.js')).toContain('assemblyBooting');
     });
 
     it('keeps timetable on the shared standalone mobile shell contract instead of navigate polling', () => {

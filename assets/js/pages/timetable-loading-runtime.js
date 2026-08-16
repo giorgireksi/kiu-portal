@@ -8,19 +8,9 @@
     const hardwareConcurrency = Number(window.navigator?.hardwareConcurrency || 8);
     const deviceMemory = Number(window.navigator?.deviceMemory || 8);
     const lowEndTimetableDevice = hardwareConcurrency <= 4 || deviceMemory <= 4;
+    if (lowEndTimetableDevice) document.body?.classList.add('timetable-low-end');
     const granularSelector = lowEndTimetableDevice
-        ? [
-            '.lux-timetable-command-head',
-            '.lux-timetable-command-focus',
-            '.lux-timetable-stage-head',
-            '.lux-timetable-view-switcher',
-            '.lux-timetable-week-nav',
-            '.lux-timetable-overview-row',
-            '#timetable-master-container',
-            'button',
-            'input',
-            'select'
-        ]
+        ? ['#timetable-master-container']
         : [
             '.lux-timetable-command-head',
             '.lux-timetable-command-title',

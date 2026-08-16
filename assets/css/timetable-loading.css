@@ -2,6 +2,13 @@
  * Timetable loading motion only.
  * Shared timetable paint, panels, and theme tokens remain unchanged.
  */
+/* Weak devices keep the same shell geometry but avoid live frost during the
+ * entrance flight; the animation itself remains compositor-friendly. */
+body.timetable-low-end #page-timetable :is(.lux-timetable-command, .lux-timetable-stage) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 body.timetable-assembly-active #page-timetable .kiu-timetable-assembly-target {
   opacity: 0;
   transform-origin: left center;
