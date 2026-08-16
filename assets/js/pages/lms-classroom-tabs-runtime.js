@@ -61,6 +61,7 @@ const LMS_QUIZ_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-protected-quiz-runtime.js?v=20260729-lmsassignfix1'
 ]);
 const LMS_CALLS_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-week-store-runtime.js?v=20260816-lmsquizweekfix1',
     'assets/js/pages/lms-calls-runtime.js?v=20260816-lmscompactcall1'
 ]);
 const LMS_INTERACTION_MODULE_URLS = Object.freeze([

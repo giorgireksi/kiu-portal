@@ -85,7 +85,7 @@ describe('scheduler and LMS regressions', () => {
     expect(appSource).toContain('function findRuntimeScriptByPath(src)');
     expect(appSource).toContain('findExistingRuntimeScript(src) || findRuntimeScriptByPath(src)');
     expect(appSource).toContain('LMS_CLASSROOM_TABS_RUNTIME_SCRIPT');
-    expect(appSource).toContain('assets/js/pages/lms-classroom-tabs-runtime.js?v=20260816-lmsquizweekfix2');
+    expect(appSource).toContain('assets/js/pages/lms-classroom-tabs-runtime.js?v=20260816-lmsquizweekfix3');
     expect(bootSource).toContain('ensureLmsQuizRuntime');
     expect(bootSource).toContain('preloadLmsQuizRuntimeIfNeeded');
     expect(bootSource).toContain('ensurePortalLmsRuntimeLoaded');

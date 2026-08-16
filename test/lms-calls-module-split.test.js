@@ -16,6 +16,7 @@ describe('LMS calls module split', () => {
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         expect(classroomSource).toContain('assets/js/pages/lms-calls-runtime.js?v=20260816-lmscompactcall1');
         expect(classroomSource).toContain('function ensureLmsCallsRuntime()');
+        expect(classroomSource).toContain("'assets/js/pages/lms-week-store-runtime.js?v=20260816-lmsquizweekfix1',\n    'assets/js/pages/lms-calls-runtime.js?v=20260816-lmscompactcall1'");
         expect(callsSource).toContain('const lmsClassLocalMediaRuntime = {');
         expect(callsSource).toContain('function getLmsCurrentUserForCalls()');
         expect(callsSource).toContain('function normalizeLmsClassSession(session = {}, resourceKey = \'\')');
