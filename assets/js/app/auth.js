@@ -4,7 +4,8 @@
 const KIU_REALTIME_BRIDGE_TIMEOUT_MS = 4000;
 const KIU_REALTIME_BRIDGE_COOLDOWN_MS = 5000;
 let kiuAuthRestoreInFlight = null;
-var currentUser = null;
+// Keep the user binding on window so auth remains compatible with older cached app bundles.
+if (typeof window.currentUser === 'undefined') window.currentUser = null;
 
 function readKiuTabIdentity(key, legacyKey = key) {
     try {
