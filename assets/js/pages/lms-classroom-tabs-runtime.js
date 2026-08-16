@@ -73,7 +73,7 @@ const LMS_CONTENT_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2',
     'assets/js/pages/lms-content-library-runtime.js?v=20260714-lmspro2',
     'assets/js/pages/lms-materials-runtime.js?v=20260729-lmsmatupload1',
-    'assets/js/pages/lms-assignments-runtime.js?v=20260729-lmsassignfix1'
+    'assets/js/pages/lms-assignments-runtime.js?v=20260816-lmscompactassign1'
 ]);
 const LMS_PERSONAL_DASHBOARD_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-personal-dashboard-runtime.js?v=20260731-pdsavename1'

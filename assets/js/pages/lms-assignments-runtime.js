@@ -6,48 +6,63 @@ function buildLmsSubmissionDraftKey(resourceKey, assignmentId, userId = getCurre
 
 function buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelId) {
     return `
-        <div class="lms-route-panel">
-            <div class="lms-route-card-head lms-route-card-head-mb-16">
-                <div>
-                    <div class="lms-route-card-title"><i class="fas fa-square-plus"></i> Create Homework</div>
-                    <div class="lms-route-copy lms-route-copy-mt-6">Publish assignments for this exact LMS group. Students in the same group will see the same work and submit back here.</div>
+        <section class="lms-route-panel lms-assignment-create-panel" aria-labelledby="lms-assignment-create-title">
+            <header class="lms-assignment-create-head">
+                <div class="lms-assignment-create-heading">
+                    <div class="lms-route-card-title" id="lms-assignment-create-title"><i class="fas fa-square-plus"></i> Create Homework</div>
+                    <div class="lms-route-copy">Publish assignments for this exact LMS group. Students in the same group will see the same work and submit back here.</div>
                 </div>
                 <div id="${assignmentLabelId}" class="lms-route-pill home-hover-chip">No attachment selected</div>
-            </div>
-            <div class="lms-route-field-grid">
+            </header>
+            <div class="lms-assignment-create-fields">
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-asm-title">Homework Title</label>
-                    <input type="text" id="new-asm-title" class="lms-route-input lux-control" placeholder="Homework title">
+                    <input type="text" id="new-asm-title" class="lms-route-input lux-control" placeholder="Homework title" autocomplete="off">
                 </div>
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-asm-deadline">Deadline</label>
-                    <input type="datetime-local" id="new-asm-deadline" class="lms-route-input lux-control">
+                    <input type="datetime-local" id="new-asm-deadline" class="lms-route-input lux-control" autocomplete="off">
                 </div>
                 <div class="lms-route-field">
                     <label class="lms-route-field-label" for="new-asm-week">Teaching Week</label>
-                    <select id="new-asm-week" class="lms-route-select lux-control">
+                    <select id="new-asm-week" class="lms-route-select lux-control" autocomplete="off">
                         ${buildLmsWeekSelectOptions(resourceKey, '')}
                     </select>
                 </div>
             </div>
-            <div class="lms-route-field lms-route-field-mt-14">
+            <div class="lms-assignment-create-textarea-field">
                 <label class="lms-route-field-label" for="new-asm-description">Description</label>
-                <textarea id="new-asm-description" class="lms-route-textarea lux-control" placeholder="Homework description, instructions, grading notes..."></textarea>
+                <textarea id="new-asm-description" class="lms-route-textarea lux-control lms-assignment-autogrow" rows="2" placeholder="Homework description, instructions, grading notes..." autocomplete="off"></textarea>
             </div>
-            <div class="lms-route-field lms-route-field-mt-14">
+            <div class="lms-assignment-create-textarea-field">
                 <label class="lms-route-field-label" for="new-asm-rubric">Rubric</label>
-                <textarea id="new-asm-rubric" class="lms-route-textarea lux-control" placeholder="Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%">Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%</textarea>
+                <textarea id="new-asm-rubric" class="lms-route-textarea lux-control lms-assignment-autogrow" rows="2" placeholder="Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%" autocomplete="off">Understanding: 40%; Evidence and method: 35%; Clarity: 15%; Timeliness: 10%</textarea>
             </div>
-            <label class="lms-route-inline lms-route-inline-gap-8 lms-route-inline-center lms-route-copy lms-route-copy-mt-12">
-                <input type="checkbox" id="new-asm-late">
-                Allow late submissions
-            </label>
-            <div class="lms-route-actions lms-route-actions-mt-16">
-                <button class="lux-secondary-btn" data-lms-click="pickLocalLmsFile('assignment', '${resourceKey}', '${assignmentLabelId}')"><i class="fas fa-paperclip"></i> Upload Assignment File</button>
-                <button class="lux-primary-btn" data-lms-click="createAssignment('${courseId}')"><i class="fas fa-save"></i> Save & Publish Homework</button>
+            <div class="lms-assignment-create-footer">
+                <label class="lms-route-inline lms-route-inline-gap-8 lms-route-inline-center lms-route-copy">
+                    <input type="checkbox" id="new-asm-late">
+                    Allow late submissions
+                </label>
+                <div class="lms-route-actions lms-assignment-create-actions">
+                    <button class="lux-secondary-btn" type="button" data-lms-click="pickLocalLmsFile('assignment', '${resourceKey}', '${assignmentLabelId}')"><i class="fas fa-paperclip"></i> Upload Assignment File</button>
+                    <button class="lux-primary-btn" type="button" data-lms-click="createAssignment('${courseId}')"><i class="fas fa-save"></i> Save & Publish Homework</button>
+                </div>
             </div>
-        </div>
+        </section>
     `;
+}
+
+function bindLmsAssignmentCreateAutosize(root = document) {
+    root.querySelectorAll?.('.lms-assignment-autogrow').forEach(textarea => {
+        if (textarea.dataset.autogrowBound === '1') return;
+        textarea.dataset.autogrowBound = '1';
+        const resize = () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = `${Math.max(52, textarea.scrollHeight)}px`;
+        };
+        textarea.addEventListener('input', resize);
+        resize();
+    });
 }
 
 function buildLmsAssignmentGradeModalBodyHtml({
@@ -313,6 +328,7 @@ function renderWorkspace(courseId) {
             ${cards}
         </div>
     `;
+    bindLmsAssignmentCreateAutosize(contentArea);
 }
 
 async function createAssignment(courseId) {

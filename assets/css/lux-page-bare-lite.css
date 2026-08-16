@@ -6465,6 +6465,99 @@ body.lux-route-lms .lms-assignment-banner {
     min-width: 0;
 }
 
+body.lux-route-lms .lms-assignment-create-panel {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px 16px 16px;
+}
+
+body.lux-route-lms .lms-assignment-create-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-assignment-create-heading {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-assignment-create-heading .lms-route-copy {
+    margin-top: 0;
+}
+
+body.lux-route-lms .lms-assignment-create-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(190px, 0.85fr) minmax(170px, 0.7fr);
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-assignment-create-textarea-field {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-assignment-create-textarea-field .lms-route-textarea {
+    min-height: 52px;
+    height: 52px;
+    max-height: none;
+    resize: vertical;
+    overflow-y: hidden;
+    line-height: 1.4;
+}
+
+body.lux-route-lms .lms-assignment-create-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-assignment-create-footer > label {
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+body.lux-route-lms .lms-assignment-create-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+body.lux-route-lms .lms-assignment-create-actions > button {
+    min-height: 34px;
+    padding: 7px 11px;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    body.lux-route-lms .lms-assignment-create-head,
+    body.lux-route-lms .lms-assignment-create-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    body.lux-route-lms .lms-assignment-create-fields {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-lms .lms-assignment-create-actions {
+        flex-wrap: wrap;
+    }
+
+    body.lux-route-lms .lms-assignment-create-actions > button {
+        flex: 1 1 auto;
+    }
+}
+
 body.lux-route-lms .lms-week-accordion-panel {
     display: grid;
     gap: 0;
