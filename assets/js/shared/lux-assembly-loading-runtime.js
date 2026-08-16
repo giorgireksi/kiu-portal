@@ -502,10 +502,6 @@
                 && typeof Element.prototype.animate === 'function';
         }
 
-        function getCurrentNode(element, root) {
-            return getAssemblyTree(root).nodes.find((node) => node.element === element) || null;
-        }
-
         function runSiblings(nodes, root, generation) {
             const runnable = nodes.filter((node) => {
                 const status = state.nodeStatus.get(node.element);
@@ -523,8 +519,7 @@
             node.element.classList.remove(classes.flight);
             state.nodeStatus.set(node.element, 'done');
             if (node.depth === 0) node.element.dataset[phaseDataset] = 'children';
-            const currentNode = getCurrentNode(node.element, root);
-            return currentNode ? runSiblings(currentNode.children, root, generation) : undefined;
+            return node.children?.length ? runSiblings(node.children, root, generation) : undefined;
         }
 
         function runNode(node, root, generation) {
@@ -545,8 +540,7 @@
             if (!animation) {
                 state.nodeStatus.set(node.element, 'done');
                 if (node.depth === 0) node.element.dataset[phaseDataset] = 'children';
-                const currentNode = getCurrentNode(node.element, root);
-                return currentNode ? runSiblings(currentNode.children, root, generation) : Promise.resolve();
+                return node.children?.length ? runSiblings(node.children, root, generation) : Promise.resolve();
             }
 
             state.animations.add(animation);

@@ -31,6 +31,14 @@ describe('social performance safeguards', () => {
         expect(page).toContain('}, 1000);');
     });
 
+    it('uses the optimized shared assembly runtime on Social', () => {
+        const html = readSource('social.html');
+        const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
+        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-treecache1');
+        expect(runtime).not.toContain('function getCurrentNode(element, root)');
+        expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
+    });
+
     it('uses an indexed directory fallback for relationship cards', () => {
         const community = readSource('assets/js/pages/social-community.js');
         expect(community).toContain('const directoryById = new Map();');
