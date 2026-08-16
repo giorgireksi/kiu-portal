@@ -5,6 +5,12 @@ let fogModulePromise = null;
 let particleModulePromise = null;
 let particleModule = null;
 
+function isLowEndDevice() {
+  const cores = Number(window.navigator?.hardwareConcurrency || 8);
+  const memory = Number(window.navigator?.deviceMemory || 8);
+  return cores <= 4 || memory <= 4;
+}
+
 function isFogMode(mode) {
   return String(mode || "").trim().toLowerCase() === "fog";
 }
@@ -85,6 +91,13 @@ async function loadParticleModule() {
 async function refreshLuxuryBackground(modeOrOpts) {
   const mode = readActiveMode(modeOrOpts);
   const nextEngine = isFogMode(mode) ? "fog" : "particle";
+
+  // Weak devices use the existing static background fill; do not import or
+  // initialize Three/Vanta just to immediately starve the timetable flight.
+  if (isLowEndDevice()) {
+    applyStaticBackgroundShell();
+    return;
+  }
 
   // Brave / disabled GPU: never touch Three or Vanta.
   if (window.__kiuWebGlUnavailable === true || window.__kiuLuxuryParticleBackgroundUnavailable === true) {

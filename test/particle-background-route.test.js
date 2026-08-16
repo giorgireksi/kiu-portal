@@ -72,7 +72,7 @@ describe('particle background route integration', () => {
             expect(html).not.toContain('luxury-background.js');
         });
         expect(readSource('assets/js/features/index-luxury.js'))
-            .toContain("import('./luxury-background.js?v=20260808-loadperf1')");
+            .toContain("import('./luxury-background.js?v=20260816-weakdevice1')");
     });
 
     it('lazy-creates LMS particle canvas via orchestrator (no static markup)', () => {
@@ -649,7 +649,7 @@ describe('particle background route integration', () => {
         expect(html).toContain('index-luxury.js?v=');
         expect(html).toContain('luxury-index-runtime.js?v=');
         expect(html).not.toContain('index-luxury.css');
-        expect(luxury).toContain("import('./luxury-background.js?v=20260808-loadperf1')");
+        expect(luxury).toContain("import('./luxury-background.js?v=20260816-weakdevice1')");
         expect(background).toContain('import("./luxury-particle-background.js?v=20260816-socialcpu1")');
         expect(background).toContain('import("./luxury-vanta-fog-background.js?v=20260723-adaptive1")');
     });
