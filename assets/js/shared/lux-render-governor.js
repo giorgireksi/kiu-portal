@@ -101,7 +101,7 @@ export function getPacingMultiplier() {
 }
 
 export function shouldSkipCanvasFrame() {
-    return window.__luxIsAnimating === true;
+    return window.__luxIsAnimating === true || window.__luxShellHoverBusy === true;
 }
 
 export function readCanvasFrameIntervalMs() {

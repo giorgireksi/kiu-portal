@@ -7,6 +7,19 @@ const STUDENT_ADMIN_SCHEDULE_VIEW_PREFIX = 'KIU_STUDENT_ADMIN_SCHEDULE_VIEW';
 let timetablePageOpenedOnCurrentWeek = false;
 /** null until first paint — then true on ≤920px so Schedule Tools start collapsed on mobile. */
 let timetableCommandCollapsed = null;
+// Keep repeated timetable sub-renders in one pass from re-normalizing the same
+// schedule objects and rebuilding the same seven weekday entries.
+let timetableRenderNormalizationCache = new WeakMap();
+const timetableWeekEntriesCache = new Map();
+
+function getCachedTimetableWeekEntries(weekStart) {
+    const key = String(weekStart || getCurrentWeekStartISO());
+    if (!timetableWeekEntriesCache.has(key)) {
+        timetableWeekEntriesCache.set(key, getWeekDateEntries(weekStart));
+    }
+    return timetableWeekEntriesCache.get(key);
+}
+
 const SCHEDULE_SESSION_MARKER_TYPES = {
     quiz: { label: 'Quiz', icon: 'fa-pen-to-square', tone: 'warning' },
     oral_quiz: { label: 'Oral Quiz', icon: 'fa-microphone-lines', tone: 'info' },
@@ -481,7 +494,7 @@ function normalizeWeekdayLabel(day, target = 'ge', weekStart = getCurrentWeekSta
     const raw = String(typeof normalizeScheduleDayLabel === 'function' ? normalizeScheduleDayLabel(day, day || '') : day || '').trim();
     if (!raw) return '';
     const lowered = raw.toLowerCase();
-    const entries = getWeekDateEntries(weekStart);
+    const entries = getCachedTimetableWeekEntries(weekStart);
     const match = entries.find(entry =>
         String(entry.ge || '').trim().toLowerCase() === lowered ||
         String(entry.en || '').trim().toLowerCase() === lowered
@@ -492,11 +505,13 @@ function normalizeWeekdayLabel(day, target = 'ge', weekStart = getCurrentWeekSta
 
 function getWeeklyScheduleColumns(items, weekStart) {
     const columns = [[], [], [], [], [], [], []];
+    const entries = getCachedTimetableWeekEntries(weekStart);
+    const dayIndex = new Map(entries.map((entry, index) => [entry.en, index]));
     (items || []).forEach(item => {
         const sourceDay = typeof normalizeScheduleDayLabel === 'function' ? normalizeScheduleDayLabel(item?.day, item?.day || '') : item?.day;
         const englishDay = normalizeWeekdayLabel(sourceDay, 'en', weekStart);
-        const columnIndex = getWeekDateEntries(weekStart).findIndex(entry => entry.en === englishDay);
-        if (columnIndex >= 0) columns[columnIndex].push(item);
+        const columnIndex = dayIndex.get(englishDay);
+        if (Number.isInteger(columnIndex)) columns[columnIndex].push(item);
     });
     return columns.map(col => col.sort((a, b) => convertTimeToMinutes(a.time) - convertTimeToMinutes(b.time)));
 }
@@ -570,6 +585,22 @@ function getRoleScopedScheduleItemsForWeek(weekStart, options = {}) {
 }
 
 function normalizeScheduleSurfaceItem(item, weekStart) {
+    if (item && typeof item === 'object') {
+        const key = String(weekStart || getCurrentWeekStartISO());
+        let byWeek = timetableRenderNormalizationCache.get(item);
+        if (!byWeek) {
+            byWeek = new Map();
+            timetableRenderNormalizationCache.set(item, byWeek);
+        }
+        if (byWeek.has(key)) return byWeek.get(key);
+        const normalized = normalizeScheduleSurfaceItemUncached(item, weekStart);
+        byWeek.set(key, normalized);
+        return normalized;
+    }
+    return normalizeScheduleSurfaceItemUncached(item, weekStart);
+}
+
+function normalizeScheduleSurfaceItemUncached(item, weekStart) {
     const durationMinutes = parseInt(String(item.duration || '110').match(/\d+/)?.[0] || '110', 10);
     const startTime = normalizeTimeString(item.startTime || item.time || '', 'TBD');
     const endTime = normalizeTimeString(item.endTime || '', '') || (startTime === 'TBD'
@@ -827,7 +858,7 @@ function setHeroFocusCopyVisible(visible) {
 }
 
 function getTimetableInsightModel(weekStart, items) {
-    const entries = getWeekDateEntries(weekStart);
+    const entries = getCachedTimetableWeekEntries(weekStart);
     const normalizedItems = (items || []).map(item => normalizeScheduleSurfaceItem(item, weekStart));
     const overview = getScheduleOverview(items || []);
     const grouped = new Map();
@@ -1047,7 +1078,7 @@ function renderScheduleSessionDaySection(section, entry, dayItems, facultyAction
 function renderScheduleSessionsView(container, items, options = {}) {
     if (!container) return;
     const weekStart = options.weekStart || getCurrentWeekStartISO();
-    const weekEntries = getWeekDateEntries(weekStart);
+    const weekEntries = getCachedTimetableWeekEntries(weekStart);
     const normalizedItems = (items || []).map(item => normalizeScheduleSurfaceItem(item, weekStart));
     const groupedItems = weekEntries.map(entry => ({
         entry,
@@ -1139,7 +1170,7 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     if (!container) return;
 
     const weekStart = options.weekStart || getCurrentWeekStartISO();
-    const weekEntries = getWeekDateEntries(weekStart);
+    const weekEntries = getCachedTimetableWeekEntries(weekStart);
     const isCurrentWeek = weekStart === getCurrentWeekStartISO();
     const normalizedItems = (items || []).map(item => normalizeScheduleSurfaceItem(item, weekStart));
     const columns = getWeeklyScheduleColumns(normalizedItems, weekStart);
@@ -1223,6 +1254,8 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
 function renderTimetable() {
     const container = document.getElementById('timetable-master-container');
     if (!container) return; // Not on the timetable page
+    // One render model may feed controls, narrative, and either surface.
+    timetableRenderNormalizationCache = new WeakMap();
     const weekStart = getTimetableWeekStartForRender();
     const targetSem = parseInt(KIU_STATE.activeSemester || 3, 10);
     const targetFac = getCurrentFaculty();

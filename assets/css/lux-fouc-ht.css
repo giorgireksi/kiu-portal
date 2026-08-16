@@ -569,14 +569,28 @@ html.lux-light-mode body .lux-utility-panel .lux-utility-category-filters.lux-ta
 .lux-hero { min-height: 240px; padding: 26px; }
 /* Outer glass host SSOT — denser desk panel tokens (redesign via lux-tokens). */
 body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]:not(.lux-glass-dialog-card)):not(.modal-content[data-lux-transparency-exempt="1"]) {
+  position: relative;
+  isolation: isolate;
   background-color: var(--lux-panel-fill);
   background-image: var(--lux-panel-surface);
   border: 1px solid var(--lux-panel-host-border);
   border-radius: var(--lux-panel-radius, 22px);
   box-shadow: var(--lux-panel-host-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
+/* Live blur on a sibling layer so chip transforms do not re-rasterize the frost. */
+body.lux-unified-shell :is(.page-hero, .lux-panel, .lux-alert, [data-lux-glass-root="1"]:not(.lux-glass-dialog-card)):not(.modal-content[data-lux-transparency-exempt="1"])::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
   backdrop-filter: var(--lux-panel-blur-filter);
   -webkit-backdrop-filter: var(--lux-panel-blur-filter);
-  background-clip: padding-box;
 }
 
 /* Registration merged shell: inner zones are layout-only — one frosted host paints the stack. */
@@ -3301,7 +3315,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) {
   isolation: isolate;
   contain: paint;
   overflow: hidden;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body.lux-unified-shell .home-hover-chip:has(.home-hover-chip) {
@@ -3387,7 +3401,6 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"])::after 
   pointer-events: none;
   z-index: 0;
   background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
-  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -3413,7 +3426,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
 @media (hover: hover) and (pointer: fine) {
   body.lux-unified-shell :is(
     .home-hover-chip:not(.lux-primary-btn):not(.lux-secondary-btn):not(.lux-destructive-btn):not(.lux-ghost-btn),
-      .lux-module-option.lux-soft-chrome,
+    .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -3430,7 +3443,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
   }
   body.lux-unified-shell :is(
     .home-hover-chip:not(.lux-primary-btn):not(.lux-secondary-btn):not(.lux-destructive-btn):not(.lux-ghost-btn),
-      .lux-module-option.lux-soft-chrome,
+    .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -3474,7 +3487,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
 @media (hover: none), (pointer: coarse) {
   body.lux-unified-shell :is(
     .home-hover-chip,
-      .lux-module-option.lux-soft-chrome,
+    .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -3491,7 +3504,7 @@ body.lux-unified-shell .lux-section-card:not([data-lux-layout-only="1"]) > *:not
   }
   body.lux-unified-shell :is(
     .home-hover-chip,
-      .lux-module-option.lux-soft-chrome,
+    .lux-module-option.lux-soft-chrome,
     .lux-subject-row.lux-program-subject-card,
     .newsx-header-bar,
     .newsx-feed-card.lux-soft-chrome,
@@ -3678,6 +3691,7 @@ body.lux-unified-shell.lux-route-social [data-lux-glass-root="1"] :is(
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   background-clip: padding-box;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* KPI chips sit on the raised stats rack — denser fill so each shell still reads as moving.
@@ -3767,108 +3781,70 @@ html[data-lux-transparency="0"] body.lux-unified-shell .lux-section-card:not([da
   box-shadow: none;
 }
 
-/* Social nested KPI / hub shells — lift paint + shadow (not transform alone). */
+/* Social nested KPI / hub shells — leaf lift only. Racks stay put so frost is not re-rasterized. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   html:not([data-lux-transparency="0"]) body.lux-unified-shell.lux-route-social :is(
-    [class*="-hero-stat"],
     [class*="-hero-stats"],
-    .social-neo-research-stat,
-    .social-neo-research-hero,
-    .social-neo-research-hero-stats,
-    .social-neo-research-catalog,
-    .social-neo-research-toolbar,
-    .social-neo-workspace-hero-stat,
-    .social-neo-workspace-hero-stats,
-    .social-neo-workspace-hero,
-    .social-neo-portfolio-hero,
-    .social-neo-portfolio-hero-stats,
-    .social-neo-events-hero,
-    .social-neo-events-hero-stats,
-    .social-neo-community-hero-grid,
+    [class*="-hero-grid"],
+    [class*="-hero-toolbar"],
     .social-neo-community-hero-stats,
-    .social-neo-community-hero-toolbar,
-    .social-neo-surveys-hero,
-    .social-neo-surveys-hero-stats,
-    .social-neo-surveys-hero-grid,
-    .social-neo-surveys-hero-toolbar,
+    .social-neo-community-hero-grid,
+    .social-neo-community-hero-toolbar
+  ).home-hover-chip:hover {
+    transform: none;
+  }
+  html:not([data-lux-transparency="0"]) body.lux-unified-shell.lux-route-social :is(
+    [class*="-hero-stat"]:not([class*="-hero-stats"]),
+    .social-neo-research-stat,
+    .social-neo-workspace-hero-stat,
+    .social-neo-community-hero-stat,
+    .social-neo-events-hero-stat,
     .social-neo-survey-card,
     .social-neo-research-card,
     .social-photo-feed-card,
     .social-neo-event-feature,
     .social-portfolio-card,
-    .social-neo-surveys-take-shell,
-    .social-neo-survey-take-hero,
     .social-neo-survey-take-card,
     .social-neo-survey-take-choice,
-    .social-neo-lost-found-hero,
-    .social-neo-lost-found-hero-stats,
-    .social-neo-lost-found-hero-toolbar,
     .social-neo-lf-card,
     .social-neo-directory-item,
     .social-neo-community-card,
     .social-neo-group-card,
-    .social-project-hub-filterbar,
-    .social-project-hub-attention,
     .social-project-hub-rail-card,
     .social-project-hub-contribution-stat,
     .social-project-hub-cta-tile,
     .social-page-surface-head
   ).home-hover-chip:hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-    box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-    z-index: 2;
+    --home-chip-hover-glow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
   }
 }
 
 @media (hover: none), (pointer: coarse) {
   @media (prefers-reduced-motion: no-preference) {
     html:not([data-lux-transparency="0"]) body.lux-unified-shell.lux-route-social :is(
-      [class*="-hero-stat"],
-      [class*="-hero-stats"],
+      [class*="-hero-stat"]:not([class*="-hero-stats"]),
       .social-neo-research-stat,
-      .social-neo-research-hero,
-      .social-neo-research-hero-stats,
-      .social-neo-research-catalog,
-      .social-neo-research-toolbar,
       .social-neo-workspace-hero-stat,
-      .social-neo-workspace-hero-stats,
-      .social-neo-workspace-hero,
-      .social-neo-portfolio-hero,
-      .social-neo-portfolio-hero-stats,
-      .social-neo-events-hero,
-      .social-neo-events-hero-stats,
-      .social-neo-community-hero-grid,
-      .social-neo-community-hero-stats,
-      .social-neo-community-hero-toolbar,
-      .social-neo-surveys-hero,
-      .social-neo-surveys-hero-stats,
-      .social-neo-surveys-hero-grid,
-      .social-neo-surveys-hero-toolbar,
+      .social-neo-community-hero-stat,
+      .social-neo-events-hero-stat,
       .social-neo-survey-card,
       .social-neo-research-card,
       .social-photo-feed-card,
       .social-neo-event-feature,
       .social-portfolio-card,
-      .social-neo-surveys-take-shell,
-      .social-neo-survey-take-hero,
       .social-neo-survey-take-card,
       .social-neo-survey-take-choice,
-      .social-neo-lost-found-hero,
-      .social-neo-lost-found-hero-stats,
-      .social-neo-lost-found-hero-toolbar,
       .social-neo-lf-card,
       .social-neo-directory-item,
       .social-neo-community-card,
       .social-neo-group-card,
-      .social-project-hub-filterbar,
-      .social-project-hub-attention,
       .social-project-hub-rail-card,
       .social-project-hub-contribution-stat,
       .social-project-hub-cta-tile
     ).home-hover-chip:active {
       transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
-      box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
-      z-index: 2;
+      --home-chip-hover-glow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
     }
   }
 }

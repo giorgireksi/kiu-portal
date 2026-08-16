@@ -5,7 +5,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
 (function enablePortalPerformanceProbeFromQuery() {
     try {
         if (new URLSearchParams(window.location.search || '').get('perf') !== '1') return;
-        import('../shared/lux-render-governor.js?v=20260808-overallperf1')
+        import('../shared/lux-render-governor.js?v=20260816-hovergpu1')
             .then(module => module.startLuxPortalPerfProbe())
             .catch(() => {});
     } catch (_error) {}
@@ -16,7 +16,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
 (function installPortalPerfProbeHook() {
     try {
         if (new URLSearchParams(window.location.search || '').get('perf') !== '1') return;
-        import('../shared/lux-render-governor.js?v=20260808-overallperf1')
+        import('../shared/lux-render-governor.js?v=20260816-hovergpu1')
             .then(({ startLuxPortalPerfProbe }) => {
                 startLuxPortalPerfProbe();
                 window.__KIU_PORTAL_PERF = {

@@ -4,7 +4,7 @@ import {
   onGovernorStateChange,
   readGovernedFrameIntervalMs,
   shouldSkipCanvasFrame,
-} from "../shared/lux-render-governor.js?v=20260808-overallperf1";
+} from "../shared/lux-render-governor.js?v=20260816-hovergpu1";
 
 const PARTICLE_QUALITY_KEYS = ["low", "balanced", "high", "auto"];
 const DEFAULT_PARTICLE_MOTION = 100;
@@ -1763,9 +1763,18 @@ export {
 function scheduleParticleBackgroundSelfInit(attempt = 0) {
   if (engineReady) return;
   if (isFogBackgroundMode()) return;
+  const shellBooting = document.body?.classList?.contains("kiu-shell-loading");
+  if (shellBooting && attempt < 180) {
+    window.requestAnimationFrame(() => scheduleParticleBackgroundSelfInit(attempt + 1));
+    return;
+  }
   const canvasEl = document.getElementById("lux-bg-canvas");
   if (canvasEl) {
-    initLuxuryParticleBackground();
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(() => initLuxuryParticleBackground(), { timeout: shellBooting ? 1800 : 800 });
+    } else {
+      window.setTimeout(() => initLuxuryParticleBackground(), shellBooting ? 900 : 350);
+    }
     return;
   }
   if (attempt < 120) {

@@ -181,6 +181,7 @@
     });
 
     function startCurrentPagesMotion(center = getCenter(), options = {}) {
+        if (typeof motion.install === 'function') motion.install();
         const force = Boolean(options?.force);
         const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
         const section = getPagesSection(center);
@@ -228,10 +229,13 @@
 
     window.__kiuSocialPagesLoadingMotion = motion;
     window.__kiuStartSocialPagesLoadingMotion = startCurrentPagesMotion;
-    motion.install();
-    observeRenderedPages();
-    window.setTimeout(() => {
-        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
-        startCurrentPagesMotion();
-    }, 0);
+    if (typeof window.__kiuShouldBindSocialLoadingFallback !== 'function'
+        || window.__kiuShouldBindSocialLoadingFallback('pages')) {
+        motion.install();
+        observeRenderedPages();
+        window.setTimeout(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+            startCurrentPagesMotion();
+        }, 0);
+    }
 })();

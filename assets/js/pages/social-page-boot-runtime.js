@@ -285,39 +285,34 @@
             window.__kiuSocialPatchPostReactions = patchPostReactions;
             window.__kiuSocialPatchCommentReactions = patchCommentReactionsByIds;
             window.__kiuSocialPatchEventRsvp = patchEventRsvpButtons;
-            applyShellIdentity(true);
+            // Fast initial render on frame 0 — paints immediately for sub-second LCP
+            renderOrRetry();
+
             const runHydrate = typeof ensurePortalSocialRuntimeLoaded === 'function'
                 ? () => Promise.resolve(ensurePortalSocialRuntimeLoaded()).catch(() => null)
                 : typeof hydratePortalSocialRuntime === 'function'
                     ? () => Promise.resolve(hydratePortalSocialRuntime()).catch(() => null)
                     : null;
-            if (runHydrate) {
-                await Promise.race([
-                    Promise.resolve(runHydrate()),
-                    new Promise((_, reject) => window.setTimeout(
-                        () => reject(new Error('Social state hydration timed out.')),
-                        8000
-                    ))
-                ]).catch((error) => {
-                    console.warn('[Social] State hydration degraded:', error);
-                });
-            }
-            // Preload the restored active panel so boot paints a real shell
-            // (not social-neo-module-loading) and assembly intro can start.
+
             const activePanel = text(state()?.ui?.activePanel || 'feed') || 'feed';
-            await Promise.race([
-                Promise.resolve(ensureActivePanelModule(activePanel)),
-                new Promise((_, reject) => window.setTimeout(
-                    () => reject(new Error(`Social ${activePanel} startup timed out.`)),
-                    8000
-                ))
-            ]).catch((error) => {
-                console.warn('[Social] Active panel startup degraded:', error);
-            });
-            renderOrRetry();
-            // Run background health & maintenance tasks after first paint
-            warnIfPinApiUnavailable().catch(() => null);
-            pruneExpiredLostFoundItems().catch(() => null);
+
+            // Background non-blocking hydration and maintenance tasks
+            Promise.allSettled([
+                runHydrate ? Promise.race([
+                    Promise.resolve(runHydrate()),
+                    new Promise((_, reject) => window.setTimeout(() => reject(new Error('Social state hydration timed out.')), 1800))
+                ]) : Promise.resolve(),
+                Promise.race([
+                    Promise.resolve(ensureActivePanelModule(activePanel)),
+                    new Promise((_, reject) => window.setTimeout(() => reject(new Error(`Social ${activePanel} startup timed out.`)), 800))
+                ])
+            ]).then(() => {
+                if (typeof renderSocialPageNow === 'function') {
+                    renderSocialPageNow('hydrate-ready');
+                }
+                warnIfPinApiUnavailable().catch(() => null);
+                pruneExpiredLostFoundItems().catch(() => null);
+            }).catch(() => null);
         }
 
         const api = {

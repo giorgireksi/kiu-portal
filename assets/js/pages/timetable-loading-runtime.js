@@ -5,19 +5,23 @@
     const createAssemblyLoadingMotion = window.__kiuCreateAssemblyLoadingMotion;
     if (typeof createAssemblyLoadingMotion !== 'function') return;
 
-    const motion = createAssemblyLoadingMotion({
-        isRoute: () => document.body?.classList.contains('lux-route-timetable')
-            || document.documentElement?.dataset?.luxPage === 'timetable'
-            || /(?:^|\/)timetable\.html$/i.test(window.location.pathname || ''),
-        getPageRoot: () => document.querySelector('#page-timetable .lux-timetable-page'),
-        observerSelector: '#page-timetable',
-        rootStateDataset: 'kiuTimetableAssemblyState',
-        hiddenSelector: '[hidden], [aria-hidden="true"], template, #mobile-action-sheet',
-        outerSelectors: [
-            '.lux-timetable-command',
-            '.lux-timetable-stage'
-        ],
-        granularSelector: [
+    const hardwareConcurrency = Number(window.navigator?.hardwareConcurrency || 8);
+    const deviceMemory = Number(window.navigator?.deviceMemory || 8);
+    const lowEndTimetableDevice = hardwareConcurrency <= 4 || deviceMemory <= 4;
+    const granularSelector = lowEndTimetableDevice
+        ? [
+            '.lux-timetable-command-head',
+            '.lux-timetable-command-focus',
+            '.lux-timetable-stage-head',
+            '.lux-timetable-view-switcher',
+            '.lux-timetable-week-nav',
+            '.lux-timetable-overview-row',
+            '#timetable-master-container',
+            'button',
+            'input',
+            'select'
+        ]
+        : [
             '.lux-timetable-command-head',
             '.lux-timetable-command-title',
             '.lux-timetable-command-note',
@@ -53,7 +57,21 @@
             'small',
             'label',
             'li'
+        ];
+
+    const motion = createAssemblyLoadingMotion({
+        isRoute: () => document.body?.classList.contains('lux-route-timetable')
+            || document.documentElement?.dataset?.luxPage === 'timetable'
+            || /(?:^|\/)timetable\.html$/i.test(window.location.pathname || ''),
+        getPageRoot: () => document.querySelector('#page-timetable .lux-timetable-page'),
+        observerSelector: '#page-timetable',
+        rootStateDataset: 'kiuTimetableAssemblyState',
+        hiddenSelector: '[hidden], [aria-hidden="true"], template, #mobile-action-sheet',
+        outerSelectors: [
+            '.lux-timetable-command',
+            '.lux-timetable-stage'
         ],
+        granularSelector,
         controlSelector: [
             'button',
             'input',
@@ -77,11 +95,12 @@
             inner: 'kiu-timetable-assembly-inner',
             structure: 'kiu-timetable-assembly-structure'
         },
+        disableBlur: lowEndTimetableDevice,
         timing: {
-            maxShellWaitMs: 1800,
-            lateAssemblyGraceMs: 145,
-            maxAssemblyWindowMs: 1650,
-            maxTotalAssemblyMs: 2450
+            maxShellWaitMs: lowEndTimetableDevice ? 700 : 1800,
+            lateAssemblyGraceMs: lowEndTimetableDevice ? 100 : 145,
+            maxAssemblyWindowMs: lowEndTimetableDevice ? 1000 : 1650,
+            maxTotalAssemblyMs: lowEndTimetableDevice ? 1400 : 2450
         }
     });
 

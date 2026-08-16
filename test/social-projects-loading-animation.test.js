@@ -11,7 +11,7 @@ describe('Social Projects workspace loading animation', () => {
 
     it('loads Projects motion before Social boot', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1');
         const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
         const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
@@ -33,6 +33,7 @@ describe('Social Projects workspace loading animation', () => {
 
         expect(runtime).toContain("return document.querySelector('#social-neo-center-region')");
         expect(runtime).toContain("activePanel !== 'workspace'");
+        expect(runtime).toContain("__kiuShouldBindSocialLoadingFallback('workspace')");
         expect(runtime).toContain('.social-neo-workspace-shell');
         expect(runtime).toContain('.social-neo-workspace-hero');
         expect(runtime).toContain('.social-project-hub-filterbar');
@@ -134,7 +135,7 @@ describe('Social Projects workspace loading animation', () => {
 
     it('cache-busts the Projects workspace assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
         expect(sw).toContain('social-projects-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-projects-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
     });

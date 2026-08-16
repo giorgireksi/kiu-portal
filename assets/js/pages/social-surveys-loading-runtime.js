@@ -169,6 +169,7 @@
     });
 
     function startCurrentSurveysMotion(center = getCenter(), options = {}) {
+        if (typeof motion.install === 'function') motion.install();
         const force = Boolean(options?.force);
         const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
         const section = getSurveysSection(center);
@@ -213,10 +214,13 @@
 
     window.__kiuSocialSurveysLoadingMotion = motion;
     window.__kiuStartSocialSurveysLoadingMotion = startCurrentSurveysMotion;
-    motion.install();
-    observeRenderedSurveys();
-    window.setTimeout(() => {
-        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
-        startCurrentSurveysMotion();
-    }, 0);
+    if (typeof window.__kiuShouldBindSocialLoadingFallback !== 'function'
+        || window.__kiuShouldBindSocialLoadingFallback('surveys')) {
+        motion.install();
+        observeRenderedSurveys();
+        window.setTimeout(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+            startCurrentSurveysMotion();
+        }, 0);
+    }
 })();

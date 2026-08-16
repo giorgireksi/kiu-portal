@@ -43,6 +43,8 @@ describe('particle same-look perf (gpuperf4m)', () => {
         expect(motion).toContain('beginLuxAnimating');
         expect(motion).toContain('__luxIsAnimating');
         expect(motion).toContain("closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell')");
+        expect(motion).toContain("closest?.('.home-hover-chip')");
+        expect(motion).toContain("addEventListener('pointerover'");
         // Hover must not arm MOTION_CLASS (would change blur look).
         expect(motion).toContain('do not arm MOTION_CLASS on control hover');
     });

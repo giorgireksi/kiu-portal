@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2';
+const CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -23,7 +23,7 @@ const SHELL_ASSETS = [
   '/exams.html',
   '/login.html',
   '/assets/css/lux-tokens.css?v=20260725-frosted1',
-  '/assets/css/lux-fouc-ht.css?v=20260806-hidetopbar2',
+  '/assets/css/lux-fouc-ht.css?v=20260816-hovergpu1',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260806-hidetopbar2',
   '/assets/css/lux-modals.css?v=20260816-socialmodals1',
@@ -56,7 +56,7 @@ const SHELL_ASSETS = [
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly26',
   '/assets/js/features/luxury-index-runtime.js?v=20260810-homeassembly6',
   '/assets/js/features/luxury-index-home-shell-runtime.js?v=20260720-w18',
-  '/assets/js/features/luxury-shell-motion-runtime.js?v=20260725-glassblur1',
+  '/assets/js/features/luxury-shell-motion-runtime.js?v=20260816-hovergpu1',
   '/assets/js/features/index-luxury.js?v=20260808-galleryfouc1',
   '/assets/js/features/luxury-home-model.js?v=20260809-homeassembly3',
   '/assets/js/features/home-dashboard-widget-layout-runtime.js?v=20260809-homeassembly3',
@@ -66,7 +66,7 @@ const SHELL_ASSETS = [
   '/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
   '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe5',
-  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2',
+  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1',
   '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9',
   '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery2',
   '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',

@@ -164,6 +164,7 @@
     });
 
     function startCurrentFeedMotion(center = getFeedCenter(), options = {}) {
+        if (typeof motion.install === 'function') motion.install();
         const force = Boolean(options?.force);
         const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
         const section = getFeedSection(center);
@@ -182,6 +183,7 @@
 
     let feedObserverFrame = 0;
     function observeRenderedFeed() {
+        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
         const page = document.querySelector('#page-social');
         if (!page || typeof MutationObserver !== 'function') {
             window.setTimeout(observeRenderedFeed, 64);
@@ -208,10 +210,13 @@
 
     window.__kiuSocialHomeLoadingMotion = motion;
     window.__kiuStartSocialHomeLoadingMotion = startCurrentFeedMotion;
-    motion.install();
-    observeRenderedFeed();
-    window.setTimeout(() => {
-        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
-        startCurrentFeedMotion();
-    }, 0);
+    if (typeof window.__kiuShouldBindSocialLoadingFallback !== 'function'
+        || window.__kiuShouldBindSocialLoadingFallback('feed')) {
+        motion.install();
+        observeRenderedFeed();
+        window.setTimeout(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+            startCurrentFeedMotion();
+        }, 0);
+    }
 })();

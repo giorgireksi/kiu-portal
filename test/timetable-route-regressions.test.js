@@ -288,6 +288,20 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('setTimeout(flattenTimetableControlRows, 700);');
     });
 
+    it('keeps timetable animation work bounded on weak devices and reuses render models', () => {
+        const runtime = readSource('assets/js/pages/timetable-runtime.js');
+        const loading = readSource('assets/js/pages/timetable-loading-runtime.js');
+        const assembly = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
+        expect(runtime).toContain('timetableRenderNormalizationCache');
+        expect(runtime).toContain('getCachedTimetableWeekEntries');
+        expect(runtime).toContain('const dayIndex = new Map');
+        expect(loading).toContain('lowEndTimetableDevice');
+        expect(loading).toContain('disableBlur: lowEndTimetableDevice');
+        expect(loading).toContain("maxTotalAssemblyMs: lowEndTimetableDevice ? 1400 : 2450");
+        expect(assembly).toContain('const disableBlur = options.disableBlur === true;');
+        expect(assembly).toContain("filter: disableBlur ? 'none' : 'blur(.5px)'");
+    });
+
     it('keeps timetable on the shared standalone mobile shell contract instead of navigate polling', () => {
         const html = readSource('timetable.html');
 

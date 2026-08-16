@@ -68,6 +68,12 @@ describe('home dashboard shell hover lift', () => {
         expect(fouc).toMatch(/\.lux-focus-panel__chip\.home-hover-chip[\s\S]*overflow:\s*visible/);
         expect(fouc).toMatch(/\.home-hover-chip[\s\S]*contain:\s*paint/);
         expect(fouc).toMatch(/\.home-hover-chip[\s\S]*::after/);
+        const chipMotion = fouc.match(
+            /body\.lux-unified-shell :is\(\s*\n\s*\.home-hover-chip:not\(\.lux-primary-btn\)[\s\S]*?transition:\s*[^;]+;/
+        )?.[0] || '';
+        expect(chipMotion).toMatch(/transition:\s*transform 0\.28s cubic-bezier\(0\.22, 1, 0\.36, 1\);/);
+        expect(chipMotion).not.toMatch(/box-shadow/);
+        expect(chipMotion).not.toMatch(/will-change/);
         expect(fouc).not.toMatch(/home-hover-chip[\s\S]*filter:\s*brightness/);
         expect(fouc).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.home-hover-chip[\s\S]*display:\s*none/);
     });

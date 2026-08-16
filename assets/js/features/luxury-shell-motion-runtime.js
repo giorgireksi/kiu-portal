@@ -156,7 +156,10 @@
     function isShellChromeHoverTarget(node) {
         if (!node || node.nodeType !== 1) return false;
         try {
-            return Boolean(node.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell'));
+            return Boolean(
+                node.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell')
+                || node.closest?.('.home-hover-chip')
+            );
         } catch (_error) {
             return false;
         }
@@ -223,4 +226,10 @@
     window.beginLuxAnimating = beginLuxAnimating;
     window.endLuxAnimating = endLuxAnimating;
     window.syncLuxIsAnimatingFlag = syncLuxIsAnimatingFlag;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindShellChromeMotion, { once: true });
+    } else {
+        bindShellChromeMotion();
+    }
 }());

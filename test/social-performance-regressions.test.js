@@ -20,6 +20,8 @@ describe('social performance safeguards', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
         expect(html).toContain('social-page.js?v=20260816-socialperf8');
+        expect(html).toContain('lux-fouc-ht.css?v=20260816-hovergpu1');
+        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260816-hovergpu1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
         expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
         expect(page).toContain('loadSocialDynamicScript');
@@ -52,7 +54,7 @@ describe('social performance safeguards', () => {
     it('uses the optimized shared assembly runtime on Social', () => {
         const html = readSource('social.html');
         const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
+        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1');
         expect(runtime).not.toContain('function getCurrentNode(element, root)');
         expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
         expect(runtime).toContain("soft-restart-skipped-same-content");
@@ -62,6 +64,11 @@ describe('social performance safeguards', () => {
         expect(runtime).toContain('function abortOtherMotions()');
         expect(runtime).toContain('motionRegistry.add(api);');
         expect(runtime).toContain('__kiuAbortAssemblyLoadingMotions');
+        expect(runtime).toContain('__kiuShouldBindSocialLoadingFallback');
+        expect(readSource('assets/js/pages/social-community-loading-runtime.js'))
+            .toContain("window.__kiuShouldBindSocialLoadingFallback('community')");
+        expect(readSource('assets/js/pages/social-home-loading-runtime.js'))
+            .toContain("window.__kiuShouldBindSocialLoadingFallback('feed')");
         const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
         expect(interactions).toContain('SOCIAL_PANEL_MOTION_GLOBAL_BY_PANEL');
         expect(interactions).toContain("projects: '__kiuSocialPortfolioLoadingMotion'");
@@ -98,7 +105,7 @@ describe('social performance safeguards', () => {
         expect(page).toContain('__kiuRetrySocialModule');
         expect(page).toContain("return ['workspace', 'projects'];");
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 

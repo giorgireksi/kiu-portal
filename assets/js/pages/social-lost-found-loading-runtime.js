@@ -157,6 +157,7 @@
     });
 
     function startCurrentLostFoundMotion(center = getCenter(), options = {}) {
+        if (typeof motion.install === 'function') motion.install();
         const force = Boolean(options?.force);
         const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
         const section = getLostFoundSection(center);
@@ -201,10 +202,13 @@
 
     window.__kiuSocialLostFoundLoadingMotion = motion;
     window.__kiuStartSocialLostFoundLoadingMotion = startCurrentLostFoundMotion;
-    motion.install();
-    observeRenderedLostFound();
-    window.setTimeout(() => {
-        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
-        startCurrentLostFoundMotion();
-    }, 0);
+    if (typeof window.__kiuShouldBindSocialLoadingFallback !== 'function'
+        || window.__kiuShouldBindSocialLoadingFallback('lost-and-found')) {
+        motion.install();
+        observeRenderedLostFound();
+        window.setTimeout(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+            startCurrentLostFoundMotion();
+        }, 0);
+    }
 })();

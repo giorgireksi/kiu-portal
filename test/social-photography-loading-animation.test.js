@@ -11,7 +11,7 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('loads photography motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1');
         const photoIndex = html.indexOf('social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9');
 
@@ -239,7 +239,7 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('cache-busts photography assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
         expect(sw).toContain('social-photography-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9');

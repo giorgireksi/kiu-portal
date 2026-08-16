@@ -158,6 +158,7 @@
     });
 
     function startCurrentAlertsMotion(center = getCenter(), options = {}) {
+        if (typeof motion.install === 'function') motion.install();
         const force = Boolean(options?.force);
         const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
         const section = getAlertsSection(center);
@@ -201,10 +202,13 @@
 
     window.__kiuSocialAlertsLoadingMotion = motion;
     window.__kiuStartSocialAlertsLoadingMotion = startCurrentAlertsMotion;
-    motion.install();
-    observeRenderedAlerts();
-    window.setTimeout(() => {
-        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
-        startCurrentAlertsMotion();
-    }, 0);
+    if (typeof window.__kiuShouldBindSocialLoadingFallback !== 'function'
+        || window.__kiuShouldBindSocialLoadingFallback('alerts')) {
+        motion.install();
+        observeRenderedAlerts();
+        window.setTimeout(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+            startCurrentAlertsMotion();
+        }, 0);
+    }
 })();

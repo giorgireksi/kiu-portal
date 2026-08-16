@@ -650,7 +650,7 @@ describe('particle background route integration', () => {
         expect(html).toContain('luxury-index-runtime.js?v=');
         expect(html).not.toContain('index-luxury.css');
         expect(luxury).toContain("import('./luxury-background.js?v=20260808-loadperf1')");
-        expect(background).toContain('import("./luxury-particle-background.js?v=20260723-gpuperf4q")');
+        expect(background).toContain('import("./luxury-particle-background.js?v=20260816-socialcpu1")');
         expect(background).toContain('import("./luxury-vanta-fog-background.js?v=20260723-adaptive1")');
     });
     it('supports gallery static background fill and media mount', () => {

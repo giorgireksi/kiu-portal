@@ -18,6 +18,7 @@ describe('lux render governor', () => {
         expect(governor).toContain('export function getPacingMultiplier');
         expect(governor).toContain('export function isModalOverlayOpen');
         expect(governor).toContain('export function shouldSkipCanvasFrame');
+        expect(governor).toContain('window.__luxShellHoverBusy === true');
         expect(governor).toContain('export function readGovernedFrameIntervalMs');
         expect(governor).toContain('export function shouldDeferTransparency');
         expect(governor).toContain('export function shouldDeferLegacyVisualRefresh');
@@ -25,7 +26,7 @@ describe('lux render governor', () => {
         expect(governor).toContain('export function stopLuxPortalPerfProbe');
         expect(governor).toContain('window.startKiuPortalPerfProbe');
         expect(governor).toContain('longTasks');
-        expect(app).toContain("import('../shared/lux-render-governor.js?v=20260808-overallperf1')");
+        expect(app).toContain("import('../shared/lux-render-governor.js?v=20260816-hovergpu1')");
         expect(app).toContain("get('perf') !== '1'");
         expect(governor).toContain('window.shouldDeferLuxTransparency');
         expect(governor).toContain('window.__luxIsScrolling');

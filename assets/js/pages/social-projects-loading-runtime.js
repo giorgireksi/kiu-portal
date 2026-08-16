@@ -269,6 +269,7 @@
     }
 
     function startCurrentProjectsMotion(center = getCenter(), options = {}) {
+        if (typeof motion.install === 'function') motion.install();
         const force = Boolean(options?.force);
         const activePanel = document.querySelector('#social-neo-root')?.dataset?.panel;
         const section = getProjectsSection(center);
@@ -316,10 +317,13 @@
 
     window.__kiuSocialProjectsLoadingMotion = motion;
     window.__kiuStartSocialProjectsLoadingMotion = startCurrentProjectsMotion;
-    motion.install();
-    observeRenderedProjects();
-    window.setTimeout(() => {
-        if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
-        startCurrentProjectsMotion();
-    }, 0);
+    if (typeof window.__kiuShouldBindSocialLoadingFallback !== 'function'
+        || window.__kiuShouldBindSocialLoadingFallback('workspace')) {
+        motion.install();
+        observeRenderedProjects();
+        window.setTimeout(() => {
+            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+            startCurrentProjectsMotion();
+        }, 0);
+    }
 })();

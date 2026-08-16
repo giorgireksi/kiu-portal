@@ -82,6 +82,7 @@
         const transformSafeSelector = Array.isArray(options.transformSafeSelector)
             ? options.transformSafeSelector.join(', ')
             : String(options.transformSafeSelector || '');
+        const disableBlur = options.disableBlur === true;
         const getMotionProfile = typeof options.getMotionProfile === 'function'
             ? options.getMotionProfile
             : null;
@@ -459,40 +460,41 @@
             );
 
             target.classList.add(classes.flight);
+            const blur = (value) => disableBlur ? 'none' : `blur(${value})`;
             const keyframes = [
                 {
                     opacity: 0,
                     transform: `translate3d(-${distance}px, ${isOuterShell ? '-16px' : '0'}, 0) rotate(${rotation}deg) scale(${isOuterShell ? '1.025' : '1.015'})`,
-                    filter: `blur(${isOuterShell ? '4px' : '2px'})`
+                    filter: blur(isOuterShell ? '4px' : '2px')
                 },
                 {
                     opacity: 0.88,
                     transform: `translate3d(-${distance * 0.46}px, ${isOuterShell ? '-8px' : '0'}, 0) rotate(${rotation * 0.5}deg) scale(${isOuterShell ? '1.014' : '1.008'})`,
-                    filter: `blur(${isOuterShell ? '2px' : '1px'})`,
+                    filter: blur(isOuterShell ? '2px' : '1px'),
                     offset: 0.42
                 },
                 {
                     opacity: 1,
                     transform: `translate3d(-${distance * 0.1}px, ${isOuterShell ? '-2px' : '0'}, 0) rotate(${rotation * 0.1}deg) scale(1.002)`,
-                    filter: 'blur(.5px)',
+                    filter: disableBlur ? 'none' : 'blur(.5px)',
                     offset: 0.72
                 },
                 {
                     opacity: 1,
                     transform: `translate3d(10px, ${isOuterShell ? '1px' : '0'}, 0) rotate(0deg) scale(1)`,
-                    filter: 'blur(0)',
+                    filter: 'none',
                     offset: 0.87
                 },
                 {
                     opacity: 1,
                     transform: 'translate3d(-3px, 0, 0) rotate(0deg) scale(1)',
-                    filter: 'blur(0)',
+                    filter: 'none',
                     offset: 0.95
                 },
                 {
                     opacity: 1,
                     transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
-                    filter: 'blur(0)'
+                    filter: 'none'
                 }
             ];
             if (preserveTransform) {
@@ -1055,4 +1057,8 @@
     }
 
     global.__kiuCreateAssemblyLoadingMotion = createAssemblyLoadingMotion;
+    global.__kiuShouldBindSocialLoadingFallback = function shouldBindSocialLoadingFallback(panelId) {
+        const active = String(document.querySelector('#social-neo-root')?.dataset?.panel || 'feed');
+        return active === String(panelId || 'feed');
+    };
 })(window);
