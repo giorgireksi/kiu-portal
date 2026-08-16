@@ -866,7 +866,7 @@ Publishes only the host/runtime contract consumed by its loader.
                     // export/flag assignment by one microtask. Wait briefly
                     // for the real renderer before mounting the panel.
                     if (!hasSocialPhotographyModule()) {
-                        if (attempt < 30) window.setTimeout(() => mountActivePhotography(attempt + 1), 0);
+                        if (attempt < 120) window.setTimeout(() => mountActivePhotography(attempt + 1), 16);
                         return;
                     }
                     if (typeof renderSocialPageNow !== 'function') return;
