@@ -595,6 +595,12 @@
                 }
                 invalidateSocialRenderCache({ center: true });
                 const liveHost = root();
+                // The key deduplicates callbacks before this flush, not future
+                // module retries. Clear it after ownership is consumed so a
+                // late/failed first remount can recover without a panel switch.
+                if (liveHost?.__kiuDeferredModuleRenderKey === renderKey) {
+                    delete liveHost.__kiuDeferredModuleRenderKey;
+                }
                 if (liveHost && !activeDialog()) liveHost.__kiuForceCenterOnly = true;
                 renderSocialPageNow(renderReason);
             };

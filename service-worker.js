@@ -65,7 +65,7 @@ const SHELL_ASSETS = [
   '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
   '/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
-  '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe3',
+  '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe4',
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2',
   '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner7',
   '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery2',

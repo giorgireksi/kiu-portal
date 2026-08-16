@@ -11,11 +11,11 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('loads photography motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const photoIndex = html.indexOf('social-photography-loading-runtime.js?v=20260810-socialbootveil2');
-        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
+        const photoIndex = html.indexOf('social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner7');
 
-        expect(html).toContain('social-photography-loading.css?v=20260809-socialassemblyreplay1');
+        expect(html).toContain('social-photography-loading.css?v=20260815-socialassemblyclean1');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(photoIndex).toBeGreaterThan(sharedIndex);
         expect(interactionsIndex).toBeGreaterThan(photoIndex);
@@ -35,7 +35,7 @@ describe('Social Exposé (photography) loading animation', () => {
         expect(runtime).toContain('.social-photo-profile-shell');
         expect(runtime).toContain('.social-photo-shell--my-profile');
         expect(runtime).toContain("'[role=\"dialog\"]'");
-        expect(runtime).toContain('flattenInnerTargets: false');
+        expect(runtime).toContain('flattenInnerTargets: true');
         expect(runtime).toContain('maxTotalAssemblyMs: 2000');
         expect(runtime).toContain('socialPhotographyAssemblyState');
         expect(runtime).toContain('observeRenderedPhotography');
@@ -44,9 +44,9 @@ describe('Social Exposé (photography) loading animation', () => {
         expect(runtime).toContain('options?.force');
         expect(runtime).not.toContain('(force && isNewSection)');
         expect(interactions).toContain('function queueSocialPhotographyMotion(center, activePanel, reason)');
-        expect(interactions).toContain("reason === 'photography-module'");
-        expect(interactions).toContain("reason === 'photography-tab'");
-        expect(interactions).toContain("reason === 'panel-photography'");
+        expect(interactions).toContain("shouldAnimateSocialPanelMotion('photography', activePanel, reason,");
+        expect(interactions).toContain("/^panel-/.test(r)");
+        expect(interactions).toContain("r === `${target}-module`");
         expect(interactions).toContain("reason === 'photography-my-profile'");
         expect(interactions).toContain("reason === 'photography-view-profile'");
         expect(interactions).toContain("reason === 'photography-profile-back'");
@@ -239,9 +239,9 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('cache-busts photography assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
-        expect(sw).toContain('social-photography-loading.css?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-photography-loading-runtime.js?v=20260810-socialbootveil2');
-        expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
+        expect(sw).toContain('social-photography-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner7');
     });
 });
