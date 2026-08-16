@@ -776,7 +776,7 @@
         // Safety net: reveal after a short deadline if deferred scripts fail.
         // Normal routes call markPortalShellReady() after route content renders.
         var revealPollMs = 50;
-        var revealDeadlineMs = 1400;
+        var revealDeadlineMs = 700;
         var revealElapsedMs = 0;
         function forceRevealPage() {
             window.__kiuSocialShellRevealAllowed = true;
@@ -802,7 +802,7 @@
             if (shellLoadState.phase !== 'loading') return;
             revealElapsedMs += revealPollMs;
             var isSocial = b.classList.contains('lux-route-social');
-            var limit = isSocial ? 2200 : 1400;
+            var limit = isSocial ? 1600 : revealDeadlineMs;
             if (revealElapsedMs >= limit) {
                 forceRevealPage();
                 return;

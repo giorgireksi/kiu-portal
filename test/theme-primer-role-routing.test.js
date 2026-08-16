@@ -75,8 +75,8 @@ describe('theme primer role routing', () => {
   it('loads the primer synchronously before body content on unified entry routes', () => {
     for (const route of ['index.html', 'social.html', 'exam-portal.html']) {
       const html = readSource(route);
-      expect(html.indexOf('theme-primer.js?v=20260810-homebootveil1')).toBeGreaterThanOrEqual(0);
-      expect(html.indexOf('theme-primer.js?v=20260810-homebootveil1')).toBeLessThan(html.indexOf('<body'));
+      expect(html.indexOf('theme-primer.js?v=20260816-earlyreveal1')).toBeGreaterThanOrEqual(0);
+      expect(html.indexOf('theme-primer.js?v=20260816-earlyreveal1')).toBeLessThan(html.indexOf('<body'));
     }
     expect(readSource('exam-portal.html')).toMatch(
       /<body[^>]*class="[^"]*kiu-shell-loading/
