@@ -181,6 +181,13 @@
         if (!(phase === 'idle' || force)) return false;
         if (center?.dataset) delete center.dataset.socialMessagesAssemblyState;
         section.dataset.socialMessagesAssemblyRoot = '1';
+        if (force && phase === 'ready' && typeof motion.abort === 'function') {
+            // A revisit can retain the completed phase marker after the old
+            // panel was detached. Clear that stale state before the new flight.
+            motion.abort();
+            if (center?.dataset) delete center.dataset.socialMessagesAssemblyState;
+            section.dataset.socialMessagesAssemblyRoot = '1';
+        }
         if (force && phase && phase !== 'idle' && typeof motion.softRestart === 'function') {
             return motion.softRestart(center);
         }

@@ -385,7 +385,6 @@ Publishes only the host/runtime contract consumed by its loader.
     let socialDesktopModulePrefetchScheduled = false;
     let socialDirectoryPrefetchScheduled = false;
     let socialRouteGuardianBound = false;
-    let socialRouteGuardianInterval = 0;
     function isStandaloneSocialRoute() {
         const pathname = String(window.location?.pathname || '').toLowerCase();
         return pathname.endsWith('/social.html') || pathname.endsWith('social.html');
@@ -473,18 +472,14 @@ Publishes only the host/runtime contract consumed by its loader.
         });
         observer.observe(appContent, { childList: true, subtree: true });
         window.setTimeout(reconcile, 200);
-        window.setTimeout(reconcile, 800);
-        window.setTimeout(reconcile, 2000);
-        if (socialRouteGuardianInterval) window.clearInterval(socialRouteGuardianInterval);
-        socialRouteGuardianInterval = window.setInterval(() => {
-            if (!document.getElementById(ROOT_ID)) reconcile();
-        }, 1000);
+        // MutationObserver owns steady-state recovery; keep only bounded
+        // startup retries so a missing host cannot leave the veil stuck.
         window.setTimeout(() => {
-            if (socialRouteGuardianInterval) {
-                window.clearInterval(socialRouteGuardianInterval);
-                socialRouteGuardianInterval = 0;
-            }
-        }, 12000);
+            if (!document.getElementById(ROOT_ID)) reconcile();
+        }, 900);
+        window.setTimeout(() => {
+            if (!document.getElementById(ROOT_ID)) reconcile();
+        }, 2200);
     }
     function root() {
         return document.getElementById(ROOT_ID) || ensureSocialRouteHost();
@@ -800,20 +795,9 @@ Publishes only the host/runtime contract consumed by its loader.
     function ensureSocialCommunityModule() {
         if (hasSocialCommunityModule()) return Promise.resolve(true);
         if (socialCommunityModulePromise) return socialCommunityModulePromise;
-        socialCommunityModulePromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${SOCIAL_COMMUNITY_MODULE_URL}"]`);
-            if (existing) {
-                existing.addEventListener('load', () => resolve(true), { once: true });
-                existing.addEventListener('error', () => reject(new Error('Social community module could not be loaded.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = SOCIAL_COMMUNITY_MODULE_URL;
-            script.defer = true;
-            script.addEventListener('load', () => resolve(true), { once: true });
-            script.addEventListener('error', () => reject(new Error('Social community module could not be loaded.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
+        socialCommunityModulePromise = loadSocialDynamicScript(SOCIAL_COMMUNITY_MODULE_URL, 'Social community module')
+            .then(() => true)
+            .catch((error) => {
             console.error('Social community module load failed.', error);
             throw error;
         }).finally(() => {
@@ -831,20 +815,9 @@ Publishes only the host/runtime contract consumed by its loader.
     function ensureSocialAlertsModule() {
         if (hasSocialAlertsModule()) return Promise.resolve(true);
         if (socialAlertsModulePromise) return socialAlertsModulePromise;
-        socialAlertsModulePromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${SOCIAL_ALERTS_MODULE_URL}"]`);
-            if (existing) {
-                existing.addEventListener('load', () => resolve(true), { once: true });
-                existing.addEventListener('error', () => reject(new Error('Social alerts module could not be loaded.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = SOCIAL_ALERTS_MODULE_URL;
-            script.defer = true;
-            script.addEventListener('load', () => resolve(true), { once: true });
-            script.addEventListener('error', () => reject(new Error('Social alerts module could not be loaded.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
+        socialAlertsModulePromise = loadSocialDynamicScript(SOCIAL_ALERTS_MODULE_URL, 'Social alerts module')
+            .then(() => true)
+            .catch((error) => {
             console.error('Social alerts module load failed.', error);
             throw error;
         }).finally(() => {
@@ -862,20 +835,9 @@ Publishes only the host/runtime contract consumed by its loader.
     function ensureSocialLostFoundModule() {
         if (hasSocialLostFoundModule()) return Promise.resolve(true);
         if (socialLostFoundModulePromise) return socialLostFoundModulePromise;
-        socialLostFoundModulePromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${SOCIAL_LOST_FOUND_MODULE_URL}"]`);
-            if (existing) {
-                existing.addEventListener('load', () => resolve(true), { once: true });
-                existing.addEventListener('error', () => reject(new Error('Social lost-found module could not be loaded.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = SOCIAL_LOST_FOUND_MODULE_URL;
-            script.defer = true;
-            script.addEventListener('load', () => resolve(true), { once: true });
-            script.addEventListener('error', () => reject(new Error('Social lost-found module could not be loaded.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
+        socialLostFoundModulePromise = loadSocialDynamicScript(SOCIAL_LOST_FOUND_MODULE_URL, 'Social lost-found module')
+            .then(() => true)
+            .catch((error) => {
             console.error('Social lost-found module load failed.', error);
             throw error;
         }).finally(() => {
@@ -893,20 +855,9 @@ Publishes only the host/runtime contract consumed by its loader.
     function ensureSocialPhotographyModule() {
         if (hasSocialPhotographyModule()) return Promise.resolve(true);
         if (socialPhotographyModulePromise) return socialPhotographyModulePromise;
-        socialPhotographyModulePromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${SOCIAL_PHOTOGRAPHY_MODULE_URL}"]`);
-            if (existing) {
-                existing.addEventListener('load', () => resolve(true), { once: true });
-                existing.addEventListener('error', () => reject(new Error('Social photography module could not be loaded.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = SOCIAL_PHOTOGRAPHY_MODULE_URL;
-            script.defer = true;
-            script.addEventListener('load', () => resolve(true), { once: true });
-            script.addEventListener('error', () => reject(new Error('Social photography module could not be loaded.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
+        socialPhotographyModulePromise = loadSocialDynamicScript(SOCIAL_PHOTOGRAPHY_MODULE_URL, 'Social photography module')
+            .then(() => true)
+            .catch((error) => {
             console.error('Social photography module load failed.', error);
             throw error;
         }).finally(() => {
@@ -924,20 +875,9 @@ Publishes only the host/runtime contract consumed by its loader.
     function ensureSocialSurveysModule() {
         if (hasSocialSurveysModule()) return Promise.resolve(true);
         if (socialSurveysModulePromise) return socialSurveysModulePromise;
-        socialSurveysModulePromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${SOCIAL_SURVEYS_MODULE_URL}"]`);
-            if (existing) {
-                existing.addEventListener('load', () => resolve(true), { once: true });
-                existing.addEventListener('error', () => reject(new Error('Social surveys module could not be loaded.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = SOCIAL_SURVEYS_MODULE_URL;
-            script.defer = true;
-            script.addEventListener('load', () => resolve(true), { once: true });
-            script.addEventListener('error', () => reject(new Error('Social surveys module could not be loaded.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
+        socialSurveysModulePromise = loadSocialDynamicScript(SOCIAL_SURVEYS_MODULE_URL, 'Social surveys module')
+            .then(() => true)
+            .catch((error) => {
             console.error('Social surveys module load failed.', error);
             throw error;
         }).finally(() => {
@@ -958,57 +898,13 @@ Publishes only the host/runtime contract consumed by its loader.
         socialResearchModulePromise = Promise.resolve()
             .then(() => {
                 if (window.__KIU_SOCIAL_RESEARCH_PDF_RUNTIME_LOADED) return true;
-                return new Promise((resolve, reject) => {
-                    const existing = document.querySelector(`script[src="${SOCIAL_RESEARCH_PDF_RUNTIME_URL}"]`);
-                    if (existing) {
-                        if (window.__KIU_SOCIAL_RESEARCH_PDF_RUNTIME_LOADED || existing.dataset.kiuLoaded === '1') {
-                            resolve(true);
-                            return;
-                        }
-                        existing.addEventListener('load', () => {
-                            existing.dataset.kiuLoaded = '1';
-                            resolve(true);
-                        }, { once: true });
-                        existing.addEventListener('error', () => reject(new Error('Social research PDF runtime could not be loaded.')), { once: true });
-                        return;
-                    }
-                    const script = document.createElement('script');
-                    script.src = SOCIAL_RESEARCH_PDF_RUNTIME_URL;
-                    script.defer = true;
-                    script.addEventListener('load', () => {
-                        script.dataset.kiuLoaded = '1';
-                        resolve(true);
-                    }, { once: true });
-                    script.addEventListener('error', () => reject(new Error('Social research PDF runtime could not be loaded.')), { once: true });
-                    document.head.appendChild(script);
-                });
+                return loadSocialDynamicScript(SOCIAL_RESEARCH_PDF_RUNTIME_URL, 'Social research PDF runtime')
+                    .then(() => true);
             })
             .then(() => {
                 if (hasSocialResearchModule()) return true;
-                return new Promise((resolve, reject) => {
-                    const existing = document.querySelector(`script[src="${SOCIAL_RESEARCH_MODULE_URL}"]`);
-                    if (existing) {
-                        if (hasSocialResearchModule() || existing.dataset.kiuLoaded === '1') {
-                            resolve(true);
-                            return;
-                        }
-                        existing.addEventListener('load', () => {
-                            existing.dataset.kiuLoaded = '1';
-                            resolve(true);
-                        }, { once: true });
-                        existing.addEventListener('error', () => reject(new Error('Social research module could not be loaded.')), { once: true });
-                        return;
-                    }
-                    const script = document.createElement('script');
-                    script.src = SOCIAL_RESEARCH_MODULE_URL;
-                    script.defer = true;
-                    script.addEventListener('load', () => {
-                        script.dataset.kiuLoaded = '1';
-                        resolve(true);
-                    }, { once: true });
-                    script.addEventListener('error', () => reject(new Error('Social research module could not be loaded.')), { once: true });
-                    document.head.appendChild(script);
-                });
+                return loadSocialDynamicScript(SOCIAL_RESEARCH_MODULE_URL, 'Social research module')
+                    .then(() => true);
             })
             .catch((error) => {
                 console.error('Social research module load failed.', error);
@@ -1029,20 +925,9 @@ Publishes only the host/runtime contract consumed by its loader.
     function ensureSocialMessagesModule() {
         if (hasSocialMessagesModule()) return Promise.resolve(true);
         if (socialMessagesModulePromise) return socialMessagesModulePromise;
-        socialMessagesModulePromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${SOCIAL_MESSAGES_MODULE_URL}"]`);
-            if (existing) {
-                existing.addEventListener('load', () => resolve(true), { once: true });
-                existing.addEventListener('error', () => reject(new Error('Social messages module could not be loaded.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = SOCIAL_MESSAGES_MODULE_URL;
-            script.defer = true;
-            script.addEventListener('load', () => resolve(true), { once: true });
-            script.addEventListener('error', () => reject(new Error('Social messages module could not be loaded.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
+        socialMessagesModulePromise = loadSocialDynamicScript(SOCIAL_MESSAGES_MODULE_URL, 'Social messages module')
+            .then(() => true)
+            .catch((error) => {
             console.error('Social messages module load failed.', error);
             throw error;
         }).finally(() => {
@@ -1095,20 +980,9 @@ Publishes only the host/runtime contract consumed by its loader.
             updatePortalSocialProfile,
             readFileAsDataUrl
         };
-        socialProfileModulePromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${SOCIAL_PROFILE_MODULE_URL}"]`);
-            if (existing) {
-                existing.addEventListener('load', () => resolve(true), { once: true });
-                existing.addEventListener('error', () => reject(new Error('Social profile module could not be loaded.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = SOCIAL_PROFILE_MODULE_URL;
-            script.defer = true;
-            script.addEventListener('load', () => resolve(true), { once: true });
-            script.addEventListener('error', () => reject(new Error('Social profile module could not be loaded.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
+        socialProfileModulePromise = loadSocialDynamicScript(SOCIAL_PROFILE_MODULE_URL, 'Social profile module')
+            .then(() => true)
+            .catch((error) => {
             console.error('Social profile module load failed.', error);
             throw error;
         }).finally(() => {
@@ -1116,15 +990,78 @@ Publishes only the host/runtime contract consumed by its loader.
         });
         return socialProfileModulePromise;
     }
-    function waitForDynamicScript(existing) {
+    const SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS = 12000;
+    function discardSocialDynamicScript(script) {
+        if (!script) return;
+        script.dataset.kiuLoadFailed = '1';
+        script.remove();
+    }
+    function waitForDynamicScript(existing, timeoutMs = SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS) {
         if (!existing) return Promise.resolve();
-        if (existing.readyState === 'complete' || existing.readyState === 'loaded') {
+        if (existing.dataset.kiuLoadFailed === '1') {
+            discardSocialDynamicScript(existing);
+            return Promise.reject(new Error('A previous Social module load failed.'));
+        }
+        if (existing.dataset.kiuLoaded === '1'
+            || existing.readyState === 'complete'
+            || existing.readyState === 'loaded') {
+            existing.dataset.kiuLoaded = '1';
             return Promise.resolve();
         }
-        return new Promise((resolve) => {
-            existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener('error', () => resolve(), { once: true });
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            const timer = window.setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                discardSocialDynamicScript(existing);
+                reject(new Error('Social module load timed out.'));
+            }, timeoutMs);
+            const cleanup = () => {
+                window.clearTimeout(timer);
+                existing.removeEventListener('load', onLoad);
+                existing.removeEventListener('error', onError);
+            };
+            const onLoad = () => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                existing.dataset.kiuLoaded = '1';
+                delete existing.dataset.kiuLoadFailed;
+                resolve();
+            };
+            const onError = () => {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                discardSocialDynamicScript(existing);
+                reject(new Error('Social module could not be loaded.'));
+            };
+            existing.addEventListener('load', onLoad);
+            existing.addEventListener('error', onError);
         });
+    }
+    function loadSocialDynamicScript(url, label = 'Social module') {
+        const existing = document.querySelector(`script[src="${url}"]`);
+        if (existing) return waitForDynamicScript(existing);
+        const script = document.createElement('script');
+        script.src = url;
+        script.defer = true;
+        document.head.appendChild(script);
+        return waitForDynamicScript(script).catch((error) => {
+            discardSocialDynamicScript(script);
+            throw new Error(`${label} could not be loaded.`, { cause: error });
+        });
+    }
+    function withSocialTimeout(promise, timeoutMs, label = 'Social operation') {
+        const pending = Promise.resolve(promise);
+        return Promise.race([
+            pending,
+            new Promise((_, reject) => window.setTimeout(
+                () => reject(new Error(`${label} timed out.`)),
+                timeoutMs
+            ))
+        ]);
     }
     function ensureSocialEventsModule() {
         if (window.__KIU_SOCIAL_EVENTS_MODULE_LOADED
@@ -1140,16 +1077,7 @@ Publishes only the host/runtime contract consumed by its loader.
             window.__KIU_SOCIAL_EVENTS_MODULE_LOADED = false;
             document.querySelectorAll('script[src*="assets/js/pages/social-events.js"]').forEach((node) => node.remove());
         }
-        const existing = document.querySelector(`script[src="${SOCIAL_EVENTS_MODULE_URL}"]`);
-        if (existing) return waitForDynamicScript(existing);
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = SOCIAL_EVENTS_MODULE_URL;
-            script.defer = true;
-            script.onload = () => resolve();
-            script.onerror = () => resolve();
-            document.head.appendChild(script);
-        });
+        return loadSocialDynamicScript(SOCIAL_EVENTS_MODULE_URL, 'Social events module');
     }
     function hasSocialEventsModule() {
         return Boolean(window.__KIU_SOCIAL_EVENTS_MODULE_LOADED
@@ -1169,16 +1097,7 @@ Publishes only the host/runtime contract consumed by its loader.
             && window.renderGroupCreateDialog !== renderGroupCreateDialog) {
             return Promise.resolve();
         }
-        const existing = document.querySelector(`script[src="${SOCIAL_GROUPS_MODULE_URL}"]`);
-        if (existing) return waitForDynamicScript(existing);
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = SOCIAL_GROUPS_MODULE_URL;
-            script.defer = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Social groups module could not be loaded.'));
-            document.head.appendChild(script);
-        });
+        return loadSocialDynamicScript(SOCIAL_GROUPS_MODULE_URL, 'Social groups module');
     }
     function hasSocialGroupsModule() {
         return Boolean(window.__KIU_SOCIAL_GROUPS_MODULE_LOADED
@@ -1199,16 +1118,7 @@ Publishes only the host/runtime contract consumed by its loader.
             && window.renderPageCreateDialog !== renderPageCreateDialog) {
             return Promise.resolve();
         }
-        const existing = document.querySelector(`script[src="${SOCIAL_PAGES_MODULE_URL}"]`);
-        if (existing) return waitForDynamicScript(existing);
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = SOCIAL_PAGES_MODULE_URL;
-            script.defer = true;
-            script.onload = () => resolve();
-            script.onerror = () => resolve();
-            document.head.appendChild(script);
-        });
+        return loadSocialDynamicScript(SOCIAL_PAGES_MODULE_URL, 'Social pages module');
     }
     function hasSocialPagesModule() {
         return Boolean(window.__KIU_SOCIAL_PAGES_MODULE_LOADED
@@ -1252,19 +1162,10 @@ Publishes only the host/runtime contract consumed by its loader.
             SOCIAL_WORKSPACE_DIALOG_ROUTE_URL,
             SOCIAL_WORKSPACE_MODULE_URL
         ];
-        return __wsChain.reduce((chain, url) => chain.then(() => new Promise((resolve) => {
-            const existing = document.querySelector(`script[src="${url}"]`);
-            if (existing) {
-                waitForDynamicScript(existing).then(resolve);
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = url;
-            script.defer = true;
-            script.onload = () => resolve();
-            script.onerror = () => resolve();
-            document.head.appendChild(script);
-        })), Promise.resolve());
+        return __wsChain.reduce(
+            (chain, url) => chain.then(() => loadSocialDynamicScript(url, 'Social workspace module')),
+            Promise.resolve()
+        );
     }
         function hasSocialWorkspaceModule() {
         const live = (name, stub) => {
@@ -1410,28 +1311,8 @@ Publishes only the host/runtime contract consumed by its loader.
             && window.patchPostReactions !== patchPostReactions) {
             return Promise.resolve();
         }
-        const loadScript = (url) => {
-            const existing = document.querySelector(`script[src="${url}"]`);
-            if (existing) {
-                return new Promise((resolve) => {
-                    if (existing.dataset.kiuLoaded === '1') return resolve();
-                    existing.addEventListener('load', () => resolve(), { once: true });
-                    existing.addEventListener('error', () => resolve(), { once: true });
-                });
-            }
-            return new Promise((resolve) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.defer = true;
-                script.onload = () => {
-                    script.dataset.kiuLoaded = '1';
-                    resolve();
-                };
-                script.onerror = () => resolve();
-                document.head.appendChild(script);
-            });
-        };
-        return loadScript(SOCIAL_FEED_COMMENTS_MODULE_URL).then(() => loadScript(SOCIAL_FEED_MODULE_URL));
+        return loadSocialDynamicScript(SOCIAL_FEED_COMMENTS_MODULE_URL, 'Social feed comments module')
+            .then(() => loadSocialDynamicScript(SOCIAL_FEED_MODULE_URL, 'Social feed module'));
     }
     function hasSocialFeedModule() {
         return Boolean(window.__KIU_SOCIAL_FEED_MODULE_LOADED
@@ -1474,7 +1355,7 @@ Publishes only the host/runtime contract consumed by its loader.
             window.requestIdleCallback(() => runPrefetch(), { timeout: 1800 });
             return;
         }
-        window.setTimeout(runPrefetch, 200);
+        window.setTimeout(runPrefetch, 1200);
     }
     function resolveSocialRenderPlan(reason, activePanel, runtime) {
         window.__kiuSocialRenderPlanHooks = {

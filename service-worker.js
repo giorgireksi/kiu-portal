@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260816-lms-clean1';
+const CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -26,20 +26,21 @@ const SHELL_ASSETS = [
   '/assets/css/lux-fouc-ht.css?v=20260806-hidetopbar2',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260806-hidetopbar2',
-  '/assets/css/social-assembly-prehide.css?v=20260810-socialbootveil2',
-  '/assets/css/social-home-loading.css?v=20260810-socialhomeanim5',
-  '/assets/css/social-community-loading.css?v=20260809-socialpopup1',
-  '/assets/css/social-groups-loading.css?v=20260809-socialpopup1',
-  '/assets/css/social-projects-loading.css?v=20260809-socialpopup1',
-  '/assets/css/social-portfolio-loading.css?v=20260809-socialpopup1',
-  '/assets/css/social-research-loading.css?v=20260809-socialpopup1',
-  '/assets/css/social-pages-loading.css?v=20260809-socialpopup1',
-  '/assets/css/social-events-loading.css?v=20260809-socialevents1',
-  '/assets/css/social-surveys-loading.css?v=20260809-socialsurveys1',
-  '/assets/css/social-photography-loading.css?v=20260809-socialassemblyreplay1',
-  '/assets/css/social-lost-found-loading.css?v=20260809-socialassemblyreplay1',
-  '/assets/css/social-messages-loading.css?v=20260809-socialassemblyreplay1',
-  '/assets/css/social-alerts-loading.css?v=20260809-socialassemblyreplay1',
+  '/assets/css/lux-modals.css?v=20260816-socialmodals1',
+  '/assets/css/social-assembly-prehide.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-home-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-community-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-groups-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-projects-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-portfolio-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-research-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-pages-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-events-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-surveys-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-photography-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-lost-found-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-messages-loading.css?v=20260815-socialassemblyclean1',
+  '/assets/css/social-alerts-loading.css?v=20260815-socialassemblyclean1',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260808-loadreveal1',
   '/assets/css/lux-layout-primitives.css?v=20260725-ssot1',
@@ -63,21 +64,24 @@ const SHELL_ASSETS = [
   '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
   '/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
-  '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-page-boot-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-home-loading-runtime.js?v=20260810-socialhomeanim5',
-  '/assets/js/pages/social-community-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-groups-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-projects-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-portfolio-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-research-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-pages-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-events-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-surveys-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-photography-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-lost-found-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-messages-loading-runtime.js?v=20260810-socialbootveil2',
-  '/assets/js/pages/social-alerts-loading-runtime.js?v=20260810-socialbootveil2',
+  '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe3',
+  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2',
+  '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner5',
+  '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
+  '/assets/js/pages/social-page.js?v=20260816-socialperf2',
+  '/assets/js/pages/social-home-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4',
+  '/assets/js/pages/social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-projects-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-portfolio-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-research-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-pages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-events-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-surveys-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-lost-found-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
+  '/assets/js/pages/social-messages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4',
+  '/assets/js/pages/social-alerts-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
 ];
 
 function isVersionedAssetUrl(url) {
@@ -156,12 +160,17 @@ function buildOfflineAssetResponse(request) {
 async function isUsableStaticAssetResponse(response, request) {
   if (!response || !response.ok) return false;
   const pathname = String(new URL(request.url).pathname || '').toLowerCase();
-  const isCodeAsset = request.destination === 'script'
-    || request.destination === 'style'
-    || /\.(?:m?js|css)$/.test(pathname);
+  const isScriptAsset = request.destination === 'script' || /\.(?:m?js)$/.test(pathname);
+  const isStyleAsset = request.destination === 'style' || /\.css$/.test(pathname);
+  const isCodeAsset = isScriptAsset || isStyleAsset;
   if (!isCodeAsset) return true;
+  const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+  if (isScriptAsset && contentType && !/(?:java|ecma)script/.test(contentType)) return false;
+  if (isStyleAsset && contentType && !/css/.test(contentType)) return false;
   const body = await response.clone().text();
-  return Boolean(body.trim()) && !body.includes('offline asset fallback');
+  if (!body.trim() || body.includes('offline asset fallback')) return false;
+  if (isCodeAsset && /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(body)) return false;
+  return true;
 }
 
 function shouldCacheResponse(response) {
@@ -218,13 +227,13 @@ async function handleSocialRuntimeScriptRequest(request, event) {
   const cache = await caches.open(CACHE_NAME);
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.ok) {
+    if (await isUsableStaticAssetResponse(networkResponse, request)) {
       event.waitUntil(cache.put(request, networkResponse.clone()));
       return networkResponse;
     }
   } catch (error) {}
   const cached = await cache.match(request);
-  if (cached) return cached;
+  if (cached && await isUsableStaticAssetResponse(cached, request)) return cached;
   return buildOfflineAssetResponse(request);
 }
 

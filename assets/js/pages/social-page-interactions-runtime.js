@@ -2232,6 +2232,7 @@ function renderSocialPageNow(reason = 'manual') {
     window.__kiuSocialAssemblyMotionOwner = 'render-pipeline';
     clearTimeout(renderDebounceTimer);
     const renderCallback = () => {
+        try {
         const host = root();
         if (!host) return;
         window.__kiuSocialLiteRenderPage = renderSocialPageNow;
@@ -2543,6 +2544,11 @@ function renderSocialPageNow(reason = 'manual') {
                 const node = host.querySelector(`#${messageAnchorId(activeChatId, jumpMessageId)}`);
                 if (node) node.scrollIntoView({ block: 'center', behavior: 'smooth' });
             });
+        }
+        } catch (error) {
+            console.error('[Social] Render degraded:', error);
+            try { releaseSocialBootShellReveal(); } catch (_error) {}
+            try { revealShell({ force: true }); } catch (_error) {}
         }
     };
     // Docs actions render synchronously so a subsequent center:false render

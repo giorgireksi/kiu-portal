@@ -19,14 +19,16 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260816-socialperf1');
+        expect(html).toContain('social-page.js?v=20260816-socialperf2');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
+        expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
+        expect(page).toContain('loadSocialDynamicScript');
     });
 
     it('coalesces duplicate deferred module remounts before rendering', () => {
         const html = readSource('social.html');
         const shell = readSource('assets/js/pages/social-page-shell-runtime.js');
-        expect(html).toContain('social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe2');
+        expect(html).toContain('social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe3');
         expect(shell).toContain('const deferredModuleRenderQueue = new Set();');
         expect(shell).toContain('if (deferredModuleRenderQueue.has(renderReason)) return;');
         expect(shell).toContain('queueMicrotask(flush)');
@@ -38,7 +40,7 @@ describe('social performance safeguards', () => {
         expect(page).toContain('const mutationTouchesSocialHost = (mutations) => mutations.some');
         expect(page).toContain('guardianRenderInProgress || !mutationTouchesSocialHost(mutations)');
         expect(page).toContain("if (!document.getElementById(ROOT_ID)) reconcile();");
-        expect(page).toContain('}, 1000);');
+        expect(page).toContain('}, 2200);');
     });
 
     it('uses the optimized shared assembly runtime on Social', () => {
@@ -65,6 +67,21 @@ describe('social performance safeguards', () => {
                 .toContain("window.__kiuSocialAssemblyMotionOwner === 'render-pipeline'");
         }
         expect(readSource('assets/js/pages/social-home-loading-runtime.js')).toContain('autoStart: false');
+        expect(readSource('assets/js/pages/social-messages-loading-runtime.js')).toContain('phase === \'ready\' && typeof motion.abort === \'function\'');
+    });
+
+    it('fails open when hydration or a dynamic module stalls', () => {
+        const boot = readSource('assets/js/pages/social-page-boot-runtime.js');
+        const page = readSource('assets/js/pages/social-page.js');
+        const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
+        const worker = readSource('service-worker.js');
+        expect(boot).toContain('Social state hydration timed out.');
+        expect(boot).toContain('Social ${activePanel} startup timed out.');
+        expect(page).toContain('discardSocialDynamicScript');
+        expect(page).toContain('Social module load timed out.');
+        expect(interactions).toContain("console.error('[Social] Render degraded:', error);");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery1'");
+        expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 
     it('uses an indexed directory fallback for relationship cards', () => {

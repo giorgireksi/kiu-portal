@@ -586,6 +586,13 @@
             // them into one center remount so assembly motion cannot restart.
             const flush = () => {
                 deferredModuleRenderQueue.delete(renderReason);
+                const livePanel = text(state()?.ui?.activePanel || '') || 'feed';
+                if (livePanel !== activePanel) {
+                    if (host?.__kiuDeferredModuleRenderKey === renderKey) {
+                        delete host.__kiuDeferredModuleRenderKey;
+                    }
+                    return;
+                }
                 invalidateSocialRenderCache({ center: true });
                 const liveHost = root();
                 if (liveHost && !activeDialog()) liveHost.__kiuForceCenterOnly = true;

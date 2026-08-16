@@ -1642,7 +1642,7 @@ enforceSingleRuntimeEntrypoint();
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     const PORTAL_CACHE_RESET_VERSION = '20260808-overallperf1';
-    const PORTAL_SERVICE_WORKER_VERSION = '20260816-navretry1';
+    const PORTAL_SERVICE_WORKER_VERSION = '20260816-socialrecovery1';
 
     async function clearPortalSiteCaches(force = false) {
         try {

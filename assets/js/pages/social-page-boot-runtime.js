@@ -291,11 +291,29 @@
                 : typeof hydratePortalSocialRuntime === 'function'
                     ? () => Promise.resolve(hydratePortalSocialRuntime()).catch(() => null)
                     : null;
-            if (runHydrate) await runHydrate();
+            if (runHydrate) {
+                await Promise.race([
+                    Promise.resolve(runHydrate()),
+                    new Promise((_, reject) => window.setTimeout(
+                        () => reject(new Error('Social state hydration timed out.')),
+                        10000
+                    ))
+                ]).catch((error) => {
+                    console.warn('[Social] State hydration degraded:', error);
+                });
+            }
             // Preload the restored active panel so boot paints a real shell
             // (not social-neo-module-loading) and assembly intro can start.
             const activePanel = text(state()?.ui?.activePanel || 'feed') || 'feed';
-            await ensureActivePanelModule(activePanel);
+            await Promise.race([
+                Promise.resolve(ensureActivePanelModule(activePanel)),
+                new Promise((_, reject) => window.setTimeout(
+                    () => reject(new Error(`Social ${activePanel} startup timed out.`)),
+                    15000
+                ))
+            ]).catch((error) => {
+                console.warn('[Social] Active panel startup degraded:', error);
+            });
             renderOrRetry();
             // Run background health & maintenance tasks after first paint
             warnIfPinApiUnavailable().catch(() => null);
