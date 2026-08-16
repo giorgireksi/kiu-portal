@@ -6084,10 +6084,82 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
 
 body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-active-head {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-active-card {
+    gap: 8px;
+    padding: 10px 12px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-active-head > div {
+    min-width: 0;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-active-head .lms-route-card-title {
+    font-size: 1rem;
+    line-height: 1.15;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-active-head .lms-route-copy {
+    margin: 2px 0 0;
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-editor--focus.lux-soft-chrome {
+    padding: 8px 10px;
+    border-radius: 12px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-editor--focus {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-stat-value {
+    margin-top: 2px;
+    gap: 5px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-stat-value strong {
+    font-size: 1.35rem;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-actions {
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-actions :is(.lux-primary-btn, .lux-secondary-btn) {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 11px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-add-hint {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+@media (max-width: 600px) {
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-active-head {
+        flex-wrap: wrap;
+    }
+
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-editor--focus {
+        grid-template-columns: 1fr;
+    }
+
+    body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-actions {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
 }
 
 @media (max-width: 900px) {

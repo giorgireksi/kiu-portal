@@ -981,6 +981,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                         <h3 class="lms-route-card-title">${escapeHtml(criterionMeta.label)} ${escapeHtml(String(assessmentNumber))}</h3>
                         ${entryDisplay?.title ? `<p class="lms-route-copy">${escapeHtml(entryDisplay.title)}</p>` : ''}
                     </div>
+                    <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}"><i class="fas ${escapeHtml(status.icon)}"></i> ${escapeHtml(status.label)}</span>
                 </div>
                 ${renderLmsStaffScoreEditorBlock({
                     studentId,

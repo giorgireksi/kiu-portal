@@ -531,7 +531,6 @@ function renderLmsStaffScoreEditorBlock({
                 <div class="gb-lms-staff-score-stat-value">
                     <strong>${scoreDisplay}</strong>
                     <span class="gb-lms-staff-score-stat-max">/ ${maxScore}</span>
-                    <span class="gb-status-badge lux-status-pill home-hover-chip is-${escapeHtml(status.key)}">${escapeHtml(status.label)}</span>
                 </div>
                 ${notePreview}
             </div>
