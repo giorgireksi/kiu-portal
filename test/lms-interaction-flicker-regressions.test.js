@@ -12,12 +12,14 @@ describe('LMS interaction flicker regressions', () => {
         expect(runtime).toContain('!lmsInteractionMarkupMatches(composeRail, composeMarkup)');
         expect(runtime).toContain('!lmsInteractionMarkupMatches(thread, nextThreadMarkup)');
         expect(runtime).toContain('kiu-lms-assembly-target');
+        expect(runtime).not.toContain("['invite', 'user-plus', 'Invite']");
+        expect(runtime).not.toContain("['settings', 'sliders', 'Settings']");
     });
 
     it('loads the flicker-safe interaction runtime on LMS', () => {
         const tabs = read('assets/js/pages/lms-classroom-tabs-runtime.js');
         const html = read('lms.html');
-        expect(tabs).toContain('lms-interaction-messages-runtime.js?v=20260816-lmsflickerfix5');
-        expect(html).toContain('lms-classroom-tabs-runtime.js?v=20260816-lmsflickerfix5');
+        expect(tabs).toContain('lms-interaction-messages-runtime.js?v=20260816-lmsflickerfix6');
+        expect(html).toContain('lms-classroom-tabs-runtime.js?v=20260816-lmsflickerfix6');
     });
 });

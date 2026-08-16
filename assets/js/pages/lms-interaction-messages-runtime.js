@@ -902,9 +902,7 @@ function renderLmsInteractionDirectThreadMarkup(resourceKey, activeChat, current
         ['media', 'image', 'Media'],
         ['members', 'users', 'Members'],
         ['files', 'folder-open', 'Files'],
-        ['links', 'link', 'Links'],
-        ['invite', 'user-plus', 'Invite'],
-        ['settings', 'sliders', 'Settings']
+        ['links', 'link', 'Links']
     ];
 
     return `
