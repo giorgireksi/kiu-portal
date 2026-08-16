@@ -11058,7 +11058,7 @@ body.lux-route-lms #page-lms-inner .lms-route-panel-compact:has(> #lms-content-a
     width: 100%;
     min-width: 0;
     min-height: calc(100dvh - 200px);
-    padding-bottom: clamp(160px, 40vh, 360px);
+    padding-bottom: 16px;
     box-sizing: border-box;
     align-content: start;
 }
@@ -11074,9 +11074,15 @@ body.lux-route-lms #lms-content-area.lms-tab-interaction {
 }
 
 body.lux-route-lms #lms-content-area.lms-tab-interaction:has(.lms-interaction-messenger.is-messages-mode) {
-    height: min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px));
-    max-height: min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px));
-    min-height: min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px));
+    height: calc(min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px)) + clamp(160px, 40vh, 360px));
+    max-height: calc(min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px)) + clamp(160px, 40vh, 360px));
+    min-height: calc(min(82vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 36px)) + clamp(160px, 40vh, 360px));
+}
+
+body.lux-route-lms #lms-content-area.lms-tab-interaction:has(.lms-interaction-messenger.is-announcements-mode) {
+    height: calc(min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px)) + clamp(160px, 40vh, 360px));
+    max-height: calc(min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px)) + clamp(160px, 40vh, 360px));
+    min-height: calc(min(72vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 64px)) + clamp(160px, 40vh, 360px));
 }
 
 body.lux-route-lms .lms-interaction-messenger {
