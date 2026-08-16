@@ -296,7 +296,7 @@
                     Promise.resolve(runHydrate()),
                     new Promise((_, reject) => window.setTimeout(
                         () => reject(new Error('Social state hydration timed out.')),
-                        10000
+                        8000
                     ))
                 ]).catch((error) => {
                     console.warn('[Social] State hydration degraded:', error);
@@ -309,7 +309,7 @@
                 Promise.resolve(ensureActivePanelModule(activePanel)),
                 new Promise((_, reject) => window.setTimeout(
                     () => reject(new Error(`Social ${activePanel} startup timed out.`)),
-                    15000
+                    8000
                 ))
             ]).catch((error) => {
                 console.warn('[Social] Active panel startup degraded:', error);
