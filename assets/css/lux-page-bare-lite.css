@@ -11057,8 +11057,8 @@ body.lux-route-lms :is(.lux-primary-btn, .lux-secondary-btn, .lux-primary-btn, .
 body.lux-route-lms #page-lms-inner .lms-route-panel-compact:has(> #lms-content-area.lms-tab-interaction) {
     width: 100%;
     min-width: 0;
-    min-height: calc(100dvh - 120px);
-    padding-bottom: clamp(44px, 7vh, 76px);
+    min-height: var(--lms-interaction-viewport-height, calc(100dvh - 180px));
+    padding-bottom: 16px;
     box-sizing: border-box;
     align-content: start;
 }

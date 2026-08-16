@@ -1744,8 +1744,23 @@ function updateLmsInteractionComposerUi(resourceKey) {
     return true;
 }
 
+function syncLmsInteractionPanelViewportHeight(contentArea = document.getElementById('lms-content-area')) {
+    if (!contentArea?.classList?.contains('lms-tab-interaction')) return;
+    const panel = contentArea.closest('#page-lms-inner .lms-route-panel-compact');
+    if (!panel || typeof window === 'undefined') return;
+    const panelTop = panel.getBoundingClientRect().top;
+    const bottomMargin = window.innerWidth <= 960 ? 12 : 18;
+    const availableHeight = Math.max(0, Math.ceil(window.innerHeight - panelTop - bottomMargin));
+    if (availableHeight > 0) {
+        panel.style.setProperty('--lms-interaction-viewport-height', `${availableHeight}px`);
+    } else {
+        panel.style.removeProperty('--lms-interaction-viewport-height');
+    }
+}
+
 function syncLmsWorkspaceChromeOffset(contentArea = document.getElementById('lms-content-area')) {
     if (!contentArea) return;
+    syncLmsInteractionPanelViewportHeight(contentArea);
     const workspaceChrome = document.querySelector('#page-lms-inner .lms-route-workspace-chrome');
     let panelChrome = 0;
     if (workspaceChrome) {
@@ -1824,6 +1839,7 @@ function bindLmsWorkspaceChromeResizeSync() {
         watch(document.querySelector('#page-lms-inner .lms-route-workspace-chrome'));
     }
     window.addEventListener('resize', scheduleSync, { passive: true });
+    window.addEventListener('scroll', scheduleSync, { passive: true });
 }
 
 bindLmsWorkspaceChromeResizeSync();
