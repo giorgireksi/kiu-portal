@@ -49,6 +49,20 @@
             'li'
         ];
 
+    const controlSelector = lowEndTimetableDevice
+        ? []
+        : [
+            'button',
+            'input',
+            'select',
+            'textarea',
+            '[role="button"]',
+            '.lux-picker-btn',
+            '.lux-primary-btn',
+            '.lux-secondary-btn',
+            '.lux-ghost-btn'
+        ];
+
     const motion = createAssemblyLoadingMotion({
         isRoute: () => document.body?.classList.contains('lux-route-timetable')
             || document.documentElement?.dataset?.luxPage === 'timetable'
@@ -62,17 +76,7 @@
             '.lux-timetable-stage'
         ],
         granularSelector,
-        controlSelector: [
-            'button',
-            'input',
-            'select',
-            'textarea',
-            '[role="button"]',
-            '.lux-picker-btn',
-            '.lux-primary-btn',
-            '.lux-secondary-btn',
-            '.lux-ghost-btn'
-        ],
+        controlSelector,
         structureSelector: [
             '.lux-timetable-command-collapse',
             '.lux-timetable-command-grid'
