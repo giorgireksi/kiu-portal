@@ -20,7 +20,9 @@
         instantLoadingStyle.textContent = `
             html.kiu-instant-loading .fa-spin,
             html.kiu-instant-loading [class*="loading"],
-            html.kiu-instant-loading [class*="skeleton"] {
+            html.kiu-instant-loading [class*="loading"] *,
+            html.kiu-instant-loading [class*="skeleton"],
+            html.kiu-instant-loading [class*="skeleton"] * {
                 animation: none !important;
                 animation-delay: 0s !important;
             }
