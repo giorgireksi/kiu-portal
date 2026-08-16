@@ -856,7 +856,15 @@ Publishes only the host/runtime contract consumed by its loader.
         if (hasSocialPhotographyModule()) return Promise.resolve(true);
         if (socialPhotographyModulePromise) return socialPhotographyModulePromise;
         socialPhotographyModulePromise = loadSocialDynamicScript(SOCIAL_PHOTOGRAPHY_MODULE_URL, 'Social photography module')
-            .then(() => true)
+            .then(() => {
+                // Do not rely only on the lazy renderer's callback: a first
+                // panel render can consume that callback while the export is
+                // becoming observable. Explicitly remount active Exposé.
+                if ((text(state()?.ui?.activePanel || '') || 'feed') === 'photography') {
+                    queueDeferredModuleRender('photography-module');
+                }
+                return true;
+            })
             .catch((error) => {
             console.error('Social photography module load failed.', error);
             throw error;

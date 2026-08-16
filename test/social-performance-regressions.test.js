@@ -19,10 +19,11 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260816-socialperf3');
+        expect(html).toContain('social-page.js?v=20260816-socialperf4');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
         expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
         expect(page).toContain('loadSocialDynamicScript');
+        expect(page).toContain("queueDeferredModuleRender('photography-module')");
     });
 
     it('coalesces duplicate deferred module remounts before rendering', () => {
