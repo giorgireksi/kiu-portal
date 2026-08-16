@@ -6162,6 +6162,73 @@ body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper
     }
 }
 
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history {
+    gap: 6px;
+    padding: 8px 10px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history > summary::-webkit-details-marker {
+    display: none;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history-head {
+    align-items: center;
+    gap: 8px;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history-head > div {
+    min-width: 0;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history-head .lms-route-card-title {
+    font-size: .95rem;
+    line-height: 1.15;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-score-history-count {
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-history-copy {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history .gb-score-history-panel {
+    gap: 0;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history .gb-score-history-panel--empty .gb-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px 8px;
+    padding: 7px 8px;
+    text-align: left;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history .gb-score-history-panel--empty .gb-empty-state > i {
+    font-size: 13px;
+    flex: 0 0 auto;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history .gb-score-history-panel--empty .gb-empty-state :is(strong, .lux-empty-state__title) {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+body:is(.lux-route-lms, .lux-route-faculty-gradebook) :is(#lms-gradebook-wrapper, #faculty-master-container) .gb-lms-staff-score-history .gb-score-history-panel--empty .gb-empty-state :is(span, .lux-empty-state__copy) {
+    font-size: 10px;
+    line-height: 1.2;
+}
+
 @media (max-width: 900px) {
     body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-control-grid,
     body:is(.lux-route-lms, .lux-route-faculty-gradebook) .gb-staff-create-grid,

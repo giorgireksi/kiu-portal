@@ -24,7 +24,7 @@ function renderGradebookScoreHistoryPanel(options = {}) {
             <div class="gb-score-history-panel gb-score-history-panel--empty">
                 <div class="gb-empty-state gb-empty-state--inline lux-empty-state lux-panel-copy">
                     <i class="fas fa-clock-rotate-left"></i>
-                    <span>No score history yet — changes appear after you save.</span>
+                    <span>No history yet · changes appear after saving.</span>
                 </div>
             </div>
         `;
@@ -34,7 +34,7 @@ function renderGradebookScoreHistoryPanel(options = {}) {
                 <div class="gb-empty-state lux-empty-state">
                     <i class="fas fa-clock-rotate-left"></i>
                     <strong class="lux-empty-state__title lms-route-card-title">No score history yet</strong>
-                    <span class="lux-empty-state__copy lux-panel-copy">Score changes will appear here after you save.</span>
+                    <span class="lux-empty-state__copy lux-panel-copy">Changes appear after saving.</span>
                 </div>
             </div>
         `;

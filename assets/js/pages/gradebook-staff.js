@@ -942,9 +942,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
     const hintCopy = isFaculty
         ? `${escapeHtml(scoreEditLabel)} opens a save dialog; history below is read-only.`
         : `${escapeHtml(scoreEditLabel)} opens a dialog where you can save the score; history below is read-only.`;
-    const historyCopy = isFaculty
-        ? `Read-only history — use <strong>${escapeHtml(scoreEditLabel)}</strong> to record changes.`
-        : `Informational only — use <strong>${escapeHtml(scoreEditLabel)}</strong> above to record changes.`;
+    const historyCopy = `Use <strong>${escapeHtml(scoreEditLabel)}</strong> above to record changes.`;
 
     if (isFaculty) {
         return `
