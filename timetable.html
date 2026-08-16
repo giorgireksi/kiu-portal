@@ -27,6 +27,40 @@
     <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260806-hidetopbar2">
     <link rel="stylesheet" href="assets/css/timetable-loading.css?v=20260816-ttlowend1">
 <script src="assets/js/theme-primer.js?v=20260816-earlyreveal1"></script>
+<script>
+(function deferTimetableLocalization() {
+    // Timetable labels are already English in the static shell. Keep a tiny
+    // fallback for the first render, then load the large localization table
+    // only after the timetable's assembly work is idle.
+    window.localizeHtmlMarkup = window.localizeHtmlMarkup || (value => String(value ?? ''));
+    window.toEnglishText = window.toEnglishText || (value => String(value ?? ''));
+    window.cleanupEncodingArtifacts = window.cleanupEncodingArtifacts || (value => String(value ?? ''));
+    const load = () => {
+        if (document.querySelector('script[data-timetable-localization]')) return;
+        const script = document.createElement('script');
+        script.defer = true;
+        script.dataset.timetableLocalization = '1';
+        script.src = 'assets/js/app/english-localization.js?v=20260816-timetable-idle1';
+        document.head.appendChild(script);
+    };
+    const waitForAssembly = () => {
+        if (document.body?.classList.contains('timetable-assembly-active')) {
+            window.setTimeout(waitForAssembly, 250);
+            return;
+        }
+        if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(load, { timeout: 4000 });
+        } else {
+            window.setTimeout(load, 1200);
+        }
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForAssembly, { once: true });
+    } else {
+        waitForAssembly();
+    }
+}());
+</script>
 </head>
 <body class="kiu-shell-loading lux-nonhome-page lux-route-timetable lux-unified-shell lux-page-bare lux-full-paint" data-faculty="ECON">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
@@ -117,7 +151,6 @@
 <script defer src="assets/js/app/portal-api-stubs-runtime.js?v=20260720-w21stubs1"></script>
 <script defer src="assets/js/app/portal-compat-runtime.js?v=20260720-w20compat1"></script>
 <script defer src="assets/js/app/app.js?v=20260816-authvarfix1"></script>
-<script defer src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
 <script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
 <script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
 <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260816-readonlycatalog1"></script>
