@@ -373,9 +373,15 @@ function getPortalRuntimeDiagnosticCopy(detail = {}) {
         };
     }
     if (kind === 'portal-role-write-dropped') {
+        const rawMessage = String(detail.message || '').trim();
+        const droppedMatch = rawMessage.match(/^Portal state keys were not saved for role\s+([^:]+):\s*(.*)$/i);
+        const role = droppedMatch?.[1] || 'this role';
+        const keys = droppedMatch?.[2] || '';
         return {
             title: 'Some portal state is read-only for this role',
-            message: detail.message || 'The backend saved the writable state. Read-only catalog keys were ignored for this role.'
+            message: keys
+                ? `Backend saved writable state. Read-only catalog keys were ignored for role ${role}: ${keys}`
+                : 'Backend saved writable state. Read-only catalog keys were ignored for this role.'
         };
     }
     return {
