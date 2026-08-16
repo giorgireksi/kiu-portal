@@ -689,6 +689,11 @@ function showBrowserNotification(title, options = {}) {
     }
 }
 
+function shouldRedirectOnKiuRealtimeUnauthorized(path = '') {
+    const normalizedPath = String(path || '').split('?')[0];
+    return /^\/api\/(?:bootstrap|portal\/bootstrap|portal\/state|portal\/session\b|auth\/session\b)/i.test(normalizedPath);
+}
+
 async function kiuRealtimeFetch(path, options = {}) {
     const runtime = ensureKiuRealtimeRuntime();
     if (shouldSkipKiuRealtimeBridge()) {
@@ -728,6 +733,7 @@ async function kiuRealtimeFetch(path, options = {}) {
         if (!response.ok) {
             if (
                 response.status === 401 &&
+                shouldRedirectOnKiuRealtimeUnauthorized(path) &&
                 typeof handleKiuUnauthorizedSession === 'function' &&
                 (typeof getPortalSessionToken !== 'function' || getPortalSessionToken() || getStoredAuthState())
             ) {
