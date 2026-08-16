@@ -4,6 +4,9 @@
 
     if (global.__kiuCreateAssemblyLoadingMotion) return;
 
+    const motionRegistry = global.__kiuAssemblyMotionRegistry
+        || (global.__kiuAssemblyMotionRegistry = new Set());
+
     const DEFAULT_TIMING = Object.freeze({
         maxShellWaitMs: 1800,
         lateAssemblyGraceMs: 145,
@@ -349,6 +352,15 @@
             state.targetCount = 0;
             recordEvent('aborted');
             return true;
+        }
+
+        function abortOtherMotions() {
+            motionRegistry.forEach((motion) => {
+                if (motion === api || typeof motion?.abort !== 'function') return;
+                const phase = motion.getState?.().phase;
+                if (phase === 'idle') return;
+                try { motion.abort(); } catch (_error) {}
+            });
         }
 
         function forceReady() {
@@ -887,6 +899,7 @@
             if (!isRoute() || !root) return false;
             const targets = getTargets(root);
             if (!targets.length) return false;
+            abortOtherMotions();
             if (state.root === root
                 && state.phase === 'ready'
                 && root.dataset[rootStateDataset] === 'ready') {
@@ -929,6 +942,7 @@
             }
             const targets = getTargets(root);
             if (!targets.length) return false;
+            abortOtherMotions();
 
             const previousRoot = state.root;
             clearAnimationState();
@@ -1014,7 +1028,7 @@
             return true;
         }
 
-        return Object.freeze({
+        const api = Object.freeze({
             start,
             softRestart,
             install,
@@ -1028,6 +1042,8 @@
                 pendingReplay: Boolean(state.pendingReplay)
             })
         });
+        motionRegistry.add(api);
+        return api;
     }
 
     global.__kiuCreateAssemblyLoadingMotion = createAssemblyLoadingMotion;
