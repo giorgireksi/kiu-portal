@@ -95,11 +95,11 @@ describe('faculty switch and scoped visual settings', () => {
     const tokens = readSource('assets/css/lux-tokens.css');
     const index = readSource('index.html');
 
-    expect(tokens).toContain('--lux-panel-alpha: 0.74;');
+    expect(tokens).toContain('--lux-panel-alpha: 0.70;');
     expect(tokens).toContain('--lux-canvas-opacity: 0.82;');
     expect(tokens).toContain('--lux-panel-fill-alpha: 0.08;');
     expect(tokens).toContain('--lux-grid-row-height: 28px;');
-    expect(luxury).not.toContain('--lux-panel-alpha: 0.74;');
+    expect(luxury).not.toContain('--lux-panel-alpha: 0.70;');
     expect(luxury).not.toContain('--lux-panel-fill-alpha: 0.08;');
     expect(luxury).toContain("window.__kiuBuildLuxuryTransparencyModel = typeof buildLuxuryTransparencyModel === 'function'");
     expect(luxury).toContain("window.buildLuxuryTransparencyModel = typeof buildLuxuryTransparencyModel === 'function'");
@@ -137,7 +137,7 @@ describe('faculty switch and scoped visual settings', () => {
     expect(utilities).not.toContain("document.documentElement.style.setProperty('--lux-transparency-alpha', surfaceFillAmount.toFixed(3));");
     expect(utilities).toContain("root.style.setProperty('--kiu-shell-gradient', shellGradient);");
     expect(utilities).toContain("root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);");
-    expect(index).toContain('assets/js/features/index-luxury.js?v=20260808-galleryfouc1');
+    expect(index).toContain('assets/js/features/index-luxury.js?v=20260816-opacity70-runtime1');
     expect(index).toContain('assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2');
     expect(index).toContain('assets/js/shared/utilities.js?v=20260725-portalmodal1');
   });

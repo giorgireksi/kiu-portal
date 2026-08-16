@@ -11,8 +11,8 @@ describe('theme primer palette/static persist', () => {
         const primer = readSource('assets/js/theme-primer.js');
         const luxury = readSource('assets/js/features/index-luxury.js');
 
-        expect(primer).toContain("LUXURY_VISUAL_DEFAULTS_VERSION = '20260815-opacity70-v2'");
-        expect(luxury).toContain("FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260815-opacity70-v2'");
+        expect(primer).toContain("LUXURY_VISUAL_DEFAULTS_VERSION = '20260816-opacity70-v3'");
+        expect(luxury).toContain("FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260816-opacity70-v3'");
         expect(primer).toContain("localStorage.getItem('kiuLuxuryPalette')");
         expect(primer).toContain("localStorage.getItem('kiuLuxuryStaticBackgroundFill')");
         expect(primer).toContain('// 3. Palette — always prefer localStorage');

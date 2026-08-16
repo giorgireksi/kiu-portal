@@ -13,7 +13,7 @@ describe('transparency slider floor', () => {
         const html = readSource('index.html');
 
         expect(html).toContain('assets/js/shared/utilities.js?v=20260725-portalmodal1');
-        expect(html).toContain('assets/js/features/index-luxury.js?v=20260808-galleryfouc1');
+        expect(html).toContain('assets/js/features/index-luxury.js?v=20260816-opacity70-runtime1');
 
         expect(utilitiesSource).toContain('function mapLuxuryTransparencyFillRatio(value)');
         expect(utilitiesSource).toContain('return (percentage + 1) / 101');

@@ -125,7 +125,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         { key: 'white', label: 'White', icon: 'fas fa-sun' },
         { key: 'gallery', label: 'Gallery', icon: 'fas fa-images' }
     ];
-    const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260815-opacity70-v2';
+    const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260816-opacity70-v3';
     const GLOBAL_LUXURY_PALETTE_SCOPE = '*';
     const DEFAULT_HOME_VISUALS = {
         themeMode: 'dark',
@@ -705,10 +705,20 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function getDashboardVisuals(scopeKey = getHomeScopeKey()) {
         const entry = getDashboardPreferenceEntry();
         const scopedVisuals = entry.visualsByScope?.[scopeKey];
-        return {
+        const visuals = {
             ...buildAdvancedDefaultVisuals(),
             ...(scopedVisuals || entry.visuals || {})
         };
+        // Keep the current forced-default generation authoritative even after
+        // PostgreSQL bootstrap merges an older per-scope visual preference.
+        let defaultsVersion = '';
+        try {
+            defaultsVersion = String(localStorage.getItem('KIU_LUXURY_VISUAL_DEFAULTS_VERSION') || '').trim();
+        } catch (error) {}
+        if (defaultsVersion === FORCED_LUXURY_VISUAL_DEFAULTS_VERSION) {
+            visuals.surfaceTransparency = String(ADVANCED_DEFAULT_VISUALS.surfaceTransparency);
+        }
+        return visuals;
     }
     function setDashboardVisuals(values, persist = true, scopeKey = getHomeScopeKey()) {
         updateDashboardPreferenceEntry((entry) => {

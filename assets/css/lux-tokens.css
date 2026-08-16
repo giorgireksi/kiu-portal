@@ -65,7 +65,10 @@
   --lux-secondary-btn-min-height: 44px;
   --lux-canvas-opacity: 0.82;
   --lux-overlay-opacity: 0.56;
-  --lux-panel-alpha: 0.74;
+  /* Global glass default: surfaces are 70% opaque; foreground content remains full-strength. */
+  --lux-transparency-alpha: 0.70;
+  --lux-color-fade-alpha: 0.70;
+  --lux-panel-alpha: 0.70;
   --lux-raised-alpha: 0.09;
   --lux-glass-alpha: 0.06;
   --lux-utility-alpha: 0.82;
