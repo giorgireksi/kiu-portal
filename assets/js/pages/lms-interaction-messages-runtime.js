@@ -1310,12 +1310,21 @@ function renderLmsInteractionBodyMarkup(resourceKey, mode) {
             </div>
         `;
     }
+    const announcementSearch = String(window.__lmsAnnouncementSearchByResource?.[resourceKey] || '');
     return `
-        <div class="lms-interaction-messenger__body">
-            <div id="lms-interaction-stream" class="lms-interaction-messenger__stream" data-lms-interaction-region="stream">
+        <div class="lms-interaction-messenger__body lms-announcements-body">
+            <div class="lms-announcement-toolbar">
+                <label class="lms-announcement-search">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <span class="sr-only">Search announcements</span>
+                    <input type="search" data-lms-announcement-search data-resource-key="${escapeHtml(resourceKey)}" value="${escapeHtml(announcementSearch)}" placeholder="Search announcements…" autocomplete="off">
+                </label>
+                <span class="lms-announcement-toolbar-label"><i class="fas fa-bullhorn"></i> Class updates</span>
+            </div>
+            <div id="lms-interaction-stream" class="lms-interaction-messenger__stream lms-announcement-feed" data-lms-interaction-region="stream">
                 ${renderLmsInteractionStreamMarkup(resourceKey)}
             </div>
-            <div class="lms-interaction-messenger__composer" data-lms-interaction-region="composer">
+            <div class="lms-interaction-messenger__composer lms-announcement-composer" data-lms-interaction-region="composer">
                 ${renderLmsInteractionComposerMarkup(resourceKey)}
             </div>
         </div>

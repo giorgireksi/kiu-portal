@@ -125,11 +125,29 @@ function toggleLmsInteractionInlineReply(replyId) {
     }
 }
 
+function toggleLmsAnnouncementReplies(postId) {
+    const id = String(postId || '').trim();
+    const replies = Array.from(document.querySelectorAll('[data-lms-announcement-replies]'))
+        .find(node => node.getAttribute('data-lms-announcement-replies') === id);
+    const composer = Array.from(document.querySelectorAll('[data-lms-interaction-inline-compose]'))
+        .find(node => node.getAttribute('data-lms-interaction-inline-compose') === id);
+    if (!replies) return;
+    const shouldOpen = replies.hidden;
+    document.querySelectorAll('[data-lms-announcement-replies]').forEach(node => { node.hidden = true; });
+    document.querySelectorAll('[data-lms-interaction-inline-compose]').forEach(node => { node.hidden = true; });
+    replies.hidden = !shouldOpen;
+    if (shouldOpen && composer) {
+        composer.hidden = false;
+        composer.querySelector('input')?.focus();
+    }
+}
+
 function sendLmsInteractionReply(resourceKey, parentId) {
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     const normalizedParentId = String(parentId || '').trim();
     if (!canonicalKey || !normalizedParentId) return;
-    const input = document.getElementById(`lms-interaction-reply-${toDomToken(canonicalKey)}-${toDomToken(normalizedParentId)}`);
+    const input = document.getElementById(`lms-announcement-reply-${toDomToken(canonicalKey)}-${toDomToken(normalizedParentId)}`)
+        || document.getElementById(`lms-interaction-reply-${toDomToken(canonicalKey)}-${toDomToken(normalizedParentId)}`);
     const text = String(input?.value || '').trim();
     if (!text) return;
     const parent = normalizeLmsInteractionMessages(canonicalKey).find(message => String(message.id) === normalizedParentId);
@@ -1160,6 +1178,7 @@ function switchLMSTab(tab, options = {}) {
             buildLmsInteractionMessagePayload,
             sendLmsInteractionMessage,
             toggleLmsInteractionInlineReply,
+            toggleLmsAnnouncementReplies,
             sendLmsInteractionReply,
             renderLmsAttendanceSection,
             markLmsAttendanceStatus,

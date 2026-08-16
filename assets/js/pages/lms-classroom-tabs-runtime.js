@@ -66,7 +66,7 @@ const LMS_INTERACTION_MODULE_URLS = Object.freeze([
     'assets/js/shared/messenger-gradebook-runtime.js?v=20260815-lmsroster3',
     'assets/js/shared/messenger-chrome-runtime.js?v=20260720-w18',
     'assets/js/shared/messenger.js?v=20260815-authoritative-send2',
-    'assets/js/pages/lms-interaction-messages-runtime.js?v=20260816-lmsflickerfix6'
+    'assets/js/pages/lms-interaction-messages-runtime.js?v=20260816-lmsannouncement1'
 ]);
 const LMS_CONTENT_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-file-storage-runtime.js?v=20260729-lmsmatupload1',
@@ -1603,6 +1603,7 @@ function renderLmsInteractionReply(reply, currentName, resourceKey, depth = 0) {
 function renderLmsInteractionThread(post, resourceKey, currentName) {
     const replies = getLmsInteractionRepliesForPost(resourceKey, post.id);
     const staffTone = post.isProf ? 'is-professor' : 'is-ta';
+    const replyLabel = replies.length ? `${replies.length} repl${replies.length === 1 ? 'y' : 'ies'}` : 'Reply';
     return `
         <article class="lms-announcement-card" data-lms-interaction-thread="${escapeHtml(post.id)}">
             <header class="lms-announcement-header">
@@ -1612,16 +1613,25 @@ function renderLmsInteractionThread(post, resourceKey, currentName) {
                         <strong class="lms-announcement-sender">${escapeHtml(post.sender || 'Staff')}</strong>
                         ${renderLmsInteractionRolePill(post)}
                         ${post.bulk ? '<span class="lms-announcement-bulk-pill lms-route-pill home-hover-chip">Multi-group</span>' : ''}
+                        <time class="lms-announcement-time">${escapeHtml(post.time || formatLmsDateTime(post.createdAt))}</time>
                     </div>
                     <div class="lms-announcement-text">${escapeHtml(post.text || '')}</div>
-                    <time class="lms-announcement-time">${escapeHtml(post.time || formatLmsDateTime(post.createdAt))}</time>
                 </div>
             </header>
-            ${replies.length ? `<div class="lms-announcement-replies">${replies.map(reply => renderLmsInteractionReply(reply, currentName, resourceKey, 0)).join('')}</div>` : ''}
+            <footer class="lms-announcement-actions">
+                <button class="lms-announcement-reply-button" type="button" data-lms-click="toggleLmsAnnouncementReplies(${lmsInlineArg(post.id)})" aria-expanded="false">
+                    <i class="fas fa-reply"></i> ${replyLabel}
+                </button>
+            </footer>
+            <div class="lms-announcement-replies" data-lms-announcement-replies="${escapeHtml(post.id)}" hidden>
+                ${replies.map(reply => renderLmsInteractionReply(reply, currentName, resourceKey, 0)).join('')}
+            </div>
             ${canReplyToLmsInteractionPost(post) ? `
-                <div class="lms-announcement-reply-composer">
-                    <input class="lms-announcement-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(post.id)}" id="lms-announcement-reply-${toDomToken(resourceKey)}-${toDomToken(post.id)}">
-                    <button class="lms-announcement-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(post.id)})">Comment</button>
+                <div class="lms-announcement-inline-composer" data-lms-interaction-inline-compose="${escapeHtml(post.id)}" hidden>
+                    <div class="lms-announcement-reply-composer">
+                        <input class="lms-announcement-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(post.id)}" id="lms-announcement-reply-${toDomToken(resourceKey)}-${toDomToken(post.id)}">
+                        <button class="lms-announcement-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(post.id)})">Send</button>
+                    </div>
                 </div>
             ` : ''}
         </article>
@@ -1629,7 +1639,11 @@ function renderLmsInteractionThread(post, resourceKey, currentName) {
 }
 
 function renderLmsInteractionStreamMarkup(resourceKey) {
-    const announcements = getLmsInteractionAnnouncements(resourceKey).filter(isLmsInteractionMessageFromStaff);
+    const searchQuery = String(window.__lmsAnnouncementSearchByResource?.[resourceKey] || '').trim().toLowerCase();
+    const announcements = getLmsInteractionAnnouncements(resourceKey)
+        .filter(isLmsInteractionMessageFromStaff)
+        .filter(post => !searchQuery || [post.sender, post.text, post.time]
+            .some(value => String(value || '').toLowerCase().includes(searchQuery)));
     const currentName = getSimulatedUserName();
     const canManage = canPostLmsInteractionAnnouncement();
     if (!announcements.length) {
@@ -1640,11 +1654,13 @@ function renderLmsInteractionStreamMarkup(resourceKey) {
             `;
         return `
             <div class="lms-interaction-empty lms-route-empty lms-route-empty--interaction">
-                <div class="lms-interaction-empty-icon lms-route-empty-icon"><i class="fas fa-comments"></i></div>
-                <div class="lms-route-empty-title">${canManage ? 'No announcements yet' : 'Waiting for staff updates'}</div>
-                <div class="lms-route-empty-copy">${canManage
-                    ? 'Post an update for your class using the composer below.'
-                    : 'Your professor or TA will post updates here. You can reply to their messages.'}</div>
+                <div class="lms-interaction-empty-icon lms-route-empty-icon"><i class="fas fa-bullhorn"></i></div>
+                <div class="lms-route-empty-title">${searchQuery ? 'No matching announcements' : (canManage ? 'No announcements yet' : 'Waiting for staff updates')}</div>
+                <div class="lms-route-empty-copy">${searchQuery
+                    ? 'Try a different search term.'
+                    : (canManage
+                        ? 'Post an update for your class using the composer below.'
+                        : 'Your professor or TA will post updates here. You can reply to their messages.')}</div>
                 ${studentCta}
             </div>
         `;
@@ -1698,6 +1714,27 @@ function updateLmsInteractionStreamUi(resourceKey) {
     syncLmsInteractionTabCacheFromDom(resourceKey);
     return true;
 }
+
+let lmsAnnouncementSearchDebounceTimer = 0;
+
+function bindLmsAnnouncementSearch() {
+    if (window.__lmsAnnouncementSearchBound) return;
+    window.__lmsAnnouncementSearchBound = true;
+    window.__lmsAnnouncementSearchByResource = window.__lmsAnnouncementSearchByResource || {};
+    document.addEventListener('input', event => {
+        const input = event.target?.closest?.('[data-lms-announcement-search]');
+        if (!input) return;
+        const resourceKey = String(input.dataset.resourceKey || currentCourseId || '').trim();
+        window.__lmsAnnouncementSearchByResource[resourceKey] = input.value || '';
+        window.clearTimeout(lmsAnnouncementSearchDebounceTimer);
+        lmsAnnouncementSearchDebounceTimer = window.setTimeout(() => {
+            lmsAnnouncementSearchDebounceTimer = 0;
+            updateLmsInteractionStreamUi(resourceKey);
+        }, 120);
+    });
+}
+
+bindLmsAnnouncementSearch();
 
 function updateLmsInteractionComposerUi(resourceKey) {
     const composer = document.querySelector('[data-lms-interaction-region="composer"]');
