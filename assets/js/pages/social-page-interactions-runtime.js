@@ -1701,6 +1701,9 @@ function setPanel(panel, options = {}) {
 }
 function finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavChanged = false, options = {}) {
     const runtime = state();
+    if (panelChanged && typeof window.__kiuAbortAssemblyLoadingMotions === 'function') {
+        try { window.__kiuAbortAssemblyLoadingMotions(); } catch (_error) {}
+    }
     runtime.ui.activePanel = nextPanel;
     runtime.ui.shellDrawerOpen = false;
     runtime.ui.workspaceNavOpen = false;

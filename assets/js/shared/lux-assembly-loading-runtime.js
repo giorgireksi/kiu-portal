@@ -6,6 +6,14 @@
 
     const motionRegistry = global.__kiuAssemblyMotionRegistry
         || (global.__kiuAssemblyMotionRegistry = new Set());
+    if (typeof global.__kiuAbortAssemblyLoadingMotions !== 'function') {
+        global.__kiuAbortAssemblyLoadingMotions = () => {
+            motionRegistry.forEach((motion) => {
+                if (typeof motion?.abort !== 'function') return;
+                try { motion.abort(); } catch (_error) {}
+            });
+        };
+    }
 
     const DEFAULT_TIMING = Object.freeze({
         maxShellWaitMs: 1800,

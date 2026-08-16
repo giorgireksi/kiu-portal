@@ -43,7 +43,7 @@ describe('social performance safeguards', () => {
     it('uses the optimized shared assembly runtime on Social', () => {
         const html = readSource('social.html');
         const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner1');
+        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner2');
         expect(runtime).not.toContain('function getCurrentNode(element, root)');
         expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
         expect(runtime).toContain("soft-restart-skipped-same-content");
@@ -52,6 +52,9 @@ describe('social performance safeguards', () => {
         expect(runtime).toContain('const motionRegistry = global.__kiuAssemblyMotionRegistry');
         expect(runtime).toContain('function abortOtherMotions()');
         expect(runtime).toContain('motionRegistry.add(api);');
+        expect(runtime).toContain('__kiuAbortAssemblyLoadingMotions');
+        expect(readSource('assets/js/pages/social-page-interactions-runtime.js'))
+            .toContain('if (panelChanged && typeof window.__kiuAbortAssemblyLoadingMotions === \'function\')');
     });
 
     it('uses an indexed directory fallback for relationship cards', () => {
