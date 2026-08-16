@@ -40,15 +40,36 @@
     }
 
     function autoCollapse() {
-        if (!isMob()) return;
-        if (document.body.classList.contains('lux-sidebar-collapsed')) return;
-        document.body.classList.add('lux-sidebar-collapsed');
-        document.body.dataset.luxSidebar = 'collapsed';
-        localStorage.setItem('kiuLuxurySidebarCollapsed', '1');
+        if (!isMob() || !document.body || window.__kiuMobileSidebarUserInteracted) return;
+        if (!document.body.classList.contains('lux-sidebar-collapsed')) {
+            document.body.classList.add('lux-sidebar-collapsed');
+            document.body.dataset.luxSidebar = 'collapsed';
+            try { localStorage.setItem('kiuLuxurySidebarCollapsed', '1'); } catch (_error) {}
+        }
         const toggle = document.getElementById('lux-sidebar-toggle');
         if (!toggle) return;
         toggle.classList.add('is-active');
         toggle.setAttribute('aria-pressed', 'true');
+    }
+
+    function stabilizeInitialMobileSidebar() {
+        if (!isMob() || !document.body) return;
+        // The unified shell is assembled asynchronously after this module can
+        // run. Observe the body briefly so a late shell initializer cannot
+        // flash over the LMS content or intercept its cards.
+        const observer = typeof MutationObserver === 'function'
+            ? new MutationObserver(() => autoCollapse())
+            : null;
+        if (observer) observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        autoCollapse();
+        window.setTimeout(() => observer?.disconnect(), 3000);
+    }
+
+    function markMobileSidebarInteraction(event) {
+        if (!isMob()) return;
+        if (event.target?.closest?.('#lux-sidebar-toggle, #lux-sidebar-close, .lux-sidebar-close-btn')) {
+            window.__kiuMobileSidebarUserInteracted = true;
+        }
     }
 
     function syncMobileTopbarVisibility() {
@@ -432,7 +453,10 @@
     }
 
     function init() {
+        window.__kiuMobileSidebarUserInteracted = false;
+        document.addEventListener('click', markMobileSidebarInteraction, true);
         autoCollapse();
+        stabilizeInitialMobileSidebar();
         syncMobileTopbarVisibility();
         setupNav();
         setupSheet();

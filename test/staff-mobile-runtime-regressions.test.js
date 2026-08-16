@@ -91,7 +91,7 @@ describe('staff mobile runtime regressions', () => {
         expect(html).toContain('<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">');
         expect(html).toContain("activeTarget: 'staff'");
         expect(html).toContain("adminPickerSelector: '.staff-admin-controls .lux-primary-btn,.lux-picker-btn'");
-        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260806-hidetopbar2');
+        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1');
         expect(html).toContain('lux-page-bare-lite.css');
         expect(html).not.toContain('staff-command-center.css');
         expect(html).not.toContain('assets/js/pages/staff-route-bootstrap.js?v=20260516-staffmobile1');
@@ -127,7 +127,7 @@ describe('staff mobile runtime regressions', () => {
         expect(html).not.toContain('assets/js/pages/admin-registration.js');
         expect(html).not.toContain('assets/js/pages/directories.js');
         expect(html).toContain('assets/js/pages/staff-command-center.js');
-        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260806-hidetopbar2');
+        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1');
         expect(html).toContain('assets/js/app/app.js');
         expect(commandCenter).toContain('function renderStaffPage()');
         expect(commandCenter).toContain('function openProfRegistration(role)');

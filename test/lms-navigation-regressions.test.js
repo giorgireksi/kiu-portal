@@ -55,6 +55,8 @@ describe('LMS navigation regressions', () => {
         const faculty = readSource('assets/js/shared/faculty.js');
         expect(boot).toContain("const LMS_STANDALONE_VIEW_STATE_KEY = 'KIU_LMS_STANDALONE_VIEW_STATE';");
         expect(boot).toContain('sessionStorage.setItem(LMS_STANDALONE_VIEW_STATE_KEY');
+        expect(boot).toContain('accountId,');
+        expect(boot).toContain("String(state?.accountId || '').trim() !== accountId");
         expect(boot).toContain('restoreLmsStandaloneViewState');
         expect(tabsShell).toContain('window.persistLmsStandaloneViewState({ tab });');
         expect(tabs).toContain('window.clearLmsStandaloneViewState()');

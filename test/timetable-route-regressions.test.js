@@ -293,7 +293,7 @@ describe('timetable route regressions', () => {
 
         expect(html).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
         expect(html).toContain("activeTarget: 'timetable'");
-        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260806-hidetopbar2');
+        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1');
         expect(html).not.toContain('(function initMobileExperience(){');
         expect(html).not.toContain("var ht=setInterval(function(){if(typeof window.navigate==='function')");
     });

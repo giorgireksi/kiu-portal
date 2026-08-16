@@ -47525,6 +47525,53 @@ body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messa
 }
 
 @media (max-width: 960px) {
+    body.lux-route-lms .lms-route-workspace-chrome {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head {
+        gap: 8px;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-role-context {
+        display: none;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head > div:first-child,
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head-actions {
+        min-width: 0;
+        width: 100%;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head-actions {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-card-head-actions > button {
+        flex: 0 0 auto;
+        min-height: 36px;
+        padding: 6px 10px;
+        white-space: nowrap;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-tab-strip {
+        flex-wrap: nowrap;
+        gap: 6px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: thin;
+    }
+
+    body.lux-route-lms .lms-route-workspace-chrome .lms-route-tab {
+        flex: 0 0 auto;
+        min-height: 36px;
+        padding: 6px 10px;
+        white-space: nowrap;
+    }
+
     body.lux-route-lms .lms-interaction-messenger.is-messages-mode {
         height: min(78vh, calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 52px));
         max-height: calc(100dvh - var(--lms-interaction-panel-chrome, 220px) - 52px);
@@ -47535,9 +47582,11 @@ body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-messa
         grid-template-columns: minmax(0, 1fr);
     }
 
-    body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct.is-rail-view .lms-interaction-direct__thread,
-    body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct.is-thread-view .lms-interaction-direct__rail {
-        display: none;
+    /* The current runtime uses the shared Social Messages thread classes.
+       Keep mobile view switching tied to the markup that is actually emitted. */
+    body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct.is-rail-view .social-neo-messages__thread-shell,
+    body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct.is-thread-view .social-neo-messages__inbox {
+        display: none !important;
     }
 }
 

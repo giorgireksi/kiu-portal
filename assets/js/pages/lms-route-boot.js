@@ -11,6 +11,22 @@
         } catch (_error) {}
     }
 
+    function getLmsStandaloneViewAccountId() {
+        try {
+            if (typeof getCurrentUserId === 'function') {
+                const id = String(getCurrentUserId() || '').trim();
+                if (id) return id;
+            }
+            return String(
+                window.currentUser?.id
+                || sessionStorage.getItem('KIU_ACTIVE_SESSION_USER_ID')
+                || ''
+            ).trim();
+        } catch (_error) {
+            return '';
+        }
+    }
+
     function persistLmsStandaloneViewState(overrides = {}) {
         const courseKey = String(
             overrides.courseKey !== undefined ? overrides.courseKey : (window.currentCourseId || '')
@@ -27,7 +43,13 @@
                 : (typeof window.getCurrentLmsSectionType === 'function' ? window.getCurrentLmsSectionType() : 'lecture')
         ).trim().toLowerCase() || 'lecture';
         try {
+            const accountId = getLmsStandaloneViewAccountId();
+            if (!accountId) {
+                clearLmsStandaloneViewState();
+                return;
+            }
             sessionStorage.setItem(LMS_STANDALONE_VIEW_STATE_KEY, JSON.stringify({
+                accountId,
                 courseKey,
                 title: String(
                     overrides.title !== undefined
@@ -48,7 +70,12 @@
             clearLmsStandaloneViewState();
             return false;
         }
+        const accountId = getLmsStandaloneViewAccountId();
         const courseKey = String(state?.courseKey || '').trim();
+        if (!accountId || String(state?.accountId || '').trim() !== accountId) {
+            clearLmsStandaloneViewState();
+            return false;
+        }
         if (!courseKey || typeof window.openLMSCourse !== 'function') return false;
         window.openLMSCourse(courseKey, String(state.title || courseKey));
         if (
