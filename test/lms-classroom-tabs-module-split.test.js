@@ -16,6 +16,10 @@ describe('LMS classroom tabs module split', () => {
             + readSource('assets/js/pages/lms-classroom-tabs-shell-runtime.js')
             + readSource('assets/js/pages/lms-classroom-sessions-runtime.js');
         expect(lmsHtml).toMatch(/assets\/js\/pages\/lms-classroom-tabs-runtime\.js\?v=/);
+        const weekStoreUrls = [...readSource('assets/js/pages/lms-classroom-tabs-runtime.js').matchAll(/lms-week-store-runtime\.js\?v=[^']+/g)]
+            .map(match => match[0]);
+        expect(new Set(weekStoreUrls).size).toBe(1);
+        expect(weekStoreUrls[0]).toContain('20260816-lmsquizweekfix1');
 
         expect(classroomSource).toContain('function openLMSGroups(subjectId, titleString, iconClass)');
         expect(classroomSource).toContain('function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = [])');

@@ -1040,7 +1040,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         return libraryRuntimeLoadPromise;
     };
 
-    const LMS_CLASSROOM_TABS_RUNTIME_SCRIPT = 'assets/js/pages/lms-classroom-tabs-runtime.js?v=20260815-authoritative-roster5';
+    const LMS_CLASSROOM_TABS_RUNTIME_SCRIPT = 'assets/js/pages/lms-classroom-tabs-runtime.js?v=20260816-lmsquizweekfix2';
     const LMS_SECTION_QUIZ_RUNTIME_SCRIPT = 'assets/js/pages/lms-section-quiz-runtime.js?v=20260729-lmsgbshare5';
     const LMS_RUNTIME_SCRIPT = 'assets/js/pages/lms.js?v=20260714-lmspro2';
     let lmsRuntimeLoadPromise = null;

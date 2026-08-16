@@ -23,7 +23,7 @@ const LMS_GRADEBOOK_MODULE_URLS = Object.freeze([
     'assets/js/pages/gradebook-staff.js?v=20260729-lmsgbshare5'
 ]);
 const LMS_LIVE_QUIZ_MODULE_URLS = Object.freeze([
-    'assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2',
+    'assets/js/pages/lms-week-store-runtime.js?v=20260816-lmsquizweekfix1',
     'assets/js/pages/lms-workspace-sync-timing.js?v=20260718-lmssync1',
     'assets/js/pages/lms-live-quiz-access-runtime.js?v=20260720-w18',
     'assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260714-lmspro2',

@@ -16,7 +16,7 @@ describe('LMS content library module split', () => {
         expect(lmsHtml).not.toContain('assets/js/pages/lms-week-store-runtime.js');
         expect(lmsHtml).not.toContain('assets/js/pages/lms-content-library-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        expect(classroomSource).toContain('assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2');
+        expect(classroomSource).toContain('assets/js/pages/lms-week-store-runtime.js?v=20260816-lmsquizweekfix1');
         expect(classroomSource).toContain('assets/js/pages/lms-content-library-runtime.js?v=20260714-lmspro2');
         expect(classroomSource).toContain('function ensureLmsContentRuntime()');
         expect(classroomSource.indexOf('lms-week-store-runtime.js')).toBeLessThan(
