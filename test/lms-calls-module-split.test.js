@@ -14,7 +14,7 @@ describe('LMS calls module split', () => {
         const callsSource = readSource('assets/js/pages/lms-calls-runtime.js');
         expect(lmsHtml).not.toContain('assets/js/pages/lms-calls-runtime.js');
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
-        expect(classroomSource).toContain('assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1');
+        expect(classroomSource).toContain('assets/js/pages/lms-calls-runtime.js?v=20260816-lmscompactcall1');
         expect(classroomSource).toContain('function ensureLmsCallsRuntime()');
         expect(callsSource).toContain('const lmsClassLocalMediaRuntime = {');
         expect(callsSource).toContain('function getLmsCurrentUserForCalls()');
@@ -27,12 +27,13 @@ describe('LMS calls module split', () => {
         expect(callsSource).toContain('function endLmsClassCall(sessionId)');
         expect(callsSource).toContain('function publishLmsClassRecording(sessionId)');
         expect(callsSource).toContain('function copyLmsClassCallInvite(sessionId)');
-        expect(callsSource).toContain('class="lms-route-card-title lms-route-copy-mt-8"');
-        expect(callsSource).toContain('class="lms-route-copy lms-route-copy-mt-6"');
-        expect(callsSource).toContain('class="lms-route-card-head lms-route-card-head-mb-16"');
-        expect(callsSource).toContain('class="lms-route-actions lms-route-actions-mt-16"');
+        expect(callsSource).toContain('lms-call-create-panel');
+        expect(callsSource).toContain('lms-call-create-subcopy');
+        expect(callsSource).toContain('lms-call-create-grid');
+        expect(callsSource).toContain('lms-call-create-actions');
+        expect(callsSource).toContain('lms-call-create-title');
         expect(callsSource).toContain('class="lms-route-panel lms-route-panel-pad-16-20"');
-        expect(callsSource).toContain('class="lms-route-panel lms-route-panel-compact"');
+        expect(callsSource).toContain('class="lms-route-panel lms-route-panel-compact lms-call-create-panel"');
         expect(callsSource).toContain('class="lms-route-inline lms-route-inline-center lms-route-inline-gap-12"');
         expect(callsSource).toContain('class="fas fa-video lms-route-lead-icon"');
         expect(callsSource).toContain('class="lms-route-inline lms-route-inline-gap-8"');

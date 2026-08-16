@@ -1040,34 +1040,30 @@ function renderLmsCallsSection(courseId) {
     const scheduledCount = sessions.filter(session => session.status === 'scheduled').length;
     const endedCount = sessions.filter(session => session.status === 'ended').length;
     const creationPanel = canManage ? `
-        <div class="lms-route-panel lms-route-panel-compact">
-            <div class="lms-route-card-head lms-route-card-head-mb-16">
-                <div>
+        <div class="lms-route-panel lms-route-panel-compact lms-call-create-panel">
+            <div class="lms-call-create-head">
+                <div class="lms-call-create-heading">
                     <div class="lms-route-card-title"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> Create ${escapeHtml(sectionMeta.label)} Lesson</div>
-                    <div class="lms-route-copy lms-route-copy-mt-6">Start immediately or schedule a lesson for this ${escapeHtml(sectionMeta.label.toLowerCase())}. The roster stays shared with the group.</div>
+                    <div class="lms-call-create-subcopy">Start now or schedule a lesson <span>·</span> Shared group roster</div>
                 </div>
             </div>
-            <div class="lms-route-field-grid">
-                <label class="lms-route-field">
+            <div class="lms-call-create-grid">
+                <label class="lms-route-field lms-call-create-title">
                     <span class="lms-route-field-label">Lesson title</span>
                     <input id="lms-call-title" class="lms-route-input lux-control" type="text" placeholder="${escapeHtml(sectionMeta.label)} online lesson">
                 </label>
-                <label class="lms-route-field">
+                <label class="lms-route-field lms-call-create-scheduled">
                     <span class="lms-route-field-label">Schedule time</span>
                     <input id="lms-call-scheduled" class="lms-route-input lux-control" type="datetime-local">
                 </label>
-                <label class="lms-route-field">
-                    <span class="lms-route-field-label">Max participants</span>
-                    <input id="lms-call-max" class="lms-route-input lux-control" type="number" min="1" max="200" value="200">
-                </label>
-                <label class="lms-route-field">
+                <label class="lms-route-field lms-call-create-week">
                     <span class="lms-route-field-label">Teaching week</span>
                     <select id="lms-call-week" class="lms-route-select lux-control">
                         ${buildLmsWeekSelectOptions(resourceKey, '')}
                     </select>
                 </label>
-                <label class="lms-route-field">
-                    <span class="lms-route-field-label">Class layout mode</span>
+                <label class="lms-route-field lms-call-create-mode">
+                    <span class="lms-route-field-label">Layout mode</span>
                     <select id="lms-call-mode" class="lms-route-select lux-control">
                         <option value="lecture">Lecture mode</option>
                         <option value="seminar">Seminar mode</option>
@@ -1077,10 +1073,14 @@ function renderLmsCallsSection(courseId) {
                         <option value="exam">Exam supervision</option>
                     </select>
                 </label>
+                <label class="lms-route-field lms-call-create-max">
+                    <span class="lms-route-field-label">Max participants</span>
+                    <input id="lms-call-max" class="lms-route-input lux-control" type="number" min="1" max="200" value="200">
+                </label>
             </div>
-            <div class="lms-route-actions lms-route-actions-mt-16">
-                <button class="lux-primary-btn" data-lms-click="startLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-circle-play"></i> Start live lesson</button>
-                <button class="lux-secondary-btn" data-lms-click="scheduleLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-calendar-plus"></i> Schedule lesson</button>
+            <div class="lms-route-actions lms-call-create-actions">
+                <button class="lux-primary-btn lms-route-btn-compact" data-lms-click="startLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-circle-play"></i> Start live lesson</button>
+                <button class="lux-secondary-btn lms-route-btn-compact" data-lms-click="scheduleLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-calendar-plus"></i> Schedule lesson</button>
             </div>
         </div>
     ` : '';

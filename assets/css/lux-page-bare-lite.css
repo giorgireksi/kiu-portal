@@ -6239,6 +6239,64 @@ body.lux-route-lms .lms-route-field-grid {
     gap: 12px;
 }
 
+body.lux-route-lms .lms-call-create-panel {
+    gap: 10px;
+    padding: 12px 14px;
+}
+
+body.lux-route-lms .lms-call-create-head {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-call-create-heading {
+    min-width: 0;
+}
+
+body.lux-route-lms .lms-call-create-subcopy {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+body.lux-route-lms .lms-call-create-subcopy span {
+    color: rgb(var(--lux-accent-rgb));
+}
+
+body.lux-route-lms .lms-call-create-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(112px, .85fr);
+    gap: 8px;
+    align-items: end;
+}
+
+body.lux-route-lms .lms-call-create-title {
+    grid-column: span 2;
+}
+
+body.lux-route-lms .lms-call-create-panel :is(.lms-route-input, .lms-route-select).lux-control {
+    min-height: 38px;
+    height: 38px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+
+body.lux-route-lms .lms-call-create-actions {
+    margin-top: 0;
+}
+
+body.lux-route-lms .lms-call-create-actions .lms-route-btn-compact {
+    min-height: 32px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 body.lux-route-lms .lms-route-field-grid-mt-12 {
     margin-top: 12px;
 }
@@ -11746,8 +11804,13 @@ body.lux-route-lms .lms-interaction-direct__thread-empty {
 
     body.lux-route-lms .lms-live-layout,
     body.lux-route-lms .lms-live-director-bar,
-    body.lux-route-lms .lms-live-form-grid.two {
+    body.lux-route-lms .lms-live-form-grid.two,
+    body.lux-route-lms .lms-call-create-grid {
         grid-template-columns: 1fr;
+    }
+
+    body.lux-route-lms .lms-call-create-title {
+        grid-column: auto;
     }
 
     body.lux-route-lms .lms-live-hero {
