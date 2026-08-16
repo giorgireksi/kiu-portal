@@ -574,6 +574,11 @@
         }
         function queueDeferredModuleRender(reason) {
             const renderReason = text(reason || 'module') || 'module';
+            const host = root();
+            const activePanel = text(state()?.ui?.activePanel || '') || 'feed';
+            const renderKey = `${activePanel}:${renderReason}`;
+            if (host?.__kiuDeferredModuleRenderKey === renderKey) return;
+            if (host) host.__kiuDeferredModuleRenderKey = renderKey;
             if (deferredModuleRenderQueue.has(renderReason)) return;
             deferredModuleRenderQueue.add(renderReason);
             // Multiple lazy renderer callbacks can resolve in the same microtask
@@ -582,8 +587,8 @@
             const flush = () => {
                 deferredModuleRenderQueue.delete(renderReason);
                 invalidateSocialRenderCache({ center: true });
-                const host = root();
-                if (host && !activeDialog()) host.__kiuForceCenterOnly = true;
+                const liveHost = root();
+                if (liveHost && !activeDialog()) liveHost.__kiuForceCenterOnly = true;
                 renderSocialPageNow(renderReason);
             };
             if (typeof queueMicrotask === 'function') queueMicrotask(flush);

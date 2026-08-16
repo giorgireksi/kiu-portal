@@ -1705,6 +1705,8 @@ function finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavCh
         try { window.__kiuAbortAssemblyLoadingMotions(); } catch (_error) {}
     }
     runtime.ui.activePanel = nextPanel;
+    const socialHost = root();
+    if (panelChanged && socialHost) delete socialHost.__kiuDeferredModuleRenderKey;
     runtime.ui.shellDrawerOpen = false;
     runtime.ui.workspaceNavOpen = false;
     if (runtime.ui.activePanel === 'community') {
