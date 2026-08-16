@@ -6,6 +6,11 @@ const read = (path) => readFileSync(path, 'utf8');
 describe('LMS interaction flicker regressions', () => {
     it('does not replace unchanged messenger subtrees during realtime refresh', () => {
         const runtime = read('assets/js/pages/lms-interaction-messages-runtime.js');
+        const announcements = read('assets/js/pages/lms-classroom-tabs-runtime.js');
+        const css = read('assets/css/lux-page-bare-lite.css');
+        expect(announcements).toContain('lms-announcement-card');
+        expect(announcements).not.toContain('class="lms-interaction-thread"');
+        expect(css).not.toContain('.lms-interaction-bubble');
         expect(runtime).toContain('function normalizeLmsInteractionMarkup(markup)');
         expect(runtime).toContain('function lmsInteractionMarkupMatches(element, markup)');
         expect(runtime).toContain('!lmsInteractionMarkupMatches(railHead, nextRailHeadMarkup)');

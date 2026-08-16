@@ -1562,59 +1562,35 @@ function renderLmsInteractionRolePill(message) {
     return `<span class="lms-interaction-role-pill lms-route-pill home-hover-chip ${tone}">${escapeHtml(label)}</span>`;
 }
 
-function renderLmsInteractionReplyComposer(resourceKey, parentId) {
-    const inputId = `lms-interaction-reply-${toDomToken(resourceKey)}-${toDomToken(parentId)}`;
-    return `
-        <div class="lms-interaction-reply-compose">
-            <input
-                id="${inputId}"
-                class="lms-interaction-compose-input"
-                type="text"
-                placeholder="Write a reply…"
-                data-lms-interaction-reply-input="${escapeHtml(parentId)}"
-            >
-            <button
-                class="lms-interaction-compose-send lux-secondary-btn"
-                type="button"
-                data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(parentId)})"
-                aria-label="Send reply"
-            ><i class="fas fa-paper-plane"></i></button>
-        </div>
-    `;
-}
-
 function renderLmsInteractionReply(reply, currentName, resourceKey, depth = 0) {
     const isMe = reply.sender === currentName;
-    const tone = 'is-student';
     const childReplies = resourceKey ? getLmsInteractionChildReplies(resourceKey, reply.id) : [];
     const canReply = canReplyToLmsInteractionPost(reply);
     const meClass = depth === 0 && isMe ? ' is-me' : '';
     const nestedChildren = childReplies.length
-        ? `<div class="lms-thread-lines">${childReplies.map(child => renderLmsInteractionReply(child, currentName, resourceKey, depth + 1)).join('')}</div>`
+        ? `<div class="lms-announcement-replies">${childReplies.map(child => renderLmsInteractionReply(child, currentName, resourceKey, depth + 1)).join('')}</div>`
         : '';
     const inlineCompose = canReply
-        ? `<div class="lms-interaction-inline-compose" data-lms-interaction-inline-compose="${escapeHtml(reply.id)}" hidden>
-            <div class="lms-interaction-reply-compose lms-interaction-reply-compose--inline">
-                <input class="lms-interaction-compose-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(reply.id)}" id="lms-interaction-reply-${toDomToken(resourceKey)}-${toDomToken(reply.id)}">
-                <button class="lms-interaction-compose-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(reply.id)})">Comment</button>
-                <button class="lms-interaction-compose-cancel" type="button" data-lms-click="toggleLmsInteractionInlineReply(${lmsInlineArg(reply.id)})">Cancel</button>
+        ? `<div class="lms-announcement-inline-composer" data-lms-interaction-inline-compose="${escapeHtml(reply.id)}" hidden>
+            <div class="lms-announcement-reply-composer">
+                <input class="lms-announcement-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(reply.id)}" id="lms-announcement-reply-${toDomToken(resourceKey)}-${toDomToken(reply.id)}">
+                <button class="lms-announcement-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(reply.id)})">Comment</button>
+                <button class="lms-announcement-cancel" type="button" data-lms-click="toggleLmsInteractionInlineReply(${lmsInlineArg(reply.id)})">Cancel</button>
             </div>
         </div>`
         : '';
     return `
-        <article class="lms-interaction-reply${meClass}" data-lms-interaction-reply-id="${escapeHtml(reply.id)}">
-            <div class="lms-interaction-reply-main">
-                ${renderLmsInteractionAvatar(reply.sender, tone)}
-                <div class="lms-interaction-body">
-                    <div class="lms-interaction-bubble-wrap">
-                        <div class="lms-interaction-bubble-meta">
-                            ${isMe ? 'You' : escapeHtml(reply.sender || 'Unknown')}
-                            &middot; ${escapeHtml(reply.time || formatLmsDateTime(reply.createdAt))}
-                        </div>
-                        <div class="lms-interaction-bubble lms-interaction-bubble--reply">${escapeHtml(reply.text || '')}</div>
-                        <div class="lms-interaction-reply-actions">
-                            ${canReply ? `<button class="lms-interaction-reply-btn" type="button" data-lms-click="toggleLmsInteractionInlineReply(${lmsInlineArg(reply.id)})"><i class="fas fa-reply"></i> Reply</button>` : ''}
-                        </div>
+        <article class="lms-announcement-reply${meClass}" data-lms-interaction-reply-id="${escapeHtml(reply.id)}">
+            <div class="lms-announcement-reply-main">
+                ${renderLmsInteractionAvatar(reply.sender, 'is-student')}
+                <div class="lms-announcement-reply-body">
+                    <div class="lms-announcement-reply-meta">
+                        ${isMe ? 'You' : escapeHtml(reply.sender || 'Unknown')}
+                        &middot; ${escapeHtml(reply.time || formatLmsDateTime(reply.createdAt))}
+                    </div>
+                    <div class="lms-announcement-reply-text">${escapeHtml(reply.text || '')}</div>
+                    <div class="lms-announcement-reply-actions">
+                        ${canReply ? `<button class="lms-announcement-reply-button" type="button" data-lms-click="toggleLmsInteractionInlineReply(${lmsInlineArg(reply.id)})"><i class="fas fa-reply"></i> Reply</button>` : ''}
                     </div>
                     ${inlineCompose}
                     ${nestedChildren}
@@ -1628,24 +1604,24 @@ function renderLmsInteractionThread(post, resourceKey, currentName) {
     const replies = getLmsInteractionRepliesForPost(resourceKey, post.id);
     const staffTone = post.isProf ? 'is-professor' : 'is-ta';
     return `
-        <article class="lms-interaction-thread" data-lms-interaction-thread="${escapeHtml(post.id)}">
-            <div class="lms-interaction-announcement">
+        <article class="lms-announcement-card" data-lms-interaction-thread="${escapeHtml(post.id)}">
+            <header class="lms-announcement-header">
                 ${renderLmsInteractionAvatar(post.sender, staffTone)}
-                <div class="lms-interaction-bubble-wrap">
-                    <div class="lms-interaction-bubble-head">
-                        <strong class="lms-interaction-sender">${escapeHtml(post.sender || 'Staff')}</strong>
+                <div class="lms-announcement-content">
+                    <div class="lms-announcement-meta">
+                        <strong class="lms-announcement-sender">${escapeHtml(post.sender || 'Staff')}</strong>
                         ${renderLmsInteractionRolePill(post)}
-                        ${post.bulk ? '<span class="lms-interaction-bulk-pill lms-route-pill home-hover-chip">Multi-group</span>' : ''}
+                        ${post.bulk ? '<span class="lms-announcement-bulk-pill lms-route-pill home-hover-chip">Multi-group</span>' : ''}
                     </div>
-                    <div class="lms-interaction-bubble lms-interaction-bubble--staff">${escapeHtml(post.text || '')}</div>
-                    <div class="lms-interaction-bubble-meta">${escapeHtml(post.time || formatLmsDateTime(post.createdAt))}</div>
+                    <div class="lms-announcement-text">${escapeHtml(post.text || '')}</div>
+                    <time class="lms-announcement-time">${escapeHtml(post.time || formatLmsDateTime(post.createdAt))}</time>
                 </div>
-            </div>
-            ${replies.length ? `<div class="lms-thread-lines">${replies.map(reply => renderLmsInteractionReply(reply, currentName, resourceKey, 0)).join('')}</div>` : ''}
+            </header>
+            ${replies.length ? `<div class="lms-announcement-replies">${replies.map(reply => renderLmsInteractionReply(reply, currentName, resourceKey, 0)).join('')}</div>` : ''}
             ${canReplyToLmsInteractionPost(post) ? `
-                <div class="lms-interaction-reply-compose lms-interaction-reply-compose--inline">
-                    <input class="lms-interaction-compose-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(post.id)}" id="lms-interaction-reply-${toDomToken(resourceKey)}-${toDomToken(post.id)}">
-                    <button class="lms-interaction-compose-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(post.id)})">Comment</button>
+                <div class="lms-announcement-reply-composer">
+                    <input class="lms-announcement-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(post.id)}" id="lms-announcement-reply-${toDomToken(resourceKey)}-${toDomToken(post.id)}">
+                    <button class="lms-announcement-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(post.id)})">Comment</button>
                 </div>
             ` : ''}
         </article>
@@ -1686,15 +1662,15 @@ function renderLmsInteractionComposerMarkup(resourceKey) {
         `;
     }
     return `
-        <div class="lms-interaction-compose-row">
+        <div class="lms-announcement-composer-row">
             <input
                 id="lms-interaction-announce-input"
-                class="lms-interaction-compose-input"
+                class="lms-announcement-input"
                 type="text"
                 placeholder="Post an announcement for your class…"
             >
             <button
-                class="lms-interaction-compose-send lux-secondary-btn"
+                class="lms-announcement-send lux-secondary-btn"
                 type="button"
                 data-lms-click="sendLmsInteractionMessage(${lmsInlineArg(resourceKey)})"
             ><i class="fas fa-paper-plane"></i> Send</button>

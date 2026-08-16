@@ -11368,115 +11368,6 @@ body.lux-route-lms .lms-interaction-direct__thread-copy {
     color: var(--lux-text-muted);
 }
 
-body.lux-route-lms .lms-interaction-direct__log {
-    overflow: auto;
-    padding: 14px 16px;
-    min-height: 0;
-    display: grid;
-    align-content: start;
-    gap: 12px;
-}
-
-body.lux-route-lms .lms-interaction-direct__log--empty {
-    place-items: center;
-}
-
-body.lux-route-lms .lms-interaction-direct__bubble-row {
-    display: grid;
-    gap: 4px;
-    max-width: min(72ch, 88%);
-}
-
-body.lux-route-lms .lms-interaction-direct__bubble-row.is-me {
-    justify-self: end;
-    justify-items: end;
-}
-
-body.lux-route-lms .lms-interaction-direct__bubble-meta {
-    font-size: 11px;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-lms .lms-interaction-direct__bubble {
-    padding: 10px 12px;
-    border-radius: 16px;
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.34);
-    line-height: 1.45;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-body.lux-route-lms .lms-interaction-direct__bubble.is-me {
-    background: rgba(var(--lux-accent-rgb), 0.2);
-}
-
-body.lux-route-lms .lms-interaction-direct__bubble-text + .lms-interaction-direct__file,
-body.lux-route-lms .lms-interaction-direct__bubble-text + .lms-interaction-direct__video {
-    margin-top: 8px;
-}
-
-body.lux-route-lms .lms-interaction-direct__video video {
-    display: block;
-    width: 100%;
-    max-width: 320px;
-    border-radius: 12px;
-}
-
-body.lux-route-lms .lms-interaction-direct__seen {
-    font-size: 11px;
-    color: var(--lux-text-muted);
-}
-
-body.lux-route-lms .lms-interaction-direct__composer {
-    padding: 12px 16px 16px;
-    border-top: 1px solid var(--lux-border);
-}
-
-body.lux-route-lms .lms-interaction-compose-row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 8px;
-    align-items: center;
-}
-
-body.lux-route-lms .lms-interaction-compose-input {
-    width: 100%;
-    min-height: 42px;
-    padding: 0 12px;
-    border-radius: 12px;
-    border: 1px solid var(--lux-border);
-    background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.22);
-    color: inherit;
-}
-
-body.lux-route-lms .lms-interaction-compose-send {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 42px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 12px;
-    background: rgb(var(--lux-accent-rgb));
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-body.lux-route-lms .lms-interaction-direct__draft {
-    margin-top: 8px;
-}
-
-body.lux-route-lms .lms-interaction-direct__draft.is-empty {
-    display: none;
-}
-
-body.lux-route-lms .lms-interaction-direct__draft-image {
-    display: block;
-    max-width: 180px;
-    border-radius: 12px;
-}
-
 body.lux-route-lms .lms-interaction-direct__empty,
 body.lux-route-lms .lms-interaction-direct__thread-empty {
     padding: 18px 12px;
@@ -47328,55 +47219,6 @@ body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-
     scrollbar-width: thin;
 }
 
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__bubble-row {
-    width: fit-content;
-    max-width: min(720px, 88%);
-    gap: 5px;
-    justify-items: start;
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__bubble-row.is-me {
-    justify-items: end;
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__bubble {
-    width: fit-content;
-    max-width: 100%;
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__bubble {
-    padding: 11px 14px;
-    border: 1px solid color-mix(in srgb, var(--lms-messenger-border) 72%, transparent);
-    border-radius: 15px 15px 15px 5px;
-    background: color-mix(in srgb, var(--lms-messenger-surface) 72%, var(--lux-glass-tint, #17233d));
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__bubble.is-me {
-    border-color: color-mix(in srgb, var(--lux-accent) 38%, var(--lms-messenger-border));
-    border-radius: 15px 15px 5px 15px;
-    background: color-mix(in srgb, var(--lux-accent) 18%, var(--lms-messenger-surface));
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__bubble-meta,
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__seen {
-    color: var(--lms-messenger-muted);
-    font-size: 11px;
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__composer {
-    position: relative;
-    z-index: 1;
-    padding: 12px 18px 16px;
-    border-top: 1px solid color-mix(in srgb, var(--lms-messenger-border) 78%, transparent);
-    background: color-mix(in srgb, var(--lms-messenger-surface) 94%, transparent);
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-compose-input {
-    min-height: 44px;
-    border-radius: 14px;
-}
-
 body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__log,
 body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__inbox,
 body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-direct__compose-list {
@@ -47745,33 +47587,6 @@ body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-c
     border-radius: 999px !important;
     background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), .34) !important;
     border-color: rgba(var(--lux-accent-rgb), .16) !important;
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .lms-interaction-compose-row.social-neo-msg-compose-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-msg-compose-input.lms-interaction-compose-input {
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 44px;
-    border-radius: 14px;
-}
-
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-btn.lms-interaction-compose-attach,
-body.lux-route-lms .lms-interaction-messenger.is-messages-mode .social-neo-btn.lms-interaction-compose-send {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 42px;
-    width: 42px;
-    min-width: 42px;
-    height: 42px;
-    min-height: 42px;
-    padding: 0;
-    border-radius: 12px;
 }
 
 /* Keep the LMS composer identical to Social Messages: one glass row, not a
