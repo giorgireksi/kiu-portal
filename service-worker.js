@@ -71,7 +71,7 @@ const SHELL_ASSETS = [
   '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery2',
   '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
   '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
-  '/assets/js/pages/social-page.js?v=20260816-socialperf4',
+  '/assets/js/pages/social-page.js?v=20260816-socialperf5',
   '/assets/js/pages/social-home-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4',
   '/assets/js/pages/social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
   '/assets/js/pages/social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',

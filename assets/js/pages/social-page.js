@@ -860,8 +860,13 @@ Publishes only the host/runtime contract consumed by its loader.
                 // Do not rely only on the lazy renderer's callback: a first
                 // panel render can consume that callback while the export is
                 // becoming observable. Explicitly remount active Exposé.
-                if ((text(state()?.ui?.activePanel || '') || 'feed') === 'photography') {
-                    queueDeferredModuleRender('photography-module');
+                if ((text(state()?.ui?.activePanel || '') || 'feed') === 'photography'
+                    && typeof renderSocialPageNow === 'function') {
+                    invalidateSocialRenderCache({ center: true });
+                    // Mount directly from the module promise. This avoids a
+                    // second-click dependency when the lazy stub's callback
+                    // was consumed before the export became observable.
+                    renderSocialPageNow('photography-module');
                 }
                 return true;
             })
