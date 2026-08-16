@@ -372,6 +372,12 @@ function getPortalRuntimeDiagnosticCopy(detail = {}) {
             message: detail.message || 'The portal backend did not respond in time.'
         };
     }
+    if (kind === 'portal-role-write-dropped') {
+        return {
+            title: 'Some portal state is read-only for this role',
+            message: detail.message || 'The backend saved the writable state. Read-only catalog keys were ignored for this role.'
+        };
+    }
     return {
         title: 'Backend unavailable',
         message: detail.message || 'The portal backend could not be reached.'
