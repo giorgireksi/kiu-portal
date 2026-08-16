@@ -54,7 +54,10 @@ describe('social performance safeguards', () => {
         expect(runtime).toContain('function abortOtherMotions()');
         expect(runtime).toContain('motionRegistry.add(api);');
         expect(runtime).toContain('__kiuAbortAssemblyLoadingMotions');
-        expect(readSource('assets/js/pages/social-page-interactions-runtime.js'))
+        const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
+        expect(interactions).toContain('SOCIAL_PANEL_MOTION_GLOBAL_BY_PANEL');
+        expect(interactions).toContain('if (r === `${target}-module`)');
+        expect(interactions)
             .toContain('if (panelChanged && typeof window.__kiuAbortAssemblyLoadingMotions === \'function\')');
         for (const panel of ['home', 'community', 'groups', 'projects', 'portfolio', 'research', 'pages', 'events', 'surveys', 'photography', 'lost-found', 'messages', 'alerts']) {
             expect(readSource(`assets/js/pages/social-${panel}-loading-runtime.js`))

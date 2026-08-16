@@ -203,6 +203,21 @@
             return /^(feed-tab|community-tab|groups-tab|pages-tab|events-tab|surveys-tab|research-tab|photography-tab|portfolio-panel-tab|surveys-lane|survey-take-open|survey-take-close|lost-found-tab|messages-filter|feed-module|community-module|groups-module|pages-module|events-module|surveys-module|research-module|photography-module|messages-module|alerts-module|lost-found-module|workspace-module)$/.test(r);
         }
 
+        const SOCIAL_PANEL_MOTION_GLOBAL_BY_PANEL = Object.freeze({
+            feed: '__kiuSocialHomeLoadingMotion',
+            community: '__kiuSocialCommunityLoadingMotion',
+            groups: '__kiuSocialGroupsLoadingMotion',
+            projects: '__kiuSocialProjectsLoadingMotion',
+            workspace: '__kiuSocialPortfolioLoadingMotion',
+            research: '__kiuSocialResearchLoadingMotion',
+            pages: '__kiuSocialPagesLoadingMotion',
+            events: '__kiuSocialEventsLoadingMotion',
+            'lost-and-found': '__kiuSocialLostFoundLoadingMotion',
+            messages: '__kiuSocialMessagesLoadingMotion',
+            alerts: '__kiuSocialAlertsLoadingMotion',
+            surveys: '__kiuSocialSurveysLoadingMotion',
+            photography: '__kiuSocialPhotographyLoadingMotion'
+        });
         function shouldAnimateSocialPanelMotion(targetPanel, activePanel, reason, extraCheck = null) {
             const target = text(targetPanel || '').trim();
             const current = text(activePanel || '').trim();
@@ -210,6 +225,13 @@
             if (typeof extraCheck === 'function' && extraCheck()) return true;
             if (window.__kiuSocialBootAwaitingAssemblyReveal || document.body?.classList.contains('kiu-shell-loading')) return true;
             const r = text(reason || '');
+            if (r === `${target}-module`) {
+                const motion = window[SOCIAL_PANEL_MOTION_GLOBAL_BY_PANEL[target]];
+                const phase = motion?.getState?.().phase;
+                // A module callback can arrive after the panel render already
+                // started its flight. Do not remount and replay that same panel.
+                if (phase && phase !== 'idle') return false;
+            }
             if (r === 'boot' || r === 'social-bootstrap' || r === 'panel' || r === 'pin-api-health' || r === 'auth-sync') return true;
             if (r === `panel-${target}` || r === `${target}-module` || r === `${target}-tab`) return true;
             return shouldPrehideCenterForAssembly(reason);
