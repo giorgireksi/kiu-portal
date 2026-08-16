@@ -158,6 +158,16 @@
                 return;
             }
 
+            if (action === 'social-module-retry') {
+                event.__kiuSocialHandled = true;
+                event.preventDefault();
+                const panel = text(trigger.getAttribute('data-social-module-panel') || '');
+                const retry = window.__kiuRetrySocialModule;
+                if (typeof retry === 'function') {
+                    await retry(panel);
+                }
+                return;
+            }
             const shellNav = handleShellNavClick(action, trigger);
             if (shellNav.handled) {
                 event.__kiuSocialHandled = true;

@@ -2120,7 +2120,23 @@ function syncSocialShortcutsTopNavPortal(markup) {
     }
     document.body.classList.add('social-has-shortcuts-top-nav');
 }
+function renderSocialModuleFailureMarkup(activePanel) {
+    const failure = window.__kiuSocialModuleFailures?.[activePanel];
+    if (!failure) return '';
+    const label = escape(failure.label || 'Social module');
+    const message = escape(failure.message || 'The workspace module could not be loaded.');
+    return `<section class="social-neo-card social-neo-module-error" data-social-module-error="${escape(activePanel)}">
+        <div class="social-neo-empty-hero">
+            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+            <strong>${label} is unavailable</strong>
+            <span>${message}</span>
+            <button type="button" class="lux-primary-btn" data-action="social-module-retry" data-social-module-panel="${escape(activePanel)}">Retry</button>
+        </div>
+    </section>`;
+}
 function renderActivePanelMarkup(activePanel) {
+    const failureMarkup = renderSocialModuleFailureMarkup(activePanel);
+    if (failureMarkup) return failureMarkup;
     return activePanel === 'community'
         ? renderCommunityPanel()
         : activePanel === 'groups'

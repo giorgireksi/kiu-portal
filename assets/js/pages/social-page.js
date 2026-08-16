@@ -1041,18 +1041,92 @@ Publishes only the host/runtime contract consumed by its loader.
             existing.addEventListener('error', onError);
         });
     }
+    function socialModulePanelForLabel(label) {
+        const value = String(label || '').toLowerCase();
+        if (value.includes('community')) return 'community';
+        if (value.includes('alerts')) return 'alerts';
+        if (value.includes('lost-found')) return 'lost-and-found';
+        if (value.includes('photography')) return 'photography';
+        if (value.includes('surveys')) return 'surveys';
+        if (value.includes('research')) return 'research';
+        if (value.includes('messages')) return 'messages';
+        if (value.includes('profile')) return 'profile';
+        if (value.includes('events')) return 'events';
+        if (value.includes('groups')) return 'groups';
+        if (value.includes('pages')) return 'pages';
+        if (value.includes('workspace')) return 'workspace';
+        if (value.includes('feed')) return 'feed';
+        return '';
+    }
+    function reportSocialModuleFailure(label, error) {
+        const panel = socialModulePanelForLabel(label);
+        if (!panel) return;
+        window.__kiuSocialModuleFailures = window.__kiuSocialModuleFailures || {};
+        window.__kiuSocialModuleFailures[panel] = {
+            label: String(label || 'Social module'),
+            message: String(error?.message || `${label} could not be loaded.`)
+        };
+        const activePanel = text(state()?.ui?.activePanel || '') || 'feed';
+        if (activePanel === panel && typeof window.renderSocialPageNow === 'function') {
+            window.setTimeout(() => window.renderSocialPageNow('module-failure'), 0);
+        }
+    }
+    function clearSocialModuleFailure(label) {
+        const panel = socialModulePanelForLabel(label);
+        if (panel && window.__kiuSocialModuleFailures) delete window.__kiuSocialModuleFailures[panel];
+    }
     function loadSocialDynamicScript(url, label = 'Social module') {
         const existing = document.querySelector(`script[src="${url}"]`);
-        if (existing) return waitForDynamicScript(existing);
-        const script = document.createElement('script');
-        script.src = url;
-        script.defer = true;
-        document.head.appendChild(script);
-        return waitForDynamicScript(script).catch((error) => {
-            discardSocialDynamicScript(script);
-            throw new Error(`${label} could not be loaded.`, { cause: error });
-        });
+        const script = existing || document.createElement('script');
+        if (!existing) {
+            script.src = url;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+        return waitForDynamicScript(script)
+            .then(() => {
+                clearSocialModuleFailure(label);
+                return true;
+            })
+            .catch((error) => {
+                discardSocialDynamicScript(script);
+                const failure = new Error(`${label} could not be loaded.`, { cause: error });
+                reportSocialModuleFailure(label, failure);
+                throw failure;
+            });
     }
+    window.__kiuReportSocialModuleFailure = reportSocialModuleFailure;
+    window.__kiuRetrySocialModule = (panel) => {
+        const ensureByPanel = {
+            feed: ensureSocialFeedModule,
+            community: ensureSocialCommunityModule,
+            groups: ensureSocialGroupsModule,
+            workspace: ensureSocialWorkspaceModule,
+            projects: ensureSocialWorkspaceModule,
+            pages: ensureSocialPagesModule,
+            events: ensureSocialEventsModule,
+            surveys: ensureSocialSurveysModule,
+            research: ensureSocialResearchModule,
+            photography: ensureSocialPhotographyModule,
+            'lost-and-found': ensureSocialLostFoundModule,
+            messages: ensureSocialMessagesModule,
+            alerts: ensureSocialAlertsModule,
+            profile: ensureSocialProfileModule
+        };
+        const normalizedPanel = text(panel || 'feed') || 'feed';
+        if (window.__kiuSocialModuleFailures) delete window.__kiuSocialModuleFailures[normalizedPanel];
+        const ensure = ensureByPanel[normalizedPanel];
+        if (typeof ensure !== 'function') return Promise.resolve(false);
+        return Promise.resolve(ensure()).then(() => {
+            if (typeof window.renderSocialPageNow === 'function') {
+                window.renderSocialPageNow(`panel-${normalizedPanel}`);
+            }
+            return true;
+        }).catch((error) => {
+            reportSocialModuleFailure(`Social ${normalizedPanel} module`, error);
+            return false;
+        });
+    };
     function withSocialTimeout(promise, timeoutMs, label = 'Social operation') {
         const pending = Promise.resolve(promise);
         return Promise.race([
