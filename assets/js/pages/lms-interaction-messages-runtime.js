@@ -1199,6 +1199,32 @@ function bindLmsInteractionDelegatedEvents(contentArea = document.getElementById
     });
 }
 
+function normalizeLmsInteractionMarkup(markup) {
+    return String(markup || '')
+        .replace(/\s+class="([^"]*)"/g, (_match, value) => {
+            const classes = String(value || '')
+                .split(/\s+/)
+                .filter(Boolean)
+                .filter(name => !['kiu-lms-assembly-target', 'kiu-lms-assembly-inner', 'is-staging', 'is-flight'].includes(name));
+            return ` class="${classes.join(' ')}"`;
+        })
+        .replace(/\s+data-kiu-assembly-phase="[^"]*"/g, '')
+        .replace(/\s+data-kiu-assembly-state="[^"]*"/g, '')
+        // Browser/password-manager enrichment must not make an unchanged
+        // messenger subtree look dirty and trigger a replacement.
+        .replace(/\s+(?:autocomplete|autocorrect|autocapitalize|spellcheck|data-lpignore|data-1p-ignore|data-form-type)="[^"]*"/g, '')
+        .trim();
+}
+
+function lmsInteractionMarkupMatches(element, markup) {
+    if (!element || !markup || typeof document === 'undefined') return false;
+    const template = document.createElement('template');
+    template.innerHTML = String(markup).trim();
+    const candidate = template.content.firstElementChild;
+    return Boolean(candidate
+        && normalizeLmsInteractionMarkup(element.outerHTML) === normalizeLmsInteractionMarkup(candidate.outerHTML));
+}
+
 function updateLmsInteractionMessagesUi(resourceKey, options = {}) {
     const contentArea = document.getElementById('lms-content-area');
     const directRegion = contentArea?.querySelector('[data-lms-interaction-region="direct"]');
@@ -1222,22 +1248,24 @@ function updateLmsInteractionMessagesUi(resourceKey, options = {}) {
 
     const rail = directRegion.querySelector('[data-lms-interaction-region="direct-rail"]');
     const railHead = rail?.querySelector('.lms-interaction-direct__rail-head');
-    if (railHead) {
-        railHead.outerHTML = renderLmsInteractionRailHead(ui);
+    const nextRailHeadMarkup = renderLmsInteractionRailHead(ui);
+    if (railHead && !lmsInteractionMarkupMatches(railHead, nextRailHeadMarkup)) {
+        railHead.outerHTML = nextRailHeadMarkup;
     }
 
     const inbox = directRegion.querySelector('[data-lms-interaction-region="direct-inbox"]');
-    if (inbox) {
-        inbox.innerHTML = renderLmsInteractionInboxMarkup(canonicalKey, currentUserId, ui.activeChatId, ui.search);
+    const nextInboxMarkup = renderLmsInteractionInboxMarkup(canonicalKey, currentUserId, ui.activeChatId, ui.search);
+    if (inbox && inbox.innerHTML !== nextInboxMarkup) {
+        inbox.innerHTML = nextInboxMarkup;
     }
 
     const composeRail = directRegion.querySelector('[data-lms-interaction-region="compose-rail"]');
     const composeMarkup = renderLmsInteractionComposeRail(canonicalKey, ui.composeSearch || '');
     if (composeRail) {
-        composeRail.outerHTML = composeMarkup;
+        if (!lmsInteractionMarkupMatches(composeRail, composeMarkup)) composeRail.outerHTML = composeMarkup;
     } else {
         const railBody = rail?.querySelector('.lms-interaction-direct__rail-body');
-        if (railBody) {
+        if (railBody && !railBody.querySelector('[data-lms-interaction-region="compose-rail"]')) {
             railBody.insertAdjacentHTML('beforeend', composeMarkup);
         }
     }
@@ -1245,9 +1273,10 @@ function updateLmsInteractionMessagesUi(resourceKey, options = {}) {
     const thread = directRegion.querySelector('[data-lms-interaction-region="direct-thread"]');
     if (thread) {
         const template = document.createElement('template');
-        template.innerHTML = renderLmsInteractionDirectThreadMarkup(canonicalKey, activeChat, currentUserId).trim();
+        const nextThreadMarkup = renderLmsInteractionDirectThreadMarkup(canonicalKey, activeChat, currentUserId).trim();
+        template.innerHTML = nextThreadMarkup;
         const nextThread = template.content.firstElementChild;
-        if (nextThread) thread.replaceWith(nextThread);
+        if (nextThread && !lmsInteractionMarkupMatches(thread, nextThreadMarkup)) thread.replaceWith(nextThread);
     }
 
     const nextLog = directRegion.querySelector('[data-lms-interaction-region="direct-log"]');

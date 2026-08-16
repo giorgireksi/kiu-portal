@@ -66,7 +66,7 @@ const LMS_INTERACTION_MODULE_URLS = Object.freeze([
     'assets/js/shared/messenger-gradebook-runtime.js?v=20260815-lmsroster3',
     'assets/js/shared/messenger-chrome-runtime.js?v=20260720-w18',
     'assets/js/shared/messenger.js?v=20260815-authoritative-send2',
-    'assets/js/pages/lms-interaction-messages-runtime.js?v=20260816-lmssocialstructure10'
+    'assets/js/pages/lms-interaction-messages-runtime.js?v=20260816-lmsflickerfix4'
 ]);
 const LMS_CONTENT_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-file-storage-runtime.js?v=20260729-lmsmatupload1',
