@@ -43,22 +43,9 @@
         script.src = 'assets/js/app/english-localization.js?v=20260816-timetable-idle1';
         document.head.appendChild(script);
     };
-    const waitForAssembly = () => {
-        if (document.body?.classList.contains('timetable-assembly-active')) {
-            window.setTimeout(waitForAssembly, 250);
-            return;
-        }
-        if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(load, { timeout: 4000 });
-        } else {
-            window.setTimeout(load, 1200);
-        }
-    };
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', waitForAssembly, { once: true });
-    } else {
-        waitForAssembly();
-    }
+    // Expose this for an explicit language/encoding refresh, but do not spend
+    // a weak device's first idle window parsing the large localization table.
+    window.__kiuLoadTimetableLocalization = load;
 }());
 </script>
 </head>
