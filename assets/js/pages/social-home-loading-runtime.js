@@ -79,7 +79,7 @@
         getPageRoot: getFeedCenter,
         getObserverRoot: getFeedCenter,
         isContentReady: isFeedSurfaceReady,
-        autoStart: true,
+        autoStart: false,
         animateLateAfterReady: true,
         autoReplayLateMutations: false,
         unlimitedLateReplay: true,

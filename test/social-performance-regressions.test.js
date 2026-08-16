@@ -59,6 +59,7 @@ describe('social performance safeguards', () => {
             expect(readSource(`assets/js/pages/social-${panel}-loading-runtime.js`))
                 .toContain("window.__kiuSocialAssemblyMotionOwner === 'render-pipeline'");
         }
+        expect(readSource('assets/js/pages/social-home-loading-runtime.js')).toContain('autoStart: false');
     });
 
     it('uses an indexed directory fallback for relationship cards', () => {
