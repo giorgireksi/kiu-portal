@@ -1066,7 +1066,9 @@ function startKiuShellReveal({ degraded = false } = {}) {
         document.body.classList.remove('kiu-shell-loading', 'kiu-shell-ready');
         document.body.setAttribute('aria-busy', 'true');
     }
-    if (reduceMotion) {
+    // Assembly readiness already gates the call into shell reveal. Keep that gate,
+    // but do not add a second entrance animation or timer when instant loading is on.
+    if (window.__KIU_INSTANT_ASSEMBLY_LOADING !== false || reduceMotion) {
         finishKiuShellReveal();
         return getKiuShellLoadState();
     }

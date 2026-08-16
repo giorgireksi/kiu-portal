@@ -11,11 +11,11 @@ describe('Social Messages loading animation', () => {
 
     it('loads Messages motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const messagesIndex = html.indexOf('social-messages-loading-runtime.js?v=20260810-socialbootveil2');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const messagesIndex = html.indexOf('social-messages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
-        expect(html).toContain('social-messages-loading.css?v=20260809-socialassemblyreplay1');
+        expect(html).toContain('social-messages-loading.css?v=20260815-socialassemblyclean1');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(messagesIndex).toBeGreaterThan(sharedIndex);
         expect(interactionsIndex).toBeGreaterThan(messagesIndex);
@@ -35,7 +35,7 @@ describe('Social Messages loading animation', () => {
         expect(runtime).toContain('.social-neo-message');
         expect(runtime).toContain("'[role=\"dialog\"]'");
         expect(runtime).toContain("'#social-neo-call-overlay'");
-        expect(runtime).toContain('flattenInnerTargets: false');
+        expect(runtime).toContain('flattenInnerTargets: true');
         expect(runtime).toContain('socialMessagesAssemblyState');
         expect(runtime).toContain('observeRenderedMessages');
         expect(runtime).toContain('delete center.dataset.socialMessagesAssemblyState');
@@ -43,9 +43,9 @@ describe('Social Messages loading animation', () => {
         expect(runtime).not.toContain('(force && isNewSection)');
         expect(runtime).toContain('options?.force');
         expect(interactions).toContain('function queueSocialMessagesMotion(center, activePanel, reason)');
-        expect(interactions).toContain("reason === 'messages-module'");
-        expect(interactions).toContain("reason === 'messages-filter'");
-        expect(interactions).toContain("reason === 'panel-messages'");
+        expect(interactions).toContain('if (r === `${target}-module`)');
+        expect(interactions).toContain('if (r === `panel-${target}` || r === `${target}-module` || r === `${target}-tab`) return true;');
+        expect(interactions).toContain('if (r === `panel-${target}` || r === `${target}-module` || r === `${target}-tab`) return true;');
         expect(interactions).toContain("reason === 'chat-read'");
         expect(interactions).toContain("reason === 'chat-upsert'");
         expect(interactions).toContain('assemblyInFlight');
@@ -112,9 +112,8 @@ describe('Social Messages loading animation', () => {
 
         try {
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
-            const buttonFlight = calls.find(({ element }) => element.matches('button'));
-            expect(buttonFlight.keyframes.some((frame) => String(frame.transform || '').includes('translate3d(-'))).toBe(true);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
         } finally {
             window.__kiuSocialMessagesLoadingObserver?.disconnect();
             if (originalAnimate) Element.prototype.animate = originalAnimate;
@@ -158,7 +157,8 @@ describe('Social Messages loading animation', () => {
                 </div>
             `;
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
             expect(window.__kiuSocialMessagesLoadingMotion?.getState?.().phase).toBe('ready');
         } finally {
             window.__kiuSocialMessagesLoadingObserver?.disconnect();
@@ -271,7 +271,8 @@ describe('Social Messages loading animation', () => {
             const started = window.__kiuStartSocialMessagesLoadingMotion(center, { force: true });
             expect(started).toBe(true);
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
             expect(window.__kiuSocialMessagesLoadingMotion?.getState?.().phase).toBe('ready');
         } finally {
             window.__kiuSocialMessagesLoadingObserver?.disconnect();
@@ -323,7 +324,8 @@ describe('Social Messages loading animation', () => {
             const restarted = window.__kiuStartSocialMessagesLoadingMotion(center, { force: true });
             expect(restarted).toBe(true);
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
             expect(window.__kiuSocialMessagesLoadingMotion?.getState?.().phase).toBe('ready');
         } finally {
             window.__kiuSocialMessagesLoadingObserver?.disconnect();
@@ -339,9 +341,9 @@ describe('Social Messages loading animation', () => {
 
     it('cache-busts Messages assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
-        expect(sw).toContain('social-messages-loading.css?v=20260809-socialassemblyreplay1');
-        expect(sw).toContain('social-messages-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
+        expect(sw).toContain('social-messages-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-messages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
     });
 });

@@ -9,12 +9,12 @@ function readSource(relativePath) {
 describe('staff loading animation', () => {
     it('loads staff motion assets and the shared engine', () => {
         const html = readSource('staff.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const runtimeIndex = html.indexOf('staff-loading-runtime.js?v=20260810-staffassembly4');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const runtimeIndex = html.indexOf('staff-loading-runtime.js?v=20260813-command-motion1');
 
         expect(html).toContain('assets/css/staff-loading.css?v=20260810-staffassembly4');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        expect(html).toContain('assets/js/pages/staff-loading-runtime.js?v=20260810-staffassembly4');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/pages/staff-loading-runtime.js?v=20260813-command-motion1');
         expect(html).toContain('staff-command-center.js');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(runtimeIndex).toBeGreaterThan(sharedIndex);
@@ -33,7 +33,7 @@ describe('staff loading animation', () => {
         expect(runtime).toContain('staff\\.html');
         expect(runtime).toContain('.staff-shell-loading-state');
         expect(runtime).toContain('.staff-hub-shell, .staff-hub-profile, .staff-hub-form-settings');
-        expect(runtime).toContain('animateLateAfterReady: true');
+        expect(runtime).toContain('animateLateAfterReady: false');
         expect(runtime).toContain('lateReplaySelector:');
         expect(runtime).toContain('kiuStaffAssemblyState');
         expect(runtime).toContain('kiu-staff-assembly-target');

@@ -7,7 +7,26 @@
 (function kiuThemePrimer() {
     'use strict';
 
+    // Assembly loading is readiness-gated but intentionally motion-free by default.
+    // Set this to false before the primer/shared runtime loads to restore legacy motion.
+    window.__KIU_INSTANT_ASSEMBLY_LOADING = window.__KIU_INSTANT_ASSEMBLY_LOADING !== false;
+
     var root = document.documentElement;
+    var instantLoadingEnabled = window.__KIU_INSTANT_ASSEMBLY_LOADING !== false;
+    if (instantLoadingEnabled) {
+        root.classList.add('kiu-instant-loading');
+        var instantLoadingStyle = document.createElement('style');
+        instantLoadingStyle.id = 'kiu-instant-loading-style';
+        instantLoadingStyle.textContent = `
+            html.kiu-instant-loading .fa-spin,
+            html.kiu-instant-loading [class*="loading"],
+            html.kiu-instant-loading [class*="skeleton"] {
+                animation: none !important;
+                animation-delay: 0s !important;
+            }
+        `;
+        (document.head || root).appendChild(instantLoadingStyle);
+    }
     var validShellRoles = ['student', 'professor', 'ta', 'admin', 'student_service'];
     var PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1';

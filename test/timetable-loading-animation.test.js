@@ -10,9 +10,9 @@ describe('timetable loading animation', () => {
     it('loads timetable-local motion assets and the shared engine', () => {
         const html = readSource('timetable.html');
 
-        expect(html).toContain('assets/css/timetable-loading.css?v=20260808-ttassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260809-assembly14');
-        expect(html).toContain('assets/js/pages/timetable-loading-runtime.js?v=20260808-ttassembly1');
+        expect(html).toContain('assets/css/timetable-loading.css?v=20260816-ttlowend1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/pages/timetable-loading-runtime.js?v=20260816-ttlowend1');
         expect(html.match(/timetable-loading\.css/g)).toHaveLength(1);
         expect(html.match(/timetable-loading-runtime\.js/g)).toHaveLength(1);
         expect(html.match(/lux-assembly-loading-runtime\.js/g)).toHaveLength(1);

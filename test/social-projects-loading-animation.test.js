@@ -11,11 +11,11 @@ describe('Social Projects workspace loading animation', () => {
 
     it('loads Projects motion before Social boot', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1');
-        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260817-instantassembly1');
         const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
-        const projectsIndex = html.indexOf('social-projects-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        const projectsIndex = html.indexOf('social-projects-loading-runtime.js?v=20260817-instantassembly1');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9');
 
         expect(html).toContain('social-projects-loading.css?v=20260815-socialassemblyclean1');
@@ -108,19 +108,8 @@ describe('Social Projects workspace loading animation', () => {
 
         try {
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
-            const buttonFlight = calls.find(({ element }) => element.matches('button'));
-            expect(buttonFlight.keyframes.some((frame) => String(frame.transform || '').includes('translate3d(-'))).toBe(true);
-            for (let i = 0; i < 40; i += 1) {
-                if (window.__kiuSocialProjectsLoadingMotion?.getState?.().phase === 'ready'
-                    && calls.some(({ element }) => element.matches?.('.social-project-hub-search i.fa-search'))) {
-                    break;
-                }
-                await wait(40);
-            }
-            const searchIconFlight = calls.find(({ element }) => element.matches('.social-project-hub-search i.fa-search'));
-            expect(searchIconFlight).toBeTruthy();
-            expect(searchIconFlight.keyframes[0].transform).toContain('scale(.62)');
+            expect(window.__kiuSocialProjectsLoadingMotion?.getState?.().phase).toBe('ready');
+            expect(calls).toHaveLength(0);
         } finally {
             window.__kiuSocialProjectsLoadingObserver?.disconnect();
             if (originalAnimate) Element.prototype.animate = originalAnimate;
@@ -137,6 +126,6 @@ describe('Social Projects workspace loading animation', () => {
         const sw = readSource('service-worker.js');
         expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
         expect(sw).toContain('social-projects-loading.css?v=20260815-socialassemblyclean1');
-        expect(sw).toContain('social-projects-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(sw).toContain('social-projects-loading-runtime.js?v=20260817-instantassembly1');
     });
 });

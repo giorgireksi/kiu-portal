@@ -182,13 +182,29 @@
     }
 
     let feedObserverFrame = 0;
+    let initialStartTimer = 0;
+    function cancelFrame(frame) {
+        if (!frame) return;
+        if (typeof window.cancelAnimationFrame === 'function') window.cancelAnimationFrame(frame);
+        else window.clearTimeout(frame);
+    }
+    function cleanupSocialHomeLoadingMotion() {
+        if (feedObserverFrame) {
+            cancelFrame(feedObserverFrame);
+            feedObserverFrame = 0;
+        }
+        if (initialStartTimer) {
+            window.clearTimeout(initialStartTimer);
+            initialStartTimer = 0;
+        }
+        window.__kiuSocialHomeLoadingObserver?.disconnect();
+        delete window.__kiuSocialHomeLoadingObserver;
+    }
     function observeRenderedFeed() {
         if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+        if (typeof document === 'undefined') return;
         const page = document.querySelector('#page-social');
-        if (!page || typeof MutationObserver !== 'function') {
-            window.setTimeout(observeRenderedFeed, 64);
-            return;
-        }
+        if (!page || typeof MutationObserver !== 'function') return;
         const observer = new MutationObserver(() => {
             if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             if (feedObserverFrame) return;
@@ -210,12 +226,15 @@
 
     window.__kiuSocialHomeLoadingMotion = motion;
     window.__kiuStartSocialHomeLoadingMotion = startCurrentFeedMotion;
+    window.__kiuSocialHomeLoadingCleanup = cleanupSocialHomeLoadingMotion;
     if (typeof window.__kiuShouldBindSocialLoadingFallback !== 'function'
         || window.__kiuShouldBindSocialLoadingFallback('feed')) {
         motion.install();
         observeRenderedFeed();
-        window.setTimeout(() => {
-            if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
+        initialStartTimer = window.setTimeout(() => {
+            initialStartTimer = 0;
+            if (typeof document === 'undefined'
+                || window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
             startCurrentFeedMotion();
         }, 0);
     }

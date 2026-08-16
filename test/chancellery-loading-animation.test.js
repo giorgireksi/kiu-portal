@@ -11,7 +11,7 @@ describe('Chancellery loading animation', () => {
         const html = readSource('chancellery.html');
 
         expect(html).toContain('assets/css/chancellery-loading.css?v=20260808-chanassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260811-assembly27');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
         expect(html).toContain('assets/js/pages/chancellery-loading-runtime.js?v=20260811-chanfilter1');
         expect(html.match(/chancellery-loading\.css/g)).toHaveLength(1);
         expect(html.match(/chancellery-loading-runtime\.js/g)).toHaveLength(1);
@@ -30,7 +30,7 @@ describe('Chancellery loading animation', () => {
         expect(runtime).toContain('autoReplayLateMutations: false');
         const shared = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
         expect(shared).toContain('if (state.phase === \'ready\' && state.root) {');
-        expect(shared).toContain('if (animateLateAfterReady && autoReplayLateMutations) {');
+        expect(shared).toContain('if ((instantLoading || animateLateAfterReady) && autoReplayLateMutations) {');
         expect(runtime).toContain('lateReplaySelector:');
         expect(runtime).toContain('kiuChancelleryAssemblyState');
         expect(runtime).toContain('kiu-chancellery-assembly-target');

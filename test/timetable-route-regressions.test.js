@@ -30,7 +30,7 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('<style>');
         expect(html).not.toContain('timetable-route.css');
         expect(html).toContain('lux-page-bare');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260816-earlyreveal1');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260817-instantassembly1');
         expect(html).toMatch(/lux-shell\.css/);
         expect(html).toMatch(/lux-page-bare-lite\.css/);
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
@@ -46,7 +46,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('id="timetable-command-collapse"');
         expect(html).toContain('class="lux-timetable-command-collapse"');
         expect(html).toContain('[data-timetable-toggle-command]');
-        expect(html).toContain('assets/js/features/navigation.js?v=20260810-socialbootveil2');
+        expect(html).toContain('assets/js/features/navigation.js?v=20260817-instantassembly1');
         expect(html).not.toContain('assets/js/pages/planner.js');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');

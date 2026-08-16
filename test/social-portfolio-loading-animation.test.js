@@ -11,7 +11,7 @@ describe('Social Portfolio loading animation', () => {
 
     it('loads Portfolio motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
         const portfolioIndex = html.indexOf('social-portfolio-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9');
 
@@ -101,9 +101,8 @@ describe('Social Portfolio loading animation', () => {
 
         try {
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
-            const buttonFlight = calls.find(({ element }) => element.matches('button'));
-            expect(buttonFlight.keyframes.some((frame) => String(frame.transform || '').includes('translate3d(-'))).toBe(true);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
         } finally {
             window.__kiuSocialPortfolioLoadingObserver?.disconnect();
             if (originalAnimate) Element.prototype.animate = originalAnimate;
@@ -149,7 +148,8 @@ describe('Social Portfolio loading animation', () => {
                 </div>
             `;
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
             expect(window.__kiuSocialPortfolioLoadingMotion?.getState?.().phase).toBe('ready');
         } finally {
             window.__kiuSocialPortfolioLoadingObserver?.disconnect();
@@ -209,10 +209,9 @@ describe('Social Portfolio loading animation', () => {
             );
             expect(restarted).toBe(true);
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
             expect(motion?.getState?.().phase).toBe('ready');
-            const buttonFlight = calls.find(({ element }) => element.matches('button'));
-            expect(buttonFlight?.keyframes?.some((frame) => String(frame.transform || '').includes('translate3d(-'))).toBe(true);
             expect(document.querySelector('#social-neo-center-region')?.dataset.socialPortfolioAssemblyState).toBe('ready');
             expect(document.querySelector('[data-social-portfolio-assembly-root="1"]')?.textContent).toContain('Remounted');
         } finally {

@@ -13,10 +13,10 @@ describe('Home loading animation', () => {
         expect(html).toContain('assets/css/home-assembly-prehide.css?v=20260810-homeassembly5');
         expect(html).toContain('assets/css/index-home-loading.css?v=20260810-homeassembly5');
         expect(html).toContain('home-shell-assembly-prehide');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260816-earlyreveal1');
-        expect(html).toContain('assets/js/features/navigation.js?v=20260810-homebootveil1');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/features/navigation.js?v=20260817-instantassembly1');
         expect(html).toContain('assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly26');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
         expect(html).toContain('assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9');
         expect(html.match(/index-home-loading\.css/g)).toHaveLength(1);
         expect(html.match(/home-loading-runtime\.js/g)).toHaveLength(1);
@@ -170,10 +170,10 @@ describe('Home loading animation', () => {
         expect(worker).toContain('isUsableStaticAssetResponse');
         expect(worker).toContain('offline asset fallback');
         expect(worker).toContain('/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
         expect(worker).toContain('/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5');
         expect(worker).toContain('/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9');
-        expect(worker).toContain('/assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly26');
+        expect(worker).toContain('/assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
     });
 
     it('covers role-specific and mobile replay surfaces without broad mutation replay', () => {

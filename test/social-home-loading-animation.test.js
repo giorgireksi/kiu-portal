@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -9,17 +9,31 @@ function readSource(relativePath) {
 describe('Social Home loading animation', () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+    afterEach(() => {
+        window.__kiuSocialHomeLoadingCleanup?.();
+        window.__kiuSocialHomeLoadingMotion?.abort?.();
+        delete window.__kiuSocialHomeLoadingCleanup;
+        delete window.__kiuSocialHomeLoadingObserver;
+        delete window.__kiuSocialHomeLoadingMotion;
+        delete window.__kiuStartSocialHomeLoadingMotion;
+        delete window.__kiuSocialAssemblyMotionOwner;
+        window.__KIU_INSTANT_ASSEMBLY_LOADING = true;
+        document.body.innerHTML = '';
+        document.body.className = '';
+        document.documentElement.className = '';
+    });
+
     it('wires only the Home center motion after the shared engine', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260810-socialhomeanim5');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260817-instantassembly1');
 
-        expect(html).toContain('social-home-loading.css?v=20260810-socialhomeanim5');
+        expect(html).toContain('social-home-loading.css?v=20260815-socialassemblyclean1');
         expect(html).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
-        expect(html).toContain('social-groups-loading.css?v=20260809-socialpopup1');
-        expect(html).toContain('social-groups-loading-runtime.js?v=20260810-socialbootveil2');
-        expect(html).toContain('social-community-loading.css?v=20260809-socialpopup1');
-        expect(html).toContain('social-community-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(html).toContain('social-groups-loading.css?v=20260815-socialassemblyclean1');
+        expect(html).toContain('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(html).toContain('social-community-loading.css?v=20260815-socialassemblyclean1');
+        expect(html).toContain('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(homeIndex).toBeGreaterThan(sharedIndex);
         expect(html).not.toContain('social-loading-runtime');
@@ -47,17 +61,17 @@ describe('Social Home loading animation', () => {
         expect(runtime).toContain('.social-neo-media');
         expect(runtime).toContain('.social-neo-post-entity-links');
         expect(runtime).toContain('.social-pagination-controls');
-        expect(runtime).toContain('flattenInnerTargets: false');
+        expect(runtime).toContain('flattenInnerTargets: true');
         expect(runtime).toContain('maxTotalAssemblyMs: 2000');
         expect(runtime).toContain('maxShellWaitMs: 900');
         expect(runtime).toContain('contentWaitMaxMs: 1200');
-        expect(runtime).toContain("outerFlightSelector: ['[data-social-home-assembly-root=\"1\"]']");
+        expect(runtime).toContain("outerFlightSelector: [\n            '[data-social-home-assembly-root=\"1\"]'");
         expect(runtime).toContain('.social-neo-feed-mobile-stack');
         expect(runtime).toContain('.social-neo-feed-hero-head');
         expect(runtime).not.toMatch(/feedRegions = \[[\s\S]*?'span'/);
         expect(runtime).not.toMatch(/feedRegions = \[[\s\S]*?'strong'/);
         expect(runtime).not.toMatch(/feedRegions = \[[\s\S]*?'img'/);
-        expect(runtime).toContain('startCurrentFeedMotion(), 0)');
+        expect(runtime).toContain('startCurrentFeedMotion();');
         expect(runtime).toContain('.lux-picker-btn');
         expect(runtime).toContain('#social-neo-overlay-portal');
         expect(readSource('assets/css/social-home-loading.css')).toContain('prefers-reduced-motion');
@@ -76,16 +90,16 @@ describe('Social Home loading animation', () => {
         expect(readSource('assets/js/shared/lux-assembly-loading-runtime.js'))
             .toContain('waitForAppContentPaint');
         expect(readSource('assets/css/social-assembly-prehide.css')).toContain('social-center-assembly-prehide');
-        expect(readSource('social.html')).toContain('social-assembly-prehide.css?v=20260810-socialbootveil2');
+        expect(readSource('social.html')).toContain('social-assembly-prehide.css?v=20260815-socialassemblyclean1');
         expect(runtime).not.toContain("section.dataset.socialHomeAssemblyRoot === '1'");
         expect(runtime).not.toContain('(force && isNewSection)');
         expect(runtime).not.toContain('motion.replay');
         expect(interactions).toContain('function queueSocialHomeMotion(center, activePanel, reason)');
-        expect(interactions).toContain("reason === 'feed-module'");
-        expect(interactions).toContain("reason === 'panel-feed'");
+        expect(interactions).toContain('if (r === `${target}-module`)');
+        expect(interactions).toContain('if (r === `panel-${target}` || r === `${target}-module` || r === `${target}-tab`) return true;');
         expect(interactions).not.toContain("section.dataset.socialHomeAssemblyRoot = '1'");
         expect(interactions).toContain("[data-social-home-assembly-root]");
-        expect(interactions).toContain("panel === 'feed'");
+        expect(interactions).toContain("panel !== 'feed'");
         expect(interactions).toContain('window.cancelAnimationFrame');
         expect(interactions).toContain('window.__kiuStartSocialHomeLoadingMotion');
         expect(interactions).toContain('startMotion(center, { force: true })');
@@ -110,11 +124,9 @@ describe('Social Home loading animation', () => {
         )?.[0] || '';
         expect(centerRender).toContain('queueSocialHomeMotion(shell.center, activePanel, reason)');
         expect(centerRender).not.toMatch(/revealShell\(\);\s*queueSocialHomeMotion/);
-        expect(readSource('social.html')).toMatch(/body class="[^"]*social-center-assembly-prehide/);
+        expect(interactions).toContain("document.body?.classList.add('social-center-assembly-prehide')");
         expect(readSource('assets/js/theme-primer.js')).toContain("classList.contains('lux-route-social')");
-        expect(readSource('assets/js/theme-primer.js')).toMatch(
-            /lux-route-social[\s\S]{0,80}return;/
-        );
+        expect(readSource('assets/js/theme-primer.js')).toContain("var isSocial = b.classList.contains('lux-route-social');");
         expect(readSource('assets/js/features/navigation.js')).toContain("entryId === 'social'");
         expect(readSource('assets/js/features/navigation.js')).toContain('__kiuSocialShellRevealAllowed');
         expect(readSource('assets/js/pages/social-page-shell-runtime.js')).toContain('__kiuSocialShellRevealAllowed = true');
@@ -140,10 +152,8 @@ describe('Social Home loading animation', () => {
         expect(readSource('assets/css/social-home-loading.css')).toContain('Keep openers clickable');
         const boot = readSource('assets/js/pages/social-page-boot-runtime.js');
         expect(boot).toContain('function ensureActivePanelModule(panel)');
-        expect(boot).toContain('await ensureActivePanelModule(activePanel)');
-        expect(boot).toMatch(
-            /await ensureActivePanelModule\(activePanel\);\s*window\.requestAnimationFrame\(renderOrRetry\);/
-        );
+        expect(boot).toContain('Promise.resolve(ensureActivePanelModule(activePanel))');
+        expect(boot).toContain("renderSocialPageNow('hydrate-ready')");
     });
 
     it('creates a center-only configuration with a real Feed readiness gate', () => {
@@ -206,11 +216,8 @@ describe('Social Home loading animation', () => {
 
         try {
             await wait(80);
-            expect(calls.length).toBeGreaterThan(0);
-            expect(calls.some(({ element }) => element.matches('.social-neo-feed-shell'))).toBe(true);
-            const buttonFlight = calls.find(({ element }) => element.matches('button'));
-            expect(buttonFlight.keyframes.some((frame) => String(frame.transform || '').includes('translate3d(-'))).toBe(true);
-            expect(calls.some(({ keyframes }) => keyframes.some((frame) => String(frame.transform || '').includes('translate3d(-')))).toBe(true);
+            expect(window.__kiuSocialHomeLoadingMotion?.getState?.().phase).toBe('ready');
+            expect(calls).toHaveLength(0);
         } finally {
             window.__kiuSocialHomeLoadingObserver?.disconnect();
             if (originalAnimate) Element.prototype.animate = originalAnimate;
@@ -264,8 +271,8 @@ describe('Social Home loading animation', () => {
 
             expect(window.__kiuStartSocialHomeLoadingMotion(center, { force: true })).toBe(true);
             await wait(80);
-            expect(calls.length).toBeGreaterThan(0);
-            expect(calls.some(({ element }) => element.matches('.social-neo-feed-shell'))).toBe(true);
+            expect(window.__kiuSocialHomeLoadingMotion?.getState?.().phase).toBe('ready');
+            expect(calls).toHaveLength(0);
         } finally {
             window.__kiuSocialHomeLoadingObserver?.disconnect();
             if (originalAnimate) Element.prototype.animate = originalAnimate;
@@ -334,16 +341,16 @@ describe('Social Home loading animation', () => {
 
     it('cache-busts the Home motion assets without removing shared engine assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
-        expect(sw).toContain('social-home-loading.css?v=20260810-socialhomeanim5');
-        expect(sw).toContain('social-community-loading.css?v=20260809-socialpopup1');
-        expect(sw).toContain('social-home-loading-runtime.js?v=20260810-socialhomeanim5');
-        expect(sw).toContain('social-community-loading-runtime.js?v=20260810-socialbootveil2');
-        expect(sw).toContain('social-groups-loading.css?v=20260809-socialpopup1');
-        expect(sw).toContain('social-groups-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
+        expect(sw).toContain('social-home-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-community-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-home-loading-runtime.js?v=20260817-instantassembly1');
+        expect(sw).toContain('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(sw).toContain('social-groups-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
-        expect(sw).toContain('lux-assembly-loading-runtime.js?v=20260810-assembly26');
-        expect(sw).toContain('social-assembly-prehide.css?v=20260810-socialbootveil2');
+        expect(sw).toContain('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        expect(sw).toContain('social-assembly-prehide.css?v=20260815-socialassemblyclean1');
         expect(sw).not.toContain('social-loading-runtime');
     });
 });

@@ -228,7 +228,10 @@
         if (!icon) return;
         icon.classList.remove(searchIconPendingClass);
         pendingSearchIcon = null;
-        if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+        // The shared assembly runtime owns instant readiness; do not replay a
+        // loading-only icon entrance after the Projects panel is ready.
+        if (window.__KIU_INSTANT_ASSEMBLY_LOADING !== false
+            || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
             || typeof icon.animate !== 'function') return;
         searchIconAnimation = icon.animate([
             {

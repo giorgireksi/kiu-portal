@@ -54,7 +54,7 @@ describe('social performance safeguards', () => {
     it('uses the optimized shared assembly runtime on Social', () => {
         const html = readSource('social.html');
         const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1');
+        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
         expect(runtime).not.toContain('function getCurrentNode(element, root)');
         expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
         expect(runtime).toContain("soft-restart-skipped-same-content");

@@ -11,7 +11,7 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('loads photography motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-activeobserver1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
         const photoIndex = html.indexOf('social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9');
 
@@ -114,9 +114,8 @@ describe('Social Exposé (photography) loading animation', () => {
 
         try {
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
-            const buttonFlight = calls.find(({ element }) => element.matches('button'));
-            expect(buttonFlight.keyframes.some((frame) => String(frame.transform || '').includes('translate3d(-'))).toBe(true);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
         } finally {
             window.__kiuSocialPhotographyLoadingObserver?.disconnect();
             if (originalAnimate) Element.prototype.animate = originalAnimate;
@@ -160,7 +159,8 @@ describe('Social Exposé (photography) loading animation', () => {
                 </div>
             `;
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
             expect(window.__kiuSocialPhotographyLoadingMotion?.getState?.().phase).toBe('ready');
         } finally {
             window.__kiuSocialPhotographyLoadingObserver?.disconnect();

@@ -89,6 +89,8 @@ function createMotion({ reducedMotion = false, partialAnimation = false, duratio
         motion,
         calls,
         restore() {
+            this.motion.getState().observer?.disconnect();
+            this.motion.abort();
             Element.prototype.animate = originalAnimate;
             window.matchMedia = originalMatchMedia;
             document.body.innerHTML = '';
@@ -97,22 +99,16 @@ function createMotion({ reducedMotion = false, partialAnimation = false, duratio
     };
 }
 
-describe('shared assembly late replay lifecycle', () => {
-    it('animates initial shells and external portal targets, then settles ready', async () => {
+describe('shared assembly instant readiness lifecycle', () => {
+    it('reveals initial shells and external portal targets without WAAPI', async () => {
         const fixture = createMotion({ duration: 1 });
 
         await wait(120);
 
-        expect(fixture.calls.length).toBeGreaterThan(0);
+        expect(fixture.calls).toHaveLength(0);
         expect(fixture.motion.getState().phase).toBe('ready');
         expect(document.body.classList.contains('assembly-ready')).toBe(true);
         expect(document.querySelector('#assembly-portal').classList.contains('assembly-target')).toBe(true);
-        const buttonFlight = fixture.calls.find((call) => call.element.matches('button'));
-        const spanFlight = fixture.calls.find((call) => call.element.matches('span'));
-        const sectionFlight = fixture.calls.find((call) => call.element.matches('#assembly-center-region'));
-        expect(buttonFlight.keyframes.every((frame) => !Object.prototype.hasOwnProperty.call(frame, 'transform'))).toBe(true);
-        expect(spanFlight.keyframes.every((frame) => !Object.prototype.hasOwnProperty.call(frame, 'transform'))).toBe(true);
-        expect(sectionFlight.keyframes.some((frame) => Object.prototype.hasOwnProperty.call(frame, 'transform'))).toBe(true);
         expect(document.querySelectorAll('.assembly-staging, .is-flight')).toHaveLength(0);
 
         fixture.restore();
@@ -128,7 +124,7 @@ describe('shared assembly late replay lifecycle', () => {
         fixture.motion.replay(['#assembly-center-region']);
         await wait(90);
 
-        expect(fixture.calls.length).toBeGreaterThan(initialCalls);
+        expect(fixture.calls.length).toBe(initialCalls);
         expect(fixture.motion.getState().phase).toBe('ready');
         expect(document.body.classList.contains('assembly-active')).toBe(false);
         expect(document.querySelectorAll('.assembly-staging, .is-flight')).toHaveLength(0);
@@ -146,7 +142,7 @@ describe('shared assembly late replay lifecycle', () => {
 
         const partial = createMotion({ partialAnimation: true });
         await wait(80);
-        expect(partial.calls.length).toBeGreaterThan(0);
+        expect(partial.calls).toHaveLength(0);
         expect(partial.motion.getState().phase).toBe('ready');
         expect(document.body.classList.contains('assembly-active')).toBe(false);
         partial.restore();
@@ -171,6 +167,9 @@ describe('shared assembly late replay lifecycle', () => {
         expect(shared).toContain('getExternalRoots');
         expect(shared).toContain('lastError');
         expect(shared).toContain('animation-finished-unsupported');
+        expect(shared).toContain('global.__KIU_INSTANT_ASSEMBLY_LOADING = global.__KIU_INSTANT_ASSEMBLY_LOADING !== false');
+        expect(shared).toContain('const instantLoading = options.instantLoading !== undefined');
+        expect(shared).toContain('if (instantLoading || reduceMotion || !state.animationSupported)');
         expect(shared).toContain('const autoStart = options.autoStart !== false');
         expect(shared).toContain('if (!autoStart) return;');
     });
@@ -242,10 +241,10 @@ describe('shared assembly late replay lifecycle', () => {
             const root = document.querySelector('#page-assembly');
             expect(typeof fixture.motion.softRestart).toBe('function');
             expect(fixture.motion.softRestart(root)).toBe(true);
-            // Shell may already be ready, so waitForShell can advance past pending in-turn.
-            expect(['pending', 'active']).toContain(fixture.motion.getState().phase);
-            expect(document.body.classList.contains('assembly-active')).toBe(true);
-            expect(document.body.classList.contains('assembly-ready')).toBe(false);
+            // Instant mode settles in the same readiness turn.
+            expect(fixture.motion.getState().phase).toBe('ready');
+            expect(document.body.classList.contains('assembly-active')).toBe(false);
+            expect(document.body.classList.contains('assembly-ready')).toBe(true);
 
             await wait(120);
             expect(fixture.motion.getState().phase).toBe('ready');
@@ -434,8 +433,8 @@ describe('shared assembly late replay lifecycle', () => {
         expect(motion.getState().phase).toBe('ready');
         hangReplay = true;
         motion.replay(['#assembly-center-region']);
-        expect(document.body.classList.contains('assembly-active')).toBe(true);
-        await wait(450);
+        expect(document.body.classList.contains('assembly-active')).toBe(false);
+        await wait(40);
         expect(motion.getState().phase).toBe('ready');
         expect(document.body.classList.contains('assembly-active')).toBe(false);
 

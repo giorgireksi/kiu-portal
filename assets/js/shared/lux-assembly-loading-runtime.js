@@ -4,6 +4,10 @@
 
     if (global.__kiuCreateAssemblyLoadingMotion) return;
 
+    // Keep route runtimes and late module mounts on the same no-motion path.
+    // A prior script may explicitly set false for a legacy/diagnostic run.
+    global.__KIU_INSTANT_ASSEMBLY_LOADING = global.__KIU_INSTANT_ASSEMBLY_LOADING !== false;
+
     const motionRegistry = global.__kiuAssemblyMotionRegistry
         || (global.__kiuAssemblyMotionRegistry = new Set());
     if (typeof global.__kiuAbortAssemblyLoadingMotions !== 'function') {
@@ -83,6 +87,9 @@
             ? options.transformSafeSelector.join(', ')
             : String(options.transformSafeSelector || '');
         const disableBlur = options.disableBlur === true;
+        const instantLoading = options.instantLoading !== undefined
+            ? options.instantLoading !== false
+            : global.__KIU_INSTANT_ASSEMBLY_LOADING !== false;
         const getMotionProfile = typeof options.getMotionProfile === 'function'
             ? options.getMotionProfile
             : null;
@@ -119,7 +126,8 @@
             lastEvent: 'idle',
             lastError: null,
             animationSupported: false,
-            reducedMotion: false
+            reducedMotion: false,
+            instantLoading
         };
 
         const isRoute = () => typeof options.isRoute === 'function' && options.isRoute();
@@ -412,6 +420,10 @@
             root.dataset[rootStateDataset] = 'ready';
             document.body?.classList.remove(classes.active);
             document.body?.classList.add(classes.ready);
+            if (instantLoading) {
+                const appContent = document.getElementById('app-content');
+                if (appContent) appContent.style.opacity = '1';
+            }
             getTargets(root).forEach((target) => {
                 target.classList.remove(classes.flight);
                 target.classList.remove(classes.staging);
@@ -420,9 +432,13 @@
                 }
             });
             if (pendingReplay) {
-                window.setTimeout(() => {
+                if (instantLoading) {
                     startReadyLateNodes(root, generation, pendingReplay, true);
-                }, 0);
+                } else {
+                    window.setTimeout(() => {
+                        startReadyLateNodes(root, generation, pendingReplay, true);
+                    }, 0);
+                }
             }
         }
 
@@ -631,7 +647,7 @@
         }
 
         function startReadyLateNodes(root, generation, requestedSelectors = '', force = false) {
-            if (!animateLateAfterReady
+            if ((!instantLoading && !animateLateAfterReady)
                 || state.phase !== 'ready'
                 || state.root !== root
                 || state.generation !== generation
@@ -685,7 +701,7 @@
             registerStructures(root);
             registerTree(tree);
             armWatchdog(root, generation);
-            if (!isAnimationSupported()) {
+            if (instantLoading || !isAnimationSupported()) {
                 finish(root, generation);
                 return true;
             }
@@ -850,11 +866,15 @@
                 const appContent = document.getElementById('app-content');
                 if (appContent) appContent.style.opacity = '1';
             }
+            if (instantLoading) {
+                const appContent = document.getElementById('app-content');
+                if (appContent) appContent.style.opacity = '1';
+            }
 
             const beginFlights = () => {
                 if (state.root !== root || state.generation !== generation) return;
                 armWatchdog(root, generation);
-                if (reduceMotion || !state.animationSupported) {
+                if (instantLoading || reduceMotion || !state.animationSupported) {
                     finish(root, generation);
                     return;
                 }
@@ -873,7 +893,7 @@
 
             // Social boot reveal triggers #app-content opacity transition;
             // wait until content is paintable so the flight is visible.
-            if (didBootReveal) {
+            if (didBootReveal && !instantLoading) {
                 waitForAppContentPaint(generation, beginFlights);
             } else {
                 beginFlights();
@@ -1002,7 +1022,7 @@
                 return;
             }
             if (state.phase === 'ready' && state.root) {
-                if (animateLateAfterReady && autoReplayLateMutations) {
+                if ((instantLoading || animateLateAfterReady) && autoReplayLateMutations) {
                     if (state.scheduleTimer) {
                         window.clearTimeout(state.scheduleTimer);
                         state.scheduleTimer = 0;

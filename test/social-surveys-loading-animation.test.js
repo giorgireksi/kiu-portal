@@ -11,11 +11,11 @@ describe('Social Surveys loading animation', () => {
 
     it('loads Surveys motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260810-assembly25');
-        const surveysIndex = html.indexOf('social-surveys-loading-runtime.js?v=20260810-socialbootveil2');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const surveysIndex = html.indexOf('social-surveys-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
-        expect(html).toContain('social-surveys-loading.css?v=20260809-socialsurveys1');
+        expect(html).toContain('social-surveys-loading.css?v=20260815-socialassemblyclean1');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(surveysIndex).toBeGreaterThan(sharedIndex);
         expect(interactionsIndex).toBeGreaterThan(surveysIndex);
@@ -34,7 +34,7 @@ describe('Social Surveys loading animation', () => {
         expect(runtime).toContain('.social-neo-surveys-take-shell');
         expect(runtime).toContain('.social-neo-survey-take-card');
         expect(runtime).toContain("'[role=\"dialog\"]'");
-        expect(runtime).toContain('flattenInnerTargets: false');
+        expect(runtime).toContain('flattenInnerTargets: true');
         expect(runtime).toContain('socialSurveysAssemblyState');
         expect(runtime).toContain('observeRenderedSurveys');
         expect(runtime).toContain('delete center.dataset.socialSurveysAssemblyState');
@@ -42,9 +42,9 @@ describe('Social Surveys loading animation', () => {
         expect(runtime).not.toContain('(force && isNewSection)');
         expect(runtime).toContain('options?.force');
         expect(interactions).toContain('function queueSocialSurveysMotion(center, activePanel, reason)');
-        expect(interactions).toContain("reason === 'surveys-module'");
-        expect(interactions).toContain("reason === 'surveys-tab'");
-        expect(interactions).toContain("reason === 'panel-surveys'");
+        expect(interactions).toContain('if (r === `${target}-module`)');
+        expect(interactions).toContain('if (r === `panel-${target}` || r === `${target}-module` || r === `${target}-tab`) return true;');
+        expect(interactions).toContain('if (r === `panel-${target}` || r === `${target}-module` || r === `${target}-tab`) return true;');
         expect(interactions).toContain("reason === 'surveys-lane'");
         expect(interactions).toContain("reason === 'survey-take-open'");
         expect(interactions).toContain("reason === 'survey-take-close'");
@@ -95,9 +95,8 @@ describe('Social Surveys loading animation', () => {
 
         try {
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
-            const buttonFlight = calls.find(({ element }) => element.matches('button'));
-            expect(buttonFlight.keyframes.some((frame) => String(frame.transform || '').includes('translate3d(-'))).toBe(true);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
         } finally {
             window.__kiuSocialSurveysLoadingObserver?.disconnect();
             if (originalAnimate) Element.prototype.animate = originalAnimate;
@@ -141,7 +140,8 @@ describe('Social Surveys loading animation', () => {
                 </div>
             `;
             await wait(300);
-            expect(calls.length).toBeGreaterThan(0);
+            expect(calls).toHaveLength(0);
+            expect(document.querySelectorAll('.is-flight, [class*="assembly-staging"]').length).toBe(0);
             expect(window.__kiuSocialSurveysLoadingMotion?.getState?.().phase).toBe('ready');
         } finally {
             window.__kiuSocialSurveysLoadingObserver?.disconnect();
@@ -220,9 +220,9 @@ describe('Social Surveys loading animation', () => {
 
     it('cache-busts Surveys assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260810-homeassembly5'");
-        expect(sw).toContain('social-surveys-loading.css?v=20260809-socialsurveys1');
-        expect(sw).toContain('social-surveys-loading-runtime.js?v=20260810-socialbootveil2');
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
+        expect(sw).toContain('social-surveys-loading.css?v=20260815-socialassemblyclean1');
+        expect(sw).toContain('social-surveys-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
     });
 });
