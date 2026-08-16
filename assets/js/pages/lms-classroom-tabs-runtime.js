@@ -49,6 +49,7 @@ const LMS_WHITEBOARD_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-whiteboard-runtime.js?v=20260808-overallperf1',
 ]);
 const LMS_QUIZ_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-week-store-runtime.js?v=20260816-lmsquizweekfix1',
     'assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1',
     'assets/js/pages/lms-quiz-model.js?v=20260720-w25quiz1',
     'assets/js/pages/lms-quiz-model-bridge.js?v=20260720-w25quiz1',
@@ -70,7 +71,7 @@ const LMS_INTERACTION_MODULE_URLS = Object.freeze([
 ]);
 const LMS_CONTENT_MODULE_URLS = Object.freeze([
     'assets/js/pages/lms-file-storage-runtime.js?v=20260729-lmsmatupload1',
-    'assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2',
+    'assets/js/pages/lms-week-store-runtime.js?v=20260816-lmsquizweekfix1',
     'assets/js/pages/lms-content-library-runtime.js?v=20260714-lmspro2',
     'assets/js/pages/lms-materials-runtime.js?v=20260729-lmsmatupload1',
     'assets/js/pages/lms-assignments-runtime.js?v=20260816-lmscompactassign1'
