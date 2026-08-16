@@ -869,12 +869,19 @@ Publishes only the host/runtime contract consumed by its loader.
                         if (attempt < 120) window.setTimeout(() => mountActivePhotography(attempt + 1), 16);
                         return;
                     }
+                    const center = document.querySelector('#social-neo-center-region');
+                    const waitingForMount = !center?.firstElementChild
+                        || center.firstElementChild.matches('.social-neo-module-loading, [aria-busy="true"]');
+                    if (!waitingForMount) return;
                     if (typeof renderSocialPageNow !== 'function') return;
                     invalidateSocialRenderCache({ center: true });
                     // Mount directly from the module promise. This avoids a
                     // second-click dependency when the lazy stub's callback
                     // was consumed before the export became observable.
                     renderSocialPageNow('photography-module');
+                    // A concurrent feed refresh can cancel the debounced mount;
+                    // keep retrying until the real shell replaces the loader.
+                    if (attempt < 120) window.setTimeout(() => mountActivePhotography(attempt + 1), 16);
                 };
                 mountActivePhotography();
                 return true;
