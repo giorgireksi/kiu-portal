@@ -15,7 +15,8 @@ describe('service worker navigation retry regressions', () => {
         expect(worker).toContain("buildNavigationRequest('reload')");
         expect(worker).toContain("caches.match(request, { ignoreSearch: true })");
         expect(worker).toContain("caches.match('/index.html', { ignoreSearch: true })");
-        expect(app).toContain("const PORTAL_SERVICE_WORKER_VERSION = '20260816-navretry1'");
+        expect(worker).toContain("const shellUrl = new URL('/social.html', request.url)");
+        expect(app).toContain("const PORTAL_SERVICE_WORKER_VERSION = '20260816-socialrecovery2'");
         expect(app).toContain('service-worker.js?v=${PORTAL_SERVICE_WORKER_VERSION}');
     });
 });

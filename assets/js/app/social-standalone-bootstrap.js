@@ -141,3 +141,11 @@ const convertTimeToMinutes = window.convertTimeToMinutes || function (timeStr) {
     return Number.isFinite(parsed) ? parsed : 0;
 };
 window.convertTimeToMinutes = convertTimeToMinutes;
+
+// Standalone Social pages may never load app.js, but they still need to
+// advance an existing service worker so query-bearing navigations receive the
+// current shell-recovery logic.
+if (window.location.protocol === 'https:' && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register(`service-worker.js?v=20260816-socialrecovery2`, { scope: './' })
+        .catch(() => null);
+}

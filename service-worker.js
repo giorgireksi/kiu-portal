@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery1';
+const CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -50,6 +50,7 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-loading.css?v=20260810-homeassembly5',
   '/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5',
   '/assets/js/theme-primer.js?v=20260810-homebootveil1',
+  '/assets/js/app/social-standalone-bootstrap.js?v=20260816-socialrecovery2',
   '/assets/js/features/navigation.js?v=20260810-homebootveil1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260810-assembly26',
@@ -268,6 +269,17 @@ async function handleNavigationRequest(request) {
   const cached = await caches.match(request)
     || await caches.match(request, { ignoreSearch: true });
   if (cached) return cached;
+  // A tunnel/proxy can fail only for the query-bearing navigation URL. Retry
+  // the standalone Social shell without view parameters before returning the
+  // offline 503 page, so panel/deep-view query strings cannot strand the UI.
+  if (isSocialStandaloneNavigation) {
+    try {
+      const shellUrl = new URL('/social.html', request.url);
+      const shellRequest = new Request(shellUrl, { cache: 'reload' });
+      const shellResponse = await fetch(shellRequest);
+      if (shellResponse?.ok) return await cacheResponse(shellRequest, shellResponse);
+    } catch (error) {}
+  }
   const shell = await caches.match('/index.html', { ignoreSearch: true });
   if (shell) return shell;
   return buildOfflineNavigationResponse();

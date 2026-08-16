@@ -83,7 +83,7 @@ describe('social performance safeguards', () => {
         expect(interactions).toContain('social-module-retry');
         expect(page).toContain('__kiuRetrySocialModule');
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery1'");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-recovery2'");
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 
