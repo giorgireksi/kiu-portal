@@ -965,6 +965,10 @@
                 abort();
                 recordEvent('root-replaced');
             }
+            // An explicit panel queue can start the motion before the shared
+            // observer delivers the same DOM mutation. Do not let that observer
+            // call start() again while the first start is waiting for the shell.
+            if (state.phase === 'pending' && state.root === currentRoot) return;
             if (state.phase === 'active' && state.root) {
                 if (state.scheduleTimer) {
                     window.clearTimeout(state.scheduleTimer);

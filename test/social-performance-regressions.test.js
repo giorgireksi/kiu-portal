@@ -48,6 +48,7 @@ describe('social performance safeguards', () => {
         expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
         expect(runtime).toContain("soft-restart-skipped-same-content");
         expect(runtime).toContain('state.contentRoot === contentRoot');
+        expect(runtime).toContain("if (state.phase === 'pending' && state.root === currentRoot) return;");
     });
 
     it('uses an indexed directory fallback for relationship cards', () => {
