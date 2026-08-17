@@ -341,7 +341,7 @@ describe('Social Messages loading animation', () => {
 
     it('cache-busts Messages assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2'");
         expect(sw).toContain('social-messages-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-messages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');

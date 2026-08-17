@@ -107,7 +107,7 @@ describe('Social People loading animation', () => {
 
     it('cache-busts the People assets with the new Social shell cache', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2'");
         expect(sw).toContain('social-community-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         expect(sw).toContain('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');

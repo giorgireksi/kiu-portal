@@ -214,7 +214,8 @@
         '}' +
         // Paint the stable chrome above the loading veil as soon as it exists;
         // route content remains hidden until its renderer/readiness gate wins.
-        'html.kiu-shell-loading body.kiu-shell-loading #lux-topbar{' +
+        'html.kiu-shell-loading body.kiu-shell-loading #lux-topbar,' +
+        'html.kiu-shell-loading body.kiu-shell-loading:not(.lux-sidebar-collapsed) #lux-shell{' +
             'visibility:visible!important;' +
             'opacity:1!important;' +
             'pointer-events:auto!important;' +
