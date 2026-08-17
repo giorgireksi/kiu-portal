@@ -380,6 +380,27 @@
             } else {
                 root.style.removeProperty('--lux-shell-background');
             }
+            // Body-scoped light/palette rules can otherwise override the
+            // freshly resolved root tokens for one paint. Keep both scopes in
+            // lockstep whenever the authoritative palette is applied.
+            if (document.body) {
+                [
+                    '--lux-accent', '--lux-accent-2', '--lux-accent-rgb', '--lux-home-secondary-rgb',
+                    '--lux-glass-tint-rgb', '--lux-topbar-tint-rgb', '--lux-bg-particle-rgb',
+                    '--lux-bg-line-rgb', '--lux-bg-glow-rgb', '--lux-bg-haze-rgb', '--lux-shell-glow-rgb',
+                    '--lux-shell-start-rgb', '--lux-shell-end-rgb'
+                ].forEach((name) => {
+                    const value = root.style.getPropertyValue(name).trim();
+                    if (value) document.body.style.setProperty(name, value);
+                });
+                if (hasCustomColors) {
+                    document.body.style.setProperty('--lux-shell-background', root.style.getPropertyValue('--lux-shell-background'));
+                    document.body.style.setProperty('background', root.style.getPropertyValue('--lux-shell-background'));
+                } else {
+                    document.body.style.removeProperty('--lux-shell-background');
+                    document.body.style.removeProperty('background');
+                }
+            }
             document.body.dataset.luxFaculty = facultyPalette.facultyCode;
             if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
                 window.queueLuxuryTransparencyRefresh(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency'));

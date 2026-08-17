@@ -102,6 +102,87 @@
         return validShellRoles.indexOf(role) !== -1 ? role : '';
     }
 
+    // Keep the tiny first-paint palette map local to the synchronous primer.
+    // The deferred palette runtime owns the full editor/API, but visible CSS
+    // must not paint its amber defaults before that runtime arrives.
+    var EARLY_PALETTES = {
+        'obsidian-amber': ['#c8822a', '#d8aa56'],
+        'slate-sapphire': ['#426cda', '#89b0ff'],
+        'pine-jade': ['#168b66', '#6ad1a0'],
+        'burgundy-rose': ['#b94447', '#d8846b'],
+        'sand-pearl': ['#c2b280', '#d4c4a0'],
+        'ink-orchid': ['#7b4bab', '#a66bc4'],
+        'ocean-teal': ['#008080', '#26a69a'],
+        'platinum-silver': ['#7b8a9a', '#a8b4c0']
+    };
+    function earlyHexToRgb(value, fallback) {
+        var hex = String(value || '').trim().replace('#', '');
+        if (!/^[0-9a-f]{6}$/i.test(hex)) return fallback || '200,130,42';
+        return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16)].join(',');
+    }
+    function earlyMixRgb(first, second, ratio) {
+        var a = String(first || '200,130,42').split(',').map(Number);
+        var b = String(second || '216,170,86').split(',').map(Number);
+        var t = Math.max(0, Math.min(1, Number(ratio) || 0));
+        return [0, 1, 2].map(function (index) {
+            return Math.round((Number.isFinite(a[index]) ? a[index] : 0) * (1 - t) + (Number.isFinite(b[index]) ? b[index] : 0) * t);
+        }).join(',');
+    }
+    function readEarlyCustomPalette() {
+        var raw = scopedVisuals && scopedVisuals.customPalette;
+        if (raw && raw.accent && raw.accent2) return raw;
+        try {
+            var stored = localStorage.getItem('kiuLuxuryCustomPalette');
+            var parsed = stored ? JSON.parse(stored) : null;
+            return parsed && parsed.accent && parsed.accent2 ? parsed : null;
+        } catch (e) {
+            return null;
+        }
+    }
+    var EARLY_PALETTE_VARIABLES = [
+        '--lux-accent', '--lux-accent-2', '--lux-accent-rgb', '--lux-home-secondary-rgb',
+        '--lux-glass-tint-rgb', '--lux-topbar-tint-rgb', '--lux-bg-particle-rgb',
+        '--lux-bg-line-rgb', '--lux-bg-glow-rgb', '--lux-bg-haze-rgb', '--lux-shell-glow-rgb',
+        '--lux-shell-start-rgb', '--lux-shell-end-rgb', '--lux-shell-background'
+    ];
+    function mirrorEarlyPaletteTokens(target) {
+        if (!target) return;
+        EARLY_PALETTE_VARIABLES.forEach(function (name) {
+            var value = root.style.getPropertyValue(name).trim();
+            if (value) target.style.setProperty(name, value);
+        });
+    }
+    function applyEarlyPaletteTokens(paletteKey, mode) {
+        var custom = paletteKey === 'custom' ? readEarlyCustomPalette() : null;
+        var pair = custom ? [custom.accent, custom.accent2] : EARLY_PALETTES[paletteKey];
+        if (!pair) return;
+        var accent = String(pair[0]);
+        var accent2 = String(pair[1]);
+        if (mode === 'light' && paletteKey === 'platinum-silver' && !custom) {
+            accent = '#4a5563';
+            accent2 = '#718096';
+        }
+        var accentRgb = earlyHexToRgb(accent);
+        var accent2Rgb = earlyHexToRgb(accent2);
+        var navRgb = mode === 'light' ? '246,237,226' : earlyMixRgb('9,18,32', accentRgb, 0.18);
+        root.style.setProperty('--lux-accent', accent);
+        root.style.setProperty('--lux-accent-2', accent2);
+        root.style.setProperty('--lux-accent-rgb', accentRgb);
+        root.style.setProperty('--lux-home-secondary-rgb', accent2Rgb);
+        root.style.setProperty('--lux-glass-tint-rgb', navRgb);
+        root.style.setProperty('--lux-topbar-tint-rgb', navRgb);
+        root.style.setProperty('--lux-bg-particle-rgb', accent2Rgb);
+        root.style.setProperty('--lux-bg-line-rgb', accentRgb);
+        root.style.setProperty('--lux-bg-glow-rgb', accent2Rgb);
+        root.style.setProperty('--lux-bg-haze-rgb', accentRgb);
+        root.style.setProperty('--lux-shell-glow-rgb', accent2Rgb);
+        root.style.setProperty('--lux-shell-start-rgb', earlyMixRgb(navRgb, accentRgb, 0.26));
+        root.style.setProperty('--lux-shell-end-rgb', earlyMixRgb(navRgb, '4,7,13', 0.34));
+        root.style.setProperty('--lux-shell-background', custom
+            ? `linear-gradient(168deg, ${accent} 0%, ${accent2} 42%, #07111c 100%)`
+            : `var(--palette-${paletteKey}-${mode === 'light' ? 'light' : 'dark'})`);
+    }
+
     function getRequestedShellRole() {
         try {
             var params = new URLSearchParams(window.location.search || '');
@@ -841,15 +922,13 @@
     }
 
     // 3. Palette — always prefer localStorage (survives version bumps); fall back to scoped prefs.
-    var savedPalette = '';
+    var savedPalette = String(scopedVisuals.paletteKey || '').trim();
     try {
-        savedPalette = localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || '';
+        savedPalette = savedPalette || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || '';
     } catch (e) {}
-    if (!savedPalette) {
-        savedPalette = String(scopedVisuals.paletteKey || '').trim();
-    }
     if (!savedPalette) savedPalette = DEFAULT_LUXURY_PALETTE;
     if (savedPalette === 'carbon-black' || savedPalette === 'arctic-white') savedPalette = 'platinum-silver';
+    if (savedPalette !== 'custom' && !EARLY_PALETTES[savedPalette]) savedPalette = DEFAULT_LUXURY_PALETTE;
     var loadingPaletteKeys = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
     if (loadingPaletteKeys.indexOf(savedPalette) !== -1) {
         // Palette variables are already available from lux-tokens.css. Set the
@@ -857,11 +936,10 @@
         // dark/green frame before applyBodyState adds body.palette-*.
         root.style.setProperty('--kiu-loading-background', `var(--palette-${savedPalette}-dark)`);
         root.style.setProperty('--kiu-loading-background-light', `var(--palette-${savedPalette}-light)`);
-        root.style.setProperty(
-            '--lux-shell-background',
-            `var(--palette-${savedPalette}-${savedMode === 'light' ? 'light' : 'dark'})`
-        );
     }
+    // Prime every color consumed by visible shell/page CSS, not only the
+    // background. The deferred runtime repeats this calculation authoritatively.
+    applyEarlyPaletteTokens(savedPalette, savedMode);
 
     // Apply to body as soon as it exists
     function applyBodyState() {
@@ -913,6 +991,13 @@
         var validPalettes = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
         if (savedPalette && savedPalette !== 'custom' && validPalettes.indexOf(savedPalette) !== -1) {
             b.classList.add('palette-' + savedPalette);
+        }
+        // Body-scoped token rules otherwise reintroduce their base accent for
+        // one frame. Mirror the already-resolved head tokens immediately.
+        mirrorEarlyPaletteTokens(b);
+        if (savedPalette === 'custom') {
+            var earlyBodyBackground = root.style.getPropertyValue('--lux-shell-background').trim();
+            if (earlyBodyBackground) b.style.setProperty('background', earlyBodyBackground);
         }
 
         // Safety net: reveal after a short deadline if deferred scripts fail.
