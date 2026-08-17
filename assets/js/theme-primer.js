@@ -889,7 +889,9 @@
         // Safety net: reveal after a short deadline if deferred scripts fail.
         // Normal routes call markPortalShellReady() after route content renders.
         var revealPollMs = 50;
-        var revealDeadlineMs = 3000;
+        // Never leave every route behind the full-screen veil for seconds.
+        // Route-specific readiness still wins; this is only the fail-open cap.
+        var revealDeadlineMs = 1400;
         var revealElapsedMs = 0;
         function forceRevealPage() {
             window.__kiuSocialShellRevealAllowed = true;

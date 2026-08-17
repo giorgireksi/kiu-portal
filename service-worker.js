@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260818-workspacefast1';
+const CACHE_NAME = 'kiu-portal-shell-v20260818-shellfailopen1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -49,9 +49,9 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
   '/assets/css/index-home-loading.css?v=20260810-homeassembly5',
   '/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5',
-  '/assets/js/theme-primer.js?v=20260817-themeinstant5',
-  '/assets/js/app/social-standalone-bootstrap.js?v=20260818-workspacefast1',
-  '/assets/js/features/navigation.js?v=20260817-timetableboot1',
+  '/assets/js/theme-primer.js?v=20260818-shellfailopen1',
+  '/assets/js/app/social-standalone-bootstrap.js?v=20260818-shellfailopen1',
+  '/assets/js/features/navigation.js?v=20260818-shellfailopen1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1',
   '/assets/js/features/luxury-index-runtime.js?v=20260810-homeassembly6',
@@ -71,7 +71,7 @@ const SHELL_ASSETS = [
   '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery2',
   '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
   '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
-  '/assets/js/pages/social-page.js?v=20260818-workspacefast1',
+  '/assets/js/pages/social-page.js?v=20260818-shellfailopen1',
   '/assets/js/pages/social-home-loading-runtime.js?v=20260817-instantassembly1',
   '/assets/js/pages/social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
   '/assets/js/pages/social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',

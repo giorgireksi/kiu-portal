@@ -19,7 +19,7 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260818-workspacefast1');
+        expect(html).toContain('social-page.js?v=20260818-shellfailopen1');
         expect(html).toContain('lux-fouc-ht.css?v=20260816-hovergpu1');
         expect(html).toContain('luxury-shell-motion-runtime.js?v=20260816-hovergpu1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
@@ -118,7 +118,7 @@ describe('social performance safeguards', () => {
         expect(page).toContain('__kiuRetrySocialModule');
         expect(page).toContain("return ['workspace', 'projects'];");
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-workspacefast1'");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellfailopen1'");
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 

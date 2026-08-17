@@ -957,7 +957,12 @@ function isPortalStartupDependencyReady() {
         ['page-chancellery', 'renderChancelleryPage']
     ];
     return dependencyChecks.every(([elementId, functionName]) => {
-        if (!document.getElementById(elementId)) return true;
+        const element = document.getElementById(elementId);
+        // Standalone admin pages keep hidden compatibility placeholders for
+        // navigation lookups. They must not hold the global shell veil while
+        // waiting for runtimes belonging to another route.
+        if (!element || element.hidden || element.closest?.('[hidden]')
+            || element.getAttribute?.('aria-hidden') === 'true') return true;
         return typeof window[functionName] === 'function';
     });
 }

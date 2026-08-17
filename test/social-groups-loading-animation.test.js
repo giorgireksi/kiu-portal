@@ -113,7 +113,7 @@ describe('Social Groups loading animation', () => {
 
     it('cache-busts the Groups assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-workspacefast1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellfailopen1'");
         expect(sw).toContain('social-groups-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         expect(sw).toContain('social-projects-loading-runtime.js?v=20260817-instantassembly1');

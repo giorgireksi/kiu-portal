@@ -181,17 +181,17 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).toContain('id="page-student-service"');
         expect(studentServiceHtml).toContain('id="student-service-modal-root"');
         expect(studentServiceHtml).not.toContain('assets/css/student-service-route.css');
-        expect(studentServiceHtml).toContain('assets/css/lux-page-bare-lite.css');
+        expect(studentServiceHtml).toContain('assets/css/route-bare/student-service/lux-page-bare-lite.css');
         expectRetiredCss('student-service-route.css');
         expect(studentServiceHtml).toContain('assets/js/shared/lux-scroll-rail.js?v=20260608-scrollrail2');
-        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260817-timetableboot1');
+        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260818-shellfailopen1');
         expect(studentServiceHtml).toContain('assets/js/shared/student-service-api-paths.js?v=20260626-ssvc-inbox-filters');
         expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260728-ssrender6');
         expect(studentServiceHtml).toContain('student-service-bootstrap-runtime.js?v=20260729-ssmerge1');
         expect(studentServiceHtml).toContain('student-service-page-runtime.js?v=20260729-sse4292');
         expect(studentServiceHtml.indexOf('student-service-bootstrap-runtime.js'))
             .toBeLessThan(studentServiceHtml.indexOf('student-service-page-runtime.js'));
-        expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260626-ssvc-inbox-filters');
+        expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260816-readonlycatalog1');
         expect(studentServiceHtml).toContain('initStandaloneStudentServiceRoute');
         expect(studentServiceHtml).toContain('bootStandaloneDesktopRoute');
         expect(studentServiceHtml).not.toContain("window.location.replace(target);");
@@ -199,7 +199,7 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).not.toContain('assets/js/pages/student-service-service.js');
         expect(studentsAdminHtml).not.toContain('assets/js/pages/student-service.js');
         expect(studentsAdminHtml).not.toContain('assets/css/index-luxury.css');
-        expect(studentsAdminHtml).toContain('assets/css/lux-page-bare-lite.css');
+        expect(studentsAdminHtml).toContain('assets/css/route-bare/directory/lux-page-bare-lite.css');
         expect(studentsAdminHtml).toContain('assets/css/mobile-shell-core.css');
     });
 
