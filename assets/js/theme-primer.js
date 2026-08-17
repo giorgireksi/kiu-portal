@@ -212,6 +212,14 @@
             'opacity:0!important;' +
             'pointer-events:none!important;' +
         '}' +
+        // The root receives the collapsed state before <body> exists. Mirror
+        // the body-scoped drawer rule so nav labels cannot flash at top-left
+        // while the shell is being created.
+        'html.lux-sidebar-collapsed #lux-shell{' +
+            'transform:translate3d(calc(-100% - var(--lux-sidebar-gutter,12px) - 12px),0,0) scale(var(--lux-shell-scale-closed, .98));' +
+            'opacity:0!important;' +
+            'pointer-events:none!important;' +
+        '}' +
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #app-content,' +
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-shell,' +
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-topbar{' +
