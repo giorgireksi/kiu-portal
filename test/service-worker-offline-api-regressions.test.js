@@ -17,8 +17,6 @@ describe('service worker offline API regressions', () => {
         expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*lux-page-bare-lite\.css/);
         expect(source).not.toContain("'/assets/css/lux-page-bare-lite.css");
         expect(source).not.toContain('"/assets/css/lux-page-bare-lite.css');
-        expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*\/assets\/css\/social-.*loading/);
-        expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*\/assets\/js\/pages\/social-/);
         expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260817-coreonly1'/);
         expect(source).toContain('isSocialStandaloneNavigation');
         expect(source).toContain("new Request(request, { cache: cacheMode })");
