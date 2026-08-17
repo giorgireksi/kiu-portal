@@ -32,8 +32,6 @@
       rgba(6, 9, 16, calc(var(--lux-shell-sidebar-alpha) * 0.92)) 100%);
   --lux-shell-sidebar-shadow:
     0 0 0 1px rgba(var(--lux-accent-rgb, 185, 68, 71), calc(var(--lux-panel-glow, 0.22) * 0.70)),
-    0 0 28px rgba(var(--lux-accent-rgb, 185, 68, 71), calc(var(--lux-panel-glow, 0.22) * 0.50)),
-    0 0 56px rgba(var(--lux-accent-rgb, 185, 68, 71), calc(var(--lux-panel-glow, 0.22) * 0.22)),
     0 24px 58px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -53,8 +51,6 @@ body.lux-light-mode {
       rgba(247, 241, 232, calc(var(--lux-shell-sidebar-alpha) * 0.9)) 100%);
   --lux-shell-sidebar-shadow:
     0 0 0 1px rgba(var(--lux-accent-rgb, 185, 68, 71), calc(var(--lux-panel-glow, 0.22) * 0.60)),
-    0 0 24px rgba(var(--lux-accent-rgb, 185, 68, 71), calc(var(--lux-panel-glow, 0.22) * 0.40)),
-    0 0 48px rgba(var(--lux-accent-rgb, 185, 68, 71), calc(var(--lux-panel-glow, 0.22) * 0.16)),
     0 22px 48px rgba(107, 91, 62, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
