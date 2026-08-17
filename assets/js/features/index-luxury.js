@@ -980,7 +980,10 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             || document.documentElement.classList.contains('kiu-route-assembly-loading')
             || document.body?.classList.contains('kiu-route-assembly-loading');
         if (shell) {
-            shell.style.setProperty('z-index', isLoading ? '2147483002' : '1100', 'important');
+            // The sidebar is an overlay shell, not normal document chrome. Keep
+            // its inline priority absolute even if a route clears the loading
+            // classes before its workspace has finished painting.
+            shell.style.setProperty('z-index', '2147483647', 'important');
             if (isLoading) {
                 const isLight = document.documentElement.classList.contains('lux-light-mode')
                     || document.body?.classList.contains('lux-light-mode');
