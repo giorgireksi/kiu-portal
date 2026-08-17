@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2';
+const CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage3';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -271,6 +271,12 @@ async function handleNavigationRequest(request) {
   const cached = await caches.match(request)
     || await caches.match(request, { ignoreSearch: true });
   if (cached) return cached;
+  // Query-bearing Social URLs must always be able to reuse the precached
+  // document shell when the tunnel briefly returns a 5xx.
+  if (isSocialStandaloneNavigation) {
+    const cachedSocialShell = await caches.match('/social.html', { ignoreSearch: true });
+    if (cachedSocialShell) return cachedSocialShell;
+  }
   // A tunnel/proxy can fail only for the query-bearing navigation URL. Retry
   // the standalone Social shell without view parameters before returning the
   // offline 503 page, so panel/deep-view query strings cannot strand the UI.
