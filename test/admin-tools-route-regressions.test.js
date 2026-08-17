@@ -18,6 +18,11 @@ describe('admin tools route regressions.test', () => {
         expect(html).not.toMatch(/href=["'][^"']*index-luxury\.css/);
         expect(html).not.toMatch(/href=["'][^"']*lux-surfaces\.css/);
         expect(existsSync(join(process.cwd(), 'assets/css', 'admin-tools-luxury.css'))).toBe(false);
+        expect(html).toContain('assets/js/features/index-admin-tools.js');
+        expect(html).not.toContain('luxury-home-model.js');
+        expect(html).not.toContain('luxury-index-home-shell-runtime.js');
+        expect(html).not.toContain('faculty-schedule-runtime.js');
+        expect(html).not.toContain('lux-scroll-rail.js');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('body.lux-page-bare');
         // Global bare blur kill forbidden; scoped admin-tools page-shell demotion is OK.
