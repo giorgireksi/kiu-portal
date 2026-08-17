@@ -80,7 +80,7 @@ async function loadFogModule() {
 
 async function loadParticleModule() {
   if (!particleModulePromise) {
-    particleModulePromise = import("./luxury-particle-background.js?v=20260816-socialcpu1").then((mod) => {
+    particleModulePromise = import("./luxury-particle-background.js?v=20260818-visualqueue1").then((mod) => {
       particleModule = mod;
       return mod;
     });

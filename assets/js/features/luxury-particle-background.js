@@ -1549,7 +1549,10 @@ function startParticleRenderLoop() {
       particleLoopTimer = window.setTimeout(tick, readParticleFrameInterval());
     });
   }
-  particleLoopTimer = window.setTimeout(tick, 0);
+  // Start on the governed cadence instead of forcing an immediate extra
+  // frame during route startup; the first visible frame keeps the same
+  // renderer/quality but no longer competes with shell hydration.
+  particleLoopTimer = window.setTimeout(tick, readParticleFrameInterval());
 }
 
 function setQuality(quality, forceRebuild = false) {

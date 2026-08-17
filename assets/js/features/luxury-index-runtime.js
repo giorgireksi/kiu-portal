@@ -254,6 +254,19 @@ return {
 
     let __luxHeavySurfaceObserverSignature = '';
 
+    function getHeavySurfaceObserverRootMargin() {
+        try {
+            const memory = Number(navigator.deviceMemory || 0);
+            const cores = Number(navigator.hardwareConcurrency || 0);
+            const saveData = Boolean(navigator.connection?.saveData);
+            return (saveData || (memory && memory <= 4) || (cores && cores <= 4))
+                ? '120px 0px 120px 0px'
+                : '300px 0px 300px 0px';
+        } catch (_error) {
+            return '300px 0px 300px 0px';
+        }
+    }
+
     function refreshHeavySurfaceObservation() {
         if (!('IntersectionObserver' in window) || !document.body) return;
         const scrollRoot = getHeavySurfaceScrollRoot();
@@ -306,7 +319,7 @@ return {
             }
         }, {
             root: scrollRoot,
-            rootMargin: '300px 0px 300px 0px',
+            rootMargin: getHeavySurfaceObserverRootMargin(),
             threshold: 0.01
         });
         document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
@@ -333,6 +346,14 @@ return {
         if (__luxHeavySurfaceRefreshTimer) window.clearTimeout(__luxHeavySurfaceRefreshTimer);
         __luxHeavySurfaceRefreshTimer = window.setTimeout(() => {
             __luxHeavySurfaceRefreshTimer = null;
+            if (typeof window.__kiuQueueLuxuryVisualTask === 'function') {
+                window.__kiuQueueLuxuryVisualTask(
+                    'heavy-surface-observation',
+                    () => refreshHeavySurfaceObservation(),
+                    { idle: true, timeoutMs: 600 }
+                );
+                return;
+            }
             const runner = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 0));
             runner(() => refreshHeavySurfaceObservation(), { timeout: 600 });
         }, 120);
@@ -677,6 +698,14 @@ return {
                 const idleRunner = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 0));
                 idleRunner(run, { timeout: 250 });
             }, 120);
+            return;
+        }
+        if (typeof window.__kiuQueueLuxuryVisualTask === 'function') {
+            queuedLegacyVisualFrame = 1;
+            window.__kiuQueueLuxuryVisualTask('legacy-visual-refresh', () => {
+                queuedLegacyVisualFrame = null;
+                run();
+            });
             return;
         }
         queuedLegacyVisualFrame = window.requestAnimationFrame(run);

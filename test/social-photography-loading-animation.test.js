@@ -11,7 +11,7 @@ describe('Social Exposé (photography) loading animation', () => {
 
     it('loads photography motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
         const photoIndex = html.indexOf('social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9');
 

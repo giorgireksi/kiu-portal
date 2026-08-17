@@ -166,11 +166,16 @@
     }
 
     function onShellChromePointerOver(event) {
-        if (!isShellChromeHoverTarget(event.target)) return;
+        if (event.pointerType && event.pointerType !== 'mouse') return;
+        const target = event.target?.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell, .home-hover-chip');
+        if (!isShellChromeHoverTarget(target)) return;
+        const related = event.relatedTarget;
+        if (related && target.contains?.(related)) return;
         pulseShellHoverBusy();
     }
 
     function onShellChromePointerMove(event) {
+        if (event.pointerType && event.pointerType !== 'mouse') return;
         if (!isShellChromeHoverTarget(event.target)) return;
         const now = performance.now();
         if (now - lastHoverPulse < 48) return;

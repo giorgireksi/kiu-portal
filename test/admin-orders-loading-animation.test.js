@@ -9,11 +9,11 @@ function readSource(relativePath) {
 describe('admin orders loading animation', () => {
     it('loads admin orders motion assets and the shared engine', () => {
         const html = readSource('admin-orders.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
         const runtimeIndex = html.indexOf('admin-orders-loading-runtime.js?v=20260811-aordersfilter1');
 
         expect(html).toContain('assets/css/admin-orders-loading.css?v=20260810-aordersassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
         expect(html).toContain('assets/js/pages/admin-orders-loading-runtime.js?v=20260811-aordersfilter1');
         expect(html).toContain('admin-orders.js');
         expect(sharedIndex).toBeGreaterThan(-1);

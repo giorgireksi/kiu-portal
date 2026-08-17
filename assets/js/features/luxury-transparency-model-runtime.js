@@ -144,16 +144,47 @@
     window.__kiuApplyHighTransparencyState = typeof applyLuxuryHighTransparencyState === 'function'
         ? applyLuxuryHighTransparencyState
         : window.__kiuApplyHighTransparencyState;
-    function queueLuxuryRefreshOperation(run) {
-        window.clearTimeout(window.__luxTransparencyPaletteRefreshTimer);
-        window.__luxTransparencyPaletteRefreshTimer = window.setTimeout(() => {
-            window.__luxTransparencyPaletteRefreshTimer = null;
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(run);
+    const visualTaskState = window.__kiuVisualTaskState || (window.__kiuVisualTaskState = {
+        framePending: new Map(),
+        idlePending: new Map(),
+        frameTimer: 0,
+        idleTimer: 0,
+        frameHandle: 0,
+        idleHandle: 0
+    });
+    function flushVisualTaskBucket(bucket, handleKey) {
+        visualTaskState[handleKey] = 0;
+        const jobs = Array.from(visualTaskState[bucket].values());
+        visualTaskState[bucket].clear();
+        jobs.forEach((run) => {
+            try { run(); } catch (_error) { /* preserve sibling visual work */ }
+        });
+    }
+    function queueLuxuryVisualTask(key, run, options = {}) {
+        if (typeof run !== 'function') return;
+        const bucket = options.idle === true ? 'idlePending' : 'framePending';
+        const timerKey = options.idle === true ? 'idleTimer' : 'frameTimer';
+        const handleKey = options.idle === true ? 'idleHandle' : 'frameHandle';
+        visualTaskState[bucket].set(String(key || 'default'), run);
+        if (visualTaskState[timerKey]) return;
+        const delayMs = Math.max(0, Number(options.delayMs) || 0);
+        visualTaskState[timerKey] = window.setTimeout(() => {
+            visualTaskState[timerKey] = 0;
+            const flush = () => flushVisualTaskBucket(bucket, handleKey);
+            if (options.idle === true && typeof window.requestIdleCallback === 'function') {
+                visualTaskState[handleKey] = window.requestIdleCallback(flush, { timeout: Number(options.timeoutMs) || 900 });
+            } else if (typeof window.requestAnimationFrame === 'function') {
+                visualTaskState[handleKey] = window.requestAnimationFrame(flush);
             } else {
-                run();
+                flush();
             }
-        }, 0);
+        }, delayMs);
+    }
+    window.__kiuQueueLuxuryVisualTask = typeof queueLuxuryVisualTask === 'function'
+        ? queueLuxuryVisualTask
+        : window.__kiuQueueLuxuryVisualTask;
+    function queueLuxuryRefreshOperation(run) {
+        queueLuxuryVisualTask('transparency', run);
     }
     window.__kiuQueueLuxuryRefreshOperation = typeof queueLuxuryRefreshOperation === 'function'
         ? queueLuxuryRefreshOperation

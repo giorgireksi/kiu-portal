@@ -11,7 +11,7 @@ describe('timetable loading animation', () => {
         const html = readSource('timetable.html');
 
         expect(html).toContain('assets/css/timetable-loading.css?v=20260816-ttlowend1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
         expect(html).toContain('assets/js/pages/timetable-loading-runtime.js?v=20260817-observeroff1');
         expect(html.match(/timetable-loading\.css/g)).toHaveLength(1);
         expect(html.match(/timetable-loading-runtime\.js/g)).toHaveLength(1);

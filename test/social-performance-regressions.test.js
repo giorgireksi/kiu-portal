@@ -21,7 +21,7 @@ describe('social performance safeguards', () => {
         const page = readSource('assets/js/pages/social-page.js');
         expect(html).toContain('social-page.js?v=20260818-shellfailopen1');
         expect(html).toContain('lux-fouc-ht.css?v=20260816-hovergpu1');
-        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260816-hovergpu1');
+        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260818-visualqueue1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
         expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
         expect(page).toContain('loadSocialDynamicScript');
@@ -67,7 +67,7 @@ describe('social performance safeguards', () => {
     it('uses the optimized shared assembly runtime on Social', () => {
         const html = readSource('social.html');
         const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
+        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
         expect(runtime).not.toContain('function getCurrentNode(element, root)');
         expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
         expect(runtime).toContain("soft-restart-skipped-same-content");

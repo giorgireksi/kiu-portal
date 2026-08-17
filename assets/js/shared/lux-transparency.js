@@ -1410,13 +1410,18 @@ function setupTransparencyObserver() {
                 window.__transparencyRefreshTimer = null;
                 const scopedRoots = Array.from(pendingRoots).filter((root) => root && root.isConnected);
                 const runTransparencyRefresh = () => {
-                    requestAnimationFrame(() => {
+                    const refresh = () => {
                         if (scopedRoots.length) {
                             refreshLuxuryTransparencySurfaces(window.__currentTransparency || transparency, { roots: scopedRoots });
                             return;
                         }
                         updateTransparency(window.__currentTransparency || transparency);
-                    });
+                    };
+                    if (typeof window.__kiuQueueLuxuryVisualTask === 'function') {
+                        window.__kiuQueueLuxuryVisualTask('transparency-observer', refresh);
+                        return;
+                    }
+                    requestAnimationFrame(refresh);
                 };
                 if (typeof window.requestIdleCallback === 'function') {
                     window.requestIdleCallback(runTransparencyRefresh, { timeout: 900 });

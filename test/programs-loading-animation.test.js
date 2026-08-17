@@ -12,7 +12,7 @@ describe('programs loading animation', () => {
 
         expect(html).toContain('assets/css/programs-loading.css?v=20260808-progassembly4');
         expect(html).toContain('assets/css/lux-fouc-ht.css?v=20260808-popupguard1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
         expect(html).toContain('assets/js/pages/programs-loading-runtime.js?v=20260808-progassembly13');
         expect(html.match(/programs-loading\.css/g)).toHaveLength(1);
         expect(html.match(/programs-loading-runtime\.js/g)).toHaveLength(1);

@@ -61,6 +61,16 @@
         const contentWaitMaxMs = Number.isFinite(Number(timing.contentWaitMaxMs))
             ? Number(timing.contentWaitMaxMs)
             : timing.maxShellWaitMs;
+        const assemblyPollMs = (() => {
+            try {
+                const memory = Number(navigator.deviceMemory || 0);
+                const cores = Number(navigator.hardwareConcurrency || 0);
+                const saveData = Boolean(navigator.connection?.saveData);
+                return saveData || (memory && memory <= 4) || (cores && cores <= 4) ? 32 : 16;
+            } catch (_error) {
+                return 16;
+            }
+        })();
         const outerSelectors = Array.isArray(options.outerSelectors)
             ? options.outerSelectors
             : [options.outerSelectors].filter(Boolean);
@@ -807,7 +817,7 @@
                     then();
                     return;
                 }
-                state.flightDeferTimer = window.setTimeout(tick, 16);
+                state.flightDeferTimer = window.setTimeout(tick, assemblyPollMs);
             };
             tick();
         }
@@ -921,7 +931,7 @@
                     run(root, generation);
                     return;
                 }
-                state.waitTimer = window.setTimeout(poll, 16);
+                state.waitTimer = window.setTimeout(poll, assemblyPollMs);
             };
             poll();
         }
