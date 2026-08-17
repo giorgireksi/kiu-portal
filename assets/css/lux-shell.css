@@ -1000,11 +1000,8 @@ body.lux-full-paint {
 }
 
 /* During deferred startup the authored shell keeps its normal glass paint.
- * A separate underlay covers route content beneath it, so the sidebar does
- * not need a black/static loading skin or a loading-only blur override. */
-#lux-shell-loading-underlay {
-  display: none;
-}
+ * Only the foreground stacking contract changes; no loading-only skin is
+ * applied, so transparency is identical before and after hydration. */
 @media (min-width: 1025px) {
   html.kiu-shell-loading #lux-shell,
   html.kiu-route-assembly-loading #lux-shell,
@@ -1014,31 +1011,6 @@ body.lux-full-paint {
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
-    isolation: isolate;
-  }
-  html.kiu-shell-loading #lux-shell-loading-underlay,
-  html.kiu-route-assembly-loading #lux-shell-loading-underlay,
-  body.kiu-shell-loading #lux-shell-loading-underlay,
-  body.kiu-route-assembly-loading #lux-shell-loading-underlay {
-    display: block;
-    position: fixed;
-    top: var(--lux-sidebar-gutter, 12px);
-    bottom: var(--lux-sidebar-gutter, 12px);
-    left: var(--lux-sidebar-gutter, 12px);
-    width: var(--lux-sidebar-width, 220px);
-    z-index: 2147483646;
-    pointer-events: none;
-    border-radius: var(--lux-shell-sidebar-radius, 22px);
-    background: var(--kiu-loading-background, var(--lux-shell-background, linear-gradient(135deg, #07110f 0%, #0b111c 58%, #07120f 100%))) !important;
-    background-clip: padding-box;
-  }
-  html.lux-light-mode.kiu-shell-loading #lux-shell-loading-underlay,
-  html.lux-light-mode.kiu-route-assembly-loading #lux-shell-loading-underlay,
-  html.kiu-shell-loading body.lux-light-mode #lux-shell-loading-underlay,
-  html.kiu-route-assembly-loading body.lux-light-mode #lux-shell-loading-underlay,
-  body.lux-light-mode.kiu-shell-loading #lux-shell-loading-underlay,
-  body.lux-light-mode.kiu-route-assembly-loading #lux-shell-loading-underlay {
-    background: var(--kiu-loading-background-light, var(--lux-shell-background, linear-gradient(135deg, #f8f5ee 0%, #f1ede5 58%, #eef6f5 100%))) !important;
   }
   html.kiu-shell-loading #lux-topbar,
   html.kiu-route-assembly-loading #lux-topbar { z-index: 1000 !important; }

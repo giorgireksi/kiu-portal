@@ -193,28 +193,9 @@
         'html.kiu-shell-loading body.lux-light-mode.kiu-shell-loading{' +
             'background:var(--lux-shell-background,#f5f0e8)!important;' +
         '}' +
-        'body.kiu-shell-loading::before{' +
-            'content:"";' +
-            'position:fixed;' +
-            'inset:0;' +
-            'z-index:2147483000;' +
-            'pointer-events:none;' +
-            'backface-visibility:hidden;' +
-            'transform:translateZ(0);' +
-            'background:var(--kiu-loading-background,' +
-                'radial-gradient(circle at 22% 18%,rgba(15,118,110,.16),transparent 36%),' +
-                'radial-gradient(circle at 78% 20%,rgba(184,134,63,.12),transparent 34%),' +
-                'linear-gradient(135deg,#07110f 0%,#0b111c 58%,#07120f 100%))!important;' +
-            'opacity:1!important;' +
-            'transition:none!important;' +
-        '}' +
-        'html.lux-light-mode body.kiu-shell-loading::before,' +
-        'body.lux-light-mode.kiu-shell-loading::before{' +
-            'background:var(--kiu-loading-background-light,' +
-                'radial-gradient(circle at 20% 18%,rgba(28,137,129,.14),transparent 35%),' +
-                'radial-gradient(circle at 82% 16%,rgba(184,134,63,.14),transparent 32%),' +
-                'linear-gradient(135deg,#f8f5ee 0%,#f1ede5 58%,#eef6f5 100%))!important;' +
-        '}' +
+        // Do not add a loading veil above the normal background. The authored
+        // shell must sample the same canvas/page surface before and after reveal;
+        // a veil makes its glass transparency visibly different during startup.
         'body.kiu-shell-loading #lux-topbar,' +
         'body.kiu-shell-loading #mobile-bottom-nav,' +
         'body.kiu-shell-loading #mobile-action-sheet{' +
@@ -231,7 +212,7 @@
             'position:relative;' +
             'z-index:2147483001!important;' +
         '}' +
-        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#app-content):not(#lux-topbar):not(#lux-shell):not(#lux-shell-loading-underlay){' +
+        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#app-content):not(#lux-topbar):not(#lux-shell){' +
             'visibility:hidden!important;' +
             'opacity:0!important;' +
             'pointer-events:none!important;' +
@@ -276,10 +257,6 @@
         '}' +
         // Instant mode removes loading motion, not readiness gating. Keep the
         // authored route skeleton visible while data-dependent content settles.
-        'html.kiu-instant-loading body.kiu-shell-loading::before{' +
-            'display:block!important;' +
-            'background:var(--lux-shell-background,var(--kiu-loading-background,#08120f))!important;' +
-        '}' +
         'html.kiu-instant-loading body.kiu-shell-loading::after{' +
             'content:"Loading workspace";' +
             'position:fixed;' +
