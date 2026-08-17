@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260817-coreonly1';
+const CACHE_NAME = 'kiu-portal-shell-v20260818-stateguard1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -50,7 +50,7 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-loading.css?v=20260810-homeassembly5',
   '/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5',
   '/assets/js/theme-primer.js?v=20260817-themeinstant5',
-  '/assets/js/app/social-standalone-bootstrap.js?v=20260816-socialrecovery2',
+  '/assets/js/app/social-standalone-bootstrap.js?v=20260818-stateguard1',
   '/assets/js/features/navigation.js?v=20260817-timetableboot1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1',
