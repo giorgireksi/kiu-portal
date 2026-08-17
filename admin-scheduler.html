@@ -355,7 +355,6 @@
 <script defer src="assets/js/app/portal-api-stubs-runtime.js?v=20260720-w21stubs1"></script>
 <script defer src="assets/js/app/portal-compat-runtime.js?v=20260720-w20compat1"></script>
 <script defer src="assets/js/app/app.js?v=20260816-authvarfix1"></script>
-<script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
 <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260816-readonlycatalog1"></script>
 <script defer src="assets/js/app/api.js?v=20260816-readonlycatalog1"></script>
 <script type="application/x-kiu-idle" data-kiu-idle-src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
@@ -376,7 +375,7 @@
 <script defer src="assets/js/pages/admin-scheduler-session-runtime.js?v=20260806-staffidchoose2"></script>
 <script defer src="assets/js/pages/admin-scheduler-faculty-runtime.js?v=20260720-h2b"></script>
 <script defer src="assets/js/pages/admin-scheduler.js?v=20260815-staff-directory-picker5"></script>
-<script defer src="assets/js/features/luxury-index-runtime.js?v=20260810-homeassembly6"></script>
+<script defer src="assets/js/features/luxury-visual-runtime.js?v=20260818-schedulerpaint1"></script>
 <script defer src="assets/js/features/luxury-palette-runtime.js?v=20260719-luxpal1"></script>
 <script defer src="assets/js/features/luxury-atmosphere-runtime.js?v=20260723-gpuperf4p"></script>
 <script defer src="assets/js/features/luxury-transparency-model-runtime.js?v=20260723-perftier1"></script>
@@ -476,7 +475,16 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
     }
 };
 </script>
-<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1"></script>
+<script>
+    // The mobile shell is not part of desktop scheduler startup. Load it only
+    // where its controls can be used, preserving the same mobile behavior.
+    if (window.matchMedia?.('(max-width: 1024px)').matches || window.innerWidth <= 1024) {
+        const mobileShell = document.createElement('script');
+        mobileShell.src = 'assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1';
+        mobileShell.defer = true;
+        document.head.appendChild(mobileShell);
+    }
+</script>
 </body>
 </html>
 

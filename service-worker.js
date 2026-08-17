@@ -55,6 +55,7 @@ const SHELL_ASSETS = [
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1',
   '/assets/js/features/luxury-index-runtime.js?v=20260810-homeassembly6',
+  '/assets/js/features/luxury-visual-runtime.js?v=20260818-schedulerpaint1',
   '/assets/js/features/luxury-index-home-shell-runtime.js?v=20260720-w18',
   '/assets/js/features/luxury-shell-motion-runtime.js?v=20260816-hovergpu1',
   '/assets/js/features/index-luxury.js?v=20260817-shellchrome2',

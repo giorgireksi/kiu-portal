@@ -104,8 +104,22 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             const revealShell = schedulerRevealShellQueued;
             schedulerRefreshQueued = { palette: false, grid: false, paletteSearchOnly: false };
             schedulerRevealShellQueued = false;
-            if (runPalette) renderPalette({ searchOnly: paletteSearchOnly });
-            if (runGrid) renderGrid();
+            const renderQueuedSchedulerSurface = () => {
+                if (runPalette) renderPalette({ searchOnly: paletteSearchOnly });
+                if (runGrid) renderGrid();
+            };
+            // Paint the server-authored scheduler skeleton before the first
+            // potentially expensive palette/grid build. This makes the route
+            // usable immediately while preserving the same data render.
+            const canPaintBeforeRender = revealShell
+                && window.__KIU_INSTANT_ASSEMBLY_LOADING !== false
+                && typeof markPortalShellReady === 'function';
+            if (canPaintBeforeRender) {
+                markPortalShellReady();
+                window.setTimeout(renderQueuedSchedulerSurface, 0);
+                return;
+            }
+            renderQueuedSchedulerSurface();
             if (revealShell) {
                 if (typeof schedulePortalShellReadyReveal === 'function') {
                     schedulePortalShellReadyReveal();
@@ -2330,8 +2344,10 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             refreshSchedulerLiveStaffAccounts(true).then(() => populateProfList());
             queueSchedulerRefresh({ palette: true, grid: true });
         }, { once: true });
+        // Local state is enough for the first paint. Account-authoritative
+        // staff refresh remains attached to portal bootstrap and staff-picker
+        // activation instead of competing with the initial scheduler render.
         populateProfList();
-        refreshSchedulerLiveStaffAccounts(true).then(() => populateProfList());
         queueSchedulerRefresh({ palette: true, grid: true, revealShell: true });
     }
 
