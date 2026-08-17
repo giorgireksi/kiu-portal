@@ -110,7 +110,7 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     content: '' !important;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: transparent;
     z-index: 9400 !important;
     pointer-events: auto !important;
   }
@@ -162,7 +162,7 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     content: '' !important;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: transparent;
     z-index: 9400 !important;
     pointer-events: auto !important;
     opacity: 1;

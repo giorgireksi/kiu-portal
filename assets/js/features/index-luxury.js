@@ -387,22 +387,13 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         return Boolean(document.body?.classList.contains('lux-unified-shell'));
     }
     function applySidebarState(collapsed = isSidebarCollapsed(), options = {}) {
-        const wasCollapsed = document.body?.classList?.contains('lux-sidebar-collapsed');
-        const wasSidebarInteractionOpen = document.body?.classList?.contains('lux-sidebar-interaction-open')
-            || document.documentElement?.classList?.contains('lux-sidebar-interaction-open');
         const nextCollapsed = Boolean(collapsed);
-        // This is distinct from the persisted layout state: it marks an
-        // actual user-opened drawer so global page atmosphere can be muted
-        // without changing the normal expanded desktop appearance at startup.
-        const sidebarInteractionOpen = !nextCollapsed && (wasCollapsed || wasSidebarInteractionOpen);
         const persist = options.persist !== false;
         if (persist) {
             localStorage.setItem('kiuLuxurySidebarCollapsed', collapsed ? '1' : '0');
         }
         document.documentElement.classList.toggle('lux-sidebar-collapsed', Boolean(collapsed));
         document.body.classList.toggle('lux-sidebar-collapsed', Boolean(collapsed));
-        document.documentElement.classList.toggle('lux-sidebar-interaction-open', sidebarInteractionOpen);
-        document.body.classList.toggle('lux-sidebar-interaction-open', sidebarInteractionOpen);
         document.body.dataset.luxSidebar = collapsed ? 'collapsed' : 'expanded';
         const toggle = document.getElementById('lux-sidebar-toggle');
         if (toggle) {
