@@ -163,8 +163,6 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
     z-index: 9400 !important;
     pointer-events: auto !important;
     opacity: 1;

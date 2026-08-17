@@ -976,5 +976,6 @@ describe('global interaction performance guardrails', () => {
     expect(shell).not.toMatch(/navigate\(pageTarget\(routePage\)\);\s*if \(typeof syncAll === 'function'\) syncAll\(\);/);
     expect(editorDraft).toContain('stopHomeEditor = function');
     expect(mobileCss).not.toMatch(/#mobile-bottom-nav \{[^}]*backdrop-filter/s);
+    expect(mobileCss).not.toMatch(/body\.not\(\.lux-sidebar-collapsed\)::after[\s\S]*backdrop-filter/);
   });
 });
