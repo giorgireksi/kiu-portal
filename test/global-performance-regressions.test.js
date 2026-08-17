@@ -155,9 +155,12 @@ describe('global interaction performance guardrails', () => {
 
   it('keeps the sidebar above the top bar during deferred desktop loading', () => {
     const shell = readSource('assets/css/lux-shell.css');
+    const luxury = readSource('assets/js/features/index-luxury.js');
 
     expect(shell).toContain('html.kiu-shell-loading #lux-shell { z-index: 1100 !important; }');
     expect(shell).toContain('html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }');
+    expect(luxury).toContain("shell?.style.setProperty('z-index', '1100', 'important')");
+    expect(luxury).toContain("topbar?.style.setProperty('z-index', '1000', 'important')");
   });
 
   it('records lightweight startup marks across primer, shell, and route phases', () => {

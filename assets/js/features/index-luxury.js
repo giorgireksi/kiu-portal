@@ -971,6 +971,13 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         window.setTimeout(run, 900);
     }
     let luxuryShellEnsured = false;
+    function applyImmediateShellLayering() {
+        if (window.innerWidth < 1025) return;
+        const shell = document.getElementById('lux-shell');
+        const topbar = document.getElementById('lux-topbar');
+        shell?.style.setProperty('z-index', '1100', 'important');
+        topbar?.style.setProperty('z-index', '1000', 'important');
+    }
     function ensureShell() {
         if (luxuryShellEnsured
             && document.getElementById('lux-shell')
@@ -1131,6 +1138,9 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             `;
             document.body.appendChild(topbar);
         }
+        // Apply the stacking order inline as soon as both nodes exist. This avoids
+        // the first-paint interval before the deferred stylesheet/class cascade wins.
+        applyImmediateShellLayering();
         ensureTopbarSoftChrome();
         // Respect saved preference on all unified-shell routes (default expanded).
         applySidebarState(isSidebarCollapsed(), { persist: false });
