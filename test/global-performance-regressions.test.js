@@ -153,6 +153,13 @@ describe('global interaction performance guardrails', () => {
     expect(readSource('assets/js/features/luxury-index-runtime.js')).toContain('frameInterval: isHome ? 16 : (reducedMotion ? 80 : 42)');
   });
 
+  it('keeps the sidebar above the top bar during deferred desktop loading', () => {
+    const shell = readSource('assets/css/lux-shell.css');
+
+    expect(shell).toContain('html.kiu-shell-loading #lux-shell { z-index: 1100 !important; }');
+    expect(shell).toContain('html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }');
+  });
+
   it('records lightweight startup marks across primer, shell, and route phases', () => {
     const primer = readSource('assets/js/theme-primer.js');
     const navigation = readSource('assets/js/features/navigation.js');

@@ -998,3 +998,9 @@ body.lux-full-paint {
     z-index: 900;
   }
 }
+
+/* Keep the authored sidebar above the top bar during deferred startup. */
+@media (min-width: 1025px) {
+  html.kiu-shell-loading #lux-shell { z-index: 1100 !important; }
+  html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }
+}
