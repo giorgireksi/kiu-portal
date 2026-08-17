@@ -231,7 +231,7 @@
             'position:relative;' +
             'z-index:2147483001!important;' +
         '}' +
-        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#app-content):not(#lux-topbar):not(#lux-shell){' +
+        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#app-content):not(#lux-topbar):not(#lux-shell):not(#lux-shell-loading-underlay){' +
             'visibility:hidden!important;' +
             'opacity:0!important;' +
             'pointer-events:none!important;' +

@@ -158,11 +158,11 @@ describe('global interaction performance guardrails', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
 
     expect(shell).toContain('z-index: 2147483647 !important;');
-    expect(shell).toContain('background-image: var(--kiu-loading-background, var(--lux-shell-background');
+    expect(shell).toContain('#lux-shell-loading-underlay');
+    expect(shell).toContain('z-index: 2147483646;');
     expect(shell).toContain('html.kiu-shell-loading #lux-topbar,\n  html.kiu-route-assembly-loading #lux-topbar { z-index: 1000 !important; }');
     expect(luxury).toContain("shell.style.setProperty('z-index', '2147483647', 'important')");
-    expect(luxury).toContain("'background-image'");
-    expect(luxury).toContain('--kiu-loading-background');
+    expect(luxury).not.toContain("shell.style.setProperty('background-image'");
     expect(luxury).toContain("topbar?.style.setProperty('z-index', '1000', 'important')");
   });
 

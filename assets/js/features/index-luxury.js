@@ -975,36 +975,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         if (window.innerWidth < 1025) return;
         const shell = document.getElementById('lux-shell');
         const topbar = document.getElementById('lux-topbar');
-        const isLoading = document.documentElement.classList.contains('kiu-shell-loading')
-            || document.body?.classList.contains('kiu-shell-loading')
-            || document.documentElement.classList.contains('kiu-route-assembly-loading')
-            || document.body?.classList.contains('kiu-route-assembly-loading');
         if (shell) {
             // The sidebar is an overlay shell, not normal document chrome. Keep
-            // its inline priority absolute even if a route clears the loading
-            // classes before its workspace has finished painting.
+            // its inline priority absolute; its normal glass paint must remain
+            // unchanged during loading as well as after hydration.
             shell.style.setProperty('z-index', '2147483647', 'important');
-            if (isLoading) {
-                const isLight = document.documentElement.classList.contains('lux-light-mode')
-                    || document.body?.classList.contains('lux-light-mode');
-                shell.style.setProperty('background-color', isLight ? '#f5f0e8' : '#08120f', 'important');
-                shell.style.setProperty(
-                    'background-image',
-                    isLight
-                        ? 'var(--kiu-loading-background-light, var(--lux-shell-background, linear-gradient(135deg, #f8f5ee 0%, #f1ede5 58%, #eef6f5 100%)))'
-                        : 'var(--kiu-loading-background, var(--lux-shell-background, linear-gradient(135deg, #07110f 0%, #0b111c 58%, #07120f 100%)))',
-                    'important'
-                );
-                shell.style.setProperty('backdrop-filter', 'none', 'important');
-                shell.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
-                shell.style.setProperty('isolation', 'isolate');
-            } else {
-                shell.style.removeProperty('background-color');
-                shell.style.removeProperty('background-image');
-                shell.style.removeProperty('backdrop-filter');
-                shell.style.removeProperty('-webkit-backdrop-filter');
-                shell.style.removeProperty('isolation');
-            }
         }
         topbar?.style.setProperty('z-index', '1000', 'important');
     }

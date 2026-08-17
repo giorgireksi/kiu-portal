@@ -999,12 +999,13 @@ body.lux-full-paint {
   }
 }
 
-/* During deferred startup the sidebar is the foreground loading surface: it
- * covers the top bar and page content instead of showing the page through glass. */
+/* During deferred startup the authored shell keeps its normal glass paint.
+ * A separate underlay covers route content beneath it, so the sidebar does
+ * not need a black/static loading skin or a loading-only blur override. */
+#lux-shell-loading-underlay {
+  display: none;
+}
 @media (min-width: 1025px) {
-  /* Route assembly has its own loading interval after the shared shell is
-   * revealed. Keep the sidebar an opaque foreground surface for both phases;
-   * z-index alone cannot stop glass bleed-through. */
   html.kiu-shell-loading #lux-shell,
   html.kiu-route-assembly-loading #lux-shell,
   body.kiu-shell-loading #lux-shell,
@@ -1013,20 +1014,31 @@ body.lux-full-paint {
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
-    background-color: #08120f !important;
-    background-image: var(--kiu-loading-background, var(--lux-shell-background, linear-gradient(135deg, #07110f 0%, #0b111c 58%, #07120f 100%))) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
     isolation: isolate;
   }
-  html.lux-light-mode.kiu-shell-loading #lux-shell,
-  html.lux-light-mode.kiu-route-assembly-loading #lux-shell,
-  html.kiu-shell-loading body.lux-light-mode #lux-shell,
-  html.kiu-route-assembly-loading body.lux-light-mode #lux-shell,
-  body.lux-light-mode.kiu-shell-loading #lux-shell,
-  body.lux-light-mode.kiu-route-assembly-loading #lux-shell {
-    background-color: #f5f0e8 !important;
-    background-image: var(--kiu-loading-background-light, var(--lux-shell-background, linear-gradient(135deg, #f8f5ee 0%, #f1ede5 58%, #eef6f5 100%))) !important;
+  html.kiu-shell-loading #lux-shell-loading-underlay,
+  html.kiu-route-assembly-loading #lux-shell-loading-underlay,
+  body.kiu-shell-loading #lux-shell-loading-underlay,
+  body.kiu-route-assembly-loading #lux-shell-loading-underlay {
+    display: block;
+    position: fixed;
+    top: var(--lux-sidebar-gutter, 12px);
+    bottom: var(--lux-sidebar-gutter, 12px);
+    left: var(--lux-sidebar-gutter, 12px);
+    width: var(--lux-sidebar-width, 220px);
+    z-index: 2147483646;
+    pointer-events: none;
+    border-radius: var(--lux-shell-sidebar-radius, 22px);
+    background: var(--kiu-loading-background, var(--lux-shell-background, linear-gradient(135deg, #07110f 0%, #0b111c 58%, #07120f 100%))) !important;
+    background-clip: padding-box;
+  }
+  html.lux-light-mode.kiu-shell-loading #lux-shell-loading-underlay,
+  html.lux-light-mode.kiu-route-assembly-loading #lux-shell-loading-underlay,
+  html.kiu-shell-loading body.lux-light-mode #lux-shell-loading-underlay,
+  html.kiu-route-assembly-loading body.lux-light-mode #lux-shell-loading-underlay,
+  body.lux-light-mode.kiu-shell-loading #lux-shell-loading-underlay,
+  body.lux-light-mode.kiu-route-assembly-loading #lux-shell-loading-underlay {
+    background: var(--kiu-loading-background-light, var(--lux-shell-background, linear-gradient(135deg, #f8f5ee 0%, #f1ede5 58%, #eef6f5 100%))) !important;
   }
   html.kiu-shell-loading #lux-topbar,
   html.kiu-route-assembly-loading #lux-topbar { z-index: 1000 !important; }
