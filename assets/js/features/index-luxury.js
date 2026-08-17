@@ -972,7 +972,15 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         // renderer in the timetable's first paint window.
         window.setTimeout(run, 900);
     }
+    let luxuryShellEnsured = false;
     function ensureShell() {
+        const primerTopbar = document.getElementById('lux-topbar');
+        const hasInteractiveTopbar = primerTopbar && primerTopbar.dataset.kiuPrimerPreview !== '1';
+        if (luxuryShellEnsured
+            && document.getElementById('lux-shell')
+            && hasInteractiveTopbar) return;
+        if (primerTopbar?.dataset.kiuPrimerPreview === '1') primerTopbar.remove();
+        luxuryShellEnsured = true;
         let createdCanvas = false;
         const onExamsRoute = document.body?.classList?.contains('lux-route-exams');
         const onOrdersRoute = document.body?.classList?.contains('lux-route-orders');
@@ -1073,6 +1081,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         if (!document.getElementById('lux-topbar')) {
             const topbar = document.createElement('div');
             topbar.id = 'lux-topbar';
+            const initialTopbarPageId = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
+            const initialTopbarPageLabel = escapeHtml(pageLabel(initialTopbarPageId));
             const rolePickerMarkup = isAdminAccountForRolePicker()
                 ? `
                         <div class="lux-picker-wrap" data-picker-wrap="role">
@@ -1090,7 +1100,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                             <i class="fas fa-sidebar"></i>
                             <span class="lux-sidebar-toggle-label">Hide nav</span>
                         </button>
-                        <div class="lux-breadcrumb">KIU <i class="fas fa-chevron-right"></i> <strong id="lux-breadcrumb-page">Dashboard</strong></div>
+                        <div class="lux-breadcrumb">KIU <i class="fas fa-chevron-right"></i> <strong id="lux-breadcrumb-page">${initialTopbarPageLabel}</strong></div>
                     </div>
                     <div class="lux-topbar-spacer"></div>
                     <div class="lux-topbar-actions">
@@ -1674,6 +1684,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             ensureLuxuryHomeDashboardBundle: () => Promise.resolve(false)
         };
     const { homeShellHasLoadingPlaceholder, homeShellHasDashboardContent, renderHomeShellRecoveryPanel, __luxHomeRecoveryPanelContract, renderHomeShell, isLuxuryHomeRoute, scheduleLuxuryHomeDashboardPreload, decodeLuxuryHomeChunkSource, scheduleLuxuryHomeDashboardChunkRetry, ensureLuxuryHomeDashboardBundle } = __luxHomeShellApi;
+
+    // index-luxury is deferred after the route's dependency graph. Build the
+    // shared chrome immediately when this file finishes instead of waiting for
+    // DOMContentLoaded; the normal ready callback still binds and syncs it.
+    if (document.body) ensureShell();
 
     __kiuLuxExpose({
         renderHomeShell,
