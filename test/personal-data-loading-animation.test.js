@@ -11,7 +11,7 @@ describe('personal-data loading animation', () => {
         const html = readSource('personal-data.html');
 
         expect(html).toContain('assets/css/personal-data-loading.css?v=20260808-pdassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
         expect(html).toContain('assets/js/pages/personal-data-loading-runtime.js?v=20260808-pdassembly1');
         expect(html.match(/personal-data-loading\.css/g)).toHaveLength(1);
         expect(html.match(/personal-data-loading-runtime\.js/g)).toHaveLength(1);

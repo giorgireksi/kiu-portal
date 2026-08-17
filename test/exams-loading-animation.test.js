@@ -11,12 +11,12 @@ describe('Exams loading animation', () => {
         const html = readSource('exams.html');
 
         expect(html).toContain('assets/css/exams-loading.css?v=20260810-examsassembly3');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
         expect(html).toContain('assets/js/pages/exams-loading-runtime.js?v=20260810-examsassembly3');
         expect(html.match(/exams-loading\.css/g)).toHaveLength(1);
         expect(html.match(/exams-loading-runtime\.js/g)).toHaveLength(1);
         expect(html.match(/lux-assembly-loading-runtime\.js/g)).toHaveLength(1);
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
         const examsIndex = html.indexOf('exams-loading-runtime.js?v=20260810-examsassembly3');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(examsIndex).toBeGreaterThan(sharedIndex);

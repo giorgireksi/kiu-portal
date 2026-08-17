@@ -46,7 +46,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('id="timetable-command-collapse"');
         expect(html).toContain('class="lux-timetable-command-collapse"');
         expect(html).toContain('[data-timetable-toggle-command]');
-        expect(html).toContain('assets/js/features/navigation.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/features/navigation.js?v=20260817-timetableboot1');
         expect(html).not.toContain('assets/js/pages/planner.js');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');

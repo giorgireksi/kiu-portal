@@ -11,7 +11,7 @@ describe('Social Groups loading animation', () => {
 
     it('loads Groups motion before Social boot', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
         const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260817-instantassembly1');
         const communityIndex = html.indexOf('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const groupsIndex = html.indexOf('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');

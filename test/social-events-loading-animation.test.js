@@ -11,7 +11,7 @@ describe('Social Events loading animation', () => {
 
     it('loads Events motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
         const eventsIndex = html.indexOf('social-events-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 

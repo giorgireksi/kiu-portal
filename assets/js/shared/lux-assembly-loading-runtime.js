@@ -102,6 +102,7 @@
             : String(options.lateReplaySelector || '');
         const unlimitedLateReplay = Boolean(options.unlimitedLateReplay);
         const autoReplayLateMutations = options.autoReplayLateMutations !== false;
+        const observeMutations = options.observeMutations !== false;
         const autoStart = options.autoStart !== false;
         const rootStateDataset = options.rootStateDataset || 'kiuAssemblyState';
         const phaseDataset = options.phaseDataset || 'kiuAssemblyPhase';
@@ -957,7 +958,11 @@
             document.body?.classList.add(classes.active);
             registerStructures(root);
             targets.forEach((target) => target.classList.add(classes.target, classes.staging));
-            waitForShell(root, generation);
+            if (instantLoading && isContentReady()) {
+                run(root, generation);
+            } else {
+                waitForShell(root, generation);
+            }
             return true;
         }
 
@@ -998,7 +1003,11 @@
             document.body?.classList.add(classes.active);
             registerStructures(root);
             targets.forEach((target) => target.classList.add(classes.target, classes.staging));
-            waitForShell(root, generation);
+            if (instantLoading && isContentReady()) {
+                run(root, generation);
+            } else {
+                waitForShell(root, generation);
+            }
             return true;
         }
 
@@ -1049,7 +1058,7 @@
                 window.setTimeout(install, 64);
                 return false;
             }
-            if (typeof MutationObserver === 'function' && !state.observer) {
+            if (observeMutations && typeof MutationObserver === 'function' && !state.observer) {
                 state.observer = new MutationObserver(scheduleStart);
                 state.observer.observe(observerRoot, { childList: true, subtree: true });
             }

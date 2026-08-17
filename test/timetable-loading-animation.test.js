@@ -11,8 +11,8 @@ describe('timetable loading animation', () => {
         const html = readSource('timetable.html');
 
         expect(html).toContain('assets/css/timetable-loading.css?v=20260816-ttlowend1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
-        expect(html).toContain('assets/js/pages/timetable-loading-runtime.js?v=20260816-ttlowend1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
+        expect(html).toContain('assets/js/pages/timetable-loading-runtime.js?v=20260817-observeroff1');
         expect(html.match(/timetable-loading\.css/g)).toHaveLength(1);
         expect(html.match(/timetable-loading-runtime\.js/g)).toHaveLength(1);
         expect(html.match(/lux-assembly-loading-runtime\.js/g)).toHaveLength(1);
@@ -39,6 +39,7 @@ describe('timetable loading animation', () => {
             'select'
         ].forEach((selector) => expect(runtime).toContain(selector));
         expect(runtime).toContain("observerSelector: '#page-timetable'");
+        expect(runtime).toContain('observeMutations: false');
         expect(runtime).toContain('kiuTimetableAssemblyState');
         expect(runtime).toContain('kiu-timetable-assembly-target');
         expect(runtime).toContain('kiu-timetable-assembly-outer');

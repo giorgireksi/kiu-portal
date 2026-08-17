@@ -11,7 +11,7 @@ describe('admin-scheduler loading animation', () => {
         const html = readSource('admin-scheduler.html');
 
         expect(html).toContain('assets/css/admin-scheduler-loading.css?v=20260808-schassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
         expect(html).toContain('assets/js/pages/admin-scheduler-loading-runtime.js?v=20260808-schassembly1');
         expect(html.match(/admin-scheduler-loading\.css/g)).toHaveLength(1);
         expect(html.match(/admin-scheduler-loading-runtime\.js/g)).toHaveLength(1);

@@ -1524,7 +1524,7 @@ __kiuNavExpose({
 function autoBootStandaloneDesktopRoute() {
     const entryId = normalizeStandaloneActivePageId(getStandaloneEntryPageId());
     // Social boots via social-page.js (assembly must own first reveal).
-    if (!entryId || entryId === 'index' || entryId === 'lms' || entryId === 'social' || entryId === 'student-service' || entryId === 'exams' || entryId === 'orders' || entryId === 'library') return;
+    if (!entryId || entryId === 'index' || entryId === 'lms' || entryId === 'social' || entryId === 'student-service' || entryId === 'exams' || entryId === 'orders' || entryId === 'library' || entryId === 'timetable') return;
     if (window.__kiuStandaloneDesktopRouteBootKey) return;
     bootStandaloneDesktopRoute({
         entryId,

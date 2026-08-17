@@ -137,7 +137,7 @@ describe('faculty switch and scoped visual settings', () => {
     expect(utilities).not.toContain("document.documentElement.style.setProperty('--lux-transparency-alpha', surfaceFillAmount.toFixed(3));");
     expect(utilities).toContain("root.style.setProperty('--kiu-shell-gradient', shellGradient);");
     expect(utilities).toContain("root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);");
-    expect(index).toContain('assets/js/features/index-luxury.js?v=20260816-opacity70-runtime1');
+    expect(index).toContain('assets/js/features/index-luxury.js?v=20260817-timetablebg1');
     expect(index).toContain('assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2');
     expect(index).toContain('assets/js/shared/utilities.js?v=20260725-portalmodal1');
   });

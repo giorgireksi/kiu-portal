@@ -90,6 +90,10 @@
             structure: 'kiu-timetable-assembly-structure'
         },
         disableBlur: lowEndTimetableDevice,
+        // Timetable markup is rendered by its single route owner. There are no
+        // lazy assembly panels here, so a subtree observer only rescans the
+        // schedule grid after every DOM mutation.
+        observeMutations: false,
         timing: {
             maxShellWaitMs: lowEndTimetableDevice ? 700 : 1800,
             lateAssemblyGraceMs: lowEndTimetableDevice ? 100 : 145,

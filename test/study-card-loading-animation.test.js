@@ -11,7 +11,7 @@ describe('study-card loading animation', () => {
         const html = readSource('study-card.html');
 
         expect(html).toContain('assets/css/study-card-loading.css?v=20260808-scardassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');
         expect(html).toContain('assets/js/pages/study-card-loading-runtime.js?v=20260808-scardassembly2');
         expect(html.match(/study-card-loading\.css/g)).toHaveLength(1);
         expect(html.match(/study-card-loading-runtime\.js/g)).toHaveLength(1);

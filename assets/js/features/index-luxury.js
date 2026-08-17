@@ -952,6 +952,26 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function scheduleLibraryRouteBackgroundRefresh() {
         scheduleExamsRouteBackgroundRefresh();
     }
+    function scheduleTimetableBackgroundRefresh() {
+        let attempts = 0;
+        const run = () => {
+            const body = document.body;
+            if (body?.classList.contains('kiu-shell-loading')
+                || body?.classList.contains('timetable-assembly-active')) {
+                if (attempts < 24) {
+                    attempts += 1;
+                    window.setTimeout(run, 100);
+                }
+                return;
+            }
+            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+                window.__kiuRefreshLuxuryBackground();
+            }
+        };
+        // Keep the normal-device background, but do not import/initialize the
+        // renderer in the timetable's first paint window.
+        window.setTimeout(run, 900);
+    }
     function ensureShell() {
         let createdCanvas = false;
         const onExamsRoute = document.body?.classList?.contains('lux-route-exams');
@@ -978,7 +998,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         else if (onOrdersRoute) scheduleOrdersRouteBackgroundRefresh();
         else if (onLibraryRoute) scheduleLibraryRouteBackgroundRefresh();
         else if (createdCanvas && typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
+            if (document.body?.classList.contains('lux-route-timetable')) {
+                scheduleTimetableBackgroundRefresh();
+            } else {
+                window.__kiuRefreshLuxuryBackground();
+            }
         }
         if (typeof window.__kiuEnsureBackgroundGalleryMount === 'function') {
             window.__kiuEnsureBackgroundGalleryMount();
@@ -1187,7 +1211,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     }
     function ensureLuxuryBackgroundRuntime() {
         if (typeof window.__kiuInitLuxuryParticleBackground === 'function') return Promise.resolve(true);
-        return window.__kiuLuxuryBackgroundModulePromise ||= import('./luxury-background.js?v=20260816-weakdevice1')
+        return window.__kiuLuxuryBackgroundModulePromise ||= import('./luxury-background.js?v=20260817-timetablebg1')
             .then(() => true).catch(() => false);
     }
     Object.assign(window, {
