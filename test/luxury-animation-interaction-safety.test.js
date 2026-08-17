@@ -40,6 +40,25 @@ describe('luxury animation interaction safety', () => {
         );
     });
 
+    it('emits valid time-valued nav stagger variables', () => {
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        expect(shellChrome).toContain('const navStagger = () =>');
+        expect(shellChrome).toContain(".toFixed(2)}s`");
+        expect(shellChrome).toContain('const groupStagger = navStagger()');
+        expect(shellChrome).toContain('const itemStagger = navStagger()');
+        expect(shellChrome).not.toContain('const groupStagger = Math.min(staggerIndex++, 14)');
+    });
+
+    it('does not let touch hover sheen or nav animation bookkeeping flicker the shell', () => {
+        const css = readShellStackCss();
+        const motion = readSource('assets/js/features/luxury-shell-motion-runtime.js');
+        expect(css).toContain('@media (hover: none), (pointer: coarse)');
+        expect(css).toContain('transform: translateX(-130%) skewX(-14deg) !important');
+        expect(motion).not.toContain("addEventListener('animationstart'");
+        expect(motion).not.toContain("endShellChromeMotion('sidebar-toggle')");
+        expect(motion).toContain("endShellChromeMotion('shell-transform')");
+    });
+
     it('cascades shell inner chrome on desktop overlay without pausing interaction', () => {
         const css = readShellStackCss();
 

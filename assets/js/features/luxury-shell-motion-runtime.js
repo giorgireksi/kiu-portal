@@ -192,18 +192,9 @@
     function onShellTransformTransitionEnd(event) {
         if (event.propertyName !== 'transform') return;
         if (event.target?.id !== 'lux-shell') return;
-        endShellChromeMotion('sidebar-toggle');
+        // One sidebar toggle creates one shell-motion reference. Ending it
+        // twice made overlapping/cancelled transitions flicker the governor.
         endShellChromeMotion('shell-transform');
-    }
-
-    function onNavEnterAnimationStart(event) {
-        if (event.animationName !== 'luxShellNavEnter') return;
-        beginShellChromeMotion(360, 'nav-enter');
-    }
-
-    function onNavEnterAnimationEnd(event) {
-        if (event.animationName !== 'luxShellNavEnter') return;
-        endShellChromeMotion('nav-enter');
     }
 
     function bindShellChromeMotion() {
@@ -213,11 +204,7 @@
         document.addEventListener('transitionrun', onShellTransformTransitionRun);
         document.addEventListener('transitionend', onShellTransformTransitionEnd);
         document.addEventListener('transitioncancel', onShellTransformTransitionEnd);
-        document.addEventListener('animationstart', onNavEnterAnimationStart, true);
-        document.addEventListener('animationend', onNavEnterAnimationEnd, true);
-        // Re-rendered nav items cancel luxShellNavEnter mid-flight; without this the
-        // matching endShellChromeMotion never runs and the governor stays busy forever.
-        document.addEventListener('animationcancel', onNavEnterAnimationEnd, true);
+        // Nav entry is compositor-safe and does not toggle the global motion class.
         // Hover lifts: do not toggle MOTION_CLASS (keeps blur). Only busy-flag particles.
         document.addEventListener('pointerover', onShellChromePointerOver, true);
         document.addEventListener('pointermove', onShellChromePointerMove, { capture: true, passive: true });

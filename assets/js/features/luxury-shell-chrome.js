@@ -470,11 +470,12 @@ function renderNav() {
     if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;
     try {
         let staggerIndex = 0;
+        const navStagger = () => `${(Math.min(staggerIndex++, 14) * 0.04).toFixed(2)}s`;
         navRoot.innerHTML = groups.map((group) => {
-            const groupStagger = Math.min(staggerIndex++, 14);
+            const groupStagger = navStagger();
             const groupMarkup = `<div class="lux-nav-group" style="--lux-nav-stagger:${groupStagger}">${escapeHtml(group.group)}</div>`;
             const itemsMarkup = group.items.map(([pageId, label, icon, badge]) => {
-                const itemStagger = Math.min(staggerIndex++, 14);
+                const itemStagger = navStagger();
                 return `
                 <button class="lux-nav-item${activePage === pageId ? ' is-active' : ''}" type="button" data-nav-target="${escapeHtml(pageId)}" style="--lux-nav-stagger:${itemStagger}">
                     <i class="${escapeHtml(icon)}"></i>
@@ -486,7 +487,7 @@ function renderNav() {
         }).join('');
         const shell = document.getElementById('lux-shell');
         if (shell) {
-            shell.style.setProperty('--lux-shell-footer-stagger', String(Math.min(staggerIndex, 14)));
+            shell.style.setProperty('--lux-shell-footer-stagger', `${(Math.min(staggerIndex, 14) * 0.04).toFixed(2)}s`);
         }
         navRoot.dataset.renderSignature = signature;
     } catch (error) {

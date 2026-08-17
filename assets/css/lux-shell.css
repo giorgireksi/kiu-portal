@@ -936,6 +936,19 @@ body.lux-page-bare .lux-page-shell {
 }
 body.lux-page-bare .page-hero { display: grid; gap: 12px; padding: 12px 0; }
 body.lux-page-bare .page-hero p { color: var(--lux-text-muted, rgba(248, 250, 252, 0.65)); line-height: 1.5; margin: 0; }
+/* Touch screens can synthesize :hover/:focus after a tap. Keep the same
+ * resting/active visuals, but do not leave transient sheen/rim layers painted. */
+@media (hover: none), (pointer: coarse) {
+  #lux-shell .lux-nav-item:hover:not(.is-active)::before {
+    opacity: 0 !important;
+  }
+  #lux-topbar :is(.lux-sidebar-toggle-btn, .lux-topbar-editor-btn, .lux-picker-btn, .lux-icon-btn):hover::after,
+  #lux-topbar :is(.lux-sidebar-toggle-btn, .lux-topbar-editor-btn, .lux-picker-btn, .lux-icon-btn):focus-visible::after {
+    will-change: auto;
+    transform: translateX(-130%) skewX(-14deg) !important;
+    opacity: 0 !important;
+  }
+}
 body.lux-page-bare .lux-empty-state {
   display: grid;
   gap: 8px;

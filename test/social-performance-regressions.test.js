@@ -21,7 +21,7 @@ describe('social performance safeguards', () => {
         const page = readSource('assets/js/pages/social-page.js');
         expect(html).toContain('social-page.js?v=20260818-shellfailopen1');
         expect(html).toContain('lux-fouc-ht.css?v=20260816-hovergpu1');
-        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260818-visualqueue1');
+        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260818-navmotionfix1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
         expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
         expect(page).toContain('loadSocialDynamicScript');
