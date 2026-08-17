@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -29,6 +29,21 @@ describe('shared staged shell reveal', () => {
         expect(navigation).not.toContain("root.classList.add('kiu-shell-revealing')");
         expect(navigation).not.toContain('KIU_SHELL_REVEAL_TIMINGS.shell');
         expect(navigation).toContain("root.classList.add('kiu-shell-ready')");
+    });
+
+    it('authors the sidebar before deferred route scripts on every unified route', () => {
+        readdirSync(process.cwd())
+            .filter((name) => name.endsWith('.html'))
+            .forEach((name) => {
+                const page = readFileSync(join(process.cwd(), name), 'utf8');
+                if (!page.includes('lux-unified-shell')) return;
+                const shellIndex = page.indexOf('<aside id="lux-shell"');
+                const contentIndex = page.indexOf('<main id="app-content"');
+                expect(shellIndex).toBeGreaterThan(-1);
+                if (contentIndex < 0) return;
+                expect(shellIndex).toBeLessThan(contentIndex);
+                expect(page.slice(shellIndex, shellIndex + 180)).toContain('z-index:2147483647 !important');
+            });
     });
 
     it('uses only a short opacity fade for route content', () => {

@@ -217,7 +217,7 @@ describe('admin scheduler route regressions.test', () => {
         expect(html).toContain('sch-preset-manage-empty" class="sch-empty-state lux-summary-surface lux-summary-surface--panel home-hover-chip"');
         expect(html).not.toContain('lux-timetable-stage');
         expect(html).toContain('defer src="assets/js/pages/admin-scheduler.js');
-        expect(html).toContain('assets/css/lux-fouc-ht.css?v=20260806-hidetopbar2');
+        expect(html).toContain('assets/css/lux-fouc-ht.css?v=20260818-showhidefix1');
         expect(html).toContain('assets/js/pages/admin-scheduler.js?v=20260815-staff-directory-picker5');
         expect(html).toContain('defer src="assets/js/features/index-luxury.js');
         expect(html).toContain('assets/js/features/luxury-visual-runtime.js?v=20260818-schedulerpaint1');

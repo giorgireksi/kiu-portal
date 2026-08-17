@@ -853,7 +853,11 @@
         collapsed = storedSidebarState === '1';
     } catch (e) {}
     if (typeof window !== 'undefined' && window.innerWidth >= 1181 && !hasSidebarPreference) {
-        collapsed = true;
+        // The shell is authored in the body before deferred runtimes. Keep it
+        // paintable in the first frame; only an explicit saved preference may
+        // collapse it before the body state is applied.
+        collapsed = false;
+        root.classList.remove('lux-sidebar-collapsed');
     }
     if (collapsed) {
         root.classList.add('lux-sidebar-collapsed');
