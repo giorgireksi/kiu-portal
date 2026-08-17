@@ -25,15 +25,15 @@ describe('Social Home loading animation', () => {
 
     it('wires only the Home center motion after the shared engine', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-showhidefix1');
-        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260817-instantassembly1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1');
+        const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260818-centerobserver1');
 
         expect(html).toContain('social-home-loading.css?v=20260815-socialassemblyclean1');
         expect(html).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
         expect(html).toContain('social-groups-loading.css?v=20260815-socialassemblyclean1');
-        expect(html).toContain('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(html).toContain('social-groups-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3');
         expect(html).toContain('social-community-loading.css?v=20260815-socialassemblyclean1');
-        expect(html).toContain('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(html).toContain('social-community-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3');
         expect(sharedIndex).toBeGreaterThan(-1);
         expect(homeIndex).toBeGreaterThan(sharedIndex);
         expect(html).not.toContain('social-loading-runtime');
@@ -344,12 +344,12 @@ describe('Social Home loading animation', () => {
         expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2'");
         expect(sw).toContain('social-home-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-community-loading.css?v=20260815-socialassemblyclean1');
-        expect(sw).toContain('social-home-loading-runtime.js?v=20260817-instantassembly1');
-        expect(sw).toContain('social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(sw).toContain('social-home-loading-runtime.js?v=20260818-centerobserver1');
+        expect(sw).toContain('social-community-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3');
         expect(sw).toContain('social-groups-loading.css?v=20260815-socialassemblyclean1');
-        expect(sw).toContain('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(sw).toContain('social-groups-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
-        expect(sw).toContain('lux-assembly-loading-runtime.js?v=20260818-showhidefix1');
+        expect(sw).toContain('lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1');
         expect(sw).toContain('social-assembly-prehide.css?v=20260815-socialassemblyclean1');
         expect(sw).not.toContain('social-loading-runtime');
     });

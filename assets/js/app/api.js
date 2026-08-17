@@ -1652,6 +1652,11 @@ function flushPortalStateBeforeNavigation(options = {}) {
             saveState();
         } catch (error) {}
     }
+    if (typeof flushKiuStatePersistence === 'function') {
+        try {
+            flushKiuStatePersistence();
+        } catch (error) {}
+    }
     const runtime = ensurePortalBackendRuntime();
     // Cancel the coalescing timer: navigation teardown must not destroy a pending
     // write that would otherwise never fire. The keepalive/sync below sends now.

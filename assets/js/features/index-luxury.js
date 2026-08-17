@@ -6,6 +6,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
 (function () {
     if (window.__kiuLuxuryIndexInitialized) return;
     window.__kiuLuxuryIndexInitialized = true;
+    window.__kiuMarkPortalBootPhase?.('index-luxury-start');
     const ROLE_LABELS = { student: 'Student Portal', professor: 'Professor View', ta: 'TA View', admin: 'Admin View', student_service: 'Student Service View' };
     const PAGE_LABELS = {
         home: 'Dashboard', lms: 'LMS', news: 'News', social: 'Social', profile: 'Profile', 'personal-data': 'Personal Data', chancellery: 'E-Chancellery',

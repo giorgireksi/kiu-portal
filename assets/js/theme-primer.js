@@ -7,6 +7,22 @@
 (function kiuThemePrimer() {
     'use strict';
 
+    function markBootPhase(phase) {
+        var name = String(phase || '').trim();
+        if (!name) return;
+        try {
+            if (typeof performance !== 'undefined' && typeof performance.mark === 'function') {
+                performance.mark(`kiu:boot:${name}`);
+            }
+        } catch (_error) {}
+        window.__KIU_PORTAL_BOOT_TIMINGS = window.__KIU_PORTAL_BOOT_TIMINGS || {};
+        window.__KIU_PORTAL_BOOT_TIMINGS[name] = typeof performance !== 'undefined' && typeof performance.now === 'function'
+            ? performance.now()
+            : Date.now();
+    }
+    window.__kiuMarkPortalBootPhase = window.__kiuMarkPortalBootPhase || markBootPhase;
+    markBootPhase('primer-start');
+
     // Assembly loading is readiness-gated but intentionally motion-free by default.
     // Set this to false before the primer/shared runtime loads to restore legacy motion.
     window.__KIU_INSTANT_ASSEMBLY_LOADING = window.__KIU_INSTANT_ASSEMBLY_LOADING !== false;
@@ -871,6 +887,7 @@
     function applyBodyState() {
         var b = document.body;
         if (!b) return;
+        markBootPhase('body-state-start');
         var requestedRole = getRequestedShellRole();
 
         // Mark as luxury shell immediately — hides old header/nav/footer via CSS
@@ -942,6 +959,7 @@
             });
         }
         function forceRevealPage() {
+            markBootPhase('shell-degraded');
             clearStaleRouteLoadingState();
             window.__kiuSocialShellRevealAllowed = true;
             window.__kiuHomeShellRevealAllowed = true;
@@ -978,6 +996,7 @@
         if (!b.classList.contains('lux-route-home') && !shouldSkipFlatSurfaceOverrides()) {
             setTimeout(applyFlatSurfaceOverrides, 0);
         }
+        markBootPhase('body-state-applied');
     }
 
     // Try immediately, fallback to earliest possible moment

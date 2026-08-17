@@ -185,7 +185,7 @@
     let observerFrame = 0;
     function observeRenderedCommunity() {
         if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
-        const page = document.querySelector('#page-social');
+        const page = getCenter();
         if (!page || typeof MutationObserver !== 'function') {
             window.setTimeout(observeRenderedCommunity, 64);
             return;

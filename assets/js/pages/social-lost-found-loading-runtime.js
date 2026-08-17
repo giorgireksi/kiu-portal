@@ -178,7 +178,7 @@
 
     let observerFrame = 0;
     function observeRenderedLostFound() {
-        const page = document.querySelector('#page-social');
+        const page = getCenter();
         if (!page || typeof MutationObserver !== 'function') {
             window.setTimeout(observeRenderedLostFound, 64);
             return;

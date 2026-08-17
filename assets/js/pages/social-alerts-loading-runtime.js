@@ -178,7 +178,7 @@
 
     let observerFrame = 0;
     function observeRenderedAlerts() {
-        const page = document.querySelector('#page-social');
+        const page = typeof getCenter === 'function' ? getCenter() : null;
         if (!page || typeof MutationObserver !== 'function') {
             window.setTimeout(observeRenderedAlerts, 64);
             return;

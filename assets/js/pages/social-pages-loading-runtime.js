@@ -205,7 +205,7 @@
 
     let observerFrame = 0;
     function observeRenderedPages() {
-        const page = document.querySelector('#page-social');
+        const page = getCenter();
         if (!page || typeof MutationObserver !== 'function') {
             window.setTimeout(observeRenderedPages, 64);
             return;

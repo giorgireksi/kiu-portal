@@ -11,7 +11,7 @@ describe('news loading animation', () => {
         const html = readSource('news.html');
 
         expect(html).toContain('assets/css/news-loading.css?v=20260808-newsassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1');
         expect(html).toContain('assets/js/pages/news-loading-runtime.js?v=20260808-newsassembly1');
         expect(html.match(/news-loading\.css/g)).toHaveLength(1);
         expect(html.match(/news-loading-runtime\.js/g)).toHaveLength(1);

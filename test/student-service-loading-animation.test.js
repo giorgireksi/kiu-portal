@@ -11,7 +11,7 @@ describe('Student Service loading animation', () => {
         const html = readSource('student-service.html');
 
         expect(html).toContain('assets/css/student-service-loading.css?v=20260808-ssassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1');
         expect(html).toContain('assets/js/pages/student-service-loading-runtime.js?v=20260808-ssassembly1');
         expect(html.match(/student-service-loading\.css/g)).toHaveLength(1);
         expect(html.match(/student-service-loading-runtime\.js/g)).toHaveLength(1);

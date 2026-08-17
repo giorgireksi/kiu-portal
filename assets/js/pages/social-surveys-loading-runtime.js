@@ -190,7 +190,7 @@
 
     let observerFrame = 0;
     function observeRenderedSurveys() {
-        const page = document.querySelector('#page-social');
+        const page = getCenter();
         if (!page || typeof MutationObserver !== 'function') {
             window.setTimeout(observeRenderedSurveys, 64);
             return;

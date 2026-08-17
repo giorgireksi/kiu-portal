@@ -793,9 +793,8 @@ function getServiceNavItems() {
 
 let kiuShellInitialized = false;
 let kiuShellStartupCompleted = false;
-let kiuShellStartupAttempts = 0;
-let portalStartupPollDelayMs = 16;
-const PORTAL_STARTUP_MAX_ATTEMPTS = 48;
+let kiuPortalStartupWaitPromise = null;
+const PORTAL_STARTUP_DEPENDENCY_TIMEOUT_MS = 1800;
 const STUDENT_SHELL_ADMIN_ENTRY_IDS = new Set(['admin-tools', 'admin-scheduler', 'staff', 'students-admin', 'admin-library', 'admin-orders', 'profile-view', 'lms']);
 
 function getStandaloneEntryPageId(pathname = window.location.pathname) {
@@ -937,10 +936,19 @@ function ensureRuntimeForPage(pageId) {
         loaders.push(ensurePortalLibraryRuntimeLoaded());
     }
     if (!loaders.length) return null;
-    return Promise.all(loaders).catch((error) => {
-        console.warn(`Could not lazy-load runtime for ${pageId}.`, error);
-        return false;
-    });
+    return Promise.all(loaders)
+        .then((result) => {
+            try {
+                window.dispatchEvent(new CustomEvent('kiu:portal-runtime-ready', {
+                    detail: { pageId }
+                }));
+            } catch (error) {}
+            return result;
+        })
+        .catch((error) => {
+            console.warn(`Could not lazy-load runtime for ${pageId}.`, error);
+            return false;
+        });
 }
 
 function isPortalStartupDependencyReady() {
@@ -966,6 +974,43 @@ function isPortalStartupDependencyReady() {
             || element.getAttribute?.('aria-hidden') === 'true') return true;
         return typeof window[functionName] === 'function';
     });
+}
+
+function waitForPortalStartupDependencies() {
+    if (isPortalStartupDependencyReady()) return Promise.resolve({ degraded: false });
+    if (kiuPortalStartupWaitPromise) return kiuPortalStartupWaitPromise;
+
+    const runtimePromise = ensureRuntimeForPage(getActivePageId());
+    window.__kiuMarkPortalBootPhase?.('runtime-wait-start');
+    kiuPortalStartupWaitPromise = new Promise((resolve) => {
+        let settled = false;
+        let timeoutId = 0;
+        const check = () => {
+            if (isPortalStartupDependencyReady()) finish(false);
+        };
+        const onRuntimeReady = () => check();
+        const finish = (degraded = false) => {
+            if (settled) return;
+            window.__kiuMarkPortalBootPhase?.(degraded ? 'runtime-wait-degraded' : 'runtime-ready');
+            settled = true;
+            if (timeoutId) window.clearTimeout(timeoutId);
+            window.removeEventListener('kiu:portal-runtime-ready', onRuntimeReady);
+            resolve({ degraded });
+        };
+        window.addEventListener('kiu:portal-runtime-ready', onRuntimeReady);
+        timeoutId = window.setTimeout(() => {
+            console.warn('Portal startup runtime dependencies did not become ready before the safety deadline.');
+            finish(true);
+        }, PORTAL_STARTUP_DEPENDENCY_TIMEOUT_MS);
+        if (runtimePromise && typeof runtimePromise.then === 'function') {
+            runtimePromise.then(check, check);
+        }
+        if (typeof window.queueMicrotask === 'function') window.queueMicrotask(check);
+        else window.setTimeout(check, 0);
+    }).finally(() => {
+        kiuPortalStartupWaitPromise = null;
+    });
+    return kiuPortalStartupWaitPromise;
 }
 
 let kiuShellRevealStarted = false;
@@ -1018,6 +1063,7 @@ function playRouteContentFade(target) {
 }
 
 function finishKiuShellReveal() {
+    window.__kiuMarkPortalBootPhase?.('shell-ready');
     kiuShellRevealFinished = true;
     setKiuShellLoadState({
         phase: 'ready',
@@ -1036,6 +1082,7 @@ function finishKiuShellReveal() {
 }
 
 function startKiuShellReveal({ degraded = false } = {}) {
+    window.__kiuMarkPortalBootPhase?.(degraded ? 'shell-reveal-degraded' : 'shell-reveal-start');
     if (kiuShellRevealFinished) return getKiuShellLoadState();
     if (kiuShellRevealStarted) return getKiuShellLoadState();
     kiuShellRevealStarted = true;
@@ -1677,11 +1724,11 @@ function queueDeferredPortalStartup() {
             markPortalShellReady();
             return;
         }
-        if (!isPortalStartupDependencyReady() && kiuShellStartupAttempts < PORTAL_STARTUP_MAX_ATTEMPTS) {
-            kiuShellStartupAttempts += 1;
-            const delay = portalStartupPollDelayMs;
-            portalStartupPollDelayMs = Math.min(portalStartupPollDelayMs + 8, 64);
-            window.setTimeout(queueDeferredPortalStartup, delay);
+        if (!isPortalStartupDependencyReady()) {
+            waitForPortalStartupDependencies().then(({ degraded }) => {
+                if (degraded) setKiuShellLoadState({ degraded: true });
+                if (!kiuShellStartupCompleted) runDeferredPortalStartupForStandaloneAdmin();
+            });
             return;
         }
         runDeferredPortalStartupForStandaloneAdmin();
@@ -1699,17 +1746,18 @@ function queueDeferredPortalStartup() {
     }
     tryMarkPortalShellInteractive();
     primeDeferredShellRouteFromLocation();
-    if (!isPortalStartupDependencyReady() && kiuShellStartupAttempts < PORTAL_STARTUP_MAX_ATTEMPTS) {
-        kiuShellStartupAttempts += 1;
-        const delay = portalStartupPollDelayMs;
-        portalStartupPollDelayMs = Math.min(portalStartupPollDelayMs + 8, 64);
-        window.setTimeout(queueDeferredPortalStartup, delay);
+    if (!isPortalStartupDependencyReady()) {
+        waitForPortalStartupDependencies().then(({ degraded }) => {
+            if (degraded) setKiuShellLoadState({ degraded: true });
+            if (!kiuShellStartupCompleted) runDeferredPortalStartup();
+        });
         return;
     }
     runDeferredPortalStartup();
 }
 
 function initializePortalShell() {
+    window.__kiuMarkPortalBootPhase?.('navigation-init');
     if (kiuShellInitialized) return;
     kiuShellInitialized = true;
     // Ensure auth state is loaded before any navigation or rendering

@@ -11,8 +11,8 @@ describe('Social Pages loading animation', () => {
 
     it('loads Pages motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
-        const pagesIndex = html.indexOf('social-pages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1');
+        const pagesIndex = html.indexOf('social-pages-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 
         expect(html).toContain('social-pages-loading.css?v=20260815-socialassemblyclean1');
@@ -222,7 +222,7 @@ describe('Social Pages loading animation', () => {
         const sw = readSource('service-worker.js');
         expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2'");
         expect(sw).toContain('social-pages-loading.css?v=20260815-socialassemblyclean1');
-        expect(sw).toContain('social-pages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
+        expect(sw).toContain('social-pages-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
     });
 });

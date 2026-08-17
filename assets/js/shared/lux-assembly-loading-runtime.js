@@ -165,6 +165,42 @@
                 return matches;
             });
         };
+        const assemblyMutationSelector = [
+            ...outerSelectors,
+            granularSelector,
+            controlSelector,
+            structureSelector,
+            hierarchySelector,
+            lateReplaySelector
+        ].filter(Boolean).join(', ');
+
+        function nodeContainsAssemblyMatch(node) {
+            if (!node || node.nodeType !== 1 || !assemblyMutationSelector) return false;
+            try {
+                return Boolean(node.matches?.(assemblyMutationSelector)
+                    || node.querySelector?.(assemblyMutationSelector));
+            } catch (_error) {
+                return false;
+            }
+        }
+
+        function hasRelevantAssemblyMutation(records, observerRoot) {
+            if (!assemblyMutationSelector || !records || typeof records.some !== 'function') return false;
+            return records.some((record) => {
+                if (record?.type !== 'childList') return false;
+                const target = record.target?.nodeType === 1
+                    ? record.target
+                    : record.target?.parentElement;
+                if (target && observerRoot?.contains?.(target)) {
+                    try {
+                        if (target.matches?.(assemblyMutationSelector)
+                            || target.closest?.(assemblyMutationSelector)) return true;
+                    } catch (_error) {}
+                }
+                return [...(record.addedNodes || []), ...(record.removedNodes || [])]
+                    .some(nodeContainsAssemblyMatch);
+            });
+        }
 
         function isVisibleAssemblyElement(element, root) {
             if (!element || element === root) return false;
@@ -783,7 +819,7 @@
                         resolve();
                         return;
                     }
-                    state.waitTimer = window.setTimeout(poll, 32);
+                    state.waitTimer = window.setTimeout(poll, assemblyPollMs);
                 };
                 poll();
             });
@@ -822,7 +858,7 @@
             tick();
         }
 
-        function run(root, generation) {
+        function run(root, generation, initialTree = null) {
             if (state.root !== root || state.generation !== generation) return;
             root.dataset[rootStateDataset] = 'active';
             state.phase = 'active';
@@ -837,7 +873,7 @@
             recordEvent(reduceMotion ? 'reduced-motion' : 'running');
             // Instant mode keeps the assembly lifecycle classes available for
             // diagnostics, but never adds staging/flight styles or WAAPI motion.
-            const tree = getAssemblyTree(root);
+            const tree = initialTree || getAssemblyTree(root);
             registerStructures(root);
             registerTree(tree);
             if (!instantLoading) {
@@ -944,7 +980,8 @@
 
         function start(root = getPageRoot()) {
             if (!isRoute() || !root) return false;
-            const targets = getTargets(root);
+            const initialTree = getAssemblyTree(root);
+            const targets = initialTree.nodes.map((node) => node.element);
             if (!targets.length) return false;
             abortOtherMotions();
             if (state.root === root
@@ -978,9 +1015,9 @@
                 targets.forEach((target) => target.classList.add(classes.target, classes.staging));
             }
             if (instantLoading && contentReadyNow) {
-                run(root, generation);
+                run(root, generation, initialTree);
             } else if (!instantLoading && contentReadyNow) {
-                run(root, generation);
+                run(root, generation, initialTree);
             } else {
                 waitForShell(root, generation);
             }
@@ -1085,7 +1122,9 @@
                 return false;
             }
             if (observeMutations && typeof MutationObserver === 'function' && !state.observer) {
-                state.observer = new MutationObserver(scheduleStart);
+                state.observer = new MutationObserver((records) => {
+                    if (hasRelevantAssemblyMutation(records, observerRoot)) scheduleStart();
+                });
                 state.observer.observe(observerRoot, { childList: true, subtree: true });
             }
             recordEvent('installed');

@@ -1834,6 +1834,7 @@ function ensureDesktopSidebarOverlayDefaults() {
 }
 
 function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
+    window.__kiuMarkPortalBootPhase?.('shell-chrome-start');
     if (typeof document === 'undefined') return;
     document.getElementById('lux-user-chip')?.remove();
     document.getElementById('lux-user-menu')?.remove();
@@ -1849,6 +1850,7 @@ function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
         if (document.getElementById('lux-shell')) {
             renderNav();
         }
+        window.__kiuMarkPortalBootPhase?.('shell-chrome-ready');
         seedRolePickerLabel();
         if (typeof window.populateRoleSwitcher === 'function') {
             window.populateRoleSwitcher();

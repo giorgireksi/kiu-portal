@@ -119,6 +119,28 @@ describe('global interaction performance guardrails', () => {
     expect(state).not.toContain("const nodes = Array.from(root.querySelectorAll('*')).filter(isScrollableSnapshotTarget);");
   });
 
+  it('filters assembly mutations and uses the weak-device polling interval consistently', () => {
+    const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
+
+    expect(runtime).toContain('const assemblyMutationSelector = [');
+    expect(runtime).toContain('function hasRelevantAssemblyMutation(records, observerRoot)');
+    expect(runtime).toContain('new MutationObserver((records) => {');
+    expect(runtime).toContain('hasRelevantAssemblyMutation(records, observerRoot)');
+    expect(runtime).toContain('window.setTimeout(poll, assemblyPollMs)');
+    expect(runtime).not.toContain('window.setTimeout(poll, 32)');
+  });
+
+  it('coalesces local portal persistence and keeps navigation flush durable', () => {
+    const state = readSource('assets/js/app/state.js');
+    const api = readSource('assets/js/app/api.js');
+
+    expect(state).toContain('function scheduleKiuLocalPersistence(snapshot)');
+    expect(state).toContain('function flushKiuStatePersistence()');
+    expect(state).toContain('requestIdleCallback');
+    expect(state).toContain('kiuPendingLocalPersistence = {');
+    expect(api).toMatch(/saveState\(\);[\s\S]*?flushKiuStatePersistence\(\);/);
+  });
+
   it('does not run expensive shell syncs while role/faculty switches are redirecting', () => {
     const utilities = readSource('assets/js/shared/utilities.js');
     const luxury = readSource('assets/js/features/index-luxury.js');
@@ -129,6 +151,32 @@ describe('global interaction performance guardrails', () => {
     expect(utilities).toContain("if (typeof fastRedirectRoleSwitch === 'function' && await fastRedirectRoleSwitch(requestedRole))");
     expect(luxury).toContain('if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;');
     expect(readSource('assets/js/features/luxury-index-runtime.js')).toContain('frameInterval: isHome ? 16 : (reducedMotion ? 80 : 42)');
+  });
+
+  it('records lightweight startup marks across primer, shell, and route phases', () => {
+    const primer = readSource('assets/js/theme-primer.js');
+    const navigation = readSource('assets/js/features/navigation.js');
+    const chrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const luxury = readSource('assets/js/features/index-luxury.js');
+
+    expect(primer).toContain('window.__kiuMarkPortalBootPhase =');
+    expect(primer).toContain("markBootPhase('primer-start')");
+    expect(primer).toContain("markBootPhase('body-state-applied')");
+    expect(navigation).toContain("'runtime-wait-start'");
+    expect(navigation).toContain("'shell-ready'");
+    expect(chrome).toContain("'shell-chrome-ready'");
+    expect(luxury).toContain("'index-luxury-start'");
+  });
+
+  it('preloads split route runtimes without changing dependency execution order', () => {
+    const app = readSource('assets/js/app/app.js');
+
+    expect(app).toContain('function preloadRuntimeScript(entry)');
+    expect(app).toContain('function preloadRuntimeEntries(entries = [])');
+    expect(app).toContain("link.rel = asModule ? 'modulepreload' : 'preload'");
+    expect(app).toContain('scriptGroups.forEach(preloadRuntimeEntries);');
+    expect(app).toContain('preloadRuntimeEntries(NEWS_RUNTIME_SCRIPTS);');
+    expect(app).toContain('preloadRuntimeEntries(REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS);');
   });
 
   it('uses lightweight navigate sync instead of full syncAll after navigation', () => {
@@ -160,7 +208,9 @@ describe('global interaction performance guardrails', () => {
     expect(navigation).not.toContain('const fallbackTimer = window.setTimeout(run, 48);');
     expect(navigation).not.toContain("body.classList.remove('kiu-shell-loading', 'lux-home-page');");
     expect(navigation).toMatch(/finally \{[\s\S]*?schedulePortalShellReadyReveal\(\);[\s\S]*?\}/);
-    expect(navigation).toContain('const PORTAL_STARTUP_MAX_ATTEMPTS = 48;');
+    expect(navigation).toContain('function waitForPortalStartupDependencies()');
+    expect(navigation).toContain("kiu:portal-runtime-ready");
+    expect(navigation).not.toContain('portalStartupPollDelayMs');
   });
 
   it('disposes particle WebGL when background animation is off', () => {

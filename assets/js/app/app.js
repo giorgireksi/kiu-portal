@@ -776,6 +776,25 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         return !current && document.readyState !== 'loading';
     }
 
+    const runtimePreloadKeys = new Set();
+    function preloadRuntimeScript(entry) {
+        const src = typeof entry === 'string' ? entry : entry?.src;
+        const asModule = Boolean(typeof entry === 'object' && entry?.module);
+        const key = normalizeRuntimeScriptKey(src);
+        if (!key || runtimePreloadKeys.has(key) || findExistingRuntimeScript(src)) return;
+        runtimePreloadKeys.add(key);
+        const link = document.createElement('link');
+        link.rel = asModule ? 'modulepreload' : 'preload';
+        if (!asModule) link.as = 'script';
+        link.href = src;
+        link.dataset.kiuRuntimePreload = key;
+        link.onerror = () => runtimePreloadKeys.delete(key);
+        document.head.appendChild(link);
+    }
+    function preloadRuntimeEntries(entries = []) {
+        (Array.isArray(entries) ? entries : [entries]).forEach(preloadRuntimeScript);
+    }
+
     function loadRuntimeScriptOnce(entry) {
         const src = typeof entry === 'string' ? entry : entry?.src;
         const asModule = Boolean(typeof entry === 'object' && entry?.module);
@@ -905,8 +924,10 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         const scriptGroups = hasRebuiltSocialShell
             ? [SOCIAL_RUNTIME_SCRIPT_GROUPS[0]]
             : SOCIAL_RUNTIME_SCRIPT_GROUPS;
+        // Fetch independent groups in parallel, while preserving classic/module
+        // execution order below so bridges never race their ESM leaf exports.
+        scriptGroups.forEach(preloadRuntimeEntries);
         // Within a group, preserve array order (module leaf before classic bridge).
-        // Promise.all raced bridges ahead of ESM evaluation and left window exports unset.
         socialRuntimeLoadPromise = scriptGroups
             .reduce(
                 (chain, group) => chain.then(() => group.reduce(
@@ -948,6 +969,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         }
         if (window.__KIU_NEWS_RUNTIME_LOADED) return Promise.resolve(true);
         if (newsRuntimeLoadPromise) return newsRuntimeLoadPromise;
+        preloadRuntimeEntries(NEWS_RUNTIME_SCRIPTS);
         newsRuntimeLoadPromise = NEWS_RUNTIME_SCRIPTS
             .reduce((chain, src) => chain.then(() => loadRuntimeScriptOnce(src)), Promise.resolve())
             .then(() => {
@@ -980,6 +1002,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         }
         if (window.__KIU_ORDERS_RUNTIME_LOADED) return Promise.resolve(true);
         if (ordersRuntimeLoadPromise) return ordersRuntimeLoadPromise;
+        preloadRuntimeEntries(ORDERS_RUNTIME_SCRIPTS);
         ordersRuntimeLoadPromise = ORDERS_RUNTIME_SCRIPTS
             .reduce((chain, src) => chain.then(() => loadRuntimeScriptOnce(src)), Promise.resolve())
             .then(() => {
@@ -1000,6 +1023,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         }
         if (window.__KIU_ADMIN_ORDERS_RUNTIME_LOADED) return Promise.resolve(true);
         if (adminOrdersRuntimeLoadPromise) return adminOrdersRuntimeLoadPromise;
+        preloadRuntimeEntries(ADMIN_ORDERS_RUNTIME_SCRIPTS);
         adminOrdersRuntimeLoadPromise = ADMIN_ORDERS_RUNTIME_SCRIPTS
             .reduce((chain, src) => chain.then(() => loadRuntimeScriptOnce(src)), Promise.resolve())
             .then(() => {
@@ -1025,6 +1049,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         }
         if (window.__KIU_LIBRARY_RUNTIME_LOADED) return Promise.resolve(true);
         if (libraryRuntimeLoadPromise) return libraryRuntimeLoadPromise;
+        preloadRuntimeEntries([LIBRARY_CATALOG_SYNC_SCRIPT, LIBRARY_CATALOG_VIEW_SCRIPT, LIBRARY_RUNTIME_SCRIPT]);
         libraryRuntimeLoadPromise = loadRuntimeScriptOnce(LIBRARY_CATALOG_SYNC_SCRIPT)
             .then(() => loadRuntimeScriptOnce(LIBRARY_CATALOG_VIEW_SCRIPT))
             .then(() => loadRuntimeScriptOnce(LIBRARY_RUNTIME_SCRIPT))
@@ -1051,6 +1076,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         }
         if (window.__KIU_LMS_RUNTIME_LOADED) return Promise.resolve(true);
         if (lmsRuntimeLoadPromise) return lmsRuntimeLoadPromise;
+        preloadRuntimeEntries([LMS_CLASSROOM_TABS_RUNTIME_SCRIPT, LMS_SECTION_QUIZ_RUNTIME_SCRIPT, LMS_RUNTIME_SCRIPT]);
         lmsRuntimeLoadPromise = loadRuntimeScriptOnce(LMS_CLASSROOM_TABS_RUNTIME_SCRIPT)
             .then(() => loadRuntimeScriptOnce(LMS_SECTION_QUIZ_RUNTIME_SCRIPT))
             .then(() => loadRuntimeScriptOnce(LMS_RUNTIME_SCRIPT))
@@ -1120,6 +1146,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
     }
     function waitForStandaloneRegistrationStaticBundle() {
         if (registrationRuntimeLoadPromise) return registrationRuntimeLoadPromise;
+        preloadRuntimeEntries(REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS);
         registrationRuntimeLoadPromise = REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS
             .reduce((chain, src) => chain.then(() => loadRuntimeScriptOnce(src)), Promise.resolve())
             .then(() => {
@@ -1171,6 +1198,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         }
         if (registrationRuntimeLoadPromise) return registrationRuntimeLoadPromise;
         const scriptsToLoad = isStudentRoute ? REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS : REGISTRATION_RUNTIME_SCRIPTS;
+        preloadRuntimeEntries(scriptsToLoad);
         registrationRuntimeLoadPromise = scriptsToLoad
             .reduce((chain, src) => chain.then(() => loadRuntimeScriptOnce(src)), Promise.resolve())
             .then(() => {

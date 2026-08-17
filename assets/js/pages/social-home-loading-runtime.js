@@ -203,7 +203,7 @@
     function observeRenderedFeed() {
         if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;
         if (typeof document === 'undefined') return;
-        const page = document.querySelector('#page-social');
+        const page = getFeedCenter();
         if (!page || typeof MutationObserver !== 'function') return;
         const observer = new MutationObserver(() => {
             if (window.__kiuSocialAssemblyMotionOwner === 'render-pipeline') return;

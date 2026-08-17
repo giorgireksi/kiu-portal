@@ -282,6 +282,93 @@ function getRegistrationCmsPersistFootprint(state = KIU_STATE) {
     }
 }
 
+let kiuPendingLocalPersistence = null;
+let kiuLocalPersistenceHandle = 0;
+let kiuLocalPersistenceHandleType = '';
+
+function buildKiuLocalPersistenceSnapshot() {
+    const persistedRegistrationCms = (() => {
+        const legacy = (KIU_STATE.registrationCMS && typeof KIU_STATE.registrationCMS === 'object')
+            ? KIU_STATE.registrationCMS
+            : {};
+        const concData = typeof concCourseData !== 'undefined'
+            ? concCourseData
+            : (legacy.concCourseData || {});
+        const minorData = typeof minorProgramData !== 'undefined'
+            ? minorProgramData
+            : (legacy.minorProgramData || {});
+        return {
+            concCourseData: concData || {},
+            minorProgramData: minorData || {}
+        };
+    })();
+    const persisted = {
+        ...KIU_STATE,
+        adminProgramStructures: KIU_STATE.adminProgramStructures || {},
+        registrationCMSByFaculty: KIU_STATE.registrationCMSByFaculty || {},
+        registrationCMS: persistedRegistrationCms
+    };
+    delete persisted.domain;
+    delete persisted.auth;
+    delete persisted.lmsLiveQuizzes;
+    delete persisted.lmsWhiteboards;
+    return persisted;
+}
+
+function writeKiuLocalPersistence(entry) {
+    if (KIU_REMOTE_AUTHORITATIVE_RUNTIME || !entry?.snapshot) return false;
+    try {
+        localStorage.setItem(entry.key || getKiuStatePersistenceKey(), JSON.stringify(entry.snapshot));
+        return true;
+    } catch (error) {
+        console.warn('Could not persist portal state locally.', error);
+        return false;
+    }
+}
+
+function scheduleKiuLocalPersistence(snapshot) {
+    if (KIU_REMOTE_AUTHORITATIVE_RUNTIME || !snapshot) return;
+    kiuPendingLocalPersistence = {
+        key: getKiuStatePersistenceKey(),
+        snapshot
+    };
+    if (kiuLocalPersistenceHandle) return;
+    const commit = () => {
+        kiuLocalPersistenceHandle = 0;
+        kiuLocalPersistenceHandleType = '';
+        const pending = kiuPendingLocalPersistence;
+        kiuPendingLocalPersistence = null;
+        writeKiuLocalPersistence(pending);
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+        kiuLocalPersistenceHandleType = 'idle';
+        kiuLocalPersistenceHandle = window.requestIdleCallback(commit, { timeout: 1000 });
+    } else if (typeof window.requestAnimationFrame === 'function') {
+        kiuLocalPersistenceHandleType = 'raf';
+        kiuLocalPersistenceHandle = window.requestAnimationFrame(commit);
+    } else {
+        kiuLocalPersistenceHandleType = 'timeout';
+        kiuLocalPersistenceHandle = window.setTimeout(commit, 0);
+    }
+}
+
+function flushKiuStatePersistence() {
+    if (kiuLocalPersistenceHandle) {
+        if (kiuLocalPersistenceHandleType === 'idle' && typeof window.cancelIdleCallback === 'function') {
+            window.cancelIdleCallback(kiuLocalPersistenceHandle);
+        } else if (kiuLocalPersistenceHandleType === 'raf' && typeof window.cancelAnimationFrame === 'function') {
+            window.cancelAnimationFrame(kiuLocalPersistenceHandle);
+        } else {
+            window.clearTimeout(kiuLocalPersistenceHandle);
+        }
+        kiuLocalPersistenceHandle = 0;
+        kiuLocalPersistenceHandleType = '';
+    }
+    const pending = kiuPendingLocalPersistence;
+    kiuPendingLocalPersistence = null;
+    return writeKiuLocalPersistence(pending);
+}
+
 function saveState() {
     kiuCanonicalStateReady = false;
     const uiScrollSnapshot = captureUiScrollSnapshot();
@@ -321,34 +408,8 @@ function saveState() {
         KIU_STATE.meta.registrationCmsRevision = cmsTimestamp;
         KIU_STATE.meta.registrationCmsSavedAt = cmsTimestamp;
     }
-    const persistedRegistrationCms = (() => {
-        const legacy = (KIU_STATE.registrationCMS && typeof KIU_STATE.registrationCMS === 'object')
-            ? KIU_STATE.registrationCMS
-            : {};
-        const concData = typeof concCourseData !== 'undefined'
-            ? concCourseData
-            : (legacy.concCourseData || {});
-        const minorData = typeof minorProgramData !== 'undefined'
-            ? minorProgramData
-            : (legacy.minorProgramData || {});
-        return {
-            concCourseData: concData || {},
-            minorProgramData: minorData || {}
-        };
-    })();
-    const persisted = {
-        ...KIU_STATE,
-        adminProgramStructures: KIU_STATE.adminProgramStructures || {},
-        registrationCMSByFaculty: KIU_STATE.registrationCMSByFaculty || {},
-        registrationCMS: persistedRegistrationCms
-    };
-    delete persisted.domain;
-    delete persisted.auth;
-    delete persisted.lmsLiveQuizzes;
-    delete persisted.lmsWhiteboards;
-    if (!KIU_REMOTE_AUTHORITATIVE_RUNTIME) {
-        localStorage.setItem(getKiuStatePersistenceKey(), JSON.stringify(persisted));
-    }
+    const persisted = buildKiuLocalPersistenceSnapshot();
+    scheduleKiuLocalPersistence(persisted);
     if (KIU_STATE.meta.registrationCmsRevision !== previousRegistrationCmsRevision) {
         try {
             window.dispatchEvent(new CustomEvent('kiu:registration-cms-changed', {
@@ -1556,4 +1617,5 @@ __kiuStateExpose({
     getCurrentUserId,
     getEffectiveUserRole,
     invalidateCanonicalState,
+    flushKiuStatePersistence,
 });

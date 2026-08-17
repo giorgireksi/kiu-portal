@@ -177,7 +177,7 @@
 
     let observerFrame = 0;
     function observeRenderedGroups() {
-        const page = document.querySelector('#page-social');
+        const page = getCenter();
         if (!page || typeof MutationObserver !== 'function') {
             window.setTimeout(observeRenderedGroups, 64);
             return;
