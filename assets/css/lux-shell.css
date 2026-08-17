@@ -1002,16 +1002,31 @@ body.lux-full-paint {
 /* During deferred startup the sidebar is the foreground loading surface: it
  * covers the top bar and page content instead of showing the page through glass. */
 @media (min-width: 1025px) {
-  html.kiu-shell-loading #lux-shell {
+  /* Route assembly has its own loading interval after the shared shell is
+   * revealed. Keep the sidebar an opaque foreground surface for both phases;
+   * z-index alone cannot stop glass bleed-through. */
+  html.kiu-shell-loading #lux-shell,
+  html.kiu-route-assembly-loading #lux-shell,
+  body.kiu-shell-loading #lux-shell,
+  body.kiu-route-assembly-loading #lux-shell {
     z-index: 2147483647 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
     background-color: rgb(8, 12, 21) !important;
     background-image: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    isolation: isolate;
   }
   html.lux-light-mode.kiu-shell-loading #lux-shell,
-  html.kiu-shell-loading body.lux-light-mode #lux-shell {
+  html.lux-light-mode.kiu-route-assembly-loading #lux-shell,
+  html.kiu-shell-loading body.lux-light-mode #lux-shell,
+  html.kiu-route-assembly-loading body.lux-light-mode #lux-shell,
+  body.lux-light-mode.kiu-shell-loading #lux-shell,
+  body.lux-light-mode.kiu-route-assembly-loading #lux-shell {
     background-color: rgb(255, 255, 255) !important;
   }
-  html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }
+  html.kiu-shell-loading #lux-topbar,
+  html.kiu-route-assembly-loading #lux-topbar { z-index: 1000 !important; }
 }

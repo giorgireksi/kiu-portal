@@ -159,8 +159,9 @@ describe('global interaction performance guardrails', () => {
 
     expect(shell).toContain('z-index: 2147483647 !important;');
     expect(shell).toContain('background-color: rgb(8, 12, 21) !important;');
-    expect(shell).toContain('html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }');
-    expect(luxury).toContain("shell?.style.setProperty('z-index', isLoading ? '2147483002' : '1100', 'important')");
+    expect(shell).toContain('html.kiu-shell-loading #lux-topbar,\n  html.kiu-route-assembly-loading #lux-topbar { z-index: 1000 !important; }');
+    expect(luxury).toContain("shell.style.setProperty('z-index', isLoading ? '2147483002' : '1100', 'important')");
+    expect(luxury).toContain("shell.style.setProperty('background-image', 'none', 'important')");
     expect(luxury).toContain("topbar?.style.setProperty('z-index', '1000', 'important')");
   });
 

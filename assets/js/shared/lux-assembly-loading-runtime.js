@@ -116,6 +116,12 @@
         const autoStart = options.autoStart !== false;
         const rootStateDataset = options.rootStateDataset || 'kiuAssemblyState';
         const phaseDataset = options.phaseDataset || 'kiuAssemblyPhase';
+        const routeLoadingClass = options.routeLoadingClass || 'kiu-route-assembly-loading';
+        function setRouteAssemblyLoading(active) {
+            const enabled = Boolean(active);
+            document.documentElement?.classList.toggle(routeLoadingClass, enabled);
+            document.body?.classList.toggle(routeLoadingClass, enabled);
+        }
         const state = {
             observer: null,
             root: null,
@@ -402,6 +408,7 @@
 
         function abort() {
             const root = state.root;
+            setRouteAssemblyLoading(false);
             clearAnimationState();
             if (state.scheduleTimer) {
                 window.clearTimeout(state.scheduleTimer);
@@ -458,6 +465,7 @@
 
         function finish(root, generation) {
             if (state.phase === 'ready' || state.root !== root || state.generation !== generation) return;
+            setRouteAssemblyLoading(false);
             const pendingReplay = state.pendingReplay;
             state.pendingReplay = null;
             clearAnimationState();
@@ -989,8 +997,10 @@
                 && root.dataset[rootStateDataset] === 'ready') {
                 return true;
             }
+            setRouteAssemblyLoading(true);
             if (state.root) {
                 abort();
+                setRouteAssemblyLoading(true);
             } else if (root.dataset[rootStateDataset]) {
                 stripAssemblyDom(root);
                 document.body?.classList.remove(classes.active, classes.ready);

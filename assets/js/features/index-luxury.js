@@ -976,8 +976,27 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         const shell = document.getElementById('lux-shell');
         const topbar = document.getElementById('lux-topbar');
         const isLoading = document.documentElement.classList.contains('kiu-shell-loading')
-            || document.body?.classList.contains('kiu-shell-loading');
-        shell?.style.setProperty('z-index', isLoading ? '2147483002' : '1100', 'important');
+            || document.body?.classList.contains('kiu-shell-loading')
+            || document.documentElement.classList.contains('kiu-route-assembly-loading')
+            || document.body?.classList.contains('kiu-route-assembly-loading');
+        if (shell) {
+            shell.style.setProperty('z-index', isLoading ? '2147483002' : '1100', 'important');
+            if (isLoading) {
+                const isLight = document.documentElement.classList.contains('lux-light-mode')
+                    || document.body?.classList.contains('lux-light-mode');
+                shell.style.setProperty('background-color', isLight ? 'rgb(255, 255, 255)' : 'rgb(8, 12, 21)', 'important');
+                shell.style.setProperty('background-image', 'none', 'important');
+                shell.style.setProperty('backdrop-filter', 'none', 'important');
+                shell.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+                shell.style.setProperty('isolation', 'isolate');
+            } else {
+                shell.style.removeProperty('background-color');
+                shell.style.removeProperty('background-image');
+                shell.style.removeProperty('backdrop-filter');
+                shell.style.removeProperty('-webkit-backdrop-filter');
+                shell.style.removeProperty('isolation');
+            }
+        }
         topbar?.style.setProperty('z-index', '1000', 'important');
     }
     function ensureShell() {

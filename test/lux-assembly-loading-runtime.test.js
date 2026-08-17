@@ -293,6 +293,8 @@ describe('shared assembly instant readiness lifecycle', () => {
 
         motion.start(root);
         expect(motion.getState().phase).toBe('pending');
+        expect(document.documentElement.classList.contains('kiu-route-assembly-loading')).toBe(true);
+        expect(document.body.classList.contains('kiu-route-assembly-loading')).toBe(true);
         expect(document.body.classList.contains('assembly-active')).toBe(false);
         expect(document.querySelector('.assembly-staging')).toBeNull();
 
@@ -301,6 +303,8 @@ describe('shared assembly instant readiness lifecycle', () => {
         document.documentElement.classList.add('kiu-shell-ready');
         await wait(120);
         expect(motion.getState().phase).toBe('ready');
+        expect(document.documentElement.classList.contains('kiu-route-assembly-loading')).toBe(false);
+        expect(document.body.classList.contains('kiu-route-assembly-loading')).toBe(false);
         expect(document.body.classList.contains('assembly-active')).toBe(false);
         expect(document.body.classList.contains('assembly-ready')).toBe(true);
 
