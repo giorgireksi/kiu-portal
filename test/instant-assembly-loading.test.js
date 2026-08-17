@@ -97,6 +97,8 @@ describe('instant portal assembly loading', () => {
         expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading::before');
         expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading > #app-content');
         expect(primer).toContain('html.kiu-instant-loading[data-kiu-load-phase="degraded"]::after');
+        expect(primer).toContain('--kiu-loading-background');
+        expect(primer).toContain('--palette-${savedPalette}-dark');
         expect(navigation).toContain('window.__KIU_INSTANT_ASSEMBLY_LOADING !== false');
         expect(navigation).toContain('finishKiuShellReveal();');
         expect(timetable).toContain('window.__kiuCreateAssemblyLoadingMotion');

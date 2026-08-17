@@ -185,17 +185,19 @@
             'pointer-events:none;' +
             'backface-visibility:hidden;' +
             'transform:translateZ(0);' +
-            'background:radial-gradient(circle at 22% 18%,rgba(15,118,110,.16),transparent 36%),' +
+            'background:var(--kiu-loading-background,' +
+                'radial-gradient(circle at 22% 18%,rgba(15,118,110,.16),transparent 36%),' +
                 'radial-gradient(circle at 78% 20%,rgba(184,134,63,.12),transparent 34%),' +
-                'linear-gradient(135deg,#07110f 0%,#0b111c 58%,#07120f 100%)!important;' +
+                'linear-gradient(135deg,#07110f 0%,#0b111c 58%,#07120f 100%))!important;' +
             'opacity:1!important;' +
             'transition:none!important;' +
         '}' +
         'html.lux-light-mode body.kiu-shell-loading::before,' +
         'body.lux-light-mode.kiu-shell-loading::before{' +
-            'background:radial-gradient(circle at 20% 18%,rgba(28,137,129,.14),transparent 35%),' +
+            'background:var(--kiu-loading-background-light,' +
+                'radial-gradient(circle at 20% 18%,rgba(28,137,129,.14),transparent 35%),' +
                 'radial-gradient(circle at 82% 16%,rgba(184,134,63,.14),transparent 32%),' +
-                'linear-gradient(135deg,#f8f5ee 0%,#f1ede5 58%,#eef6f5 100%)!important;' +
+                'linear-gradient(135deg,#f8f5ee 0%,#f1ede5 58%,#eef6f5 100%))!important;' +
         '}' +
         'body.kiu-shell-loading #app-content,' +
         'body.kiu-shell-loading #lux-shell,' +
@@ -793,6 +795,14 @@
     }
     if (!savedPalette) savedPalette = DEFAULT_LUXURY_PALETTE;
     if (savedPalette === 'carbon-black' || savedPalette === 'arctic-white') savedPalette = 'platinum-silver';
+    var loadingPaletteKeys = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
+    if (loadingPaletteKeys.indexOf(savedPalette) !== -1) {
+        // Palette variables are already available from lux-tokens.css. Set the
+        // loading surface on <html> before <body> exists, preventing a default
+        // dark/green frame before applyBodyState adds body.palette-*.
+        root.style.setProperty('--kiu-loading-background', `var(--palette-${savedPalette}-dark)`);
+        root.style.setProperty('--kiu-loading-background-light', `var(--palette-${savedPalette}-light)`);
+    }
 
     // Apply to body as soon as it exists
     function applyBodyState() {
