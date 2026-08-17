@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1';
+const CACHE_NAME = 'kiu-portal-shell-v20260817-coreonly1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -26,21 +26,6 @@ const SHELL_ASSETS = [
   '/assets/css/lux-fouc-ht.css?v=20260816-hovergpu1',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260806-hidetopbar2',
-  '/assets/css/lux-modals.css?v=20260816-socialmodals1',
-  '/assets/css/social-assembly-prehide.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-home-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-community-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-groups-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-projects-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-portfolio-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-research-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-pages-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-events-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-surveys-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-photography-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-lost-found-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-messages-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-alerts-loading.css?v=20260815-socialassemblyclean1',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260808-loadreveal1',
   '/assets/css/lux-layout-primitives.css?v=20260725-ssot1',
@@ -50,7 +35,6 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-loading.css?v=20260810-homeassembly5',
   '/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5',
   '/assets/js/theme-primer.js?v=20260817-themeinstant5',
-  '/assets/js/app/social-standalone-bootstrap.js?v=20260816-socialrecovery2',
   '/assets/js/features/navigation.js?v=20260817-timetableboot1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1',
@@ -65,26 +49,7 @@ const SHELL_ASSETS = [
   '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
   '/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
-  '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe5',
   '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1',
-  '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9',
-  '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery2',
-  '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
-  '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
-  '/assets/js/pages/social-page.js?v=20260816-socialperf8',
-  '/assets/js/pages/social-home-loading-runtime.js?v=20260817-instantassembly1',
-  '/assets/js/pages/social-community-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-projects-loading-runtime.js?v=20260817-instantassembly1',
-  '/assets/js/pages/social-portfolio-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4',
-  '/assets/js/pages/social-research-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-pages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-events-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-surveys-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-photography-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-lost-found-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-messages-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4',
-  '/assets/js/pages/social-alerts-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3',
 ];
 
 function isVersionedAssetUrl(url) {

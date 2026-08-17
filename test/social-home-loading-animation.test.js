@@ -341,7 +341,7 @@ describe('Social Home loading animation', () => {
 
     it('cache-busts the Home motion assets without removing shared engine assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260816-social-cpuperf1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260817-coreonly1'");
         expect(sw).toContain('social-home-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-community-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-home-loading-runtime.js?v=20260817-instantassembly1');

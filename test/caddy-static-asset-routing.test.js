@@ -13,6 +13,8 @@ describe('caddy static asset routing regressions', () => {
         expect(caddy).toContain('@api path /api/* /health /ready /download /download/*');
         expect(caddy).toContain('@static path /assets/* /images/* /favicon.ico /manifest.webmanifest /service-worker.js');
         expect(caddy).toContain('handle @static {');
+        expect(caddy).toContain('@versionedAssets');
+        expect(caddy).toContain('Cache-Control "public, max-age=31536000, immutable"');
         expect(caddy).not.toContain('@api path /api/* /health /ready /download /download/* /manifest.webmanifest /service-worker.js');
     });
 

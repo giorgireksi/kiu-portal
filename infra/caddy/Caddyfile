@@ -15,6 +15,12 @@ http://{$KIU_PUBLIC_HOSTNAME} {
         reverse_proxy portal-backend:47833
     }
 
+    @versionedAssets {
+        path /assets/*
+        query v=*
+    }
+    header @versionedAssets Cache-Control "public, max-age=31536000, immutable"
+
     @static path /assets/* /images/* /favicon.ico /manifest.webmanifest /service-worker.js
     handle @static {
         file_server
