@@ -203,6 +203,16 @@ function applyFacultyLuxuryTheme(faculty, profile) {
         document.body?.setAttribute('data-lux-faculty', normalizedFaculty);
         return;
     }
+    // Unified routes have already been synchronously primed by theme-primer.
+    // Do not let the legacy faculty palette overwrite that chosen theme while
+    // the canonical luxury palette runtime is still loading.
+    const isUnifiedLoading = document.body?.classList.contains('lux-unified-shell')
+        && (document.documentElement?.classList.contains('kiu-shell-loading')
+            || document.body?.classList.contains('kiu-shell-loading'));
+    if (isUnifiedLoading) {
+        document.body?.setAttribute('data-lux-faculty', normalizedFaculty);
+        return;
+    }
     const root = document.documentElement;
     const useUnifiedShellColors = document.body?.classList.contains('lux-unified-shell');
     const forceStudentShellVisuals = (() => {
