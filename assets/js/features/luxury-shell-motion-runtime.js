@@ -183,20 +183,6 @@
         pulseShellHoverBusy();
     }
 
-    function onShellTransformTransitionRun(event) {
-        if (event.propertyName !== 'transform') return;
-        if (event.target?.id !== 'lux-shell') return;
-        extendShellChromeMotion(420, 'shell-transform');
-    }
-
-    function onShellTransformTransitionEnd(event) {
-        if (event.propertyName !== 'transform') return;
-        if (event.target?.id !== 'lux-shell') return;
-        // One sidebar toggle creates one shell-motion reference. Ending it
-        // twice made overlapping/cancelled transitions flicker the governor.
-        endShellChromeMotion('shell-transform');
-    }
-
     function bindShellChromeMotion() {
         if (bound) return;
         bound = true;

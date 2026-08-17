@@ -904,7 +904,7 @@ describe('global interaction performance guardrails', () => {
     expect(motionRuntime).not.toContain('control-hover');
     expect(motionRuntime).not.toContain('control-transition');
     expect(motionRuntime).not.toMatch(/addEventListener\('mouseenter'/);
-    expect(motionRuntime).toContain('shell-transform');
+    expect(motionRuntime).not.toContain('shell-transform');
     expect(motionRuntime).not.toContain('nav-enter');
     expect(motionRuntime).not.toContain("addEventListener('animationstart'");
     expect(motionRuntime).not.toMatch(/queueLuxuryTransparencyRefresh\([^)]*force:\s*true/);

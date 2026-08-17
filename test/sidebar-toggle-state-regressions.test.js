@@ -17,8 +17,9 @@ describe('sidebar toggle state regressions', () => {
             /function toggleSidebar\(\)[\s\S]*const next = !document\.body\.classList\.contains\('lux-sidebar-collapsed'\)/
         );
         expect(luxury).toMatch(
-            /function applySidebarState[\s\S]*beginShellChromeMotion\(320, 'sidebar-toggle'\)/
+            /function applySidebarState[\s\S]*document\.documentElement\.classList\.toggle\('lux-sidebar-collapsed'/
         );
+        expect(luxury).not.toContain("beginShellChromeMotion(320, 'sidebar-toggle')");
     });
 
     it('does not auto-close desktop nav on outside clicks escape or nav picks', () => {

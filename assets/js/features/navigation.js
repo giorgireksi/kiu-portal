@@ -272,8 +272,7 @@ function primeShellSectionTransition(pageId, effectiveRole = getEffectiveUserRol
     getPageSections().forEach((section) => {
         if (section.id === 'page-' + pageId) {
             setPageSectionShown(section, true, (pageId === 'admin-scheduler') ? 'flex' : 'block');
-            section.classList.add('active-page', 'lux-route-content-fade');
-            window.setTimeout(() => section.classList.remove('lux-route-content-fade'), 180);
+            section.classList.add('active-page');
             found = true;
         } else {
             setPageSectionShown(section, false);
@@ -284,6 +283,7 @@ function primeShellSectionTransition(pageId, effectiveRole = getEffectiveUserRol
     syncShellNavActiveItem(pageId, effectiveRole);
     if (found) {
         _domCache.lastPageId = pageId;
+        playRouteContentFade(targetSection);
     }
     return found;
 }
@@ -1000,6 +1000,23 @@ function setKiuShellLoadState(next) {
     return state;
 }
 
+function playRouteContentFade(target) {
+    if (!target || target.dataset.luxRouteFadePending === '1') return;
+    if (target.classList.contains('lux-route-content-fade')) return;
+    target.dataset.luxRouteFadePending = '1';
+    target.classList.remove('lux-route-content-fade');
+    const schedule = typeof window.requestAnimationFrame === 'function'
+        ? window.requestAnimationFrame.bind(window)
+        : (callback) => window.setTimeout(callback, 0);
+    schedule(() => {
+        target.classList.add('lux-route-content-fade');
+        window.setTimeout(() => {
+            target.classList.remove('lux-route-content-fade');
+            delete target.dataset.luxRouteFadePending;
+        }, 180);
+    });
+}
+
 function finishKiuShellReveal() {
     kiuShellRevealFinished = true;
     setKiuShellLoadState({
@@ -1015,13 +1032,7 @@ function finishKiuShellReveal() {
         document.body.removeAttribute('aria-busy');
     }
     const fadeTarget = document.querySelector('#app-content .page-section.active-page, #app-content');
-    if (fadeTarget) {
-        fadeTarget.classList.remove('lux-route-content-fade');
-        window.requestAnimationFrame?.(() => {
-            fadeTarget.classList.add('lux-route-content-fade');
-            window.setTimeout(() => fadeTarget.classList.remove('lux-route-content-fade'), 180);
-        });
-    }
+    if (fadeTarget) playRouteContentFade(fadeTarget);
 }
 
 function startKiuShellReveal({ degraded = false } = {}) {

@@ -248,14 +248,13 @@
         // The root receives the collapsed state before <body> exists. Mirror
         // the body-scoped drawer rule so nav labels cannot flash at top-left
         // while the shell is being created.
-        'html.lux-sidebar-collapsed #lux-shell{' +
+        'html.kiu-shell-loading.lux-sidebar-collapsed #lux-shell{' +
             'transform:none;' +
             'opacity:0!important;' +
             'visibility:hidden!important;' +
             'pointer-events:none!important;' +
         '}' +
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #app-content,' +
-        'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-shell,' +
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-topbar{' +
             'opacity:1;' +
             'transition:opacity .12s ease-out;' +
@@ -832,8 +831,13 @@
 
     // 2. Sidebar collapsed state — desktop overlay shell defaults hidden at first paint
     var collapsed = false;
-    try { collapsed = localStorage.getItem('kiuLuxurySidebarCollapsed') === '1'; } catch (e) {}
-    if (typeof window !== 'undefined' && window.innerWidth >= 1181) {
+    var hasSidebarPreference = false;
+    try {
+        var storedSidebarState = localStorage.getItem('kiuLuxurySidebarCollapsed');
+        hasSidebarPreference = storedSidebarState === '0' || storedSidebarState === '1';
+        collapsed = storedSidebarState === '1';
+    } catch (e) {}
+    if (typeof window !== 'undefined' && window.innerWidth >= 1181 && !hasSidebarPreference) {
         collapsed = true;
     }
     if (collapsed) {
@@ -894,7 +898,7 @@
         b.dataset.luxStaticBackground = staticBackgroundFill;
 
         // Sidebar — unified shell on desktop starts collapsed for overlay layout
-        if (typeof window !== 'undefined' && window.innerWidth >= 1181) {
+        if (typeof window !== 'undefined' && window.innerWidth >= 1181 && !hasSidebarPreference) {
             collapsed = true;
             root.classList.add('lux-sidebar-collapsed');
         }
