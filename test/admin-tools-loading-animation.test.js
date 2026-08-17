@@ -11,7 +11,7 @@ describe('admin-tools loading animation', () => {
         const html = readSource('admin-tools.html');
 
         expect(html).toContain('assets/css/admin-tools-loading.css?v=20260808-atoolsmotion3');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
         expect(html).toContain('assets/js/pages/admin-tools-loading-runtime.js?v=20260808-atoolsmotion7');
         expect(html.match(/lux-assembly-loading-runtime\.js/g)).toHaveLength(1);
         expect(html.match(/admin-tools-loading\.css/g)).toHaveLength(1);

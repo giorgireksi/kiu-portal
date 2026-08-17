@@ -11,7 +11,7 @@ describe('registration loading animation', () => {
         const html = readSource('registration.html');
 
         expect(html).toContain('assets/css/registration-loading.css?v=20260808-regassembly1');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
         expect(html).toContain('assets/js/pages/registration-loading-runtime.js?v=20260808-regassembly1');
         expect(html.match(/registration-loading\.css/g)).toHaveLength(1);
         expect(html.match(/registration-loading-runtime\.js/g)).toHaveLength(1);

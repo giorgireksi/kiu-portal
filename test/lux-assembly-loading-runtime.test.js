@@ -255,7 +255,7 @@ describe('shared assembly instant readiness lifecycle', () => {
         }
     });
 
-    it('hides content while pending shell wait then settles ready', async () => {
+    it('keeps the authored route skeleton visible while pending shell wait', async () => {
         document.body.innerHTML = `
             <main id="page-assembly">
                 <div id="assembly-root" class="assembly-shell">
@@ -293,8 +293,8 @@ describe('shared assembly instant readiness lifecycle', () => {
 
         motion.start(root);
         expect(motion.getState().phase).toBe('pending');
-        expect(document.body.classList.contains('assembly-active')).toBe(true);
-        expect(document.querySelector('.assembly-staging')).not.toBeNull();
+        expect(document.body.classList.contains('assembly-active')).toBe(false);
+        expect(document.querySelector('.assembly-staging')).toBeNull();
 
         contentReady = true;
         document.documentElement.classList.remove('kiu-shell-loading');

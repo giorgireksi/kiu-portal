@@ -199,7 +199,6 @@
                 'radial-gradient(circle at 82% 16%,rgba(184,134,63,.14),transparent 32%),' +
                 'linear-gradient(135deg,#f8f5ee 0%,#f1ede5 58%,#eef6f5 100%))!important;' +
         '}' +
-        'body.kiu-shell-loading #app-content,' +
         'body.kiu-shell-loading #lux-shell,' +
         'body.kiu-shell-loading #lux-topbar,' +
         'body.kiu-shell-loading #mobile-bottom-nav,' +
@@ -207,13 +206,30 @@
             'opacity:0!important;' +
             'pointer-events:none!important;' +
         '}' +
-        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#lux-topbar):not(#lux-shell){' +
+        // Keep the authored route skeleton above the palette-matched backdrop.
+        // This removes the long blank interval without exposing interactive
+        // controls before route/state readiness completes.
+        'html.kiu-shell-loading body.kiu-shell-loading #app-content{' +
+            'visibility:visible!important;' +
+            'opacity:1!important;' +
+            'pointer-events:none!important;' +
+            'position:relative;' +
+            'z-index:2147483001!important;' +
+        '}' +
+        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#app-content):not(#lux-topbar):not(#lux-shell){' +
             'visibility:hidden!important;' +
             'opacity:0!important;' +
             'pointer-events:none!important;' +
         '}' +
-        // Paint the stable chrome above the loading veil as soon as it exists;
-        // route content remains hidden until its renderer/readiness gate wins.
+        // Home/Social have an additional prehide class before their route
+        // assembly runtime mounts staging classes. Their authored skeleton is
+        // safe to paint while the rest of the route remains non-interactive.
+        'html.kiu-shell-loading body.lux-route-home.home-shell-assembly-prehide #lux-home-shell > *,' +
+        'html.kiu-shell-loading body.lux-route-social.social-center-assembly-prehide #social-neo-center-region > *{' +
+            'visibility:visible!important;' +
+            'opacity:1!important;' +
+        '}' +
+        // Paint the stable chrome above the loading backdrop as soon as it exists.
         'html.kiu-shell-loading body.kiu-shell-loading #lux-topbar,' +
         'html.kiu-shell-loading body.kiu-shell-loading:not(.lux-sidebar-collapsed) #lux-shell{' +
             'visibility:visible!important;' +
@@ -244,7 +260,7 @@
             'transition:opacity .12s ease-out;' +
         '}' +
         // Instant mode removes loading motion, not readiness gating. Keep the
-        // route DOM behind one palette-matched static veil until it is ready.
+        // authored route skeleton visible while data-dependent content settles.
         'html.kiu-instant-loading body.kiu-shell-loading::before{' +
             'display:block!important;' +
             'background:var(--lux-shell-background,var(--kiu-loading-background,#08120f))!important;' +
@@ -902,7 +918,26 @@
         // Route-specific readiness still wins; this is only the fail-open cap.
         var revealDeadlineMs = 1400;
         var revealElapsedMs = 0;
+        function clearStaleRouteLoadingState() {
+            if (!document.body) return;
+            Array.from(document.body.classList).forEach((className) => {
+                if (/(?:^|-)(?:assembly-(?:active|prehide)|shell-assembly-prehide)$/.test(className)) {
+                    document.body.classList.remove(className);
+                }
+            });
+            var appContent = document.getElementById('app-content');
+            if (!appContent) return;
+            appContent.querySelectorAll('*').forEach((node) => {
+                Array.from(node.classList || []).forEach((className) => {
+                    if (/(?:^|-)(?:assembly-(?:target|outer|inner|structure|staging))$/.test(className)
+                        || className === 'is-flight') {
+                        node.classList.remove(className);
+                    }
+                });
+            });
+        }
         function forceRevealPage() {
+            clearStaleRouteLoadingState();
             window.__kiuSocialShellRevealAllowed = true;
             window.__kiuHomeShellRevealAllowed = true;
             if (typeof window.__kiuStartShellReveal === 'function') {

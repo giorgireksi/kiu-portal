@@ -962,13 +962,18 @@
             state.pendingReplay = null;
             recordEvent('pending');
             root.dataset[rootStateDataset] = 'pending';
-            // Hide immediately so the first paint after remount is opacity 0
-            // (deferring hide until run() flashed a full visible frame).
-            document.body?.classList.remove(classes.ready);
-            document.body?.classList.add(classes.active);
-            registerStructures(root);
-            targets.forEach((target) => target.classList.add(classes.target, classes.staging));
-            if (instantLoading && isContentReady()) {
+            // Instant mode must not hide an already-authored route skeleton
+            // while waiting for async content readiness. The active/staging
+            // classes are applied only when content is ready, then removed in
+            // the same task by the instant finish path.
+            const contentReadyNow = isContentReady();
+            if (!instantLoading || contentReadyNow) {
+                document.body?.classList.remove(classes.ready);
+                document.body?.classList.add(classes.active);
+                registerStructures(root);
+                targets.forEach((target) => target.classList.add(classes.target, classes.staging));
+            }
+            if (instantLoading && contentReadyNow) {
                 run(root, generation);
             } else {
                 waitForShell(root, generation);
@@ -1009,11 +1014,14 @@
             state.pendingReplay = null;
             recordEvent('soft-restart');
             root.dataset[rootStateDataset] = 'pending';
-            document.body?.classList.remove(classes.ready);
-            document.body?.classList.add(classes.active);
-            registerStructures(root);
-            targets.forEach((target) => target.classList.add(classes.target, classes.staging));
-            if (instantLoading && isContentReady()) {
+            const contentReadyNow = isContentReady();
+            if (!instantLoading || contentReadyNow) {
+                document.body?.classList.remove(classes.ready);
+                document.body?.classList.add(classes.active);
+                registerStructures(root);
+                targets.forEach((target) => target.classList.add(classes.target, classes.staging));
+            }
+            if (instantLoading && contentReadyNow) {
                 run(root, generation);
             } else {
                 waitForShell(root, generation);

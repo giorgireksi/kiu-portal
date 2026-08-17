@@ -11,7 +11,7 @@ describe('Social Research loading animation', () => {
 
     it('loads Research motion before Social interactions', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-visualqueue1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
         const researchIndex = html.indexOf('social-research-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         const interactionsIndex = html.indexOf('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
 

@@ -95,7 +95,10 @@ describe('instant portal assembly loading', () => {
         expect(primer).toContain('html.kiu-instant-loading .fa-spin');
         expect(primer).toContain('html.kiu-instant-loading [class*="skeleton"]');
         expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading::before');
-        expect(primer).toContain('html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#lux-topbar):not(#lux-shell)');
+        expect(primer).toContain('html.kiu-shell-loading body.kiu-shell-loading #app-content');
+        expect(primer).toContain('position:relative;');
+        expect(primer).toContain('html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#app-content):not(#lux-topbar):not(#lux-shell)');
+        expect(primer).toContain('function clearStaleRouteLoadingState()');
         expect(primer).toContain('html.kiu-shell-loading body.kiu-shell-loading #lux-topbar,');
         expect(primer).toContain('body.kiu-shell-loading:not(.lux-sidebar-collapsed) #lux-shell');
         expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading::before');
