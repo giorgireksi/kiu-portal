@@ -931,7 +931,7 @@ function ensureCanonicalState() {
     if (kiuCanonicalStateInProgress) return;
     kiuCanonicalStateInProgress = true;
     try {
-    if (typeof ensureExamSessionStore === 'function') ensureExamSessionStore();
+    if (typeof window.ensureExamSessionStore === 'function') window.ensureExamSessionStore();
     if (typeof stripSeededMockStudents === 'function') {
         stripSeededMockStudents(KIU_STATE, { retainAdminTestingPersonas: shouldRetainAdminTestingPersonas() });
     }

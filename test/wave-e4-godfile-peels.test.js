@@ -45,6 +45,8 @@ describe('Wave E4 god-file peels', () => {
 
         expect(host).not.toMatch(/^function .*Admin(Quiz|Exam)/m);
         expect(host).not.toContain('function makeAdminExamEntityId');
+        expect(host).toContain("typeof window.ensureExamSessionStore === 'function'");
+        expect(host).not.toContain("typeof ensureExamSessionStore === 'function'");
         expect(host.split('\n').length).toBeLessThanOrEqual(1600);
     });
 
