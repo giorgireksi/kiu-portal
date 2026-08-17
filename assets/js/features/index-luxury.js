@@ -987,8 +987,14 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             if (isLoading) {
                 const isLight = document.documentElement.classList.contains('lux-light-mode')
                     || document.body?.classList.contains('lux-light-mode');
-                shell.style.setProperty('background-color', isLight ? 'rgb(255, 255, 255)' : 'rgb(8, 12, 21)', 'important');
-                shell.style.setProperty('background-image', 'none', 'important');
+                shell.style.setProperty('background-color', isLight ? '#f5f0e8' : '#08120f', 'important');
+                shell.style.setProperty(
+                    'background-image',
+                    isLight
+                        ? 'var(--kiu-loading-background-light, var(--lux-shell-background, linear-gradient(135deg, #f8f5ee 0%, #f1ede5 58%, #eef6f5 100%)))'
+                        : 'var(--kiu-loading-background, var(--lux-shell-background, linear-gradient(135deg, #07110f 0%, #0b111c 58%, #07120f 100%)))',
+                    'important'
+                );
                 shell.style.setProperty('backdrop-filter', 'none', 'important');
                 shell.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
                 shell.style.setProperty('isolation', 'isolate');
