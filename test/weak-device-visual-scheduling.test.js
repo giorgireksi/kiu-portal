@@ -37,10 +37,9 @@ describe('weak-device visual scheduling safeguards', () => {
         expect(assembly).toContain('window.setTimeout(poll, assemblyPollMs)');
     });
 
-    it('does not attach hover events that can drive the visual governor', () => {
+    it('does not let touch hover events drive the visual governor', () => {
         const motion = readSource('assets/js/features/luxury-shell-motion-runtime.js');
-        expect(motion).not.toContain("addEventListener('pointermove'");
-        expect(motion).not.toContain("addEventListener('pointerover'");
-        expect(motion).toContain('ordinary hover must');
+        expect(motion).toContain("event.pointerType !== 'mouse'");
+        expect(motion).toContain('target.contains?.(related)');
     });
 });

@@ -963,8 +963,7 @@ describe('global interaction performance guardrails', () => {
     expect(motionRuntime).toContain('pulseShellHoverBusy');
     expect(motionRuntime).toContain('beginLuxAnimating');
     expect(motionRuntime).toContain('__luxIsAnimating');
-    expect(motionRuntime).not.toContain("addEventListener('pointermove'");
-    expect(motionRuntime).toContain('CSS-only');
+    expect(motionRuntime).toContain("addEventListener('pointerover'");
     expect(motionRuntime).not.toContain('control-hover');
     expect(motionRuntime).not.toContain('control-transition');
     expect(motionRuntime).not.toMatch(/addEventListener\('mouseenter'/);

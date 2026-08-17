@@ -23,7 +23,7 @@ const SHELL_ASSETS = [
   '/exams.html',
   '/login.html',
   '/assets/css/lux-tokens.css?v=20260725-frosted1',
-  '/assets/css/lux-fouc-ht.css?v=20260818-hoverperf1',
+  '/assets/css/lux-fouc-ht.css?v=20260818-showhidefix1',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260806-hidetopbar2',
   '/assets/css/lux-modals.css?v=20260816-socialmodals1',

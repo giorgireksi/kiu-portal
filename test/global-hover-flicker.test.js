@@ -96,10 +96,8 @@ describe('global hover flicker prevention', () => {
         expect(controlsCss).not.toMatch(/\.lux-control\s*\{[^}]*transition:\s*all/);
         expect(controlsCss).toMatch(/\.lux-icon-btn:hover::after/);
         expect(controlsCss).toContain('backdrop-filter: none');
-        expect(foucCss).toContain('transition-property: transform, border-color !important;');
-        expect(foucCss).toContain('transition-duration: 120ms !important;');
-        expect(foucCss).toContain('transition-property: opacity !important;');
-        expect(foucCss).not.toContain('html.lux-shell-chrome-motion #lux-shell :is(');
+        expect(foucCss).toMatch(/html\.lux-shell-chrome-motion #lux-shell :is\([\s\S]*\.lux-nav-item[\s\S]*backdrop-filter:\s*none !important/);
+        expect(foucCss).not.toMatch(/html\.lux-shell-chrome-motion #lux-shell\s*\{[\s\S]*backdrop-filter:\s*none !important/);
         expect(shellCss).toMatch(/#lux-shell[\s\S]*backdrop-filter:\s*var\(--lux-shell-sidebar-blur\)/);
         expect(shellCss).toMatch(
             /body\.lux-full-paint\.lux-unified-shell #lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?backdrop-filter:\s*none/
