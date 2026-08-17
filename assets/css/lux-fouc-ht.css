@@ -3873,3 +3873,159 @@ body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lu
   -webkit-backdrop-filter: var(--lux-frosted-glass-blur);
   box-shadow: var(--lux-frosted-glass-shadow);
 }
+
+/* Final interaction-performance contract. Route styles are loaded in
+ * different orders, so this last shared block deliberately overrides their
+ * transition declarations without changing hover endpoint values. Keep
+ * movement/opacity compositor-friendly; never interpolate blurred shadows or
+ * generic `transition: all` on pointer interaction. */
+@media (hover: hover) and (pointer: fine) {
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-stat,
+    .lux-card:not(.orders-inbox-workspace),
+    .lux-section-card:not([data-lux-layout-only="1"]),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  ) {
+    transition-property: transform, border-color !important;
+    transition-duration: 120ms !important;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-stat,
+    .lux-card:not(.orders-inbox-workspace),
+    .lux-section-card:not([data-lux-layout-only="1"]),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state
+  )::after {
+    transition-property: opacity !important;
+    transition-duration: 100ms !important;
+    transition-timing-function: ease-out !important;
+  }
+
+  body.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-destructive-btn,
+    .lux-ghost-btn,
+    .lux-icon-btn,
+    .lux-picker-btn,
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn
+  ) {
+    transition-property: transform, border-color, color, opacity !important;
+    transition-duration: 120ms !important;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  body.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-destructive-btn,
+    .lux-ghost-btn,
+    .lux-icon-btn,
+    .lux-picker-btn,
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn
+  )::before,
+  body.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-destructive-btn,
+    .lux-ghost-btn,
+    .lux-icon-btn,
+    .lux-picker-btn,
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn
+  )::after {
+    transition-property: opacity, transform !important;
+    transition-duration: 120ms !important;
+    transition-timing-function: ease-out !important;
+  }
+}
+
+/* Touch browsers can synthesize :hover after a tap. Keep touch feedback on
+ * :active/focus-visible and do not leave a slow hover transition armed. */
+@media (hover: none), (pointer: coarse) {
+  body.lux-unified-shell :is(
+    .home-hover-chip,
+    .lux-stat,
+    .lux-card:not(.orders-inbox-workspace),
+    .lux-section-card:not([data-lux-layout-only="1"]),
+    .lux-module-option.lux-soft-chrome,
+    .lux-subject-row.lux-program-subject-card,
+    .newsx-header-bar,
+    .newsx-feed-card.lux-soft-chrome,
+    .student-service-zone,
+    .student-service-qa-card,
+    .student-service-qa-answer-card,
+    .admin-library-catalog-card.lux-soft-chrome,
+    .lux-empty-state,
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-destructive-btn,
+    .lux-ghost-btn,
+    .lux-icon-btn,
+    .lux-picker-btn,
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn
+  ) {
+    transition-duration: 90ms !important;
+    transition-timing-function: ease-out !important;
+  }
+}
+
+/* Route bundles use many local names (ex2-stat-card, scheduler rows, LMS
+ * options, Social tiles, directory pills, etc.). Match the semantic class
+ * families once here so late route CSS cannot reintroduce slow `all` or
+ * box-shadow interpolation. Endpoint styles remain route-owned. */
+@media (hover: hover) and (pointer: fine), (hover: none) and (pointer: coarse) {
+  body.lux-unified-shell :where(
+    [class*="card"],
+    [class*="chip"],
+    [class*="stat"],
+    [class*="tile"],
+    [class*="tab"],
+    [class*="pill"],
+    [class*="badge"],
+    [class*="option"],
+    [class*="panel"]
+  ) {
+    transition-property: transform, border-color, color, opacity !important;
+    transition-duration: 120ms !important;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  body.lux-unified-shell :where(
+    [class*="card"],
+    [class*="chip"],
+    [class*="stat"],
+    [class*="tile"],
+    [class*="tab"],
+    [class*="pill"],
+    [class*="badge"],
+    [class*="option"],
+    [class*="panel"]
+  ) {
+    transition-duration: 90ms !important;
+  }
+}

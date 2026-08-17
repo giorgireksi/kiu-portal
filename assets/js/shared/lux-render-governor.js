@@ -119,11 +119,20 @@ export function readGovernedFrameIntervalMs() {
 }
 
 export function shouldDeferTransparency() {
-    return isGovernorBusy() || window.__luxIsScrolling === true;
+    // CSS hover is a tiny interaction and must not park visual refreshes for
+    // hundreds of milliseconds. Keep deferral for real animation/scroll work;
+    // an explicit hover busy flag may still pace background frames elsewhere.
+    return (
+        (window.__luxIsAnimating === true && window.__luxShellHoverBusy !== true)
+        || window.__luxIsScrolling === true
+    );
 }
 
 export function shouldDeferLegacyVisualRefresh() {
-    return isGovernorBusy() || window.__luxIsScrolling === true;
+    return (
+        (window.__luxIsAnimating === true && window.__luxShellHoverBusy !== true)
+        || window.__luxIsScrolling === true
+    );
 }
 
 export function isGovernorBusy() {

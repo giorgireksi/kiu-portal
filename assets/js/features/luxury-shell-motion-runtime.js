@@ -19,7 +19,6 @@
     let bound = false;
     let hoverBusyUntil = 0;
     let hoverBusyTimer = null;
-    let lastHoverPulse = 0;
 
     function syncMotionClass() {
         const root = document.documentElement;
@@ -153,45 +152,15 @@
         syncShellHoverBusyFlag();
     }
 
-    function isShellChromeHoverTarget(node) {
-        if (!node || node.nodeType !== 1) return false;
-        try {
-            return Boolean(
-                node.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell')
-                || node.closest?.('.home-hover-chip')
-            );
-        } catch (_error) {
-            return false;
-        }
-    }
-
-    function onShellChromePointerOver(event) {
-        if (event.pointerType && event.pointerType !== 'mouse') return;
-        const target = event.target?.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell, .home-hover-chip');
-        if (!isShellChromeHoverTarget(target)) return;
-        const related = event.relatedTarget;
-        if (related && target.contains?.(related)) return;
-        pulseShellHoverBusy();
-    }
-
-    function onShellChromePointerMove(event) {
-        if (event.pointerType && event.pointerType !== 'mouse') return;
-        if (!isShellChromeHoverTarget(event.target)) return;
-        const now = performance.now();
-        if (now - lastHoverPulse < 48) return;
-        lastHoverPulse = now;
-        pulseShellHoverBusy();
-    }
-
     function bindShellChromeMotion() {
         if (bound) return;
         bound = true;
 
-        // Sidebar open/close is CSS-only. Do not arm a global motion class,
-        // toggle backdrop filters, or refresh every glass surface afterward.
-        // Hover lifts only pulse the lightweight particle busy flag.
-        document.addEventListener('pointerover', onShellChromePointerOver, true);
-        document.addEventListener('pointermove', onShellChromePointerMove, { capture: true, passive: true });
+        // Sidebar open/close and hover lifts are CSS-only. Do not attach
+        // document-level pointermove/pointerover listeners: ordinary hover must
+        // never change the render governor, defer transparency, or wake a
+        // global handler on every pointer transition. The public pulse API is
+        // retained for explicit, non-hover visual workflows.
     }
 
     window.beginShellChromeMotion = beginShellChromeMotion;

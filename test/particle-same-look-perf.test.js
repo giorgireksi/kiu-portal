@@ -42,11 +42,10 @@ describe('particle same-look perf (gpuperf4m)', () => {
         expect(motion).toContain('pulseShellHoverBusy');
         expect(motion).toContain('beginLuxAnimating');
         expect(motion).toContain('__luxIsAnimating');
-        expect(motion).toContain("closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell')");
-        expect(motion).toContain("closest?.('.home-hover-chip')");
-        expect(motion).toContain("addEventListener('pointerover'");
-        // Hover must not arm MOTION_CLASS (would change blur look).
-        expect(motion).toContain('do not arm MOTION_CLASS on control hover');
+        // CSS owns hover; ordinary pointer movement must not enter the render
+        // governor or defer transparency refreshes.
+        expect(motion).not.toContain("addEventListener('pointermove'");
+        expect(motion).toContain('document-level pointermove/pointerover listeners');
     });
 
     it('skips layered ribbon geometry rebuild when variant is not layered', () => {
