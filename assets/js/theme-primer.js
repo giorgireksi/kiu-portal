@@ -162,11 +162,11 @@
 
     appendLateStyle('kiu-shell-boot-guard', '' +
         'html.kiu-shell-loading{' +
-            'background:#08120f!important;' +
+            'background:var(--lux-shell-background,var(--kiu-loading-background,#08120f))!important;' +
             'color-scheme:dark;' +
         '}' +
         'html.kiu-shell-loading.lux-light-mode{' +
-            'background:#f3efe7!important;' +
+            'background:var(--lux-shell-background,var(--kiu-loading-background-light,#f3efe7))!important;' +
             'color-scheme:light;' +
         '}' +
         'html.kiu-shell-loading body.kiu-shell-loading{' +
@@ -802,6 +802,10 @@
         // dark/green frame before applyBodyState adds body.palette-*.
         root.style.setProperty('--kiu-loading-background', `var(--palette-${savedPalette}-dark)`);
         root.style.setProperty('--kiu-loading-background-light', `var(--palette-${savedPalette}-light)`);
+        root.style.setProperty(
+            '--lux-shell-background',
+            `var(--palette-${savedPalette}-${savedMode === 'light' ? 'light' : 'dark'})`
+        );
     }
 
     // Apply to body as soon as it exists
