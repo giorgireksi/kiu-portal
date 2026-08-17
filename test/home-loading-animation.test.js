@@ -13,7 +13,7 @@ describe('Home loading animation', () => {
         expect(html).toContain('assets/css/home-assembly-prehide.css?v=20260810-homeassembly5');
         expect(html).toContain('assets/css/index-home-loading.css?v=20260810-homeassembly5');
         expect(html).toContain('home-shell-assembly-prehide');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260817-instantassembly1');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260817-shellfirst2');
         expect(html).toContain('assets/js/features/navigation.js?v=20260817-timetableboot1');
         expect(html).toContain('assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2');
         expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260817-timetableobserver1');

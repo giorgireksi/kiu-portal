@@ -29,6 +29,39 @@
         `;
         (document.head || root).appendChild(instantLoadingStyle);
     }
+    // Localization is an enhancement, not a prerequisite for rendering. The
+    // route pages are authored in English, so provide cheap fallbacks while
+    // the large repair/translation table waits for idle time.
+    window.cleanupEncodingArtifacts = window.cleanupEncodingArtifacts || (value => String(value ?? ''));
+    window.toEnglishText = window.toEnglishText || (value => String(value ?? ''));
+    window.localizeHtmlMarkup = window.localizeHtmlMarkup || (value => String(value ?? ''));
+    function scheduleIdleEnglishLocalization() {
+        if (window.__kiuEnglishLocalizationDeferredScheduled) return;
+        window.__kiuEnglishLocalizationDeferredScheduled = true;
+        const load = () => {
+            document.querySelectorAll('script[data-kiu-idle-src]').forEach((placeholder) => {
+                const src = placeholder.getAttribute('data-kiu-idle-src');
+                if (!src || document.querySelector(`script[data-kiu-localization-loaded="${src}"]`)) return;
+                const script = document.createElement('script');
+                script.src = src;
+                script.dataset.kiuLocalizationLoaded = src;
+                document.head.appendChild(script);
+                placeholder.remove();
+            });
+        };
+        const schedule = window.requestIdleCallback;
+        if (typeof schedule === 'function') {
+            schedule(load, { timeout: 4500 });
+        } else {
+            window.setTimeout(load, 1800);
+        }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', scheduleIdleEnglishLocalization, { once: true });
+    } else {
+        scheduleIdleEnglishLocalization();
+    }
+
     var validShellRoles = ['student', 'professor', 'ta', 'admin', 'student_service'];
     var PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1';
@@ -182,6 +215,22 @@
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-topbar{' +
             'opacity:1;' +
             'transition:opacity .12s ease-out;' +
+        '}' +
+        // Instant mode keeps the route's static shell paintable while the
+        // deferred bootstrap builds navigation/data. Final shell visuals and
+        // readiness classes still settle through the normal path below.
+        'html.kiu-instant-loading body.kiu-shell-loading::before{' +
+            'display:none!important;' +
+        '}' +
+        'html.kiu-instant-loading body.kiu-shell-loading > #app-content{' +
+            'visibility:visible!important;' +
+            'opacity:1!important;' +
+            'pointer-events:auto!important;' +
+        '}' +
+        'html.kiu-instant-loading[data-kiu-load-phase="degraded"]::after{' +
+            'content:none!important;' +
+            'display:none!important;' +
+            'animation:none!important;' +
         '}'
     );
 
