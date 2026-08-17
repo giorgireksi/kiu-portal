@@ -1248,23 +1248,24 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
     document.head.appendChild(script);
 })();
 
-const USER_ROLES = {
+var USER_ROLES = window.USER_ROLES || {
     STUDENT: 'student',
     PROFESSOR: 'professor',
     TA: 'ta',
     ADMIN: 'admin',
     STUDENT_SERVICE: 'student_service'
 };
+window.USER_ROLES = USER_ROLES;
 
-const ACTIVE_SESSION_KEY = 'KIU_ACTIVE_SESSION_USER_ID';
-const ACTIVE_ROLE_IMPERSONATION_KEY = 'KIU_ACTIVE_ROLE_IMPERSONATION';
-const PENDING_ROLE_SWITCH_KEY = 'KIU_PENDING_ROLE_SWITCH_ROLE';
-const MANUAL_TESTING_STATE_VERSION = 8;
-const REAL_TESTING_CLEANUP_FLAG = 'KIU_REAL_TESTING_CLEANUP_V8';
-const TIMETABLE_WEEK_STORAGE_KEY = 'KIU_TIMETABLE_WEEK_START';
-const PROFILE_CALENDAR_WEEK_STORAGE_KEY = 'KIU_PROFILE_CALENDAR_WEEK_START';
-const SCHEDULER_WEEK_STORAGE_KEY = 'KIU_SCHEDULER_WEEK_START';
-const PERMISSION_MATRIX = {
+var ACTIVE_SESSION_KEY = window.ACTIVE_SESSION_KEY || 'KIU_ACTIVE_SESSION_USER_ID';
+var ACTIVE_ROLE_IMPERSONATION_KEY = window.ACTIVE_ROLE_IMPERSONATION_KEY || 'KIU_ACTIVE_ROLE_IMPERSONATION';
+var PENDING_ROLE_SWITCH_KEY = window.PENDING_ROLE_SWITCH_KEY || 'KIU_PENDING_ROLE_SWITCH_ROLE';
+var MANUAL_TESTING_STATE_VERSION = window.MANUAL_TESTING_STATE_VERSION || 8;
+var REAL_TESTING_CLEANUP_FLAG = window.REAL_TESTING_CLEANUP_FLAG || 'KIU_REAL_TESTING_CLEANUP_V8';
+var TIMETABLE_WEEK_STORAGE_KEY = window.TIMETABLE_WEEK_STORAGE_KEY || 'KIU_TIMETABLE_WEEK_START';
+var PROFILE_CALENDAR_WEEK_STORAGE_KEY = window.PROFILE_CALENDAR_WEEK_STORAGE_KEY || 'KIU_PROFILE_CALENDAR_WEEK_START';
+var SCHEDULER_WEEK_STORAGE_KEY = window.SCHEDULER_WEEK_STORAGE_KEY || 'KIU_SCHEDULER_WEEK_START';
+var PERMISSION_MATRIX = window.PERMISSION_MATRIX || {
     [USER_ROLES.STUDENT]: ['portal.student', 'registration.manage', 'lms.view', 'library.view', 'orders.view'],
     [USER_ROLES.PROFESSOR]: ['portal.professor', 'gradebook.manage', 'attendance.manage', 'lms.manage', 'profile.view'],
     [USER_ROLES.TA]: ['portal.ta', 'attendance.manage', 'gradebook.view', 'lms.assist', 'profile.view'],
@@ -1273,7 +1274,7 @@ const PERMISSION_MATRIX = {
 };
 
 // Check if role is stored in localStorage
-let currentUserRole = (() => {
+var currentUserRole = (() => {
     try {
         const storedRole = sessionStorage.getItem('KIU_TAB_CURRENT_ROLE') || localStorage.getItem('currentUserRole');
         const pendingRole = sessionStorage.getItem('KIU_TAB_PENDING_ROLE_SWITCH_ROLE') || sessionStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem(PENDING_ROLE_SWITCH_KEY);

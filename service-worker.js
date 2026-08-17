@@ -50,6 +50,7 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-loading.css?v=20260810-homeassembly5',
   '/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5',
   '/assets/js/theme-primer.js?v=20260818-paletteprimer1',
+  '/assets/js/app/portal-runtime-globals.js?v=20260818-runtimeglobals1',
   '/assets/js/app/social-standalone-bootstrap.js?v=20260818-shellfailopen1',
   '/assets/js/features/navigation.js?v=20260818-navneutral1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
