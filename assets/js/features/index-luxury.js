@@ -974,12 +974,9 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     }
     let luxuryShellEnsured = false;
     function ensureShell() {
-        const primerTopbar = document.getElementById('lux-topbar');
-        const hasInteractiveTopbar = primerTopbar && primerTopbar.dataset.kiuPrimerPreview !== '1';
         if (luxuryShellEnsured
             && document.getElementById('lux-shell')
-            && hasInteractiveTopbar) return;
-        if (primerTopbar?.dataset.kiuPrimerPreview === '1') primerTopbar.remove();
+            && document.getElementById('lux-topbar')) return;
         luxuryShellEnsured = true;
         let createdCanvas = false;
         const onExamsRoute = document.body?.classList?.contains('lux-route-exams');

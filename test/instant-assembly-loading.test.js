@@ -95,10 +95,11 @@ describe('instant portal assembly loading', () => {
         expect(primer).toContain('html.kiu-instant-loading .fa-spin');
         expect(primer).toContain('html.kiu-instant-loading [class*="skeleton"]');
         expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading::before');
-        expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading > #app-content');
-        expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading #lux-topbar');
+        expect(primer).toContain('html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style)');
+        expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading::before');
+        expect(primer).toContain('html.kiu-instant-loading body.kiu-shell-loading::after');
         expect(primer).toContain('body.lux-unified-shell > #top-nav');
-        expect(primer).toContain('mountEarlyShellTopbar');
+        expect(primer).not.toContain('html.kiu-instant-loading body.kiu-shell-loading > #app-content');
         expect(primer).toContain('html.kiu-instant-loading[data-kiu-load-phase="degraded"]::after');
         expect(primer).toContain('--kiu-loading-background');
         expect(primer).toContain('--palette-${savedPalette}-dark');
@@ -110,8 +111,6 @@ describe('instant portal assembly loading', () => {
         expect(socialProjects).toContain('window.__KIU_INSTANT_ASSEMBLY_LOADING !== false');
         expect(readSource('assets/js/shared/lux-assembly-loading-runtime.js'))
             .toContain('options.instantLoading !== undefined');
-        expect(readSource('assets/js/features/index-luxury.js'))
-            .toContain('kiuPrimerPreview');
     });
 
     it('settles Social late panel mounts without replay motion', async () => {

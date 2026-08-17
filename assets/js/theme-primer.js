@@ -220,13 +220,6 @@
         'body.lux-unified-shell > #service-nav{' +
             'display:none!important;' +
         '}' +
-        // Paint the real topbar as soon as index-luxury creates it. Content
-        // remains ready-gated, but shell chrome should not wait for DCL.
-        'html.kiu-instant-loading body.kiu-shell-loading #lux-topbar{' +
-            'visibility:visible!important;' +
-            'opacity:1!important;' +
-            'pointer-events:auto!important;' +
-        '}' +
         // The root receives the collapsed state before <body> exists. Mirror
         // the body-scoped drawer rule so nav labels cannot flash at top-left
         // while the shell is being created.
@@ -241,16 +234,29 @@
             'opacity:1;' +
             'transition:opacity .12s ease-out;' +
         '}' +
-        // Instant mode keeps the route's static shell paintable while the
-        // deferred bootstrap builds navigation/data. Final shell visuals and
-        // readiness classes still settle through the normal path below.
+        // Instant mode removes loading motion, not readiness gating. Keep the
+        // route DOM behind one palette-matched static veil until it is ready.
         'html.kiu-instant-loading body.kiu-shell-loading::before{' +
-            'display:none!important;' +
+            'display:block!important;' +
+            'background:var(--lux-shell-background,var(--kiu-loading-background,#08120f))!important;' +
         '}' +
-        'html.kiu-instant-loading body.kiu-shell-loading > #app-content{' +
-            'visibility:visible!important;' +
-            'opacity:1!important;' +
-            'pointer-events:auto!important;' +
+        'html.kiu-instant-loading body.kiu-shell-loading::after{' +
+            'content:"Loading workspace";' +
+            'position:fixed;' +
+            'left:50%;' +
+            'bottom:20px;' +
+            'z-index:2147483001;' +
+            'transform:translateX(-50%);' +
+            'padding:7px 12px;' +
+            'border:1px solid color-mix(in srgb,var(--lux-accent,#26a69a) 35%,transparent);' +
+            'border-radius:999px;' +
+            'background:color-mix(in srgb,var(--lux-panel-surface,#0b1520) 88%,transparent);' +
+            'color:var(--lux-text-muted,rgba(248,250,252,.72));' +
+            'font-size:10px;' +
+            'letter-spacing:.12em;' +
+            'text-transform:uppercase;' +
+            'pointer-events:none;' +
+            'animation:none!important;' +
         '}' +
         'html.kiu-instant-loading[data-kiu-load-phase="degraded"]::after{' +
             'content:none!important;' +
@@ -831,55 +837,6 @@
         );
     }
 
-    function earlyShellPageLabel(body) {
-        var labels = {
-            home: 'Dashboard',
-            'personal-data': 'Personal Data',
-            'student-service': 'Student Service',
-            'study-card': 'Study Card',
-            timetable: 'Timetable',
-            library: 'Library',
-            orders: 'Orders',
-            'admin-orders': 'Orders',
-            'admin-library': 'Library'
-        };
-        var routeClass = Array.prototype.find.call(body.classList || [], function (name) {
-            return name.indexOf('lux-route-') === 0;
-        });
-        var route = routeClass ? routeClass.slice('lux-route-'.length) : 'home';
-        if (labels[route]) return labels[route];
-        return route
-            .split('-')
-            .filter(Boolean)
-            .map(function (part) { return part.charAt(0).toUpperCase() + part.slice(1); })
-            .join(' ') || 'Dashboard';
-    }
-
-    // Paint a tiny shell chrome placeholder before the deferred dependency
-    // graph evaluates. index-luxury replaces it with the full interactive
-    // chrome without a visible gap.
-    function mountEarlyShellTopbar(body) {
-        if (!body || !body.classList.contains('lux-unified-shell') || document.getElementById('lux-topbar')) return;
-        var collapsedEarly = root.classList.contains('lux-sidebar-collapsed') || body.classList.contains('lux-sidebar-collapsed');
-        var topbar = document.createElement('div');
-        topbar.id = 'lux-topbar';
-        topbar.dataset.kiuPrimerPreview = '1';
-        topbar.setAttribute('aria-hidden', 'true');
-        topbar.innerHTML = '' +
-            '<div class="lux-topbar-shell lux-soft-chrome">' +
-                '<div class="lux-topbar-main">' +
-                    '<button class="lux-secondary-btn lux-sidebar-toggle-btn" type="button" tabindex="-1" aria-hidden="true">' +
-                        '<i class="fas fa-sidebar' + (collapsedEarly ? ' fa-flip-horizontal' : '') + '"></i>' +
-                        '<span class="lux-sidebar-toggle-label">' + (collapsedEarly ? 'Show nav' : 'Hide nav') + '</span>' +
-                    '</button>' +
-                    '<div class="lux-breadcrumb">KIU <i class="fas fa-chevron-right"></i> <strong>' +
-                        earlyShellPageLabel(body) +
-                    '</strong></div>' +
-                '</div>' +
-            '</div>';
-        body.appendChild(topbar);
-    }
-
     // Apply to body as soon as it exists
     function applyBodyState() {
         var b = document.body;
@@ -932,7 +889,7 @@
         // Safety net: reveal after a short deadline if deferred scripts fail.
         // Normal routes call markPortalShellReady() after route content renders.
         var revealPollMs = 50;
-        var revealDeadlineMs = 700;
+        var revealDeadlineMs = 3000;
         var revealElapsedMs = 0;
         function forceRevealPage() {
             window.__kiuSocialShellRevealAllowed = true;
@@ -966,8 +923,6 @@
             setTimeout(tryRevealPageEarly, revealPollMs);
         }
         setTimeout(tryRevealPageEarly, revealPollMs);
-
-        mountEarlyShellTopbar(b);
 
         if (!b.classList.contains('lux-route-home') && !shouldSkipFlatSurfaceOverrides()) {
             setTimeout(applyFlatSurfaceOverrides, 0);
