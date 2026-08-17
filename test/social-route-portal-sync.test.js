@@ -12,11 +12,12 @@ describe('social route portal sync guardrails', () => {
         const portalRuntime = readSource('assets/js/app/api-lms-portal-runtime.js');
 
         expect(portalRuntime).toContain('function isStandaloneSocialRoute(pathname = window.location.pathname)');
-        expect(api).toContain('const isStandaloneSocialRoute = window.isStandaloneSocialRoute');
+        expect(api).toContain('const isStandaloneSocialRoute = typeof window.isStandaloneSocialRoute === \'function\'');
+        expect(api).toContain('isStandaloneSocialRouteFallback');
         expect(api).toMatch(/function queuePortalStateSync[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return;/);
         expect(api).toMatch(/async function persistPortalStateToBackend[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return null;/);
         expect(api).toMatch(/function sendPortalStateKeepalive\(\) \{[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return;/);
-        expect(api).toMatch(/function flushPortalStateSync\(\) \{[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return null;/);
+        expect(api).toMatch(/function flushPortalStateSync\([^)]*\) \{[\s\S]*?if \(isStandaloneSocialRoute\(\)\) return null;/);
     });
 
     it('keeps socialHub out of portal backend persist payload', () => {

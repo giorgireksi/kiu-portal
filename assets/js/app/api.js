@@ -837,7 +837,14 @@ const persistPortalSocialState = window.persistPortalSocialState;
 const queuePortalSocialSync = window.queuePortalSocialSync;
 const bootstrapPortalSocialState = window.bootstrapPortalSocialState;
 const schedulePortalSocialBootstrap = window.schedulePortalSocialBootstrap;
-const isStandaloneSocialRoute = window.isStandaloneSocialRoute;
+const isStandaloneSocialRoute = typeof window.isStandaloneSocialRoute === 'function'
+    ? window.isStandaloneSocialRoute
+    : function isStandaloneSocialRouteFallback(pathname = window.location.pathname) {
+        const normalizedPath = String(pathname || '').toLowerCase();
+        return normalizedPath.endsWith('/social.html')
+            || normalizedPath.endsWith('social.html')
+            || Boolean(document.body?.classList?.contains('lux-route-social'));
+    };
 const ensurePortalSocialGroupChatRecord = window.ensurePortalSocialGroupChatRecord;
 const beginMicrosoftPortalLogin = window.beginMicrosoftPortalLogin;
 const completeMicrosoftPortalLoginFromUrl = window.completeMicrosoftPortalLoginFromUrl;

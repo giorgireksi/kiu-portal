@@ -191,7 +191,7 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).toContain('student-service-page-runtime.js?v=20260729-sse4292');
         expect(studentServiceHtml.indexOf('student-service-bootstrap-runtime.js'))
             .toBeLessThan(studentServiceHtml.indexOf('student-service-page-runtime.js'));
-        expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260816-readonlycatalog1');
+        expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260818-socialrouteguard1');
         expect(studentServiceHtml).toContain('initStandaloneStudentServiceRoute');
         expect(studentServiceHtml).toContain('bootStandaloneDesktopRoute');
         expect(studentServiceHtml).not.toContain("window.location.replace(target);");
