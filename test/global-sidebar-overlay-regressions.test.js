@@ -11,11 +11,9 @@ describe('global sidebar overlay regressions', () => {
         expect(shellCss).toMatch(
             /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell #app-content[\s\S]*width:\s*100%/
         );
-        expect(shellCss).toMatch(
-            /#lux-shell[\s\S]*transform var\(--lux-shell-slide-duration\)/
-        );
-        expect(shellCss).toMatch(
-            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell:not\(\.lux-sidebar-collapsed\)::before[\s\S]*pointer-events:\s*none/
+        expect(shellCss).toContain('transition: opacity 0.12s linear');
+        expect(shellCss).not.toMatch(
+            /body\.lux-unified-shell:not\(\.lux-sidebar-collapsed\)::before/
         );
         expect(shellCss).toMatch(
             /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell:not\(\.lux-sidebar-collapsed\) #lux-shell[\s\S]*z-index:\s*70/

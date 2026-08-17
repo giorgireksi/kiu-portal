@@ -406,14 +406,6 @@ body:not(.lux-unified-shell) #lux-topbar { z-index: 1000 !important; }
 @media (min-width: 1181px) {
   body.lux-unified-shell #app-content { margin-left: 0; width: 100%; }
   body.lux-unified-shell #lux-shell { z-index: 70; }
-  body.lux-unified-shell:not(.lux-sidebar-collapsed)::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 65;
-    pointer-events: none;
-    background: transparent;
-  }
   body.lux-unified-shell:not(.lux-sidebar-collapsed) #lux-shell { z-index: 70 !important; }
   body.lux-unified-shell:not(.lux-sidebar-collapsed) #lux-topbar { z-index: 60 !important; }
 }
