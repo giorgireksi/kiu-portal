@@ -977,8 +977,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         const topbar = document.getElementById('lux-topbar');
         const isLoading = document.documentElement.classList.contains('kiu-shell-loading')
             || document.body?.classList.contains('kiu-shell-loading');
-        if (isLoading) shell?.style.removeProperty('z-index');
-        else shell?.style.setProperty('z-index', '1100', 'important');
+        shell?.style.setProperty('z-index', isLoading ? '2147483002' : '1100', 'important');
         topbar?.style.setProperty('z-index', '1000', 'important');
     }
     function ensureShell() {

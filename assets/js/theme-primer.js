@@ -215,7 +215,6 @@
                 'radial-gradient(circle at 82% 16%,rgba(184,134,63,.14),transparent 32%),' +
                 'linear-gradient(135deg,#f8f5ee 0%,#f1ede5 58%,#eef6f5 100%))!important;' +
         '}' +
-        'body.kiu-shell-loading #lux-shell,' +
         'body.kiu-shell-loading #lux-topbar,' +
         'body.kiu-shell-loading #mobile-bottom-nav,' +
         'body.kiu-shell-loading #mobile-action-sheet{' +
@@ -251,7 +250,7 @@
             'visibility:visible!important;' +
             'opacity:1!important;' +
             'pointer-events:auto!important;' +
-            'z-index:2147483001!important;' +
+            'z-index:2147483002!important;' +
         '}' +
         // Legacy role nav stubs are still kept for compatibility lookups, but
         // the unified shell owns navigation and must be the only painted nav.
@@ -916,8 +915,10 @@
 
         // Sidebar — unified shell on desktop starts collapsed for overlay layout
         if (typeof window !== 'undefined' && window.innerWidth >= 1181 && !hasSidebarPreference) {
-            collapsed = true;
-            root.classList.add('lux-sidebar-collapsed');
+            // The authored shell is the primary loading surface; default it open
+            // so it cannot appear late after the route content has already painted.
+            collapsed = false;
+            root.classList.remove('lux-sidebar-collapsed');
         }
         if (collapsed) {
             b.classList.add('lux-sidebar-collapsed');
