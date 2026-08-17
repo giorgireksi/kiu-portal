@@ -146,6 +146,6 @@ window.convertTimeToMinutes = convertTimeToMinutes;
 // advance an existing service worker so query-bearing navigations receive the
 // current shell-recovery logic.
 if (window.location.protocol === 'https:' && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register(`service-worker.js?v=20260818-stateguard1`, { scope: './' })
+    navigator.serviceWorker.register(`service-worker.js?v=20260818-workspacefast1`, { scope: './' })
         .catch(() => null);
 }

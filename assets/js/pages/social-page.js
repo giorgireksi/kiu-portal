@@ -186,7 +186,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_WORKSPACE_EVENTS_URL = 'assets/js/pages/social-workspace-events.js?v=20260805-health-scroll2';
     const SOCIAL_WORKSPACE_PANEL_BUDGET_URL = 'assets/js/pages/social-workspace-panel-budget-runtime.js?v=20260726-socfix38';
     const SOCIAL_WORKSPACE_PANEL_TEAM_URL = 'assets/js/pages/social-workspace-panel-team-runtime.js?v=20260726-socfix43';
-    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260807-socialtopnav34';
+    const SOCIAL_WORKSPACE_PANEL_URL = 'assets/js/pages/social-workspace-panel.js?v=20260818-workspacefast1';
     const SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL = 'assets/js/pages/social-workspace-graph-runtime.js?v=20260808-overallperf1';
     const SOCIAL_WORKSPACE_DIALOGS_URL = 'assets/js/pages/social-workspace-dialogs.js?v=20260807-socialsurface1';
     const SOCIAL_WORKSPACE_GRAPH_RENDER_URL = 'assets/js/pages/social-workspace-graph-render.js?v=20260807-mapopaque1';
@@ -382,6 +382,7 @@ Publishes only the host/runtime contract consumed by its loader.
     let socialResearchModulePromise = null;
     let socialMessagesModulePromise = null;
     let socialProfileModulePromise = null;
+    let socialWorkspaceModulePromise = null;
     let socialDesktopModulePrefetchScheduled = false;
     let socialDirectoryPrefetchScheduled = false;
     let socialRouteGuardianBound = false;
@@ -754,11 +755,14 @@ Publishes only the host/runtime contract consumed by its loader.
         }
         return null;
     }
-    async function ensureProjectWorkspaceChat(project) {
+    async function ensureProjectWorkspaceChat(project, options = {}) {
         let chat = resolveProjectWorkspaceChat(project);
         if (chat?.id) return chat;
         if (!project?.groupId || typeof openPortalSocialGroupChat !== 'function') return null;
-        chat = await openPortalSocialGroupChat(project.groupId, { skipRoute: true });
+        chat = await openPortalSocialGroupChat(project.groupId, {
+            skipRoute: true,
+            skipStateRefresh: options.skipStateRefresh === true
+        });
         return chat || resolveProjectWorkspaceChat(project);
     }
     const groupAvatarSource = window.groupAvatarSource || (window.KiuSocialChromeModel || {}).groupAvatarSource;
@@ -1247,42 +1251,53 @@ Publishes only the host/runtime contract consumed by its loader.
             && window.renderPageCreateDialog !== renderPageCreateDialog);
     }
         function ensureSocialWorkspaceModule() {
-        if (hasSocialWorkspaceModule()) {
-            return Promise.resolve();
-        }
-        // Deferred workspace bundle: models → UI peels → panel → coordinator (see engineering-a-plus-frontend-js.md).
-        const __wsChain = [
+        if (hasSocialWorkspaceModule()) return Promise.resolve();
+        if (socialWorkspaceModulePromise) return socialWorkspaceModulePromise;
+
+        const loadWorkspaceBatch = (urls) => Promise.all(
+            urls.map((url) => loadSocialDynamicScript(url, 'Social workspace module'))
+        );
+        // Factories do not execute until the final coordinator is loaded. Keep
+        // dependency phases intact, but fetch independent peels together so a
+        // weak connection does not pay for 20+ sequential round trips.
+        socialWorkspaceModulePromise = loadWorkspaceBatch([
             SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL,
             SOCIAL_WORKSPACE_HEALTH_MODEL_URL,
             SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL,
             SOCIAL_WORKSPACE_GRAPH_MODEL_URL,
             SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL,
-            SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL,
-            SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL,
-            SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL,
-            SOCIAL_WORKSPACE_SCHEDULE_UI_URL,
-            SOCIAL_WORKSPACE_TAB_RUNTIME_URL,
-            SOCIAL_WORKSPACE_EVENTS_INPUT_URL,
-            SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL,
-            SOCIAL_WORKSPACE_EVENTS_URL,
-            SOCIAL_WORKSPACE_PANEL_BUDGET_URL,
-            SOCIAL_WORKSPACE_PANEL_TEAM_URL,
-            SOCIAL_WORKSPACE_PANEL_URL,
-            SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL,
-            SOCIAL_WORKSPACE_DIALOGS_URL,
-            SOCIAL_WORKSPACE_GRAPH_RENDER_URL,
-            SOCIAL_WORKSPACE_TASK_UI_URL,
-            SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL,
-            SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL,
-            SOCIAL_WORKSPACE_PORTFOLIO_UI_URL,
-            SOCIAL_WORKSPACE_PROJECT_CHROME_URL,
-            SOCIAL_WORKSPACE_DIALOG_ROUTE_URL,
-            SOCIAL_WORKSPACE_MODULE_URL
-        ];
-        return __wsChain.reduce(
-            (chain, url) => chain.then(() => loadSocialDynamicScript(url, 'Social workspace module')),
-            Promise.resolve()
-        );
+            SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL
+        ])
+            .then(() => loadWorkspaceBatch([
+                SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL,
+                SOCIAL_WORKSPACE_GRAPH_LAYOUT_RUNTIME_URL,
+                SOCIAL_WORKSPACE_SCHEDULE_UI_URL,
+                SOCIAL_WORKSPACE_TAB_RUNTIME_URL,
+                SOCIAL_WORKSPACE_EVENTS_URL,
+                SOCIAL_WORKSPACE_PANEL_BUDGET_URL,
+                SOCIAL_WORKSPACE_PANEL_TEAM_URL
+            ]))
+            .then(() => loadWorkspaceBatch([
+                SOCIAL_WORKSPACE_EVENTS_INPUT_URL,
+                SOCIAL_WORKSPACE_EVENTS_SUBMIT_URL,
+                SOCIAL_WORKSPACE_PANEL_URL,
+                SOCIAL_WORKSPACE_GRAPH_RUNTIME_URL,
+                SOCIAL_WORKSPACE_DIALOGS_URL,
+                SOCIAL_WORKSPACE_GRAPH_RENDER_URL,
+                SOCIAL_WORKSPACE_TASK_UI_URL,
+                SOCIAL_WORKSPACE_PORTFOLIO_RUNTIME_URL,
+                SOCIAL_WORKSPACE_PROJECT_CHROME_URL,
+                SOCIAL_WORKSPACE_DIALOG_ROUTE_URL
+            ]))
+            .then(() => loadWorkspaceBatch([
+                SOCIAL_WORKSPACE_PORTFOLIO_EDITOR_URL,
+                SOCIAL_WORKSPACE_PORTFOLIO_UI_URL
+            ]))
+            .then(() => loadSocialDynamicScript(SOCIAL_WORKSPACE_MODULE_URL, 'Social workspace module'))
+            .finally(() => {
+                socialWorkspaceModulePromise = null;
+            });
+        return socialWorkspaceModulePromise;
     }
         function hasSocialWorkspaceModule() {
         const live = (name, stub) => {

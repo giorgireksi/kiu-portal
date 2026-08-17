@@ -124,8 +124,10 @@ describe('social-page-feed-runtime peel', () => {
         const start = main.indexOf('function ensureSocialWorkspaceModule()');
         const end = main.indexOf('function hasSocialWorkspaceModule()', start);
         const block = main.slice(start, end);
-        expect(block).toMatch(/waitForDynamicScript\(existing\)/);
-        expect(block).not.toMatch(/if \(document\.querySelector\(`script\[src="\$\{url\}"\]`\)\) \{ resolve\(\); return; \}/);
+        expect(main).toMatch(/function loadSocialDynamicScript\(url, label/);
+        expect(main).toMatch(/function waitForDynamicScript\(existing/);
+        expect(block).toMatch(/loadSocialDynamicScript/);
+        expect(block).not.toMatch(/if \(document\.querySelector\(`script\[src="\$\{url\}"\]`\) \{ resolve\(\); return; \}/);
     });
 
     it('exports projectRiskScaleRank for workspace hooks', () => {

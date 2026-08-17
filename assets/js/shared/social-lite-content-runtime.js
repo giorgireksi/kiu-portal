@@ -1164,7 +1164,14 @@ async function openGroupChat(groupId, options = {}) {
     });
     if (payload?.chat) {
         upsertChat(payload.chat, true);
-        await loadSocialState(true);
+        if (options?.skipStateRefresh) {
+            // The chat response is sufficient for workspace paint. Refresh the
+            // wider Social snapshot in the background instead of holding the
+            // workspace loader on a second bootstrap request.
+            loadSocialState(true, { skipRender: true }).catch(() => null);
+        } else {
+            await loadSocialState(true);
+        }
         if (!options?.skipRoute) routeToSocial('messages', text(payload.chat.id));
     }
     return payload?.chat || null;

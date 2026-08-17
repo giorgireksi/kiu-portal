@@ -1663,7 +1663,29 @@
                     </div>
                 </section>
             `;
+            const queueProjectChatBootstrap = () => {
+                const bootstrapKey = text(activeProject?.id || '');
+                if (!bootstrapKey || !text(activeProject?.groupId || '')
+                    || resolveProjectWorkspaceChat(activeProject)
+                    || text(runtime.ui?.__projectChatBootstrapping || '') === bootstrapKey) return;
+                runtime.ui.__projectChatBootstrapping = bootstrapKey;
+                ensureProjectWorkspaceChat(activeProject, { skipStateRefresh: true })
+                    .then((opened) => {
+                        delete runtime.ui.__projectChatBootstrapping;
+                        if (!opened?.id) return;
+                        setActiveChat(opened.id);
+                        clearProjectTabPaneCache(bootstrapKey);
+                        renderSocialPageNow('project-chat-ready');
+                    })
+                    .catch(() => {
+                        delete runtime.ui.__projectChatBootstrapping;
+                    });
+            };
             const renderChatTab = () => {
+                // Start the messages module and the backing group-chat request
+                // together. Previously these were serialized, leaving the
+                // workspace loader visible for both round trips in sequence.
+                queueProjectChatBootstrap();
                 if (!hasSocialMessagesModule()) {
                     ensureSocialMessagesModule()
                         .then(() => {
@@ -1678,21 +1700,6 @@
                 }
                 const chat = resolveProjectWorkspaceChat(activeProject);
                 if (!chat) {
-                    const bootstrapKey = text(activeProject.id);
-                    if (text(runtime.ui?.__projectChatBootstrapping || '') !== bootstrapKey) {
-                        runtime.ui.__projectChatBootstrapping = bootstrapKey;
-                        ensureProjectWorkspaceChat(activeProject)
-                            .then((opened) => {
-                                delete runtime.ui.__projectChatBootstrapping;
-                                if (!opened?.id) return;
-                                setActiveChat(opened.id);
-                                clearProjectTabPaneCache(bootstrapKey);
-                                renderSocialPageNow('project-chat-ready');
-                            })
-                            .catch(() => {
-                                delete runtime.ui.__projectChatBootstrapping;
-                            });
-                    }
                     return renderProjectChatLoading('Preparing workspace chat', 'Opening the backing group chat for this project.');
                 }
                 if (text(runtime.ui?.activeChatId || '') !== text(chat.id)) {

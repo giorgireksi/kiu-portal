@@ -228,7 +228,7 @@ describe('Social Portfolio loading animation', () => {
 
     it('cache-busts Portfolio assets', () => {
         const sw = readSource('service-worker.js');
-        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-stateguard1'");
+        expect(sw).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-workspacefast1'");
         expect(sw).toContain('social-portfolio-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-portfolio-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner4');
     });

@@ -19,7 +19,7 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260816-socialperf8');
+        expect(html).toContain('social-page.js?v=20260818-workspacefast1');
         expect(html).toContain('lux-fouc-ht.css?v=20260816-hovergpu1');
         expect(html).toContain('luxury-shell-motion-runtime.js?v=20260816-hovergpu1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
@@ -41,6 +41,19 @@ describe('social performance safeguards', () => {
         expect(shell).toContain('__kiuDeferredModuleRenderKey');
         expect(shell).toContain('delete liveHost.__kiuDeferredModuleRenderKey');
         expect(shell).toContain("renderReason === 'photography-module'");
+    });
+
+    it('parallelizes workspace peels and does not serialize chat paint on bootstrap', () => {
+        const page = readSource('assets/js/pages/social-page.js');
+        const workspace = readSource('assets/js/pages/social-workspace-panel.js');
+        const socialRuntime = readSource('assets/js/shared/social-lite-content-runtime.js');
+        expect(page).toContain('let socialWorkspaceModulePromise = null;');
+        expect(page).toContain('const loadWorkspaceBatch = (urls) => Promise.all(');
+        expect(page).toContain('if (socialWorkspaceModulePromise) return socialWorkspaceModulePromise;');
+        expect(workspace).toContain('queueProjectChatBootstrap');
+        expect(workspace).toContain('ensureProjectWorkspaceChat(activeProject, { skipStateRefresh: true })');
+        expect(socialRuntime).toContain('if (options?.skipStateRefresh)');
+        expect(socialRuntime).toContain('loadSocialState(true, { skipRender: true })');
     });
 
     it('filters route-guardian mutations before scheduling reconciliation', () => {
@@ -105,7 +118,7 @@ describe('social performance safeguards', () => {
         expect(page).toContain('__kiuRetrySocialModule');
         expect(page).toContain("return ['workspace', 'projects'];");
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-stateguard1'");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-workspacefast1'");
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 
