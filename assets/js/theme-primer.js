@@ -207,10 +207,18 @@
             'opacity:0!important;' +
             'pointer-events:none!important;' +
         '}' +
-        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style){' +
+        'html.kiu-shell-loading body.kiu-shell-loading > :not(script):not(style):not(#lux-topbar):not(#lux-shell){' +
             'visibility:hidden!important;' +
             'opacity:0!important;' +
             'pointer-events:none!important;' +
+        '}' +
+        // Paint the stable chrome above the loading veil as soon as it exists;
+        // route content remains hidden until its renderer/readiness gate wins.
+        'html.kiu-shell-loading body.kiu-shell-loading #lux-topbar{' +
+            'visibility:visible!important;' +
+            'opacity:1!important;' +
+            'pointer-events:auto!important;' +
+            'z-index:2147483001!important;' +
         '}' +
         // Legacy role nav stubs are still kept for compatibility lookups, but
         // the unified shell owns navigation and must be the only painted nav.
