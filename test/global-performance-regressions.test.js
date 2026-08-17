@@ -157,9 +157,10 @@ describe('global interaction performance guardrails', () => {
     const shell = readSource('assets/css/lux-shell.css');
     const luxury = readSource('assets/js/features/index-luxury.js');
 
-    expect(shell).toContain('html.kiu-shell-loading #lux-shell { z-index: 1100 !important; }');
+    expect(shell).toContain('z-index: 2147483647 !important;');
+    expect(shell).toContain('background-color: rgb(8, 12, 21) !important;');
     expect(shell).toContain('html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }');
-    expect(luxury).toContain("shell?.style.setProperty('z-index', '1100', 'important')");
+    expect(luxury).toContain("if (isLoading) shell?.style.removeProperty('z-index');");
     expect(luxury).toContain("topbar?.style.setProperty('z-index', '1000', 'important')");
   });
 

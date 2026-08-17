@@ -999,8 +999,19 @@ body.lux-full-paint {
   }
 }
 
-/* Keep the authored sidebar above the top bar during deferred startup. */
+/* During deferred startup the sidebar is the foreground loading surface: it
+ * covers the top bar and page content instead of showing the page through glass. */
 @media (min-width: 1025px) {
-  html.kiu-shell-loading #lux-shell { z-index: 1100 !important; }
+  html.kiu-shell-loading #lux-shell {
+    z-index: 2147483647 !important;
+    background-color: rgb(8, 12, 21) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  html.lux-light-mode.kiu-shell-loading #lux-shell,
+  html.kiu-shell-loading body.lux-light-mode #lux-shell {
+    background-color: rgb(255, 255, 255) !important;
+  }
   html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }
 }

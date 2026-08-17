@@ -975,7 +975,10 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         if (window.innerWidth < 1025) return;
         const shell = document.getElementById('lux-shell');
         const topbar = document.getElementById('lux-topbar');
-        shell?.style.setProperty('z-index', '1100', 'important');
+        const isLoading = document.documentElement.classList.contains('kiu-shell-loading')
+            || document.body?.classList.contains('kiu-shell-loading');
+        if (isLoading) shell?.style.removeProperty('z-index');
+        else shell?.style.setProperty('z-index', '1100', 'important');
         topbar?.style.setProperty('z-index', '1000', 'important');
     }
     function ensureShell() {
