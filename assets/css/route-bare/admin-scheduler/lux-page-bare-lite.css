@@ -1,0 +1,980 @@
+/* Generated route bundle: admin-scheduler. */
+/* Source: assets/css/lux-page-bare-lite.css; regenerate with tools/generate-route-bare-css.mjs. */
+/* Included source lines: 1-76, 1595-2499. */
+
+body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content {
+  min-width: 0;
+}
+
+body.lux-page-bare .lux-page-shell { display: grid; gap: 12px; padding: 12px 0; }
+body.lux-page-bare .lux-page-title, body.lux-page-bare h1 {
+  color: var(--lux-text, #f8fafc);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+body.lux-page-bare .lux-page-copy, body.lux-page-bare .lux-page-kicker {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  line-height: 1.5;
+  margin: 0;
+}
+body.lux-page-bare .lux-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+body.lux-page-bare .lux-field { display: grid; gap: 6px; min-width: 0; }
+body.lux-page-bare .lux-field label, body.lux-page-bare .lux-overline {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-subcards, body.lux-page-bare .lux-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+body.lux-page-bare .lux-pill-row, body.lux-page-bare .lux-card-actions, body.lux-page-bare .lux-actions-between {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+body.lux-page-bare table { width: 100%; border-collapse: collapse; }
+body.lux-page-bare table th, body.lux-page-bare table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+  text-align: left;
+  vertical-align: top;
+}
+body.lux-page-bare table thead th {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: grid; gap: 8px; }
+@media (max-width: 920px) {
+  body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
+}
+
+
+
+body.lux-unified-shell.lux-page-bare {
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+
+:is(#page-admin-scheduler, #page-timetable) {
+  --sch-shell-gap: 18px;
+  --sch-sidebar-width: 368px;
+  --sch-panel-radius: 28px;
+  --sch-card-radius: 20px;
+  --sch-pill-radius: 999px;
+  --sch-slot-height: 96px;
+  --sch-grid-border: var(--lux-border, rgba(255, 255, 255, 0.08));
+  --sch-grid-muted-border: var(--lux-panel-border-soft, rgba(255, 255, 255, 0.05));
+  --sch-grid-chrome-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.04));
+  --sch-grid-chrome-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 12%, transparent);
+  --sch-grid-lane-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.02));
+  --sch-grid-time-pill-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.06));
+  --sch-grid-time-pill-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, transparent);
+}
+body.lux-route-admin-scheduler #app-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+#page-admin-scheduler .scheduler-wrap {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 40px);
+}
+#page-admin-scheduler .sch-sidebar,
+#page-admin-scheduler .sch-main {
+  min-width: 0;
+  contain: layout style paint;
+}
+#page-admin-scheduler .sch-sidebar {
+  position: static;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: start;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+}
+#page-admin-scheduler .sch-rail-hero.lux-hero {
+  align-self: start;
+  height: fit-content;
+  min-height: 0;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-panel-radius) - 4px);
+}
+#page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 0;
+}
+#page-admin-scheduler .sch-stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 0;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-card-radius) - 4px);
+}
+#page-admin-scheduler .sch-stat-label,
+#page-admin-scheduler .sch-palette-count-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-stat-card strong {
+  display: block;
+  margin-top: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--lux-text);
+  flex: 0 0 auto;
+}
+#page-admin-scheduler .sch-stat-card > span:last-child {
+  display: none;
+}
+#page-admin-scheduler .sch-rail-section {
+  align-self: start;
+  display: grid;
+  gap: 6px;
+  height: fit-content;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-panel-radius) - 4px);
+  content-visibility: auto;
+  contain: layout style paint;
+  contain-intrinsic-size: auto 120px;
+}
+#page-admin-scheduler .sch-rail-section.sch-palette-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto auto;
+  gap: 8px 16px;
+  align-items: center;
+  contain-intrinsic-size: auto 160px;
+}
+#page-admin-scheduler .sch-palette-section .sch-rail-section-title {
+  grid-column: 1;
+  grid-row: 1;
+}
+#page-admin-scheduler .sch-palette-section .sch-palette-meta {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  margin: 0;
+}
+#page-admin-scheduler .sch-palette-section .sch-search-shell {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+#page-admin-scheduler .sch-palette-section .sch-palette-list {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+#page-admin-scheduler .sch-rail-section-title {
+  margin-bottom: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-control-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 10px;
+}
+#page-admin-scheduler .sch-control-group {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-control-group > span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-control-group .lux-universal-picker-field {
+  width: 100%;
+  display: block;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-control-grid .lux-control {
+  min-width: 0;
+}
+#page-admin-scheduler .sch-control-grid .lux-picker-btn--compact {
+  width: 100%;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-rail-note {
+  display: none;
+}
+#page-admin-scheduler .sch-search-shell {
+  position: relative;
+}
+#page-admin-scheduler .sch-search-shell > i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  pointer-events: none;
+  z-index: 1;
+}
+#page-admin-scheduler .sch-search-shell .lux-control,
+#page-admin-scheduler .sch-search-shell .sch-preset-manage-search {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+#page-admin-scheduler .sch-palette-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 4px;
+  font-size: 11px;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-palette-meta strong {
+  color: var(--lux-text);
+}
+#page-admin-scheduler .sch-palette-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-right: 2px;
+  padding-bottom: 2px;
+  scroll-snap-type: x proximity;
+}
+#page-admin-scheduler .palette-card {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px 10px 16px;
+  min-height: 0;
+  flex: 0 0 auto;
+  width: 200px;
+  max-width: 240px;
+  text-align: left;
+  border-radius: calc(var(--sch-card-radius) - 4px);
+  cursor: pointer;
+  transform: none;
+  outline: none;
+  scroll-snap-align: start;
+}
+#page-admin-scheduler .palette-card::before {
+  content: '';
+  position: absolute;
+  inset: 8px auto 8px 0;
+  width: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.88;
+}
+#page-admin-scheduler .palette-card .pc-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lux-accent);
+}
+#page-admin-scheduler .palette-card .pc-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+#page-admin-scheduler .palette-card .pc-meta {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-preset-search-field {
+  position: relative;
+}
+#page-admin-scheduler .sch-preset-search-field > i {
+  position: absolute;
+  left: 14px;
+  bottom: calc(var(--lux-field-min-height, 44px) / 2);
+  transform: translateY(50%);
+  color: var(--lux-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+#page-admin-scheduler .sch-preset-search-field .lux-control {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-main {
+  display: grid;
+  gap: 8px;
+  align-content: stretch;
+  min-width: 0;
+  min-height: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-wrap {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  flex: none;
+  overflow: visible;
+  min-height: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-shell {
+  padding: 18px;
+  overflow: hidden;
+  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 200px);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-start,
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-end {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-week-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--lux-text);
+  white-space: nowrap;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border-radius: var(--sch-pill-radius);
+  border: 1px solid var(--sch-grid-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-tag-soft {
+  color: var(--lux-text);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-week-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-week-arrow {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
+  justify-content: center;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-week-current-btn {
+  min-height: 46px;
+  padding: 0 18px;
+  justify-content: center;
+}
+:is(#page-admin-scheduler #scheduler-grid, #page-timetable #timetable-grid) {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-root {
+  min-width: 1420px;
+  contain: layout style paint;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-container {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  align-items: stretch;
+  border: 1px solid var(--sch-grid-border);
+  border-radius: 24px;
+  overflow: hidden;
+  min-width: 0;
+  background: var(--sch-grid-chrome-bg);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-lane-bg);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day:last-child {
+  border-right: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 86px;
+  padding: 14px 12px 12px;
+  border-bottom: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-chrome-bg);
+  text-align: center;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day.is-today .sch-weeklist-day-head {
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 8%, var(--sch-grid-chrome-bg));
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--lux-text);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col-meta {
+  font-size: 11px;
+  color: var(--lux-text-muted);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day-count {
+  font-size: 10px;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 180px;
+  padding: 12px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-item {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-empty {
+  display: grid;
+  min-height: 110px;
+  place-items: center;
+  padding: 16px 8px;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  font-size: 11px;
+  text-align: center;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell > #timetable-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  margin-inline: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell .sch-weeklist-root {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  margin-inline: 0;
+  margin-bottom: -14px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell .sch-weeklist-container {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile {
+  --sch-slot-height: 36px;
+  padding: 10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile .sch-weeklist-root {
+  margin-inline: -10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-weeklist-root {
+  width: 100%;
+  min-width: 0;
+}
+
+body.lux-route-timetable #page-timetable .sch-weeklist-container {
+  width: 100%;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+body.lux-route-timetable #page-timetable .schedule-now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--sch-now-top, 0);
+  z-index: 12;
+  pointer-events: none;
+  border-top: 2px solid color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 72%, transparent);
+}
+
+body.lux-route-timetable #page-timetable .schedule-now-line span {
+  position: absolute;
+  right: 8px;
+  top: -10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, transparent);
+  color: var(--lux-text);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-info-banner,
+:is(#page-admin-scheduler, #page-timetable) .sch-empty-week-notice,
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-empty {
+  margin-top: 14px;
+}
+
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-form-section {
+  display: grid;
+  gap: 12px;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-form-section-head {
+  display: grid;
+  gap: 4px;
+}
+#page-admin-scheduler .sch-form-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-form-section-copy {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row {
+  display: grid;
+  gap: 10px;
+}
+#schPresetManagerOverlay .sch-input-row {
+  gap: 12px;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-single {
+  align-items: end;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-group > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lux-text-muted);
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-row label {
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject .sch-input-group > label,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two .sch-input-group > label {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .lux-picker-field {
+  display: block;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .lux-picker-btn {
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="time"],
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="number"],
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-readonly {
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="time"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  line-height: 1.2;
+}
+body.lux-route-admin-scheduler .sch-modal-overlay {
+  z-index: 2400;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay.sch-modal-overlay {
+  z-index: 2500;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) > .sch-modal {
+  width: min(760px, 100%);
+  max-height: min(90vh, 1100px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--lux-panel-radius, 22px);
+}
+body.lux-route-admin-scheduler .sch-modal-wide {
+  width: min(920px, 100%);
+}
+body.lux-route-admin-scheduler .sch-modal-narrow {
+  width: min(520px, 100%);
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-head,
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  flex: 0 0 auto;
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-head {
+  border-bottom: 1px solid var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler .quiz-modal-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  line-height: 1.08;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  line-height: 1.08;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.sch-modal-subtitle, .quiz-modal-subtitle, .sch-modal-week) {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.quiz-modal-close, .sch-modal-close-muted) {
+  font-size: 18px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+  padding: 14px 18px;
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-body {
+  overflow: auto;
+  padding: 20px 24px 24px;
+  display: grid;
+  gap: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay.is-open .sch-modal-body,
+body.lux-route-admin-scheduler #profQuizModalOverlay.is-open .sch-modal-body {
+  overscroll-behavior: contain;
+}
+body.lux-route-admin-scheduler .sch-modal-body-pad {
+  padding-top: 24px;
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-foot {
+  border-top: 1px solid var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler .sch-modal-foot-between {
+  justify-content: space-between;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-form-section:not(.home-hover-chip),
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-form-section:not(.home-hover-chip) {
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list-shell {
+  max-height: min(52vh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-label {
+  font-size: 13px;
+  font-weight: 700;
+  word-break: break-word;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-helper {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-btn {
+  min-height: 44px;
+  white-space: nowrap;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  outline: none;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input {
+  width: 100%;
+  min-width: 0;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-search-shell .sch-preset-manage-search {
+  padding-left: 40px;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-preset-manage-link {
+  padding: 4px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+#page-admin-scheduler .quiz-questions-head {
+  display: grid;
+  gap: 10px;
+}
+#page-admin-scheduler .quiz-questions-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#page-admin-scheduler .quiz-questions-list {
+  display: grid;
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+}
+#page-admin-scheduler .quiz-question-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+}
+#page-admin-scheduler .quiz-question-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+@media (max-width: 1100px) {
+  #page-admin-scheduler .scheduler-wrap {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  #page-admin-scheduler .sch-sidebar {
+    grid-template-columns: 1fr;
+    max-height: none;
+    min-height: 0;
+  }
+  #page-admin-scheduler .sch-main {
+    max-height: none;
+    min-height: 0;
+  }
+}
+@media (max-width: 900px) {
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-root {
+    min-width: 0;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #page-admin-scheduler .sch-control-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  body.lux-route-admin-scheduler #page-admin-scheduler .sch-weeklist-container,
+  body.lux-route-timetable #page-timetable .sch-weeklist-container {
+    grid-template-columns: 1fr;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items > .sch-weeklist-item {
+    align-self: stretch;
+    width: auto;
+    max-width: 100%;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items::after {
+    display: none;
+  }
+  #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid,
+  #page-admin-scheduler .sch-control-grid,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity {
+    grid-template-columns: 1fr;
+  }
+}

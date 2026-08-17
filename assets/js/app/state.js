@@ -931,7 +931,7 @@ function ensureCanonicalState() {
     if (kiuCanonicalStateInProgress) return;
     kiuCanonicalStateInProgress = true;
     try {
-    ensureExamSessionStore();
+    if (typeof ensureExamSessionStore === 'function') ensureExamSessionStore();
     if (typeof stripSeededMockStudents === 'function') {
         stripSeededMockStudents(KIU_STATE, { retainAdminTestingPersonas: shouldRetainAdminTestingPersonas() });
     }
@@ -1352,7 +1352,9 @@ function resolveStudentScheduleEntryFaculty(entry, fallbackFaculty = '') {
     const courseId = entry?.courseId || entry?.sourceCourseId || '';
     const groupId = entry?.groupId || entry?.groupName || '';
     if (courseId && groupId) {
-        const candidateGroups = getAvailableGroupsForSubject(courseId).filter(group => (
+        const candidateGroups = (typeof getAvailableGroupsForSubject === 'function'
+            ? getAvailableGroupsForSubject(courseId)
+            : []).filter(group => (
             canonicalCourseKey(group?.id || group?.groupId || group?.name || '') === canonicalCourseKey(groupId)
         ));
         const matchedGroup = candidateGroups.find(group => (

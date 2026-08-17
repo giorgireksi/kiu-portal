@@ -97,8 +97,8 @@ describe('staff mobile runtime regressions', () => {
         expect(html).not.toContain('assets/js/pages/staff-route-bootstrap.js?v=20260516-staffmobile1');
         expect(html).not.toContain('assets/js/pages/staff-mobile-shell.js?v=20260510-staff-admin3');
         expect(html).not.toContain('assets/css/admin-directories.css');
-        expect(classificationModule).toContain("'staff.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' }");
-        expect(classificationMarkdown).toContain("| `staff.html` | `special-surface` | `assets/css/lux-page-bare-lite.css` | `shared-standalone` |");
+        expect(classificationModule).toContain("'staff.html': { category: 'special-surface', dedicatedCss: ['assets/css/route-bare/directory/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' }");
+        expect(classificationMarkdown).toContain("| `staff.html` | `special-surface` | `assets/css/route-bare/directory/lux-page-bare-lite.css` | `shared-standalone` |");
     });
 
     it('uses the shared standalone shell on first tap and clears the default home active state', () => {

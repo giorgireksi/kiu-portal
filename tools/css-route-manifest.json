@@ -13,7 +13,7 @@
     "admin-library.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/library/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -21,7 +21,7 @@
     "admin-orders.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/orders/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -29,7 +29,7 @@
     "admin-scheduler.html": {
       "category": "special-surface",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/admin-scheduler/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -37,7 +37,7 @@
     "admin-tools.html": {
       "category": "special-surface",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/admin-tools.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -53,7 +53,7 @@
     "chancellery.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/chancellery/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -61,7 +61,7 @@
     "exam-portal.html": {
       "category": "excluded-route",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/lms/lux-page-bare-lite.css"
       ],
       "mobileShell": "none",
       "stack": "shared-portal"
@@ -69,7 +69,7 @@
     "exams.html": {
       "category": "special-surface",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/exams/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -77,7 +77,7 @@
     "faculty-gradebook.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/faculty-gradebook/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -103,7 +103,10 @@
       "dedicatedCss": [
         "assets/css/index-home-layout.css",
         "assets/css/index-home-widgets.css",
-        "assets/css/index-home-role.css"
+        "assets/css/index-home-role.css",
+        "assets/css/index-home-loading.css",
+        "assets/css/home-assembly-prehide.css",
+        "assets/css/lux-layout-primitives.css"
       ],
       "mobileShell": "index-shared",
       "stack": "index"
@@ -112,7 +115,7 @@
       "category": "standard-shell",
       "dedicatedCss": [
         "assets/css/lux-layout-primitives.css",
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/library/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -120,7 +123,7 @@
     "lms.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/lms/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -136,7 +139,7 @@
     "news.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/news/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -144,7 +147,7 @@
     "orders.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/orders/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -152,7 +155,7 @@
     "personal-data.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/personal/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -168,7 +171,7 @@
     "profile-view.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/core/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -176,7 +179,7 @@
     "programs.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/programs/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -192,7 +195,7 @@
     "registration.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/registration/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -200,7 +203,7 @@
     "social.html": {
       "category": "special-surface",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css",
+        "assets/css/route-bare/social/lux-page-bare-lite.css",
         "assets/css/lux-studio.css"
       ],
       "mobileShell": "social-shared",
@@ -209,7 +212,7 @@
     "staff.html": {
       "category": "special-surface",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/directory/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -217,7 +220,7 @@
     "students-admin.html": {
       "category": "special-surface",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/directory/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -226,7 +229,7 @@
       "category": "standard-shell",
       "dedicatedCss": [
         "assets/css/lux-layout-primitives.css",
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/student-service/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -234,7 +237,7 @@
     "study-card.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/study-card/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"
@@ -243,7 +246,7 @@
       "category": "standard-shell",
       "dedicatedCss": [
         "assets/css/layout-schedule-board.css",
-        "assets/css/lux-page-bare-lite.css"
+        "assets/css/route-bare/timetable/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
       "stack": "shared-portal"

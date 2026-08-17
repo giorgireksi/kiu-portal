@@ -12,4 +12,4 @@ Retired dedicated `*-route.css` paint skins are denylisted in [`test/helpers/bar
 
 | Route | Category | Dedicated CSS | Mobile shell |
 |-------|----------|---------------|--------------|
-| `staff.html` | `special-surface` | `assets/css/lux-page-bare-lite.css` | `shared-standalone` |
+| `staff.html` | `special-surface` | `assets/css/route-bare/directory/lux-page-bare-lite.css` | `shared-standalone` |

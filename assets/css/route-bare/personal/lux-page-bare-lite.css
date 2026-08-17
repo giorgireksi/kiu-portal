@@ -1,0 +1,423 @@
+/* Generated route bundle: personal. */
+/* Source: assets/css/lux-page-bare-lite.css; regenerate with tools/generate-route-bare-css.mjs. */
+/* Included source lines: 1-76, 13232-13577. */
+
+body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content {
+  min-width: 0;
+}
+
+body.lux-page-bare .lux-page-shell { display: grid; gap: 12px; padding: 12px 0; }
+body.lux-page-bare .lux-page-title, body.lux-page-bare h1 {
+  color: var(--lux-text, #f8fafc);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+body.lux-page-bare .lux-page-copy, body.lux-page-bare .lux-page-kicker {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  line-height: 1.5;
+  margin: 0;
+}
+body.lux-page-bare .lux-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+body.lux-page-bare .lux-field { display: grid; gap: 6px; min-width: 0; }
+body.lux-page-bare .lux-field label, body.lux-page-bare .lux-overline {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-subcards, body.lux-page-bare .lux-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+body.lux-page-bare .lux-pill-row, body.lux-page-bare .lux-card-actions, body.lux-page-bare .lux-actions-between {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+body.lux-page-bare table { width: 100%; border-collapse: collapse; }
+body.lux-page-bare table th, body.lux-page-bare table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+  text-align: left;
+  vertical-align: top;
+}
+body.lux-page-bare table thead th {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: grid; gap: 8px; }
+@media (max-width: 920px) {
+  body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
+}
+
+
+
+body.lux-unified-shell.lux-page-bare {
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+
+
+body.lux-route-personal-data #page-personal-data {
+    display: grid;
+    gap: 0;
+    padding: 12px 0 84px;
+}
+
+body.lux-route-personal-data #page-personal-data .personal-data-shell {
+    display: grid;
+    gap: 0;
+    border-radius: 24px;
+    overflow: visible;
+}
+
+body.lux-route-personal-data .personal-data-hero {
+    padding: 28px 30px 0;
+    min-height: 0;
+    overflow: visible;
+}
+
+body.lux-route-personal-data .personal-data-hero-copy {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+    overflow: visible;
+}
+
+body.lux-route-personal-data .personal-data-hero-copy :is(.page-hero-title, .lux-page-title) {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-personal-data .personal-data-command.personal-data-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 24px;
+    margin-top: 18px;
+    border-top: 1px solid var(--lux-soft-chrome-border-accent);
+    border-radius: 0;
+}
+
+body.lux-route-personal-data .personal-data-command-context {
+    flex: 1 1 280px;
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-personal-data .personal-data-command-context p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-personal-data .personal-data-command-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+body.lux-route-personal-data .personal-data-layout.personal-data-workspace-body {
+    display: grid;
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    padding: 22px 24px 24px;
+    margin-top: 0;
+    border-top: 1px solid var(--lux-soft-chrome-border-accent);
+    overflow: visible;
+}
+
+body.lux-route-personal-data .personal-data-rail,
+body.lux-route-personal-data .personal-data-main {
+    min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-main {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+    padding: 24px;
+    border-radius: 16px;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details-root {
+    min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-details-empty {
+    margin: 0;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+    line-height: 1.3;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field-value {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--lux-text);
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-personal-data .personal-data-blueprint-field-value.is-empty {
+    color: var(--lux-text-muted);
+    font-weight: 600;
+}
+
+body.lux-route-personal-data .personal-data-identity-card {
+    display: grid;
+    gap: 14px;
+    padding: 24px;
+    border-radius: 16px;
+    position: sticky;
+    top: 24px;
+}
+
+body.lux-route-personal-data .personal-data-profile-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+body.lux-route-personal-data .personal-data-avatar-shell {
+    flex: 0 0 auto;
+}
+
+body.lux-route-personal-data .personal-data-avatar-shell img,
+body.lux-route-personal-data .personal-data-avatar-shell [data-personal-data-avatar-fallback="true"] {
+    display: grid;
+    place-items: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    font-weight: 800;
+    font-size: 24px;
+}
+
+body.lux-route-personal-data .personal-data-merged {
+    display: grid;
+    gap: 20px;
+    min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-section-head {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-personal-data .personal-data-kpi-row {
+    gap: 14px;
+}
+
+body.lux-route-personal-data .personal-data-kpi-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 16px 18px;
+    border-radius: 16px;
+    min-width: 0;
+}
+
+body.lux-route-personal-data .personal-data-metric-icon {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+}
+
+body.lux-route-personal-data .pd-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: color-mix(in srgb, var(--lux-text-muted) 18%, transparent);
+}
+
+body.lux-route-personal-data .pd-password-form {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-personal-data .pd-field {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-personal-data .pd-field span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-personal-data .pd-progress {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-personal-data .pd-progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-personal-data .pd-progress-head strong {
+    font-family: 'DM Mono', ui-monospace, monospace;
+    color: var(--lux-text);
+}
+
+body.lux-route-personal-data .pd-progress-track {
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--lux-text-muted) 18%, transparent);
+}
+
+body.lux-route-personal-data .pd-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
+    transition: width 0.25s ease;
+}
+
+
+body.lux-route-personal-data #page-personal-data .personal-data-merged.home-hover-chip {
+    padding: 24px;
+    border-radius: 16px;
+}
+
+body.lux-route-personal-data #page-personal-data .personal-data-card-copy.lux-card-copy {
+    max-width: 56ch;
+    margin-top: 0;
+    color: var(--lux-text-muted);
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-personal-data #page-personal-data .personal-data-command-context .filter-shell-title {
+    color: var(--lux-accent-2, var(--lux-accent));
+}
+
+body.lux-route-personal-data #page-personal-data .personal-data-kpi-label.lux-card-meta {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-personal-data #page-personal-data .personal-data-metric-icon.lux-data-icon {
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: rgb(var(--lux-accent-rgb));
+}
+
+body.lux-light-mode.lux-route-personal-data #page-personal-data :is(
+    .lux-page-title,
+    .personal-data-name,
+    .personal-data-level-heading,
+    .personal-data-kpi-value
+),
+html.lux-light-mode body.lux-route-personal-data #page-personal-data :is(
+    .lux-page-title,
+    .personal-data-name,
+    .personal-data-level-heading,
+    .personal-data-kpi-value
+) {
+    color: var(--lux-text);
+}
+
+body.lux-light-mode.lux-route-personal-data #page-personal-data :is(
+    .lux-card-copy,
+    .personal-data-kpi-label,
+    .pd-progress-head
+),
+html.lux-light-mode body.lux-route-personal-data #page-personal-data :is(
+    .lux-card-copy,
+    .personal-data-kpi-label,
+    .pd-progress-head
+) {
+    color: var(--lux-text-muted, var(--lux-text-secondary));
+}
+
+@media (max-width: 960px) {
+    body.lux-route-personal-data .personal-data-layout.personal-data-workspace-body {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-personal-data .personal-data-identity-card {
+        position: static;
+    }
+
+    body.lux-route-personal-data .personal-data-command.personal-data-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-personal-data .personal-data-command-actions {
+        justify-content: flex-start;
+    }
+
+    body.lux-route-personal-data .personal-data-hero {
+        padding: 22px 20px 0;
+    }
+
+    body.lux-route-personal-data .personal-data-command.personal-data-toolbar,
+    body.lux-route-personal-data .personal-data-layout.personal-data-workspace-body {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}

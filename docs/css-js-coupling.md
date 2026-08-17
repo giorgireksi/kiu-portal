@@ -10,7 +10,10 @@ Visual design: [`visual-ssot.md`](visual-ssot.md) · Archive: [`active-vs-archiv
 ```
 kiu-fonts → lux-tokens.css
 → lux-focus-panel.css → lux-controls.css → lux-shell.css
-→ lux-page-bare-lite.css → mobile-shell-core.css
+→ route-bare/<route>/lux-page-bare-lite.css → mobile-shell-core.css
+
+`lux-page-bare-lite.css` remains the source SSOT; route bundles are generated with
+`npm run generate:route-bare-css` so each page parses only its own layout sections.
 ```
 
 **Index extras:** `lux-fouc-ht.css` + `index-home-layout.css` + `index-home-widgets.css` + `index-home-role.css`.
@@ -28,9 +31,9 @@ kiu-fonts → lux-tokens.css
 | HTML | Stack | Dedicated CSS |
 |------|-------|----------------|
 | `index.html` | index | `index-home-layout.css` + `index-home-widgets.css` + `index-home-role.css` |
-| `lms.html` | shared-portal | `lux-page-bare-lite.css` |
-| `social.html` | shared-portal | `lux-page-bare-lite.css` |
-| `timetable.html` | shared-portal | `layout-schedule-board.css` + bare-lite |
+| `lms.html` | shared-portal | `route-bare/lms/lux-page-bare-lite.css` |
+| `social.html` | shared-portal | `route-bare/social/lux-page-bare-lite.css` |
+| `timetable.html` | shared-portal | `layout-schedule-board.css` + `route-bare/timetable/lux-page-bare-lite.css` |
 | `login.html` | auth | `login-route.css` |
 | `calendar.html` / `gradebook.html` / … | redirect | `redirect-route.css` |
 

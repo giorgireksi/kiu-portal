@@ -79,7 +79,7 @@ describe('timetable mobile shell migration', () => {
     expect(source).not.toContain('(function initMobileExperience(){');
 
     expect(classificationModuleSource).toContain("'timetable.html': {");
-    expect(classificationModuleSource).toContain("dedicatedCss: ['assets/css/layout-schedule-board.css', 'assets/css/lux-page-bare-lite.css']");
+    expect(classificationModuleSource).toContain("dedicatedCss: ['assets/css/layout-schedule-board.css', 'assets/css/route-bare/timetable/lux-page-bare-lite.css']");
     expect(classificationModuleSource).toContain("mobileShell: 'shared-standalone'");
     expect(classificationSource).toContain('# Portal Visual Route Classification');
     expect(classificationSource).toContain('# Portal Visual Route Classification');

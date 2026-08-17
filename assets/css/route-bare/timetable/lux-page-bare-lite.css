@@ -1,0 +1,2164 @@
+/* Generated route bundle: timetable. */
+/* Source: assets/css/lux-page-bare-lite.css; regenerate with tools/generate-route-bare-css.mjs. */
+/* Included source lines: 1-76, 1595-2499, 12051-13231. */
+
+body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content {
+  min-width: 0;
+}
+
+body.lux-page-bare .lux-page-shell { display: grid; gap: 12px; padding: 12px 0; }
+body.lux-page-bare .lux-page-title, body.lux-page-bare h1 {
+  color: var(--lux-text, #f8fafc);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+body.lux-page-bare .lux-page-copy, body.lux-page-bare .lux-page-kicker {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  line-height: 1.5;
+  margin: 0;
+}
+body.lux-page-bare .lux-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+body.lux-page-bare .lux-field { display: grid; gap: 6px; min-width: 0; }
+body.lux-page-bare .lux-field label, body.lux-page-bare .lux-overline {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-subcards, body.lux-page-bare .lux-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+body.lux-page-bare .lux-pill-row, body.lux-page-bare .lux-card-actions, body.lux-page-bare .lux-actions-between {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+body.lux-page-bare table { width: 100%; border-collapse: collapse; }
+body.lux-page-bare table th, body.lux-page-bare table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+  text-align: left;
+  vertical-align: top;
+}
+body.lux-page-bare table thead th {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: grid; gap: 8px; }
+@media (max-width: 920px) {
+  body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
+}
+
+
+
+body.lux-unified-shell.lux-page-bare {
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+
+:is(#page-admin-scheduler, #page-timetable) {
+  --sch-shell-gap: 18px;
+  --sch-sidebar-width: 368px;
+  --sch-panel-radius: 28px;
+  --sch-card-radius: 20px;
+  --sch-pill-radius: 999px;
+  --sch-slot-height: 96px;
+  --sch-grid-border: var(--lux-border, rgba(255, 255, 255, 0.08));
+  --sch-grid-muted-border: var(--lux-panel-border-soft, rgba(255, 255, 255, 0.05));
+  --sch-grid-chrome-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.04));
+  --sch-grid-chrome-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 12%, transparent);
+  --sch-grid-lane-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.02));
+  --sch-grid-time-pill-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.06));
+  --sch-grid-time-pill-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, transparent);
+}
+body.lux-route-admin-scheduler #app-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+#page-admin-scheduler .scheduler-wrap {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 40px);
+}
+#page-admin-scheduler .sch-sidebar,
+#page-admin-scheduler .sch-main {
+  min-width: 0;
+  contain: layout style paint;
+}
+#page-admin-scheduler .sch-sidebar {
+  position: static;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: start;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  margin: 0;
+}
+#page-admin-scheduler .sch-rail-hero.lux-hero {
+  align-self: start;
+  height: fit-content;
+  min-height: 0;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-panel-radius) - 4px);
+}
+#page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 0;
+}
+#page-admin-scheduler .sch-stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 0;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-card-radius) - 4px);
+}
+#page-admin-scheduler .sch-stat-label,
+#page-admin-scheduler .sch-palette-count-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-stat-card strong {
+  display: block;
+  margin-top: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--lux-text);
+  flex: 0 0 auto;
+}
+#page-admin-scheduler .sch-stat-card > span:last-child {
+  display: none;
+}
+#page-admin-scheduler .sch-rail-section {
+  align-self: start;
+  display: grid;
+  gap: 6px;
+  height: fit-content;
+  padding: 6px 8px;
+  border-radius: calc(var(--sch-panel-radius) - 4px);
+  content-visibility: auto;
+  contain: layout style paint;
+  contain-intrinsic-size: auto 120px;
+}
+#page-admin-scheduler .sch-rail-section.sch-palette-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto auto;
+  gap: 8px 16px;
+  align-items: center;
+  contain-intrinsic-size: auto 160px;
+}
+#page-admin-scheduler .sch-palette-section .sch-rail-section-title {
+  grid-column: 1;
+  grid-row: 1;
+}
+#page-admin-scheduler .sch-palette-section .sch-palette-meta {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  margin: 0;
+}
+#page-admin-scheduler .sch-palette-section .sch-search-shell {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+#page-admin-scheduler .sch-palette-section .sch-palette-list {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+#page-admin-scheduler .sch-rail-section-title {
+  margin-bottom: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-control-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 10px;
+}
+#page-admin-scheduler .sch-control-group {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-control-group > span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-control-group .lux-universal-picker-field {
+  width: 100%;
+  display: block;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-control-grid .lux-control {
+  min-width: 0;
+}
+#page-admin-scheduler .sch-control-grid .lux-picker-btn--compact {
+  width: 100%;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-rail-note {
+  display: none;
+}
+#page-admin-scheduler .sch-search-shell {
+  position: relative;
+}
+#page-admin-scheduler .sch-search-shell > i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  pointer-events: none;
+  z-index: 1;
+}
+#page-admin-scheduler .sch-search-shell .lux-control,
+#page-admin-scheduler .sch-search-shell .sch-preset-manage-search {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+#page-admin-scheduler .sch-palette-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 4px;
+  font-size: 11px;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-palette-meta strong {
+  color: var(--lux-text);
+}
+#page-admin-scheduler .sch-palette-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-right: 2px;
+  padding-bottom: 2px;
+  scroll-snap-type: x proximity;
+}
+#page-admin-scheduler .palette-card {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px 10px 16px;
+  min-height: 0;
+  flex: 0 0 auto;
+  width: 200px;
+  max-width: 240px;
+  text-align: left;
+  border-radius: calc(var(--sch-card-radius) - 4px);
+  cursor: pointer;
+  transform: none;
+  outline: none;
+  scroll-snap-align: start;
+}
+#page-admin-scheduler .palette-card::before {
+  content: '';
+  position: absolute;
+  inset: 8px auto 8px 0;
+  width: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.88;
+}
+#page-admin-scheduler .palette-card .pc-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lux-accent);
+}
+#page-admin-scheduler .palette-card .pc-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+#page-admin-scheduler .palette-card .pc-meta {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-preset-search-field {
+  position: relative;
+}
+#page-admin-scheduler .sch-preset-search-field > i {
+  position: absolute;
+  left: 14px;
+  bottom: calc(var(--lux-field-min-height, 44px) / 2);
+  transform: translateY(50%);
+  color: var(--lux-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+#page-admin-scheduler .sch-preset-search-field .lux-control {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-main {
+  display: grid;
+  gap: 8px;
+  align-content: stretch;
+  min-width: 0;
+  min-height: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-wrap {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  flex: none;
+  overflow: visible;
+  min-height: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-shell {
+  padding: 18px;
+  overflow: hidden;
+  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 200px);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-start,
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-topline-end {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-week-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--lux-text);
+  white-space: nowrap;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border-radius: var(--sch-pill-radius);
+  border: 1px solid var(--sch-grid-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-tag-soft {
+  color: var(--lux-text);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-week-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-week-arrow {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
+  justify-content: center;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-week-current-btn {
+  min-height: 46px;
+  padding: 0 18px;
+  justify-content: center;
+}
+:is(#page-admin-scheduler #scheduler-grid, #page-timetable #timetable-grid) {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-root {
+  min-width: 1420px;
+  contain: layout style paint;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-container {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  align-items: stretch;
+  border: 1px solid var(--sch-grid-border);
+  border-radius: 24px;
+  overflow: hidden;
+  min-width: 0;
+  background: var(--sch-grid-chrome-bg);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-lane-bg);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day:last-child {
+  border-right: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 86px;
+  padding: 14px 12px 12px;
+  border-bottom: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-chrome-bg);
+  text-align: center;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day.is-today .sch-weeklist-day-head {
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 8%, var(--sch-grid-chrome-bg));
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--lux-text);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-day-col-meta {
+  font-size: 11px;
+  color: var(--lux-text-muted);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-day-count {
+  font-size: 10px;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 180px;
+  padding: 12px;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-item {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-empty {
+  display: grid;
+  min-height: 110px;
+  place-items: center;
+  padding: 16px 8px;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  font-size: 11px;
+  text-align: center;
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-weeklist-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell > #timetable-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  margin-inline: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell .sch-weeklist-root {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  margin-inline: 0;
+  margin-bottom: -14px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell .sch-weeklist-container {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile {
+  --sch-slot-height: 36px;
+  padding: 10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-shell.is-profile .sch-weeklist-root {
+  margin-inline: -10px;
+}
+
+body.lux-route-timetable #page-timetable .sch-weeklist-root {
+  width: 100%;
+  min-width: 0;
+}
+
+body.lux-route-timetable #page-timetable .sch-weeklist-container {
+  width: 100%;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+body.lux-route-timetable #page-timetable .schedule-now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--sch-now-top, 0);
+  z-index: 12;
+  pointer-events: none;
+  border-top: 2px solid color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 72%, transparent);
+}
+
+body.lux-route-timetable #page-timetable .schedule-now-line span {
+  position: absolute;
+  right: 8px;
+  top: -10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, transparent);
+  color: var(--lux-text);
+}
+:is(#page-admin-scheduler, #page-timetable) .sch-info-banner,
+:is(#page-admin-scheduler, #page-timetable) .sch-empty-week-notice,
+:is(#page-admin-scheduler, #page-timetable) .sch-grid-empty {
+  margin-top: 14px;
+}
+
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-form-section {
+  display: grid;
+  gap: 12px;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-form-section-head {
+  display: grid;
+  gap: 4px;
+}
+#page-admin-scheduler .sch-form-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-form-section-copy {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row {
+  display: grid;
+  gap: 10px;
+}
+#schPresetManagerOverlay .sch-input-row {
+  gap: 12px;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-single {
+  align-items: end;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-group > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lux-text-muted);
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-row label {
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject .sch-input-group > label,
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two .sch-input-group > label {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  margin-bottom: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-label-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .lux-picker-field {
+  display: block;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .lux-picker-btn {
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="time"],
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="number"],
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-readonly {
+  width: 100%;
+  min-width: 0;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) input[type="time"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  line-height: 1.2;
+}
+body.lux-route-admin-scheduler .sch-modal-overlay {
+  z-index: 2400;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay.sch-modal-overlay {
+  z-index: 2500;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) > .sch-modal {
+  width: min(760px, 100%);
+  max-height: min(90vh, 1100px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--lux-panel-radius, 22px);
+}
+body.lux-route-admin-scheduler .sch-modal-wide {
+  width: min(920px, 100%);
+}
+body.lux-route-admin-scheduler .sch-modal-narrow {
+  width: min(520px, 100%);
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-head,
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  flex: 0 0 auto;
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-head {
+  border-bottom: 1px solid var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler .quiz-modal-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  line-height: 1.08;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  line-height: 1.08;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.sch-modal-subtitle, .quiz-modal-subtitle, .sch-modal-week) {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler :is(#schPresetManagerOverlay, #profQuizModalOverlay) :is(.quiz-modal-close, .sch-modal-close-muted) {
+  font-size: 18px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+  padding: 14px 18px;
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-body {
+  overflow: auto;
+  padding: 20px 24px 24px;
+  display: grid;
+  gap: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay.is-open .sch-modal-body,
+body.lux-route-admin-scheduler #profQuizModalOverlay.is-open .sch-modal-body {
+  overscroll-behavior: contain;
+}
+body.lux-route-admin-scheduler .sch-modal-body-pad {
+  padding-top: 24px;
+}
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-modal-foot {
+  border-top: 1px solid var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler .sch-modal-foot-between {
+  justify-content: space-between;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-form-section:not(.home-hover-chip),
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-form-section:not(.home-hover-chip) {
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list-shell {
+  max-height: min(52vh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-label {
+  font-size: 13px;
+  font-weight: 700;
+  word-break: break-word;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-helper {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-btn {
+  min-height: 44px;
+  white-space: nowrap;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  outline: none;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input {
+  width: 100%;
+  min-width: 0;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-search-shell .sch-preset-manage-search {
+  padding-left: 40px;
+}
+:is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-preset-manage-link {
+  padding: 4px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+#page-admin-scheduler .quiz-questions-head {
+  display: grid;
+  gap: 10px;
+}
+#page-admin-scheduler .quiz-questions-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#page-admin-scheduler .quiz-questions-list {
+  display: grid;
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+}
+#page-admin-scheduler .quiz-question-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+}
+#page-admin-scheduler .quiz-question-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+@media (max-width: 1100px) {
+  #page-admin-scheduler .scheduler-wrap {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  #page-admin-scheduler .sch-sidebar {
+    grid-template-columns: 1fr;
+    max-height: none;
+    min-height: 0;
+  }
+  #page-admin-scheduler .sch-main {
+    max-height: none;
+    min-height: 0;
+  }
+}
+@media (max-width: 900px) {
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-root {
+    min-width: 0;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #page-admin-scheduler .sch-control-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  body.lux-route-admin-scheduler #page-admin-scheduler .sch-weeklist-container,
+  body.lux-route-timetable #page-timetable .sch-weeklist-container {
+    grid-template-columns: 1fr;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items > .sch-weeklist-item {
+    align-self: stretch;
+    width: auto;
+    max-width: 100%;
+  }
+  :is(#page-admin-scheduler, #page-timetable) .sch-weeklist-items::after {
+    display: none;
+  }
+  #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid,
+  #page-admin-scheduler .sch-control-grid,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-two,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-three,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-subject,
+  :is(#page-admin-scheduler, #schPresetManagerOverlay) .sch-input-row-capacity {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+
+
+
+body.lux-route-timetable .lux-timetable-page {
+    display: grid;
+    gap: 14px;
+    padding: 12px 0 calc(84px + env(safe-area-inset-bottom, 0px));
+    min-width: 0;
+}
+
+body.lux-route-timetable #app-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+body.lux-route-timetable .lux-timetable-hero.page-hero {
+    padding: 20px 22px 16px;
+    min-height: 0;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-hero-top.lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 360px);
+    gap: 16px;
+    align-items: stretch;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-width: 0;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main :is(.page-hero-title, .lux-page-title) {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main :is(.page-hero-copy, .lux-page-copy) {
+    max-width: 56ch;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main .lux-pill-row {
+    margin-top: 4px;
+}
+
+body.lux-route-timetable .lux-timetable-hero-focus {
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-focus-title,
+body.lux-route-timetable .lux-timetable-focus-copy {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-focus-facts li span {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-page :is(
+    .lux-card-title,
+    .lux-card-copy,
+    .lux-card-meta,
+    .lux-route-field-label,
+    .schedule-week-label,
+    .schedule-empty-title,
+    .schedule-empty-copy,
+    .lux-empty-state__title,
+    .lux-empty-state__copy
+) {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-stage {
+    padding: 20px 0;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-command {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 18px;
+}
+
+body.lux-route-timetable .lux-timetable-command-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+body.lux-route-timetable .lux-timetable-command-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    flex-shrink: 0;
+}
+
+body.lux-route-timetable .lux-timetable-command-collapse {
+    min-width: 0;
+}
+
+body.lux-route-timetable .lux-timetable-command.is-collapsed .lux-timetable-command-collapse,
+body.lux-route-timetable .lux-timetable-command-collapse.is-collapsed {
+    display: none;
+}
+
+body.lux-route-timetable .lux-timetable-command.is-collapsed .lux-timetable-command-head {
+    margin-bottom: 0;
+}
+
+body.lux-route-timetable .lux-timetable-command-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.95fr);
+    gap: 14px;
+    align-items: stretch;
+}
+
+body.lux-route-timetable .lux-timetable-command-focus {
+    display: flex;
+    flex-direction: column;
+    align-content: stretch;
+    gap: 10px;
+    height: 100%;
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: 16px;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-command-focus .lux-timetable-focus-title {
+    font-size: clamp(18px, 1.8vw, 24px);
+}
+
+body.lux-route-timetable .lux-timetable-command-focus .lux-timetable-focus-copy {
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+body.lux-route-timetable .lux-timetable-command-focus .lux-timetable-focus-facts {
+    gap: 4px;
+}
+
+body.lux-route-timetable .lux-timetable-command-focus .lux-timetable-focus-facts li {
+    gap: 7px;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+body.lux-route-timetable .lux-timetable-command-focus .lux-timetable-focus-meta {
+    gap: 5px;
+    margin-top: auto;
+}
+
+body.lux-route-timetable .lux-timetable-command-focus .lux-timetable-focus-meta span {
+    min-height: 30px;
+    padding: 6px 8px;
+    font-size: 10px;
+}
+
+body.lux-route-timetable .lux-timetable-view-switcher {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+body.lux-route-timetable .lux-timetable-week-nav {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 10px 12px;
+}
+
+body.lux-route-timetable .lux-timetable-stage-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+body.lux-route-timetable .lux-timetable-stage-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-timetable .lux-timetable-overview-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+}
+
+body.lux-route-timetable .lux-timetable-canvas {
+    min-width: 0;
+    min-height: 280px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.lux-route-timetable #page-timetable .sch-grid-wrap {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.lux-route-timetable #page-timetable .sch-body {
+    min-width: 780px;
+}
+
+body.lux-route-timetable .marker-quiz {
+    --session-marker-accent: #3b82f6;
+}
+
+body.lux-route-timetable .marker-oral_quiz {
+    --session-marker-accent: #8b5cf6;
+}
+
+body.lux-route-timetable .marker-exam {
+    --session-marker-accent: #ef4444;
+}
+
+body.lux-route-timetable .marker-presentation {
+    --session-marker-accent: #f97316;
+}
+
+body.lux-route-timetable .marker-project {
+    --session-marker-accent: #06b6d4;
+}
+
+body.lux-route-timetable .marker-lab {
+    --session-marker-accent: #22c55e;
+}
+
+body.lux-route-timetable .marker-deadline {
+    --session-marker-accent: #eab308;
+}
+
+body.lux-route-timetable .marker-important {
+    --session-marker-accent: #f59e0b;
+}
+
+body.lux-route-timetable .has-session-marker {
+    border-color: color-mix(in srgb, var(--session-marker-accent, var(--lux-accent)) 42%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--session-marker-accent, var(--lux-accent)) 18%, transparent);
+}
+
+body.lux-route-timetable .schedule-marker-badge,
+body.lux-route-timetable .schedule-session-marker-banner {
+    color: var(--session-marker-accent, var(--lux-accent));
+    background: color-mix(in srgb, var(--session-marker-accent, var(--lux-accent)) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--session-marker-accent, var(--lux-accent)) 28%, transparent);
+}
+
+@media (max-width: 1100px) {
+    body.lux-route-timetable .lux-timetable-command-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    }
+
+    body.lux-route-timetable .lux-timetable-command-focus {
+        grid-column: 1 / -1;
+        height: auto;
+    }
+}
+
+@media (max-width: 960px) {
+    body.lux-route-timetable .lux-timetable-hero-top.lux-hero-stage {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-timetable .lux-timetable-command-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-timetable .lux-timetable-command-focus {
+        grid-column: auto;
+        height: auto;
+    }
+
+    body.lux-route-timetable .lux-timetable-command-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 720px) {
+    body.lux-route-timetable .lux-timetable-page {
+        gap: 10px;
+        padding: 8px 0 calc(88px + env(safe-area-inset-bottom, 0px));
+    }
+
+    body.lux-route-timetable .lux-timetable-command {
+        margin-top: 8px;
+        padding: 12px;
+    }
+
+    body.lux-route-timetable .lux-timetable-command-focus {
+        padding: 12px;
+    }
+
+    body.lux-route-timetable .lux-timetable-view-switcher {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    body.lux-route-timetable .lux-timetable-view-switcher-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 44px;
+    }
+
+    body.lux-route-timetable .lux-timetable-week-nav {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+        padding: 8px 10px;
+    }
+
+    body.lux-route-timetable .lux-timetable-week-arrow {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    body.lux-route-timetable .lux-timetable-week-label {
+        flex: 1 1 auto;
+        min-width: 0;
+        text-align: center;
+    }
+
+    body.lux-route-timetable .lux-timetable-current-week-btn {
+        flex: 1 1 100%;
+        min-height: 44px;
+    }
+
+    body.lux-route-timetable .lux-timetable-overview-row {
+        width: 100%;
+        gap: 6px;
+        padding: 8px 10px;
+    }
+
+    body.lux-route-timetable .lux-timetable-stage {
+        padding: 12px 0;
+    }
+
+    body.lux-route-timetable .lux-timetable-stage-head {
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-grid-shell {
+        padding: 10px;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-weeklist-day-head {
+        min-height: 64px;
+        padding: 10px 8px 8px;
+        gap: 2px;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-weeklist-items {
+        gap: 8px;
+        min-height: 0;
+        padding: 10px;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-weeklist-item,
+    body.lux-route-timetable #page-timetable .sch-weeklist-empty {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-weeklist-empty {
+        min-height: 72px;
+        padding: 12px 8px;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-day-col-label,
+    body.lux-route-timetable #page-timetable .sch-day-col-meta,
+    body.lux-route-timetable #page-timetable .sch-weeklist-day-count {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-time-col,
+    body.lux-route-timetable #page-timetable .sch-time-labels {
+        width: 48px;
+    }
+
+    body.lux-route-timetable #page-timetable .sch-body {
+        min-width: 720px;
+    }
+}
+
+
+
+body.lux-route-registration #page-registration.registration-page {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-page-stack {
+    display: grid;
+    gap: 0;
+    padding: 12px 0 84px;
+}
+
+body.lux-route-registration .registration-studio-shell {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    overflow: visible;
+    min-width: 0;
+}
+
+body.lux-route-timetable .lux-timetable-hero.page-hero,
+body.lux-route-registration .registration-studio-shell > .registration-hero-shell.page-hero {
+    padding: 20px 22px 16px;
+    min-height: 0;
+    overflow: visible;
+}
+body.lux-route-chancellery .lux-chancellery-hero-card.page-hero {
+    padding: 12px 14px 12px;
+    min-height: 0;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-hero-top.lux-hero-stage,
+body.lux-route-registration .registration-hero-top.lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 360px);
+    gap: 16px;
+    align-items: stretch;
+}
+body.lux-route-chancellery .lux-chancellery-hero-stage.lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(240px, 320px);
+    gap: 12px;
+    align-items: stretch;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main,
+body.lux-route-registration .registration-hero-copy.lux-timetable-hero-main,
+body.lux-route-chancellery .lux-chancellery-hero-main.lux-hero-main {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-width: 0;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main :is(.page-hero-title, .lux-page-title),
+body.lux-route-registration .registration-hero-copy :is(.page-hero-title, .lux-page-title),
+body.lux-route-chancellery .lux-chancellery-hero-main :is(.page-hero-title, .lux-page-title) {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main :is(.page-hero-copy, .lux-page-copy),
+body.lux-route-registration .registration-hero-copy :is(.page-hero-copy, .lux-page-copy),
+body.lux-route-chancellery .lux-chancellery-hero-main :is(.page-hero-copy, .lux-page-copy) {
+    max-width: 56ch;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main .lux-pill-row,
+body.lux-route-registration .registration-hero-copy .lux-pill-row {
+    margin-top: 4px;
+}
+
+body.lux-route-timetable .lux-timetable-hero-focus,
+body.lux-route-registration .registration-hero-aside.lux-timetable-hero-focus,
+body.lux-route-chancellery .lux-chancellery-hero-side.lux-timetable-hero-focus {
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-focus-title,
+body.lux-route-timetable .lux-timetable-focus-copy,
+body.lux-route-registration .registration-focus-value,
+body.lux-route-registration .registration-focus-copy,
+body.lux-route-chancellery .lux-chancellery-hero-side :is(.lux-focus-panel__title, .lux-focus-panel__copy) {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-focus-facts li span,
+body.lux-route-registration .lux-timetable-focus-facts li span {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-page-stack :is(
+    .lux-card-title,
+    .lux-card-copy,
+    .lux-card-meta,
+    .registration-insight-label,
+    .registration-insight-value,
+    .registration-insight-copy,
+    .registration-workspace-title,
+    .registration-workspace-note,
+    .registration-state-title,
+    .registration-state-meta,
+    .registration-state-summary,
+    .registration-render-error-title,
+    .registration-render-error-copy
+) {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-studio-shell > .registration-studio-deck {
+    display: grid;
+    gap: 14px;
+    padding: 14px 20px 20px;
+    overflow: visible;
+}
+
+body.lux-route-registration .registration-metrics-band {
+    display: block;
+    margin: 0;
+}
+
+body.lux-route-registration .registration-summary-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 16px 18px 12px;
+    overflow: visible;
+}
+
+body.lux-route-registration .registration-summary-header {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-summary-heading,
+body.lux-route-registration .registration-summary-term-field,
+body.lux-route-registration .registration-summary-status-line {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-summary-heading {
+    display: grid;
+    gap: 4px;
+    justify-self: start;
+}
+
+body.lux-route-registration .registration-summary-heading .registration-insight-label {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+body.lux-route-registration .registration-summary-status-line {
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    gap: 8px;
+}
+
+body.lux-route-registration .registration-summary-status {
+    color: var(--lux-accent);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+body.lux-route-registration .registration-summary-status-meta {
+    display: flex;
+    gap: 5px;
+}
+
+body.lux-route-registration .registration-summary-status-meta .lux-hero-signal {
+    min-height: 30px;
+    padding: 7px 10px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+body.lux-route-registration .registration-summary-term-field {
+    display: grid;
+    gap: 5px;
+    justify-self: end;
+    width: min(100%, 220px);
+}
+
+body.lux-route-registration .registration-summary-term-field .registration-insight-label {
+    margin: 0;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+body.lux-route-registration .registration-summary-term-select {
+    width: 100%;
+    min-height: 34px;
+    padding: 7px 30px 7px 10px;
+    font-size: 12px;
+}
+
+body.lux-route-registration .registration-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-summary-section {
+    display: flex;
+    flex-direction: column;
+    align-content: start;
+    align-self: start;
+    gap: 4px;
+    min-width: 0;
+    min-height: 0;
+    padding: 10px 14px 4px;
+}
+
+body.lux-route-registration .registration-summary-section + .registration-summary-section {
+    border-inline-start: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+}
+
+body.lux-route-registration .registration-summary-section .registration-insight-label {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+body.lux-route-registration .registration-summary-value {
+    margin-top: 2px;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-summary-copy {
+    max-width: 36ch;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+body.lux-route-registration .registration-summary-progress {
+    width: 100%;
+    height: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--lux-accent) 12%, transparent);
+}
+
+body.lux-route-registration .registration-summary-progress span {
+    display: block;
+    width: var(--registration-progress, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--lux-accent);
+    transition: width 180ms ease;
+}
+
+body.lux-route-registration .registration-summary-footer {
+    padding: 10px 18px 2px;
+    border-top: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+}
+
+body.lux-route-registration .registration-summary-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body.lux-route-registration .registration-summary-facts li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 3px 14px;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+body.lux-route-registration .registration-summary-facts li + li {
+    border-inline-start: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+}
+
+body.lux-route-registration .registration-summary-facts li i {
+    flex: 0 0 14px;
+    width: 14px;
+    font-size: 12px;
+    color: var(--lux-accent);
+    text-align: center;
+}
+
+body.lux-route-registration .registration-summary-facts li span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-insight-label {
+    font-size: 9px;
+}
+
+body.lux-route-registration .registration-studio-shell > .lux-timetable-stage.registration-workspace {
+    padding: 18px 24px 24px;
+    overflow: visible;
+}
+
+body.lux-route-registration .registration-command-band {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 16px;
+    min-width: 0;
+}
+
+body.lux-route-registration .reg-tabs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-registration .reg-tab {
+    appearance: none;
+    min-height: 60px;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 16px;
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.35;
+    text-align: center;
+    cursor: pointer;
+}
+
+body.lux-route-registration .reg-tab.active {
+    color: #fff8ef;
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
+    box-shadow: var(--lux-elev-2);
+}
+
+body.lux-route-registration .registration-workspace-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+body.lux-route-registration .registration-workspace-body {
+    min-width: 0;
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-registration .registration-course-action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+body.lux-route-registration .registration-course-picker-btn,
+body.lux-route-registration .registration-course-remove-btn {
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-registration .registration-course-remove-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+body.lux-route-registration .registration-runtime-stale-banner {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.lux-route-registration .registration-empty-state,
+body.lux-route-registration .registration-render-error {
+    padding: 24px;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px dashed color-mix(in srgb, var(--lux-text-muted) 28%, transparent);
+}
+
+body.lux-route-registration .registration-render-error-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+body.lux-route-registration .registration-render-error-copy {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-shell-grid,
+body.lux-route-registration .registration-course-list,
+body.lux-route-registration .registration-track-list {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-registration .registration-shell-grid {
+    grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.08fr);
+    align-items: start;
+}
+
+body.lux-route-registration .registration-module-list-card,
+body.lux-route-registration .registration-module-pane-card,
+body.lux-route-registration .registration-track-card {
+    display: grid;
+    gap: 14px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    min-width: 0;
+    min-height: 100%;
+}
+
+body.lux-route-registration .registration-module-list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-registration .registration-module-list {
+    display: grid;
+    gap: 10px;
+    max-height: 260px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+body.lux-route-registration .registration-module-pane-shell {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-pane-head,
+body.lux-route-registration .registration-track-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-module-pane-heading {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-pane-chip,
+body.lux-route-registration .registration-track-group-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+body.lux-route-registration .registration-module-pane-title {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-course-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+body.lux-route-registration .registration-module-choice.is-active {
+    border-color: color-mix(in srgb, var(--lux-accent) 34%, transparent);
+}
+
+body.lux-route-registration .registration-course-list {
+    gap: 10px;
+}
+
+body.lux-route-registration .registration-course-index,
+body.lux-route-registration .registration-course-ects {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 14px;
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-weight: 800;
+    text-align: center;
+}
+
+body.lux-route-registration .registration-course-row-main,
+body.lux-route-registration .registration-course-meta,
+body.lux-route-registration .registration-course-action {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-faculty-hint {
+    margin-bottom: 12px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-state-list {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-registration .registration-state-card {
+    display: grid;
+    gap: 8px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-history-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-module-choice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+body.lux-route-registration .registration-module-choice-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-grid-head {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1.6fr) 110px minmax(0, 2.2fr) 120px;
+    gap: 10px;
+    margin-top: 2px;
+    padding: 0 2px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-course-row {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1.6fr) 110px minmax(0, 2.2fr) 120px;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 14px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-section-head {
+    margin-bottom: 14px;
+}
+
+@media (max-width: 960px) {
+    body.lux-route-registration .registration-hero-top.lux-hero-stage {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-registration .registration-summary-header {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    body.lux-route-registration .registration-summary-status-line {
+        justify-content: flex-start;
+    }
+
+    body.lux-route-registration .registration-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-registration .registration-summary-section {
+        min-height: 0;
+        padding-inline: 0;
+    }
+
+    body.lux-route-registration .registration-summary-section + .registration-summary-section {
+        border-inline-start: 0;
+        border-block-start: 1px solid color-mix(in srgb, var(--lux-accent) 18%, transparent);
+    }
+
+    body.lux-route-registration .reg-tabs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.lux-route-registration .registration-workspace-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-registration .registration-workspace-note {
+        max-width: none;
+        text-align: left;
+    }
+
+    body.lux-route-registration .registration-module-grid-head {
+        display: none;
+    }
+
+    body.lux-route-registration .registration-module-pane-card,
+    body.lux-route-registration .registration-track-card {
+        padding: 12px 14px;
+        gap: 12px;
+    }
+
+    body.lux-route-registration .registration-module-pane-head,
+    body.lux-route-registration .registration-track-head {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    body.lux-route-registration .registration-module-pane-chip,
+    body.lux-route-registration .registration-track-group-chip {
+        min-height: 30px;
+        padding: 0 10px;
+    }
+
+    body.lux-route-registration .registration-course-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "main ects"
+            "meta meta"
+            "action action";
+        gap: 10px;
+        align-items: start;
+        padding: 12px;
+    }
+
+    body.lux-route-registration .registration-course-index {
+        display: none;
+    }
+
+    body.lux-route-registration .registration-course-row-main {
+        grid-area: main;
+    }
+
+    body.lux-route-registration .registration-course-ects {
+        grid-area: ects;
+        align-self: start;
+        min-height: 32px;
+        padding: 0 10px;
+        font-size: 12px;
+    }
+
+    body.lux-route-registration .registration-course-meta {
+        grid-area: meta;
+    }
+
+    body.lux-route-registration .registration-course-action {
+        grid-area: action;
+        justify-content: stretch;
+        width: 100%;
+    }
+
+    body.lux-route-registration .registration-course-action-group {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    body.lux-route-registration .registration-course-picker-btn,
+    body.lux-route-registration .registration-course-remove-btn {
+        flex: 1 1 0;
+        min-height: 44px;
+    }
+
+    body.lux-route-registration .registration-shell-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    body.lux-route-registration .registration-summary-panel {
+        padding-inline: 14px;
+    }
+
+    body.lux-route-registration .registration-summary-status-line {
+        justify-content: space-between;
+    }
+
+    body.lux-route-registration .registration-summary-term-select {
+        width: 100%;
+    }
+
+    body.lux-route-registration .registration-summary-footer {
+        padding-inline: 0;
+    }
+
+    body.lux-route-registration .registration-summary-facts {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-registration .registration-summary-facts li + li {
+        border-inline-start: 0;
+        border-block-start: 1px solid color-mix(in srgb, var(--lux-accent) 18%, transparent);
+        padding-top: 8px;
+    }
+}

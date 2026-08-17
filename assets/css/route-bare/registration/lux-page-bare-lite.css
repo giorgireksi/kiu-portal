@@ -1,0 +1,833 @@
+/* Generated route bundle: registration. */
+/* Source: assets/css/lux-page-bare-lite.css; regenerate with tools/generate-route-bare-css.mjs. */
+/* Included source lines: 1-76, 12476-13231. */
+
+body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content {
+  min-width: 0;
+}
+
+body.lux-page-bare .lux-page-shell { display: grid; gap: 12px; padding: 12px 0; }
+body.lux-page-bare .lux-page-title, body.lux-page-bare h1 {
+  color: var(--lux-text, #f8fafc);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+body.lux-page-bare .lux-page-copy, body.lux-page-bare .lux-page-kicker {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  line-height: 1.5;
+  margin: 0;
+}
+body.lux-page-bare .lux-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+body.lux-page-bare .lux-field { display: grid; gap: 6px; min-width: 0; }
+body.lux-page-bare .lux-field label, body.lux-page-bare .lux-overline {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-subcards, body.lux-page-bare .lux-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+body.lux-page-bare .lux-pill-row, body.lux-page-bare .lux-card-actions, body.lux-page-bare .lux-actions-between {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+body.lux-page-bare table { width: 100%; border-collapse: collapse; }
+body.lux-page-bare table th, body.lux-page-bare table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+  text-align: left;
+  vertical-align: top;
+}
+body.lux-page-bare table thead th {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: grid; gap: 8px; }
+@media (max-width: 920px) {
+  body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
+}
+
+
+
+body.lux-unified-shell.lux-page-bare {
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+
+
+body.lux-route-registration #page-registration.registration-page {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-page-stack {
+    display: grid;
+    gap: 0;
+    padding: 12px 0 84px;
+}
+
+body.lux-route-registration .registration-studio-shell {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    overflow: visible;
+    min-width: 0;
+}
+
+body.lux-route-timetable .lux-timetable-hero.page-hero,
+body.lux-route-registration .registration-studio-shell > .registration-hero-shell.page-hero {
+    padding: 20px 22px 16px;
+    min-height: 0;
+    overflow: visible;
+}
+body.lux-route-chancellery .lux-chancellery-hero-card.page-hero {
+    padding: 12px 14px 12px;
+    min-height: 0;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-hero-top.lux-hero-stage,
+body.lux-route-registration .registration-hero-top.lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 360px);
+    gap: 16px;
+    align-items: stretch;
+}
+body.lux-route-chancellery .lux-chancellery-hero-stage.lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(240px, 320px);
+    gap: 12px;
+    align-items: stretch;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main,
+body.lux-route-registration .registration-hero-copy.lux-timetable-hero-main,
+body.lux-route-chancellery .lux-chancellery-hero-main.lux-hero-main {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-width: 0;
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main :is(.page-hero-title, .lux-page-title),
+body.lux-route-registration .registration-hero-copy :is(.page-hero-title, .lux-page-title),
+body.lux-route-chancellery .lux-chancellery-hero-main :is(.page-hero-title, .lux-page-title) {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main :is(.page-hero-copy, .lux-page-copy),
+body.lux-route-registration .registration-hero-copy :is(.page-hero-copy, .lux-page-copy),
+body.lux-route-chancellery .lux-chancellery-hero-main :is(.page-hero-copy, .lux-page-copy) {
+    max-width: 56ch;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-hero-main .lux-pill-row,
+body.lux-route-registration .registration-hero-copy .lux-pill-row {
+    margin-top: 4px;
+}
+
+body.lux-route-timetable .lux-timetable-hero-focus,
+body.lux-route-registration .registration-hero-aside.lux-timetable-hero-focus,
+body.lux-route-chancellery .lux-chancellery-hero-side.lux-timetable-hero-focus {
+    overflow: visible;
+}
+
+body.lux-route-timetable .lux-timetable-focus-title,
+body.lux-route-timetable .lux-timetable-focus-copy,
+body.lux-route-registration .registration-focus-value,
+body.lux-route-registration .registration-focus-copy,
+body.lux-route-chancellery .lux-chancellery-hero-side :is(.lux-focus-panel__title, .lux-focus-panel__copy) {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-timetable .lux-timetable-focus-facts li span,
+body.lux-route-registration .lux-timetable-focus-facts li span {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-page-stack :is(
+    .lux-card-title,
+    .lux-card-copy,
+    .lux-card-meta,
+    .registration-insight-label,
+    .registration-insight-value,
+    .registration-insight-copy,
+    .registration-workspace-title,
+    .registration-workspace-note,
+    .registration-state-title,
+    .registration-state-meta,
+    .registration-state-summary,
+    .registration-render-error-title,
+    .registration-render-error-copy
+) {
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-studio-shell > .registration-studio-deck {
+    display: grid;
+    gap: 14px;
+    padding: 14px 20px 20px;
+    overflow: visible;
+}
+
+body.lux-route-registration .registration-metrics-band {
+    display: block;
+    margin: 0;
+}
+
+body.lux-route-registration .registration-summary-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 16px 18px 12px;
+    overflow: visible;
+}
+
+body.lux-route-registration .registration-summary-header {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-summary-heading,
+body.lux-route-registration .registration-summary-term-field,
+body.lux-route-registration .registration-summary-status-line {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-summary-heading {
+    display: grid;
+    gap: 4px;
+    justify-self: start;
+}
+
+body.lux-route-registration .registration-summary-heading .registration-insight-label {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+body.lux-route-registration .registration-summary-status-line {
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    gap: 8px;
+}
+
+body.lux-route-registration .registration-summary-status {
+    color: var(--lux-accent);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+body.lux-route-registration .registration-summary-status-meta {
+    display: flex;
+    gap: 5px;
+}
+
+body.lux-route-registration .registration-summary-status-meta .lux-hero-signal {
+    min-height: 30px;
+    padding: 7px 10px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+body.lux-route-registration .registration-summary-term-field {
+    display: grid;
+    gap: 5px;
+    justify-self: end;
+    width: min(100%, 220px);
+}
+
+body.lux-route-registration .registration-summary-term-field .registration-insight-label {
+    margin: 0;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+body.lux-route-registration .registration-summary-term-select {
+    width: 100%;
+    min-height: 34px;
+    padding: 7px 30px 7px 10px;
+    font-size: 12px;
+}
+
+body.lux-route-registration .registration-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-summary-section {
+    display: flex;
+    flex-direction: column;
+    align-content: start;
+    align-self: start;
+    gap: 4px;
+    min-width: 0;
+    min-height: 0;
+    padding: 10px 14px 4px;
+}
+
+body.lux-route-registration .registration-summary-section + .registration-summary-section {
+    border-inline-start: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+}
+
+body.lux-route-registration .registration-summary-section .registration-insight-label {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+body.lux-route-registration .registration-summary-value {
+    margin-top: 2px;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-summary-copy {
+    max-width: 36ch;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+body.lux-route-registration .registration-summary-progress {
+    width: 100%;
+    height: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--lux-accent) 12%, transparent);
+}
+
+body.lux-route-registration .registration-summary-progress span {
+    display: block;
+    width: var(--registration-progress, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: var(--lux-accent);
+    transition: width 180ms ease;
+}
+
+body.lux-route-registration .registration-summary-footer {
+    padding: 10px 18px 2px;
+    border-top: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+}
+
+body.lux-route-registration .registration-summary-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body.lux-route-registration .registration-summary-facts li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 3px 14px;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+body.lux-route-registration .registration-summary-facts li + li {
+    border-inline-start: 2px solid color-mix(in srgb, var(--lux-accent) 42%, transparent);
+}
+
+body.lux-route-registration .registration-summary-facts li i {
+    flex: 0 0 14px;
+    width: 14px;
+    font-size: 12px;
+    color: var(--lux-accent);
+    text-align: center;
+}
+
+body.lux-route-registration .registration-summary-facts li span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-registration .registration-insight-label {
+    font-size: 9px;
+}
+
+body.lux-route-registration .registration-studio-shell > .lux-timetable-stage.registration-workspace {
+    padding: 18px 24px 24px;
+    overflow: visible;
+}
+
+body.lux-route-registration .registration-command-band {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 16px;
+    min-width: 0;
+}
+
+body.lux-route-registration .reg-tabs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-registration .reg-tab {
+    appearance: none;
+    min-height: 60px;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 16px;
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.35;
+    text-align: center;
+    cursor: pointer;
+}
+
+body.lux-route-registration .reg-tab.active {
+    color: #fff8ef;
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
+    box-shadow: var(--lux-elev-2);
+}
+
+body.lux-route-registration .registration-workspace-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+body.lux-route-registration .registration-workspace-body {
+    min-width: 0;
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-registration .registration-course-action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+body.lux-route-registration .registration-course-picker-btn,
+body.lux-route-registration .registration-course-remove-btn {
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-registration .registration-course-remove-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+body.lux-route-registration .registration-runtime-stale-banner {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.lux-route-registration .registration-empty-state,
+body.lux-route-registration .registration-render-error {
+    padding: 24px;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px dashed color-mix(in srgb, var(--lux-text-muted) 28%, transparent);
+}
+
+body.lux-route-registration .registration-render-error-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+body.lux-route-registration .registration-render-error-copy {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-shell-grid,
+body.lux-route-registration .registration-course-list,
+body.lux-route-registration .registration-track-list {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-registration .registration-shell-grid {
+    grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.08fr);
+    align-items: start;
+}
+
+body.lux-route-registration .registration-module-list-card,
+body.lux-route-registration .registration-module-pane-card,
+body.lux-route-registration .registration-track-card {
+    display: grid;
+    gap: 14px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    min-width: 0;
+    min-height: 100%;
+}
+
+body.lux-route-registration .registration-module-list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-registration .registration-module-list {
+    display: grid;
+    gap: 10px;
+    max-height: 260px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+body.lux-route-registration .registration-module-pane-shell {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-pane-head,
+body.lux-route-registration .registration-track-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-module-pane-heading {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-pane-chip,
+body.lux-route-registration .registration-track-group-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+body.lux-route-registration .registration-module-pane-title {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-course-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+body.lux-route-registration .registration-module-choice.is-active {
+    border-color: color-mix(in srgb, var(--lux-accent) 34%, transparent);
+}
+
+body.lux-route-registration .registration-course-list {
+    gap: 10px;
+}
+
+body.lux-route-registration .registration-course-index,
+body.lux-route-registration .registration-course-ects {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 14px;
+    font-family: 'DM Mono', ui-monospace, monospace;
+    font-weight: 800;
+    text-align: center;
+}
+
+body.lux-route-registration .registration-course-row-main,
+body.lux-route-registration .registration-course-meta,
+body.lux-route-registration .registration-course-action {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-faculty-hint {
+    margin-bottom: 12px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-state-list {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-registration .registration-state-card {
+    display: grid;
+    gap: 8px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-history-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-module-choice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+body.lux-route-registration .registration-module-choice-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-grid-head {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1.6fr) 110px minmax(0, 2.2fr) 120px;
+    gap: 10px;
+    margin-top: 2px;
+    padding: 0 2px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-course-row {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1.6fr) 110px minmax(0, 2.2fr) 120px;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 14px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-section-head {
+    margin-bottom: 14px;
+}
+
+@media (max-width: 960px) {
+    body.lux-route-registration .registration-hero-top.lux-hero-stage {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-registration .registration-summary-header {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    body.lux-route-registration .registration-summary-status-line {
+        justify-content: flex-start;
+    }
+
+    body.lux-route-registration .registration-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-registration .registration-summary-section {
+        min-height: 0;
+        padding-inline: 0;
+    }
+
+    body.lux-route-registration .registration-summary-section + .registration-summary-section {
+        border-inline-start: 0;
+        border-block-start: 1px solid color-mix(in srgb, var(--lux-accent) 18%, transparent);
+    }
+
+    body.lux-route-registration .reg-tabs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.lux-route-registration .registration-workspace-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-registration .registration-workspace-note {
+        max-width: none;
+        text-align: left;
+    }
+
+    body.lux-route-registration .registration-module-grid-head {
+        display: none;
+    }
+
+    body.lux-route-registration .registration-module-pane-card,
+    body.lux-route-registration .registration-track-card {
+        padding: 12px 14px;
+        gap: 12px;
+    }
+
+    body.lux-route-registration .registration-module-pane-head,
+    body.lux-route-registration .registration-track-head {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    body.lux-route-registration .registration-module-pane-chip,
+    body.lux-route-registration .registration-track-group-chip {
+        min-height: 30px;
+        padding: 0 10px;
+    }
+
+    body.lux-route-registration .registration-course-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "main ects"
+            "meta meta"
+            "action action";
+        gap: 10px;
+        align-items: start;
+        padding: 12px;
+    }
+
+    body.lux-route-registration .registration-course-index {
+        display: none;
+    }
+
+    body.lux-route-registration .registration-course-row-main {
+        grid-area: main;
+    }
+
+    body.lux-route-registration .registration-course-ects {
+        grid-area: ects;
+        align-self: start;
+        min-height: 32px;
+        padding: 0 10px;
+        font-size: 12px;
+    }
+
+    body.lux-route-registration .registration-course-meta {
+        grid-area: meta;
+    }
+
+    body.lux-route-registration .registration-course-action {
+        grid-area: action;
+        justify-content: stretch;
+        width: 100%;
+    }
+
+    body.lux-route-registration .registration-course-action-group {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    body.lux-route-registration .registration-course-picker-btn,
+    body.lux-route-registration .registration-course-remove-btn {
+        flex: 1 1 0;
+        min-height: 44px;
+    }
+
+    body.lux-route-registration .registration-shell-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    body.lux-route-registration .registration-summary-panel {
+        padding-inline: 14px;
+    }
+
+    body.lux-route-registration .registration-summary-status-line {
+        justify-content: space-between;
+    }
+
+    body.lux-route-registration .registration-summary-term-select {
+        width: 100%;
+    }
+
+    body.lux-route-registration .registration-summary-footer {
+        padding-inline: 0;
+    }
+
+    body.lux-route-registration .registration-summary-facts {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-registration .registration-summary-facts li + li {
+        border-inline-start: 0;
+        border-block-start: 1px solid color-mix(in srgb, var(--lux-accent) 18%, transparent);
+        padding-top: 8px;
+    }
+}

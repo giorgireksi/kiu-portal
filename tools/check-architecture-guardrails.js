@@ -12,9 +12,9 @@ const ROOT = path.resolve(__dirname, '..');
 const jsCeilingsOnly = process.argv.includes('--js-ceilings-only');
 
 const explicitMobileShellRouteGuardrails = {
-    'admin-orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
-    'admin-tools.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
-    'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' }
+    'admin-orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/route-bare/orders/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
+    'admin-tools.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-tools.css'], mobileShell: 'shared-standalone' },
+    'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/route-bare/admin-scheduler/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' }
 };
 
 /** Wave 11+ peels must expose a factory marker (__kiuCreate* / createKiu*). Allowlist grows with each peel. */

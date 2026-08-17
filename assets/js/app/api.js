@@ -1197,7 +1197,7 @@ function mergePortalStateFromLocal(localState, remoteState, options = {}) {
     if (!Object.keys(local).length) return;
     if (options.allowLocalMerge === false) return;
 
-    if (options.allowCmsMerge !== false) {
+    if (options.allowCmsMerge !== false && typeof mergeRegistrationCmsStateFromLocal === 'function') {
         mergeRegistrationCmsStateFromLocal(local, remoteState);
     }
 
@@ -1221,7 +1221,7 @@ function mergePortalStateFromLocal(localState, remoteState, options = {}) {
             return;
         }
 
-        if (key === 'adminLibrary') {
+        if (key === 'adminLibrary' && typeof mergeAdminLibraryState === 'function') {
             remoteState[key] = mergeAdminLibraryState(local[key], remoteState[key], { preferLocal });
             return;
         }

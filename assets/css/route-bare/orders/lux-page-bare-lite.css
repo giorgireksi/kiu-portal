@@ -1,0 +1,1157 @@
+/* Generated route bundle: orders. */
+/* Source: assets/css/lux-page-bare-lite.css; regenerate with tools/generate-route-bare-css.mjs. */
+/* Included source lines: 1-76, 22525-23604. */
+
+body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content {
+  min-width: 0;
+}
+
+body.lux-page-bare .lux-page-shell { display: grid; gap: 12px; padding: 12px 0; }
+body.lux-page-bare .lux-page-title, body.lux-page-bare h1 {
+  color: var(--lux-text, #f8fafc);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+body.lux-page-bare .lux-page-copy, body.lux-page-bare .lux-page-kicker {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  line-height: 1.5;
+  margin: 0;
+}
+body.lux-page-bare .lux-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+body.lux-page-bare .lux-field { display: grid; gap: 6px; min-width: 0; }
+body.lux-page-bare .lux-field label, body.lux-page-bare .lux-overline {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-subcards, body.lux-page-bare .lux-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+body.lux-page-bare .lux-pill-row, body.lux-page-bare .lux-card-actions, body.lux-page-bare .lux-actions-between {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+body.lux-page-bare table { width: 100%; border-collapse: collapse; }
+body.lux-page-bare table th, body.lux-page-bare table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+  text-align: left;
+  vertical-align: top;
+}
+body.lux-page-bare table thead th {
+  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: grid; gap: 8px; }
+@media (max-width: 920px) {
+  body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
+}
+
+
+
+body.lux-unified-shell.lux-page-bare {
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-shell {
+  width: 100%;
+  margin: 0 auto 28px;
+  display: grid;
+  gap: 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero {
+  padding: 28px 30px 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-body {
+  padding: 22px 24px 24px;
+  border-top: 1px solid var(--lux-soft-chrome-border-accent);
+  margin-top: 22px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(330px, 420px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-list,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-detail {
+  min-width: 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace-detail {
+  border-left: 1px solid var(--lux-soft-chrome-border-accent);
+  padding-left: 22px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-stage {
+  gap: 24px;
+  align-items: stretch;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-hero-pills {
+  margin-top: 16px;
+  gap: 8px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-side {
+  border-radius: 20px;
+  padding: 18px 18px 16px;
+  min-height: auto;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-side .lux-hero-side-head {
+  display: none;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-hero-side .lux-hero-signal-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .lux-hero-signal,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-metric-card {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 16px 16px 14px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .lux-hero-signal::before,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-metric-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 16px 0 0 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--lux-accent-rgb), 0.85),
+    rgba(var(--lux-home-secondary-rgb), 0.45)
+  );
+  opacity: 0.85;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-shell .lux-card-head {
+  margin: 0 0 18px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--lux-soft-chrome-border-accent);
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-workspace {
+  border-radius: 24px;
+  border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-status-row:not(.lux-tab-strip) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-status-row.lux-tab-strip {
+  margin-top: 14px;
+}
+
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.12));
+  background: color-mix(in srgb, var(--lux-text) 4%, var(--lux-panel-control, var(--lux-panel-fill)));
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--lux-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  margin: 0;
+  box-shadow: none;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--lux-accent) 8%, var(--lux-panel-control));
+  color: var(--lux-text);
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn:is(.is-active, .active, [aria-pressed="true"], [aria-selected="true"]) {
+  background: color-mix(in srgb, var(--lux-accent) 18%, var(--lux-panel-control));
+  border-color: color-mix(in srgb, var(--lux-accent) 24%, var(--lux-border));
+  color: var(--lux-accent);
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--lux-text) 6%, transparent);
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery)
+) :is(
+  .orders-admin-audience-tabs.lux-tab-strip--segmented,
+  .orders-status-row.lux-tab-strip--segmented,
+  .orders-admin-sent-status-row.lux-tab-strip--segmented,
+  .orders-recipient-filter-editor-head .lux-tab-strip--segmented,
+  .lux-chancellery-routing-filter.lux-tab-strip--segmented
+) .lux-tab-btn:not(.is-active):not(.active):not([aria-pressed="true"]):not([aria-selected="true"]) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-list-wrap {
+  margin-top: 16px;
+  border-radius: 18px;
+  overflow: visible;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-list {
+  max-height: 400px;
+  overflow: auto;
+  padding-block: 4px;
+  scroll-padding-block: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--lux-accent-rgb), 0.28) transparent;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px 12px 16px;
+  border: 0;
+  border-bottom: 1px solid var(--lux-soft-chrome-border-accent);
+  cursor: pointer;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: transparent;
+  transition: background 180ms ease;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item__copy {
+  min-width: 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-item__state {
+  flex-shrink: 0;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-list-empty {
+  padding: 44px 18px;
+  text-align: center;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-submeta {
+  margin-top: 8px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-panel.lux-detail-panel {
+  margin-top: 16px;
+  padding: 18px 20px;
+  line-height: 1.6;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-section-label {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-attachments,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-grid {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-attachment-card,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-attachment-meta,
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-meta {
+  margin-top: 4px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-recipient-submeta {
+  margin-top: 4px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-empty {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 28px;
+  border-radius: 18px;
+  border-style: dashed;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-empty__inner {
+  max-width: 320px;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-detail-empty__icon {
+  font-size: 32px;
+  margin-bottom: 14px;
+  display: block;
+}
+
+:is(
+  body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+) .orders-inbox-shell :is(
+  .orders-detail-submeta,
+  .orders-attachment-copy,
+  .orders-recipient-submeta
+) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 1180px) {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-workspace-detail {
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid var(--lux-soft-chrome-border-accent);
+    padding-top: 22px;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-stage {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-side {
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 1040px) {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-side .lux-hero-signal-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero {
+    padding: 22px 20px 0;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-workspace-body {
+    padding: 18px 20px 20px;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-inbox-hero-side .lux-hero-signal-list {
+    grid-template-columns: 1fr;
+  }
+
+  :is(
+    body.lux-route-orders :is(#page-orders, #orders-inbox-root),
+    body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(#admin-orders-root, #admin-orders-thread-overlay)
+  ) .orders-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root > .orders-admin-shell {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-shell {
+  width: 100%;
+  max-width: 100%;
+  display: grid;
+  gap: 16px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-panel {
+  border-radius: 18px;
+  overflow: hidden;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-panel__body--workspace {
+  display: grid;
+  gap: 0;
+  padding: 14px 16px 16px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-divider {
+  height: 1px;
+  margin: 10px 0;
+  background: var(--lux-border);
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section {
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section.lux-soft-chrome.home-hover-chip {
+  padding: 12px 14px;
+  border-radius: 16px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-pills,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-pills,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-filter-row,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-pills {
+  margin-top: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-draft {
+  margin-top: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-tabs {
+  margin-top: 8px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-filter-head {
+  margin-top: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: end;
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-search {
+  display: grid;
+  gap: 6px;
+  width: min(240px, 100%);
+  margin-top: 0;
+  min-width: 0;
+  flex: 1 1 180px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-search .lux-control {
+  width: 100%;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-status-row {
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-empty {
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-field--wide {
+  grid-column: span 2;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+  margin-left: auto;
+  align-items: center;
+  justify-content: flex-end;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-modal.modal-content {
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(86vh, 900px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  overflow: auto;
+}
+body.lux-route-chancellery .chancellery-filter-editor-modal.orders-recipient-filter-editor-modal.modal-content {
+  width: min(820px, calc(100vw - 32px));
+}
+body.lux-route-chancellery .chancellery-filter-editor-body {
+  display: grid;
+  gap: 14px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-panel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+body.lux-route-chancellery .chancellery-filter-editor-primary-tabs,
+body.lux-route-chancellery .chancellery-filter-editor-who-tabs {
+  margin-top: 10px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-who-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 12px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-status-options,
+body.lux-route-chancellery .chancellery-filter-editor-catalog-list {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-connections-table {
+  display: grid;
+  gap: 8px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-connections-row {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.7fr) minmax(96px, 0.8fr) minmax(0, 1.8fr);
+  gap: 10px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+body.lux-route-chancellery .chancellery-filter-editor-connections-row.is-head {
+  padding: 0 12px 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft);
+}
+body.lux-route-chancellery .chancellery-filter-editor-mode-pill {
+  justify-self: start;
+}
+@media (max-width: 640px) {
+  body.lux-route-chancellery .chancellery-filter-editor-connections-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-head,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-actions {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-head .lux-tab-strip {
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-row {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-row-head,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-row-actions,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-option,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-actions-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders, .lux-route-chancellery) .orders-recipient-filter-editor-options {
+  display: grid;
+  gap: 8px;
+}
+body:is(.lux-route-orders, .lux-entry-orders) :is(#page-orders, #orders-inbox-root) .orders-inbox-layout-filters,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0;
+  flex: 2 1 280px;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--lux-border);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item.is-selected {
+  border-color: rgba(var(--lux-accent-rgb), 0.28);
+  box-shadow: var(--lux-hub-inset-ring-soft, var(--lux-elev-1));
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__title {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__meta {
+  margin-top: 2px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__side {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-item__summary {
+  white-space: nowrap;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-sent-empty,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-admin-sent-empty {
+  padding: 24px 18px;
+  text-align: center;
+  border: 1px dashed var(--lux-border);
+  border-radius: 16px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-list-shell {
+  margin-top: 16px;
+  border: 1px solid var(--lux-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-list-scroll {
+  display: grid;
+  gap: 10px;
+  max-height: 420px;
+  overflow: auto;
+  padding: 14px;
+  align-content: start;
+  grid-auto-rows: max-content;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .admin-orders-create-modal .orders-recipient-list-shell {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+  margin-top: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .admin-orders-create-modal .orders-recipient-list-scroll {
+  max-height: none;
+  min-height: 0;
+  height: 100%;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .admin-orders-create-modal .orders-compose-body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .admin-orders-create-modal .orders-compose-textarea {
+  min-height: 0;
+  height: 100%;
+  resize: none;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-list-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--lux-text-muted);
+  border: 1px dashed var(--lux-border);
+  border-radius: 16px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border: 1px solid var(--lux-border);
+  border-radius: 16px;
+  cursor: pointer;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row.is-selected {
+  border-color: rgba(var(--lux-accent-rgb), 0.28);
+  box-shadow: var(--lux-hub-active-rail-shadow, var(--lux-elev-1));
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row input[type='checkbox'] {
+  margin: 4px 0 0;
+  inline-size: 16px;
+  block-size: 16px;
+  accent-color: var(--lux-accent);
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row__name {
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row__meta,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row__submeta {
+  margin-top: 6px;
+  color: var(--lux-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row__submeta {
+  color: var(--lux-text-soft);
+  font-size: 11px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.7fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-title-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-title-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-title-toolbar .lux-secondary-btn {
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12px;
+  gap: 8px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-body {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-textarea {
+  min-height: 170px;
+  padding: 14px 16px;
+  resize: vertical;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-pills {
+  margin-top: 0;
+}
+
+
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(
+  #admin-orders-root,
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) .lux-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--lux-border);
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
+  padding-bottom: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-picker-field .lux-universal-picker-field,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters .lux-picker-field .lux-universal-picker-field {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid :is(.lux-control, .lux-picker-btn--compact),
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters :is(.lux-control, .lux-picker-btn--compact) {
+  width: 100%;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-universal-picker-field .lux-picker-btn--compact,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters .lux-universal-picker-field .lux-picker-btn--compact {
+  justify-content: space-between;
+  align-items: center;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) :is(
+  .admin-orders-create-modal,
+  .admin-orders-thread-modal
+) :is(.lux-control, .lux-picker-btn--compact) {
+  width: 100%;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid .lux-picker-field,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-inbox-layout-filters .lux-picker-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row {
+  position: relative;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: transparent;
+  transition: background 180ms ease;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row:hover::before,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row:focus-within::before {
+  background: rgba(var(--lux-accent-rgb), 0.35);
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row.is-selected {
+  box-shadow:
+    inset 3px 0 0 rgba(var(--lux-accent-rgb), 0.75),
+    var(--lux-soft-chrome-chip-shadow, var(--lux-elev-2));
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-recipient-row.is-selected::before {
+  background: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+@media (max-width: 980px) {
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
+    grid-template-columns: 1fr;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-strip {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-audience-search {
+    width: 100%;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-foot {
+    margin-left: 0;
+    justify-content: space-between;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-grid {
+    grid-template-columns: 1fr;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-filter-field--wide {
+    grid-column: auto;
+  }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) .orders-compose-head {
+    grid-template-columns: 1fr;
+  }
+}
