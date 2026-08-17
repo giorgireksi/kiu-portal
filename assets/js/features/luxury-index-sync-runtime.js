@@ -96,7 +96,8 @@
         function buildVisualStateSyncSignature() {
             const visuals = getDashboardVisuals() || {};
             return [
-                getActivePageId() || 'home',
+                // Route identity belongs to layout/content sync, not visual
+                // preference sync. Switching pages must not repaint the theme.
                 getEffectiveRole(),
                 getCurrentFacultyCode(),
                 visuals.themeMode || getThemeMode(),

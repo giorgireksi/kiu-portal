@@ -1983,6 +1983,15 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
     const profileMenu = document.getElementById('profileMenu');
     if(profileMenu) profileMenu.classList.remove('show');
     if (typeof clearTemporarySocialNavGlow === 'function') clearTemporarySocialNavGlow();
+    // Navigation is a content operation. End any drawer-only atmosphere
+    // suppression before the next page is shown, so route switching cannot
+    // carry the drawer's visual state into the page.
+    document.documentElement.classList.remove('lux-sidebar-interaction-open');
+    document.body?.classList.remove('lux-sidebar-interaction-open');
+    if (window.innerWidth <= 1024 && !document.body?.classList.contains('lux-sidebar-collapsed')) {
+        document.documentElement.classList.add('lux-sidebar-collapsed');
+        document.body?.classList.add('lux-sidebar-collapsed');
+    }
     if (!isIndexPortalShell() && isStudentServiceWorkspaceEntry()) {
         pinStudentServiceWorkspaceRole({ refreshChrome: false });
     }
