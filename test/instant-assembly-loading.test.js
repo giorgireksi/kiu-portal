@@ -109,13 +109,15 @@ describe('instant portal assembly loading', () => {
         expect(primer).toContain('--kiu-loading-background');
         expect(primer).toContain('--palette-${savedPalette}-dark');
         expect(primer).toContain('html.lux-sidebar-collapsed #lux-shell');
-        expect(navigation).toContain('window.__KIU_INSTANT_ASSEMBLY_LOADING !== false');
         expect(navigation).toContain('finishKiuShellReveal();');
+        expect(navigation).not.toContain('root.classList.add(\'kiu-shell-revealing\')');
         expect(timetable).toContain('window.__kiuCreateAssemblyLoadingMotion');
         expect(social).toContain('window.__kiuCreateAssemblyLoadingMotion');
         expect(socialProjects).toContain('window.__KIU_INSTANT_ASSEMBLY_LOADING !== false');
-        expect(readSource('assets/js/shared/lux-assembly-loading-runtime.js'))
-            .toContain('options.instantLoading !== undefined');
+        const assemblyRuntime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
+        expect(assemblyRuntime).toContain('options.instantLoading !== undefined');
+        expect(assemblyRuntime).toContain('const tree = getAssemblyTree(root)');
+        expect(assemblyRuntime).toContain('never adds staging/flight styles or WAAPI motion');
     });
 
     it('settles Social late panel mounts without replay motion', async () => {

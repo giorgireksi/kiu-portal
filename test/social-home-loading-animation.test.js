@@ -25,7 +25,7 @@ describe('Social Home loading animation', () => {
 
     it('wires only the Home center motion after the shared engine', () => {
         const html = readSource('social.html');
-        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
+        const sharedIndex = html.indexOf('lux-assembly-loading-runtime.js?v=20260818-simplereveal1');
         const homeIndex = html.indexOf('social-home-loading-runtime.js?v=20260817-instantassembly1');
 
         expect(html).toContain('social-home-loading.css?v=20260815-socialassemblyclean1');
@@ -128,7 +128,7 @@ describe('Social Home loading animation', () => {
         expect(readSource('assets/js/theme-primer.js')).toContain("classList.contains('lux-route-social')");
         expect(readSource('assets/js/theme-primer.js')).toContain("var isSocial = b.classList.contains('lux-route-social');");
         expect(readSource('assets/js/features/navigation.js')).toContain("entryId === 'social'");
-        expect(readSource('assets/js/features/navigation.js')).toContain('__kiuSocialShellRevealAllowed');
+        expect(readSource('assets/js/features/navigation.js')).not.toContain('__kiuSocialShellRevealAllowed');
         expect(readSource('assets/js/pages/social-page-shell-runtime.js')).toContain('__kiuSocialShellRevealAllowed = true');
         expect(readSource('assets/js/pages/social-page-shell-runtime.js')).toContain('__kiuSocialBootForceUnveil');
         expect(readSource('assets/css/social-home-loading.css')).toContain(
@@ -349,7 +349,7 @@ describe('Social Home loading animation', () => {
         expect(sw).toContain('social-groups-loading.css?v=20260815-socialassemblyclean1');
         expect(sw).toContain('social-groups-loading-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-singleowner3');
         expect(sw).toContain('social-page-interactions-runtime.js?v=20260810-socialbootveil2');
-        expect(sw).toContain('lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
+        expect(sw).toContain('lux-assembly-loading-runtime.js?v=20260818-simplereveal1');
         expect(sw).toContain('social-assembly-prehide.css?v=20260815-socialassemblyclean1');
         expect(sw).not.toContain('social-loading-runtime');
     });

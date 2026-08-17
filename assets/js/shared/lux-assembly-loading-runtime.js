@@ -835,10 +835,14 @@
             state.reducedMotion = reduceMotion;
             state.animationSupported = isAnimationSupported();
             recordEvent(reduceMotion ? 'reduced-motion' : 'running');
+            // Instant mode keeps the assembly lifecycle classes available for
+            // diagnostics, but never adds staging/flight styles or WAAPI motion.
             const tree = getAssemblyTree(root);
             registerStructures(root);
             registerTree(tree);
-            tree.nodes.forEach((node) => node.element.classList.add(classes.staging));
+            if (!instantLoading) {
+                tree.nodes.forEach((node) => node.element.classList.add(classes.staging));
+            }
             // Route prehide covers content until flight owns hide.
             document.body?.classList.remove('social-center-assembly-prehide');
             document.body?.classList.remove('home-shell-assembly-prehide');
@@ -880,6 +884,8 @@
             if (instantLoading) {
                 const appContent = document.getElementById('app-content');
                 if (appContent) appContent.style.opacity = '1';
+                finish(root, generation);
+                return;
             }
 
             const beginFlights = () => {
@@ -962,18 +968,18 @@
             state.pendingReplay = null;
             recordEvent('pending');
             root.dataset[rootStateDataset] = 'pending';
-            // Instant mode must not hide an already-authored route skeleton
-            // while waiting for async content readiness. The active/staging
-            // classes are applied only when content is ready, then removed in
-            // the same task by the instant finish path.
+            // Instant mode leaves the authored route skeleton visible while
+            // content readiness settles; no staging class is applied.
             const contentReadyNow = isContentReady();
-            if (!instantLoading || contentReadyNow) {
+            if (!instantLoading) {
                 document.body?.classList.remove(classes.ready);
                 document.body?.classList.add(classes.active);
                 registerStructures(root);
                 targets.forEach((target) => target.classList.add(classes.target, classes.staging));
             }
             if (instantLoading && contentReadyNow) {
+                run(root, generation);
+            } else if (!instantLoading && contentReadyNow) {
                 run(root, generation);
             } else {
                 waitForShell(root, generation);
@@ -1015,13 +1021,15 @@
             recordEvent('soft-restart');
             root.dataset[rootStateDataset] = 'pending';
             const contentReadyNow = isContentReady();
-            if (!instantLoading || contentReadyNow) {
+            if (!instantLoading) {
                 document.body?.classList.remove(classes.ready);
                 document.body?.classList.add(classes.active);
                 registerStructures(root);
                 targets.forEach((target) => target.classList.add(classes.target, classes.staging));
             }
             if (instantLoading && contentReadyNow) {
+                run(root, generation);
+            } else if (!instantLoading && contentReadyNow) {
                 run(root, generation);
             } else {
                 waitForShell(root, generation);

@@ -13,10 +13,10 @@ describe('Home loading animation', () => {
         expect(html).toContain('assets/css/home-assembly-prehide.css?v=20260810-homeassembly5');
         expect(html).toContain('assets/css/index-home-loading.css?v=20260810-homeassembly5');
         expect(html).toContain('home-shell-assembly-prehide');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260818-shellcontent1');
-        expect(html).toContain('assets/js/features/navigation.js?v=20260818-shellfailopen1');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260818-simplereveal1');
+        expect(html).toContain('assets/js/features/navigation.js?v=20260818-simplereveal1');
         expect(html).toContain('assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2');
-        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
+        expect(html).toContain('assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-simplereveal1');
         expect(html).toContain('assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9');
         expect(html.match(/index-home-loading\.css/g)).toHaveLength(1);
         expect(html.match(/home-loading-runtime\.js/g)).toHaveLength(1);
@@ -57,17 +57,15 @@ describe('Home loading animation', () => {
         expect(runtime).not.toContain("'#lux-topbar'");
     });
 
-    it('gates Home shell reveal until assembly run like Social', () => {
+    it('does not gate Home shell visibility behind assembly or reveal timers', () => {
         const nav = readSource('assets/js/features/navigation.js');
-        const primer = readSource('assets/js/theme-primer.js');
         const shared = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
 
-        expect(nav).toContain('lux-route-home');
-        expect(nav).toContain('__kiuHomeShellRevealAllowed');
-        expect(primer).toContain("body.classList.contains('lux-route-home')");
+        expect(nav).toContain('function startKiuShellReveal');
+        expect(nav).not.toContain('__kiuHomeShellRevealAllowed');
+        expect(nav).not.toContain('KIU_SHELL_REVEAL_TIMINGS');
         expect(shared).toContain('__kiuHomeBootAwaitingAssemblyReveal');
         expect(shared).toContain('home-shell-assembly-prehide');
-        expect(shared).toContain('__kiuHomeRevealShellNow');
         expect(shared).toContain('waitForAppContentPaint');
     });
 
@@ -173,7 +171,7 @@ describe('Home loading animation', () => {
         expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2'");
         expect(worker).toContain('/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5');
         expect(worker).toContain('/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9');
-        expect(worker).toContain('/assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-contentpaint1');
+        expect(worker).toContain('/assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-simplereveal1');
     });
 
     it('covers role-specific and mobile replay surfaces without broad mutation replay', () => {

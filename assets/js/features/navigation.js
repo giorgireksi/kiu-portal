@@ -272,7 +272,8 @@ function primeShellSectionTransition(pageId, effectiveRole = getEffectiveUserRol
     getPageSections().forEach((section) => {
         if (section.id === 'page-' + pageId) {
             setPageSectionShown(section, true, (pageId === 'admin-scheduler') ? 'flex' : 'block');
-            section.classList.add('active-page');
+            section.classList.add('active-page', 'lux-route-content-fade');
+            window.setTimeout(() => section.classList.remove('lux-route-content-fade'), 180);
             found = true;
         } else {
             setPageSectionShown(section, false);
@@ -967,14 +968,6 @@ function isPortalStartupDependencyReady() {
     });
 }
 
-const KIU_SHELL_REVEAL_TIMINGS = Object.freeze({
-    shell: 48,
-    panel: 116,
-    controls: 184,
-    content: 244,
-    ready: 320
-});
-let kiuShellRevealTimers = [];
 let kiuShellRevealStarted = false;
 let kiuShellRevealFinished = false;
 let kiuShellRouteReady = false;
@@ -1007,20 +1000,7 @@ function setKiuShellLoadState(next) {
     return state;
 }
 
-function clearKiuShellRevealTimers() {
-    kiuShellRevealTimers.forEach((timer) => window.clearTimeout(timer));
-    kiuShellRevealTimers = [];
-}
-
-function setKiuShellRevealStage(stage) {
-    setKiuShellLoadState({
-        phase: getKiuShellLoadState().degraded ? 'degraded' : 'revealing',
-        stage
-    });
-}
-
 function finishKiuShellReveal() {
-    clearKiuShellRevealTimers();
     kiuShellRevealFinished = true;
     setKiuShellLoadState({
         phase: 'ready',
@@ -1034,93 +1014,40 @@ function finishKiuShellReveal() {
         document.body.classList.remove('kiu-shell-loading', 'kiu-shell-revealing');
         document.body.removeAttribute('aria-busy');
     }
-}
-
-function continueKiuShellRevealFromDegraded() {
-    if (kiuShellRevealFinished) return;
-    clearKiuShellRevealTimers();
-    setKiuShellLoadState({ degraded: false, phase: 'revealing' });
-    kiuShellRevealTimers = [
-        window.setTimeout(() => setKiuShellRevealStage('controls'), 24),
-        window.setTimeout(() => setKiuShellRevealStage('content'), 84),
-        window.setTimeout(finishKiuShellReveal, 148)
-    ];
+    const fadeTarget = document.querySelector('#app-content .page-section.active-page, #app-content');
+    if (fadeTarget) {
+        fadeTarget.classList.remove('lux-route-content-fade');
+        window.requestAnimationFrame?.(() => {
+            fadeTarget.classList.add('lux-route-content-fade');
+            window.setTimeout(() => fadeTarget.classList.remove('lux-route-content-fade'), 180);
+        });
+    }
 }
 
 function startKiuShellReveal({ degraded = false } = {}) {
     if (kiuShellRevealFinished) return getKiuShellLoadState();
-    if (kiuShellRevealStarted) {
-        if (!degraded && getKiuShellLoadState().degraded) continueKiuShellRevealFromDegraded();
-        return getKiuShellLoadState();
-    }
+    if (kiuShellRevealStarted) return getKiuShellLoadState();
     kiuShellRevealStarted = true;
-    const reduceMotion = Boolean(
-        window.matchMedia
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    );
+    // The authored shell and route skeleton are already paintable. Do not put
+    // them behind a staged veil and do not schedule shell/panel/control timers:
+    // those timers made the whole page appear first and animate afterwards.
     setKiuShellLoadState({
-        phase: degraded ? 'degraded' : 'revealing',
-        stage: 'background',
+        phase: degraded ? 'degraded' : 'ready',
+        stage: 'ready',
         degraded
     });
-    const root = document.documentElement;
-    root.classList.add('kiu-shell-revealing');
-    root.classList.remove('kiu-shell-loading', 'kiu-shell-ready');
-    if (document.body) {
-        document.body.classList.add('kiu-shell-revealing');
-        document.body.classList.remove('kiu-shell-loading', 'kiu-shell-ready');
-        document.body.setAttribute('aria-busy', 'true');
-    }
-    // Assembly readiness already gates the call into shell reveal. Keep that gate,
-    // but do not add a second entrance animation or timer when instant loading is on.
-    if (window.__KIU_INSTANT_ASSEMBLY_LOADING !== false || reduceMotion) {
-        finishKiuShellReveal();
-        return getKiuShellLoadState();
-    }
-    kiuShellRevealTimers = [
-        window.setTimeout(() => setKiuShellRevealStage('shell'), degraded ? 28 : KIU_SHELL_REVEAL_TIMINGS.shell),
-        window.setTimeout(() => setKiuShellRevealStage('panel'), degraded ? 92 : KIU_SHELL_REVEAL_TIMINGS.panel)
-    ];
-    if (degraded) {
-        kiuShellRevealTimers.push(window.setTimeout(() => {
-            if (!kiuShellRouteReady) finishKiuShellReveal();
-        }, 420));
-    } else {
-        kiuShellRevealTimers.push(
-            window.setTimeout(() => setKiuShellRevealStage('controls'), KIU_SHELL_REVEAL_TIMINGS.controls),
-            window.setTimeout(() => setKiuShellRevealStage('content'), KIU_SHELL_REVEAL_TIMINGS.content),
-            window.setTimeout(finishKiuShellReveal, KIU_SHELL_REVEAL_TIMINGS.ready)
-        );
-    }
+    finishKiuShellReveal();
     return getKiuShellLoadState();
 }
 
 window.__kiuStartShellReveal = startKiuShellReveal;
 
 function markPortalShellReady(options = {}) {
-    const force = options?.force === true;
-    if (!force) {
-        if (document.body?.classList.contains('lux-route-home')
-            && !window.__kiuHomeShellRevealAllowed) {
-            if (!window.__kiuHomeRevealFailSafe) {
-                window.__kiuHomeRevealFailSafe = window.setTimeout(() => {
-                    window.__kiuHomeShellRevealAllowed = true;
-                    markPortalShellReady({ force: true });
-                }, 1200);
-            }
-            return;
-        }
-        if (document.body?.classList.contains('lux-route-social')
-            && !window.__kiuSocialShellRevealAllowed) {
-            if (!window.__kiuSocialRevealFailSafe) {
-                window.__kiuSocialRevealFailSafe = window.setTimeout(() => {
-                    window.__kiuSocialShellRevealAllowed = true;
-                    markPortalShellReady({ force: true });
-                }, 1200);
-            }
-            return;
-        }
-    }
+    // Route readiness still records the lifecycle phase, but it no longer
+    // gates visibility or interaction behind Home/Social-specific fail-safes.
+    // Their authored skeletons are already on screen and the shared assembly
+    // runtime now completes without flight animation.
+    void options;
     markPortalNavigationIntentForCurrentPage();
     kiuShellRouteReady = true;
     if (getKiuShellLoadState().phase === 'ready') return;
@@ -1132,14 +1059,6 @@ __kiuNavExpose({
 });
 
 function schedulePortalShellReadyReveal() {
-    if (document.body?.classList.contains('lux-route-home')
-        && !window.__kiuHomeShellRevealAllowed) {
-        return;
-    }
-    if (document.body?.classList.contains('lux-route-social')
-        && !window.__kiuSocialShellRevealAllowed) {
-        return;
-    }
     const reveal = () => markPortalShellReady();
     if (typeof window.requestAnimationFrame === 'function') {
         window.requestAnimationFrame(() => {

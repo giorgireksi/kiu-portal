@@ -64,18 +64,6 @@ html.lux-high-transparency :is(
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
-html.lux-shell-chrome-motion #lux-shell :is(
-  .lux-nav-item,
-  .lux-picker-btn,
-  .lux-icon-btn,
-  .lux-user-chip,
-  .lux-sidebar-toggle-btn,
-  .lux-sidebar-close-btn,
-  .lux-topbar-editor-btn
-) {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

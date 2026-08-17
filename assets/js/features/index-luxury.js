@@ -388,9 +388,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function applySidebarState(collapsed = isSidebarCollapsed(), options = {}) {
         const wasCollapsed = document.body?.classList?.contains('lux-sidebar-collapsed');
         const nextCollapsed = Boolean(collapsed);
-        if (wasCollapsed !== nextCollapsed && typeof window.beginShellChromeMotion === 'function') {
-            window.beginShellChromeMotion(320, 'sidebar-toggle');
-        }
         const persist = options.persist !== false;
         if (persist) {
             localStorage.setItem('kiuLuxurySidebarCollapsed', collapsed ? '1' : '0');

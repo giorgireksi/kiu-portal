@@ -30,14 +30,12 @@ describe('luxury animation interaction safety', () => {
         expect(toggleBlock).not.toContain('lux-is-animating');
     });
 
-    it('slides the platform sidebar with transform-only desktop bloom motion', () => {
+    it('uses a lightweight opacity-only sidebar show/hide motion', () => {
         const css = readShellStackCss();
-        expect(css).toMatch(/--lux-shell-slide-duration:\s*0\.3s/);
-        expect(css).toMatch(/--lux-shell-scale-closed:\s*0\.92/);
-        expect(css).toMatch(/#lux-shell\s*\{[^}]*transition:[\s\S]*transform var\(--lux-shell-slide-duration\)/);
-        expect(css).toMatch(
-            /lux-sidebar-collapsed[\s\S]*#lux-shell[\s\S]*transform:\s*translate3d\(calc\(-100%[\s\S]*scale\(var\(--lux-shell-scale-closed\)\)/
-        );
+        expect(css).toContain('transition: opacity 0.12s linear');
+        const collapsed = css.match(/body\.lux-sidebar-collapsed \{[\s\S]*?#lux-shell \{[\s\S]*?\n  \}[\s\S]*?\n\}/)?.[0] || '';
+        expect(collapsed).toMatch(/opacity:\s*0[\s\S]*visibility:\s*hidden/);
+        expect(collapsed).not.toContain('transition: transform');
     });
 
     it('emits valid time-valued nav stagger variables', () => {
@@ -56,25 +54,19 @@ describe('luxury animation interaction safety', () => {
         expect(css).toContain('transform: translateX(-130%) skewX(-14deg) !important');
         expect(motion).not.toContain("addEventListener('animationstart'");
         expect(motion).not.toContain("endShellChromeMotion('sidebar-toggle')");
-        expect(motion).toContain("endShellChromeMotion('shell-transform')");
+        expect(motion).not.toContain("addEventListener('transitionrun'");
+        expect(motion).not.toContain("addEventListener('transitionend'");
     });
 
     it('cascades shell inner chrome on desktop overlay without pausing interaction', () => {
         const css = readShellStackCss();
 
-        expect(css).toContain('@keyframes luxShellNavEnter');
+        expect(css).not.toContain('@keyframes luxShellNavEnter');
         expect(css).toMatch(
-            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell #lux-shell \.lux-nav-item[\s\S]*opacity:\s*0/
+            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell #lux-shell \.lux-nav-item[\s\S]*opacity:\s*1[\s\S]*animation:\s*none/
         );
-        expect(css).toMatch(
-            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell:not\(\.lux-sidebar-collapsed\) #lux-shell \.lux-nav-item[\s\S]*animation:\s*luxShellNavEnter/
-        );
-        expect(css).toMatch(
-            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell:not\(\.lux-sidebar-collapsed\) #lux-shell \.lux-nav-item[\s\S]*animation-delay:\s*calc\(var\(--lux-shell-stagger-base\) \+ var\(--lux-nav-stagger/
-        );
-        expect(css).toMatch(
-            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell\.lux-sidebar-collapsed #lux-shell \.lux-nav-item[\s\S]*animation:\s*none/
-        );
+        expect(css).toContain('@keyframes luxRouteContentFade');
+        expect(css).toContain('.lux-route-content-fade');
         expect(css).toMatch(/\.lux-nav-item \{[^}]*transition:\s*none;/);
         expect(css).toMatch(/\.lux-nav-item::before[\s\S]*opacity:\s*0/);
         expect(css).toMatch(/\.lux-nav-item:hover:not\(\.is-active\)::before[\s\S]*opacity:\s*1/);

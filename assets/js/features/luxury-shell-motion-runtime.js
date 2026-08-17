@@ -1,6 +1,6 @@
-/* Shell chrome motion: suspend live backdrop-filter during sidebar/nav transitions only (gpuperf4j).
- * Button hover lifts stay compositor-only — do not arm MOTION_CLASS on control hover
- * (that would drop blur). Instead, pulse __luxShellHoverBusy so particles yield GPU. */
+/* Shell chrome motion compatibility runtime.
+ * Sidebar open/close is CSS-only; hover work only pulses the lightweight
+ * particle busy flag. No shell-wide blur or staged navigation animation. */
 (function initLuxuryShellMotionRuntime() {
     if (window.__KIU_LUXURY_SHELL_MOTION_LOADED) return;
     window.__KIU_LUXURY_SHELL_MOTION_LOADED = true;
@@ -201,11 +201,9 @@
         if (bound) return;
         bound = true;
 
-        document.addEventListener('transitionrun', onShellTransformTransitionRun);
-        document.addEventListener('transitionend', onShellTransformTransitionEnd);
-        document.addEventListener('transitioncancel', onShellTransformTransitionEnd);
-        // Nav entry is compositor-safe and does not toggle the global motion class.
-        // Hover lifts: do not toggle MOTION_CLASS (keeps blur). Only busy-flag particles.
+        // Sidebar open/close is CSS-only. Do not arm a global motion class,
+        // toggle backdrop filters, or refresh every glass surface afterward.
+        // Hover lifts only pulse the lightweight particle busy flag.
         document.addEventListener('pointerover', onShellChromePointerOver, true);
         document.addEventListener('pointermove', onShellChromePointerMove, { capture: true, passive: true });
     }
