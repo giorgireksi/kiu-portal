@@ -1,27 +1,34 @@
 /* Social-only click burst particles. The studio owns the keyframes; this sheet
- * adds the Social root and keeps the burst independent from button styling. */
-body.lux-route-social #public-social-root > .lux-chip-burst-particle {
+ * adds a stable body-level layer so section loading cannot move the burst. */
+body.lux-route-social > #social-button-burst-layer {
+  position: fixed;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2147483646;
+}
+body.lux-route-social > #social-button-burst-layer > .lux-chip-burst-particle {
   position: fixed;
   width: var(--burst-size, 5px);
   height: var(--burst-size, 5px);
   border-radius: 50%;
   background: color-mix(in srgb, var(--lux-accent) 85%, #fff 15%);
   pointer-events: none;
-  z-index: 2100;
+  z-index: 1;
   opacity: 0;
   transform: translate(-50%, -50%);
   animation: lux-chip-particle-out 0.72s cubic-bezier(0.4, 0, 0.2, 1) var(--burst-delay, 0ms) forwards;
 }
-body.lux-route-social #public-social-root > .lux-chip-burst-particle--sm { --burst-size: 3px; }
-body.lux-route-social #public-social-root > .lux-chip-burst-particle--md { --burst-size: 5px; }
-body.lux-route-social #public-social-root > .lux-chip-burst-particle--lg { --burst-size: 7px; }
-body.lux-route-social #public-social-root > .lux-chip-burst-particle--spark {
+body.lux-route-social > #social-button-burst-layer > .lux-chip-burst-particle--sm { --burst-size: 3px; }
+body.lux-route-social > #social-button-burst-layer > .lux-chip-burst-particle--md { --burst-size: 5px; }
+body.lux-route-social > #social-button-burst-layer > .lux-chip-burst-particle--lg { --burst-size: 7px; }
+body.lux-route-social > #social-button-burst-layer > .lux-chip-burst-particle--spark {
   border-radius: 2px;
   background: color-mix(in srgb, var(--lux-accent) 70%, #fff 30%);
   box-shadow: 0 0 6px color-mix(in srgb, var(--lux-accent) 55%, transparent);
   animation-name: lux-chip-particle-spark;
 }
-body.lux-route-social #public-social-root > .lux-chip-burst-particle--streak {
+body.lux-route-social > #social-button-burst-layer > .lux-chip-burst-particle--streak {
   width: 2px;
   height: 10px;
   border-radius: 999px;
@@ -30,7 +37,7 @@ body.lux-route-social #public-social-root > .lux-chip-burst-particle--streak {
   animation-name: lux-chip-particle-streak;
 }
 @media (prefers-reduced-motion: reduce) {
-  body.lux-route-social #public-social-root > .lux-chip-burst-particle {
+  body.lux-route-social > #social-button-burst-layer > .lux-chip-burst-particle {
     animation: none !important;
   }
 }

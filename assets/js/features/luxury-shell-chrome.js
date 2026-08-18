@@ -535,7 +535,18 @@ function collectShellPerimeterPoints(rect, perSide = 6) {
     return points;
 }
 
-function spawnStudioChipBurstParticles(shell, _event, root) {
+function ensureSocialButtonBurstLayer() {
+    if (typeof document === 'undefined' || !document.body) return null;
+    let layer = document.getElementById('social-button-burst-layer');
+    if (layer) return layer;
+    layer = document.createElement('div');
+    layer.id = 'social-button-burst-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(layer);
+    return layer;
+}
+
+function spawnStudioChipBurstParticles(shell, _event, root, rectOverride) {
     const now = performance.now();
     const lastAt = spawnStudioChipBurstParticles._lastBurstAt || 0;
     if (now - lastAt < 90) return;
@@ -547,7 +558,7 @@ function spawnStudioChipBurstParticles(shell, _event, root) {
         for (let i = 0; i < excess; i += 1) existing[i]?.remove();
     }
 
-    const rect = shell.getBoundingClientRect();
+    const rect = rectOverride || shell.getBoundingClientRect();
     const points = collectShellPerimeterPoints(rect, 5);
     const { left, top, width, height } = rect;
     const corners = [
@@ -637,9 +648,14 @@ function ensureStudioChipBurstHandler() {
         if (!target || !root.contains(target) || target.disabled || target.matches('[aria-disabled="true"], .lux-scroll-rail__btn, .social-project-task-graph-link-handle')) return;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const burstTarget = target;
-        const burstRoot = root;
+        // Capture geometry before the button's action can rerender the section.
+        // Social particles use a stable body-level layer so loading cannot move
+        // or detach the burst from the button that was clicked.
+        const burstRect = burstTarget.getBoundingClientRect();
+        const burstRoot = isSocialRoot ? ensureSocialButtonBurstLayer() : root;
+        if (!burstRoot) return;
         window.requestAnimationFrame(() => {
-            spawnStudioChipBurstParticles(burstTarget, event, burstRoot);
+            spawnStudioChipBurstParticles(burstTarget, event, burstRoot, burstRect);
         });
     }, true);
 }
