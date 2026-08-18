@@ -10,7 +10,7 @@
     <link rel="preload" as="style" href="assets/vendor/fontawesome/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css"></noscript>
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=5b8be500">
+    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=196d6e2a">
     <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260726-frostedpopup1" media="print" onload="this.onload=null;this.media='all'">
     <link rel="stylesheet" href="assets/css/route-bare/directory/lux-page-bare-lite.css?v=20260819-noloading1" fetchpriority="high">
     <link rel="icon" href="data:,">
@@ -26,34 +26,65 @@
             <span class="lux-sidebar-close-label">Hide nav</span>
         </button>
     </header>
-    <div class="lux-nav" id="lux-nav">
-        <div class="lux-nav-boot-skeleton" aria-hidden="true">
-            <span class="lux-nav-boot-label"></span>
-            <span class="lux-nav-boot-item lux-nav-boot-item--wide"></span>
-            <span class="lux-nav-boot-item"></span>
-            <span class="lux-nav-boot-item"></span>
-            <span class="lux-nav-boot-item lux-nav-boot-item--active"></span>
-            <span class="lux-nav-boot-item"></span>
-            <span class="lux-nav-boot-label lux-nav-boot-label--second"></span>
-            <span class="lux-nav-boot-item"></span>
-            <span class="lux-nav-boot-item"></span>
-            <span class="lux-nav-boot-item"></span>
-        </div>
+    <div class="lux-nav" id="lux-nav" data-render-structure-signature="admin|Control:home,admin-tools,admin-scheduler,staff,students-admin;Systems:news,library,orders,chancellery,social,exams,programs,personal-data">
+        <div class="lux-nav-group">Control</div>
+        <button class="lux-nav-item" type="button" data-nav-target="home"><i class="fas fa-hammer"></i><span>Dashboard</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="admin-tools"><i class="fas fa-layer-group"></i><span>Admin Tools</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="admin-scheduler"><i class="fas fa-calendar-plus"></i><span>Scheduler</span></button>
+        <button class="lux-nav-item is-active" type="button" data-nav-target="staff"><i class="fas fa-users-cog"></i><span>Staff</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="students-admin"><i class="fas fa-user-graduate"></i><span>Students</span></button>
+        <div class="lux-nav-group">Systems</div>
+        <button class="lux-nav-item" type="button" data-nav-target="news"><i class="fas fa-newspaper"></i><span>News</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="library"><i class="fas fa-book"></i><span>Library</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="orders"><i class="fas fa-book-open"></i><span>Orders</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="chancellery"><i class="fas fa-inbox"></i><span>E-Chancellery</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="social"><i class="fas fa-comments"></i><span>Social</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="exams"><i class="fas fa-file-signature"></i><span>Exams</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="programs"><i class="fas fa-layer-group"></i><span>Programs</span></button>
+        <button class="lux-nav-item" type="button" data-nav-target="personal-data"><i class="far fa-user"></i><span>Personal Data</span></button>
     </div>
     <div class="lux-shell-footer">
         <div class="lux-avatar" id="lux-avatar">KI</div>
         <div class="lux-shell-footer-copy">
-            <div class="lux-user-name" id="lux-user-name"><span class="lux-shell-boot-line lux-shell-boot-line--name"></span></div>
-            <div class="lux-user-role" id="lux-user-role"><span class="lux-shell-boot-line lux-shell-boot-line--role"></span></div>
+            <div class="lux-user-name" id="lux-user-name">Portal User</div>
+            <div class="lux-user-role" id="lux-user-role">Admin View</div>
         </div>
     </div>
 </aside>
-<div id="lux-topbar-boot-skeleton" class="lux-topbar-boot-skeleton" aria-hidden="true">
-    <span class="lux-topbar-boot-line lux-topbar-boot-line--wide"></span>
-    <span class="lux-topbar-boot-line"></span>
-    <span class="lux-topbar-boot-control"></span>
-    <span class="lux-topbar-boot-control"></span>
-    <span class="lux-topbar-boot-control"></span>
+<div id="lux-topbar" aria-label="Portal toolbar">
+    <div class="lux-topbar-shell lux-soft-chrome">
+        <div class="lux-topbar-main">
+            <button class="lux-secondary-btn lux-sidebar-toggle-btn" id="lux-sidebar-toggle" type="button" aria-pressed="false" title="Show navigation">
+                <i class="fas fa-sidebar"></i>
+                <span class="lux-sidebar-toggle-label">Hide nav</span>
+            </button>
+            <div class="lux-breadcrumb">KIU <i class="fas fa-chevron-right"></i> <strong id="lux-breadcrumb-page">Staff</strong></div>
+        </div>
+        <div class="lux-topbar-spacer"></div>
+        <div class="lux-topbar-actions">
+            <div class="lux-picker-wrap" data-picker-wrap="faculty">
+                <button class="lux-picker-btn" id="lux-faculty-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="lux-picker-caption">Faculty</span>
+                    <strong id="lux-faculty-picker-value">Faculty</strong>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="lux-picker-wrap" data-picker-wrap="role">
+                <button class="lux-picker-btn" id="lux-role-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="lux-picker-caption">View</span>
+                    <strong id="lux-role-picker-value">Admin View</strong>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <button class="lux-secondary-btn lux-topbar-editor-btn" id="lux-dashboard-edit-btn" type="button" hidden title="Customize the home dashboard">
+                <i class="fas fa-sliders-h"></i>
+                <span id="lux-dashboard-edit-label">Customize</span>
+            </button>
+            <button class="lux-icon-btn" id="lux-palette-btn" type="button" title="Open colour and motion studio"><i class="fas fa-palette"></i></button>
+            <div class="lux-utility-wrap"><button class="lux-icon-btn" id="lux-notification-btn" type="button" title="Notifications"><i class="far fa-bell"></i><span class="lux-icon-badge" id="lux-notification-badge">0</span></button></div>
+            <div class="lux-utility-wrap"><button class="lux-icon-btn" id="lux-chat-btn" type="button" title="Messenger"><i class="fas fa-comments"></i><span class="lux-icon-badge" id="lux-chat-badge">0</span></button></div>
+        </div>
+    </div>
 </div>
 
     <nav id="prof-nav" aria-label="Professor navigation stub"></nav>

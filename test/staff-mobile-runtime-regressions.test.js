@@ -76,7 +76,7 @@ describe('staff mobile runtime regressions', () => {
         const classificationModule = readSource('tools/visual-route-classification.js');
         const classificationMarkdown = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
         const shellRuntime = readSource('assets/js/features/index-luxury.js');
-        expect(shellRuntime).toContain("document.getElementById('lux-topbar-boot-skeleton')?.remove();");
+        expect(shellRuntime).toContain('if (!document.getElementById(\'lux-topbar\')) {');
 
         expect(html).not.toContain('onclick="closeAllModals(event)"');
         expect(html).not.toContain('modal-overlay" onclick');
@@ -85,8 +85,8 @@ describe('staff mobile runtime regressions', () => {
         expect(html).toContain('<nav id="admin-nav" aria-label="Admin navigation stub"');
         expect(html).toContain('data-route-boot-surface="staff"');
         expect(html).toContain('route-boot-skeleton--directory');
-        expect(html).toContain('lux-nav-boot-skeleton');
-        expect(html).toContain('lux-topbar-boot-skeleton');
+        expect(html).toContain('data-render-structure-signature="admin|Control:home,admin-tools,admin-scheduler,staff,students-admin;Systems:news,library,orders,chancellery,social,exams,programs,personal-data"');
+        expect(html).toContain('<div id="lux-topbar" aria-label="Portal toolbar">');
         expect(html).not.toContain('Loading staff command center...');
         expect(html).toContain('id="staff-command-modal-root"');
         expect(html).toContain('<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"');
