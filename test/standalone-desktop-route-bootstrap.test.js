@@ -19,7 +19,7 @@ describe('standalone desktop route bootstrap', () => {
     expect(navigation).toContain("'lux-route-social'");
     expect(navigation).toContain('function applyStandaloneDesktopRouteVisualState(config = {}) {');
     expect(navigation).toContain('function scheduleRouteContentRender(renderFn) {');
-    expect(navigation).toContain('window.requestAnimationFrame(() => {\n            window.requestAnimationFrame(run);');
+    expect(navigation).toContain('Render the route immediately so');
     expect(navigation).not.toContain('const fallbackTimer = window.setTimeout(run, 48);');
     expect(navigation).not.toContain('requestIdleCallback(() => {\n            window.clearTimeout(fallbackTimer);');
     expect(navigation).toContain('bootStandaloneDesktopRoute,');

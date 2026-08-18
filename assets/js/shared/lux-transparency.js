@@ -357,11 +357,28 @@ function shouldKeepRouteFadeCssBackground(el) {
     return isCssOwnedSurface(el);
 }
 
+function setInlineStyleIfChanged(el, property, value, priority = '') {
+    if (!el?.style) return false;
+    const nextValue = String(value);
+    if (
+        el.style.getPropertyValue(property) === nextValue
+        && el.style.getPropertyPriority(property) === priority
+    ) return false;
+    el.style.setProperty(property, nextValue, priority);
+    return true;
+}
+
+function removeInlineStyleIfPresent(el, property) {
+    if (!el?.style || !el.style.getPropertyValue(property)) return false;
+    el.style.removeProperty(property);
+    return true;
+}
+
 function stripInlineGlassPaint(el, transparencySignature) {
-    el.style.removeProperty('background-color');
-    el.style.removeProperty('background');
-    el.style.removeProperty('backdrop-filter');
-    el.style.removeProperty('-webkit-backdrop-filter');
+    removeInlineStyleIfPresent(el, 'background-color');
+    removeInlineStyleIfPresent(el, 'background');
+    removeInlineStyleIfPresent(el, 'backdrop-filter');
+    removeInlineStyleIfPresent(el, '-webkit-backdrop-filter');
     el.dataset.luxTransparencySignature = transparencySignature;
 }
 
@@ -598,28 +615,6 @@ function finalizeTransparencySurfaceElements(elements) {
     return filterCssOwnedTransparencySurfaces(elements);
 }
 
-function filterCssOwnedTransparencySurfaces(elements) {
-    if (!Array.isArray(elements) || !elements.length) return elements;
-    const keepHomeFade = typeof window.shouldKeepHomeFadeCssBackground === 'function'
-        ? window.shouldKeepHomeFadeCssBackground
-        : null;
-    return elements.filter((el) => {
-        if (!el) return false;
-        if (typeof shouldKeepRouteFadeCssBackground === 'function' && shouldKeepRouteFadeCssBackground(el)) {
-            return false;
-        }
-        if (keepHomeFade && keepHomeFade(el)) return false;
-        if (window.__luxCssNativeGlass !== false && el.classList?.contains('lux-modern-surface')) {
-            return false;
-        }
-        return true;
-    });
-}
-
-function finalizeTransparencySurfaceElements(elements) {
-    return filterCssOwnedTransparencySurfaces(elements);
-}
-
 function getCachedTransparencySurfaceElements(selectorList, rootsOverride) {
     const explicitRoots = normalizeTransparencyRoots(rootsOverride);
     if (explicitRoots.length) {
@@ -780,7 +775,7 @@ function buildLuxuryTransparencyModel(value, lightMode = false) {
     };
 }
 
-function applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage) {
+function applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage, options = {}) {
     const glowPercent = typeof window.getGlowStrength === 'function'
         ? window.getGlowStrength()
         : (typeof getGlowStrength === 'function' ? getGlowStrength() : 50);
@@ -809,16 +804,42 @@ function applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage) {
     }
     const glassBlurQuality = resolveGlassBlurQualityKey();
     const glassBlurMult = resolveGlassBlurQualityMultiplier(glassBlurQuality);
-    const blurAmount = (2 + fillRatio * 22) * glassBlurMult;
+    const rawBlur = (2 + fillRatio * 22) * glassBlurMult;
+    const blurAmount = Math.min(rawBlur, 14);
     const saturateAmount = 100 + (fillRatio * 45);
     const blurPx = `${blurAmount}px`;
-    [document.documentElement, document.body].filter(Boolean).forEach((target) => {
-        target.style.setProperty('--lux-transparency-blur', blurPx);
-        target.style.setProperty('--lux-glass-blur', blurPx);
-        target.style.setProperty('--lux-glass-blur-quality-mult', String(glassBlurMult));
-        target.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
-        target.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
-    });
+    const root = document.documentElement;
+    const lastBlur = root.dataset.luxLastBlurPx;
+    const lastSat = root.dataset.luxLastSaturate;
+    if (lastBlur === blurPx && lastSat === `${saturateAmount}%` && !options?.force) {
+    } else {
+        root.dataset.luxLastBlurPx = blurPx;
+        root.dataset.luxLastSaturate = `${saturateAmount}%`;
+        root.style.setProperty('--lux-transparency-blur', blurPx);
+        root.style.setProperty('--lux-glass-blur', blurPx);
+        root.style.setProperty('--lux-glass-blur-quality-mult', String(glassBlurMult));
+        root.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
+        root.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
+        if (document.body) {
+            document.body.style.setProperty('--lux-transparency-blur', blurPx);
+            document.body.style.setProperty('--lux-glass-blur', blurPx);
+        }
+    }
+}
+
+let __luxTransparencyRaf = 0;
+let __luxTransparencyPending = null;
+function flushLuxTransparencyRaf() {
+    __luxTransparencyRaf = 0;
+    const pending = __luxTransparencyPending;
+    __luxTransparencyPending = null;
+    if (!pending) return;
+    updateTransparency(pending.value, { ...pending.options, live: true });
+}
+function queueLuxTransparencyLive(value, options = {}) {
+    __luxTransparencyPending = { value, options };
+    if (__luxTransparencyRaf) return;
+    __luxTransparencyRaf = requestAnimationFrame(flushLuxTransparencyRaf);
 }
 
 function updateTransparency(value, options = {}) {
@@ -998,7 +1019,7 @@ function updateTransparency(value, options = {}) {
 
     const glassBlurQuality = resolveGlassBlurQualityKey();
     const glassBlurMult = resolveGlassBlurQualityMultiplier(glassBlurQuality);
-    const blurAmount = (2 + fillRatio * 22) * glassBlurMult;
+    const blurAmount = Math.min((2 + fillRatio * 22) * glassBlurMult, 14);
     const saturateAmount = 100 + (fillRatio * 45);
     const surfaceFillAmount = transparencyModel.panelFillAlpha;
     const structuralClasses = [
@@ -1109,18 +1130,25 @@ function updateTransparency(value, options = {}) {
     );
 
     const blurPx = `${blurAmount}px`;
-    const blurTargets = [document.documentElement, document.body].filter(Boolean);
-    blurTargets.forEach((target) => {
-      target.style.setProperty('--lux-transparency-blur', blurPx);
-      target.style.setProperty('--lux-glass-blur', blurPx);
-      target.style.setProperty('--lux-glass-blur-quality-mult', String(glassBlurMult));
-      target.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
-      target.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
-    });
-    if (document.body) {
-      document.body.dataset.luxGlassBlurQuality = glassBlurQuality;
+    const root = document.documentElement;
+    const lastBlur = root.dataset.luxLastBlurPx;
+    const lastSat = root.dataset.luxLastSaturate;
+    if (lastBlur !== blurPx || lastSat !== `${saturateAmount}%`) {
+        root.dataset.luxLastBlurPx = blurPx;
+        root.dataset.luxLastSaturate = `${saturateAmount}%`;
+        root.style.setProperty('--lux-transparency-blur', blurPx);
+        root.style.setProperty('--lux-glass-blur', blurPx);
+        root.style.setProperty('--lux-glass-blur-quality-mult', String(glassBlurMult));
+        root.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
+        root.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
+        if (document.body) {
+            document.body.style.setProperty('--lux-transparency-blur', blurPx);
+            document.body.style.setProperty('--lux-glass-blur', blurPx);
+            document.body.dataset.luxGlassBlurQuality = glassBlurQuality;
+        }
+    } else if (document.body) {
+        document.body.dataset.luxGlassBlurQuality = glassBlurQuality;
     }
-    document.documentElement.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
     const docStyle = document.documentElement.style;
     const transparencySignature = [
         percentage,
@@ -1571,9 +1599,8 @@ function scheduleLuxuryTransparencyBootRefresh(value) {
 function syncLuxuryOffscreenBackdrop(el) {
     if (!el?.dataset || el.dataset.luxObservedSurface !== '1') return;
     if (el.dataset.luxOffscreen === '1') {
-
-        el.style.setProperty('backdrop-filter', 'none', 'important');
-        el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        setInlineStyleIfChanged(el, 'backdrop-filter', 'none', 'important');
+        setInlineStyleIfChanged(el, '-webkit-backdrop-filter', 'none', 'important');
         return;
     }
 
@@ -1606,6 +1633,7 @@ window.scheduleLuxuryTransparencyBootRefresh = scheduleLuxuryTransparencyBootRef
 window.buildLuxuryTransparencyModel = buildLuxuryTransparencyModel;
 window.mapLuxuryTransparencyFillRatio = mapLuxuryTransparencyFillRatio;
 window.clampLuxuryTransparencyPercentage = clampLuxuryTransparencyPercentage;
+window.queueLuxTransparencyLive = queueLuxTransparencyLive;
 
 (function bootLuxTransparencyIfNeeded() {
     try {

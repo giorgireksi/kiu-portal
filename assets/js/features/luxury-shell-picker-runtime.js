@@ -363,7 +363,12 @@ function releasePickerTransparencySuppress(panel) {
 
 function forcePickerReflow(panel) {
     if (!panel) return;
-    void panel.offsetHeight;
+    if (panel.dataset.luxReflowPending === '1') return;
+    panel.dataset.luxReflowPending = '1';
+    requestAnimationFrame(() => {
+        panel.dataset.luxReflowPending = '0';
+        void panel.offsetHeight;
+    });
 }
 
 function deactivatePickerTrigger(panel) {

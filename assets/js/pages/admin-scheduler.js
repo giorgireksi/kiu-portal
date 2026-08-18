@@ -112,7 +112,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             // potentially expensive palette/grid build. This makes the route
             // usable immediately while preserving the same data render.
             const canPaintBeforeRender = revealShell
-                && window.__KIU_INSTANT_ASSEMBLY_LOADING !== false
                 && typeof markPortalShellReady === 'function';
             if (canPaintBeforeRender) {
                 markPortalShellReady();
@@ -2340,7 +2339,10 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         }
 
         bindSchedulerListeners();
+        let __schedBootstrapDone = false;
         window.addEventListener('kiu:portal-bootstrap-complete', () => {
+            if (__schedBootstrapDone) return;
+            __schedBootstrapDone = true;
             refreshSchedulerLiveStaffAccounts(true).then(() => populateProfList());
             queueSchedulerRefresh({ palette: true, grid: true });
         }, { once: true });
@@ -2349,6 +2351,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         // activation instead of competing with the initial scheduler render.
         populateProfList();
         queueSchedulerRefresh({ palette: true, grid: true, revealShell: true });
+        __schedBootstrapDone = true;
     }
 
     __kiuSchedExpose({

@@ -164,13 +164,16 @@ function restoreScrollableNodes(root, snapshot) {
 
 function captureUiScrollSnapshot() {
     const adminContainer = document.getElementById('admin-reg-content-container');
+    const namedScrollRoot = document.body?.classList?.contains('lux-route-admin-tools')
+        ? (adminContainer || document)
+        : document;
     return {
         _capturedAt: performance.now(),
         pageX: window.scrollX || window.pageXOffset || 0,
         pageY: window.scrollY || window.pageYOffset || 0,
         adminScrollTop: adminContainer ? adminContainer.scrollTop : 0,
         adminScrollLeft: adminContainer ? adminContainer.scrollLeft : 0,
-        namedScrolls: captureNamedScrollSnapshot(document),
+        namedScrolls: captureNamedScrollSnapshot(namedScrollRoot),
         scrollNodes: captureScrollableNodes(document.body)
     };
 }
@@ -188,17 +191,33 @@ function restoreUiScrollSnapshot(snapshot) {
         adminContainer.scrollTop = snapshot.adminScrollTop || 0;
         adminContainer.scrollLeft = snapshot.adminScrollLeft || 0;
     }
-    restoreNamedScrollSnapshot(snapshot.namedScrolls, document);
+    const namedScrollRoot = document.body?.classList?.contains('lux-route-admin-tools')
+        ? (adminContainer || document)
+        : document;
+    restoreNamedScrollSnapshot(snapshot.namedScrolls, namedScrollRoot);
     restoreScrollableNodes(document.body, snapshot.scrollNodes);
     if (Math.abs((window.scrollY || window.pageYOffset || 0) - pageY) > 2 || Math.abs((window.scrollX || window.pageXOffset || 0) - pageX) > 2) {
         window.scrollTo(pageX, pageY);
     }
 }
 
+let adminRegistrationScrollRestoreFrame = 0;
+let adminRegistrationPendingScrollSnapshot = null;
+
 function rerenderAdminRegistrationModulesPreservingScroll(tabType) {
     const snapshot = captureUiScrollSnapshot();
     renderAdminRegistrationModules(tabType);
-    requestAnimationFrame(() => restoreUiScrollSnapshot(snapshot));
+    // Multiple state handlers can request the same rerender in one turn. Keep
+    // the final snapshot and batch scroll writes into one frame after the DOM
+    // has settled, avoiding repeated layout/scroll invalidations.
+    adminRegistrationPendingScrollSnapshot = snapshot;
+    if (adminRegistrationScrollRestoreFrame) return;
+    adminRegistrationScrollRestoreFrame = requestAnimationFrame(() => {
+        adminRegistrationScrollRestoreFrame = 0;
+        const pendingSnapshot = adminRegistrationPendingScrollSnapshot;
+        adminRegistrationPendingScrollSnapshot = null;
+        restoreUiScrollSnapshot(pendingSnapshot);
+    });
 }
 
 function normalizeScheduleGroupForState(subjectId, group) {

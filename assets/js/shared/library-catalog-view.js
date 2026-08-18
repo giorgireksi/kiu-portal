@@ -668,8 +668,6 @@
             mode: options.tabsMode,
             activeId: typeof global.getActiveLibrarySectionId === 'function' ? global.getActiveLibrarySectionId() : 'books',
             onSelect: function onCatalogSectionSelect() {
-                const motion = global.__kiuLibraryLoadingMotion;
-                if (typeof motion?.forceReady === 'function') motion.forceReady();
                 resetCatalogPage(mode);
                 renderCatalogTable({ mode });
             }

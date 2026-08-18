@@ -25,7 +25,7 @@ describe('luxury animation interaction safety', () => {
         const source = readSource('assets/js/features/index-luxury.js');
         const toggleBlock = source.match(/function toggleSidebar\(\)[\s\S]*?\n    \}/)?.[0] || '';
 
-        expect(toggleBlock).toContain('applySidebarState(next, { persist: true })');
+        expect(toggleBlock).toContain('applySidebarState(next, { persist: true, animate: true })');
         expect(toggleBlock).not.toContain('__luxIsAnimating');
         expect(toggleBlock).not.toContain('lux-is-animating');
     });
@@ -38,13 +38,13 @@ describe('luxury animation interaction safety', () => {
         expect(collapsed).not.toContain('transition: transform');
     });
 
-    it('emits valid time-valued nav stagger variables', () => {
+    it('keeps nav rows static and updates only the active row after initial render', () => {
         const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
-        expect(shellChrome).toContain('const navStagger = () =>');
-        expect(shellChrome).toContain(".toFixed(2)}s`");
-        expect(shellChrome).toContain('const groupStagger = navStagger()');
-        expect(shellChrome).toContain('const itemStagger = navStagger()');
-        expect(shellChrome).not.toContain('const groupStagger = Math.min(staggerIndex++, 14)');
+        expect(shellChrome).not.toContain('const navStagger = () =>');
+        expect(shellChrome).not.toContain('--lux-nav-stagger');
+        expect(shellChrome).not.toContain('--lux-shell-footer-stagger');
+        expect(shellChrome).toContain('function syncRenderedNavActiveItem(navRoot, activePage)');
+        expect(shellChrome).toContain('navRoot.dataset.renderStructureSignature');
     });
 
     it('does not let touch hover sheen or nav animation bookkeeping flicker the shell', () => {
@@ -65,8 +65,8 @@ describe('luxury animation interaction safety', () => {
         expect(css).toMatch(
             /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell #lux-shell \.lux-nav-item[\s\S]*opacity:\s*1[\s\S]*animation:\s*none/
         );
-        expect(css).toContain('@keyframes luxRouteContentFade');
-        expect(css).toContain('.lux-route-content-fade');
+        expect(css).not.toContain('@keyframes luxRouteContentFade');
+        expect(css).not.toContain('.lux-route-content-fade');
         expect(css).toMatch(/\.lux-nav-item \{[^}]*transition:\s*none;/);
         expect(css).toMatch(/\.lux-nav-item::before[\s\S]*opacity:\s*0/);
         expect(css).toMatch(/\.lux-nav-item:hover:not\(\.is-active\)::before[\s\S]*opacity:\s*1/);

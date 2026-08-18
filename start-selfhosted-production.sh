@@ -17,16 +17,43 @@ set -a
 . "$ENV_FILE"
 set +a
 
+PUBLIC_HOSTNAME="${KIU_PUBLIC_HOSTNAME:?KIU_PUBLIC_HOSTNAME is required in $ENV_FILE}"
+LOCAL_WEB_ORIGIN="http://127.0.0.1:${WEB_PORT}"
+
+# The Caddy site is host-routed. A request without the public Host header can
+# receive an empty default response and falsely look healthy, while /api and
+# login requests still fail through the real public hostname.
+local_backend_ready() {
+    curl -fsS --max-time 2 \
+        -H "Host: ${PUBLIC_HOSTNAME}" \
+        "${LOCAL_WEB_ORIGIN}/health" >/dev/null 2>&1 \
+        && curl -fsS --max-time 2 \
+        -H "Host: ${PUBLIC_HOSTNAME}" \
+        "${LOCAL_WEB_ORIGIN}/ready" >/dev/null 2>&1
+}
+
 node "$ROOT/tools/check-production-readiness.js"
 # This host's Docker Buildx state is root-owned. Disable Bake/BuildKit here so
 # the public launcher remains usable by the normal desktop user.
 COMPOSE_BAKE=false DOCKER_BUILDKIT=0 "$DOCKER_BIN" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --build
 
-for _ in $(seq 1 30); do
-    if curl -fsS --max-time 2 "http://127.0.0.1:${WEB_PORT}/health" >/dev/null 2>&1; then break; fi
+# Re-resolve portal-backend after a rebuilt container gets a new Docker IP.
+# Without this, an already-running Caddy can briefly keep dialing the old
+# backend address and the public login/API endpoints return 502/503.
+if ! local_backend_ready; then
+    echo "Refreshing the public proxy backend connection..."
+    "$DOCKER_BIN" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" restart caddy
+fi
+
+for _ in $(seq 1 45); do
+    if local_backend_ready; then break; fi
     sleep 2
 done
-curl -fsS --max-time 10 "http://127.0.0.1:${WEB_PORT}/health" >/dev/null
+if ! local_backend_ready; then
+    echo "The public proxy/backend did not become ready on ${PUBLIC_HOSTNAME}." >&2
+    "$DOCKER_BIN" compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps >&2 || true
+    exit 1
+fi
 
 if ! tailscale funnel status 2>/dev/null | grep -Eq "proxy[[:space:]]+http://127\\.0\\.0\\.1:${WEB_PORT}([[:space:]]|$)"; then
     sudo tailscale funnel --bg "$WEB_PORT"

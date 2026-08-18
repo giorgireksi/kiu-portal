@@ -1136,10 +1136,13 @@ function pollKiuMessengerSnapshot() {
 function startKiuMessengerSnapshotFallback() {
     const runtime = ensureKiuRealtimeRuntime();
     if (runtime.messengerSnapshotPollHandle) return;
+    const pollMs = 15000;
     runtime.messengerSnapshotPollHandle = setInterval(() => {
         if (document.visibilityState === 'hidden') return;
+        if (runtime.bridgeUnavailableUntil && Date.now() < runtime.bridgeUnavailableUntil) return;
+        if (ensurePortalBackendRuntime().backendUnavailableUntil && Date.now() < ensurePortalBackendRuntime().backendUnavailableUntil) return;
         pollKiuMessengerSnapshot();
-    }, 3000);
+    }, pollMs);
 }
 
 function handleKiuRealtimeEventPayload(payload) {
@@ -1293,7 +1296,7 @@ function handleKiuRealtimeEventPayload(payload) {
             if (typeof window.refreshRecipientOrdersAfterRealtime === 'function') {
                 window.refreshRecipientOrdersAfterRealtime(payload);
             } else if (typeof window.renderOrdersInboxPage === 'function') {
-                window.renderOrdersInboxPage({ skipLoadingAnimation: true, force: true });
+                window.renderOrdersInboxPage({ force: true });
             }
             emitWorkspaceEvent('kiu:orders-updated', payload);
             break;

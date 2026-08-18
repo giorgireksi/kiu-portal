@@ -58,6 +58,11 @@
         let pageMembersSearchTimer = 0;
         let eventEditorSearchTimer = 0;
         const deferredModuleRenderQueue = new Set();
+        let socialChromeRaf = 0;
+        let socialLayoutRaf = 0;
+        let wheelDebt = 0;
+        let wheelRaf = 0;
+        let wheelPending = null;
 
         function readWorkspaceNavCollapsed() {
             try {
@@ -216,13 +221,21 @@
         function bindSocialScrollChromeObserver(host = root()) {
             if (!host || typeof ResizeObserver !== 'function') return;
             const onResize = () => {
-                updateSocialMeasuredChrome(host);
-                if (socialScrollLockActive()) {
-                    syncSocialVisualViewport();
-                    const center = getSocialCenterScroller(host);
-                    if (center) delete center.__kiuSocialCenterContentScrollHeight;
-                    ensureSocialCenterScrollBounds(host);
-                }
+                if (socialChromeRaf) return;
+                socialChromeRaf = requestAnimationFrame(() => {
+                    socialChromeRaf = 0;
+                    updateSocialMeasuredChrome(host);
+                    if (socialScrollLockActive()) {
+                        syncSocialVisualViewport();
+                        const center = getSocialCenterScroller(host);
+                        if (center) {
+                            if (typeof window.bumpCenterMetricsVersion === 'function') window.bumpCenterMetricsVersion(center);
+                            else if (typeof bumpCenterMetricsVersion === 'function') bumpCenterMetricsVersion(center);
+                            else delete center.__kiuSocialCenterContentScrollHeight;
+                        }
+                        ensureSocialCenterScrollBounds(host);
+                    }
+                });
             };
             if (!socialChromeResizeObserver) {
                 socialChromeResizeObserver = new ResizeObserver(onResize);
@@ -243,11 +256,19 @@
             if (!host || typeof ResizeObserver !== 'function') return;
             const onLayoutResize = () => {
                 if (!socialScrollLockActive()) return;
-                syncSocialVisualViewport();
-                updateSocialMeasuredChrome(host);
-                const center = getSocialCenterScroller(host);
-                if (center) delete center.__kiuSocialCenterContentScrollHeight;
-                ensureSocialCenterScrollBounds(host);
+                if (socialLayoutRaf) return;
+                socialLayoutRaf = requestAnimationFrame(() => {
+                    socialLayoutRaf = 0;
+                    syncSocialVisualViewport();
+                    updateSocialMeasuredChrome(host);
+                    const center = getSocialCenterScroller(host);
+                    if (center) {
+                        if (typeof window.bumpCenterMetricsVersion === 'function') window.bumpCenterMetricsVersion(center);
+                        else if (typeof bumpCenterMetricsVersion === 'function') bumpCenterMetricsVersion(center);
+                        else delete center.__kiuSocialCenterContentScrollHeight;
+                    }
+                    ensureSocialCenterScrollBounds(host);
+                });
             };
             if (!socialLayoutResizeObserver) {
                 socialLayoutResizeObserver = new ResizeObserver(onLayoutResize);
@@ -501,7 +522,18 @@
                 const shell = host?.querySelector?.('.social-neo-shell');
                 const innerScroller = event.target.closest('.social-neo-messages__thread-scroll, .social-neo-thread-messages, .social-neo-chat-items, .social-neo-chat-list, .sn-alerts-list, .lux-scroll-rail__viewport, .social-neo-event-feature-desc-viewport, .social-project-scroll-list');
                 if (innerScroller && innerScroller !== center && socialInnerScrollerCanAbsorbWheel(innerScroller, event.deltaY)) return;
-                if (applySocialCenterWheel(center, shell, host, event.deltaY)) event.preventDefault();
+                wheelDebt += event.deltaY;
+                wheelPending = { center, shell, host };
+                event.preventDefault();
+                if (wheelRaf) return;
+                wheelRaf = requestAnimationFrame(() => {
+                    const debt = wheelDebt;
+                    const pending = wheelPending;
+                    wheelDebt = 0;
+                    wheelRaf = 0;
+                    wheelPending = null;
+                    if (pending) applySocialCenterWheel(pending.center, pending.shell, pending.host, debt);
+                });
             }, { passive: false, capture: true });
         }
         function scheduleDeferredWindowScrollRestore(host, snapshot) {
@@ -583,7 +615,7 @@
             deferredModuleRenderQueue.add(renderReason);
             // Multiple lazy renderer callbacks can resolve in the same microtask
             // (for example, two renders waiting on one panel module). Collapse
-            // them into one center remount so assembly motion cannot restart.
+            // them into one center remount so a visual transition cannot restart.
             const flush = () => {
                 deferredModuleRenderQueue.delete(renderReason);
                 const livePanel = text(state()?.ui?.activePanel || '') || 'feed';
@@ -664,8 +696,7 @@
                 syncSocialVisualShell();
             }
             const forceUnveil = options?.force === true || window.__kiuSocialBootForceUnveil === true;
-            // Keep the global shell veil until assembly run() (or an explicit force fail-safe)
-            // allows first paint — early pin/guardian/standalone renders must not uncover Feed.
+            // The shell is already visible; early pin/guardian/standalone renders may update Feed directly.
             if (document.body?.classList.contains('lux-route-social')
                 && document.body?.classList.contains('kiu-shell-loading')
                 && !window.__kiuSocialShellRevealAllowed

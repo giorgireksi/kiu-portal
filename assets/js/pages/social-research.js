@@ -737,6 +737,11 @@
         } else {
             listItems = filterPublicationsForTab(tab);
         }
+        const pagination = window.KiuSocialPagination;
+        const paginateResearch = pagination && typeof pagination.currentMode === 'function' && pagination.currentMode() === 'infinite';
+        if (paginateResearch && listItems.length > 10) {
+            listItems = listItems.slice(0, 10);
+        }
         return `
             <div class="social-neo-stack social-neo-research-shell">
                 ${renderResearchHero(listItems)}

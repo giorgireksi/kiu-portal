@@ -1060,9 +1060,11 @@ function applyHubProgressBars(scope = document) {
     const hub = ccHub();
     const attr = `data-${hub}-progress`;
     const cssVar = `--${hub}-progress`;
+    const scaleVar = `--${hub}-progress-scale`;
     scope.querySelectorAll(`[${attr}]`).forEach((element) => {
         const fill = clampProgressPercent(element.getAttribute(attr));
         element.style.setProperty(cssVar, `${fill}%`);
+        element.style.setProperty(scaleVar, String(fill / 100));
     });
 }
 

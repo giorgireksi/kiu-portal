@@ -203,6 +203,8 @@ return {
         '.lux-admin-provision-card',
         '.admin-reg-tab',
         '#admin-reg-content-container',
+        '#lux-admin-tools-shell .admin-reg-program-list-shell',
+        '#lux-admin-tools-shell .admin-reg-track-group-card',
         '#curriculum-library-modules-root',
         '.career-history-item',
         '.career-provider-route-card',
@@ -270,10 +272,15 @@ return {
     function refreshHeavySurfaceObservation() {
         if (!('IntersectionObserver' in window) || !document.body) return;
         const scrollRoot = getHeavySurfaceScrollRoot();
-        const observerSignature = `${scrollRoot?.id || scrollRoot?.className || 'null'}|${LUX_HEAVY_SCROLL_SURFACE_SELECTOR}`;
+        const adminToolsRoot = document.body.classList.contains('lux-route-admin-tools')
+            ? document.getElementById('lux-admin-tools-shell')
+            : null;
+        const observerSignature = `${scrollRoot?.id || scrollRoot?.className || 'null'}|${adminToolsRoot?.id || 'all'}|${LUX_HEAVY_SCROLL_SURFACE_SELECTOR}`;
+        const surfaceQueryRoot = adminToolsRoot || document;
         if (__luxHeavySurfaceObserver && __luxHeavySurfaceObserverSignature === observerSignature) {
-            document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
+            surfaceQueryRoot.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
                 if (!node || node.dataset.luxObservedSurface === '1') return;
+                if (adminToolsRoot && !adminToolsRoot.contains(node)) return;
                 if (node.closest('#lux-home-shell .lux-home-merged') && !node.classList.contains('lux-home-merged')) return;
                 if (node.closest('#lux-home-shell .lux-home-grid') && !node.classList.contains('lux-home-grid')) return;
                 if (node.closest('#library-schema-overlay')) return;
@@ -322,8 +329,9 @@ return {
             rootMargin: getHeavySurfaceObserverRootMargin(),
             threshold: 0.01
         });
-        document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
+        surfaceQueryRoot.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
             if (!node) return;
+            if (adminToolsRoot && !adminToolsRoot.contains(node)) return;
             if (node.closest('#lux-home-shell .lux-home-merged') && !node.classList.contains('lux-home-merged')) return;
             if (node.closest('#lux-home-shell .lux-home-grid') && !node.classList.contains('lux-home-grid')) return;
             if (node.closest('#library-schema-overlay')) return;
@@ -594,6 +602,8 @@ return {
         }
         const className = typeof node.className === 'string' ? node.className : '';
         const styleText = node.getAttribute('style') || '';
+        const visualSignature = `${className}\u0000${styleText}`;
+        if (node.dataset.luxLegacyVisualSignature === visualSignature) return;
         const combinedVisualHint = `${className} ${styleText}`;
         const tone = resolveLegacyTone(combinedVisualHint);
         const tagName = node.tagName;
@@ -626,6 +636,7 @@ return {
         if (styleText) {
             // Never strip glass applied by the transparency engine.
             if (node.dataset?.luxTransparencySignature) {
+                node.dataset.luxLegacyVisualSignature = `${typeof node.className === 'string' ? node.className : ''}\u0000${node.getAttribute('style') || ''}`;
                 return;
             }
             const sanitized = sanitizeLegacyVisualInlineStyle(styleText, {
@@ -638,6 +649,7 @@ return {
                 node.removeAttribute('style');
             }
         }
+        node.dataset.luxLegacyVisualSignature = `${typeof node.className === 'string' ? node.className : ''}\u0000${node.getAttribute('style') || ''}`;
     }
 
     function sanitizeLegacyVisualTree(root = document.body) {
@@ -723,6 +735,12 @@ return {
 
     function observeLegacyVisualTree() {
         if (window.__luxLegacyVisualObserver || !window.MutationObserver || !document.body) return;
+        // Admin Tools owns its dynamic workspace under one stable root. Scoping
+        // this observer avoids recording unrelated body mutations (toasts,
+        // shell chrome, and background portals) while preserving all route UI.
+        const observerRoot = document.body.classList.contains('lux-route-admin-tools')
+            ? document.getElementById('lux-admin-tools-shell') || document.body
+            : document.body;
         /* PERFORMANCE: Debounce — collect 150ms of DOM changes, then process once */
         let _legacyDebounceTimer = null;
         let _legacyPendingNodes = new Set();
@@ -750,7 +768,7 @@ return {
                 }, 150);
             }
         });
-        observer.observe(document.body, {
+        observer.observe(observerRoot, {
             childList: true,
             subtree: true,
             attributes: false /* PERF: stop watching style/class — caused feedback loops */
@@ -998,7 +1016,6 @@ return {
         clearHomeShellLoadTimeout();
         try {
             const signature = buildHomeShellRenderSignature();
-            const wasAlreadyRendered = Boolean(homeShell.dataset.homeRenderSignature);
             if (
                 homeShell.dataset.homeRenderSignature === signature
                 && homeShellHasDashboardContent(homeShell)
@@ -1029,9 +1046,6 @@ return {
             const idleRunner = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 120));
             idleRunner(repaintHomeSurfaces);
             queueHeavySurfaceObservationRefresh();
-            if (typeof window.__kiuReplayHomeLoadingMotion === 'function') {
-                window.__kiuReplayHomeLoadingMotion('render', undefined, { intro: !wasAlreadyRendered });
-            }
         } catch (error) {
             console.error('Home dashboard render failed.', error);
             delete homeShell.dataset.homeRenderReady;

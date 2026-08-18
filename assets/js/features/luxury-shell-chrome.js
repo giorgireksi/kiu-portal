@@ -161,33 +161,6 @@ function pageTarget(pageId) {
     return pageId === 'profile' ? 'personal-data' : pageId;
 }
 
-function prefetchPortalRoute(pageId) {
-    const normalizedPageId = String(pageId || '').trim().toLowerCase();
-    if (!normalizedPageId || typeof window.resolvePortalRouteUrl !== 'function') return;
-    if (typeof window.prefetchStandalonePortalRoute === 'function') {
-        void window.prefetchStandalonePortalRoute(normalizedPageId);
-        return;
-    }
-    const role = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student');
-    let targetUrl = '';
-    try {
-        targetUrl = window.resolvePortalRouteUrl(pageTarget(normalizedPageId), role);
-    } catch (error) {
-        return;
-    }
-    if (!targetUrl) return;
-    const prefetched = window.__kiuPrefetchedNavUrls || (window.__kiuPrefetchedNavUrls = new Set());
-    if (prefetched.has(targetUrl)) return;
-    prefetched.add(targetUrl);
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.as = 'document';
-    link.href = targetUrl;
-    document.head.appendChild(link);
-}
-
 function queueAccessibleFocus(target) {
     if (!target || typeof target.focus !== 'function') return;
     const schedule = window.requestAnimationFrame || ((cb) => window.setTimeout(cb, 0));
@@ -424,6 +397,7 @@ function renderTopbarUtilityPanels(currentUser) {
 
 function renderNavRecoveryFallback(navRoot, error) {
     console.error('Luxury navigation render failed.', error);
+    navRoot.dataset.renderStructureSignature = '';
     navRoot.dataset.renderSignature = 'recovery';
     navRoot.innerHTML = `
         <div class="lux-nav-group">Navigation</div>
@@ -446,6 +420,16 @@ function renderNavRecoveryFallback(navRoot, error) {
     }
 }
 
+function syncRenderedNavActiveItem(navRoot, activePage) {
+    if (!navRoot?.children.length) return;
+    navRoot.querySelectorAll('.lux-nav-item[data-nav-target]').forEach((button) => {
+        const shouldBeActive = button.getAttribute('data-nav-target') === activePage;
+        if (button.classList.contains('is-active') !== shouldBeActive) {
+            button.classList.toggle('is-active', shouldBeActive);
+        }
+    });
+}
+
 function renderNav() {
     const role = typeof getEffectiveUserRole === 'function'
         ? getEffectiveUserRole()
@@ -466,29 +450,28 @@ function renderNav() {
     const itemSignature = groups
         .map((group) => `${group.group}:${group.items.map((item) => item[0]).join(',')}`)
         .join(';');
+    const structureSignature = `${role}|${itemSignature}`;
     const signature = `${role}|${activePage}|${itemSignature}`;
     if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;
+    // Route changes only change the active row. Preserve the existing buttons
+    // so their focus, hover state, and layout do not get destroyed/repainted.
+    if (navRoot.dataset.renderStructureSignature === structureSignature && navRoot.children.length) {
+        syncRenderedNavActiveItem(navRoot, activePage);
+        navRoot.dataset.renderSignature = signature;
+        return;
+    }
     try {
-        let staggerIndex = 0;
-        const navStagger = () => `${(Math.min(staggerIndex++, 14) * 0.04).toFixed(2)}s`;
         navRoot.innerHTML = groups.map((group) => {
-            const groupStagger = navStagger();
-            const groupMarkup = `<div class="lux-nav-group" style="--lux-nav-stagger:${groupStagger}">${escapeHtml(group.group)}</div>`;
-            const itemsMarkup = group.items.map(([pageId, label, icon, badge]) => {
-                const itemStagger = navStagger();
-                return `
-                <button class="lux-nav-item${activePage === pageId ? ' is-active' : ''}" type="button" data-nav-target="${escapeHtml(pageId)}" style="--lux-nav-stagger:${itemStagger}">
+            const groupMarkup = `<div class="lux-nav-group">${escapeHtml(group.group)}</div>`;
+            const itemsMarkup = group.items.map(([pageId, label, icon, badge]) => `
+                <button class="lux-nav-item${activePage === pageId ? ' is-active' : ''}" type="button" data-nav-target="${escapeHtml(pageId)}">
                     <i class="${escapeHtml(icon)}"></i>
                     <span>${escapeHtml(label)}</span>
                     ${badge ? `<span class="lux-nav-badge">${escapeHtml(badge)}</span>` : ''}
-                </button>`;
-            }).join('');
+                </button>`).join('');
             return groupMarkup + itemsMarkup;
         }).join('');
-        const shell = document.getElementById('lux-shell');
-        if (shell) {
-            shell.style.setProperty('--lux-shell-footer-stagger', `${(Math.min(staggerIndex, 14) * 0.04).toFixed(2)}s`);
-        }
+        navRoot.dataset.renderStructureSignature = structureSignature;
         navRoot.dataset.renderSignature = signature;
     } catch (error) {
         renderNavRecoveryFallback(navRoot, error);
@@ -500,11 +483,9 @@ function renderNav() {
             if (!button || !navRoot.contains(button)) return;
             if (typeof navigate === 'function') navigate(pageTarget(button.dataset.navTarget));
         });
-        navRoot.addEventListener('mouseover', (event) => {
-            const button = event.target.closest('[data-nav-target]');
-            if (!button || !navRoot.contains(button)) return;
-            prefetchPortalRoute(button.dataset.navTarget);
-        });
+        // Route prefetch is owned by navigation.js's delegated pointerover
+        // scheduler. Do not start a second immediate fetch from the shell;
+        // that competes with the first hover frame and makes buttons feel late.
         navRoot.dataset.bound = '1';
     }
 }
@@ -1675,14 +1656,19 @@ function bindUserMenu() {
 
 function invokeSidebarToggle() {
     closeStudio();
-    closeUtilityPanels();
-    closePickerPanels();
-    closeUserMenu();
     const toggleSidebarFn =
         typeof window.toggleSidebar === 'function'
             ? window.toggleSidebar
             : getLuxurySharedConfig().toggleSidebar;
-    if (typeof toggleSidebarFn === 'function') toggleSidebarFn();
+    if (typeof toggleSidebarFn === 'function') {
+        // toggleSidebar owns the guarded fast-close path; avoid closing the
+        // same popovers twice before the shell transition can start.
+        toggleSidebarFn();
+        return;
+    }
+    closeUtilityPanels();
+    closePickerPanels();
+    closeUserMenu();
 }
 
 function bindSidebarToggleButton(button) {

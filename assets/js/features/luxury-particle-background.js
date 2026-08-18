@@ -347,7 +347,6 @@ const qualityProfiles = {
     alphaBoost: 1.16,
   },
   high: {
-    // Denser, richer, higher-fidelity field.
     columns: 372,
     rows: 176,
     layers: 4,
@@ -357,11 +356,8 @@ const qualityProfiles = {
     tinyColumns: 104,
     tinyRows: 52,
     tinyLayers: 1,
-    // Max quality: supersample 1.85x ABOVE native (getRenderPixelRatio), capped
-    // at total ratio 3.7. On a DPR-2 display this renders a ~3.7x buffer and
-    // downsamples — the cleanest possible edges, zero crawl/shimmer.
-    maxDpr: 3.7,
-    supersample: 1.85,
+    maxDpr: 2.6,
+    supersample: 1.35,
     fps: 30,
     tinyFps: 30,
     pointScale: 1,
@@ -395,12 +391,13 @@ function buildLuxuryParticleEngine() {
   canvas = ensureUsableParticleCanvas(canvas) || canvas;
 
   try {
+    const isTinyCanvas = window.innerWidth < 480;
+    const isSmallCanvas = window.innerWidth < 720;
     renderer = new THREE.WebGLRenderer({
       canvas,
-      // Supersampled tiers already soften edges; MSAA on top is redundant fill-rate work.
       antialias: !(initialQuality.supersample > 1),
       alpha: false,
-      powerPreference: "high-performance",
+      powerPreference: isTinyCanvas || isSmallCanvas ? "low-power" : "high-performance",
     });
   } catch (error) {
     console.warn("[LuxuryParticles] WebGLRenderer init failed", error);
@@ -1502,7 +1499,7 @@ function renderParticleSceneToScreen() {
   const height = window.innerHeight;
   const pixelRatio = lastAppliedPixelRatio || getEffectiveRenderPixelRatio(activeQuality);
   // Temporal blend only while scaled down — restores soft edges without permanent supersample cost.
-  const useTemporal = adaptivePixelScale < 0.97 && ensureTemporalPipeline(width, height, pixelRatio);
+  const useTemporal = adaptivePixelScale < 0.92 && ensureTemporalPipeline(width, height, pixelRatio);
   if (!useTemporal) {
     renderer.setRenderTarget(null);
     renderer.render(scene, camera);
@@ -1657,7 +1654,16 @@ function applyVariantTuning() {
 
 function scheduleResize() {
   window.clearTimeout(resizeTimer);
-  resizeTimer = window.setTimeout(resize, 120);
+  resizeTimer = window.setTimeout(() => {
+    const w = window.innerWidth;
+    if (Math.abs(w - (scheduleResize._lastW || 0)) < 40 && activeQuality && activeQuality.name === (activeQualityName || '')) {
+      scheduleResize._lastW = w;
+      updateViewport(false);
+      return;
+    }
+    scheduleResize._lastW = w;
+    resize();
+  }, 200);
   updateViewport(false);
 }
 
@@ -1767,8 +1773,7 @@ function scheduleParticleBackgroundSelfInit(attempt = 0) {
   if (engineReady) return;
   if (isFogBackgroundMode()) return;
   const shellBooting = document.body?.classList?.contains("kiu-shell-loading");
-  const assemblyBooting = /(?:^|\s)\S+-assembly-active(?:\s|$)/.test(document.body?.className || '');
-  if ((shellBooting || assemblyBooting) && attempt < 300) {
+  if (shellBooting && attempt < 300) {
     window.requestAnimationFrame(() => scheduleParticleBackgroundSelfInit(attempt + 1));
     return;
   }

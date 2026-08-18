@@ -5,7 +5,7 @@
 
     const DEFAULT_DURATION_MS = 7000;
     const DISMISS_ANIMATION_MS = 220;
-    const POLL_INTERVAL_MS = 25000;
+    const POLL_INTERVAL_MS = 60000;
     const MAX_STACK = 4;
     const SEEN_STORAGE_PREFIX = 'kiu_live_alert_seen:';
 
@@ -281,10 +281,13 @@
 
     async function fetchApiNotifications(userId = currentUserId()) {
         if (!userId || typeof window.kiuPortalFetch !== 'function') return [];
+        const runtime = typeof ensurePortalBackendRuntime === 'function' ? ensurePortalBackendRuntime() : null;
+        if (runtime && runtime.backendUnavailableUntil && Date.now() < runtime.backendUnavailableUntil) return [];
         try {
             const payload = await window.kiuPortalFetch(`/api/notifications?userId=${encodeURIComponent(userId)}&limit=50`);
             return Array.isArray(payload?.items) ? payload.items.map(normalizeApiNotification) : [];
         } catch (error) {
+            if (error && (error.status === 503 || error.code === 'KIU_PORTAL_BACKEND_COOLDOWN')) return [];
             return [];
         }
     }

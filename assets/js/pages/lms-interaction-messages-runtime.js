@@ -1202,12 +1202,9 @@ function normalizeLmsInteractionMarkup(markup) {
         .replace(/\s+class="([^"]*)"/g, (_match, value) => {
             const classes = String(value || '')
                 .split(/\s+/)
-                .filter(Boolean)
-                .filter(name => !['kiu-lms-assembly-target', 'kiu-lms-assembly-inner', 'is-staging', 'is-flight'].includes(name));
+                .filter(Boolean);
             return ` class="${classes.join(' ')}"`;
         })
-        .replace(/\s+data-kiu-assembly-phase="[^"]*"/g, '')
-        .replace(/\s+data-kiu-assembly-state="[^"]*"/g, '')
         .replace(/\s+data-lux-observed-surface="[^"]*"/g, '')
         .replace(/\s+data-lux-offscreen="[^"]*"/g, '')
         .replace(/\s+data-lux-transparency-signature="[^"]*"/g, '')

@@ -386,47 +386,78 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function isSidebarOverlayRoute() {
         return Boolean(document.body?.classList.contains('lux-unified-shell'));
     }
+    let __sidebarToggling = false;
+    let __sidebarTransitionTimer = 0;
+    function armSidebarTransitionHint() {
+        const root = document.documentElement;
+        if (!root) return;
+        root.classList.add('lux-sidebar-transitioning');
+        if (__sidebarTransitionTimer) window.clearTimeout(__sidebarTransitionTimer);
+        const mobile = typeof window.matchMedia === 'function'
+            && window.matchMedia('(max-width: 1024px)').matches;
+        __sidebarTransitionTimer = window.setTimeout(() => {
+            __sidebarTransitionTimer = 0;
+            root.classList.remove('lux-sidebar-transitioning');
+        }, mobile ? 340 : 170);
+    }
     function applySidebarState(collapsed = isSidebarCollapsed(), options = {}) {
         const nextCollapsed = Boolean(collapsed);
-        const persist = options.persist !== false;
-        if (persist) {
-            localStorage.setItem('kiuLuxurySidebarCollapsed', collapsed ? '1' : '0');
-        }
-        document.documentElement.classList.toggle('lux-sidebar-collapsed', Boolean(collapsed));
-        document.body.classList.toggle('lux-sidebar-collapsed', Boolean(collapsed));
-        document.body.dataset.luxSidebar = collapsed ? 'collapsed' : 'expanded';
-        const toggle = document.getElementById('lux-sidebar-toggle');
-        if (toggle) {
-            toggle.classList.toggle('is-active', Boolean(collapsed));
-            toggle.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
-            toggle.title = 'Show navigation';
-            const icon = toggle.querySelector('i');
-            const label = toggle.querySelector('.lux-sidebar-toggle-label');
-            if (icon) {
-                icon.className = 'fas fa-sidebar fa-flip-horizontal';
+        if (__sidebarToggling) return;
+        if (document.body.classList.contains('lux-sidebar-collapsed') === nextCollapsed
+            && document.documentElement.classList.contains('lux-sidebar-collapsed') === nextCollapsed) return;
+        __sidebarToggling = true;
+        if (options.animate === true) armSidebarTransitionHint();
+        // Apply the two paint-driving classes in the click task so the CSS
+        // transition starts on this frame; only persistence and tiny control
+        // bookkeeping wait for the next frame.
+        document.documentElement.classList.toggle('lux-sidebar-collapsed', nextCollapsed);
+        document.body.classList.toggle('lux-sidebar-collapsed', nextCollapsed);
+        document.body.dataset.luxSidebar = nextCollapsed ? 'collapsed' : 'expanded';
+        requestAnimationFrame(() => {
+            __sidebarToggling = false;
+            if (options.persist !== false) {
+                try { localStorage.setItem('kiuLuxurySidebarCollapsed', nextCollapsed ? '1' : '0'); } catch {}
             }
-            if (label) {
-                label.textContent = 'Show nav';
+            const toggle = document.getElementById('lux-sidebar-toggle');
+            if (toggle) {
+                toggle.classList.toggle('is-active', nextCollapsed);
+                toggle.setAttribute('aria-pressed', nextCollapsed ? 'true' : 'false');
+                toggle.title = 'Show navigation';
+                const icon = toggle.querySelector('i');
+                if (icon) icon.className = 'fas fa-sidebar fa-flip-horizontal';
+                const label = toggle.querySelector('.lux-sidebar-toggle-label');
+                if (label) label.textContent = 'Show nav';
             }
-        }
-        const closeBtn = document.getElementById('lux-sidebar-close');
-        if (closeBtn) {
-            closeBtn.classList.toggle('is-active', !collapsed);
-            closeBtn.setAttribute('aria-pressed', collapsed ? 'false' : 'true');
-            closeBtn.setAttribute('aria-label', 'Hide navigation');
-            closeBtn.removeAttribute('title');
-            const closeLabel = closeBtn.querySelector('.lux-sidebar-close-label');
-            if (closeLabel) {
-                closeLabel.textContent = 'Hide nav';
+            const closeBtn = document.getElementById('lux-sidebar-close');
+            if (closeBtn) {
+                closeBtn.classList.toggle('is-active', !nextCollapsed);
+                closeBtn.setAttribute('aria-pressed', nextCollapsed ? 'false' : 'true');
+                closeBtn.setAttribute('aria-label', 'Hide navigation');
+                closeBtn.removeAttribute('title');
+                const closeLabel = closeBtn.querySelector('.lux-sidebar-close-label');
+                if (closeLabel) closeLabel.textContent = 'Hide nav';
             }
-        }
+        });
     }
     function toggleSidebar() {
+        if (__sidebarToggling) return;
         const next = !document.body.classList.contains('lux-sidebar-collapsed');
-        applySidebarState(next, { persist: true });
-        // FIX: Do NOT call syncAll() or dispatch fake 'resize' events here.
-        // Sidebar toggle is a pure CSS transition handled by lux-shell.css / index-home layout.
-        // Dispatching a resize event tricks the app into rebuilding the DOM.
+        closeUtilityPanelsFast();
+        closePickerPanelsFast();
+        closeUserMenuFast();
+        applySidebarState(next, { persist: true, animate: true });
+    }
+    function closeUtilityPanelsFast() {
+        if (!document.querySelector('.lux-utility-panel.is-open')) return;
+        if (typeof window.closeUtilityPanels === 'function') window.closeUtilityPanels();
+    }
+    function closePickerPanelsFast() {
+        if (!document.querySelector('.lux-picker-panel.is-open')) return;
+        if (typeof window.closePickerPanels === 'function') window.closePickerPanels({ immediate: true });
+    }
+    function closeUserMenuFast() {
+        if (!document.getElementById('lux-user-menu')?.classList.contains('is-open')) return;
+        if (typeof window.closeUserMenu === 'function') window.closeUserMenu();
     }
     function pageLabel(pageId) {
         return PAGE_LABELS[pageId] || 'Dashboard';
@@ -953,8 +984,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         let attempts = 0;
         const run = () => {
             const body = document.body;
-            if (body?.classList.contains('kiu-shell-loading')
-                || body?.classList.contains('timetable-assembly-active')) {
+            if (body?.classList.contains('kiu-shell-loading')) {
                 if (attempts < 24) {
                     attempts += 1;
                     window.setTimeout(run, 100);
@@ -1793,6 +1823,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                 const onStandaloneLibrary = isStandaloneLibraryRouteActive();
                 const onStandaloneOrders = isStandaloneOrdersRouteActive();
                 const onStandaloneScheduler = isStandaloneSchedulerRouteActive();
+                const onAdminTools = document.body?.classList.contains('lux-route-admin-tools');
                 enhanceUniversalPickers(document.querySelector('.page-section.active-page') || document);
                 observeUniversalPickers();
                 if (!onStandaloneLms && !onStandaloneAdminOrders && !onStandaloneLibrary && !onStandaloneOrders && !onStandaloneScheduler) {
@@ -1810,7 +1841,12 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                     ensureLuxuryBackgroundRuntime().then((loaded) => loaded && window.__kiuInitLuxuryParticleBackground?.());
                 };
                 if (!onStandaloneAdminOrders && !onStandaloneScheduler) {
-                    if (onStandaloneLibrary || onStandaloneOrders) {
+                    if (onAdminTools) {
+                        // Admin Tools should become interactive before the
+                        // optional WebGL background competes for the first
+                        // post-mount frame.
+                        window.setTimeout(scheduleParticleInit, 900);
+                    } else if (onStandaloneLibrary || onStandaloneOrders) {
                         const schedule = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 120));
                         schedule(scheduleParticleInit);
                     } else {

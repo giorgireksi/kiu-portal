@@ -579,7 +579,6 @@
         root.style.setProperty('--lux-raised-fill-alpha', String(raisedFillMin));
         root.style.setProperty('--lux-utility-fill-alpha', String(utilityFillMin));
         root.style.setProperty('--lux-glass-highlight-alpha', String(lightMode ? 0.02 : 0.012));
-        root.style.setProperty('--lux-glass-blur', lightMode ? '8px' : '8px');
         root.style.setProperty('--lux-topbar-fill-alpha', String(topbarFillMin));
         root.style.setProperty('--lux-topbar-raised-alpha', String(topbarRaisedMin));
         root.style.setProperty('--lux-button-glow', glowConfig.buttonGlow);

@@ -1,81 +1,5 @@
-/* Generated route bundle: exams. */
-/* Source: assets/css/lux-page-bare-lite.css; regenerate with tools/generate-route-bare-css.mjs. */
-/* Included source lines: 1-76, 43386-45828. */
-
-body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content {
-  min-width: 0;
-}
-
-body.lux-page-bare .lux-page-shell { display: grid; gap: 12px; padding: 12px 0; }
-body.lux-page-bare .lux-page-title, body.lux-page-bare h1 {
-  color: var(--lux-text, #f8fafc);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin: 0;
-}
-body.lux-page-bare .lux-page-copy, body.lux-page-bare .lux-page-kicker {
-  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
-  line-height: 1.5;
-  margin: 0;
-}
-body.lux-page-bare .lux-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-body.lux-page-bare .lux-field { display: grid; gap: 6px; min-width: 0; }
-body.lux-page-bare .lux-field label, body.lux-page-bare .lux-overline {
-  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-body.lux-page-bare .lux-subcards, body.lux-page-bare .lux-strip-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-}
-body.lux-page-bare .lux-pill-row, body.lux-page-bare .lux-card-actions, body.lux-page-bare .lux-actions-between {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-body.lux-page-bare table { width: 100%; border-collapse: collapse; }
-body.lux-page-bare table th, body.lux-page-bare table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
-  text-align: left;
-  vertical-align: top;
-}
-body.lux-page-bare table thead th {
-  color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-body.lux-page-bare .lux-queue-list, body.lux-page-bare .lux-thread { display: grid; gap: 8px; }
-@media (max-width: 920px) {
-  body.lux-page-bare .lux-field-grid { grid-template-columns: 1fr; }
-}
-
-
-
-body.lux-unified-shell.lux-page-bare {
-  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-
-body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-
+/* Thin route diff: exams. Core in shared-lux-core.css */
+/* Included source lines: 43354-45757. */
 
 
 body.lux-route-exams #page-exams.lux-page-shell[data-lux-layout-only="1"] {
@@ -145,7 +69,6 @@ body.lux-route-exams #admin-exams-root .ex2-stat-chip.is-pending strong { color:
 body.lux-route-exams #admin-exams-root .ex2-stat-chip.is-returned strong { color: var(--ex-returned); }
 body.lux-route-exams #admin-exams-root .ex2-stat-chip.is-approved strong { color: var(--ex-approved); }
 body.lux-route-exams #admin-exams-root .ex2-stat-chip.is-live strong { color: var(--ex-live); }
-body.lux-route-exams #admin-exams-root .ex2-stat-chip.is-live { animation: exPulse 2s infinite; }
 
 body.lux-route-exams #admin-exams-root .ex2-workspace-body {
     display: grid;
@@ -509,28 +432,11 @@ body.lux-route-exams #admin-exams-root {
 body.lux-route-exams #admin-exams-root .ex2-shell {
     display: grid;
     gap: 24px;
-    animation: exFadeIn .4s ease;
 }
 
-@keyframes exFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 
-@keyframes exSlideIn {
-    from { opacity: 0; transform: translateX(40px); }
-    to { opacity: 1; transform: translateX(0); }
-}
 
-@keyframes exPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
-    50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
-}
 
-@keyframes exStagger {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 
 
 body.lux-route-exams #admin-exams-root .ex2-stats-row {
@@ -572,7 +478,6 @@ body.lux-route-exams #admin-exams-root .ex2-stat-card.is-pending strong { color:
 body.lux-route-exams #admin-exams-root .ex2-stat-card.is-returned strong { color: var(--ex-returned); }
 body.lux-route-exams #admin-exams-root .ex2-stat-card.is-approved strong { color: var(--ex-approved); }
 body.lux-route-exams #admin-exams-root .ex2-stat-card.is-live strong { color: var(--ex-live); }
-body.lux-route-exams #admin-exams-root .ex2-stat-card.is-live { animation: exPulse 2s infinite; }
 
 
 body.lux-route-exams #admin-exams-root .ex2-command-bar {
@@ -745,7 +650,6 @@ body.lux-route-exams #admin-exams-root .ex2-quiz-card {
     background: var(--lux-surface);
     cursor: pointer;
     transition: transform .2s, box-shadow .2s, border-color .2s;
-    animation: exStagger .4s ease both;
 }
 
 body.lux-route-exams #admin-exams-root .ex2-quiz-card:hover {
@@ -772,7 +676,6 @@ body.lux-route-exams #admin-exams-root .ex2-status-dot.is-submitted { color: var
 body.lux-route-exams #admin-exams-root .ex2-status-dot.is-in_review { color: var(--ex-in-review); background: rgba(139,92,246,.1); }
 body.lux-route-exams #admin-exams-root .ex2-status-dot.is-returned { color: var(--ex-returned); background: rgba(245,158,11,.1); }
 body.lux-route-exams #admin-exams-root .ex2-status-dot.is-approved { color: var(--ex-approved); background: rgba(16,185,129,.1); }
-body.lux-route-exams #admin-exams-root .ex2-status-dot.is-live { color: var(--ex-live); background: rgba(239,68,68,.1); animation: exPulse 2s infinite; }
 
 body.lux-route-exams #admin-exams-root .ex2-status-dot::before {
     content: '';
@@ -855,7 +758,6 @@ body.lux-route-exams #admin-exams-root .ex2-progress-step.is-done::after {
 
 
 body.lux-route-exams #admin-exams-root .ex2-builder-fullscreen {
-    animation: exSlideIn .35s ease;
 }
 
 body.lux-route-exams #admin-exams-root .ex2-builder-header {
@@ -904,7 +806,6 @@ body.lux-route-exams #admin-exams-root .ex2-live-sidebar h3 {
 }
 
 body.lux-route-exams #admin-exams-root .ex2-panel--animated {
-    animation: exSlideIn .3s ease;
 }
 
 body.lux-route-exams #admin-exams-root .ex2-divider {
@@ -1067,7 +968,6 @@ body.lux-route-exams #admin-exams-root .ex2-q-card {
     border-radius: 16px;
     overflow: hidden;
     transition: border-color .2s;
-    animation: exStagger .3s ease both;
 }
 
 body.lux-route-exams #admin-exams-root .ex2-q-card:hover {
@@ -1360,18 +1260,6 @@ body.lux-route-exams #admin-exams-root .ex2-revision-note--spaced {
     margin-top: 12px;
 }
 
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-0 { animation-delay: 0s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-1 { animation-delay: 0.04s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-2 { animation-delay: 0.08s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-3 { animation-delay: 0.12s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-4 { animation-delay: 0.16s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-5 { animation-delay: 0.20s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-6 { animation-delay: 0.24s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-7 { animation-delay: 0.28s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-8 { animation-delay: 0.32s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-9 { animation-delay: 0.36s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-10 { animation-delay: 0.40s; }
-body.lux-route-exams #admin-exams-root .ex2-quiz-card--delay-11 { animation-delay: 0.44s; }
 
 body.lux-route-exams #admin-exams-root .ex2-quiz-card--static {
     cursor: default;
@@ -1506,7 +1394,6 @@ body.lux-route-exams #admin-exams-root .ex2-modal-overlay {
     background: rgba(3, 8, 20, 0.52);
     backdrop-filter: blur(var(--lux-transparency-blur, 18px));
     -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px));
-    animation: exFadeIn 0.2s ease;
 }
 
 body.lux-route-exams #admin-exams-root .ex2-modal {
@@ -1523,7 +1410,6 @@ body.lux-route-exams #admin-exams-root .ex2-modal {
     backdrop-filter: var(--lux-panel-blur-filter);
     -webkit-backdrop-filter: var(--lux-panel-blur-filter);
     background-clip: padding-box;
-    animation: exSlideIn 0.3s ease;
 }
 
 body.lux-route-exams #admin-exams-root .ex2-modal-head h3 {
@@ -1863,7 +1749,6 @@ body.lux-route-exams #admin-exams-root .ex2-summary-group-label {
 }
 
 body.lux-route-exams #admin-exams-root .ex2-builder-step-body.is-entering {
-    animation: exFadeIn 0.32s ease both;
 }
 
 

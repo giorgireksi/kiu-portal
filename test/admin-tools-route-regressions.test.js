@@ -10,8 +10,8 @@ function readSource(relativePath) {
 describe('admin tools route regressions.test', () => {
     it('bare shell: no luxury/surfaces paint sheets; flat bare CSS', () => {
         const html = readSource('admin-tools.html');
-        expect(html).toContain('lux-shell.css');
-        expect(html).toContain('assets/css/admin-tools.css?v=20260817-atoolssplit1');
+        expect(html).toContain('shared-lux-core.css');
+        expect(html).toContain('assets/css/admin-tools.css?v=20260818-atoolssplit2');
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).toMatch(/class="[^"]*lux-page-bare/);
         // Must not load the shared luxury paint sheet (looks like full design if present)
@@ -235,7 +235,7 @@ describe('admin tools route regressions.test', () => {
     it('admin-tools every-device layout stacks grids and subject rows on tablet/phone', () => {
         const html = readSource('admin-tools.html');
         const bare = readSource('assets/css/admin-tools.css');
-        expect(html).toContain('assets/css/admin-tools.css?v=20260817-atoolssplit1');
+        expect(html).toContain('assets/css/admin-tools.css?v=20260818-atoolssplit2');
         expect(bare).toMatch(/@media \(max-width: 1100px\)[\s\S]*?#lux-admin-tools-shell \.lux-admin-curriculum-grid/);
         expect(bare).toMatch(/@media \(max-width: 1100px\)[\s\S]*?#lux-admin-tools-shell \.admin-reg-program-layout/);
         expect(bare).toMatch(

@@ -6,6 +6,17 @@ const LOGIN_PENDING_ROLE_SWITCH_KEY = 'KIU_PENDING_ROLE_SWITCH_ROLE';
 const LOGIN_ACTIVE_SESSION_KEY = 'KIU_ACTIVE_SESSION_USER_ID';
 const LOGIN_ACTIVE_ROLE_IMPERSONATION_KEY = 'KIU_ACTIVE_ROLE_IMPERSONATION';
 const LOGIN_PORTAL_BACKEND_TIMEOUT_MS = 4000;
+let loginRequestInFlight = false;
+const LOGIN_SERVICE_WORKER_UPDATE = (() => {
+    try {
+        if (!('serviceWorker' in navigator) || !/^https?:$/i.test(window.location?.protocol || '')) {
+            return Promise.resolve(null);
+        }
+        return navigator.serviceWorker.register('/service-worker.js?v=20260819-fastboot2', { scope: '/' }).catch(() => null);
+    } catch (error) {
+        return Promise.resolve(null);
+    }
+})();
 
 function getKiuPortalBackendDefaultUrl() {
     try {
@@ -119,21 +130,37 @@ function getLoginRoleDefaultTarget(role = 'student') {
 }
 
 async function kiuPortalFetch(path, options = {}) {
+    await Promise.race([
+        LOGIN_SERVICE_WORKER_UPDATE,
+        new Promise((resolve) => setTimeout(resolve, 800))
+    ]);
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     const timeoutHandle = controller
         ? setTimeout(() => controller.abort(), LOGIN_PORTAL_BACKEND_TIMEOUT_MS)
         : null;
     try {
-        const response = await fetch(`${getKiuPortalBackendUrl()}${path}`, {
-            method: options.method || 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(options.headers || {})
-            },
-            body: options.body,
-            cache: 'no-store',
-            signal: controller ? controller.signal : undefined
-        });
+        let response = null;
+        let lastFetchError = null;
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+            try {
+                response = await fetch(`${getKiuPortalBackendUrl()}${path}`, {
+                    method: options.method || 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(options.headers || {})
+                    },
+                    body: options.body,
+                    cache: 'no-store',
+                    signal: controller ? controller.signal : undefined
+                });
+                if (response.ok || attempt === 1 || response.status < 500) break;
+            } catch (error) {
+                lastFetchError = error;
+                if (attempt === 1 || error?.name === 'AbortError') throw error;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        }
+        if (!response && lastFetchError) throw lastFetchError;
         let payload = null;
         try {
             payload = await response.json();
@@ -470,6 +497,7 @@ async function handleMicrosoftLogin() {
 }
 
 async function handleLogin() {
+    if (loginRequestInFlight) return;
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
     const runAuthLogin = typeof window.authLogin === 'function' ? window.authLogin : authLogin;
@@ -481,10 +509,16 @@ async function handleLogin() {
     const button = document.querySelector('#form-login .login-btn:last-of-type');
     if (button) {
         button.classList.add('is-loading');
-        button.innerHTML = '<i class="fas fa-spinner"></i> Signing in...';
+        button.innerHTML = 'Signing in...';
     }
 
-    const result = await runAuthLogin(email, password);
+    loginRequestInFlight = true;
+    let result;
+    try {
+        result = await runAuthLogin(email, password);
+    } finally {
+        loginRequestInFlight = false;
+    }
     if (result?.success) {
         if (button) button.innerHTML = '<i class="fas fa-check"></i> Success!';
         window.location.href = getLoginRedirectTarget(result.redirect || 'index.html');

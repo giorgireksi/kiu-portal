@@ -16,7 +16,10 @@ describe('service worker navigation retry regressions', () => {
         expect(worker).toContain("caches.match(request, { ignoreSearch: true })");
         expect(worker).toContain("caches.match('/index.html', { ignoreSearch: true })");
         expect(worker).toContain("const shellUrl = new URL('/social.html', request.url)");
-        expect(app).toContain("const PORTAL_SERVICE_WORKER_VERSION = '20260818-shellstage2'");
+        expect(worker).toContain('async function handleApiRequest(request)');
+        expect(worker).toContain('fetch(request.clone())');
+        expect(worker).toContain('A brief Caddy/container restart must not surface as an offline CSS/JS');
+        expect(app).toContain("const PORTAL_SERVICE_WORKER_VERSION = '20260819-fastboot2'");
         expect(app).toContain('service-worker.js?v=${PORTAL_SERVICE_WORKER_VERSION}');
     });
 });

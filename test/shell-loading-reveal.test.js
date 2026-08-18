@@ -13,8 +13,8 @@ describe('shared staged shell reveal', () => {
 
         expect(primer).toContain('window.__kiuShellLoadState');
         expect(primer).toContain('window.__kiuSetShellLoadState = setShellLoadState');
-        expect(primer).toContain('window.__kiuStartShellReveal');
-        expect(primer).toContain('revealDeadlineMs = 1400');
+        expect(primer).not.toContain('window.__kiuStartShellReveal');
+        expect(primer).not.toContain('revealDeadlineMs = 1400');
         expect(navigation).toContain('function startKiuShellReveal');
         expect(navigation).not.toContain('KIU_SHELL_REVEAL_TIMINGS');
         expect(navigation).toContain('window.__kiuStartShellReveal = startKiuShellReveal');
@@ -46,12 +46,11 @@ describe('shared staged shell reveal', () => {
             });
     });
 
-    it('uses only a short opacity fade for route content', () => {
+    it('does not animate route content during shell readiness', () => {
         const shellCss = readSource('assets/css/lux-shell.css');
 
-        expect(shellCss).toContain('@keyframes luxRouteContentFade');
-        expect(shellCss).toContain('.lux-route-content-fade');
-        expect(shellCss).toContain('animation: luxRouteContentFade 0.12s linear both');
+        expect(shellCss).not.toContain('@keyframes luxRouteContentFade');
+        expect(shellCss).not.toContain('.lux-route-content-fade');
         expect(shellCss).not.toContain('html.kiu-shell-revealing body :is(#lux-topbar, #lux-shell, #app-content, #mobile-bottom-nav, #mobile-action-sheet)');
     });
 

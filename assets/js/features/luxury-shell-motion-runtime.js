@@ -6,7 +6,7 @@
     window.__KIU_LUXURY_SHELL_MOTION_LOADED = true;
 
     const MOTION_CLASS = 'lux-shell-chrome-motion';
-    const HOVER_BUSY_MS = 280;
+    const HOVER_BUSY_MS = 160;
     /* Longest chrome motion is 420ms; anything still held after this is a lost
      * end* pairing, and holding it would freeze the render governor (and with it
      * every deferred transparency/blur refresh) for the rest of the session. */
@@ -19,7 +19,6 @@
     let bound = false;
     let hoverBusyUntil = 0;
     let hoverBusyTimer = null;
-    let lastHoverPulse = 0;
 
     function syncMotionClass() {
         const root = document.documentElement;
@@ -165,8 +164,20 @@
         }
     }
 
+    function shouldPulseForPointer(event) {
+        if (event.pointerType && event.pointerType !== 'mouse') return false;
+        try {
+            if (window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches) return false;
+        } catch (_e) {}
+        return true;
+    }
+
     function onShellChromePointerOver(event) {
-        if (event.pointerType && event.pointerType !== 'mouse') return;
+        if (!shouldPulseForPointer(event)) return;
+        // Sidebar rows only fade a local sheen; they do not lift or animate a
+        // canvas-backed chrome surface. Avoid waking the global render
+        // governor for every row-to-row hover transition.
+        if (event.target?.closest?.('.lux-nav-item')) return;
         const target = event.target?.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell, .home-hover-chip');
         if (!isShellChromeHoverTarget(target)) return;
         const related = event.relatedTarget;
@@ -174,24 +185,20 @@
         pulseShellHoverBusy();
     }
 
-    function onShellChromePointerMove(event) {
-        if (event.pointerType && event.pointerType !== 'mouse') return;
-        if (!isShellChromeHoverTarget(event.target)) return;
-        const now = performance.now();
-        if (now - lastHoverPulse < 48) return;
-        lastHoverPulse = now;
-        pulseShellHoverBusy();
+    function ensureLuxHoverGuardCss() {
+        if (document.querySelector('link[data-lux-hover-guard]')) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'assets/css/lux-hover-guard.css?v=20260819-hover1';
+        link.setAttribute('data-lux-hover-guard', '1');
+        (document.head || document.documentElement).appendChild(link);
     }
 
     function bindShellChromeMotion() {
         if (bound) return;
         bound = true;
-
-        // Sidebar open/close is CSS-only. Do not arm a global motion class,
-        // toggle backdrop filters, or refresh every glass surface afterward.
-        // Hover lifts only pulse the lightweight particle busy flag.
-        document.addEventListener('pointerover', onShellChromePointerOver, true);
-        document.addEventListener('pointermove', onShellChromePointerMove, { capture: true, passive: true });
+        ensureLuxHoverGuardCss();
+        document.addEventListener('pointerover', onShellChromePointerOver, { passive: true, capture: true });
     }
 
     window.beginShellChromeMotion = beginShellChromeMotion;

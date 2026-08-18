@@ -773,7 +773,7 @@ function renderLmsLiveSyncNotice(workspace = null) {
     if (workspace?.ui?.syncing) {
         return `
             <div class="lms-live-card home-hover-chip lms-live-sync-card is-syncing">
-                <div class="lms-live-label"><i class="fas fa-rotate fa-spin"></i> Syncing live quiz</div>
+                <div class="lms-live-label">Syncing live quiz</div>
             </div>
         `;
     }

@@ -1709,16 +1709,29 @@
             handleAction(actionEl.dataset.studentAction, actionEl);
         });
 
+        let __stuQueryRaf = 0;
+        let __stuPendingQuery = '';
+        let __stuPendingDroplist = '';
         document.addEventListener('input', (event) => {
             if (event.target.id === 'student-search' || event.target.id === 'staff-global-search') {
-                setFilter('query', event.target.value);
+                __stuPendingQuery = event.target.value;
+                if (__stuQueryRaf) cancelAnimationFrame(__stuQueryRaf);
+                __stuQueryRaf = requestAnimationFrame(() => {
+                    __stuQueryRaf = 0;
+                    setFilter('query', __stuPendingQuery);
+                });
                 return;
             }
             if (event.target.id === 'student-droplist-search') {
-                setFilter('droplistQuery', event.target.value);
-                if (typeof window.applyStudentDirectoryDroplistFieldVisibility === 'function') {
-                    window.applyStudentDirectoryDroplistFieldVisibility(event.target.value);
-                }
+                __stuPendingDroplist = event.target.value;
+                if (__stuQueryRaf) cancelAnimationFrame(__stuQueryRaf);
+                __stuQueryRaf = requestAnimationFrame(() => {
+                    __stuQueryRaf = 0;
+                    setFilter('droplistQuery', __stuPendingDroplist);
+                    if (typeof window.applyStudentDirectoryDroplistFieldVisibility === 'function') {
+                        window.applyStudentDirectoryDroplistFieldVisibility(__stuPendingDroplist);
+                    }
+                });
                 return;
             }
             if (event.target.id === 'student-filter-program') {
@@ -1881,7 +1894,7 @@
             }
         }
         // Mark this root after its first paint; the next render is then treated
-        // as an internal update and skips loading motion.
+        // as an internal update without a visual transition.
         container.__commandCenterHasRendered = true;
         if (typeof markPortalShellReady === 'function') {
             markPortalShellReady();

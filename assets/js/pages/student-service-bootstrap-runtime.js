@@ -158,8 +158,7 @@ function shouldDeferStudentServiceStudentHubUntilBootstrap(role, ui) {
 function renderStudentServiceBootstrapLoadingShell() {
     return `
         <div class="student-service-loading-state student-service-empty-state-large">
-            <i class="fas fa-spinner fa-spin student-service-loading-icon"></i>
-            Loading guidance and support topics...
+                        Loading guidance and support topics...
         </div>
     `;
 }

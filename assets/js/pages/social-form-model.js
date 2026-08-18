@@ -536,7 +536,7 @@ function filePreview(file) {
         if (src) {
             return `
                 <div class="social-neo-media">
-                    <img src="${escape(src)}" alt="${escape(text(file.name || 'Image'))}" data-social-file-key="${escape(storageKey)}">
+                    <img src="${escape(src)}" alt="${escape(text(file.name || 'Image'))}" data-social-file-key="${escape(storageKey)}" loading="lazy" decoding="async">
                 </div>
             `;
         }

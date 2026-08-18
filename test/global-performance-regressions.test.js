@@ -119,15 +119,9 @@ describe('global interaction performance guardrails', () => {
     expect(state).not.toContain("const nodes = Array.from(root.querySelectorAll('*')).filter(isScrollableSnapshotTarget);");
   });
 
-  it('filters assembly mutations and uses the weak-device polling interval consistently', () => {
-    const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-
-    expect(runtime).toContain('const assemblyMutationSelector = [');
-    expect(runtime).toContain('function hasRelevantAssemblyMutation(records, observerRoot)');
-    expect(runtime).toContain('new MutationObserver((records) => {');
-    expect(runtime).toContain('hasRelevantAssemblyMutation(records, observerRoot)');
-    expect(runtime).toContain('window.setTimeout(poll, assemblyPollMs)');
-    expect(runtime).not.toContain('window.setTimeout(poll, 32)');
+  it('does not ship the removed assembly loading engine', () => {
+    expect(readSource('assets/js/shared/lux-assembly-loading-runtime.js')).toBe('');
+    expect(readSource('service-worker.js')).not.toContain('lux-assembly-loading-runtime');
   });
 
   it('coalesces local portal persistence and keeps navigation flush durable', () => {
@@ -158,9 +152,9 @@ describe('global interaction performance guardrails', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
 
     expect(shell).toContain('z-index: 2147483647 !important;');
-    expect(shell).toContain('transparency is identical before and after hydration');
+    expect(shell).not.toContain('transparency is identical before and after hydration');
     expect(shell).not.toContain('#lux-shell-loading-underlay');
-    expect(shell).toContain('html.kiu-shell-loading #lux-topbar,\n  html.kiu-route-assembly-loading #lux-topbar { z-index: 1000 !important; }');
+    expect(shell).toContain('html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }');
     expect(luxury).toContain("shell.style.setProperty('z-index', '2147483647', 'important')");
     expect(luxury).not.toContain("shell.style.setProperty('background-image'");
     expect(luxury).toContain("topbar?.style.setProperty('z-index', '1000', 'important')");
@@ -218,13 +212,14 @@ describe('global interaction performance guardrails', () => {
     expect(navigation).toContain('schedulePortalShellReadyReveal,');
     expect(navigation).toContain('function scheduleRouteContentRender(renderFn) {');
     expect(navigation).toContain('scheduleRouteContentRender,');
-    expect(navigation).toContain('window.requestAnimationFrame(() => {\n            window.requestAnimationFrame(run);');
+    expect(navigation).toContain('Render the route immediately so');
     expect(navigation).not.toContain('const fallbackTimer = window.setTimeout(run, 48);');
     expect(navigation).not.toContain("body.classList.remove('kiu-shell-loading', 'lux-home-page');");
     expect(navigation).toMatch(/finally \{[\s\S]*?schedulePortalShellReadyReveal\(\);[\s\S]*?\}/);
     expect(navigation).toContain('function waitForPortalStartupDependencies()');
     expect(navigation).toContain("kiu:portal-runtime-ready");
     expect(navigation).not.toContain('portalStartupPollDelayMs');
+    expect(navigation).toContain('const dependencyByPage = {');
   });
 
   it('disposes particle WebGL when background animation is off', () => {

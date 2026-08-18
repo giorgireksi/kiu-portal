@@ -14,23 +14,17 @@
     <title>KIU - Portal</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B192C'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' font-weight='700' fill='white'%3EK%3C/text%3E%3C/svg%3E">
 
-    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822050">
+    <link rel="preload" as="style" href="assets/vendor/fontawesome/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css"></noscript>
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260725-frosted1">
-    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
-    <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260818-isolatedglass1">
-    <link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260818-navneutral1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260725-ssot1">
-    <link rel="stylesheet" href="assets/css/index-home-layout.css?v=20260806-studentboard11">
-    <link rel="stylesheet" href="assets/css/index-home-widgets.css?v=20260806-studentboard11">
+    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=e73cd04b">
+                        <link rel="stylesheet" href="assets/css/index-home-layout.css?v=20260806-studentboard11">
+    <link rel="stylesheet" href="assets/css/index-home-widgets.css?v=20260819-fastboot1">
     <link rel="stylesheet" href="assets/css/index-home-role.css?v=20260725-homefoucdedup1">
-    <link rel="stylesheet" href="assets/css/index-home-loading.css?v=20260810-homeassembly5">
-    <link rel="stylesheet" href="assets/css/home-assembly-prehide.css?v=20260810-homeassembly5">
     <!-- Mobile shell after home so polish wins by cascade (no layout !important). -->
     <script>
     (function loadIndexMobileShellCss() {
-        var coreHref = 'assets/css/mobile-shell-core.css?v=20260818-navneutral1';
+        var coreHref = 'assets/css/mobile-shell-core.css?v=20260819-sidebarperf2';
         var polishHref = 'assets/css/mobile-shell.css?v=20260724-chromeshare1';
         function injectOne(href, flag) {
             if (document.querySelector('link[' + flag + ']')) return;
@@ -41,6 +35,7 @@
             var link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = href;
+            link.fetchPriority = 'high';
             link.setAttribute(flag, '1');
             document.head.appendChild(link);
         }
@@ -71,10 +66,10 @@
         }
     })();
     </script>
-    <script src="assets/js/theme-primer.js?v=20260818-paletteprimer1"></script>
+    <script src="assets/js/theme-primer.js?v=20260819-fastboot1"></script>
 <script src="assets/js/app/portal-runtime-globals.js?v=20260818-runtimeglobals1"></script>
 </head>
-<body class="kiu-shell-loading lux-unified-shell lux-route-home lux-full-paint home-shell-assembly-prehide" data-faculty="ECON">
+<body class="lux-unified-shell lux-route-home lux-full-paint" data-faculty="ECON">
 <!-- Immediate shell chrome: paint the navigation surface before deferred route runtimes. -->
 <aside id="lux-shell" aria-label="Portal navigation" style="z-index:2147483647 !important;">
     <header class="lux-shell-head">
@@ -111,12 +106,12 @@
 
 <script defer src="assets/js/app/portal-api-stubs-runtime.js?v=20260720-w21stubs1"></script>
 <script defer src="assets/js/app/portal-compat-runtime.js?v=20260720-w20compat1"></script>
-<script defer src="assets/js/app/app.js?v=20260818-runtimeglobals1"></script>
+<script defer src="assets/js/app/app.js?v=20260819-fastboot2"></script>
 <script type="application/x-kiu-idle" data-kiu-idle-src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
 <script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
 <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260816-readonlycatalog1"></script>
 <script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
-<script defer src="assets/js/app/api.js?v=20260818-socialrouteguard1"></script>
+<script defer src="assets/js/app/api.js?v=20260819-fastboot2"></script>
 <script defer src="assets/js/app/auth.js?v=20260818-runtimeglobals1"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604822050"></script>
 <script defer src="assets/js/app/state-deleted-staff-runtime.js?v=20260720-w18"></script>
@@ -129,7 +124,7 @@
 <script defer src="assets/js/shared/faculty-schedule-runtime.js?v=20260720-facsched1"></script>
 <script defer src="assets/js/shared/faculty-messenger-runtime.js?v=20260720-w18"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260505-authglobals1"></script>
-<script defer src="assets/js/features/navigation.js?v=20260818-navneutral1"></script>
+<script defer src="assets/js/features/navigation.js?v=20260819-fastboot1"></script>
 <script defer src="assets/js/features/ui.js?v=20260725-ssot1"></script>
 <script defer src="assets/js/features/luxury-index-runtime.js?v=20260818-visualqueue1"></script>
 <script defer src="assets/js/features/luxury-palette-runtime.js?v=20260818-paletteprimer1"></script>
@@ -137,19 +132,17 @@
 <script defer src="assets/js/features/luxury-transparency-model-runtime.js?v=20260818-visualqueue1"></script>
 <script defer src="assets/js/features/luxury-index-home-shell-runtime.js?v=20260720-w18"></script>
 <script defer src="assets/js/features/luxury-index-sync-runtime.js?v=20260818-navneutral1"></script>
-<script defer src="assets/js/features/luxury-shell-motion-runtime.js?v=20260818-showhidefix1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260818-navneutral1"></script>
+<script defer src="assets/js/features/luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260819-sidebarclick3"></script>
 <script defer src="assets/js/features/luxury-shell-studio-runtime.js?v=20260719-luxstudio1"></script>
 <script defer src="assets/js/features/luxury-shell-picker-runtime.js?v=20260811-roleadmin1"></script>
 <script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260811-roleadmin1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260818-bootmarks1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260809-homeassembly3"></script>
 <script defer src="assets/js/features/home-dashboard-gesture-runtime.js?v=20260721-nodebug1"></script>
 <script defer src="assets/js/features/home-dashboard-widget-layout-runtime.js?v=20260809-homeassembly3"></script>
 <script defer src="assets/js/features/home-dashboard-widget-data-runtime.js?v=20260806-studentboard11"></script>
 <script defer src="assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2"></script>
-<script defer src="assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1"></script>
-<script defer src="assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9"></script>
 
 <script>
 (function loadIndexMobileShell() {

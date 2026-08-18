@@ -627,26 +627,6 @@ body {
   margin-top: 10px;
 }
 
-.ac-spinner {
-  width: 46px;
-  height: 46px;
-  margin: 0 auto 18px;
-  border: 4px solid rgba(148, 163, 184, 0.24);
-  border-top-color: var(--ac-blue);
-  border-radius: 50%;
-  animation: ac-spin 1s linear infinite;
-}
-
-@keyframes ac-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (max-width: 980px) {
   .ac-page--settings .hero,
   .ac-page--settings .launch-grid,
@@ -682,7 +662,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ac-spinner,
   .ac-btn,
   .ac-page--settings .btn {
     animation: none;

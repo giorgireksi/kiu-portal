@@ -447,10 +447,7 @@
     }
 
     function notifyHomeNewsMotion() {
-        const onHome = document.body?.classList?.contains('lux-route-home')
-            || (typeof getActivePageId === 'function' && getActivePageId() === 'home');
-        if (!onHome || typeof window.__kiuReplayHomeLoadingMotion !== 'function') return;
-        window.__kiuReplayHomeLoadingMotion('news', ['[data-news-home-strip="1"]']);
+        // The strip mounts directly without a startup transition.
     }
 
     function mountNewsHomeStrip(host = document.getElementById('lux-home-shell')) {

@@ -17,7 +17,7 @@ describe('admin tools structured form warmglass regressions', () => {
         const html = readSource('admin-tools.html');
 
         expectRetiredCss('admin-tools-luxury.css');
-        expect(html).toContain('assets/css/admin-tools.css?v=20260817-atoolssplit1');
+        expect(html).toContain('assets/css/admin-tools.css?v=20260818-atoolssplit2');
         expect(html).not.toContain('admin-tools-luxury.css');
     });
 

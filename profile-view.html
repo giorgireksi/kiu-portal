@@ -5,20 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>KIU - Profile</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822072">
+    <link rel="preload" as="style" href="assets/vendor/fontawesome/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css"></noscript>
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260725-frosted1">
-    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260726-luxtab2">
-    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260725-legacypurge1" media="print" onload="this.onload=null;this.media='all'">
-    <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260818-isolatedglass1">
-<link rel="stylesheet" href="assets/css/lux-fouc-ht.css?v=20260818-navneutral1">
-    <link rel="stylesheet" href="assets/css/route-bare/core/lux-page-bare-lite.css?v=20260725-hostwave1" media="print" onload="this.onload=null;this.media='all'">
-    <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260818-navneutral1">
-    <script src="assets/js/theme-primer.js?v=20260818-paletteprimer1"></script>
+    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=e73cd04b">
+            <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260725-legacypurge1" media="print" onload="this.onload=null;this.media='all'">
+        <link rel="stylesheet" href="assets/css/route-bare/core/lux-page-bare-lite.css?v=20260725-hostwave1" fetchpriority="high" media="print" onload="this.onload=null;this.media='all'">
+        <script src="assets/js/theme-primer.js?v=20260819-fastboot1"></script>
 <script src="assets/js/app/portal-runtime-globals.js?v=20260818-runtimeglobals1"></script>
 </head>
-<body class="kiu-shell-loading lux-nonhome-page lux-route-profile-view lux-unified-shell lux-page-bare lux-full-paint">
+<body class="lux-nonhome-page lux-route-profile-view lux-unified-shell lux-page-bare lux-full-paint">
 <!-- Immediate shell chrome: paint the navigation surface before deferred route runtimes. -->
 <aside id="lux-shell" aria-label="Portal navigation" style="z-index:2147483647 !important;">
     <header class="lux-shell-head">
@@ -45,7 +41,6 @@
 <main id="app-content">
     <div id="profile-view-root" class="lux-page-shell" data-lux-layout-only="1">
         <div class="pv-loading-state">
-            <i class="fas fa-spinner fa-spin pv-loading-state-icon"></i>
             Loading profile...
         </div>
     </div>
@@ -136,10 +131,10 @@
 
 <script defer src="assets/js/app/portal-api-stubs-runtime.js?v=20260720-w21stubs1"></script>
 <script defer src="assets/js/app/portal-compat-runtime.js?v=20260720-w20compat1"></script>
-<script src="assets/js/app/app.js?v=20260818-runtimeglobals1"></script>
+<script src="assets/js/app/app.js?v=20260819-fastboot2"></script>
 <script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
 <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260816-readonlycatalog1"></script>
-<script defer src="assets/js/app/api.js?v=20260818-socialrouteguard1"></script>
+<script defer src="assets/js/app/api.js?v=20260819-fastboot2"></script>
 <script type="application/x-kiu-idle" data-kiu-idle-src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
 <script src="assets/js/app/auth.js?v=20260818-runtimeglobals1"></script>
 <script src="assets/js/data/initial-state.js?v=1776604822072"></script>
@@ -150,7 +145,7 @@
 <script src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
 <script src="assets/js/shared/utilities.js?v=20260818-redflashfix1"></script>
 <script defer src="assets/js/shared/lux-transparency.js?v=20260818-visualqueue1"></script>
-<script src="assets/js/features/navigation.js?v=20260818-navneutral1"></script>
+<script src="assets/js/features/navigation.js?v=20260819-fastboot1"></script>
 <script src="assets/js/features/ui.js?v=20260725-ssot1"></script>
 <script src="assets/js/pages/profile-view-admin-actions.js?v=20260517-profileviewadmin1"></script>
 <script src="assets/js/shared/student-academic-helpers.js?v=20260705-student-academic2"></script>
@@ -162,12 +157,12 @@
 <script defer src="assets/js/features/luxury-atmosphere-runtime.js?v=20260723-gpuperf4p"></script>
 <script src="assets/js/features/luxury-transparency-model-runtime.js?v=20260818-visualqueue1"></script>
 <script defer src="assets/js/features/luxury-index-sync-runtime.js?v=20260818-navneutral1"></script>
-<script src="assets/js/features/luxury-shell-motion-runtime.js?v=20260818-showhidefix1"></script>
-<script src="assets/js/features/index-luxury.js?v=20260818-navneutral1"></script>
+<script src="assets/js/features/luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1"></script>
+<script src="assets/js/features/index-luxury.js?v=20260819-sidebarclick3"></script>
 <script defer src="assets/js/features/luxury-shell-studio-runtime.js?v=20260719-luxstudio1"></script>
 <script defer src="assets/js/features/luxury-shell-picker-runtime.js?v=20260811-roleadmin1"></script>
 <script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260811-roleadmin1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260818-bootmarks1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
 <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">

@@ -1157,7 +1157,26 @@ function saveAdminRegStructures() {
 
 function selectFreeModule(moduleId) {
     adminRegUiState.selectedFreeModule = moduleId;
-    rerenderAdminRegistrationModulesPreservingScroll('free');
+    const container = document.getElementById('admin-reg-content-container');
+    const selectedOption = container
+        ? Array.from(container.querySelectorAll('[data-admin-reg-select-module]'))
+            .find((input) => input.value === String(moduleId || ''))
+        : null;
+    if (!selectedOption) {
+        rerenderAdminRegistrationModulesPreservingScroll('free');
+        return;
+    }
+
+    // Keep the existing module list and update only the selected row plus pane.
+    container.querySelectorAll('[data-admin-reg-select-module]').forEach((input) => {
+        const active = input === selectedOption;
+        input.checked = active;
+        input.closest('.admin-reg-program-option')?.classList.toggle('is-active', active);
+    });
+    renderFreeModulePane();
+    if (typeof refreshAdminRegistrationCmsPresentation === 'function') {
+        refreshAdminRegistrationCmsPresentation();
+    }
 }
 
 function renderFreeModulePane() {

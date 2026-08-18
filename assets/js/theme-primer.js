@@ -23,28 +23,9 @@
     window.__kiuMarkPortalBootPhase = window.__kiuMarkPortalBootPhase || markBootPhase;
     markBootPhase('primer-start');
 
-    // Assembly loading is readiness-gated but intentionally motion-free by default.
-    // Set this to false before the primer/shared runtime loads to restore legacy motion.
-    window.__KIU_INSTANT_ASSEMBLY_LOADING = window.__KIU_INSTANT_ASSEMBLY_LOADING !== false;
-
+    // Startup motion has been removed. Content is painted and revealed directly;
+    // data-dependent states remain owned by their routes.
     var root = document.documentElement;
-    var instantLoadingEnabled = window.__KIU_INSTANT_ASSEMBLY_LOADING !== false;
-    if (instantLoadingEnabled) {
-        root.classList.add('kiu-instant-loading');
-        var instantLoadingStyle = document.createElement('style');
-        instantLoadingStyle.id = 'kiu-instant-loading-style';
-        instantLoadingStyle.textContent = `
-            html.kiu-instant-loading .fa-spin,
-            html.kiu-instant-loading [class*="loading"],
-            html.kiu-instant-loading [class*="loading"] *,
-            html.kiu-instant-loading [class*="skeleton"],
-            html.kiu-instant-loading [class*="skeleton"] * {
-                animation: none !important;
-                animation-delay: 0s !important;
-            }
-        `;
-        (document.head || root).appendChild(instantLoadingStyle);
-    }
     // Localization is an enhancement, not a prerequisite for rendering. The
     // route pages are authored in English, so provide cheap fallbacks while
     // the large repair/translation table waits for idle time.
@@ -298,14 +279,6 @@
             'opacity:0!important;' +
             'pointer-events:none!important;' +
         '}' +
-        // Home/Social have an additional prehide class before their route
-        // assembly runtime mounts staging classes. Their authored skeleton is
-        // safe to paint while the rest of the route remains non-interactive.
-        'html.kiu-shell-loading body.lux-route-home.home-shell-assembly-prehide #lux-home-shell > *,' +
-        'html.kiu-shell-loading body.lux-route-social.social-center-assembly-prehide #social-neo-center-region > *{' +
-            'visibility:visible!important;' +
-            'opacity:1!important;' +
-        '}' +
         // Paint the stable chrome above the loading backdrop as soon as it exists.
         'html.kiu-shell-loading body.kiu-shell-loading #lux-topbar,' +
         'html.kiu-shell-loading body.kiu-shell-loading:not(.lux-sidebar-collapsed) #lux-shell{' +
@@ -334,32 +307,6 @@
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #app-content,' +
         'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-topbar{' +
             'opacity:1;' +
-            'transition:opacity .12s ease-out;' +
-        '}' +
-        // Instant mode removes loading motion, not readiness gating. Keep the
-        // authored route skeleton visible while data-dependent content settles.
-        'html.kiu-instant-loading body.kiu-shell-loading::after{' +
-            'content:"Loading workspace";' +
-            'position:fixed;' +
-            'left:50%;' +
-            'bottom:20px;' +
-            'z-index:2147483001;' +
-            'transform:translateX(-50%);' +
-            'padding:7px 12px;' +
-            'border:1px solid color-mix(in srgb,var(--lux-accent,#26a69a) 35%,transparent);' +
-            'border-radius:999px;' +
-            'background:color-mix(in srgb,var(--lux-panel-surface,#0b1520) 88%,transparent);' +
-            'color:var(--lux-text-muted,rgba(248,250,252,.72));' +
-            'font-size:10px;' +
-            'letter-spacing:.12em;' +
-            'text-transform:uppercase;' +
-            'pointer-events:none;' +
-            'animation:none!important;' +
-        '}' +
-        'html.kiu-instant-loading[data-kiu-load-phase="degraded"]::after{' +
-            'content:none!important;' +
-            'display:none!important;' +
-            'animation:none!important;' +
         '}'
     );
 
@@ -834,7 +781,7 @@
         var blurMult = glassBlurQuality === 'auto'
             ? (adaptiveTier === 'efficient' ? 0.25 : adaptiveTier === 'high' ? 1 : 0.5)
             : glassBlurQuality === 'balanced' ? 0.5 : glassBlurQuality === 'performance' ? 0.25 : 1;
-        var blurAmount = transInt === 0 ? 0 : (2 + fillRatio * 22) * blurMult;
+        var blurAmount = transInt === 0 ? 0 : Math.min((2 + fillRatio * 22) * blurMult, 14);
         var saturateAmount = transInt === 0 ? 100 : 100 + (fillRatio * 45);
         var blurPx = blurAmount.toFixed(3) + 'px';
         var satPct = saturateAmount.toFixed(1) + '%';
@@ -1000,65 +947,23 @@
             if (earlyBodyBackground) b.style.setProperty('background', earlyBodyBackground);
         }
 
-        // Safety net: reveal after a short deadline if deferred scripts fail.
-        // Normal routes call markPortalShellReady() after route content renders.
-        var revealPollMs = 50;
-        // Never leave every route behind the full-screen veil for seconds.
-        // Route-specific readiness still wins; this is only the fail-open cap.
-        var revealDeadlineMs = 1400;
-        var revealElapsedMs = 0;
-        function clearStaleRouteLoadingState() {
-            if (!document.body) return;
-            Array.from(document.body.classList).forEach((className) => {
-                if (/(?:^|-)(?:assembly-(?:active|prehide)|shell-assembly-prehide)$/.test(className)) {
-                    document.body.classList.remove(className);
-                }
-            });
-            var appContent = document.getElementById('app-content');
-            if (!appContent) return;
-            appContent.querySelectorAll('*').forEach((node) => {
-                Array.from(node.classList || []).forEach((className) => {
-                    if (/(?:^|-)(?:assembly-(?:target|outer|inner|structure|staging))$/.test(className)
-                        || className === 'is-flight') {
-                        node.classList.remove(className);
-                    }
-                });
-            });
+        // There is no startup veil or delayed reveal anymore. Keep the shell
+        // lifecycle fields for compatibility, but mark the authored route
+        // visible and interactive immediately after body state is applied.
+        window.__kiuSocialShellRevealAllowed = true;
+        window.__kiuHomeShellRevealAllowed = true;
+        setShellLoadState({ phase: 'ready', stage: 'ready', degraded: false });
+        root.classList.add('kiu-shell-ready');
+        root.classList.remove('kiu-shell-loading');
+        b.classList.add('kiu-shell-ready');
+        b.classList.remove('kiu-shell-loading');
+        b.removeAttribute('aria-busy');
+        var appContent = document.getElementById('app-content');
+        if (appContent) appContent.style.opacity = '1';
+        window.__kiuShellRevealComplete = true;
+        if (typeof window.markPortalShellReady === 'function') {
+            try { window.markPortalShellReady({ immediate: true }); } catch (_e) {}
         }
-        function forceRevealPage() {
-            markBootPhase('shell-degraded');
-            clearStaleRouteLoadingState();
-            window.__kiuSocialShellRevealAllowed = true;
-            window.__kiuHomeShellRevealAllowed = true;
-            if (typeof window.__kiuStartShellReveal === 'function') {
-                try { window.__kiuStartShellReveal({ degraded: true }); } catch (_e) {}
-            }
-            setShellLoadState({ phase: 'degraded', stage: 'ready', degraded: true });
-            root.classList.add('kiu-shell-ready');
-            root.classList.remove('kiu-shell-loading');
-            if (document.body) {
-                document.body.classList.add('kiu-shell-ready');
-                document.body.classList.remove('kiu-shell-loading', 'social-center-assembly-prehide', 'home-shell-assembly-prehide');
-                document.body.removeAttribute('aria-busy');
-            }
-            var appContent = document.getElementById('app-content');
-            if (appContent) appContent.style.opacity = '1';
-            if (typeof window.markPortalShellReady === 'function') {
-                try { window.markPortalShellReady(); } catch (_e) {}
-            }
-        }
-        function tryRevealPageEarly() {
-            if (shellLoadState.phase !== 'loading') return;
-            revealElapsedMs += revealPollMs;
-            var isSocial = b.classList.contains('lux-route-social');
-            var limit = isSocial ? 1600 : revealDeadlineMs;
-            if (revealElapsedMs >= limit) {
-                forceRevealPage();
-                return;
-            }
-            setTimeout(tryRevealPageEarly, revealPollMs);
-        }
-        setTimeout(tryRevealPageEarly, revealPollMs);
 
         if (!b.classList.contains('lux-route-home') && !shouldSkipFlatSurfaceOverrides()) {
             setTimeout(applyFlatSurfaceOverrides, 0);

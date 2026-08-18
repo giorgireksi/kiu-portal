@@ -141,6 +141,8 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     opacity: 1;
     pointer-events: auto !important;
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    /* The transition remains transform-based, but the resting drawer does
+       not reserve a compositor layer until the browser needs it. */
     border-radius: 0 18px 18px 0;
     border: 1px solid var(--lux-shell-sidebar-border, rgba(255, 255, 255, 0.12));
     border-left: none;
@@ -151,6 +153,9 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     backdrop-filter: var(--lux-shell-sidebar-blur, blur(20px) saturate(160%)) !important;
     -webkit-backdrop-filter: var(--lux-shell-sidebar-blur, blur(20px) saturate(160%)) !important;
     overflow-y: auto;
+  }
+  html.lux-sidebar-transitioning #lux-shell {
+    will-change: transform, opacity;
   }
   body.lux-sidebar-collapsed #lux-shell {
     transform: translateX(-100%);

@@ -54,31 +54,31 @@ describe('theme primer role routing', () => {
     expect(guard?.textContent).toContain('visibility:hidden!important;');
   });
 
-  it('publishes a loading state before the shared reveal coordinator loads', () => {
+  it('publishes an immediate ready state without a startup animation', () => {
     const dom = bootPrimer('http://localhost/index.html#home');
     const root = dom.window.document.documentElement;
     const body = dom.window.document.body;
 
     expect(dom.window.__kiuShellLoadState).toMatchObject({
-      phase: 'loading',
-      stage: 'background',
+      phase: 'ready',
+      stage: 'ready',
       degraded: false
     });
-    expect(root.dataset.kiuLoadPhase).toBe('loading');
-    expect(root.dataset.kiuLoadStage).toBe('background');
-    expect(body.dataset.kiuLoadPhase).toBe('loading');
-    expect(body.dataset.kiuLoadStage).toBe('background');
-    expect(body.getAttribute('aria-busy')).toBe('true');
+    expect(root.dataset.kiuLoadPhase).toBe('ready');
+    expect(root.dataset.kiuLoadStage).toBe('ready');
+    expect(body.dataset.kiuLoadPhase).toBe('ready');
+    expect(body.dataset.kiuLoadStage).toBe('ready');
+    expect(body.getAttribute('aria-busy')).toBe(null);
     expect(typeof dom.window.__kiuSetShellLoadState).toBe('function');
   });
 
   it('loads the primer synchronously before body content on unified entry routes', () => {
     for (const route of ['index.html', 'social.html', 'exam-portal.html']) {
       const html = readSource(route);
-      expect(html.indexOf('theme-primer.js?v=20260818-paletteprimer1')).toBeGreaterThanOrEqual(0);
-      expect(html.indexOf('theme-primer.js?v=20260818-paletteprimer1')).toBeLessThan(html.indexOf('<body'));
+      expect(html.indexOf('theme-primer.js?v=20260819-fastboot1')).toBeGreaterThanOrEqual(0);
+      expect(html.indexOf('theme-primer.js?v=20260819-fastboot1')).toBeLessThan(html.indexOf('<body'));
     }
-    expect(readSource('exam-portal.html')).toMatch(
+    expect(readSource('exam-portal.html')).not.toMatch(
       /<body[^>]*class="[^"]*kiu-shell-loading/
     );
   });

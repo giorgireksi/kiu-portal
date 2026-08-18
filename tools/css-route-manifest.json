@@ -103,10 +103,7 @@
       "dedicatedCss": [
         "assets/css/index-home-layout.css",
         "assets/css/index-home-widgets.css",
-        "assets/css/index-home-role.css",
-        "assets/css/index-home-loading.css",
-        "assets/css/home-assembly-prehide.css",
-        "assets/css/lux-layout-primitives.css"
+        "assets/css/index-home-role.css"
       ],
       "mobileShell": "index-shared",
       "stack": "index"
@@ -114,7 +111,6 @@
     "library.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-layout-primitives.css",
         "assets/css/route-bare/library/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",
@@ -228,7 +224,6 @@
     "student-service.html": {
       "category": "standard-shell",
       "dedicatedCss": [
-        "assets/css/lux-layout-primitives.css",
         "assets/css/route-bare/student-service/lux-page-bare-lite.css"
       ],
       "mobileShell": "shared-standalone",

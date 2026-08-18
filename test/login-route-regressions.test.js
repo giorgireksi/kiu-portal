@@ -33,7 +33,7 @@ describe('login route regressions', () => {
         expect(html).not.toContain('assets/js/app/state.js');
         expect(html).not.toContain('assets/js/shared/faculty.js');
         expect(html).toContain('assets/css/login-route.css');
-        expect(html).toContain('assets/js/pages/login-runtime.js');
+        expect(html).toContain('assets/js/pages/login-runtime.js?v=20260819-fastboot3');
         expect(html).toContain('class="login-page lux-full-paint palette-obsidian-amber"');
         expect(html).not.toContain('onclick=');
         expect(html).toContain('data-login-tab="login"');
@@ -50,6 +50,10 @@ describe('login route regressions', () => {
         expect(runtimeSource).toContain('async function beginMicrosoftPortalLogin(returnTo = window.location.href) {');
         expect(runtimeSource).toContain('async function completeMicrosoftPortalLoginFromUrl() {');
         expect(runtimeSource).toContain('async function authLogin(email, password) {');
+        expect(runtimeSource).toContain('let loginRequestInFlight = false;');
+        expect(runtimeSource).toContain("navigator.serviceWorker.register('/service-worker.js?v=20260819-fastboot2'");
+        expect(runtimeSource).toContain('for (let attempt = 0; attempt < 2; attempt += 1) {');
+        expect(runtimeSource).toContain('if (loginRequestInFlight) return;');
         expect(runtimeSource).toContain('async function authActivate(id, activationToken, newPassword) {');
         expect(runtimeSource).toContain('const defaultTarget = getLoginRoleDefaultTarget(microsoftResult.account?.role || \'student\');');
         expect(runtimeSource).toContain('const existingSession = await restoreExistingPortalSession();');

@@ -15,11 +15,13 @@ describe('service worker offline API regressions', () => {
         expect(source).not.toContain('refresh in');
         expect(source).not.toContain('fetch(request)\n          .then((networkResponse)');
         expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*lux-page-bare-lite\.css/);
+        expect(source).toContain("/assets/css/shared-lux-core.css?v=e73cd04b");
+        expect(source).toContain("/assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3");
         expect(source).not.toContain("'/assets/css/lux-page-bare-lite.css");
         expect(source).not.toContain('"/assets/css/lux-page-bare-lite.css');
-        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2'/);
+        expect(source).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v20260819-fastboot2'/);
         expect(source).toContain('isSocialStandaloneNavigation');
-        expect(source).toContain("new Request(request, { cache: cacheMode })");
+        expect(source).toContain('const buildNavigationRequest = (cacheMode) => new Request(request, {');
     });
 
     it('returns an explicit offline API response instead of cached shell HTML for /api/ failures', () => {
@@ -28,7 +30,8 @@ describe('service worker offline API regressions', () => {
         expect(source).toContain('function buildOfflineApiResponse(request) {');
         expect(source).toContain('return new Response(JSON.stringify(payload), {');
         expect(source).toContain("code: 'offline'");
-        expect(source).toContain("fetch(request).catch(() => buildOfflineApiResponse(request))");
+        expect(source).toContain('async function handleApiRequest(request)');
+        expect(source).toContain('return buildOfflineApiResponse(request);');
         expect(source).not.toContain("fetch(request).catch(() => caches.match('/index.html'))");
     });
 

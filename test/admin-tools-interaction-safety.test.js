@@ -30,6 +30,20 @@ describe('admin tools interaction safety', () => {
         expect(source).toContain("tabRouteTarget === tabTarget");
     });
 
+    it('updates registration panes incrementally and scopes expensive runtime work', () => {
+        const cms = readSource('assets/js/pages/admin-registration-cms-runtime.js');
+        const registration = readSource('assets/js/pages/admin-registration.js');
+        const visualRuntime = readSource('assets/js/features/luxury-index-runtime.js');
+        const state = readSource('assets/js/app/state.js');
+
+        expect(cms).toContain('The module list is unchanged');
+        expect(registration).toContain('Keep the existing module list and update only the selected row plus pane.');
+        expect(visualRuntime).toContain('const observerRoot = document.body.classList.contains(\'lux-route-admin-tools\')');
+        expect(visualRuntime).toContain('adminToolsRoot && !adminToolsRoot.contains(node)');
+        expect(state).toContain('adminRegistrationPendingScrollSnapshot');
+        expect(state).toContain('adminRegistrationScrollRestoreFrame');
+    });
+
     it('keeps admin tools shell chrome from caching blank nav or repainting alignment endlessly', () => {
         const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
         const alignment = readSource('assets/js/pages/admin-tools-index-alignment.js');

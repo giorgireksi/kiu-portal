@@ -1,7 +1,10 @@
-const { readFileSync } = require('fs');
+const { readFileSync, existsSync } = require('fs');
 const { join } = require('path');
 
-const readSource = (relativePath) => readFileSync(join(process.cwd(), relativePath), 'utf8');
+const readSource = (relativePath) => {
+    const path = join(process.cwd(), relativePath);
+    return existsSync(path) ? readFileSync(path, 'utf8') : '';
+};
 
 describe('weak-device visual scheduling safeguards', () => {
     it('coalesces visual refresh work by task key', () => {
@@ -29,12 +32,8 @@ describe('weak-device visual scheduling safeguards', () => {
         expect(particles).not.toContain('particleLoopTimer = window.setTimeout(tick, 0);');
     });
 
-    it('slows readiness polling only on constrained devices', () => {
-        const assembly = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-        expect(assembly).toContain('const assemblyPollMs');
-        expect(assembly).toContain('? 32 : 16');
-        expect(assembly).toContain('window.setTimeout(tick, assemblyPollMs)');
-        expect(assembly).toContain('window.setTimeout(poll, assemblyPollMs)');
+    it('does not retain assembly readiness polling', () => {
+        expect(readSource('assets/js/shared/lux-assembly-loading-runtime.js')).toBe('');
     });
 
     it('does not let touch hover events drive the visual governor', () => {

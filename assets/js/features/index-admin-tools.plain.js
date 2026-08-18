@@ -131,6 +131,19 @@ function ensureAdminToolsPage() {
         const shell = ensureAdminToolsPage();
         if (!shell) return;
         if (!canRenderLuxuryAdminToolsWorkspace() && !shell.dataset.rendered) return;
+        const renderSignature = [
+            getAdminToolsProgramFaculty(),
+            typeof adminRegActiveTab !== 'undefined' ? String(adminRegActiveTab || 'prog') : 'prog',
+            String((typeof KIU_STATE !== 'undefined' && KIU_STATE?.meta?.registrationCmsRevision) || 0)
+        ].join('|');
+        let hasPendingFocus = false;
+        try { hasPendingFocus = Boolean(localStorage.getItem('KIU_ADMIN_TOOLS_FOCUS')); } catch (_error) {}
+        if (shell.dataset.rendered === '1'
+            && shell.dataset.workspaceReady === '1'
+            && shell.dataset.renderSignature === renderSignature
+            && !hasPendingFocus) {
+            return;
+        }
         // STABILITY FIX: Relaxed the missingCriticalWorkspace check. 
         // Wiping the entire shell.innerHTML leads to severe flickering and event handler loss.
         // Individual components now handle their own missing containers gracefully.
@@ -138,6 +151,7 @@ function ensureAdminToolsPage() {
         if (shell.dataset.rendered && missingCriticalWorkspace) {
             console.warn('[Luxury] Admin tools container missing, forcing re-render.');
             shell.dataset.rendered = '';
+            shell.dataset.renderSignature = '';
         }
 
 
@@ -434,6 +448,7 @@ function ensureAdminToolsPage() {
             shell.dataset.workspaceReady = '1';
             shell.dataset.workspaceFaculty = currentFaculty;
             shell.dataset.cmsRevision = cmsRevision;
+            shell.dataset.renderSignature = renderSignature;
         };
         const registrationContainer = document.getElementById('admin-reg-content-container');
         const curriculumWorkspaceRoot = document.getElementById('curriculum-library-workspace-root');
@@ -448,6 +463,7 @@ function ensureAdminToolsPage() {
 
         if (!shouldRefreshRegistrationWorkspace) {
             shell.dataset.workspaceFaculty = currentFaculty;
+            shell.dataset.renderSignature = renderSignature;
         } else if (typeof renderCurriculumTable === 'function' && typeof bootAdminRegistrationCms === 'function') {
             refreshRegistrationWorkspace();
         } else if (typeof ensurePortalRegistrationRuntimeLoaded === 'function') {

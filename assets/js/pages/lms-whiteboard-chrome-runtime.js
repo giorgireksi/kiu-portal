@@ -531,8 +531,8 @@ function renderLmsWhiteboardStatusPills(workspace = {}, canManage = false, canEd
             pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-eye"></i> View only</span>');
         }
     }
-    if (workspace.ui?.loadingFromBackend) pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-spinner fa-spin"></i> Loading</span>');
-    else if (workspace.ui?.syncing) pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-sync fa-spin"></i> Syncing</span>');
+    if (workspace.ui?.loadingFromBackend) pills.push('<span class="lms-live-pill home-hover-chip">Loading</span>');
+    else if (workspace.ui?.syncing) pills.push('<span class="lms-live-pill home-hover-chip">Syncing</span>');
     else if (workspace.ui?.dirty) pills.push('<span class="lms-live-pill home-hover-chip is-warn"><i class="fas fa-clock"></i> Unsaved changes</span>');
     else if (workspace.ui?.syncError) pills.push('<span class="lms-live-pill home-hover-chip is-danger"><i class="fas fa-triangle-exclamation"></i> Sync issue</span>');
     else pills.push('<span class="lms-live-pill home-hover-chip"><i class="fas fa-check"></i> Synced</span>');

@@ -16,7 +16,7 @@ describe('LMS interaction flicker regressions', () => {
         expect(runtime).toContain('!lmsInteractionMarkupMatches(railHead, nextRailHeadMarkup)');
         expect(runtime).toContain('!lmsInteractionMarkupMatches(composeRail, composeMarkup)');
         expect(runtime).toContain('!lmsInteractionMarkupMatches(thread, nextThreadMarkup)');
-        expect(runtime).toContain('kiu-lms-assembly-target');
+        expect(runtime).not.toContain('kiu-lms-assembly-target');
         expect(runtime).not.toContain("['invite', 'user-plus', 'Invite']");
         expect(runtime).not.toContain("['settings', 'sliders', 'Settings']");
     });

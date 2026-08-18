@@ -1,0 +1,44 @@
+/* lux-hover-guard.css — global touch / weak-device guard. Loaded last via JS injection.
+ * Ensures no :hover lift/shadow paints on coarse pointers, even for route-bare ungated rules.
+ * Pure override — visuals identical on fine pointer, zero hover cost on touch. */
+@media (hover: none), (pointer: coarse) {
+  .home-hover-chip:hover,
+  .lux-soft-chrome:hover,
+  .lux-card:hover,
+  .portal-msg-chip:hover,
+  .portal-msg-chat-item:hover,
+  .portal-msg-card:hover,
+  .portal-msg-ghost-btn:hover,
+  .portal-msg-favorite-btn:hover,
+  .portal-msg-remove-btn:hover,
+  .social-neo-chat-item:hover,
+  .social-neo-btn:hover,
+  .social-neo-composer-cta:hover,
+  .staff-hub-builder-type.home-hover-chip:hover,
+  .students-hub-builder-type.home-hover-chip:hover,
+  [class*="social-neo-"]:hover,
+  [class*="social-project-"]:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .home-hover-chip:hover::after,
+  .lux-soft-chrome:hover::after,
+  .portal-msg-chip:hover::after {
+    opacity: 0 !important;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .home-hover-chip,
+  .portal-msg-chip,
+  .portal-msg-chat-item,
+  .portal-msg-card,
+  .social-neo-chat-item,
+  .staff-hub-builder-type.home-hover-chip {
+    will-change: transform;
+  }
+  .home-hover-chip:not(:hover):not(:active):not(.is-active),
+  .portal-msg-chip:not(:hover):not(:active),
+  .social-neo-chat-item:not(:hover):not(:active) {
+    will-change: auto;
+  }
+}

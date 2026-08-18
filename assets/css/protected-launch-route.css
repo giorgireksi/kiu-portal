@@ -12,7 +12,6 @@
   --launch-progress-track: rgba(255, 255, 255, 0.08);
   --launch-progress-fill: linear-gradient(90deg, rgba(var(--lux-accent-rgb, 212, 173, 111), 0.25), rgba(var(--lux-accent-rgb, 212, 173, 111), 0.88));
   --launch-btn-transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-  --launch-progress-animation: pulseProgress 1.15s ease-in-out infinite alternate;
 }
 * { box-sizing: border-box; }
 body {
@@ -113,16 +112,11 @@ body {
   width: 35%;
   border-radius: inherit;
   background: var(--launch-progress-fill);
-  animation: var(--launch-progress-animation);
   transform-origin: left center;
 }
 .launch-progress[data-launch-tone="success"] > span { background: linear-gradient(90deg, rgba(48, 212, 154, 0.32), rgba(48, 212, 154, 0.92)); }
 .launch-progress[data-launch-tone="warn"] > span { background: linear-gradient(90deg, rgba(255, 211, 109, 0.28), rgba(255, 211, 109, 0.88)); }
 .launch-progress[data-launch-tone="danger"] > span { background: linear-gradient(90deg, rgba(255, 143, 143, 0.28), rgba(255, 143, 143, 0.84)); }
-@keyframes pulseProgress {
-  from { transform: scaleX(0.48); opacity: 0.56; }
-  to { transform: scaleX(1); opacity: 1; }
-}
 .launch-meta { padding: 16px 18px; display: grid; gap: 10px; }
 .launch-meta-row {
   display: flex;
@@ -172,7 +166,6 @@ body {
 html[data-launch-performance="reduced"] {
   --launch-progress-fill: linear-gradient(90deg, rgba(var(--lux-accent-rgb, 212, 173, 111), 0.72), rgba(var(--lux-accent-rgb, 212, 173, 111), 0.72));
   --launch-btn-transition: border-color 0.18s ease, background 0.18s ease;
-  --launch-progress-animation: none;
 }
 html[data-launch-performance="reduced"] .launch-progress > span { width: 100%; transform: scaleX(0.72); opacity: 0.9; }
 html[data-launch-performance="reduced"] .launch-btn:hover { transform: none; }

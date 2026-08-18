@@ -316,6 +316,7 @@
 
         function flipFogProfileSiblings(list, placeholderRow, mutateFn) {
             const siblings = Array.from(list.querySelectorAll('.lux-fog-profile-item')).filter((row) => row !== placeholderRow);
+            if (siblings.length > 12) { mutateFn(); if (!prefersReducedFogProfileMotion()) syncFogProfileIndexBadges(list); return; }
             const firstRects = new Map(siblings.map((row) => [row, row.getBoundingClientRect()]));
             mutateFn();
             if (prefersReducedFogProfileMotion()) {

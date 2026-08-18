@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2';
+const CACHE_NAME = 'kiu-portal-shell-v20260819-fastboot2';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -25,68 +25,39 @@ const SHELL_ASSETS = [
   '/assets/css/lux-tokens.css?v=20260725-frosted1',
   '/assets/css/lux-fouc-ht.css?v=20260818-navneutral1',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
-  '/assets/css/mobile-shell-core.css?v=20260818-navneutral1',
+  '/assets/css/mobile-shell-core.css?v=20260819-sidebarperf2',
+  '/assets/css/shared-lux-core.css?v=e73cd04b',
   '/assets/css/lux-modals.css?v=20260816-socialmodals1',
-  '/assets/css/social-assembly-prehide.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-home-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-community-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-groups-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-projects-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-portfolio-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-research-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-pages-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-events-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-surveys-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-photography-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-lost-found-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-messages-loading.css?v=20260815-socialassemblyclean1',
-  '/assets/css/social-alerts-loading.css?v=20260815-socialassemblyclean1',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260818-isolatedglass1',
   '/assets/css/lux-layout-primitives.css?v=20260725-ssot1',
   '/assets/css/index-home-layout.css?v=20260806-studentboard11',
-  '/assets/css/index-home-widgets.css?v=20260806-studentboard11',
+  '/assets/css/index-home-widgets.css?v=20260819-fastboot1',
   '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
-  '/assets/css/index-home-loading.css?v=20260810-homeassembly5',
-  '/assets/css/home-assembly-prehide.css?v=20260810-homeassembly5',
-  '/assets/js/theme-primer.js?v=20260818-paletteprimer1',
+  '/assets/js/theme-primer.js?v=20260819-fastboot1',
   '/assets/js/app/portal-runtime-globals.js?v=20260818-runtimeglobals1',
-  '/assets/js/app/social-standalone-bootstrap.js?v=20260818-shellfailopen1',
-  '/assets/js/features/navigation.js?v=20260818-navneutral1',
+  '/assets/js/app/social-standalone-bootstrap.js?v=20260819-fastboot2',
+  '/assets/js/features/navigation.js?v=20260819-fastboot1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
-  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1',
   '/assets/js/features/luxury-index-runtime.js?v=20260818-visualqueue1',
   '/assets/js/features/luxury-visual-runtime.js?v=20260818-schedulerpaint1',
   '/assets/js/features/luxury-index-home-shell-runtime.js?v=20260720-w18',
-  '/assets/js/features/luxury-shell-motion-runtime.js?v=20260818-showhidefix1',
-  '/assets/js/features/index-luxury.js?v=20260818-navneutral1',
+  '/assets/js/features/luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1',
+  '/assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3',
+  '/assets/css/lux-hover-guard.css?v=20260819-hover1',
+  '/assets/js/features/index-luxury.js?v=20260819-sidebarclick3',
   '/assets/js/features/luxury-home-model.js?v=20260809-homeassembly3',
   '/assets/js/features/home-dashboard-widget-layout-runtime.js?v=20260809-homeassembly3',
   '/assets/js/features/home-dashboard-widget-data-runtime.js?v=20260806-studentboard11',
   '/assets/js/features/index-home-dashboard.js?v=20260809-homeassembly2',
   '/assets/js/features/index-home-dashboard.plain.js?v=20260809-homeassembly2',
-  '/assets/js/pages/home-loading-runtime.js?v=20260810-homeassembly9',
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
   '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe5',
-  '/assets/js/shared/lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1',
   '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9',
   '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery2',
   '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
   '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
   '/assets/js/pages/social-page.js?v=20260818-shellfailopen1',
-  '/assets/js/pages/social-home-loading-runtime.js?v=20260818-centerobserver1',
-  '/assets/js/pages/social-community-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-groups-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-projects-loading-runtime.js?v=20260818-centerobserver1',
-  '/assets/js/pages/social-portfolio-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner4',
-  '/assets/js/pages/social-research-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-pages-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-events-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-surveys-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-photography-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-lost-found-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
-  '/assets/js/pages/social-messages-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner4',
-  '/assets/js/pages/social-alerts-loading-runtime.js?v=20260818-centerobserver1&perf=20260816-singleowner3',
 ];
 
 function isVersionedAssetUrl(url) {
@@ -202,6 +173,19 @@ function isStaticAssetRequest(url, request) {
   return ['script', 'style', 'font', 'image'].includes(request.destination);
 }
 
+async function handleApiRequest(request) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const response = await fetch(request.clone());
+      if (response?.ok || attempt === 1 || (response?.status || 0) < 500) return response;
+    } catch (error) {
+      if (attempt === 1) return buildOfflineApiResponse(request);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return buildOfflineApiResponse(request);
+}
+
 function isRegistrationRuntimeScriptRequest(url, request) {
   if (request.destination !== 'script') return false;
   const pathname = String(url.pathname || '').toLowerCase();
@@ -254,9 +238,9 @@ async function handleNavigationRequest(request) {
     }
   }
   try {
-    const buildNavigationRequest = (cacheMode) => isSocialStandaloneNavigation
-      ? new Request(request, { cache: cacheMode })
-      : request;
+    const buildNavigationRequest = (cacheMode) => new Request(request, {
+      cache: cacheMode
+    });
     let networkResponse = await fetch(buildNavigationRequest('no-store'));
     // A transient proxy/tunnel 5xx must not replace a working cached shell.
     // Retry once before falling back to the route shell.
@@ -326,13 +310,23 @@ async function handleStaticAssetRequest(request, event) {
     }
   }
 
-  try {
-    const networkResponse = await fetch(request);
-    if (await isUsableStaticAssetResponse(networkResponse, request)) {
-      event.waitUntil(cacheResponse(request, networkResponse.clone()).catch(() => {}));
-      return networkResponse;
+  // A brief Caddy/container restart must not surface as an offline CSS/JS
+  // response. Retry one transient 5xx/network failure before using the cache
+  // or the explicit offline response.
+  let networkResponse = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      networkResponse = await fetch(request.clone());
+      if (networkResponse?.ok || attempt === 1 || (networkResponse?.status || 0) < 500) break;
+    } catch (error) {
+      if (attempt === 1) break;
     }
-  } catch (error) {}
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  if (await isUsableStaticAssetResponse(networkResponse, request)) {
+    event.waitUntil(cacheResponse(request, networkResponse.clone()).catch(() => {}));
+    return networkResponse;
+  }
   const cached = await cache.match(request);
   if (cached && await isUsableStaticAssetResponse(cached, request)) return cached;
   return buildOfflineAssetResponse(request);
@@ -360,9 +354,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(
-      fetch(request).catch(() => buildOfflineApiResponse(request))
-    );
+    event.respondWith(handleApiRequest(request));
     return;
   }
   if (isRoutePrefetchRequest(request)) {

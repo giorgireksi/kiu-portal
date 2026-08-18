@@ -81,7 +81,12 @@
         if (Object.prototype.hasOwnProperty.call(options, 'cardGlowAlpha')) propertyMap['--lux-card-glow-alpha'] = options.cardGlowAlpha;
         Object.entries(propertyMap).forEach(([name, value]) => {
             if (value == null) return;
-            root.style.setProperty(name, String(value));
+            const nextValue = String(value);
+            // Transparency refreshes are frequent during route startup and
+            // live controls. Avoid invalidating the root style/compositor when
+            // the token already has the exact same value.
+            if (root.style.getPropertyValue(name) === nextValue) return;
+            root.style.setProperty(name, nextValue);
         });
     }
     window.__kiuApplyTransparencyTokenState = typeof applyLuxuryTransparencyTokenState === 'function'

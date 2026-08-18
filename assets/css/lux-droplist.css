@@ -101,12 +101,10 @@
   --lux-picker-slide-offset: var(--lux-droplist-slide-offset);
   --lux-picker-scale-closed: var(--lux-droplist-scale-closed);
   transform-origin: top center;
-  /* Soft bloom: springy open; close uses quicker ease via .is-closing */
+  /* Soft bloom: springy open; close uses quicker ease via .is-closing — compositor only (opacity+transform) */
   transition:
     opacity calc(var(--lux-droplist-anim-duration) * 0.72) var(--lux-droplist-anim-ease),
-    transform var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease),
-    filter var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease);
-  filter: blur(0);
+    transform var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease);
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
   .lux-picker-panel-scrollport,
@@ -156,7 +154,6 @@
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel:not(.is-open):not(.is-closing) {
   opacity: 0;
-  filter: blur(7px);
   transform: var(--lux-picker-anchor-transform, translateY(0)) translateY(var(--lux-picker-slide-offset)) scale(var(--lux-picker-scale-closed));
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel.is-open-above {
@@ -165,26 +162,23 @@
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel.is-open {
   opacity: 1;
-  filter: blur(0);
   transform: var(--lux-picker-anchor-transform, translateY(0)) translateY(0) scale(1);
   pointer-events: auto;
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel.is-closing:not(.is-open) {
   opacity: 0;
-  filter: blur(5px);
   transform: var(--lux-picker-anchor-transform, translateY(0)) translateY(var(--lux-picker-slide-offset)) scale(var(--lux-picker-scale-closed));
   pointer-events: none;
   transition:
     opacity var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
-    transform var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
-    filter var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in);
+    transform var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in);
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel:is(.is-open, .is-closing) {
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   min-height: 0;
   position: fixed;
-  will-change: opacity, transform, filter;
+  will-change: opacity, transform;
 }
 .lux-droplist-panel .lux-picker-option {
   position: relative;
@@ -198,7 +192,6 @@
   text-align: left;
   transition:
     border-color var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease),
-    box-shadow var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease),
     background var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease);
 }
 .lux-droplist-panel .lux-picker-option::before {

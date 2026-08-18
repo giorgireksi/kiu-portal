@@ -30,13 +30,12 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('<style>');
         expect(html).not.toContain('timetable-route.css');
         expect(html).toContain('lux-page-bare');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260818-shellvisible1');
-        expect(html).toMatch(/lux-shell\.css/);
+        expect(html).toContain('assets/js/theme-primer.js?v=20260819-fastboot1');
+        expect(html).toContain('shared-lux-core.css');
         expect(html).toMatch(/lux-page-bare-lite\.css/);
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).not.toContain('index-luxury.css');
-        expect(html).toContain('lux-shell.css');
-        expect(html).toContain('lux-shell.css');
+        expect(html).toContain('shared-lux-core.css');
         expect(html).toContain('lux-page-bare-lite.css?v=20260806-tttoolscollapse1');
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).toContain('lux-page-bare-lite.css');
@@ -46,7 +45,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('id="timetable-command-collapse"');
         expect(html).toContain('class="lux-timetable-command-collapse"');
         expect(html).toContain('[data-timetable-toggle-command]');
-        expect(html).toContain('assets/js/features/navigation.js?v=20260818-shellfailopen1');
+        expect(html).toContain('assets/js/features/navigation.js?v=20260819-fastboot1');
         expect(html).not.toContain('assets/js/pages/planner.js');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');
@@ -288,23 +287,14 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('setTimeout(flattenTimetableControlRows, 700);');
     });
 
-    it('keeps timetable animation work bounded on weak devices and reuses render models', () => {
+    it('removes timetable assembly animation work while retaining render models', () => {
         const runtime = readSource('assets/js/pages/timetable-runtime.js');
-        const loading = readSource('assets/js/pages/timetable-loading-runtime.js');
-        const assembly = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
         expect(runtime).toContain('timetableRenderNormalizationCache');
         expect(runtime).toContain('getCachedTimetableWeekEntries');
         expect(runtime).toContain('const dayIndex = new Map');
-        expect(loading).toContain('lowEndTimetableDevice');
-        expect(loading).toContain("document.body?.classList.add('timetable-low-end')");
-        expect(loading).toContain("granularSelector = lowEndTimetableDevice");
-        expect(loading).toContain("['#timetable-master-container']");
-        expect(loading).toContain('timetable-low-end');
-        expect(loading).toContain('disableBlur: lowEndTimetableDevice');
-        expect(loading).toContain("maxTotalAssemblyMs: lowEndTimetableDevice ? 1400 : 2450");
-        expect(assembly).toContain('const disableBlur = options.disableBlur === true;');
-        expect(assembly).toContain("filter: disableBlur ? 'none' : 'blur(.5px)'");
-        expect(readSource('assets/js/features/luxury-particle-background.js')).toContain('assemblyBooting');
+        expect(readSource('assets/js/pages/timetable-loading-runtime.js')).toBe('');
+        expect(readSource('assets/js/shared/lux-assembly-loading-runtime.js')).toBe('');
+        expect(readSource('assets/js/features/luxury-particle-background.js')).not.toContain('assemblyBooting');
     });
 
     it('keeps timetable on the shared standalone mobile shell contract instead of navigate polling', () => {
@@ -328,7 +318,7 @@ describe('timetable route regressions', () => {
 
     it('uses shared layout primitives and typography in static shell', () => {
         const html = readSource('timetable.html');
-        expect(html).toContain('ttgrid1');
+        expect(html).toContain('weeklist-inline1');
         expect(html).toContain('lux-timetable-command home-hover-chip');
         expect(html).not.toContain('lux-timetable-filters');
         expect(html).not.toContain('id="tt-filter-sem"');
@@ -336,7 +326,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('lux-timetable-view-switcher home-hover-chip');
         expect(html).toContain('lux-timetable-week-nav home-hover-chip');
         expect(html).toContain('lux-timetable-overview-row schedule-overview-row home-hover-chip');
-        expect(html).toContain('lux-layout-primitives.css');
+        expect(html).toContain('shared-lux-core.css');
         expect(html).not.toContain('lux-section-kicker lux-page-kicker');
         expect(html).toContain('lux-card-copy lux-card-meta');
         expect(html).not.toContain('lux-route-field-label');

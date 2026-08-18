@@ -20,8 +20,8 @@ describe('social performance safeguards', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
         expect(html).toContain('social-page.js?v=20260818-shellfailopen1');
-        expect(html).toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
-        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260818-showhidefix1');
+        expect(html).not.toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
+        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
         expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
         expect(page).toContain('loadSocialDynamicScript');
@@ -64,55 +64,13 @@ describe('social performance safeguards', () => {
         expect(page).toContain('}, 2200);');
     });
 
-    it('uses the optimized shared assembly runtime on Social', () => {
+    it('does not load the removed Social assembly animation assets', () => {
         const html = readSource('social.html');
-        const runtime = readSource('assets/js/shared/lux-assembly-loading-runtime.js');
-        expect(html).toContain('lux-assembly-loading-runtime.js?v=20260818-assemblyfilter1');
-        expect(runtime).not.toContain('function getCurrentNode(element, root)');
-        expect(runtime).toContain('return node.children?.length ? runSiblings(node.children, root, generation)');
-        expect(runtime).toContain("soft-restart-skipped-same-content");
-        expect(runtime).toContain('state.contentRoot === contentRoot');
-        expect(runtime).toContain("if (state.phase === 'pending' && state.root === currentRoot) return;");
-        expect(runtime).toContain('const motionRegistry = global.__kiuAssemblyMotionRegistry');
-        expect(runtime).toContain('function abortOtherMotions()');
-        expect(runtime).toContain('motionRegistry.add(api);');
-        expect(runtime).toContain('__kiuAbortAssemblyLoadingMotions');
-        expect(runtime).toContain('__kiuShouldBindSocialLoadingFallback');
-        expect(readSource('assets/js/pages/social-community-loading-runtime.js'))
-            .toContain("window.__kiuShouldBindSocialLoadingFallback('community')");
-        expect(readSource('assets/js/pages/social-home-loading-runtime.js'))
-            .toContain("window.__kiuShouldBindSocialLoadingFallback('feed')");
         const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
-        expect(interactions).toContain('SOCIAL_PANEL_MOTION_GLOBAL_BY_PANEL');
-        expect(interactions).toContain("projects: '__kiuSocialPortfolioLoadingMotion'");
-        expect(interactions).toContain("workspace: '__kiuSocialProjectsLoadingMotion'");
-        expect(interactions).toContain('if (r === `${target}-module`)');
-        expect(interactions).toContain("if (fastPath || /-module$/.test(reason)) {");
-        expect(interactions).toContain('renderCallback();');
-        expect(interactions).toContain('Read receipts and realtime upserts must not restart the visible');
-        expect(interactions)
-            .toContain('if (panelChanged && typeof window.__kiuAbortAssemblyLoadingMotions === \'function\')');
-        for (const panel of ['home', 'community', 'groups', 'projects', 'portfolio', 'research', 'pages', 'events', 'surveys', 'photography', 'lost-found', 'messages', 'alerts']) {
-            expect(readSource(`assets/js/pages/social-${panel}-loading-runtime.js`))
-                .toContain("window.__kiuSocialAssemblyMotionOwner === 'render-pipeline'");
-        }
-        expect(readSource('assets/js/pages/social-home-loading-runtime.js')).toContain('autoStart: false');
-        expect(readSource('assets/js/pages/social-messages-loading-runtime.js')).toContain('phase === \'ready\' && typeof motion.abort === \'function\'');
-        expect(interactions).toContain('queueSocialPortfolioMotion(shell.center, activePanel, reason);');
-        expect(interactions).toContain('queueSocialProjectsMotion(shell.center, activePanel, reason);');
-        expect(interactions).toContain('socialPortfolioMotionFrame = 0;');
-        expect(readSource('assets/js/pages/social-portfolio-loading-runtime.js')).toContain("activePanel !== 'projects'");
-        expect(readSource('assets/js/pages/social-home-loading-runtime.js')).toContain('const page = getFeedCenter();');
-        for (const runtimePath of [
-            'social-community-loading-runtime.js',
-            'social-events-loading-runtime.js',
-            'social-groups-loading-runtime.js',
-            'social-messages-loading-runtime.js',
-            'social-projects-loading-runtime.js',
-            'social-surveys-loading-runtime.js'
-        ]) {
-            expect(readSource(`assets/js/pages/${runtimePath}`)).toContain('const page = getCenter();');
-        }
+        expect(html).not.toContain('lux-assembly-loading-runtime.js');
+        expect(html).not.toMatch(/social-[a-z-]+-loading-runtime\.js/);
+        expect(interactions).not.toContain('LoadingMotion');
+        expect(interactions).not.toContain('assembly-active');
     });
 
     it('fails open when hydration or a dynamic module stalls', () => {
@@ -129,7 +87,7 @@ describe('social performance safeguards', () => {
         expect(page).toContain('__kiuRetrySocialModule');
         expect(page).toContain("return ['workspace', 'projects'];");
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260818-shellstage2'");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260819-fastboot2'");
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 

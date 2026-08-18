@@ -384,7 +384,7 @@ describe('particle background route integration', () => {
         expect(shellChrome).toContain('id="lux-static-bg-white"');
         expect(shellChrome).toContain('data-static-bg-fill');
         expect(shellChrome).toContain('setStaticBackgroundFill');
-        expect(readSource('index.html')).toContain('luxury-shell-chrome.js?v=20260818-bootmarks1');
+        expect(readSource('index.html')).toContain('luxury-shell-chrome.js?v=20260819-sidebarperf3');
         expect(foucCss).toContain('data-lux-static-background="dark"');
         expect(foucCss).toContain('data-lux-static-background="white"');
         expect(foucCss).toContain('not(.lux-light-mode)[data-lux-background-animation="off"][data-lux-static-background="colored"]');

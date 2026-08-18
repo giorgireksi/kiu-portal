@@ -37,8 +37,8 @@ describe('protected launch route regressions', () => {
         expect(css).toContain('html[data-launch-performance="reduced"]');
         expect(css).toContain('--launch-progress-track:');
         expect(css).toContain('--launch-progress-fill:');
-        expect(css).toContain('--launch-progress-animation:');
-        expect(css).toContain('animation: var(--launch-progress-animation);');
+        expect(css).not.toContain('--launch-progress-animation:');
+        expect(css).not.toContain('animation: var(--launch-progress-animation);');
         expect(html).toContain('retryButtonEl.hidden = retry !== true;');
         expect(html).toContain('installButtonEl.hidden = !(installUrl && installUrl !== \'#\');');
     });

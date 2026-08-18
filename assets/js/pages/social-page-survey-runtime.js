@@ -626,7 +626,7 @@ function socialCenterHasLiveScrollRoom(center, contentH = 0) {
 function getSocialCenterContentScrollHeight(center) {
     if (!center) return 0;
     const cached = center.__kiuSocialCenterContentScrollHeight;
-    if (cached && cached.root === center.firstElementChild) return cached.value;
+    if (cached && cached.root === center.firstElementChild && cached.v === center.__kiuCenterMetricsVersion) return cached.value;
     if (center.querySelector('.social-neo-messages') || center.querySelector('.sn-alerts-panel')) {
         const value = center.clientHeight;
         center.__kiuSocialCenterContentScrollHeight = { root: center.firstElementChild, value };
@@ -666,9 +666,16 @@ function getSocialCenterContentScrollHeight(center) {
         panelShell?.offsetHeight || 0,
         panelExtent
     );
-    center.__kiuSocialCenterContentScrollHeight = { root: center.firstElementChild, value };
+    center.__kiuSocialCenterContentScrollHeight = { root: center.firstElementChild, v: center.__kiuCenterMetricsVersion, value };
     return value;
 }
+
+function bumpCenterMetricsVersion(center) {
+    if (!center) return;
+    center.__kiuCenterMetricsVersion = (center.__kiuCenterMetricsVersion || 0) + 1;
+    delete center.__kiuSocialCenterContentScrollHeight;
+}
+window.bumpCenterMetricsVersion = bumpCenterMetricsVersion;
 
 function getSocialCenterMaxScroll(center, shell) {
     if (!center) return 0;
@@ -697,7 +704,7 @@ function setSocialRegionMarkup(node, markup) {
     node.innerHTML = nextMarkup;
     node.__kiuLastMarkup = nextMarkup;
     const center = node.closest?.('#social-neo-center-region');
-    if (center) delete center.__kiuSocialCenterContentScrollHeight;
+    if (center) bumpCenterMetricsVersion(center);
 }
 
 function invalidateSocialRenderCache({ center = true } = {}) {
@@ -711,7 +718,7 @@ function invalidateSocialRenderCache({ center = true } = {}) {
         const centerEl = document.getElementById('social-neo-center-region');
         if (centerEl) {
             delete centerEl.__kiuLastMarkup;
-            delete centerEl.__kiuSocialCenterContentScrollHeight;
+            bumpCenterMetricsVersion(centerEl);
         }
     }
 }

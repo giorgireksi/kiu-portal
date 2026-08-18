@@ -201,7 +201,27 @@ function renderProgModulePane() {
 
 function selectProgModule(moduleId) {
     adminRegUiState.selectedProgModule = moduleId;
-    rerenderAdminRegistrationModulesPreservingScroll('prog');
+    const container = document.getElementById('admin-reg-content-container');
+    const selectedOption = container
+        ? Array.from(container.querySelectorAll('[data-admin-reg-select-module]'))
+            .find((input) => input.value === String(moduleId || ''))
+        : null;
+    if (!selectedOption) {
+        rerenderAdminRegistrationModulesPreservingScroll('prog');
+        return;
+    }
+
+    // The module list is unchanged: update only its selection state and the
+    // detail pane instead of rebuilding the entire registration workspace.
+    container.querySelectorAll('[data-admin-reg-select-module]').forEach((input) => {
+        const active = input === selectedOption;
+        input.checked = active;
+        input.closest('.admin-reg-program-option')?.classList.toggle('is-active', active);
+    });
+    renderProgModulePane();
+    if (typeof refreshAdminRegistrationCmsPresentation === 'function') {
+        refreshAdminRegistrationCmsPresentation();
+    }
 }
 
 function editProgSubModule(moduleId, subModuleId) {

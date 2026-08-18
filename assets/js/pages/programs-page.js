@@ -258,7 +258,6 @@
                     <span class="lux-status-pill home-hover-chip wave2-chip wave2-chip--pill">${escapeHtml(context.semesterLabel)}</span>
                 </div>
                 <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--loading">
-                    <i class="fas fa-spinner fa-spin"></i>
                     <strong class="lux-empty-state__title">Loading curriculum detail</strong>
                     <span class="lux-empty-state__copy">Preparing the filtered curriculum detail panel.</span>
                 </div>

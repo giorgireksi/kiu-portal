@@ -18,7 +18,7 @@ describe('route panel CSS-own wave 2 (bare-shell era)', () => {
             ['admin-scheduler.html', 'admin-scheduler-route.css'],
         ]) {
             const h = readSource(html);
-            expect(h).toContain('lux-shell.css');
+            expect(h).toContain('shared-lux-core.css');
             expect(h).toContain(html === 'admin-tools.html' ? 'assets/css/admin-tools.css' : 'lux-page-bare-lite.css');
             expect(h).not.toMatch(/lux-page-bare\.css(?!-lite)/);
             expect(existsSync(join(process.cwd(), 'assets/css', gone))).toBe(false);

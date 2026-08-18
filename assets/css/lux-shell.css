@@ -78,13 +78,20 @@ body.lux-sidebar-collapsed { --lux-sidebar-offset: 0px; }
   transform: none;
   opacity: 1;
   pointer-events: auto;
-  contain: layout style;
+  contain: layout paint;
   overflow: hidden;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+/* Motion APIs may opt into transform promotion only while a chrome transition
+   is active; the resting shell does not reserve a compositor layer. */
 html.lux-shell-chrome-motion #lux-shell {
-  will-change: transform;
+  will-change: transform, opacity;
+}
+/* Reserve a compositor surface only for an intentional sidebar transition;
+   the resting glass shell stays unpromoted. */
+html.lux-sidebar-transitioning #lux-shell {
+  will-change: opacity;
 }
 body.lux-sidebar-collapsed {
   #lux-shell {
@@ -761,7 +768,9 @@ html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar :is(.lux-s
   text-shadow: none;
 }
 body.lux-full-paint {
-  #lux-shell { contain: layout style; }
+  /* Keep the actual painted shell contained too; this overrides the base
+     shell rule on unified routes without changing its glass material. */
+  #lux-shell { contain: layout paint; }
   .lux-card, .lux-quick-btn, .lux-stat, .lux-alert, .lux-nav-item, .lux-pill, .lux-picker-panel, .lux-utility-panel { isolation: auto; }
   &.lux-light-mode #lux-shell .lux-nav-group, &.lux-light-mode #lux-shell .lux-user-role { color: var(--lux-text-muted); }
   :is(&.lux-light-mode #lux-shell .lux-nav-item, &.lux-light-mode #lux-shell .lux-nav-item:hover) { color: var(--lux-text); }
@@ -877,7 +886,6 @@ body.lux-full-paint {
   #lux-shell, .lux-picker-panel {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
   }
   .lux-nav-item, .lux-quick-btn, .lux-stat, .lux-alert, .lux-pill, .lux-user-menu, .lux-breadcrumb {
     backdrop-filter: none;
@@ -886,7 +894,6 @@ body.lux-full-paint {
   #lux-shell {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
   }
   #lux-topbar { z-index: 1000 !important; }
   #lux-topbar, .lux-card-head, .lux-nav-item { overflow: visible; }
@@ -912,16 +919,6 @@ body.lux-full-paint {
     opacity: 1;
     animation: none;
   }
-}
-@keyframes luxRouteContentFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.lux-route-content-fade {
-  animation: luxRouteContentFade 0.12s linear both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .lux-route-content-fade { animation: none; }
 }
 /* ── §4 bare-portal chrome helpers + focus-within ── */
 body.lux-page-bare .lux-page-shell {
@@ -985,19 +982,21 @@ body.lux-full-paint {
   }
 }
 
-/* During deferred startup the authored shell keeps its normal glass paint.
- * Only the foreground stacking contract changes; no loading-only skin is
- * applied, so transparency is identical before and after hydration. */
+/* During startup the authored shell keeps its normal glass paint. */
 @media (min-width: 1025px) {
   html.kiu-shell-loading #lux-shell,
-  html.kiu-route-assembly-loading #lux-shell,
-  body.kiu-shell-loading #lux-shell,
-  body.kiu-route-assembly-loading #lux-shell {
+  body.kiu-shell-loading #lux-shell {
     z-index: 2147483647 !important;
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
   }
-  html.kiu-shell-loading #lux-topbar,
-  html.kiu-route-assembly-loading #lux-topbar { z-index: 1000 !important; }
+  html.kiu-shell-loading #lux-topbar { z-index: 1000 !important; }
+}
+/* Promote the desktop filtered surface only while it fades. The zero-depth
+   transform is geometrically neutral and avoids a resting compositor layer. */
+@media (min-width: 1025px) {
+  body.lux-full-paint.lux-sidebar-transitioning #lux-shell {
+    transform: translateZ(0);
+  }
 }

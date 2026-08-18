@@ -459,9 +459,6 @@
         syncMobileTopbarVisibility();
         setupNav();
         setupSheet();
-        if (typeof window.__kiuReplayHomeLoadingMotion === 'function') {
-            window.__kiuReplayHomeLoadingMotion('mobile');
-        }
         onResize();
         waitForNavigationRuntime();
         window.addEventListener('resize', onResize);

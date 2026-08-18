@@ -607,6 +607,7 @@ body[data-lux-performance='efficient'] {
   --lux-glass-alpha: 0.052;
   --lux-utility-alpha: 0.8;
   --lux-card-glow-alpha: 0.05;
+  --lux-soft-chrome-rim-halo: 0 0 0 transparent;
 }
 body[data-lux-performance='standard'] {
   --lux-transparency-saturate: 138%;

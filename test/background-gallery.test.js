@@ -143,7 +143,7 @@ describe('background gallery feature', () => {
         expect(shellChrome).toContain('id="lux-bg-gallery-open-images"');
         expect(shellChrome).toContain('id="lux-bg-gallery-open-videos"');
         expect(shellChrome).not.toContain('id="lux-bg-gallery-curated-grid"');
-        expect(readSource('index.html')).toContain('luxury-shell-chrome.js?v=20260818-bootmarks1');
+        expect(readSource('index.html')).toContain('luxury-shell-chrome.js?v=20260819-sidebarperf3');
         expect(studio).toContain('openBackgroundGalleryPopup');
         expect(studio).toContain('closeBackgroundGalleryPopup');
         expect(studio).toContain('Saved to My backgrounds');

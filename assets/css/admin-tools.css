@@ -150,6 +150,13 @@ body.lux-route-programs #page-programs .lux-prog-control-band .lux-program-field
 body.lux-route-programs #page-programs .lux-prog-control-band .lux-program-field .lux-picker-field,
 body.lux-route-programs #page-programs .lux-prog-control-band .lux-program-field .lux-picker-btn--compact {
   width: 100%;
+  min-height: 44px;
+}
+
+#lux-admin-tools-shell .lux-module-option__main,
+#lux-admin-tools-shell .lux-module-option__right {
+  min-height: 33px;
+  contain-intrinsic-size: auto 54px;
 }
 
 #lux-admin-tools-shell .lux-admin-curriculum-semester-count-wrap {
@@ -801,7 +808,7 @@ body.lux-route-programs #page-programs .lux-program-detail-head {
   color: var(--lux-text, #f8fafc);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 .admin-reg-subject-quick-match:hover {
   transform: translateY(-1px);

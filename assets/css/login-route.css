@@ -21,17 +21,6 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
 }
-@keyframes cardEntry {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 .login-wrapper {
   position: relative;
   z-index: 1;
@@ -40,7 +29,6 @@ body {
   min-height: 640px;
   border-radius: 28px;
   overflow: hidden;
-  animation: cardEntry 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .login-main,
 .login-aside {
@@ -176,7 +164,6 @@ body {
 .login-btn:active { transform: translateY(0) scale(0.99); }
 .login-btn.microsoft-btn { margin-top: 0; }
 .login-btn.is-loading { pointer-events: none; opacity: 0.75; }
-.login-btn.is-loading i { animation: spin 0.8s linear infinite; }
 .login-btn:disabled, .login-btn.is-disabled { opacity: 0.6; cursor: not-allowed; }
 .login-error, .login-success {
   font-size: 13px;
@@ -223,7 +210,7 @@ body {
   border-radius: 18px;
 }
 .login-support-card { position: relative; z-index: 1; border-radius: 18px; }
-.tab-content { display: none; animation: fadeIn 0.28s ease; }
+.tab-content { display: none; }
 .tab-content[hidden] { display: none; }
 .tab-content.active { display: block; }
 .login-form-card {

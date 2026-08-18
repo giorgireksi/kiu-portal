@@ -145,7 +145,7 @@ describe('Student Service split workspace regressions', () => {
         expect(source).toContain('class="student-service-detail-icon"');
         expect(source).toContain('class="student-service-detail-body"');
         expect(source).toContain('class="student-service-loading-state"');
-        expect(source).toContain('class="fas fa-spinner fa-spin student-service-loading-icon"');
+        expect(source).not.toContain('fa-spin');
         expect(source).toContain("return renderStudentServiceStaffWorkbench(container, visibleArticles, visibleTickets, { lane: 'qa' });");
         expect(source).toContain("return renderStudentServiceResponderServiceLane(container, visibleArticles);");
         expect(source).toContain("renderStudentServiceLaneChooser(role, currentUser, visibleArticles, visibleTickets)");
@@ -184,14 +184,14 @@ describe('Student Service split workspace regressions', () => {
         expect(studentServiceHtml).toContain('assets/css/route-bare/student-service/lux-page-bare-lite.css');
         expectRetiredCss('student-service-route.css');
         expect(studentServiceHtml).toContain('assets/js/shared/lux-scroll-rail.js?v=20260608-scrollrail2');
-        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260818-shellfailopen1');
+        expect(studentServiceHtml).toContain('assets/js/features/navigation.js?v=20260819-fastboot1');
         expect(studentServiceHtml).toContain('assets/js/shared/student-service-api-paths.js?v=20260626-ssvc-inbox-filters');
         expect(studentServiceHtml).toContain('assets/js/pages/student-service.js?v=20260728-ssrender6');
         expect(studentServiceHtml).toContain('student-service-bootstrap-runtime.js?v=20260729-ssmerge1');
         expect(studentServiceHtml).toContain('student-service-page-runtime.js?v=20260729-sse4292');
         expect(studentServiceHtml.indexOf('student-service-bootstrap-runtime.js'))
             .toBeLessThan(studentServiceHtml.indexOf('student-service-page-runtime.js'));
-        expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260818-socialrouteguard1');
+        expect(studentServiceHtml).toContain('assets/js/app/api.js?v=20260819-fastboot2');
         expect(studentServiceHtml).toContain('initStandaloneStudentServiceRoute');
         expect(studentServiceHtml).toContain('bootStandaloneDesktopRoute');
         expect(studentServiceHtml).not.toContain("window.location.replace(target);");
@@ -200,7 +200,7 @@ describe('Student Service split workspace regressions', () => {
         expect(studentsAdminHtml).not.toContain('assets/js/pages/student-service.js');
         expect(studentsAdminHtml).not.toContain('assets/css/index-luxury.css');
         expect(studentsAdminHtml).toContain('assets/css/route-bare/directory/lux-page-bare-lite.css');
-        expect(studentsAdminHtml).toContain('assets/css/mobile-shell-core.css');
+        expect(studentsAdminHtml).toContain('assets/css/shared-lux-core.css');
     });
 
     it('keeps the student-service standalone page on the shared mobile shell contract', () => {

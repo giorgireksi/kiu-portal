@@ -283,7 +283,6 @@ function primeShellSectionTransition(pageId, effectiveRole = getEffectiveUserRol
     syncShellNavActiveItem(pageId, effectiveRole);
     if (found) {
         _domCache.lastPageId = pageId;
-        playRouteContentFade(targetSection);
     }
     return found;
 }
@@ -695,13 +694,26 @@ function prefetchStandalonePortalRoute(pageId, role = getEffectiveUserRole()) {
 function schedulePortalRoutePrefetch(pageId) {
     const normalizedPageId = String(pageId || '').trim().toLowerCase();
     if (!normalizedPageId || portalRoutePrefetchState.pending.has(normalizedPageId)) return;
-    portalRoutePrefetchState.pending.set(
-        normalizedPageId,
-        window.setTimeout(() => {
-            portalRoutePrefetchState.pending.delete(normalizedPageId);
-            void prefetchStandalonePortalRoute(normalizedPageId);
-        }, 80)
-    );
+    const run = () => {
+        const request = Promise.resolve(prefetchStandalonePortalRoute(normalizedPageId));
+        // Keep a page-level marker until the URL-level request settles, so a
+        // second bubbled pointerover cannot queue another idle callback while
+        // the first document is still being parsed.
+        portalRoutePrefetchState.pending.set(normalizedPageId, request);
+        const clear = () => {
+            if (portalRoutePrefetchState.pending.get(normalizedPageId) === request) {
+                portalRoutePrefetchState.pending.delete(normalizedPageId);
+            }
+        };
+        request.then(clear, clear);
+    };
+    // Prefetching parses a full HTML document and adds asset hints. Start it
+    // during idle time so entering a sidebar button cannot steal its first
+    // interaction frame; the timeout still warms deliberate hover intent.
+    const handle = typeof window.requestIdleCallback === 'function'
+        ? window.requestIdleCallback(run, { timeout: 320 })
+        : window.setTimeout(run, 120);
+    portalRoutePrefetchState.pending.set(normalizedPageId, handle);
 }
 
 function installPortalRoutePrefetch() {
@@ -952,24 +964,30 @@ function ensureRuntimeForPage(pageId) {
 }
 
 function isPortalStartupDependencyReady() {
-    const dependencyChecks = [
-        ['page-registration', 'renderStudentRegStructures'],
-        ['study-card-container', 'renderStudyCard'],
-        ['timetable-master-container', 'renderTimetable'],
-        ['lms-subject-grid', 'renderLMSSubjects'],
-        ['staff-content', 'renderStaffPage'],
-        ['students-content', 'renderStudentsPage'],
-        ['admin-orders-root', 'renderAdminOrders'],
-        ['page-orders', 'renderOrdersInboxPage'],
-        ['orders-inbox-root', 'renderOrdersInboxPage'],
-        ['page-library', 'renderLibraryPageShellContext'],
-        ['page-chancellery', 'renderChancelleryPage']
-    ];
+    const dependencyByPage = {
+        registration: [['page-registration', 'renderStudentRegStructures']],
+        'study-card': [['study-card-container', 'renderStudyCard']],
+        timetable: [['timetable-master-container', 'renderTimetable']],
+        lms: [['lms-subject-grid', 'renderLMSSubjects']],
+        staff: [['staff-content', 'renderStaffPage']],
+        'students-admin': [['students-content', 'renderStudentsPage']],
+        'admin-orders': [['admin-orders-root', 'renderAdminOrders']],
+        orders: [['page-orders', 'renderOrdersInboxPage'], ['orders-inbox-root', 'renderOrdersInboxPage']],
+        library: [['page-library', 'renderLibraryPageShellContext']],
+        chancellery: [['page-chancellery', 'renderChancelleryPage']]
+    };
+    const entryPageId = normalizeStandaloneActivePageId(getStandaloneEntryPageId?.() || '');
+    const activePageId = normalizeStandaloneActivePageId(
+        entryPageId && entryPageId !== 'index' ? entryPageId : (getActivePageId?.() || '')
+    );
+    const dependencyChecks = dependencyByPage[activePageId] || [];
     return dependencyChecks.every(([elementId, functionName]) => {
         const element = document.getElementById(elementId);
         // Standalone admin pages keep hidden compatibility placeholders for
         // navigation lookups. They must not hold the global shell veil while
-        // waiting for runtimes belonging to another route.
+        // waiting for runtimes belonging to another route. Most importantly,
+        // do not wait for every route's renderer on the home shell: only the
+        // active route can block its own first controls.
         if (!element || element.hidden || element.closest?.('[hidden]')
             || element.getAttribute?.('aria-hidden') === 'true') return true;
         return typeof window[functionName] === 'function';
@@ -1045,23 +1063,6 @@ function setKiuShellLoadState(next) {
     return state;
 }
 
-function playRouteContentFade(target) {
-    if (!target || target.dataset.luxRouteFadePending === '1') return;
-    if (target.classList.contains('lux-route-content-fade')) return;
-    target.dataset.luxRouteFadePending = '1';
-    target.classList.remove('lux-route-content-fade');
-    const schedule = typeof window.requestAnimationFrame === 'function'
-        ? window.requestAnimationFrame.bind(window)
-        : (callback) => window.setTimeout(callback, 0);
-    schedule(() => {
-        target.classList.add('lux-route-content-fade');
-        window.setTimeout(() => {
-            target.classList.remove('lux-route-content-fade');
-            delete target.dataset.luxRouteFadePending;
-        }, 180);
-    });
-}
-
 function finishKiuShellReveal() {
     window.__kiuMarkPortalBootPhase?.('shell-ready');
     kiuShellRevealFinished = true;
@@ -1077,8 +1078,6 @@ function finishKiuShellReveal() {
         document.body.classList.remove('kiu-shell-loading', 'kiu-shell-revealing');
         document.body.removeAttribute('aria-busy');
     }
-    const fadeTarget = document.querySelector('#app-content .page-section.active-page, #app-content');
-    if (fadeTarget) playRouteContentFade(fadeTarget);
 }
 
 function startKiuShellReveal({ degraded = false } = {}) {
@@ -1103,8 +1102,8 @@ window.__kiuStartShellReveal = startKiuShellReveal;
 function markPortalShellReady(options = {}) {
     // Route readiness still records the lifecycle phase, but it no longer
     // gates visibility or interaction behind Home/Social-specific fail-safes.
-    // Their authored skeletons are already on screen and the shared assembly
-    // runtime now completes without flight animation.
+    // Their authored skeletons are already on screen and route readiness
+    // no longer adds a flight or fade transition.
     void options;
     markPortalNavigationIntentForCurrentPage();
     kiuShellRouteReady = true;
@@ -1117,14 +1116,9 @@ __kiuNavExpose({
 });
 
 function schedulePortalShellReadyReveal() {
-    const reveal = () => markPortalShellReady();
-    if (typeof window.requestAnimationFrame === 'function') {
-        window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(reveal);
-        });
-        return;
-    }
-    window.setTimeout(reveal, 32);
+    // Startup is intentionally motionless. Mark the shell ready immediately
+    // instead of spending two frames on the retired reveal coordinator.
+    markPortalShellReady();
 }
 
 __kiuNavExpose({
@@ -1199,14 +1193,9 @@ function scheduleRouteContentRender(renderFn) {
         run();
         return;
     }
-    // Next-frame paint (double rAF): shell/layout settles, then content — no idle/48ms delay.
-    if (typeof window.requestAnimationFrame === 'function') {
-        window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(run);
-        });
-        return;
-    }
-    window.setTimeout(run, 0);
+    // There is no startup reveal to wait for. Render the route immediately so
+    // controls and their delegated handlers are available in the first task.
+    run();
 }
 
 __kiuNavExpose({
@@ -1505,7 +1494,7 @@ __kiuNavExpose({
 
 function autoBootStandaloneDesktopRoute() {
     const entryId = normalizeStandaloneActivePageId(getStandaloneEntryPageId());
-    // Social boots via social-page.js (assembly must own first reveal).
+    // Social boots via social-page.js; its content mounts directly.
     if (!entryId || entryId === 'index' || entryId === 'lms' || entryId === 'social' || entryId === 'student-service' || entryId === 'exams' || entryId === 'orders' || entryId === 'library' || entryId === 'timetable') return;
     if (window.__kiuStandaloneDesktopRouteBootKey) return;
     bootStandaloneDesktopRoute({

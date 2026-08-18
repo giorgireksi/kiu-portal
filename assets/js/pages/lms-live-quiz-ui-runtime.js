@@ -1603,7 +1603,7 @@ function renderLmsLiveQuizLoadingShell() {
     return `
         <div class="lms-live-shell">
             <div class="lms-live-card home-hover-chip lms-live-sync-card is-syncing">
-                <div class="lms-live-label"><i class="fas fa-rotate fa-spin"></i> Loading live quiz</div>
+                <div class="lms-live-label">Loading live quiz</div>
                 <div class="lms-live-copy lms-route-copy-mt-6">Syncing the latest session from the server…</div>
             </div>
         </div>

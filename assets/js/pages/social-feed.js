@@ -576,7 +576,10 @@ function __kiuFeedExpose(map) {
             </div>
         `;
 
-        /* ── Assemble the feed panel layout ── */
+        /* ── Assemble the feed panel layout — windowing for trace UpdateLayoutTree ── */
+        const pagination = window.KiuSocialPagination;
+        const isInfinite = pagination && typeof pagination.currentMode === 'function' && pagination.currentMode() === 'infinite';
+        const effectiveFeed = isInfinite && visibleFeed.length > 10 ? visibleFeed.slice(0, 10) : visibleFeed;
         return `
             <div class="social-neo-feed-shell">
                 <section class="social-neo-card social-neo-feed-header-card lux-soft-chrome home-hover-chip">
@@ -587,9 +590,10 @@ function __kiuFeedExpose(map) {
                     </div>
                 </section>
             <section class="social-neo-stack">
-                ${visibleFeed.length
-                    ? visibleFeed.map((post) => renderPost(post)).join('')
+                ${effectiveFeed.length
+                    ? effectiveFeed.map((post) => renderPost(post)).join('')
                     : `<div class="social-neo-empty">No posts match the current Home filter yet.</div>`}
+                ${isInfinite && visibleFeed.length > 10 ? `<div class="social-neo-infinite-sentinel" data-infinite-sentinel="feed" style="height:1px"></div>` : ''}
             </section>
             </div>
         `;

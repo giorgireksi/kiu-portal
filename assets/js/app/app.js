@@ -1092,7 +1092,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         return lmsRuntimeLoadPromise;
     };
 
-    const REGISTRATION_PICKER_ASSET_TOKEN = '20260725-portalmodal1';
+    const REGISTRATION_PICKER_ASSET_TOKEN = '20260818-adminregperf1';
     const registrationRuntimeAsset = (path) => `${path}?v=${REGISTRATION_PICKER_ASSET_TOKEN}`;
     const REGISTRATION_RUNTIME_SCRIPTS = [
         registrationRuntimeAsset('assets/js/pages/registration-shared.js'),
@@ -1109,9 +1109,9 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         'assets/js/pages/student-registration.js?v=20260727-peelfix2',
         'assets/js/pages/admin-registration-track.js?v=20260808-hoverchips1',
         'assets/js/pages/admin-registration-seats-runtime.js?v=20260719-regseats1',
-        'assets/js/pages/admin-registration-cms-runtime.js?v=20260808-hoverchips1',
+        'assets/js/pages/admin-registration-cms-runtime.js?v=20260818-adminregperf1',
         'assets/js/pages/admin-registration-boot-runtime.js?v=20260724-peelfix1',
-        'assets/js/pages/admin-registration.js?v=20260808-hoverchips1'
+        'assets/js/pages/admin-registration.js?v=20260818-adminregperf1'
     ];
     const REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS = [
         registrationRuntimeAsset('assets/js/pages/timetable-runtime.js'),
@@ -1671,7 +1671,7 @@ enforceSingleRuntimeEntrypoint();
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     const PORTAL_CACHE_RESET_VERSION = '20260808-overallperf1';
-    const PORTAL_SERVICE_WORKER_VERSION = '20260818-shellstage2';
+    const PORTAL_SERVICE_WORKER_VERSION = '20260819-fastboot2';
 
     async function clearPortalSiteCaches(force = false) {
         try {

@@ -520,8 +520,7 @@ function __kiuSspExpose(map) {
                         <div data-student-service-page-overview="1"></div>
                         <section id="student-service-page-body" class="student-service-canvas">
                             <div class="student-service-loading-state">
-                                <i class="fas fa-spinner fa-spin student-service-loading-icon"></i>
-                                Loading Student Service Center...
+                                                                Loading Student Service Center...
                             </div>
                         </section>
                     </div>

@@ -254,7 +254,7 @@
             if (action === 'panel-lost-found' || action === 'panel-lost-and-found') {
                 setPanel('lost-and-found', { skipRender: true });
                 // Mount immediately (like Events). Never await prune first — that
-                // delayed the shell and skipped assembly the same way Exposé did.
+                // delayed the shell and skipped the direct panel mount the same way Exposé did.
                 void Promise.resolve(pruneExpiredLostFoundItems()).catch(() => null);
                 invalidateSocialRenderCache({ center: true });
                 return { handled: true, result: renderSocialPageNow('panel-lost-and-found') };
@@ -319,7 +319,7 @@
                 state().ui.photographyProfileUserId = '';
                 setPanel('photography', { skipRender: true });
                 // Mount Exposé immediately (like Events). Never await feed refresh first —
-                // that left center on feed-shell while ui said photography, so assembly never ran.
+                // that left center on feed-shell while ui said photography.
                 if (!wasOnPhotography) {
                     void Promise.resolve(refreshPortalSocialFeed(true)).catch(() => null);
                 }
@@ -383,12 +383,12 @@
                 const previousFilter = text(state().ui?.messagesFilter || 'all');
                 if (filter) state().ui.messagesFilter = filter;
                 // skipRender: setPanel would paint center as reason `panel`, then we remount
-                // again for panel-messages — that flashes full UI before assembly staging.
+                // again for panel-messages — avoid an unnecessary intermediate paint.
                 setPanel('messages', { skipRender: true });
                 invalidateSocialRenderCache({ center: true });
                 if (wasOnMessages && filter && filter !== previousFilter) {
                     const filterResult = renderSocialPageNow('messages-filter');
-                    // Mark-read after first paint so chat-read/upsert remount can replay in-flight assembly.
+                    // Mark-read after first paint so chat-read/upsert does not remount the panel.
                     const activeChatId = text(state().ui?.activeChatId || '');
                     if (activeChatId && typeof window.markPortalChatMessagesRead === 'function') {
                         window.markPortalChatMessagesRead(activeChatId).catch(() => null);
@@ -396,8 +396,7 @@
                     return { handled: true, result: filterResult };
                 }
                 const openResult = renderSocialPageNow('panel-messages');
-                // After mount+assembly start: mark-read may remount via chat-read/upsert;
-                // queueSocialMessagesMotion replays while assembly is still in flight.
+                // After mount: mark-read may update the existing panel via chat-read/upsert;
                 const activeChatId = text(state().ui?.activeChatId || '');
                 if (activeChatId && typeof window.markPortalChatMessagesRead === 'function') {
                     window.markPortalChatMessagesRead(activeChatId).catch(() => null);
@@ -410,7 +409,7 @@
                 const previousFilter = text(state().ui?.alertsFilter || 'all');
                 if (filter) state().ui.alertsFilter = filter;
                 // Mount immediately (like Messages / Lost & Found). Never await
-                // refresh first — that delayed the shell and skipped assembly.
+                // refresh first — that delayed the shell and skipped the direct panel mount.
                 setPanel('alerts', { skipRender: true });
                 invalidateSocialRenderCache({ center: true });
                 const paintReason = wasOnAlerts && filter && filter !== previousFilter

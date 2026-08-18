@@ -7,14 +7,15 @@ function readSource(relativePath) {
 }
 
 describe('nav route prefetch', () => {
-    it('prefetches portal routes on lux-nav hover', () => {
+    it('keeps lux-nav hover prefetch delegated and non-blocking', () => {
         const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const navigation = readSource('assets/js/features/navigation.js');
 
-        expect(shellChrome).toContain('function prefetchPortalRoute(pageId) {');
-        expect(shellChrome).toContain('window.resolvePortalRouteUrl(pageTarget(normalizedPageId), role)');
-        expect(shellChrome).toContain("link.rel = 'prefetch';");
-        expect(shellChrome).toContain("navRoot.addEventListener('mouseover', (event) => {");
-        expect(shellChrome).toContain('prefetchPortalRoute(button.dataset.navTarget);');
+        expect(shellChrome).not.toContain('function prefetchPortalRoute(pageId) {');
+        expect(shellChrome).not.toContain("navRoot.addEventListener('mouseover'");
+        expect(shellChrome).toContain('Route prefetch is owned by navigation.js');
+        expect(navigation).toContain('function schedulePortalRoutePrefetch(pageId) {');
+        expect(navigation).toContain("document.addEventListener('pointerover', handleIntent");
     });
 
     it('warms same-origin standalone routes and preserves the service-worker handoff', () => {

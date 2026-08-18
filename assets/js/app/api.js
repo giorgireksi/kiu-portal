@@ -183,8 +183,9 @@ async function kiuPortalFetch(path, options = {}) {
         throw failure;
     }
     const runtime = ensurePortalBackendRuntime();
+    const publicEndpoint = !doesPortalEndpointRequireSession(path);
     const now = Date.now();
-    if (runtime.backendUnavailableUntil && runtime.backendUnavailableUntil > now) {
+    if (runtime.backendUnavailableUntil && runtime.backendUnavailableUntil > now && !publicEndpoint) {
         const failure = new Error(runtime.lastBackendError || 'Portal backend is temporarily unavailable.');
         failure.code = 'KIU_PORTAL_BACKEND_COOLDOWN';
         failure.silent = true;
@@ -200,7 +201,12 @@ async function kiuPortalFetch(path, options = {}) {
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     const timeoutMs = Number(options.timeoutMs) > 0 ? Number(options.timeoutMs) : KIU_PORTAL_BACKEND_TIMEOUT_MS;
     const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    const requestMethod = String(options.method || 'GET').toUpperCase();
+    const canRetryTransient = publicEndpoint && (
+        requestMethod === 'GET' || /^\/api\/portal\/session\/login\b/i.test(String(path || ''))
+    );
     let response;
+    let attempt = 0;
     const portalSessionToken = getPortalSessionToken();
     const protectedRequest = doesPortalEndpointRequireSession(path);
     if (!portalSessionToken && hasPortalAuthSnapshot() && protectedRequest) {
@@ -221,43 +227,56 @@ async function kiuPortalFetch(path, options = {}) {
         }
         throw failure;
     }
-    try {
+    while (true) {
+        try {
 // --- READABILITY: Fetch ---
-        response = await fetch(`${getKiuPortalBackendUrl()}${path}`, {
-            method: options.method || 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(portalSessionToken ? { 'X-Portal-Session': portalSessionToken } : {}),
-                ...(options.headers || {})
-            },
-            body: options.body,
-            cache: 'no-store',
-            signal: controller ? controller.signal : undefined
-        });
-    } catch (error) {
-        runtime.online = false;
-        if (error?.name === 'AbortError') {
-            runtime.lastBackendError = `Portal backend timed out after ${Math.round(timeoutMs / 1000)}s.`;
-        } else if (String(error?.message || '').trim().toLowerCase() === 'failed to fetch') {
-            runtime.lastBackendError = `Portal backend unreachable at ${getKiuPortalBackendUrl()}. ${getKiuPortalBackendRecoveryHint()}`;
-        } else {
-            runtime.lastBackendError = error?.message || 'Portal backend is unavailable.';
+            response = await fetch(`${getKiuPortalBackendUrl()}${path}`, {
+                method: requestMethod,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(portalSessionToken ? { 'X-Portal-Session': portalSessionToken } : {}),
+                    ...(options.headers || {})
+                },
+                body: options.body,
+                cache: 'no-store',
+                signal: controller ? controller.signal : undefined
+            });
+            if (canRetryTransient && attempt === 0 && response.status >= 500) {
+                attempt += 1;
+                await new Promise((resolve) => setTimeout(resolve, 150));
+                continue;
+            }
+            break;
+        } catch (error) {
+            if (canRetryTransient && attempt === 0 && error?.name !== 'AbortError') {
+                attempt += 1;
+                await new Promise((resolve) => setTimeout(resolve, 150));
+                continue;
+            }
+            runtime.online = false;
+            if (error?.name === 'AbortError') {
+                runtime.lastBackendError = `Portal backend timed out after ${Math.round(timeoutMs / 1000)}s.`;
+            } else if (String(error?.message || '').trim().toLowerCase() === 'failed to fetch') {
+                runtime.lastBackendError = `Portal backend unreachable at ${getKiuPortalBackendUrl()}. ${getKiuPortalBackendRecoveryHint()}`;
+            } else {
+                runtime.lastBackendError = error?.message || 'Portal backend is unavailable.';
+            }
+            runtime.backendUnavailableUntil = Date.now() + KIU_PORTAL_BACKEND_COOLDOWN_MS;
+            if (timeout) clearTimeout(timeout);
+            const failure = new Error(runtime.lastBackendError);
+            failure.code = error?.name === 'AbortError' ? 'KIU_PORTAL_BACKEND_TIMEOUT' : 'KIU_PORTAL_BACKEND_OFFLINE';
+            failure.silent = true;
+            setPortalRuntimeDiagnostic({
+                kind: error?.name === 'AbortError' ? 'backend-timeout' : 'backend-unavailable',
+                code: failure.code,
+                path,
+                message: failure.message,
+                status: 0
+            });
+            throw failure;
         }
-        runtime.backendUnavailableUntil = Date.now() + KIU_PORTAL_BACKEND_COOLDOWN_MS;
-        const failure = new Error(runtime.lastBackendError);
-        failure.code = error?.name === 'AbortError' ? 'KIU_PORTAL_BACKEND_TIMEOUT' : 'KIU_PORTAL_BACKEND_OFFLINE';
-        failure.silent = true;
-        setPortalRuntimeDiagnostic({
-            kind: error?.name === 'AbortError' ? 'backend-timeout' : 'backend-unavailable',
-            code: failure.code,
-            path,
-            message: failure.message,
-            status: 0
-        });
-        throw failure;
-    } finally {
-        if (timeout) clearTimeout(timeout);
     }
+    if (timeout) clearTimeout(timeout);
     let payload = null;
     try {
         payload = await response.json();
@@ -265,7 +284,14 @@ async function kiuPortalFetch(path, options = {}) {
         payload = null;
     }
     if (!response.ok) {
-        runtime.online = response.status < 500;
+        if (response.status === 503) {
+            runtime.backendUnavailableUntil = publicEndpoint
+                ? Date.now() + KIU_PORTAL_BACKEND_COOLDOWN_MS
+                : Date.now() + 30000;
+            runtime.lastBackendError = payload?.error || 'Portal backend temporarily unavailable (503).';
+        } else {
+            runtime.online = response.status < 500;
+        }
         let message = payload?.error || payload?.message || `Portal backend request failed (${response.status}).`;
         if (response.status === 503 && payload?.code === 'offline') {
             message = `${message} ${getKiuPortalBackendRecoveryHint()}`;

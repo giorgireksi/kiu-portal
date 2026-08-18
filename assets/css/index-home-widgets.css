@@ -30,28 +30,6 @@
 #page-home #lux-home-shell .lux-student-summary-strip {
   min-height: 0;
   padding: 12px 18px;
-  animation: lux-student-pulse-in 420ms ease both;
-}
-
-#page-home #lux-home-shell .lux-student-command {
-  animation-delay: 60ms;
-}
-
-#page-home #lux-home-shell .lux-student-summary-strip {
-  animation-delay: 120ms;
-}
-
-@keyframes lux-student-pulse-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #page-home #lux-home-shell .lux-student-compact-header,
-  #page-home #lux-home-shell .lux-student-command,
-  #page-home #lux-home-shell .lux-student-summary-strip {
-    animation: none !important;
-  }
 }
 
 #page-home #lux-home-shell .lux-student-compact-header {

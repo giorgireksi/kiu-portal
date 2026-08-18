@@ -313,14 +313,14 @@ function updateRecipientOrdersSearch(value) {
     const currentUser = getCurrentUser();
     const uiState = ensureRecipientOrdersUiState(currentUser?.id);
     uiState.search = value || '';
-    renderOrdersInboxPage({ suppressAssembly: true });
+    renderOrdersInboxPage();
 }
 
 function setRecipientOrdersStatus(status) {
     const currentUser = getCurrentUser();
     const uiState = ensureRecipientOrdersUiState(currentUser?.id);
     uiState.status = status || 'all';
-    renderOrdersInboxPage({ suppressAssembly: true });
+    renderOrdersInboxPage();
 }
 
 function setRecipientOrdersLayoutFilter(field, value) {
@@ -328,14 +328,14 @@ function setRecipientOrdersLayoutFilter(field, value) {
     const uiState = ensureRecipientOrdersUiState(currentUser?.id);
     if (!uiState.layoutFilters) uiState.layoutFilters = {};
     uiState.layoutFilters[field] = value || 'all';
-    renderOrdersInboxPage({ suppressAssembly: true });
+    renderOrdersInboxPage();
 }
 
 function setRecipientOrdersDateFilter(field, value) {
     const currentUser = getCurrentUser();
     const uiState = ensureRecipientOrdersUiState(currentUser?.id);
     uiState[field === 'dateTo' ? 'dateTo' : 'dateFrom'] = value || '';
-    renderOrdersInboxPage({ suppressAssembly: true });
+    renderOrdersInboxPage();
 }
 
 function openRecipientOrder(orderId) {
@@ -345,7 +345,7 @@ function openRecipientOrder(orderId) {
     if (orderId) {
         markOrderAsRead(orderId, currentUser?.id);
     }
-    renderOrdersInboxPage({ suppressAssembly: true });
+    renderOrdersInboxPage();
 }
 function ensureRecipientOrdersShell(container) {
     if (!container.querySelector('[data-orders-inbox-shell="1"]')) {
@@ -780,15 +780,9 @@ function renderOrdersInboxAccessState(container, message) {
     `;
 }
 
-function settleRecipientOrdersAssemblyBeforeUpdate(container, options = {}) {
-    if (!options.suppressAssembly || !container?.querySelector?.('[data-orders-inbox-shell="1"]')) return;
-    const motion = window.__kiuOrdersLoadingMotion;
-    if (typeof motion?.forceReady === 'function') motion.forceReady();
-}
-
 function refreshRecipientOrdersAfterRealtime() {
     if (!document.getElementById('page-orders') && !document.getElementById('orders-inbox-root') && !document.getElementById('admin-orders-root')) return;
-    renderOrdersInboxPage({ suppressAssembly: true, force: true });
+    renderOrdersInboxPage({ force: true });
 }
 
 function renderOrdersInboxPage(options = {}) {
@@ -796,7 +790,6 @@ function renderOrdersInboxPage(options = {}) {
         || document.getElementById('orders-inbox-root')
         || (getEffectiveUserRole() !== USER_ROLES.ADMIN ? document.getElementById('admin-orders-root') : null);
     if (!container) return;
-    settleRecipientOrdersAssemblyBeforeUpdate(container, options);
     bindRecipientOrdersDelegates();
 
     const currentUser = getCurrentUser();

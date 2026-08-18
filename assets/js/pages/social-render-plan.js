@@ -422,7 +422,7 @@
             'task-graph-group-member',
         ]);
         // Background feed refresh/error must not remount other panels' centers —
-        // that aborts in-flight Exposé (and other) assembly intros mid-flight.
+        // that would unnecessarily replace an active panel during an update.
         if ((reason === 'feed' || reason === 'feed-error') && text(activePanel || '') !== 'feed') {
             return {
                 flash: false,

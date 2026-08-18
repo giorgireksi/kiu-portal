@@ -53,18 +53,15 @@ describe('local dev backend proxy regressions', () => {
         expect(localServerPolicy.isRetryableProxyError({ code: 'ENOTFOUND' })).toBe(false);
     });
 
-    it('keeps the public demo supervisor restarting an unhealthy web proxy and Funnel', () => {
+    it('delegates the public demo entry point to the production launcher', () => {
         const demo = readSource('start-public-demo.sh');
-        expect(demo).toContain('web_healthy');
-        expect(demo).toContain('ensure_funnel');
-        expect(demo).toContain('start_web_proxy');
-        expect(demo).toContain('[public-demo] web proxy unhealthy; restarting...');
-        expect(demo).toContain('funnel_points_here');
-        expect(demo).toContain('WATCHDOG_SECONDS');
-        expect(demo).toContain('open_url');
-        expect(demo).toContain('xdg-open');
-        expect(demo).toContain("$PUBLIC_URL/login.html");
-        expect(demo).not.toContain('sleep 3600');
+        const production = readSource('start-selfhosted-production.sh');
+
+        expect(demo).toContain('exec bash "$ROOT/start-selfhosted-production.sh" "$@"');
+        expect(production).toContain('PUBLIC_HOSTNAME="${KIU_PUBLIC_HOSTNAME:?KIU_PUBLIC_HOSTNAME is required in $ENV_FILE}"');
+        expect(production).toContain('-H "Host: ${PUBLIC_HOSTNAME}"');
+        expect(production).toContain('restart caddy');
+        expect(production).toContain('The public proxy/backend did not become ready');
     });
 
     it('blocks sensitive repository paths from public static delivery', () => {

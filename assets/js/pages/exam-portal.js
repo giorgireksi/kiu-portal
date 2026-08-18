@@ -414,12 +414,10 @@
         if (!button) return;
         if (isLoading) {
             button.dataset.originalHtml = button.innerHTML;
-            button.classList.add('is-loading');
             button.disabled = true;
-            button.innerHTML = `<span class="exam-spinner" aria-hidden="true"></span> ${escapeHtml(label || 'Working')}`;
+            button.innerHTML = escapeHtml(label || 'Working');
             return;
         }
-        button.classList.remove('is-loading');
         button.disabled = false;
         if (button.dataset.originalHtml) {
             button.innerHTML = button.dataset.originalHtml;
