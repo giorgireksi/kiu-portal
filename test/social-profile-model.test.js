@@ -70,7 +70,7 @@ describe('social-profile-model', () => {
         expect(inviteEligibleGroups()).toHaveLength(1);
     });
 
-    it('ESM leaf + bridge wired before social-page', () => {
+    it('ESM leaf loads on profile intent before the profile panel', () => {
         const page = readSource('assets/js/pages/social-page.js');
         const html = readSource('social.html');
         const mod = readSource('assets/js/pages/social-profile-model.js');
@@ -86,10 +86,10 @@ describe('social-profile-model', () => {
             'feedReason'
         ]) {
             expect(page).not.toMatch(new RegExp(`function\\s+${name}\\s*\\(`));
-            expect(page).toMatch(new RegExp(`const ${name} = window\\.${name}`));
+            expect(page).toContain(`resolveSocialProfileModelFunction('${name}'`);
         }
-        expect(html).toMatch(/type="module"\s+src="assets\/js\/pages\/social-profile-model\.js/);
-        expect(html).toContain('social-profile-model-bridge.js');
-        expect(html.indexOf('social-profile-model.js')).toBeLessThan(html.indexOf('social-page.js'));
+        expect(html).not.toMatch(/type="module"\s+src="assets\/js\/pages\/social-profile-model\.js/);
+        expect(page).toContain('SOCIAL_PROFILE_MODEL_URL');
+        expect(page).toContain("loadSocialDynamicModule(SOCIAL_PROFILE_MODEL_URL, 'Social profile model')");
     });
 });

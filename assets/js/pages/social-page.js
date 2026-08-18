@@ -162,7 +162,9 @@ Publishes only the host/runtime contract consumed by its loader.
     const PHOTOGRAPHY_UPLOAD_FILE_SINK_ID = 'kiu-photography-upload-file-sink';
     const PHOTOGRAPHY_UPLOAD_MAX_BYTES = 25 * 1024 * 1024;
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260816-customscroll4';
+    const SOCIAL_PROFILE_MODEL_URL = 'assets/js/pages/social-profile-model.js?v=20260820-socialintent1';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
+    const SOCIAL_WORKSPACE_RISK_MODEL_URL = 'assets/js/pages/social-workspace-risk-model.js?v=20260820-socialintent1';
     const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260807-socialtopnav34';
     const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260807-socialtopnav34';
     const SOCIAL_FEED_COMMENTS_MODULE_URL = 'assets/js/pages/social-feed-comments-runtime.js?v=20260728-socshell25';
@@ -1013,7 +1015,8 @@ Publishes only the host/runtime contract consumed by its loader.
             updatePortalSocialProfile,
             readFileAsDataUrl
         };
-        socialProfileModulePromise = loadSocialDynamicScript(SOCIAL_PROFILE_MODULE_URL, 'Social profile module')
+        socialProfileModulePromise = loadSocialDynamicModule(SOCIAL_PROFILE_MODEL_URL, 'Social profile model')
+            .then(() => loadSocialDynamicScript(SOCIAL_PROFILE_MODULE_URL, 'Social profile module'))
             .then(() => true)
             .catch((error) => {
             console.error('Social profile module load failed.', error);
@@ -1111,6 +1114,26 @@ Publishes only the host/runtime contract consumed by its loader.
         if (window.__kiuSocialModuleFailures) {
             panels.forEach((panel) => delete window.__kiuSocialModuleFailures[panel]);
         }
+    }
+    function loadSocialDynamicModule(url, label = 'Social module') {
+        const existing = document.querySelector(`script[type="module"][src="${url}"]`);
+        const script = existing || document.createElement('script');
+        if (!existing) {
+            script.type = 'module';
+            script.src = url;
+            document.head.appendChild(script);
+        }
+        return waitForDynamicScript(script)
+            .then(() => {
+                clearSocialModuleFailure(label);
+                return true;
+            })
+            .catch((error) => {
+                discardSocialDynamicScript(script);
+                const failure = new Error(`${label} could not be loaded.`, { cause: error });
+                reportSocialModuleFailure(label, failure);
+                throw failure;
+            });
     }
     function loadSocialDynamicScript(url, label = 'Social module') {
         const existing = document.querySelector(`script[src="${url}"]`);
@@ -1260,13 +1283,16 @@ Publishes only the host/runtime contract consumed by its loader.
         // Factories do not execute until the final coordinator is loaded. Keep
         // dependency phases intact, but fetch independent peels together so a
         // weak connection does not pay for 20+ sequential round trips.
-        socialWorkspaceModulePromise = loadWorkspaceBatch([
+        socialWorkspaceModulePromise = Promise.all([
+            loadSocialDynamicModule(SOCIAL_WORKSPACE_RISK_MODEL_URL, 'Social workspace risk model'),
+            loadWorkspaceBatch([
             SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL,
             SOCIAL_WORKSPACE_HEALTH_MODEL_URL,
             SOCIAL_WORKSPACE_GRAPH_DESK_MODEL_URL,
             SOCIAL_WORKSPACE_GRAPH_MODEL_URL,
             SOCIAL_WORKSPACE_PORTFOLIO_MODEL_URL,
             SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL
+            ])
         ])
             .then(() => loadWorkspaceBatch([
                 SOCIAL_WORKSPACE_GRAPH_SYNC_RUNTIME_URL,
@@ -1847,32 +1873,39 @@ Publishes only the host/runtime contract consumed by its loader.
     const prefillEventEditDraft = window.prefillEventEditDraft || (window.KiuSocialChromeModel || {}).prefillEventEditDraft;
     const eventCanManage = window.eventCanManage || (window.KiuSocialChromeModel || {}).eventCanManage;
     const renderContextTabs = window.renderContextTabs || (window.KiuSocialChromeModel || {}).renderContextTabs;
-    const connectionStatusFor = window.connectionStatusFor || (window.KiuSocialProfileModel || {}).connectionStatusFor;
-    const profileAccount = window.profileAccount || (window.KiuSocialProfileModel || {}).profileAccount;
-    const profilePosts = window.profilePosts || (window.KiuSocialProfileModel || {}).profilePosts;
-    const profileFriends = window.profileFriends || (window.KiuSocialProfileModel || {}).profileFriends;
-    const profileFriendCount = window.profileFriendCount || (window.KiuSocialProfileModel || {}).profileFriendCount;
-    const profilePostCount = window.profilePostCount || (window.KiuSocialProfileModel || {}).profilePostCount;
-    const profileBio = window.profileBio || (window.KiuSocialProfileModel || {}).profileBio;
-    const profileCover = window.profileCover || (window.KiuSocialProfileModel || {}).profileCover;
-    const profileEditable = window.profileEditable || (window.KiuSocialProfileModel || {}).profileEditable;
-    const profileFollowingItems = window.profileFollowingItems || (window.KiuSocialProfileModel || {}).profileFollowingItems;
-    const profileFollowingCount = window.profileFollowingCount || (window.KiuSocialProfileModel || {}).profileFollowingCount;
-    const mutualConnectionCount = window.mutualConnectionCount || (window.KiuSocialProfileModel || {}).mutualConnectionCount;
-    const pageParticipantIds = window.pageParticipantIds || (window.KiuSocialProfileModel || {}).pageParticipantIds;
-    const groupParticipantIds = window.groupParticipantIds || (window.KiuSocialProfileModel || {}).groupParticipantIds;
-    const sharedGroupsWithUser = window.sharedGroupsWithUser || (window.KiuSocialProfileModel || {}).sharedGroupsWithUser;
-    const sharedPagesWithUser = window.sharedPagesWithUser || (window.KiuSocialProfileModel || {}).sharedPagesWithUser;
-    const personLatestPost = window.personLatestPost || (window.KiuSocialProfileModel || {}).personLatestPost;
-    const personActivityLabel = window.personActivityLabel || (window.KiuSocialProfileModel || {}).personActivityLabel;
-    const personProfileCompleteness = window.personProfileCompleteness || (window.KiuSocialProfileModel || {}).personProfileCompleteness;
-    const isStaffAccount = window.isStaffAccount || (window.KiuSocialProfileModel || {}).isStaffAccount;
-    const canPublishOfficialSurveys = window.canPublishOfficialSurveys || (window.KiuSocialProfileModel || {}).canPublishOfficialSurveys;
-    const personRoleBadges = window.personRoleBadges || (window.KiuSocialProfileModel || {}).personRoleBadges;
-    const personSuggestionScore = window.personSuggestionScore || (window.KiuSocialProfileModel || {}).personSuggestionScore;
-    const personSuggestionReason = window.personSuggestionReason || (window.KiuSocialProfileModel || {}).personSuggestionReason;
-    const inviteEligibleGroups = window.inviteEligibleGroups || (window.KiuSocialProfileModel || {}).inviteEligibleGroups;
-    const audienceBadge = window.audienceBadge || (window.KiuSocialProfileModel || {}).audienceBadge;
+    function resolveSocialProfileModelFunction(name, fallback) {
+        return (...args) => {
+            const impl = window[name] || (window.KiuSocialProfileModel || {})[name];
+            if (typeof impl === 'function' && impl !== resolveSocialProfileModelFunction) return impl(...args);
+            return fallback(...args);
+        };
+    }
+    const connectionStatusFor = resolveSocialProfileModelFunction('connectionStatusFor', () => ({ state: 'none' }));
+    const profileAccount = resolveSocialProfileModelFunction('profileAccount', (id) => typeof accountById === 'function' ? accountById(id) : null);
+    const profilePosts = resolveSocialProfileModelFunction('profilePosts', () => []);
+    const profileFriends = resolveSocialProfileModelFunction('profileFriends', () => []);
+    const profileFriendCount = resolveSocialProfileModelFunction('profileFriendCount', (id) => profileFriends(id).length);
+    const profilePostCount = resolveSocialProfileModelFunction('profilePostCount', (id) => profilePosts(id).length);
+    const profileBio = resolveSocialProfileModelFunction('profileBio', (account) => text(account?.bio || ''));
+    const profileCover = resolveSocialProfileModelFunction('profileCover', (account) => text(account?.coverImage || account?.cover || ''));
+    const profileEditable = resolveSocialProfileModelFunction('profileEditable', () => false);
+    const profileFollowingItems = resolveSocialProfileModelFunction('profileFollowingItems', () => []);
+    const profileFollowingCount = resolveSocialProfileModelFunction('profileFollowingCount', (id) => profileFollowingItems(id).length);
+    const mutualConnectionCount = resolveSocialProfileModelFunction('mutualConnectionCount', () => 0);
+    const pageParticipantIds = resolveSocialProfileModelFunction('pageParticipantIds', () => []);
+    const groupParticipantIds = resolveSocialProfileModelFunction('groupParticipantIds', () => []);
+    const sharedGroupsWithUser = resolveSocialProfileModelFunction('sharedGroupsWithUser', () => []);
+    const sharedPagesWithUser = resolveSocialProfileModelFunction('sharedPagesWithUser', () => []);
+    const personLatestPost = resolveSocialProfileModelFunction('personLatestPost', () => null);
+    const personActivityLabel = resolveSocialProfileModelFunction('personActivityLabel', () => '');
+    const personProfileCompleteness = resolveSocialProfileModelFunction('personProfileCompleteness', () => 0);
+    const isStaffAccount = resolveSocialProfileModelFunction('isStaffAccount', () => false);
+    const canPublishOfficialSurveys = resolveSocialProfileModelFunction('canPublishOfficialSurveys', () => false);
+    const personRoleBadges = resolveSocialProfileModelFunction('personRoleBadges', () => []);
+    const personSuggestionScore = resolveSocialProfileModelFunction('personSuggestionScore', () => 0);
+    const personSuggestionReason = resolveSocialProfileModelFunction('personSuggestionReason', () => '');
+    const inviteEligibleGroups = resolveSocialProfileModelFunction('inviteEligibleGroups', () => []);
+    const audienceBadge = resolveSocialProfileModelFunction('audienceBadge', () => 'Campus');
 
     /**
      * Returns a human-readable context line explaining why a post appears in the feed.
@@ -1881,7 +1914,7 @@ Publishes only the host/runtime contract consumed by its loader.
      * @param {Object} author - The resolved author account.
      * @returns {string} A short explanation like "Active in Study Group" or "Same faculty as you".
      */
-    const feedReason = window.feedReason || (window.KiuSocialProfileModel || {}).feedReason;
+    const feedReason = resolveSocialProfileModelFunction('feedReason', () => 'Visible to campus');
 
     /**
      * Returns (and lazily initialises) the global social hub state bucket

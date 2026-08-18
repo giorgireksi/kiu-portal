@@ -22,7 +22,7 @@ describe('Wave 20 module boundaries', () => {
         expect(bareAssigns.length).toBeLessThanOrEqual(10);
     });
 
-    it('risk model is ESM namespace-only with classic bridge', () => {
+    it('risk model is a lazy ESM namespace-only workspace dependency', () => {
         const model = readAsset('assets/js/pages/social-workspace-risk-model.js');
         const bridge = readAsset('assets/js/pages/social-workspace-risk-model-bridge.js');
         const html = readAsset('social.html');
@@ -31,9 +31,8 @@ describe('Wave 20 module boundaries', () => {
         expect(model).not.toMatch(/Object\.keys\(api\)\.forEach/);
         expect(bridge).toContain('KiuSocialWorkspaceRiskModel');
         expect(bridge).not.toMatch(/Object\.keys\(api\)\.forEach/);
-        expect(html).toContain('type="module" src="assets/js/pages/social-workspace-risk-model.js');
-        expect(html).toContain('social-workspace-risk-model-bridge.js');
-        expect(html.indexOf('social-workspace-risk-model.js')).toBeLessThan(html.indexOf('social-workspace-risk-model-bridge.js'));
+        expect(html).not.toContain('type="module" src="assets/js/pages/social-workspace-risk-model.js');
+        expect(readAsset('assets/js/pages/social-page.js')).toContain('loadSocialDynamicModule(SOCIAL_WORKSPACE_RISK_MODEL_URL');
     });
 
     it('portal social runtime loads ESM leaf before classic bridge (no Promise.all race)', () => {

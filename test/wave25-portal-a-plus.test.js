@@ -10,15 +10,15 @@ function readAsset(rel) {
 }
 
 describe('Wave 25 Portal A+ 10', () => {
-    it('social-profile-model is an ESM leaf with classic bridge', () => {
+    it('social-profile-model is a lazy ESM leaf with an explicit intent loader', () => {
         const html = readAsset('social.html');
         const model = readAsset('assets/js/pages/social-profile-model.js');
         const bridge = readAsset('assets/js/pages/social-profile-model-bridge.js');
         expect(model).toMatch(/export\s+function\s+installSocialProfileModel/);
         expect(model).toMatch(/export\s+const\s+\w+Api/);
         expect(bridge).toContain('ESM leaf missing');
-        expect(html).toMatch(/type="module"\s+src="assets\/js\/pages\/social-profile-model\.js/);
-        expect(html).toContain('social-profile-model-bridge.js');
+        expect(html).not.toMatch(/type="module"\s+src="assets\/js\/pages\/social-profile-model\.js/);
+        expect(readAsset('assets/js/pages/social-page.js')).toContain('loadSocialDynamicModule(SOCIAL_PROFILE_MODEL_URL');
     });
 
     it('LMS quiz + whiteboard models are ESM leaves with bridges in MODULE_URLS', () => {
