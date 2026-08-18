@@ -623,16 +623,18 @@ function ensureStudioChipBurstHandler() {
     if (ensureStudioChipBurstHandler._bound || typeof document === 'undefined') return;
     ensureStudioChipBurstHandler._bound = true;
     const chipSelector = '.lux-mode-btn, .lux-control-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], [data-glass-blur-quality], .lux-palette-chip, .lux-apply-btn, .lux-bg-gallery-tab';
+    const socialChipSelector = `button, .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-control-btn, .lux-mode-btn, .lux-tab-btn, .lux-icon-btn, .lux-picker-btn, [role="button"]`;
     document.addEventListener('pointerdown', (event) => {
         if (event.button !== 0) return;
-        const root = event.target.closest('#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop');
+        const root = event.target.closest('#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop, #social-neo-overlay-portal, #public-social-root');
         if (!root) return;
+        const isSocialRoot = root.matches('#social-neo-overlay-portal, #public-social-root');
         if (event.target.closest('.lux-bg-gallery-tile, #lux-bg-gallery-upload, #lux-bg-gallery-upload-label, [data-gallery-empty-upload]')) return;
         const shell = event.target.closest('.lux-bg-mode-item, .lux-fog-profile-item');
         const target = shell && root.contains(shell)
             ? shell
-            : event.target.closest(chipSelector);
-        if (!target || !root.contains(target) || target.disabled) return;
+            : event.target.closest(isSocialRoot ? socialChipSelector : chipSelector);
+        if (!target || !root.contains(target) || target.disabled || target.matches('[aria-disabled="true"], .lux-scroll-rail__btn, .social-project-task-graph-link-handle')) return;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const burstTarget = target;
         const burstRoot = root;

@@ -8,7 +8,8 @@ const read = (path) => readFileSync(join(root, path), 'utf8');
 describe('Social button motion trial', () => {
     it('loads a route-scoped motion sheet for Social', () => {
         const html = read('social.html');
-        expect(html).toContain('assets/css/social-button-motion.css?v=20260819-socialmotion7');
+        expect(html).toContain('assets/css/social-button-motion.css?v=20260819-socialmotion8');
+        expect(html).toContain('assets/js/features/luxury-shell-chrome.js?v=20260819-socialburst1');
         expect(read('index.html')).not.toContain('social-button-motion.css');
     });
 
@@ -34,6 +35,9 @@ describe('Social button motion trial', () => {
         expect(css).toContain('prefers-reduced-motion: reduce');
         expect(css).toContain('.lux-scroll-rail__btn');
         expect(css).toContain('.social-project-task-graph-link-handle');
+        expect(css).toContain('#public-social-root > .lux-chip-burst-particle');
+        expect(read('assets/js/features/luxury-shell-chrome.js')).toContain('#public-social-root');
+        expect(read('assets/js/features/luxury-shell-chrome.js')).toContain('const socialChipSelector');
         expect(css).not.toMatch(/^[^{]*\bbutton\b[^.{]*\{/m);
     });
 });
