@@ -1513,23 +1513,11 @@ Publishes only the host/runtime contract consumed by its loader.
     function scheduleDeferredDesktopModulePrefetch() {
         if (socialDesktopModulePrefetchScheduled) return;
         socialDesktopModulePrefetchScheduled = true;
+        // Keep the normal boot path limited to the active panel. Modules for
+        // other panels are warmed only by pointer intent or keyboard focus;
+        // warming the entire graph after first paint creates a large CPU burst
+        // and competes with the first interaction on constrained devices.
         bindSocialPanelIntentPrefetch();
-        const connection = typeof navigator !== 'undefined'
-            ? (navigator.connection || navigator.mozConnection || navigator.webkitConnection)
-            : null;
-        if (connection?.saveData) return;
-        const runPrefetch = () => {
-            // Warm panel code after the first feed paint. This removes the cold
-            // module/loading surface from normal panel switching without putting
-            // the entire Social graph on the critical startup path.
-            Object.keys(SOCIAL_PANEL_MODULE_WARMERS)
-                .forEach(warmSocialPanelModule);
-        };
-        if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(() => runPrefetch(), { timeout: 700 });
-            return;
-        }
-        window.setTimeout(runPrefetch, 700);
     }
     function scheduleDirectoryPrefetch() {
         if (socialDirectoryPrefetchScheduled) return;

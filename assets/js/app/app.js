@@ -835,7 +835,7 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
         });
     }
 
-    const SOCIAL_RUNTIME_VERSION = '20260808-overallperf1';
+    const SOCIAL_RUNTIME_VERSION = '20260820-socialintent1';
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
         [
             'assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1',

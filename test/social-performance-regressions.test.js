@@ -19,7 +19,7 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260819-socialwarm2');
+        expect(html).toContain('social-page.js?v=20260820-socialintent1');
         expect(html).toContain('social-page-interactions-runtime.js?v=20260820-switchnoflicker2');
         expect(html).not.toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
         expect(html).toContain('luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1');
@@ -53,10 +53,11 @@ describe('social performance safeguards', () => {
         expect(boot).toContain('window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED = true;');
         expect(standalone).toContain('scheduleStandaloneServiceWorkerRegistration');
         expect(standalone).toContain('requestIdleCallback(register, { timeout: 2500 })');
-        expect(page).toContain('requestIdleCallback(() => runPrefetch(), { timeout: 700 });');
-        expect(page).toContain('window.setTimeout(runPrefetch, 700);');
+        expect(page).not.toContain('Object.keys(SOCIAL_PANEL_MODULE_WARMERS)');
+        expect(page).not.toContain('window.setTimeout(runPrefetch, 700);');
         expect(page).toContain('SOCIAL_PANEL_MODULE_WARMERS');
         expect(page).toContain('bindSocialPanelIntentPrefetch');
+        expect(page).toContain('warming the entire graph after first paint');
     });
 
     it('parallelizes workspace peels and does not serialize chat paint on bootstrap', () => {
