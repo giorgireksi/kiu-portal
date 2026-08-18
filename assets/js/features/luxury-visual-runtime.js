@@ -129,12 +129,20 @@
         }
     }
 
+    function getHeavySurfaceObservationRoot(scrollRoot) {
+        if (scrollRoot) return scrollRoot;
+        return document.querySelector('.page-section.active-page')
+            || document.getElementById('app-content')
+            || document;
+    }
+
     function refreshHeavySurfaceObservation() {
         if (!('IntersectionObserver' in window) || !document.body) return;
         const scrollRoot = getHeavySurfaceScrollRoot();
-        const observerSignature = `${scrollRoot?.id || scrollRoot?.className || 'null'}|${LUX_HEAVY_SCROLL_SURFACE_SELECTOR}`;
+        const observationRoot = getHeavySurfaceObservationRoot(scrollRoot);
+        const observerSignature = `${scrollRoot?.id || scrollRoot?.className || 'null'}|${observationRoot?.id || observationRoot?.className || 'document'}|${LUX_HEAVY_SCROLL_SURFACE_SELECTOR}`;
         if (__luxHeavySurfaceObserver && __luxHeavySurfaceObserverSignature === observerSignature) {
-            document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
+            observationRoot.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
                 if (!node || node.dataset.luxObservedSurface === '1') return;
                 if (node.closest('#lux-home-shell .lux-home-merged') && !node.classList.contains('lux-home-merged')) return;
                 if (node.closest('#lux-home-shell .lux-home-grid') && !node.classList.contains('lux-home-grid')) return;
@@ -184,7 +192,7 @@
             rootMargin: getHeavySurfaceObserverRootMargin(),
             threshold: 0.01
         });
-        document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
+        observationRoot.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
             if (!node) return;
             if (node.closest('#lux-home-shell .lux-home-merged') && !node.classList.contains('lux-home-merged')) return;
             if (node.closest('#lux-home-shell .lux-home-grid') && !node.classList.contains('lux-home-grid')) return;
@@ -612,7 +620,8 @@
                 }, 150);
             }
         });
-        observer.observe(document.body, {
+        const observationRoot = document.getElementById('app-content') || document.body;
+        observer.observe(observationRoot, {
             childList: true,
             subtree: true,
             attributes: false /* PERF: stop watching style/class — caused feedback loops */

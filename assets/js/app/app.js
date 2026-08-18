@@ -1671,7 +1671,7 @@ enforceSingleRuntimeEntrypoint();
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     const PORTAL_CACHE_RESET_VERSION = '20260808-overallperf1';
-    const PORTAL_SERVICE_WORKER_VERSION = '20260819-fastboot2';
+    const PORTAL_SERVICE_WORKER_VERSION = '20260819-fastboot3';
 
     async function clearPortalSiteCaches(force = false) {
         try {
@@ -1743,9 +1743,18 @@ enforceSingleRuntimeEntrypoint();
         }
     }
 
+    function scheduleWorkerRegistration() {
+        const schedule = window.requestIdleCallback;
+        if (typeof schedule === 'function') {
+            schedule(registerWorker, { timeout: 2500 });
+        } else {
+            window.setTimeout(registerWorker, 1200);
+        }
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', registerWorker, { once: true });
+        document.addEventListener('DOMContentLoaded', scheduleWorkerRegistration, { once: true });
     } else {
-        registerWorker();
+        scheduleWorkerRegistration();
     }
 })();

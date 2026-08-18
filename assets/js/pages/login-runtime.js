@@ -130,10 +130,11 @@ function getLoginRoleDefaultTarget(role = 'student') {
 }
 
 async function kiuPortalFetch(path, options = {}) {
-    await Promise.race([
-        LOGIN_SERVICE_WORKER_UPDATE,
-        new Promise((resolve) => setTimeout(resolve, 800))
-    ]);
+    // Service-worker registration is a background cache/update task, not a
+    // prerequisite for same-origin login/API requests. Do not put it on the
+    // first interaction critical path; the registration started above can
+    // finish independently while this request proceeds.
+    void LOGIN_SERVICE_WORKER_UPDATE;
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     const timeoutHandle = controller
         ? setTimeout(() => controller.abort(), LOGIN_PORTAL_BACKEND_TIMEOUT_MS)

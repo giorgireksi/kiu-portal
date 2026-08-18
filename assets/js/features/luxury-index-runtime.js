@@ -275,8 +275,10 @@ return {
         const adminToolsRoot = document.body.classList.contains('lux-route-admin-tools')
             ? document.getElementById('lux-admin-tools-shell')
             : null;
-        const observerSignature = `${scrollRoot?.id || scrollRoot?.className || 'null'}|${adminToolsRoot?.id || 'all'}|${LUX_HEAVY_SCROLL_SURFACE_SELECTOR}`;
-        const surfaceQueryRoot = adminToolsRoot || document;
+        const activePageRoot = document.querySelector('.page-section.active-page')
+            || document.getElementById('app-content');
+        const surfaceQueryRoot = adminToolsRoot || activePageRoot || document;
+        const observerSignature = `${scrollRoot?.id || scrollRoot?.className || 'null'}|${surfaceQueryRoot?.id || surfaceQueryRoot?.className || 'document'}|${LUX_HEAVY_SCROLL_SURFACE_SELECTOR}`;
         if (__luxHeavySurfaceObserver && __luxHeavySurfaceObserverSignature === observerSignature) {
             surfaceQueryRoot.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
                 if (!node || node.dataset.luxObservedSurface === '1') return;
@@ -740,7 +742,7 @@ return {
         // shell chrome, and background portals) while preserving all route UI.
         const observerRoot = document.body.classList.contains('lux-route-admin-tools')
             ? document.getElementById('lux-admin-tools-shell') || document.body
-            : document.body;
+            : document.getElementById('app-content') || document.body;
         /* PERFORMANCE: Debounce — collect 150ms of DOM changes, then process once */
         let _legacyDebounceTimer = null;
         let _legacyPendingNodes = new Set();

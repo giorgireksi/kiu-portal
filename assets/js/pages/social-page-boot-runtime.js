@@ -253,6 +253,16 @@
             if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(message, 'danger');
             if (typeof renderSocialPageNow === 'function') renderSocialPageNow('pin-api-health');
         }
+        function waitForSocialInitialPaint() {
+            return new Promise((resolve) => {
+                if (typeof window.requestAnimationFrame === 'function') {
+                    window.requestAnimationFrame(() => resolve());
+                } else {
+                    window.setTimeout(resolve, 0);
+                }
+            });
+        }
+
         function ensureActivePanelModule(panel) {
             const id = text(panel || 'feed') || 'feed';
             const ensureByPanel = {
@@ -285,8 +295,15 @@
             window.__kiuSocialPatchPostReactions = patchPostReactions;
             window.__kiuSocialPatchCommentReactions = patchCommentReactionsByIds;
             window.__kiuSocialPatchEventRsvp = patchEventRsvpButtons;
-            // Fast initial render on frame 0 — paints immediately for sub-second LCP
-            renderOrRetry();
+            // Render the shell without allowing lazy panel stubs to start their
+            // entire module graph before the browser gets its first paint.
+            window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED = true;
+            try {
+                renderOrRetry();
+            } finally {
+                window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED = false;
+            }
+            await waitForSocialInitialPaint();
 
             const runHydrate = typeof ensurePortalSocialRuntimeLoaded === 'function'
                 ? () => Promise.resolve(ensurePortalSocialRuntimeLoaded()).catch(() => null)

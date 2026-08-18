@@ -36,11 +36,11 @@ const SHELL_ASSETS = [
   '/assets/css/index-home-role.css?v=20260725-homefoucdedup1',
   '/assets/js/theme-primer.js?v=20260819-fastboot1',
   '/assets/js/app/portal-runtime-globals.js?v=20260818-runtimeglobals1',
-  '/assets/js/app/social-standalone-bootstrap.js?v=20260819-fastboot2',
+  '/assets/js/app/social-standalone-bootstrap.js?v=20260819-fastboot3',
   '/assets/js/features/navigation.js?v=20260819-fastboot1',
   '/assets/js/shared/news-home.js?v=20260809-homeassembly2',
-  '/assets/js/features/luxury-index-runtime.js?v=20260818-visualqueue1',
-  '/assets/js/features/luxury-visual-runtime.js?v=20260818-schedulerpaint1',
+  '/assets/js/features/luxury-index-runtime.js?v=20260819-routeobservation1',
+  '/assets/js/features/luxury-visual-runtime.js?v=20260819-routeobservation1',
   '/assets/js/features/luxury-index-home-shell-runtime.js?v=20260720-w18',
   '/assets/js/features/luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1',
   '/assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3',
@@ -54,10 +54,10 @@ const SHELL_ASSETS = [
   '/assets/js/pages/index-mobile-shell.js?v=20260809-homeassembly1',
   '/assets/js/pages/social-page-shell-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-dedupe5',
   '/assets/js/pages/social-page-interactions-runtime.js?v=20260810-socialbootveil2&perf=20260816-singleowner9',
-  '/assets/js/pages/social-page-boot-runtime.js?v=20260815-socialassemblyclean1&perf=20260816-recovery2',
+  '/assets/js/pages/social-page-boot-runtime.js?v=20260819-socialbootsequence1',
   '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
   '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
-  '/assets/js/pages/social-page.js?v=20260818-shellfailopen1',
+  '/assets/js/pages/social-page.js?v=20260819-socialbootsequence1',
 ];
 
 function isVersionedAssetUrl(url) {

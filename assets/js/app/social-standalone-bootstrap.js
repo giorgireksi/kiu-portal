@@ -144,8 +144,16 @@ window.convertTimeToMinutes = convertTimeToMinutes;
 
 // Standalone Social pages may never load app.js, but they still need to
 // advance an existing service worker so query-bearing navigations receive the
-// current shell-recovery logic.
-if (window.location.protocol === 'https:' && 'serviceWorker' in navigator) {
-    navigator.serviceWorker.register(`service-worker.js?v=20260819-fastboot2`, { scope: './' })
+// current shell-recovery logic. Registration/cache work is intentionally
+// scheduled after the first paint rather than competing with the shell boot.
+function scheduleStandaloneServiceWorkerRegistration() {
+    if (window.location.protocol !== 'https:' || !('serviceWorker' in navigator)) return;
+    const register = () => navigator.serviceWorker.register(`service-worker.js?v=20260819-fastboot3`, { scope: './' })
         .catch(() => null);
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(register, { timeout: 2500 });
+    } else {
+        window.setTimeout(register, 1200);
+    }
 }
+scheduleStandaloneServiceWorkerRegistration();

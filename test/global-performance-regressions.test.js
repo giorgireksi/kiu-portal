@@ -111,6 +111,33 @@ describe('global interaction performance guardrails', () => {
         expect(transparency).not.toContain("const surfaceElements = document.querySelectorAll(allSelectors.join(', '));");
     });
 
+  it('scopes heavy-surface observation to the active route root', () => {
+    const visualRuntime = readSource('assets/js/features/luxury-visual-runtime.js');
+
+    expect(visualRuntime).toContain('function getHeavySurfaceObservationRoot(scrollRoot)');
+    expect(visualRuntime).toContain("document.querySelector('.page-section.active-page')");
+    expect(visualRuntime).toContain('observationRoot.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR)');
+    expect(visualRuntime).toContain("const observationRoot = document.getElementById('app-content') || document.body;");
+    expect(visualRuntime).not.toContain('document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR)');
+  });
+
+  it('defers service-worker cache work off the initial route boot burst', () => {
+    const app = readSource('assets/js/app/app.js');
+
+    expect(app).toContain('function scheduleWorkerRegistration()');
+    expect(app).toContain("schedule(registerWorker, { timeout: 2500 });");
+    expect(app).toContain('window.setTimeout(registerWorker, 1200);');
+  });
+
+  it('scopes shared luxury observers to the active route content', () => {
+    const luxuryRuntime = readSource('assets/js/features/luxury-index-runtime.js');
+
+    expect(luxuryRuntime).toContain("document.querySelector('.page-section.active-page')");
+    expect(luxuryRuntime).toContain("document.getElementById('app-content') || document.body");
+    expect(luxuryRuntime).toContain('const surfaceQueryRoot = adminToolsRoot || activePageRoot || document;');
+    expect(luxuryRuntime).not.toContain('const surfaceQueryRoot = adminToolsRoot || document;');
+  });
+
   it('keeps saveState from scanning every node on the page', () => {
     const state = readSource('assets/js/app/state.js');
 

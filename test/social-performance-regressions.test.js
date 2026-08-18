@@ -19,7 +19,7 @@ describe('social performance safeguards', () => {
     it('cache-busts the optimized route runtimes', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
-        expect(html).toContain('social-page.js?v=20260818-shellfailopen1');
+        expect(html).toContain('social-page.js?v=20260819-socialbootsequence1');
         expect(html).not.toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
         expect(html).toContain('luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
@@ -41,6 +41,19 @@ describe('social performance safeguards', () => {
         expect(shell).toContain('__kiuDeferredModuleRenderKey');
         expect(shell).toContain('delete liveHost.__kiuDeferredModuleRenderKey');
         expect(shell).toContain("renderReason === 'photography-module'");
+    });
+
+    it('lets the first shell paint before lazy Social modules start', () => {
+        const page = readSource('assets/js/pages/social-page.js');
+        const boot = readSource('assets/js/pages/social-page-boot-runtime.js');
+        const standalone = readSource('assets/js/app/social-standalone-bootstrap.js');
+        expect(page).toContain('window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED');
+        expect(boot).toContain('waitForSocialInitialPaint');
+        expect(boot).toContain('window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED = true;');
+        expect(standalone).toContain('scheduleStandaloneServiceWorkerRegistration');
+        expect(standalone).toContain('requestIdleCallback(register, { timeout: 2500 })');
+        expect(page).toContain('requestIdleCallback(() => runPrefetch(), { timeout: 5000 });');
+        expect(page).toContain('window.setTimeout(runPrefetch, 4000);');
     });
 
     it('parallelizes workspace peels and does not serialize chat paint on bootstrap', () => {

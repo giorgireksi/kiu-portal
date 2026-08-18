@@ -1343,6 +1343,9 @@ Publishes only the host/runtime contract consumed by its loader.
         function stub(...args) {
             const impl = resolveSocialExportImpl(name);
             if (has() && typeof impl === 'function' && impl !== stub) return impl(...args);
+            if (window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED) {
+                return typeof fallback === 'function' ? fallback(...args) : fallback;
+            }
             const pending = ensure();
             if (afterLoad && pending && typeof pending.then === 'function') {
                 pending.then(afterLoad).catch(() => null);
@@ -1361,6 +1364,9 @@ Publishes only the host/runtime contract consumed by its loader.
             const impl = resolveSocialExportImpl(name);
             if (hasSocialWorkspaceModule() && typeof impl === 'function' && impl !== stub) {
                 return impl(...args);
+            }
+            if (window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED) {
+                return typeof fallback === 'function' ? fallback(...args) : fallback;
             }
             ensureSocialWorkspaceModule().catch(() => null);
             if (typeof fallback === 'function') return fallback(...args);
@@ -1471,10 +1477,10 @@ Publishes only the host/runtime contract consumed by its loader.
                 .catch(() => null);
         };
         if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(() => runPrefetch(), { timeout: 3000 });
+            window.requestIdleCallback(() => runPrefetch(), { timeout: 5000 });
             return;
         }
-        window.setTimeout(runPrefetch, 1200);
+        window.setTimeout(runPrefetch, 4000);
     }
     function scheduleDirectoryPrefetch() {
         if (socialDirectoryPrefetchScheduled) return;
