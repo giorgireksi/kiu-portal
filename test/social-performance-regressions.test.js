@@ -20,6 +20,7 @@ describe('social performance safeguards', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
         expect(html).toContain('social-page.js?v=20260820-socialmodels4');
+        expect(html).toContain('route-boot-skeleton--social');
         expect(html).toContain('social-page-interactions-runtime.js?v=20260820-switchnoflicker2');
         expect(html).not.toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
         expect(html).toContain('luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1');

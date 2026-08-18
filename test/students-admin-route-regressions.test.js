@@ -15,6 +15,7 @@ describe('students admin route regressions.test', () => {
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).toContain('lux-page-bare-lite.css');
         expect(html).toMatch(/class="[^"]*lux-page-bare/);
+        expect(html).toContain('route-boot-skeleton--directory');
         // Must not load the shared luxury paint sheet (looks like full design if present)
         expect(html).not.toMatch(/href=["'][^"']*index-luxury\.css/);
         expect(html).not.toMatch(/href=["'][^"']*lux-surfaces\.css/);

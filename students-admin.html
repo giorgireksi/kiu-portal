@@ -10,7 +10,7 @@
     <link rel="preload" as="style" href="assets/vendor/fontawesome/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css"></noscript>
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=11f3ee1a">
+    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=196d6e2a">
     <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260726-frostedpopup1" media="print" onload="this.onload=null;this.media='all'">
     <link rel="stylesheet" href="assets/css/route-bare/directory/lux-page-bare-lite.css?v=20260819-noloading1" fetchpriority="high">
     <link rel="stylesheet" href="assets/css/layout-schedule.css?v=20260720-densify6500">
@@ -42,7 +42,25 @@
     <nav id="admin-nav" aria-label="Admin navigation stub"></nav>
 
     <main id="app-content">
-        <div id="students-content" class="lux-page-shell" data-tab="all" aria-live="polite" data-lux-layout-only="1" data-route-boot-surface="students"></div>
+        <div id="students-content" class="lux-page-shell" data-tab="all" aria-live="polite" data-lux-layout-only="1" data-route-boot-surface="students">
+            <div class="route-boot-skeleton route-boot-skeleton--directory" aria-hidden="true">
+                <div class="route-boot-skeleton__toolbar">
+                    <span class="route-boot-skeleton__line route-boot-skeleton__line--button"></span>
+                    <span class="route-boot-skeleton__line route-boot-skeleton__line--button"></span>
+                </div>
+                <div class="route-boot-skeleton__grid route-boot-skeleton__grid--filters">
+                    <span class="route-boot-skeleton__cell"></span><span class="route-boot-skeleton__cell"></span>
+                    <span class="route-boot-skeleton__cell"></span><span class="route-boot-skeleton__cell"></span>
+                    <span class="route-boot-skeleton__cell"></span><span class="route-boot-skeleton__cell"></span>
+                    <span class="route-boot-skeleton__cell"></span><span class="route-boot-skeleton__cell"></span>
+                </div>
+                <div class="route-boot-skeleton__table">
+                    <span class="route-boot-skeleton__line route-boot-skeleton__line--heading"></span>
+                    <span class="route-boot-skeleton__line"></span><span class="route-boot-skeleton__line"></span>
+                    <span class="route-boot-skeleton__line"></span>
+                </div>
+            </div>
+        </div>
     </main>
 
     <div id="modal-overlay" class="modal-overlay"></div>

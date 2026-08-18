@@ -82,6 +82,7 @@ describe('staff mobile runtime regressions', () => {
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');
         expect(html).toContain('<nav id="admin-nav" aria-label="Admin navigation stub"');
         expect(html).toContain('data-route-boot-surface="staff"');
+        expect(html).toContain('route-boot-skeleton--directory');
         expect(html).not.toContain('Loading staff command center...');
         expect(html).toContain('id="staff-command-modal-root"');
         expect(html).toContain('<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"');
