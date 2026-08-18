@@ -7,7 +7,7 @@ function readSource(relativePath) {
 }
 
 describe('theme primer palette/static persist', () => {
-    it('shares visual defaults version with index-luxury and always reads stored palette/static fill', () => {
+    it('shares visual defaults version and avoids stale palette flashes during migration', () => {
         const primer = readSource('assets/js/theme-primer.js');
         const luxury = readSource('assets/js/features/index-luxury.js');
 
@@ -15,7 +15,8 @@ describe('theme primer palette/static persist', () => {
         expect(luxury).toContain("FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260816-opacity70-v3'");
         expect(primer).toContain("localStorage.getItem('kiuLuxuryPalette')");
         expect(primer).toContain("localStorage.getItem('kiuLuxuryStaticBackgroundFill')");
-        expect(primer).toContain('// 3. Palette — always prefer localStorage');
-        expect(primer).not.toMatch(/if \(hasCurrentVisualDefaults\) \{\s*try \{ savedPalette = localStorage/);
+        expect(primer).toContain('// 3. Palette — only reuse persisted/scoped palette values after the');
+        expect(primer).toContain('var savedPalette = hasCurrentVisualDefaults');
+        expect(primer).toContain('if (hasCurrentVisualDefaults) {');
     });
 });

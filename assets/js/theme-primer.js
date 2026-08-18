@@ -868,11 +868,19 @@
         root.classList.add('lux-sidebar-collapsed');
     }
 
-    // 3. Palette — always prefer localStorage (survives version bumps); fall back to scoped prefs.
-    var savedPalette = String(scopedVisuals.paletteKey || '').trim();
-    try {
-        savedPalette = savedPalette || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || '';
-    } catch (e) {}
+    // 3. Palette — only reuse persisted/scoped palette values after the
+    // forced-defaults migration is current. During a migration, the deferred
+    // runtime may intentionally replace an old palette (for example burgundy)
+    // with the current default; using that old value here causes a one-frame
+    // color flash before the runtime finishes.
+    var savedPalette = hasCurrentVisualDefaults
+        ? String(scopedVisuals.paletteKey || '').trim()
+        : '';
+    if (hasCurrentVisualDefaults) {
+        try {
+            savedPalette = savedPalette || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || '';
+        } catch (e) {}
+    }
     if (!savedPalette) savedPalette = DEFAULT_LUXURY_PALETTE;
     if (savedPalette === 'carbon-black' || savedPalette === 'arctic-white') savedPalette = 'platinum-silver';
     if (savedPalette !== 'custom' && !EARLY_PALETTES[savedPalette]) savedPalette = DEFAULT_LUXURY_PALETTE;
