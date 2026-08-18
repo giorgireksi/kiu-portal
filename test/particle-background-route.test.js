@@ -181,6 +181,8 @@ describe('particle background route integration', () => {
         expect(paletteRuntime).toMatch(/applyPaletteValues[\s\S]*__kiuApplyResolvedPalette/);
         expect(utilities).toMatch(/applyFacultyLuxuryTheme[\s\S]*__kiuApplyResolvedPalette/);
         expect(utilities).toContain('__kiuApplyLmsParticleTheme');
+        expect(utilities.indexOf('if (useUnifiedShellColors) {')).toBeLessThan(utilities.indexOf('const primary = fp.color'));
+        expect(utilities).toContain('never fall back to the ECON');
     });
 
     it('rebuilds variant geometry when studio switches particle mode', () => {

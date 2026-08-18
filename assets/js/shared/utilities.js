@@ -198,23 +198,24 @@ function kiuBlendRgbTriplets(a, b, ratio = 0.5) {
 function applyFacultyLuxuryTheme(faculty, profile) {
     const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
     const fp = profile || getFacultyProfile(normalizedFaculty) || {};
+    const useUnifiedShellColors = document.body?.classList.contains('lux-unified-shell');
+    // Unified routes are synchronously primed by theme-primer and owned by the
+    // canonical luxury palette runtime. Navigation can initialize before that
+    // runtime exposes __kiuApplyResolvedPalette; never fall back to the ECON
+    // faculty color here or it flashes red over the primed palette.
+    if (useUnifiedShellColors) {
+        document.body?.setAttribute('data-lux-faculty', normalizedFaculty);
+        if (typeof window.__kiuApplyResolvedPalette === 'function') {
+            window.__kiuApplyResolvedPalette();
+        }
+        return;
+    }
     if (typeof window.__kiuApplyResolvedPalette === 'function') {
         window.__kiuApplyResolvedPalette();
         document.body?.setAttribute('data-lux-faculty', normalizedFaculty);
         return;
     }
-    // Unified routes have already been synchronously primed by theme-primer.
-    // Do not let the legacy faculty palette overwrite that chosen theme while
-    // the canonical luxury palette runtime is still loading.
-    const isUnifiedLoading = document.body?.classList.contains('lux-unified-shell')
-        && (document.documentElement?.classList.contains('kiu-shell-loading')
-            || document.body?.classList.contains('kiu-shell-loading'));
-    if (isUnifiedLoading) {
-        document.body?.setAttribute('data-lux-faculty', normalizedFaculty);
-        return;
-    }
     const root = document.documentElement;
-    const useUnifiedShellColors = document.body?.classList.contains('lux-unified-shell');
     const forceStudentShellVisuals = (() => {
         try {
             if (typeof window.shouldUseStudentShellVisualRole === 'function') {
