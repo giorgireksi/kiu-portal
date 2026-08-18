@@ -104,9 +104,9 @@ describe('social-workspace-week-plan-model', () => {
             expect(workspace).toMatch(new RegExp(`const ${name} = window\\.${name}`));
         }
         expect(page).not.toMatch(/function\s+migrateProjectPlanEntry\s*\(/);
-        expect(page).toMatch(/const migrateProjectPlanEntry = window\.migrateProjectPlanEntry/);
-        expect(html).toContain('social-workspace-week-plan-model.js');
-        expect(html.indexOf('social-workspace-week-plan-model.js')).toBeLessThan(html.indexOf('social-page.js'));
+        expect(page).toContain('resolveSocialWeekPlanModelFunction');
         expect(page).toContain('SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL');
+        expect(html).not.toMatch(/<script[^>]+social-workspace-week-plan-model\.js/);
+        expect(page).toMatch(/loadWorkspaceBatch\(\[[\s\S]*SOCIAL_WORKSPACE_WEEK_PLAN_MODEL_URL/);
     });
 });

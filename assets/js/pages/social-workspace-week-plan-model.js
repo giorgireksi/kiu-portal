@@ -1,6 +1,5 @@
 /* Week-plan localStorage helpers for social workspace / health pick.
- * Eager: social.html before social-page.js (migrate used by page hooks).
- * Also loaded in ensureSocialWorkspaceModule before social-workspace.js.
+ * Workspace-only: loaded by ensureSocialWorkspaceModule before social-workspace.js.
  */
 (function initSocialWorkspaceWeekPlanModel() {
     'use strict';

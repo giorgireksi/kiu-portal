@@ -130,7 +130,21 @@ Publishes only the host/runtime contract consumed by its loader.
             localStorage.setItem(DESK_VIEWS_KEY, JSON.stringify(Array.isArray(views) ? views.slice(0, 20) : []));
         } catch (error) {}
     }
-    const normalizeProjectPlanHorizon = window.normalizeProjectPlanHorizon || (window.KiuSocialWorkspaceWeekPlanModel || {}).normalizeProjectPlanHorizon;
+    // The week-plan model is workspace-only. Keep feed boot independent from it;
+    // workspace stubs/loaders replace these lookups once that panel is entered.
+    function resolveSocialWeekPlanModelFunction(name, fallback) {
+        return (...args) => {
+            const impl = window[name] || (window.KiuSocialWorkspaceWeekPlanModel || {})[name];
+            if (typeof impl === 'function' && impl !== resolveSocialWeekPlanModelFunction) return impl(...args);
+            return fallback(...args);
+        };
+    }
+    const normalizeProjectPlanHorizon = resolveSocialWeekPlanModelFunction('normalizeProjectPlanHorizon', (value) => {
+        const raw = text(value || '').toLowerCase();
+        if (raw === 'week' || raw === '2weeks' || raw === '2week') return 'weeks';
+        if (['days', 'weeks', 'months', 'all'].includes(raw)) return raw;
+        return 'weeks';
+    });
     function projectPlanHorizonLabel(horizon) {
         const id = normalizeProjectPlanHorizon(horizon);
         return PROJECT_PLAN_HORIZONS.find((h) => h.id === id)?.label || 'Weeks';
@@ -142,7 +156,23 @@ Publishes only the host/runtime contract consumed by its loader.
         if (h === 'months') return '60d';
         return 'all';
     }
-    const migrateProjectPlanEntry = window.migrateProjectPlanEntry || (window.KiuSocialWorkspaceWeekPlanModel || {}).migrateProjectPlanEntry;
+    const migrateProjectPlanEntry = resolveSocialWeekPlanModelFunction('migrateProjectPlanEntry', (raw) => {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+            return { days: [], weeks: [], months: [], all: [] };
+        }
+        const cleanList = (list) => [...new Set((Array.isArray(list) ? list : [])
+            .map((id) => text(id)).filter(Boolean))].slice(0, PROJECT_WEEK_PLAN_MAX);
+        return {
+            days: cleanList(raw.days),
+            weeks: cleanList([
+                ...(Array.isArray(raw.weeks) ? raw.weeks : []),
+                ...(Array.isArray(raw.week) ? raw.week : []),
+                ...(Array.isArray(raw['2weeks']) ? raw['2weeks'] : [])
+            ]),
+            months: cleanList(raw.months),
+            all: cleanList(raw.all)
+        };
+    });
     function taskActivityMs(task) {
         const candidates = [
             Date.parse(text(task?.updatedAt || '')),
