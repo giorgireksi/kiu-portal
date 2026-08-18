@@ -8,7 +8,7 @@ const read = (path) => readFileSync(join(root, path), 'utf8');
 describe('Social button motion trial', () => {
     it('loads a route-scoped motion sheet for Social', () => {
         const html = read('social.html');
-        expect(html).toContain('assets/css/social-button-motion.css?v=20260819-socialmotion6');
+        expect(html).toContain('assets/css/social-button-motion.css?v=20260819-socialmotion7');
         expect(read('index.html')).not.toContain('social-button-motion.css');
     });
 
@@ -28,6 +28,8 @@ describe('Social button motion trial', () => {
         expect(css).toContain('--lux-btn-frame-shadow-hover');
         expect(css).toContain('--lux-studio-chip-shadow-press');
         expect(css).toContain('scale(0.985)');
+        expect(css).toContain('focus-visible');
+        expect(css).toContain('!important');
         expect(css).toContain('transition-duration: 60ms');
         expect(css).toContain('prefers-reduced-motion: reduce');
         expect(css).toContain('.lux-scroll-rail__btn');
