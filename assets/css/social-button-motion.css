@@ -20,7 +20,6 @@ body.lux-route-social :is(
   .lux-mode-btn,
   .lux-tab-btn
 ):not(:disabled):not([aria-disabled="true"]):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle) {
-  transform: translate3d(0, 0, 0);
   transition:
     transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -49,6 +48,7 @@ body.lux-route-social :is(
     .lux-tab-btn
   ):not(:disabled):not([aria-disabled="true"]):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle):is(:hover, :focus-visible) {
     transform: translate3d(0, -3px, 0);
+    box-shadow: var(--lux-btn-frame-shadow-hover, var(--lux-studio-chip-shadow-palette-hover));
   }
 }
 
@@ -68,8 +68,9 @@ body.lux-route-social :is(
   .lux-control-btn,
   .lux-mode-btn,
   .lux-tab-btn
-):not(:disabled):not([aria-disabled="true"]):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle):active {
-  transform: translate3d(0, 0, 0);
+):not(:disabled):not([aria-disabled="true"]):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle):not(.lux-palette-chip):not(.lux-apply-btn):not(:has(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn)):active {
+  transform: translate3d(0, 0, 0) scale(0.985);
+  box-shadow: var(--lux-studio-chip-shadow-press, var(--lux-btn-frame-shadow));
   transition-duration: 60ms;
   transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
