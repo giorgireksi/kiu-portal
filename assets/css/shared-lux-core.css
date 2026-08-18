@@ -1,4 +1,4 @@
-/* shared-lux-core — generated from 8 sources — hash 196d6e2a — edit SOURCES, run tools/build-shared-lux-core.mjs */
+/* shared-lux-core — generated from 8 sources — hash 5b8be500 — edit SOURCES, run tools/build-shared-lux-core.mjs */
 /* source: assets/css/lux-tokens.css */
 
 
@@ -716,6 +716,73 @@ html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
   .route-boot-skeleton__toolbar,
   .route-boot-skeleton__grid--filters,
   .route-boot-skeleton__grid--cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.lux-nav-boot-skeleton {
+  display: grid;
+  gap: 8px;
+  padding: 14px 2px 10px;
+}
+.lux-nav-boot-label {
+  display: block;
+  width: 46%;
+  height: 8px;
+  margin: 4px 12px 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-text-soft, rgba(248, 250, 252, 0.55)) 46%, transparent);
+}
+.lux-nav-boot-label--second { margin-top: 12px; width: 34%; }
+.lux-nav-boot-item {
+  display: block;
+  width: 72%;
+  height: 38px;
+  margin: 0 2px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--lux-panel-control-soft, rgba(255, 255, 255, 0.08)) 62%, transparent);
+  border: 1px solid color-mix(in srgb, var(--lux-panel-border-soft, rgba(255, 255, 255, 0.1)) 58%, transparent);
+}
+.lux-nav-boot-item--wide { width: 86%; }
+.lux-nav-boot-item--active {
+  width: 92%;
+  background: color-mix(in srgb, var(--lux-accent, #008080) 22%, rgba(255, 255, 255, 0.06));
+  border-color: color-mix(in srgb, var(--lux-accent, #008080) 34%, transparent);
+}
+.lux-shell-boot-line {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-text-soft, rgba(248, 250, 252, 0.55)) 50%, transparent);
+}
+.lux-shell-boot-line--name { width: 82px; }
+.lux-shell-boot-line--role { width: 116px; height: 8px; margin-top: 5px; }
+.lux-topbar-boot-skeleton {
+  position: fixed;
+  top: 12px;
+  left: calc(var(--lux-sidebar-offset, 244px) + 12px);
+  right: 12px;
+  z-index: 54;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 12px;
+  pointer-events: none;
+}
+.lux-topbar-boot-line,
+.lux-topbar-boot-control {
+  display: block;
+  flex: 0 0 auto;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--lux-border, rgba(255, 255, 255, 0.14)) 70%, transparent);
+  background: color-mix(in srgb, var(--lux-panel-control-soft, rgba(255, 255, 255, 0.08)) 70%, transparent);
+}
+.lux-topbar-boot-line { width: 112px; }
+.lux-topbar-boot-line--wide { margin-right: auto; width: 180px; }
+.lux-topbar-boot-control { width: 42px; border-radius: 50%; }
+@media (max-width: 1024px) {
+  .lux-topbar-boot-skeleton { display: none; }
 }
 #lux-shell { contain: layout paint; }
 #app-content { contain: layout paint; }

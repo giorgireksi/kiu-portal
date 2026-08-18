@@ -10,7 +10,7 @@
     <link rel="preload" as="style" href="assets/vendor/fontawesome/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css"></noscript>
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=196d6e2a">
+    <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=5b8be500">
     <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260726-frostedpopup1" media="print" onload="this.onload=null;this.media='all'">
     <link rel="stylesheet" href="assets/css/route-bare/directory/lux-page-bare-lite.css?v=20260819-noloading1" fetchpriority="high">
     <link rel="icon" href="data:,">
@@ -26,15 +26,35 @@
             <span class="lux-sidebar-close-label">Hide nav</span>
         </button>
     </header>
-    <div class="lux-nav" id="lux-nav"></div>
+    <div class="lux-nav" id="lux-nav">
+        <div class="lux-nav-boot-skeleton" aria-hidden="true">
+            <span class="lux-nav-boot-label"></span>
+            <span class="lux-nav-boot-item lux-nav-boot-item--wide"></span>
+            <span class="lux-nav-boot-item"></span>
+            <span class="lux-nav-boot-item"></span>
+            <span class="lux-nav-boot-item lux-nav-boot-item--active"></span>
+            <span class="lux-nav-boot-item"></span>
+            <span class="lux-nav-boot-label lux-nav-boot-label--second"></span>
+            <span class="lux-nav-boot-item"></span>
+            <span class="lux-nav-boot-item"></span>
+            <span class="lux-nav-boot-item"></span>
+        </div>
+    </div>
     <div class="lux-shell-footer">
         <div class="lux-avatar" id="lux-avatar">KI</div>
         <div class="lux-shell-footer-copy">
-            <div class="lux-user-name" id="lux-user-name">Portal User</div>
-            <div class="lux-user-role" id="lux-user-role">University Portal</div>
+            <div class="lux-user-name" id="lux-user-name"><span class="lux-shell-boot-line lux-shell-boot-line--name"></span></div>
+            <div class="lux-user-role" id="lux-user-role"><span class="lux-shell-boot-line lux-shell-boot-line--role"></span></div>
         </div>
     </div>
 </aside>
+<div id="lux-topbar-boot-skeleton" class="lux-topbar-boot-skeleton" aria-hidden="true">
+    <span class="lux-topbar-boot-line lux-topbar-boot-line--wide"></span>
+    <span class="lux-topbar-boot-line"></span>
+    <span class="lux-topbar-boot-control"></span>
+    <span class="lux-topbar-boot-control"></span>
+    <span class="lux-topbar-boot-control"></span>
+</div>
 
     <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
     <nav id="top-nav" aria-label="Top navigation stub"></nav>

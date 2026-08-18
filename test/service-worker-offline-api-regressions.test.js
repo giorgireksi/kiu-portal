@@ -15,7 +15,7 @@ describe('service worker offline API regressions', () => {
         expect(source).not.toContain('refresh in');
         expect(source).not.toContain('fetch(request)\n          .then((networkResponse)');
         expect(source).not.toMatch(/SHELL_ASSETS[\s\S]*lux-page-bare-lite\.css/);
-        expect(source).toContain("/assets/css/shared-lux-core.css?v=196d6e2a");
+        expect(source).toContain("/assets/css/shared-lux-core.css?v=5b8be500");
         expect(source).toContain("/assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3");
         expect(source).not.toContain("'/assets/css/lux-page-bare-lite.css");
         expect(source).not.toContain('"/assets/css/lux-page-bare-lite.css');

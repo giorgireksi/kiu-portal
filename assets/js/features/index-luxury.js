@@ -1171,6 +1171,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             `;
             document.body.appendChild(topbar);
         }
+        document.getElementById('lux-topbar-boot-skeleton')?.remove();
         // Apply the stacking order inline as soon as both nodes exist. This avoids
         // the first-paint interval before the deferred stylesheet/class cascade wins.
         applyImmediateShellLayering();
