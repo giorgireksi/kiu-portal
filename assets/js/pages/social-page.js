@@ -1523,14 +1523,13 @@ Publishes only the host/runtime contract consumed by its loader.
             // module/loading surface from normal panel switching without putting
             // the entire Social graph on the critical startup path.
             Object.keys(SOCIAL_PANEL_MODULE_WARMERS)
-                .filter((panel) => panel !== 'workspace' && panel !== 'projects')
                 .forEach(warmSocialPanelModule);
         };
         if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(() => runPrefetch(), { timeout: 2200 });
+            window.requestIdleCallback(() => runPrefetch(), { timeout: 700 });
             return;
         }
-        window.setTimeout(runPrefetch, 2200);
+        window.setTimeout(runPrefetch, 700);
     }
     function scheduleDirectoryPrefetch() {
         if (socialDirectoryPrefetchScheduled) return;
