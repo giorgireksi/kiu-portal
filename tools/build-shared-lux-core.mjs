@@ -32,5 +32,5 @@ const hash = createHash('sha256').update(combined).digest('hex').slice(0, 8);
 const outPath = resolve(root, 'assets/css/shared-lux-core.css');
 const banner = `/* shared-lux-core — generated from ${sources.length} sources — hash ${hash} — edit SOURCES, run tools/build-shared-lux-core.mjs */\n`;
 await mkdir(dirname(outPath), { recursive: true });
-await writeFile(outPath, banner + combined, 'utf8');
+await writeFile(outPath, banner + combined.trimEnd() + '\n', 'utf8');
 console.log(`shared-lux-core.css — ${hash} — ${Buffer.byteLength(combined)} bytes from ${sources.length} sources`);

@@ -51,7 +51,7 @@ describe('login route regressions', () => {
         expect(runtimeSource).toContain('async function completeMicrosoftPortalLoginFromUrl() {');
         expect(runtimeSource).toContain('async function authLogin(email, password) {');
         expect(runtimeSource).toContain('let loginRequestInFlight = false;');
-        expect(runtimeSource).toContain("navigator.serviceWorker.register('/service-worker.js?v=20260819-fastboot2'");
+        expect(runtimeSource).toContain("navigator.serviceWorker.register('/service-worker.js?v=20260820-globalpaint1'");
         expect(runtimeSource).toContain('void LOGIN_SERVICE_WORKER_UPDATE;');
         expect(runtimeSource).not.toContain('await Promise.race([\n        LOGIN_SERVICE_WORKER_UPDATE');
         expect(runtimeSource).toContain('for (let attempt = 0; attempt < 2; attempt += 1) {');

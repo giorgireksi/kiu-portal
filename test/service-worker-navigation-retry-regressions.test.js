@@ -19,7 +19,7 @@ describe('service worker navigation retry regressions', () => {
         expect(worker).toContain('async function handleApiRequest(request)');
         expect(worker).toContain('fetch(request.clone())');
         expect(worker).toContain('A brief Caddy/container restart must not surface as an offline CSS/JS');
-        expect(app).toContain("const PORTAL_SERVICE_WORKER_VERSION = '20260819-fastboot3'");
+        expect(app).toContain("const PORTAL_SERVICE_WORKER_VERSION = '20260820-globalpaint1'");
         expect(app).toContain('service-worker.js?v=${PORTAL_SERVICE_WORKER_VERSION}');
     });
 });

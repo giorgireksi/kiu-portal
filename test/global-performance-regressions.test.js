@@ -32,6 +32,16 @@ function readRegisteredAdminToolsChunk() {
 }
 
 describe('global interaction performance guardrails', () => {
+  it('keeps active route cards synchronously paintable during route and tab switches', () => {
+    const fouc = readSource('assets/css/lux-fouc-ht.css');
+    const core = readSource('assets/css/shared-lux-core.css');
+    expect(fouc).toContain('#app-content > .page-section.active-page :is(');
+    expect(fouc).toContain('content-visibility: visible !important;');
+    expect(core).toContain('#app-content > .page-section.active-page :is(');
+    expect(core).toContain('.newsx-feed-card');
+    expect(core).toContain('.sch-rail-section');
+  });
+
   it('does not full-scan every DOM mutation for glass transparency refreshes', () => {
     const utilities = readSource('assets/js/shared/lux-transparency.js');
 

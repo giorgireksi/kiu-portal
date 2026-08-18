@@ -1,4 +1,4 @@
-/* shared-lux-core — generated from 8 sources — hash e73cd04b — edit SOURCES, run tools/build-shared-lux-core.mjs */
+/* shared-lux-core — generated from 8 sources — hash 9d75c3d7 — edit SOURCES, run tools/build-shared-lux-core.mjs */
 /* source: assets/css/lux-tokens.css */
 
 
@@ -659,6 +659,19 @@ html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
 .home-hover-chip,
 .social-neo-card,
 .social-project-card-new { contain: layout paint; content-visibility: auto; contain-intrinsic-size: 0 300px; }
+
+#app-content > .page-section.active-page :is(
+  .lux-soft-chrome,
+  .home-hover-chip,
+  .social-neo-card,
+  .social-project-card-new,
+  .sch-rail-section,
+  .newsx-feed-card,
+  .newsx-loading-card
+) {
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+}
 #lux-shell { contain: layout paint; }
 #app-content { contain: layout paint; }
 .lux-summary-surface {

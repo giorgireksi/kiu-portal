@@ -111,7 +111,7 @@ describe('social performance safeguards', () => {
         expect(page).toContain('__kiuRetrySocialModule');
         expect(page).toContain("return ['workspace', 'projects'];");
         expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('module-failure');
-        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260819-fastboot2'");
+        expect(worker).toContain("CACHE_NAME = 'kiu-portal-shell-v20260820-globalpaint1'");
         expect(worker).toContain('await isUsableStaticAssetResponse(networkResponse, request)');
     });
 

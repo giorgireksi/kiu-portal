@@ -37,6 +37,21 @@ html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
 .home-hover-chip,
 .social-neo-card,
 .social-project-card-new { contain: layout paint; content-visibility: auto; contain-intrinsic-size: 0 300px; }
+/* The active route is already the user's viewport. Keep its glass cards
+   synchronously paintable so route/tab switches do not materialize across
+   multiple frames. Inactive page sections retain content-visibility:auto. */
+#app-content > .page-section.active-page :is(
+  .lux-soft-chrome,
+  .home-hover-chip,
+  .social-neo-card,
+  .social-project-card-new,
+  .sch-rail-section,
+  .newsx-feed-card,
+  .newsx-loading-card
+) {
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+}
 #lux-shell { contain: layout paint; }
 #app-content { contain: layout paint; }
 .lux-summary-surface {

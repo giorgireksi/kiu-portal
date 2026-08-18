@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260819-fastboot2';
+const CACHE_NAME = 'kiu-portal-shell-v20260820-globalpaint1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const ROUTE_PREFETCH_CACHE_NAME = 'kiu-portal-route-prefetch-v1';
 const ROUTE_PREFETCH_HEADER = 'X-KIU-Route-Prefetch';
@@ -23,10 +23,10 @@ const SHELL_ASSETS = [
   '/exams.html',
   '/login.html',
   '/assets/css/lux-tokens.css?v=20260725-frosted1',
-  '/assets/css/lux-fouc-ht.css?v=20260818-navneutral1',
+  '/assets/css/lux-fouc-ht.css?v=20260820-globalpaint1',
   '/assets/css/lux-controls.css?v=20260726-luxtab2',
   '/assets/css/mobile-shell-core.css?v=20260819-sidebarperf2',
-  '/assets/css/shared-lux-core.css?v=e73cd04b',
+  '/assets/css/shared-lux-core.css?v=9d75c3d7',
   '/assets/css/lux-modals.css?v=20260816-socialmodals1',
   '/assets/css/mobile-shell.css?v=20260724-chromeshare1',
   '/assets/css/lux-shell.css?v=20260818-isolatedglass1',

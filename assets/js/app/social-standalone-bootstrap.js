@@ -148,7 +148,7 @@ window.convertTimeToMinutes = convertTimeToMinutes;
 // scheduled after the first paint rather than competing with the shell boot.
 function scheduleStandaloneServiceWorkerRegistration() {
     if (window.location.protocol !== 'https:' || !('serviceWorker' in navigator)) return;
-    const register = () => navigator.serviceWorker.register(`service-worker.js?v=20260819-fastboot3`, { scope: './' })
+    const register = () => navigator.serviceWorker.register(`service-worker.js?v=20260820-globalpaint1`, { scope: './' })
         .catch(() => null);
     if (typeof window.requestIdleCallback === 'function') {
         window.requestIdleCallback(register, { timeout: 2500 });
