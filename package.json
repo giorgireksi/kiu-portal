@@ -80,6 +80,7 @@
     "load:smoke": "node tools/load-test-smoke.js",
     "test:all-pages-console": "node tools/all_pages_console_scan.mjs",
     "test:all-pages-load-scan": "node tools/all_pages_load_scan.mjs",
+    "perf:routes": "node tools/route-performance-matrix.mjs",
     "test:scroll-heavy-pages": "node tools/scroll_heavy_pages_benchmark.mjs",
     "test:runtime-shell": "node tools/runtime_shell_smoke.mjs",
     "test:live-quiz-smoke": "node tools/lms_live_quiz_smoke.mjs",
