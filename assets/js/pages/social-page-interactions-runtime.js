@@ -989,6 +989,25 @@ function renderSocialModuleFailureMarkup(activePanel) {
         </div>
     </section>`;
 }
+function syncSocialPanelNavigation(activePanel) {
+    const normalizedPanel = text(activePanel || 'feed') || 'feed';
+    const navSelector = [
+        '.social-neo-side-link',
+        '.social-neo-workspace-nav-btn',
+        '.social-neo-shell-nav-btn',
+        '.social-neo-shell-drawer-nav-btn',
+        '.social-shortcuts-top-nav-btn',
+        '.social-neo-mobile-tab'
+    ].join(',');
+    document.querySelectorAll(navSelector).forEach((button) => {
+        const action = text(button?.dataset?.action || '');
+        if (!action.startsWith('panel-')) return;
+        const isActive = action.slice(6) === normalizedPanel;
+        button.classList.toggle('is-active', isActive);
+        if (isActive) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+    });
+}
 function renderActivePanelMarkup(activePanel) {
     const failureMarkup = renderSocialModuleFailureMarkup(activePanel);
     if (failureMarkup) return failureMarkup;
@@ -1139,6 +1158,17 @@ function renderSocialPageNow(reason = 'manual') {
             return;
         }
         const renderPlan = resolveSocialRenderPlan(reason, activePanel, runtime);
+        const isPanelSwitch = reason === 'panel' || /^panel-/.test(reason);
+        if (isPanelSwitch) {
+            // Navigation chrome is persistent across panels. Rebuilding every
+            // nav/button tree during a switch briefly drops its glass surface
+            // and focus state, which reads as a flicker. Patch only active
+            // classes and leave the mounted chrome in place.
+            renderPlan.topbar = false;
+            renderPlan.workspaceNav = false;
+            renderPlan.mobileTab = false;
+            syncSocialPanelNavigation(activePanel);
+        }
         bindSocialShortcutsViewportWatcher();
         const useShortcutsTopNav = isPhoneSocialShortcutsViewport()
             && !isSocialTopbarSkippedPanel(activePanel);
@@ -1173,12 +1203,24 @@ function renderSocialPageNow(reason = 'manual') {
         shell.root.dataset.role = text(currentUser()?.role || 'student');
         shell.root.dataset.panel = activePanel;
         if (renderPlan.flash) setSocialRegionMarkup(shell.flash, renderSocialFlashStatus(runtime));
-        if (renderPlan.topbar || useShortcutsTopNav) {
+        const topbarSkipped = isSocialTopbarSkippedPanel(activePanel);
+        const shortcutsTopNav = document.getElementById('social-shortcuts-top-nav-portal')
+            ?.querySelector('.social-shortcuts-top-nav');
+        if (!isPanelSwitch && (renderPlan.topbar || useShortcutsTopNav)) {
             const topbarHtml = renderSocialTopbarRegion(activePanel, activeConfig, user);
             // Keep in-tree region empty: body portal owns the fixed chrome (bottom-nav twin).
             setSocialRegionMarkup(shell.topbar, '');
             syncSocialShortcutsTopNavPortal(topbarHtml);
-        } else if (isSocialTopbarSkippedPanel(activePanel) || !isPhoneSocialShortcutsViewport()) {
+        } else if (isPanelSwitch && topbarSkipped) {
+            // Messages and other full-height panels intentionally have no fixed
+            // shortcuts bar. Clear it only when entering one of those panels.
+            setSocialRegionMarkup(shell.topbar, '');
+            syncSocialShortcutsTopNavPortal('');
+        } else if (isPanelSwitch && useShortcutsTopNav && !shortcutsTopNav) {
+            // Recover the bar when leaving a panel that intentionally hid it,
+            // but do not rebuild it on ordinary switches.
+            syncSocialShortcutsTopNavPortal(renderSocialTopbarRegion(activePanel, activeConfig, user));
+        } else if (!isPanelSwitch && (topbarSkipped || !isPhoneSocialShortcutsViewport())) {
             setSocialRegionMarkup(shell.topbar, '');
             syncSocialShortcutsTopNavPortal('');
         }
@@ -1314,7 +1356,7 @@ function renderSocialPageNow(reason = 'manual') {
         } else if (!skipTransparencyRefresh) {
             // Sync call first to prevent flash of unstyled/transparent surfaces
             // during panel switches. The queued refresh handles edge cases.
-            if (/^panel-/.test(reason)) {
+            if (isPanelSwitch) {
                 syncSocialVisualShell();
             }
             if (typeof window.queueLuxuryTransparencyRefresh === 'function') {

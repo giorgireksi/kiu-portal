@@ -20,6 +20,7 @@ describe('social performance safeguards', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
         expect(html).toContain('social-page.js?v=20260819-socialwarm2');
+        expect(html).toContain('social-page-interactions-runtime.js?v=20260820-switchnoflicker2');
         expect(html).not.toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
         expect(html).toContain('luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
@@ -86,6 +87,14 @@ describe('social performance safeguards', () => {
         expect(html).not.toMatch(/social-[a-z-]+-loading-runtime\.js/);
         expect(interactions).not.toContain('LoadingMotion');
         expect(interactions).not.toContain('assembly-active');
+    });
+
+    it('keeps Social navigation chrome mounted during panel switches', () => {
+        const interactions = readSource('assets/js/pages/social-page-interactions-runtime.js');
+        expect(interactions).toContain('function syncSocialPanelNavigation(activePanel)');
+        expect(interactions).toContain('const isPanelSwitch = reason === \'panel\' || /^panel-/.test(reason);');
+        expect(interactions).toContain('renderPlan.workspaceNav = false;');
+        expect(interactions).toContain('renderPlan.mobileTab = false;');
     });
 
     it('fails open when hydration or a dynamic module stalls', () => {

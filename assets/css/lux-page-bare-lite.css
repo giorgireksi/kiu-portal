@@ -48438,3 +48438,19 @@ html:has(body.lux-route-social)::-webkit-scrollbar-thumb {
     }
 }
 
+/* Social panel switches must paint as one settled surface. The shared core
+   uses content-visibility:auto for broad card perf, but that lets a freshly
+   mounted panel materialize over several frames and visibly flicker. Keep
+   the active Social panel synchronously visible without changing its glass
+   surfaces or inactive-route behavior. */
+body.lux-route-social #social-neo-center-region > *,
+body.lux-route-social #social-neo-center-region > * :is(
+  .lux-soft-chrome,
+  .home-hover-chip,
+  .social-neo-card,
+  .social-project-card-new
+) {
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+}
+

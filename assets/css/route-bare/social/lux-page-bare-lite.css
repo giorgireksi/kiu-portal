@@ -1,5 +1,5 @@
 /* Thin route diff: social. Core in shared-lux-core.css */
-/* Included source lines: 23580-43353, 47014-48440. */
+/* Included source lines: 23580-43353, 47014-48456. */
 
 body.lux-route-social {
   --social-gap: 16px;
@@ -21166,4 +21166,16 @@ html:has(body.lux-route-social)::-webkit-scrollbar-thumb {
         box-shadow: 0 0 8px rgba(17, 200, 198, 0.75);
         transform-origin: top center;
     }
+}
+
+
+body.lux-route-social #social-neo-center-region > *,
+body.lux-route-social #social-neo-center-region > * :is(
+  .lux-soft-chrome,
+  .home-hover-chip,
+  .social-neo-card,
+  .social-project-card-new
+) {
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
 }
