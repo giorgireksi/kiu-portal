@@ -57,7 +57,7 @@ const SHELL_ASSETS = [
   '/assets/js/pages/social-page-boot-runtime.js?v=20260819-socialbootsequence1',
   '/assets/js/pages/social-page-events.js?v=20260815-socialassemblyclean1&perf=20260816-recovery1',
   '/assets/js/pages/social-fingerprint-model.js?v=20260816-socialrecovery1',
-  '/assets/js/pages/social-page.js?v=20260820-socialmodels2',
+  '/assets/js/pages/social-page.js?v=20260820-socialmodels3',
 ];
 
 function isVersionedAssetUrl(url) {

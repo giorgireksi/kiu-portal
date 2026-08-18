@@ -1469,7 +1469,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const {
         readProjectWeekPlansStore, readProjectWeekPlan, writeProjectWeekPlan, addToProjectWeekPlan, addManyToProjectWeekPlan, removeFromProjectWeekPlan,
         normalizeProjectWeekPlanWindow, shouldRenderProjectTaskGraphStack, shouldRenderProjectHealthStack, renderWorkspaceOwnedDialog, isProjectTaskGraphStackActive, getProjectTaskGraphStackAnchorDialog,
-        wrapProjectTaskGraphStack, wrapProjectHealthStack, renderHealthStackLayers, maybeWrapStackedProjectDialog, renderStackedProjectTaskChild, trySyncProjectTaskGraphStackDialog, syncProjectTaskGraphStackSlotState,
+        wrapProjectTaskGraphStack, wrapProjectHealthStack, renderHealthStackLayers, maybeWrapStackedProjectDialog, renderStackedProjectTaskChild, trySyncProjectTaskGraphStackDialog: trySyncProjectTaskGraphStackDialogRaw, syncProjectTaskGraphStackSlotState,
         projectTaskGraphStackedBackdropClass, resolveProjectTaskGraphNodeFromTarget, sortProjectBoardTasksByPriority, filterProjectBoardTasks, projectTaskDependsOnIds, resolveDeskTaskReadiness,
         orderDeskTasksByDependency, buildDeskTaskForest, buildProjectTaskInspectorFields, syncProjectTaskMatrixPreview, computePertExpected, taskHasPert,
         resolveTaskScheduleEstimate, resolveProjectTaskPriorityDisplay, clampProjectTaskGraphCardHeight, estimateProjectTaskGraphCardHeight, measureProjectTaskGraphCardHeights, normalizeProjectTaskGraphMode,
@@ -1516,6 +1516,14 @@ Publishes only the host/runtime contract consumed by its loader.
         portfolioReadDateRange, portfolioCollectDocumentFromUi, saveMyPortfolioDocument, renderMyPortfolioPanel, renderPortfolioEditorDialog, renderPortfolioCustomBuilderOverlay,
         openPortfolioEditor, resetPortfolioEditor, renderPortfolioProfileBlock
     } = __kiuWorkspaceStubBag;
+
+    // Stack synchronization is dialog-only. Calling the lazy stub during every
+    // feed render used to pull the complete workspace graph into first paint.
+    function trySyncProjectTaskGraphStackDialog(...args) {
+        const kind = text(activeDialog()?.type || '');
+        if (!kind || (kind !== 'project-task-graph' && !PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(kind))) return false;
+        return trySyncProjectTaskGraphStackDialogRaw(...args);
+    }
 
     function ensureSocialFeedModule() {
         if (window.__KIU_SOCIAL_FEED_MODULE_LOADED
