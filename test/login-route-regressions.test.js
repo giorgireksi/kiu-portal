@@ -51,6 +51,8 @@ describe('login route regressions', () => {
         expect(runtimeSource).toContain('async function completeMicrosoftPortalLoginFromUrl() {');
         expect(runtimeSource).toContain('async function authLogin(email, password) {');
         expect(runtimeSource).toContain('let loginRequestInFlight = false;');
+        expect(runtimeSource).toContain('function scheduleLoginServiceWorkerUpdate() {');
+        expect(runtimeSource).toContain("window.requestIdleCallback(() => resolve(register()), { timeout: 3000 });");
         expect(runtimeSource).toContain("navigator.serviceWorker.register('/service-worker.js?v=20260820-globalpaint1'");
         expect(runtimeSource).toContain('void LOGIN_SERVICE_WORKER_UPDATE;');
         expect(runtimeSource).not.toContain('await Promise.race([\n        LOGIN_SERVICE_WORKER_UPDATE');

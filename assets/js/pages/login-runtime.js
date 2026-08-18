@@ -7,16 +7,29 @@ const LOGIN_ACTIVE_SESSION_KEY = 'KIU_ACTIVE_SESSION_USER_ID';
 const LOGIN_ACTIVE_ROLE_IMPERSONATION_KEY = 'KIU_ACTIVE_ROLE_IMPERSONATION';
 const LOGIN_PORTAL_BACKEND_TIMEOUT_MS = 4000;
 let loginRequestInFlight = false;
-const LOGIN_SERVICE_WORKER_UPDATE = (() => {
-    try {
-        if (!('serviceWorker' in navigator) || !/^https?:$/i.test(window.location?.protocol || '')) {
+function scheduleLoginServiceWorkerUpdate() {
+    const register = () => {
+        try {
+            if (!('serviceWorker' in navigator) || !/^https?:$/i.test(window.location?.protocol || '')) {
+                return Promise.resolve(null);
+            }
+            return navigator.serviceWorker.register('/service-worker.js?v=20260820-globalpaint1', { scope: '/' }).catch(() => null);
+        } catch (error) {
             return Promise.resolve(null);
         }
-        return navigator.serviceWorker.register('/service-worker.js?v=20260820-globalpaint1', { scope: '/' }).catch(() => null);
-    } catch (error) {
-        return Promise.resolve(null);
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+        return new Promise((resolve) => {
+            window.requestIdleCallback(() => resolve(register()), { timeout: 3000 });
+        });
     }
-})();
+    return new Promise((resolve) => {
+        window.setTimeout(() => resolve(register()), 1500);
+    });
+}
+
+const LOGIN_SERVICE_WORKER_UPDATE = scheduleLoginServiceWorkerUpdate();
 
 function getKiuPortalBackendDefaultUrl() {
     try {
