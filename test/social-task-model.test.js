@@ -62,7 +62,7 @@ describe('social-task-model', () => {
         expect(edges.some((e) => e.from === 'a' && e.to === 'b' && e.kind === 'flow')).toBe(true);
     });
 
-    it('ESM leaf + classic bridge wired before social-page', () => {
+    it('ESM leaf loads with the workspace batch instead of Social feed boot', () => {
         const html = readSource('social.html');
         const page = readSource('assets/js/pages/social-page.js');
         const mod = readSource('assets/js/pages/social-task-model.js');
@@ -70,12 +70,11 @@ describe('social-task-model', () => {
         expect(mod).toContain('export function installSocialTaskModel');
         expect(mod).not.toMatch(/^\(function\s+initSocialTaskModel/m);
         expect(bridge).toContain('KiuSocialTaskModel');
-        expect(html).toMatch(/<script\s+type="module"\s+src="assets\/js\/pages\/social-task-model\.js/);
-        expect(html).toContain('social-task-model-bridge.js');
-        expect(html.indexOf('social-task-model.js')).toBeLessThan(html.indexOf('social-task-model-bridge.js'));
-        expect(html.indexOf('social-task-model-bridge.js')).toBeLessThan(html.indexOf('social-page.js'));
+        expect(html).not.toMatch(/<script[^>]+social-task-model\.js/);
+        expect(html).not.toContain('social-task-model-bridge.js');
+        expect(page).toContain('SOCIAL_TASK_MODEL_URL');
+        expect(page).toMatch(/loadSocialDynamicModule\(SOCIAL_TASK_MODEL_URL/);
         expect(page).toContain('KiuSocialTaskModel');
-        expect(page).not.toMatch(/function normalizeTaskTime\s*\(/);
-        expect(page).not.toMatch(/function computeTaskMatrixScore\s*\(/);
+        expect(page).toContain('resolveSocialTaskModelFunction');
     });
 });

@@ -142,7 +142,7 @@ describe('social-form-model', () => {
         expect(html).toContain('social-form-model-bridge.js');
         expect(html.indexOf('social-form-model.js')).toBeLessThan(html.indexOf('social-form-model-bridge.js'));
         expect(html.indexOf('social-form-model-bridge.js')).toBeLessThan(html.indexOf('social-page.js'));
-        expect(html.indexOf('social-task-model.js')).toBeLessThan(html.indexOf('social-form-model.js'));
+        expect(html).not.toContain('social-task-model.js');
     });
 
     it('builds survey draft defaults and datetime locals', () => {

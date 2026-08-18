@@ -10,21 +10,26 @@ function readAsset(rel) {
 }
 
 describe('Wave 23 ESM leaf expansion', () => {
-    it('task + form models are ESM leaves with classic bridges on social.html', () => {
+    it('task + form models remain ESM leaves while task code loads with Workspace', () => {
         const html = readAsset('social.html');
-        for (const leaf of ['social-task-model', 'social-form-model']) {
-            const model = readAsset(`assets/js/pages/${leaf}.js`);
-            const bridge = readAsset(`assets/js/pages/${leaf}-bridge.js`);
+        const task = readAsset('assets/js/pages/social-task-model.js');
+        const taskBridge = readAsset('assets/js/pages/social-task-model-bridge.js');
+        const form = readAsset('assets/js/pages/social-form-model.js');
+        const formBridge = readAsset('assets/js/pages/social-form-model-bridge.js');
+        const page = readAsset('assets/js/pages/social-page.js');
+        for (const [model, bridge] of [[task, taskBridge], [form, formBridge]]) {
             expect(model).toMatch(/export\s+function\s+install/);
             expect(model).toMatch(/export\s+const\s+\w+Api/);
             expect(model).not.toMatch(/^\(function\s+init/m);
             expect(bridge).toContain('ESM leaf missing');
-            expect(html).toMatch(new RegExp(`type="module"\\s+src="assets/js/pages/${leaf}\\.js`));
-            expect(html).toContain(`${leaf}-bridge.js`);
-            expect(html.indexOf(`${leaf}.js`)).toBeLessThan(html.indexOf(`${leaf}-bridge.js`));
         }
-        expect(html.indexOf('social-task-model-bridge.js')).toBeLessThan(html.indexOf('social-form-model.js'));
+        expect(html).not.toMatch(/<script[^>]+social-task-model\.js/);
+        expect(html).not.toContain('social-task-model-bridge.js');
+        expect(html).toMatch(/type="module"\s+src="assets\/js\/pages\/social-form-model\.js/);
+        expect(html).toContain('social-form-model-bridge.js');
+        expect(html.indexOf('social-form-model.js')).toBeLessThan(html.indexOf('social-form-model-bridge.js'));
         expect(html.indexOf('social-form-model-bridge.js')).toBeLessThan(html.indexOf('social-page.js'));
+        expect(page).toMatch(/loadSocialDynamicModule\(SOCIAL_TASK_MODEL_URL/);
     });
 
     it('guardrails enforce ≥10 ESM leaves', () => {

@@ -194,6 +194,7 @@ Publishes only the host/runtime contract consumed by its loader.
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260816-customscroll4';
     const SOCIAL_PROFILE_MODEL_URL = 'assets/js/pages/social-profile-model.js?v=20260820-socialintent1';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';
+    const SOCIAL_TASK_MODEL_URL = 'assets/js/pages/social-task-model.js?v=20260720-w23task1';
     const SOCIAL_WORKSPACE_RISK_MODEL_URL = 'assets/js/pages/social-workspace-risk-model.js?v=20260820-socialintent1';
     const SOCIAL_EVENTS_MODULE_URL = 'assets/js/pages/social-events.js?v=20260807-socialtopnav34';
     const SOCIAL_GROUPS_MODULE_URL = 'assets/js/pages/social-groups.js?v=20260807-socialtopnav34';
@@ -275,8 +276,20 @@ Publishes only the host/runtime contract consumed by its loader.
             <button class="${btnClass}" type="button" data-action="project-risk-open" data-project-id="${projectId}"><i class="fas fa-triangle-exclamation"></i> Risks${riskPill}</button>
         `.trim();
     }
-    const projectTaskDownstreamIds = window.projectTaskDownstreamIds || (window.KiuSocialTaskModel || {}).projectTaskDownstreamIds;
-    const normalizeProjectTaskStatusId = window.normalizeProjectTaskStatusId || (window.KiuSocialTaskModel || {}).normalizeProjectTaskStatusId;
+    // Task helpers are workspace-only. Keep the feed boot independent from the
+    // ESM leaf; the workspace loader replaces these lookups before rendering.
+    function resolveSocialTaskModelFunction(name, fallback) {
+        return (...args) => {
+            const impl = window[name] || (window.KiuSocialTaskModel || {})[name];
+            if (typeof impl === 'function' && impl !== resolveSocialTaskModelFunction) return impl(...args);
+            return fallback(...args);
+        };
+    }
+    const projectTaskDownstreamIds = resolveSocialTaskModelFunction('projectTaskDownstreamIds', () => []);
+    const normalizeProjectTaskStatusId = resolveSocialTaskModelFunction('normalizeProjectTaskStatusId', (status) => {
+        const value = text(status || 'todo') || 'todo';
+        return value === 'backlog' ? 'todo' : value;
+    });
     const buildSocialRenderSignature = window.buildSocialRenderSignature;
 
     /** Desk readiness from dependsOn (graph parents) — pure read. */
@@ -288,26 +301,40 @@ Publishes only the host/runtime contract consumed by its loader.
      * Multi-parent: first in-list dep after sibling sort is primary; others only affect readiness UI.
      */
 
-    const countDeskForestNodes = window.countDeskForestNodes || (window.KiuSocialTaskModel || {}).countDeskForestNodes;
-    const formatProjectTaskBudgetEstimate = window.formatProjectTaskBudgetEstimate || (window.KiuSocialTaskModel || {}).formatProjectTaskBudgetEstimate;
-    const parseProjectTaskBudgetEstimate = window.parseProjectTaskBudgetEstimate || (window.KiuSocialTaskModel || {}).parseProjectTaskBudgetEstimate;
-    const parseProjectTaskPriorityPayload = window.parseProjectTaskPriorityPayload || (window.KiuSocialTaskModel || {}).parseProjectTaskPriorityPayload;
-    const parseProjectTaskActualsPayload = window.parseProjectTaskActualsPayload || (window.KiuSocialTaskModel || {}).parseProjectTaskActualsPayload;
-    const normalizeTaskScore1to5 = window.normalizeTaskScore1to5 || (window.KiuSocialTaskModel || {}).normalizeTaskScore1to5;
-    const normalizeTaskPriorityModel = window.normalizeTaskPriorityModel || (window.KiuSocialTaskModel || {}).normalizeTaskPriorityModel;
-    const computeTaskMatrixScore = window.computeTaskMatrixScore || (window.KiuSocialTaskModel || {}).computeTaskMatrixScore;
-    const computeTaskMatrixBucket = window.computeTaskMatrixBucket || (window.KiuSocialTaskModel || {}).computeTaskMatrixBucket;
+    const countDeskForestNodes = resolveSocialTaskModelFunction('countDeskForestNodes', () => 0);
+    const formatProjectTaskBudgetEstimate = resolveSocialTaskModelFunction('formatProjectTaskBudgetEstimate', () => '');
+    const parseProjectTaskBudgetEstimate = resolveSocialTaskModelFunction('parseProjectTaskBudgetEstimate', () => 0);
+    const normalizeTaskScore1to5 = resolveSocialTaskModelFunction('normalizeTaskScore1to5', (value, fallback = 3) => {
+        const n = Math.round(Number(value));
+        return Number.isFinite(n) ? Math.max(1, Math.min(5, n)) : fallback;
+    });
+    const normalizeTaskPriorityModel = resolveSocialTaskModelFunction('normalizeTaskPriorityModel', (value) => text(value).toLowerCase() === 'matrix' ? 'matrix' : 'manual');
+    const computeTaskMatrixScore = resolveSocialTaskModelFunction('computeTaskMatrixScore', (impact, effort) => normalizeTaskScore1to5(impact) * (6 - normalizeTaskScore1to5(effort)));
+    const computeTaskMatrixBucket = resolveSocialTaskModelFunction('computeTaskMatrixBucket', (score) => {
+        const value = Number(score) || 0;
+        return value >= 20 ? 'urgent' : value >= 15 ? 'high' : value >= 8 ? 'medium' : 'low';
+    });
 
     // Cost can be money and/or time. Time is a number + unit ('h' hours / 'd' days).
-    const normalizeTaskTimeUnit = window.normalizeTaskTimeUnit || (window.KiuSocialTaskModel || {}).normalizeTaskTimeUnit;
-    const normalizeTaskTime = window.normalizeTaskTime || (window.KiuSocialTaskModel || {}).normalizeTaskTime;
-    const formatTaskTime = window.formatTaskTime || (window.KiuSocialTaskModel || {}).formatTaskTime;
-    const formatTaskTimeVariance = window.formatTaskTimeVariance || (window.KiuSocialTaskModel || {}).formatTaskTimeVariance;
-    const formatTaskCostVariance = window.formatTaskCostVariance || (window.KiuSocialTaskModel || {}).formatTaskCostVariance;
+    const normalizeTaskTimeUnit = resolveSocialTaskModelFunction('normalizeTaskTimeUnit', (value) => text(value).toLowerCase() === 'd' ? 'd' : 'h');
+    const normalizeTaskTime = resolveSocialTaskModelFunction('normalizeTaskTime', (value) => {
+        const n = Number(value);
+        return Number.isFinite(n) && n > 0 ? Math.round(n * 10) / 10 : 0;
+    });
+    const formatTaskTime = resolveSocialTaskModelFunction('formatTaskTime', (value, unit) => {
+        const n = normalizeTaskTime(value);
+        return n > 0 ? `${Number.isInteger(n) ? n : n.toFixed(1)}${normalizeTaskTimeUnit(unit)}` : '';
+    });
+    const formatTaskTimeVariance = resolveSocialTaskModelFunction('formatTaskTimeVariance', () => null);
+    const formatTaskCostVariance = resolveSocialTaskModelFunction('formatTaskCostVariance', () => null);
+    const parseProjectTaskPriorityPayload = resolveSocialTaskModelFunction('parseProjectTaskPriorityPayload', () => ({
+        priorityModel: 'matrix', impactScore: 3, effortScore: 3, timeOptimistic: 0,
+        timeMostLikely: 0, timePessimistic: 0, timeEstimate: 0, timeUnit: 'h', priority: 'medium'
+    }));
+    const parseProjectTaskActualsPayload = resolveSocialTaskModelFunction('parseProjectTaskActualsPayload', () => ({ actualTime: 0, actualCost: 0 }));
 
     // Impact×Effort is the headline priority. Always matrix now (no manual/mode).
-
-    const buildProjectTaskFlowEdges = window.buildProjectTaskFlowEdges || (window.KiuSocialTaskModel || {}).buildProjectTaskFlowEdges;
+    const buildProjectTaskFlowEdges = resolveSocialTaskModelFunction('buildProjectTaskFlowEdges', () => []);
     function loadTaskGraphSyncMarker(projectId) {
         try {
             return text(localStorage.getItem(projectTaskGraphSyncStorageKey(projectId)) || '');
@@ -1314,6 +1341,7 @@ Publishes only the host/runtime contract consumed by its loader.
         // dependency phases intact, but fetch independent peels together so a
         // weak connection does not pay for 20+ sequential round trips.
         socialWorkspaceModulePromise = Promise.all([
+            loadSocialDynamicModule(SOCIAL_TASK_MODEL_URL, 'Social task model'),
             loadSocialDynamicModule(SOCIAL_WORKSPACE_RISK_MODEL_URL, 'Social workspace risk model'),
             loadWorkspaceBatch([
             SOCIAL_WORKSPACE_SCHEDULE_MODEL_URL,
