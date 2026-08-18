@@ -40,10 +40,24 @@ describe('route-owned bare CSS split', () => {
             const bundlePath = `assets/css/route-bare/${bundleName}/lux-page-bare-lite.css`;
 
             expect(html, htmlFile).toContain(href);
+            const hrefIndex = html.indexOf(`href="${href}`);
+            const linkStart = html.lastIndexOf('<link', hrefIndex);
+            const linkEnd = html.indexOf('>', hrefIndex);
+            const routeLink = html.slice(linkStart, linkEnd + 1);
+            expect(routeLink, htmlFile).not.toContain('media="print"');
+            expect(routeLink, htmlFile).not.toContain('onload="this.onload=null;this.media=\'all\'"');
             expect(html, htmlFile).not.toContain('href="assets/css/lux-page-bare-lite.css');
             expect(existsSync(join(process.cwd(), bundlePath)), bundlePath).toBe(true);
             expect(statSync(join(process.cwd(), bundlePath)).size, bundlePath).toBeLessThan(fullBareSize * 0.75);
         }
+    });
+
+    it('keeps route class replacement and active paintability atomic', () => {
+        const routeRuntime = readSource('assets/js/features/index-luxury.js');
+        const fouc = readSource('assets/css/lux-fouc-ht.css');
+        expect(routeRuntime).toContain('document.body.className = [...new Set([...retainedClasses, ...nextRouteClasses])].join(\' \')');
+        expect(fouc).toContain('#app-content > .page-section.active-page,');
+        expect(fouc).toContain('#app-content > .page-section.active-page .lux-page-shell,');
     });
 
     it('keeps the large home model on the home route only', () => {

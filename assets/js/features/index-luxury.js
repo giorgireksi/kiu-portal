@@ -285,9 +285,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         return Array.from(tokens);
     }
     function applyLuxRouteBodyClasses(pageId, entryId) {
-        getLuxRouteBodyClassTokens(pageId, entryId).forEach((token) => {
-            document.body.classList.add(`lux-route-${token}`);
-        });
+        return getLuxRouteBodyClassTokens(pageId, entryId).map((token) => `lux-route-${token}`);
     }
     function isLuxRouteWorkspace(pageId = getActivePageId(), entryId = getActiveEntryPageId()) {
         if (resolveLuxRouteBodyToken(pageId, entryId) === 'lms') return true;
@@ -357,16 +355,17 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         document.body.classList.toggle('lux-home-page', pageId === 'home');
         document.body.classList.toggle('lux-nonhome-page', pageId !== 'home');
         document.body.classList.toggle('lux-home-editing', Boolean(isHomeEditing));
-        Array.from(document.body.classList).forEach((className) => {
-            if (/^lux-(route|entry|family)-/.test(className)) {
-                document.body.classList.remove(className);
-            }
-        });
-        applyLuxRouteBodyClasses(pageId, entryId);
-        document.body.classList.add(
+        // Replace route/family tokens in one className assignment. Adding and
+        // removing them through separate classList operations creates a frame
+        // where route CSS matches nothing during page switches.
+        const nextRouteClasses = [
+            ...applyLuxRouteBodyClasses(pageId, entryId),
             `lux-entry-${sanitizeBodyToken(entryId || pageId)}`,
             `lux-family-${sanitizeBodyToken(family)}`
-        );
+        ];
+        const retainedClasses = Array.from(document.body.classList)
+            .filter((className) => !/^lux-(route|entry|family)-/.test(className));
+        document.body.className = [...new Set([...retainedClasses, ...nextRouteClasses])].join(' ');
         reconcileAdminLibraryRouteClasses(pageId, entryId);
     }
     function isSidebarCollapsed() {

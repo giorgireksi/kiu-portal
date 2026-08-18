@@ -1,4 +1,4 @@
-/* shared-lux-core — generated from 8 sources — hash 9d75c3d7 — edit SOURCES, run tools/build-shared-lux-core.mjs */
+/* shared-lux-core — generated from 8 sources — hash 11f3ee1a — edit SOURCES, run tools/build-shared-lux-core.mjs */
 /* source: assets/css/lux-tokens.css */
 
 
@@ -660,6 +660,9 @@ html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
 .social-neo-card,
 .social-project-card-new { contain: layout paint; content-visibility: auto; contain-intrinsic-size: 0 300px; }
 
+#app-content > .page-section.active-page,
+#app-content > .page-section.active-page .lux-page-shell,
+#app-content > .page-section.active-page .social-neo,
 #app-content > .page-section.active-page :is(
   .lux-soft-chrome,
   .home-hover-chip,

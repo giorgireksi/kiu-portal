@@ -40,6 +40,9 @@ html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
 /* The active route is already the user's viewport. Keep its glass cards
    synchronously paintable so route/tab switches do not materialize across
    multiple frames. Inactive page sections retain content-visibility:auto. */
+#app-content > .page-section.active-page,
+#app-content > .page-section.active-page .lux-page-shell,
+#app-content > .page-section.active-page .social-neo,
 #app-content > .page-section.active-page :is(
   .lux-soft-chrome,
   .home-hover-chip,
