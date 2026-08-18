@@ -1468,7 +1468,7 @@ Publishes only the host/runtime contract consumed by its loader.
         : {});
     const {
         readProjectWeekPlansStore, readProjectWeekPlan, writeProjectWeekPlan, addToProjectWeekPlan, addManyToProjectWeekPlan, removeFromProjectWeekPlan,
-        normalizeProjectWeekPlanWindow, shouldRenderProjectTaskGraphStack, shouldRenderProjectHealthStack, renderWorkspaceOwnedDialog, isProjectTaskGraphStackActive, getProjectTaskGraphStackAnchorDialog,
+        normalizeProjectWeekPlanWindow, shouldRenderProjectTaskGraphStack: shouldRenderProjectTaskGraphStackRaw, shouldRenderProjectHealthStack, renderWorkspaceOwnedDialog, isProjectTaskGraphStackActive, getProjectTaskGraphStackAnchorDialog,
         wrapProjectTaskGraphStack, wrapProjectHealthStack, renderHealthStackLayers, maybeWrapStackedProjectDialog, renderStackedProjectTaskChild, trySyncProjectTaskGraphStackDialog: trySyncProjectTaskGraphStackDialogRaw, syncProjectTaskGraphStackSlotState,
         projectTaskGraphStackedBackdropClass, resolveProjectTaskGraphNodeFromTarget, sortProjectBoardTasksByPriority, filterProjectBoardTasks, projectTaskDependsOnIds, resolveDeskTaskReadiness,
         orderDeskTasksByDependency, buildDeskTaskForest, buildProjectTaskInspectorFields, syncProjectTaskMatrixPreview, computePertExpected, taskHasPert,
@@ -1517,11 +1517,18 @@ Publishes only the host/runtime contract consumed by its loader.
         openPortfolioEditor, resetPortfolioEditor, renderPortfolioProfileBlock
     } = __kiuWorkspaceStubBag;
 
-    // Stack synchronization is dialog-only. Calling the lazy stub during every
+    // Stack synchronization is dialog-only. Calling the lazy stubs during every
     // feed render used to pull the complete workspace graph into first paint.
+    function workspaceStackDialogKind(kind = '') {
+        const value = text(kind || activeDialog()?.type || '');
+        return value === 'project-task-graph' || PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(value);
+    }
+    function shouldRenderProjectTaskGraphStack(runtime, kind = '') {
+        if (!workspaceStackDialogKind(kind)) return false;
+        return shouldRenderProjectTaskGraphStackRaw(runtime, kind);
+    }
     function trySyncProjectTaskGraphStackDialog(...args) {
-        const kind = text(activeDialog()?.type || '');
-        if (!kind || (kind !== 'project-task-graph' && !PROJECT_TASK_GRAPH_STACKED_DIALOGS.has(kind))) return false;
+        if (!workspaceStackDialogKind()) return false;
         return trySyncProjectTaskGraphStackDialogRaw(...args);
     }
 
