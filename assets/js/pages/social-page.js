@@ -1467,20 +1467,70 @@ Publishes only the host/runtime contract consumed by its loader.
             && typeof window.patchPostReactions === 'function'
             && window.patchPostReactions !== patchPostReactions);
     }
+    const SOCIAL_PANEL_MODULE_WARMERS = {
+        community: () => ensureSocialCommunityModule(),
+        groups: () => ensureSocialGroupsModule(),
+        workspace: () => ensureSocialWorkspaceModule(),
+        projects: () => ensureSocialWorkspaceModule(),
+        pages: () => ensureSocialPagesModule(),
+        events: () => ensureSocialEventsModule(),
+        surveys: () => ensureSocialSurveysModule(),
+        research: () => ensureSocialResearchModule(),
+        photography: () => ensureSocialPhotographyModule(),
+        'lost-and-found': () => ensureSocialLostFoundModule(),
+        messages: () => ensureSocialMessagesModule(),
+        alerts: () => ensureSocialAlertsModule(),
+        profile: () => ensureSocialProfileModule()
+    };
+    let socialPanelIntentPrefetchBound = false;
+    const warmedSocialPanels = new Set();
+    function warmSocialPanelModule(panel) {
+        const normalized = text(panel || '').toLowerCase();
+        const warmer = SOCIAL_PANEL_MODULE_WARMERS[normalized];
+        if (!warmer || warmedSocialPanels.has(normalized)) return;
+        warmedSocialPanels.add(normalized);
+        Promise.resolve().then(warmer).catch(() => {
+            warmedSocialPanels.delete(normalized);
+        });
+    }
+    function panelFromIntentTarget(target) {
+        const actionTarget = target?.closest?.('[data-action^="panel-"]');
+        const action = text(actionTarget?.dataset?.action || '');
+        if (action.startsWith('panel-')) return action.slice(6);
+        const panelTarget = target?.closest?.('[data-social-panel]');
+        return text(panelTarget?.dataset?.socialPanel || '');
+    }
+    function bindSocialPanelIntentPrefetch() {
+        if (socialPanelIntentPrefetchBound || typeof document === 'undefined') return;
+        socialPanelIntentPrefetchBound = true;
+        const warmFromIntent = (event) => {
+            if (!document.body?.classList.contains('lux-route-social')) return;
+            warmSocialPanelModule(panelFromIntentTarget(event.target));
+        };
+        document.addEventListener('pointerover', warmFromIntent, { passive: true, capture: true });
+        document.addEventListener('focusin', warmFromIntent, { passive: true, capture: true });
+    }
     function scheduleDeferredDesktopModulePrefetch() {
         if (socialDesktopModulePrefetchScheduled) return;
-        if (window.innerWidth <= 1024) return;
         socialDesktopModulePrefetchScheduled = true;
+        bindSocialPanelIntentPrefetch();
+        const connection = typeof navigator !== 'undefined'
+            ? (navigator.connection || navigator.mozConnection || navigator.webkitConnection)
+            : null;
+        if (connection?.saveData) return;
         const runPrefetch = () => {
-            ensureSocialCommunityModule()
-                .then(() => ensureSocialMessagesModule())
-                .catch(() => null);
+            // Warm panel code after the first feed paint. This removes the cold
+            // module/loading surface from normal panel switching without putting
+            // the entire Social graph on the critical startup path.
+            Object.keys(SOCIAL_PANEL_MODULE_WARMERS)
+                .filter((panel) => panel !== 'workspace' && panel !== 'projects')
+                .forEach(warmSocialPanelModule);
         };
         if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(() => runPrefetch(), { timeout: 5000 });
+            window.requestIdleCallback(() => runPrefetch(), { timeout: 2200 });
             return;
         }
-        window.setTimeout(runPrefetch, 4000);
+        window.setTimeout(runPrefetch, 2200);
     }
     function scheduleDirectoryPrefetch() {
         if (socialDirectoryPrefetchScheduled) return;
