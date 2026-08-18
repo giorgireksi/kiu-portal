@@ -1,0 +1,74 @@
+/* Social-only button motion trial.
+ * This is intentionally route-scoped so the interaction can be reviewed before
+ * the same treatment is considered for the rest of the portal.
+ */
+
+body.lux-route-social :is(
+  #lux-shell button,
+  #lux-topbar button,
+  #public-social-root button,
+  #social-neo-overlay-portal button,
+  #lux-studio-backdrop button,
+  #lux-bg-mode-params-backdrop button,
+  #lux-bg-gallery-backdrop button,
+  #mobile-bottom-nav button,
+  #mobile-action-sheet button
+):not(:disabled):not([aria-disabled="true"]):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle) {
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.lux-route-social :is(
+    #lux-shell button,
+    #lux-topbar button,
+    #public-social-root button,
+    #social-neo-overlay-portal button,
+    #lux-studio-backdrop button,
+    #lux-bg-mode-params-backdrop button,
+    #lux-bg-gallery-backdrop button,
+    #mobile-bottom-nav button,
+    #mobile-action-sheet button
+  ):not(:disabled):not([aria-disabled="true"]):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle):is(:hover, :focus-visible) {
+    transform: translate3d(0, -3px, 0);
+  }
+}
+
+body.lux-route-social :is(
+  #lux-shell button,
+  #lux-topbar button,
+  #public-social-root button,
+  #social-neo-overlay-portal button,
+  #lux-studio-backdrop button,
+  #lux-bg-mode-params-backdrop button,
+  #lux-bg-gallery-backdrop button,
+  #mobile-bottom-nav button,
+  #mobile-action-sheet button
+):not(:disabled):not([aria-disabled="true"]):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle):active {
+  transform: translate3d(0, 0, 0);
+  transition-duration: 60ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.lux-route-social :is(
+    #lux-shell button,
+    #lux-topbar button,
+    #public-social-root button,
+    #social-neo-overlay-portal button,
+    #lux-studio-backdrop button,
+    #lux-bg-mode-params-backdrop button,
+    #lux-bg-gallery-backdrop button,
+    #mobile-bottom-nav button,
+    #mobile-action-sheet button
+  ):not([data-no-social-button-motion="1"]):not(.lux-scroll-rail__btn):not(.social-project-task-graph-link-handle) {
+    transform: none !important;
+    transition: none !important;
+  }
+}
