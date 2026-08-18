@@ -33,6 +33,17 @@ describe('loading animation removal', () => {
         }
     });
 
+    it('does not ship legacy authored loading copy on route boot surfaces', () => {
+        expect(read('staff.html')).toContain('data-route-boot-surface="staff"');
+        expect(read('staff.html')).not.toContain('Loading staff command center...');
+        expect(read('students-admin.html')).toContain('data-route-boot-surface="students"');
+        expect(read('students-admin.html')).not.toContain('Loading student administration...');
+        expect(read('profile-view.html')).toContain('data-route-boot-surface="profile"');
+        expect(read('profile-view.html')).not.toContain('Loading profile...');
+        expect(read('social.html')).toContain('data-route-boot-surface="social"');
+        expect(read('social.html')).not.toContain('Preparing campus social');
+    });
+
     it('keeps route startup immediate and removes route fade animation hooks', () => {
         expect(read('assets/js/features/navigation.js')).not.toContain('playRouteContentFade');
         expect(read('assets/css/lux-shell.css')).not.toContain('luxRouteContentFade');
