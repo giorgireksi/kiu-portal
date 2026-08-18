@@ -431,8 +431,7 @@
             if (typeof impl === 'function' && impl !== renderProjectsWorkspacePanelClassic) {
                 return impl();
             }
-            ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
-            return `
+            const placeholder = `
                 <section class="social-neo-card">
                     <div class="social-neo-empty-hero">
                         <i class="fas fa-diagram-project"></i>
@@ -441,6 +440,12 @@
                     </div>
                 </section>
             `;
+            // The first shell render must not turn a transient/default
+            // workspace state into a full graph load. The boot coordinator
+            // explicitly warms the active panel after the initial paint.
+            if (window.__KIU_SOCIAL_LAZY_MODULES_DEFERRED) return placeholder;
+            ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
+            return placeholder;
         }
         function renderLostFoundPanel() {
             if (hasSocialLostFoundModule()) return window.renderLostFoundPanel();
