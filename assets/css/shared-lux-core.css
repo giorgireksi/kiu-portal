@@ -1,4 +1,4 @@
-/* shared-lux-core — generated from 8 sources — hash 703202ac — edit SOURCES, run tools/build-shared-lux-core.mjs */
+/* shared-lux-core — generated from 8 sources — hash fb1f0885 — edit SOURCES, run tools/build-shared-lux-core.mjs */
 /* source: assets/css/lux-tokens.css */
 
 
@@ -3025,8 +3025,10 @@ body.lux-route-news #portal-news-root :is(
   .newsx-attachment-chip.home-hover-chip,
   .newsx-attach-btn.home-hover-chip
 ) {
-  contain: none;
-  overflow: visible;
+  contain: none !important;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+  overflow: visible !important;
 }
 
 .newsx-sections-modal .newsx-sections-row.home-hover-chip {

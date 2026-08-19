@@ -66,7 +66,12 @@ describe('news publisher warmglass regressions (bare-shell era)', () => {
         expect(modals).toMatch(/#newsx-confirm-overlay\.modal-overlay\s*\{[^}]*z-index:\s*2100/);
         expect(modals).toContain('.newsx-sections-row:not(.home-hover-chip)');
         expect(modals).toContain('.newsx-sections-modal .newsx-sections-row.home-hover-chip');
+        expect(modals).toContain('contain: none !important;');
+        expect(modals).toContain('content-visibility: visible !important;');
+        expect(modals).toContain('overflow: visible !important;');
+        expect(modals).toContain('grid-template-areas:');
         expect(fouc).toContain('.newsx-sections-modal .newsx-sections-row.home-hover-chip');
+        expect(fouc).toContain('content-visibility: visible !important;');
     });
 
     it('dual-writes shared Lux classes on publisher create/edit modal markup', () => {

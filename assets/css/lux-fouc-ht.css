@@ -2406,8 +2406,10 @@ body.lux-route-news #portal-news-root :is(
   .newsx-attachment-chip.home-hover-chip,
   .newsx-attach-btn.home-hover-chip
 ) {
-  contain: none;
-  overflow: visible;
+  contain: none !important;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+  overflow: visible !important;
 }
 
 .newsx-sections-modal .newsx-sections-row.home-hover-chip {

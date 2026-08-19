@@ -4753,6 +4753,8 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   box-shadow: var(--lux-warmglass-section-shadow);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
 }
 
 .newsx-publisher-modal .newsx-publisher-pane.lux-soft-chrome.home-hover-chip {
@@ -4767,8 +4769,10 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
   :is(.newsx-publisher-radio-card, .newsx-publisher-toggle-card).lux-soft-chrome.home-hover-chip,
   .newsx-attachment-chip.lux-soft-chrome.home-hover-chip
 ) {
-  contain: none;
-  overflow: visible;
+  contain: none !important;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+  overflow: visible !important;
 }
 .newsx-publisher-modal {
   width: min(960px, 94vw);
@@ -5215,8 +5219,10 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
 .newsx-sections-row.home-hover-chip {
   padding: 12px 14px;
   border-radius: 14px;
-  contain: none;
-  overflow: visible;
+  contain: none !important;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+  overflow: visible !important;
 }
 .newsx-sections-row:not(.home-hover-chip) {
   border: 1px solid var(--lux-modal-glass-border);
@@ -5572,6 +5578,62 @@ body.lux-route-social :is(#public-social-root, #social-neo-overlay-portal) .lux-
 @media (max-width: 720px) {
   .newsx-publisher-modal .newsx-publisher-footer-draft-mobile { display: inline-flex; }
   .newsx-publisher-modal .newsx-publisher-header-actions [data-news-save-draft] { display: none; }
+
+  .newsx-sections-modal {
+    width: min(640px, calc(100vw - 20px));
+    max-width: min(640px, calc(100vw - 20px));
+  }
+  .newsx-sections-head {
+    padding: 16px 16px 0;
+  }
+  .newsx-sections-modal .newsx-subtle {
+    padding-inline: 16px;
+  }
+  .newsx-sections-list {
+    gap: 8px;
+    padding-inline: 16px;
+    max-height: 42vh;
+  }
+  .newsx-sections-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icon label remove"
+      "meta meta meta";
+    gap: 8px 10px;
+    align-items: start;
+  }
+  .newsx-sections-icon-field { grid-area: icon; }
+  .newsx-sections-row-label {
+    grid-area: label;
+    min-width: 0;
+  }
+  .newsx-sections-row-label .newsx-input {
+    min-width: 0;
+  }
+  .newsx-sections-row-meta {
+    grid-area: meta;
+    min-width: 0;
+  }
+  .newsx-sections-key {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .newsx-sections-remove-btn {
+    grid-area: remove;
+    align-self: start;
+  }
+  .newsx-sections-add-row,
+  .newsx-sections-actions {
+    padding-inline: 16px;
+  }
+  .newsx-sections-add-row > .newsx-input {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  .newsx-sections-add-row > .newsx-btn,
+  .newsx-sections-actions > .newsx-btn {
+    flex: 1 1 auto;
+  }
 }
 
 /* ── Admin library modal interiors (layout only) ── */
