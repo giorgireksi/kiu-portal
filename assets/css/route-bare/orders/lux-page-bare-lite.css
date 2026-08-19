@@ -622,6 +622,28 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section {
   min-width: 0;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command { min-height: 92px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter { min-height: 238px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox { min-height: 184px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton {
+  min-height: 0;
+  height: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: none;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton--command { min-height: 64px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton--filter { min-height: 210px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton--inbox { min-height: 156px; }
+@media (max-width: 760px) {
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command { min-height: 112px; }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter { min-height: 390px; }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox { min-height: 220px; }
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section.lux-soft-chrome.home-hover-chip {
   padding: 12px 14px;
