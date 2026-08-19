@@ -630,6 +630,10 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
   padding: 12px 14px;
   border-radius: 16px;
 }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root :is(.lux-soft-chrome, .home-hover-chip) {
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
+}
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-command-layout {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
