@@ -33,6 +33,10 @@ describe('admin library route regressions.test', () => {
     it('loads shared panel SSOT stack with library layout CSS', () => {
         const html = readSource('admin-library.html');
         expect(html).toContain('lux-modals.css');
+        expect(html).toContain('<link rel="stylesheet" href="assets/css/lux-modals.css?v=20260729-libmodal3">');
+        expect(html).not.toContain("media=\"print\" onload=\"this.onload=null;this.media='all'\"");
+        expect(html).toMatch(/library-schema-overlay[^>]*aria-hidden="true"[^>]*hidden/);
+        expect(html).toMatch(/library-filters-overlay[^>]*aria-hidden="true"[^>]*hidden/);
         expect(html).toContain('libshell2');
         expect(html).toContain('admin-library-catalog-card lux-soft-chrome home-hover-chip');
         expect(html).toContain('alib-panel alib-panel--entry lux-soft-chrome home-hover-chip');
@@ -80,7 +84,8 @@ describe('admin library route regressions.test', () => {
         expect(adminLibraryJs).toContain("row.className = 'admin-library-section-row lux-soft-chrome home-hover-chip'");
         expect(adminLibraryJs).toContain('lux-card-copy admin-library-section-row-title');
         expect(adminLibraryJs).toContain('lux-empty-state admin-library-sections-empty');
-        expect(adminLibraryJs).toMatch(/setAdminLibrarySectionsModalOpen[\s\S]*?classList\.toggle\('is-open'/);
+        expect(adminLibraryJs).toMatch(/setAdminLibrarySectionsModalOpen[\s\S]*?overlay\.hidden = !isOpen[\s\S]*?classList\.toggle\('is-open'/);
+        expect(adminLibraryJs).toMatch(/setAdminLibrarySchemaModalOpen[\s\S]*?overlay\.hidden = !isOpen/);
         expect(html).toContain('library-sections-overlay');
         expect(html).toContain('lux-glass-dialog-overlay');
         const primitives = readSource('assets/css/lux-layout-primitives.css');

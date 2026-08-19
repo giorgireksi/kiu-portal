@@ -863,6 +863,7 @@ function syncAdminLibraryModalBodyLock() {
 function setAdminLibrarySchemaModalOpen(isOpen) {
     const overlay = document.getElementById('library-schema-overlay');
     if (!overlay) return;
+    overlay.hidden = !isOpen;
     overlay.classList.toggle('active', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     syncAdminLibraryModalBodyLock();
@@ -871,6 +872,7 @@ function setAdminLibrarySchemaModalOpen(isOpen) {
 function setAdminLibraryFiltersModalOpen(isOpen) {
     const overlay = document.getElementById('library-filters-overlay');
     if (!overlay) return;
+    overlay.hidden = !isOpen;
     overlay.classList.toggle('active', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     syncAdminLibraryModalBodyLock();
@@ -879,6 +881,7 @@ function setAdminLibraryFiltersModalOpen(isOpen) {
 function setAdminLibraryDroplistModalOpen(isOpen) {
     const overlay = document.getElementById('library-schema-droplist-overlay');
     if (!overlay) return;
+    overlay.hidden = !isOpen;
     overlay.classList.toggle('active', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
     syncAdminLibraryModalBodyLock();
@@ -1119,6 +1122,7 @@ function getAdminLibrarySectionBookCount(sectionId) {
 function setAdminLibrarySectionsModalOpen(isOpen) {
     const overlay = document.getElementById('library-sections-overlay');
     if (!overlay) return;
+    overlay.hidden = !isOpen;
     overlay.classList.toggle('active', Boolean(isOpen));
     overlay.classList.toggle('is-open', Boolean(isOpen));
     overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
