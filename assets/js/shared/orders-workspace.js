@@ -1585,6 +1585,10 @@ function renderAdminOrders() {
         selectedOrderId: uiState.selectedOrderId,
         sentFilters: uiState.sentFilters,
         recipients: filteredRecipients.map((recipient) => recipient.id),
+        filterLayouts: ORDERS_RECIPIENT_FILTER_ROLES.map((role) => {
+            const layout = getCachedOrdersRecipientFilterLayout(faculty, role);
+            return [role, (layout.filters || []).map((filter) => [filter.field, filter.label, filter.enabled, (filter.options || []).map((option) => option.value)])];
+        }),
         orders: filteredOrders.map((order) => [order.id, order.updatedAt || order.createdAt || order.createdDate, order.status])
     });
     if (root.dataset.adminOrdersRenderSignature === renderSignature) return;
