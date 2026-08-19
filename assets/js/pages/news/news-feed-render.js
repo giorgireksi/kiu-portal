@@ -232,7 +232,7 @@ function renderPostTile(post) {
     const coverUrl = images.length ? resolveNewsAttachmentUrl(images[0].file) : '';
     const cover = coverUrl
         ? `<div class="newsx-post-tile-cover"><img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" decoding="async"></div>`
-        : `<div class="newsx-post-tile-cover newsx-post-tile-cover--empty" aria-hidden="true"><i class="fas fa-newspaper"></i></div>`;
+        : '';
     const pinBadge = post.pinned
         ? '<span class="newsx-post-tile-pin home-hover-chip" title="Pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i></span>'
         : '';
