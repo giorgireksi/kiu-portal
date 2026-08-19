@@ -12,7 +12,15 @@
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/shared-lux-core.css?v=703202ac">
     <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260726-frostedpopup1">
-    <link rel="stylesheet" href="assets/css/route-bare/directory/lux-page-bare-lite.css?v=20260820-cls1" fetchpriority="high">
+    <link rel="stylesheet" href="assets/css/route-bare/directory/lux-page-bare-lite.css?v=20260820-cls2" fetchpriority="high">
+    <style id="students-directory-cls-guard">
+        /* Keep directory panels and row chips at their real first-layout size
+           even if an older cached route stylesheet is still present. */
+        body.lux-route-students-admin #students-content .students-hub-shell :is(.home-hover-chip, .lux-soft-chrome) {
+            content-visibility: visible !important;
+            contain-intrinsic-size: auto !important;
+        }
+    </style>
     <link rel="stylesheet" href="assets/css/layout-schedule.css?v=20260720-densify6500">
     <link rel="icon" href="data:,">
     <script src="assets/js/theme-primer.js?v=20260819-fastboot2"></script>
