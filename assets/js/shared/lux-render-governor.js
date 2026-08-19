@@ -94,7 +94,7 @@ export function getPacingMultiplier() {
         if (document.body?.classList?.contains('lux-studio-open')) return 3.2;
         if (document.documentElement?.classList?.contains('lux-shell-chrome-motion')) return 3;
         if (window.__luxShellHoverBusy) return 1.4;
-        if (window.__luxShellInteractionBusy) return 6;
+        if (window.__luxShellInteractionLock || window.__luxShellInteractionBusy) return 6;
         if (window.__luxIsScrolling) return 4.5;
         if (isModalOverlayOpen()) return 2.6;
     } catch (_error) { /* ignore */ }
@@ -104,6 +104,7 @@ export function getPacingMultiplier() {
 export function shouldSkipCanvasFrame() {
     return window.__luxIsAnimating === true
         || window.__luxShellHoverBusy === true
+        || window.__luxShellInteractionLock === true
         || window.__luxShellInteractionBusy === true;
 }
 

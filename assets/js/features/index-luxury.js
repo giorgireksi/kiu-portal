@@ -403,7 +403,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         const nextCollapsed = Boolean(collapsed);
         if (__sidebarToggling) return;
         if (document.body.classList.contains('lux-sidebar-collapsed') === nextCollapsed
-            && document.documentElement.classList.contains('lux-sidebar-collapsed') === nextCollapsed) return;
+            && document.documentElement.classList.contains('lux-sidebar-collapsed') === nextCollapsed) {
+            window.__luxShellInteractionLock = !nextCollapsed && isDesktopSidebarOverlayViewport();
+            window.notifyLuxGovernorStateChange?.();
+            return;
+        }
         __sidebarToggling = true;
         if (options.animate === true) armSidebarTransitionHint();
         // Apply the two paint-driving classes in the click task so the CSS
@@ -412,6 +416,12 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         document.documentElement.classList.toggle('lux-sidebar-collapsed', nextCollapsed);
         document.body.classList.toggle('lux-sidebar-collapsed', nextCollapsed);
         document.body.dataset.luxSidebar = nextCollapsed ? 'collapsed' : 'expanded';
+        // Keep the interactive shell responsive: the full-screen WebGL
+        // background must yield while the desktop sidebar is open. The last
+        // rendered frame remains visible, so this does not alter the palette
+        // or resting glass appearance.
+        window.__luxShellInteractionLock = !nextCollapsed && isDesktopSidebarOverlayViewport();
+        window.notifyLuxGovernorStateChange?.();
         requestAnimationFrame(() => {
             __sidebarToggling = false;
             if (options.persist !== false) {
