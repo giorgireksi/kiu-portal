@@ -50,6 +50,6 @@ describe('admin orders title presets', () => {
         const html = readSource('admin-orders.html');
         expect(html).toMatch(/lux-modals\.css\?v=20260730-chanfiltercss1/);
         expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260730-filterbtncss1/);
-        expect(html).toMatch(/orders-workspace\.js\?v=20260820-adminordersperf1/);
+        expect(html).toMatch(/orders-workspace\.js\?v=20260820-adminordersperf2/);
     });
 });
