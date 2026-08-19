@@ -1047,9 +1047,15 @@ body.lux-full-paint {
      the already-painted shell fill while the compositor settles. */
   html.lux-sidebar-transitioning #lux-shell {
     transition: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
     transform: none !important;
     will-change: auto !important;
+  }
+
+  /* Keep the blur on the first visible frame when opening. Only the closing
+     path needs the temporary filter removal because the shell is leaving the
+     viewport and no blur frame is visible to the user. */
+  html.lux-sidebar-transitioning body.lux-sidebar-collapsed #lux-shell {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }

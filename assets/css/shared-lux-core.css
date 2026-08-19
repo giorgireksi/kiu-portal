@@ -1,4 +1,4 @@
-/* shared-lux-core — generated from 8 sources — hash 7ebe9dc6 — edit SOURCES, run tools/build-shared-lux-core.mjs */
+/* shared-lux-core — generated from 8 sources — hash 703202ac — edit SOURCES, run tools/build-shared-lux-core.mjs */
 /* source: assets/css/lux-tokens.css */
 
 
@@ -5586,10 +5586,14 @@ body.lux-full-paint {
 
   html.lux-sidebar-transitioning #lux-shell {
     transition: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
     transform: none !important;
     will-change: auto !important;
+  }
+
+
+  html.lux-sidebar-transitioning body.lux-sidebar-collapsed #lux-shell {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }
 
