@@ -228,21 +228,36 @@ function renderPostTile(post) {
     const postId = String(post?.id || '');
     const title = stripNewsTitlePlainText(post.title) || 'Announcement';
     const when = formatDateTime(post.publishedAt || post.updatedAt || post.createdAt);
+    const sectionLabel = String(post.sectionLabel || post.sectionKey || 'University News').trim() || 'University News';
+    const authorName = String(post.createdByName || 'University').trim() || 'University';
+    const priority = String(post.priority || 'standard').trim().toLowerCase();
+    const priorityLabel = priority === 'critical' ? 'Critical' : priority === 'important' ? 'Important' : '';
     const images = getNewsImageAttachmentEntries(post);
     const coverUrl = images.length ? resolveNewsAttachmentUrl(images[0].file) : '';
     const cover = coverUrl
         ? `<div class="newsx-post-tile-cover"><img src="${escapeHtml(coverUrl)}" alt="" loading="lazy" decoding="async"></div>`
         : '';
-    const pinBadge = post.pinned
-        ? '<span class="newsx-post-tile-pin home-hover-chip" title="Pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i></span>'
-        : '';
+    const excerpt = renderMagazineExcerpt(post);
+    const badges = [
+        post.pinned ? '<span class="newsx-post-tile-badge is-pinned"><i class="fas fa-thumbtack" aria-hidden="true"></i> Pinned</span>' : '',
+        priorityLabel ? `<span class="newsx-post-tile-badge is-${escapeHtml(priority)}">${escapeHtml(priorityLabel)}</span>` : ''
+    ].filter(Boolean).join('');
     return `
         <button type="button" class="newsx-post-tile-hit" data-news-open-post="${escapeHtml(postId)}" aria-label="Open ${escapeHtml(title)}">
             ${cover}
-            ${pinBadge}
             <div class="newsx-post-tile-copy">
+                <div class="newsx-post-tile-kicker-row">
+                    <span class="newsx-post-tile-section">${escapeHtml(sectionLabel)}</span>
+                    ${badges ? `<span class="newsx-post-tile-badges">${badges}</span>` : ''}
+                </div>
                 <h3 class="newsx-post-tile-title">${escapeHtml(title)}</h3>
-                <div class="newsx-post-tile-date lux-card-meta">${escapeHtml(when)}</div>
+                ${excerpt}
+                <div class="newsx-post-tile-meta lux-card-meta">
+                    <span><i class="fas fa-calendar-day" aria-hidden="true"></i> ${escapeHtml(when)}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${escapeHtml(authorName)}</span>
+                </div>
+                <div class="newsx-post-tile-action">Read announcement <i class="fas fa-arrow-right" aria-hidden="true"></i></div>
             </div>
         </button>
     `;
