@@ -777,6 +777,12 @@ function renderSectionCommandCenter(activePanel, activeConfig, runtime) {
         ? window.KiuSocialPagination.renderModeControl(activePanel)
         : '';
 }
+function renderSocialPaginationToolbar(activePanel, activeConfig, runtime) {
+    const control = renderSectionCommandCenter(activePanel, activeConfig, runtime);
+    return control
+        ? `<div class="social-pagination-toolbar" data-social-pagination-toolbar="1">${control}</div>`
+        : '';
+}
 function renderSocialFlashStatus(runtime) {
     const pinWarning = runtime.ui?.pinApiUnavailable ? `
         <div class="social-neo-pin-api-warning home-hover-chip" role="status">
@@ -1225,7 +1231,9 @@ function renderSocialPageNow(reason = 'manual') {
             syncSocialShortcutsTopNavPortal('');
         }
         if (renderPlan.command) {
-            setSocialRegionMarkup(shell.command, renderSectionCommandCenter(activePanel, activeConfig, runtime));
+            // Pagination belongs to the active collection, not the global page
+            // chrome. The center render below mounts it in context.
+            setSocialRegionMarkup(shell.command, '');
         } else if (isSocialCommandSkippedPanel(activePanel)) {
             setSocialRegionMarkup(shell.command, '');
         }
@@ -1234,7 +1242,11 @@ function renderSocialPageNow(reason = 'manual') {
             setSocialRegionMarkup(shell.workspaceNav, renderShellWorkspaceNav(activePanel));
         }
         if (renderPlan.center) {
-            setSocialRegionMarkup(shell.center, renderActivePanelMarkup(activePanel));
+            const paginationToolbar = renderSocialPaginationToolbar(activePanel, activeConfig, runtime);
+            setSocialRegionMarkup(
+                shell.center,
+                `${paginationToolbar}${renderActivePanelMarkup(activePanel)}`
+            );
             if (typeof window.KiuSocialPagination?.decorate === 'function') {
                 window.KiuSocialPagination.decorate(shell.center, activePanel);
             }

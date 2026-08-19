@@ -24016,6 +24016,20 @@ body.lux-route-social #social-neo-command-region:not(:empty) {
   min-width: 0;
 }
 
+/* Pagination is contextual to the active collection, not global chrome. */
+body.lux-route-social .social-pagination-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+body.lux-route-social .social-pagination-toolbar .social-pagination-mode-control {
+  margin-left: auto;
+}
+
 /* Phone: Social Shortcuts top bar — bottom-nav twin (fixed full-bleed). Desktop keeps left rail. */
 body.lux-route-social {
   --social-shortcuts-top-nav-height: 58px;
