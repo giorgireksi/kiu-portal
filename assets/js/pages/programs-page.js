@@ -1,8 +1,12 @@
 (function initProgramsPageController() {
     'use strict';
 
+    const PROGRAMS_INITIAL_RENDER_FALLBACK_MS = 1200;
     const programsUiState = window.studentEducationalProgramUiState = window.studentEducationalProgramUiState || {
         selectedModulesByFaculty: {},
+        initialRenderFallbackScheduled: false,
+        initialRenderComplete: false,
+        lastRenderSignature: '',
         searchQueryByFaculty: {},
         searchDebounceTimer: null,
         detailRenderRequestId: 0,
@@ -285,7 +289,10 @@
         cancelProgramsSubjectPanelRender();
         programsUiState.detailRenderRequestId += 1;
         const requestId = programsUiState.detailRenderRequestId;
-        region.innerHTML = renderProgramsSubjectPanelLoadingRegion(context);
+        const isBootSkeleton = Boolean(region.querySelector('[data-programs-boot-skeleton="1"]'));
+        if (!isBootSkeleton) {
+            region.innerHTML = renderProgramsSubjectPanelLoadingRegion(context);
+        }
 
         const commit = () => {
             if (requestId !== programsUiState.detailRenderRequestId) return;
@@ -467,12 +474,29 @@
         });
     }
 
-    function renderStudentEducationalProgramPage() {
+    function renderStudentEducationalProgramPage(options = {}) {
         const pageSection = document.getElementById('page-programs');
         const root = document.getElementById('student-educational-program-root');
         if (!pageSection || !root) return;
         bindProgramsPageDelegates();
         ensureProgramsContentShell(root);
+        const allowBootstrapFallback = options.allowBootstrapFallback === true;
+        if (
+            !programsUiState.initialRenderComplete
+            && !allowBootstrapFallback
+            && window.__KIU_PORTAL_BOOTSTRAP_PENDING === true
+        ) {
+            if (!programsUiState.initialRenderFallbackScheduled) {
+                programsUiState.initialRenderFallbackScheduled = true;
+                window.setTimeout(() => {
+                    programsUiState.initialRenderFallbackScheduled = false;
+                    if (!programsUiState.initialRenderComplete) {
+                        renderStudentEducationalProgramPage({ allowBootstrapFallback: true });
+                    }
+                }, PROGRAMS_INITIAL_RENDER_FALLBACK_MS);
+            }
+            return;
+        }
 
         const currentUser = getCurrentUser();
         const programFaculty = getStudentEducationalProgramFaculty(currentUser, getCurrentFaculty());
@@ -537,6 +561,17 @@
         const allProgramSubjects = Array.from(allProgramSubjectsById.values());
         const totalProgramEcts = allProgramSubjects.reduce((sum, subject) => sum + toPositiveInt(subject.ects, 0), 0);
         const visibleEcts = moduleSubjects.reduce((sum, subject) => sum + toPositiveInt(subject.ects, 0), 0);
+        const renderSignature = JSON.stringify({
+            programFaculty,
+            semesterFilter,
+            searchQuery,
+            selectedModuleId: selectedModule?.id || '',
+            modules: modules.map((module) => [module.id, module.name, module.updatedAt]),
+            subjects: allProgramSubjects.map((subject) => [subject.id, subject.name, subject.ects, subject.semester, subject.cond, subject.antireq])
+        });
+        if (programsUiState.lastRenderSignature === renderSignature) return;
+        programsUiState.lastRenderSignature = renderSignature;
+        programsUiState.initialRenderComplete = true;
         const renderContext = {
             allProgramSubjects,
             moduleSubjects,
@@ -571,6 +606,7 @@
     // Standalone programs initially renders before PostgreSQL bootstrap. Refresh
     // after the authoritative catalog arrives so it does not remain empty.
     window.addEventListener('kiu:portal-bootstrap-complete', () => {
-        renderStudentEducationalProgramPage();
+        programsUiState.initialRenderFallbackScheduled = false;
+        renderStudentEducationalProgramPage({ allowBootstrapFallback: true });
     });
 })();

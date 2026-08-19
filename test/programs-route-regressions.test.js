@@ -31,7 +31,9 @@ describe('programs route regressions.test', () => {
         expect(html).not.toContain('Program Snapshot');
         expect(html).not.toContain('programs-ops-grid');
         expect(html).toContain('lux-page-bare-lite.css?v=20260806-infopop6');
-        expect(html).toContain('programs-page.js?v=20260806-infopop3');
+        expect(html).toContain('programs-page.js?v=20260820-stableboot1');
+        expect(html).toContain('data-programs-content-shell="1"');
+        expect(html).toContain('data-programs-boot-skeleton="1"');
         expect(bare).toContain('.lux-prog-control-band .lux-program-field .lux-picker-btn--compact');
         expect(bare).not.toContain('--prog-fade-');
         const programsBlock = bare.split('/* ── Programs route')[1]?.split('/* ── LMS route')[0] || '';
@@ -69,6 +71,9 @@ describe('programs route regressions.test', () => {
     it('dynamic workspace uses lux-section-card panels and home-hover-chip on matte rows', () => {
         const js = readSource('assets/js/pages/programs-page.js');
         expect(js).toContain('lux-section-card lux-program-shell-section');
+        expect(js).toContain('PROGRAMS_INITIAL_RENDER_FALLBACK_MS = 1200');
+        expect(js).toContain('window.__KIU_PORTAL_BOOTSTRAP_PENDING === true');
+        expect(js).toContain("programsUiState.lastRenderSignature === renderSignature");
         expect(js).toContain('window.enhanceUniversalPickers');
         expect(js).toContain('window.observeUniversalPickers');
         expect(js).not.toMatch(/surface-card lux-program-shell-section/);
