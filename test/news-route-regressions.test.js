@@ -95,7 +95,7 @@ describe('news bare shell', () => {
         expect(events).toContain('closeNewsPostDetail()');
         expect(events).toContain('closeNewsAttachmentViewer()');
         expect(readSource('news.html')).toContain('lux-modals.css?v=20260820-newssectionsfix1');
-        expect(readSource('news.html')).toContain('lux-page-bare-lite.css?v=20260806-newssectioncollapse1');
+        expect(readSource('news.html')).toContain('lux-page-bare-lite.css?v=20260820-newsfullscreen1');
         expect(readSource('news.html')).toContain('news-feed-render.js?v=20260806-newssectioncollapse1');
         expect(readSource('news.html')).toContain('news-events.js?v=20260806-newssectioncollapse1');
         expect(readSource('news.html')).toContain('news-runtime.js?v=20260806-newssectioncollapse1');
@@ -282,7 +282,7 @@ describe('news bare shell', () => {
         expect(feed).toContain('newsx-btn lux-secondary-btn home-hover-chip" data-news-close-post-detail');
         expect(modals).toContain('#newsx-post-detail-panel *');
         expect(modals).toContain('#newsx-attachment-viewer-panel *');
-        expect(html).toContain('lux-page-bare-lite.css?v=20260806-newssectioncollapse1');
+        expect(html).toContain('lux-page-bare-lite.css?v=20260820-newsfullscreen1');
         expect(html).toContain('lux-modals.css?v=20260820-newssectionsfix1');
         expect(html).toContain('news-feed-render.js?v=20260806-newssectioncollapse1');
         expect(html).toContain('news-replies.js?v=20260731-newsreplytab1');
