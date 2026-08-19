@@ -622,9 +622,30 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section {
   min-width: 0;
-  min-height: 522px;
   content-visibility: visible !important;
   contain-intrinsic-size: auto !important;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command { min-height: 48px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter { min-height: 177px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox { min-height: 122px; }
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section > .route-boot-skeleton--directory {
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .route-boot-skeleton--directory .route-boot-skeleton__line { display: none; }
+@media (max-width: 980px) {
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command { min-height: 88px; }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter { min-height: 629px; }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox { min-height: 122px; }
+}
+@media (max-width: 760px) {
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter { min-height: 640px; }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox { min-height: 143px; }
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section.lux-soft-chrome.home-hover-chip {
   padding: 12px 14px;
