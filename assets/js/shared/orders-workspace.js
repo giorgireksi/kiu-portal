@@ -1549,7 +1549,6 @@ function renderAdminOrders() {
     const root = document.getElementById('admin-orders-root');
     if (!root) return;
     bindOrdersWorkspaceDelegates();
-    ensureAdminOrdersModals();
     if (getEffectiveUserRole() !== USER_ROLES.ADMIN) {
         renderOrdersInboxPage();
         return;
@@ -1577,6 +1576,20 @@ function renderAdminOrders() {
     const today = new Date().toISOString().slice(0, 10);
     const ordersToday = orders.filter(order => order.createdDate === today).length;
     const recipientFootprint = orders.reduce((count, order) => count + (order.recipientCount || order.recipientIds?.length || 0), 0);
+    const renderSignature = JSON.stringify({
+        faculty,
+        search: uiState.search,
+        roleFilter: uiState.roleFilter,
+        audienceRole: uiState.audienceRole,
+        selectedRecipientIds: uiState.selectedRecipientIds,
+        selectedOrderId: uiState.selectedOrderId,
+        sentFilters: uiState.sentFilters,
+        recipients: filteredRecipients.map((recipient) => recipient.id),
+        orders: filteredOrders.map((order) => [order.id, order.updatedAt || order.createdAt || order.createdDate, order.status])
+    });
+    if (root.dataset.adminOrdersRenderSignature === renderSignature) return;
+    root.dataset.adminOrdersRenderSignature = renderSignature;
+    window.__kiuMarkPortalBootPhase?.('admin-orders-render-start');
 
     const shell = ensureAdminOrdersShell(root);
     if (!shell.commandPanel || !shell.ordersTablePanel || !shell.detailPanel) return;
@@ -1599,6 +1612,7 @@ function renderAdminOrders() {
     }
     setOrdersRegionMarkup(shell.ordersTablePanel, 'admin-filter', renderAdminOrdersFilterPanel(uiState, facultyLabel, filteredOrders.length, orders.length));
     renderAdminOrdersSentInboxPanel(shell.detailPanel, filteredOrders, uiState.selectedOrderId);
+    window.__kiuMarkPortalBootPhase?.('admin-orders-content-ready');
     return;
 }
 
@@ -2058,6 +2072,7 @@ function setAdminOrdersThreadModalOpen(isOpen) {
 
 function openAdminOrderThreadModal(orderId) {
     if (!orderId) return;
+    ensureAdminOrdersModals();
     selectAdminOrderRecord(orderId, { skipRender: true });
     const order = getAdminOrderById(orderId);
     if (!order) return;

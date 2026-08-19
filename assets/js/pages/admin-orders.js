@@ -1,7 +1,12 @@
 (function initAdminOrdersPageController() {
     'use strict';
 
+    const ADMIN_ORDERS_INITIAL_RENDER_FALLBACK_MS = 1200;
     let studioControlsBound = false;
+    const adminOrdersBootState = window.__KIU_ADMIN_ORDERS_BOOT_STATE = window.__KIU_ADMIN_ORDERS_BOOT_STATE || {
+        initialRenderComplete: false,
+        fallbackScheduled: false
+    };
 
     function bindAdminOrdersStudioControls() {
         if (studioControlsBound) return;
@@ -59,10 +64,27 @@
         });
     }
 
-    function ensureAdminOrdersContent() {
-        if (typeof renderAdminOrders === 'function') {
-            renderAdminOrders();
+    function ensureAdminOrdersContent(options = {}) {
+        if (typeof renderAdminOrders !== 'function') return;
+        const allowBootstrapFallback = options.allowBootstrapFallback === true;
+        if (
+            !adminOrdersBootState.initialRenderComplete
+            && !allowBootstrapFallback
+            && window.__KIU_PORTAL_BOOTSTRAP_PENDING === true
+        ) {
+            if (!adminOrdersBootState.fallbackScheduled) {
+                adminOrdersBootState.fallbackScheduled = true;
+                window.setTimeout(() => {
+                    adminOrdersBootState.fallbackScheduled = false;
+                    if (!adminOrdersBootState.initialRenderComplete) {
+                        ensureAdminOrdersContent({ allowBootstrapFallback: true });
+                    }
+                }, ADMIN_ORDERS_INITIAL_RENDER_FALLBACK_MS);
+            }
+            return;
         }
+        renderAdminOrders();
+        adminOrdersBootState.initialRenderComplete = true;
     }
 
     function initAdminOrdersPage() {
@@ -91,6 +113,11 @@
 
         ensureAdminOrdersContent();
     }
+
+    window.addEventListener('kiu:portal-bootstrap-complete', () => {
+        adminOrdersBootState.fallbackScheduled = false;
+        ensureAdminOrdersContent({ allowBootstrapFallback: true });
+    });
 
     window.bindAdminOrdersStudioControls = bindAdminOrdersStudioControls;
     window.ensureAdminOrdersContent = ensureAdminOrdersContent;
