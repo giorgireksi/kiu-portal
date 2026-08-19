@@ -4,7 +4,7 @@ import {
   onGovernorStateChange,
   readGovernedFrameIntervalMs,
   shouldSkipCanvasFrame,
-} from "../shared/lux-render-governor.js?v=20260816-hovergpu1";
+} from "../shared/lux-render-governor.js?v=20260820-shellinput1";
 
 let vantaInstance = null;
 let engineReady = false;

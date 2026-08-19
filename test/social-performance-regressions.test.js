@@ -23,7 +23,7 @@ describe('social performance safeguards', () => {
         expect(html).toContain('route-boot-skeleton--social');
         expect(html).toContain('social-page-interactions-runtime.js?v=20260820-switchnoflicker2');
         expect(html).not.toContain('lux-fouc-ht.css?v=20260818-showhidefix1');
-        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1');
+        expect(html).toContain('luxury-shell-motion-runtime.js?v=20260820-shellinput1');
         expect(page).toContain('social-community.js?v=20260816-socialperf1');
         expect(page).toContain('SOCIAL_DYNAMIC_SCRIPT_TIMEOUT_MS');
         expect(page).toContain('loadSocialDynamicScript');

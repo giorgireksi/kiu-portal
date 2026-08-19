@@ -26,7 +26,7 @@ describe('lux render governor', () => {
         expect(governor).toContain('export function stopLuxPortalPerfProbe');
         expect(governor).toContain('window.startKiuPortalPerfProbe');
         expect(governor).toContain('longTasks');
-        expect(app).toContain("import('../shared/lux-render-governor.js?v=20260816-hovergpu1')");
+        expect(app).toContain("import('../shared/lux-render-governor.js?v=20260820-shellinput1')");
         expect(app).toContain("get('perf') !== '1'");
         expect(governor).toContain('window.shouldDeferLuxTransparency');
         expect(governor).toContain('window.__luxIsScrolling');

@@ -19,6 +19,8 @@
     let bound = false;
     let hoverBusyUntil = 0;
     let hoverBusyTimer = null;
+    let shellInteractionBusyUntil = 0;
+    let shellInteractionBusyTimer = null;
 
     function syncMotionClass() {
         const root = document.documentElement;
@@ -164,6 +166,28 @@
         }
     }
 
+    function armShellInteractionBusy(ms = 650) {
+        const duration = Math.max(0, Number(ms) || 0);
+        if (duration <= 0) return;
+        shellInteractionBusyUntil = Math.max(shellInteractionBusyUntil, performance.now() + duration);
+        window.__luxShellInteractionBusy = true;
+        if (shellInteractionBusyTimer) return;
+        const finish = () => {
+            shellInteractionBusyTimer = null;
+            const remaining = shellInteractionBusyUntil - performance.now();
+            if (remaining > 0) {
+                shellInteractionBusyTimer = window.setTimeout(finish, remaining + 8);
+                return;
+            }
+            shellInteractionBusyUntil = 0;
+            window.__luxShellInteractionBusy = false;
+            if (typeof window.notifyLuxGovernorStateChange === 'function') {
+                window.notifyLuxGovernorStateChange();
+            }
+        };
+        shellInteractionBusyTimer = window.setTimeout(finish, duration + 8);
+    }
+
     function shouldPulseForPointer(event) {
         if (event.pointerType && event.pointerType !== 'mouse') return false;
         try {
@@ -174,15 +198,31 @@
 
     function onShellChromePointerOver(event) {
         if (!shouldPulseForPointer(event)) return;
-        // Sidebar rows only fade a local sheen; they do not lift or animate a
-        // canvas-backed chrome surface. Avoid waking the global render
-        // governor for every row-to-row hover transition.
-        if (event.target?.closest?.('.lux-nav-item')) return;
         const target = event.target?.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell, .home-hover-chip');
         if (!isShellChromeHoverTarget(target)) return;
         const related = event.relatedTarget;
         if (related && target.contains?.(related)) return;
+        // Pause the expensive WebGL backdrop while the pointer is interacting
+        // with chrome. This removes input starvation without changing the
+        // resting visual or the page's normal background cadence.
+        armShellInteractionBusy();
+        // Sidebar rows only fade a local sheen; they do not lift or animate a
+        // canvas-backed chrome surface. Avoid waking the global render
+        // governor for every row-to-row hover transition.
+        if (event.target?.closest?.('.lux-nav-item')) return;
         pulseShellHoverBusy();
+    }
+
+    function onShellChromePointerMove(event) {
+        if (!shouldPulseForPointer(event)) return;
+        const target = event.target?.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell');
+        if (target) armShellInteractionBusy(420);
+    }
+
+    function onShellChromePointerDown(event) {
+        if (event.target?.closest?.('#lux-shell, #lux-topbar, .lux-topbar-shell')) {
+            armShellInteractionBusy(700);
+        }
     }
 
     function ensureLuxHoverGuardCss() {
@@ -199,6 +239,8 @@
         bound = true;
         ensureLuxHoverGuardCss();
         document.addEventListener('pointerover', onShellChromePointerOver, { passive: true, capture: true });
+        document.addEventListener('pointermove', onShellChromePointerMove, { passive: true, capture: true });
+        document.addEventListener('pointerdown', onShellChromePointerDown, { passive: true, capture: true });
     }
 
     window.beginShellChromeMotion = beginShellChromeMotion;

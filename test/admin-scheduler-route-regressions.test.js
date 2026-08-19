@@ -221,7 +221,7 @@ describe('admin scheduler route regressions.test', () => {
         expect(html).toContain('assets/js/pages/admin-scheduler.js?v=20260815-staff-directory-picker5');
         expect(html).toContain('defer src="assets/js/features/index-luxury.js');
         expect(html).toContain('assets/js/features/luxury-visual-runtime.js?v=20260819-routeobservation1');
-        expect(html).not.toContain('assets/js/features/luxury-index-runtime.js?v=20260818-visualqueue1');
+        expect(html).not.toContain('assets/js/features/luxury-index-runtime.js?v=20260820-shellinput1');
         expect(js).toContain("card.className = `palette-card lux-strip-card lux-soft-chrome home-hover-chip${isActive ? ' selected' : ''}`");
         expect(js).toContain("state.className = 'sch-empty-state lux-soft-chrome'");
         expect(js).not.toContain('sch-info-banner');

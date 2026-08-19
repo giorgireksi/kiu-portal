@@ -1259,7 +1259,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     }
     function ensureLuxuryBackgroundRuntime() {
         if (typeof window.__kiuInitLuxuryParticleBackground === 'function') return Promise.resolve(true);
-        return window.__kiuLuxuryBackgroundModulePromise ||= import('./luxury-background.js?v=20260817-timetablebg1')
+        return window.__kiuLuxuryBackgroundModulePromise ||= import('./luxury-background.js?v=20260820-shellinput1')
             .then(() => true).catch(() => false);
     }
     Object.assign(window, {
