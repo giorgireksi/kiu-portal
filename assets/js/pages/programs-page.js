@@ -7,6 +7,9 @@
         initialRenderFallbackScheduled: false,
         initialRenderComplete: false,
         lastRenderSignature: '',
+        catalogViewCache: null,
+        controlsEnhanced: false,
+        initialContentCommitted: false,
         searchQueryByFaculty: {},
         searchDebounceTimer: null,
         detailRenderRequestId: 0,
@@ -136,6 +139,35 @@
         });
     }
 
+    function getProgramsCatalogView(faculty, modules) {
+        const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
+        const cached = programsUiState.catalogViewCache;
+        if (cached && cached.faculty === normalizedFaculty && cached.modules === modules) return cached;
+        const moduleSubjectsById = new Map();
+        const allProgramSubjectsById = new Map();
+        modules.forEach((module) => {
+            const subjects = getCurriculumLibraryModuleSubjects(module, normalizedFaculty, 'all');
+            moduleSubjectsById.set(module.id, subjects);
+            subjects.forEach((subject) => {
+                if (subject?.id) allProgramSubjectsById.set(subject.id, subject);
+            });
+        });
+        const allProgramSubjects = Array.from(allProgramSubjectsById.values());
+        const next = {
+            faculty: normalizedFaculty,
+            modules,
+            moduleSubjectsById,
+            allProgramSubjects,
+            totalProgramEcts: allProgramSubjects.reduce((sum, subject) => sum + toPositiveInt(subject.ects, 0), 0),
+            revision: modules.map((module) => {
+                const subjects = moduleSubjectsById.get(module.id) || [];
+                return `${module.id}:${module.updatedAt || ''}:${subjects.length}:${subjects.map((subject) => subject.id).join(',')}`;
+            }).join('|')
+        };
+        programsUiState.catalogViewCache = next;
+        return next;
+    }
+
     function getSelectedStudentCurriculumModule(faculty = getCurrentFaculty()) {
         const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
         const modules = ensureCurriculumLibraryModules(normalizedFaculty);
@@ -188,8 +220,9 @@
                         </div>
                     ` : context.modules.map((module) => {
                         const active = context.selectedModule && module.id === context.selectedModule.id;
-                        const moduleSubjectsForFaculty = getCurriculumLibraryModuleSubjects(module, context.programFaculty, 'all');
-                        const ectsTotal = getCurriculumModuleEctsTotal(module, context.programFaculty);
+                        const moduleSubjectsForFaculty = context.moduleSubjectsById?.get(module.id)
+                            || getCurriculumLibraryModuleSubjects(module, context.programFaculty, 'all');
+                        const ectsTotal = moduleSubjectsForFaculty.reduce((sum, subject) => sum + toPositiveInt(subject?.ects, 0), 0);
                         const subjectCount = getCurriculumLibraryModuleSubjects(module, context.programFaculty, context.semesterFilter).length;
                         const limit = toPositiveInt(module.maxEcts, 0);
                         const load = limit > 0 ? Math.min(100, Math.round((ectsTotal / limit) * 100)) : 0;
@@ -297,11 +330,15 @@
         const commit = () => {
             if (requestId !== programsUiState.detailRenderRequestId) return;
             region.innerHTML = renderProgramsSubjectPanelRegion(context);
+            programsUiState.initialContentCommitted = true;
+            if (typeof window.__kiuMarkPortalBootPhase === 'function') {
+                window.__kiuMarkPortalBootPhase('programs-content-ready');
+            }
             programsUiState.detailRenderHandle = null;
             programsUiState.detailRenderHandleType = '';
         };
 
-        const shouldUseIdle = !!context.selectedModule && (
+        const shouldUseIdle = programsUiState.initialContentCommitted && !!context.selectedModule && (
             (context.moduleSubjects && context.moduleSubjects.length > 8)
             || (context.selectedModuleSubjectsAll && context.selectedModuleSubjectsAll.length > 12)
         );
@@ -508,11 +545,12 @@
         const clearSearchButton = document.getElementById('student-program-search-clear');
 
         if (semesterFilterSelect) semesterFilterSelect.value = preservedSemesterFilter;
-        if (typeof window.enhanceUniversalPickers === 'function') {
+        if (!programsUiState.controlsEnhanced && typeof window.enhanceUniversalPickers === 'function') {
             window.enhanceUniversalPickers(pageSection);
-        }
-        if (typeof window.observeUniversalPickers === 'function') {
-            window.observeUniversalPickers();
+            programsUiState.controlsEnhanced = true;
+            if (typeof window.observeUniversalPickers === 'function') {
+                window.observeUniversalPickers();
+            }
         }
         if (
             semesterFilterSelect?.dataset.luxPickerEnhanced === 'true'
@@ -536,6 +574,7 @@
         const semesterFilter = semesterFilterSelect?.value || preservedSemesterFilter;
         const searchQuery = getStudentEducationalProgramSearchQuery(programFaculty);
         const modules = ensureCurriculumLibraryModules(programFaculty);
+        const catalogView = getProgramsCatalogView(programFaculty, modules);
         const selectedModule = getSelectedStudentCurriculumModule(programFaculty);
         const programLabel = getProgramLabelForUser(currentUser, facultyProfile);
         const selectedModuleSubjectsAll = getCurriculumLibraryModuleSubjects(selectedModule, programFaculty, 'all');
@@ -552,28 +591,23 @@
         const searchLabel = searchQuery
             ? `${moduleSubjects.length} search result${moduleSubjects.length === 1 ? '' : 's'}`
             : `${moduleSubjects.length} subject${moduleSubjects.length === 1 ? '' : 's'} in current filter`;
-        const allProgramSubjectsById = new Map();
-        modules.forEach((module) => {
-            getCurriculumLibraryModuleSubjects(module, programFaculty, 'all').forEach((subject) => {
-                if (subject?.id) allProgramSubjectsById.set(subject.id, subject);
-            });
-        });
-        const allProgramSubjects = Array.from(allProgramSubjectsById.values());
-        const totalProgramEcts = allProgramSubjects.reduce((sum, subject) => sum + toPositiveInt(subject.ects, 0), 0);
+        const allProgramSubjects = catalogView.allProgramSubjects;
+        const totalProgramEcts = catalogView.totalProgramEcts;
         const visibleEcts = moduleSubjects.reduce((sum, subject) => sum + toPositiveInt(subject.ects, 0), 0);
         const renderSignature = JSON.stringify({
             programFaculty,
             semesterFilter,
             searchQuery,
             selectedModuleId: selectedModule?.id || '',
-            modules: modules.map((module) => [module.id, module.name, module.updatedAt]),
-            subjects: allProgramSubjects.map((subject) => [subject.id, subject.name, subject.ects, subject.semester, subject.cond, subject.antireq])
+            catalogRevision: catalogView.revision
         });
         if (programsUiState.lastRenderSignature === renderSignature) return;
         programsUiState.lastRenderSignature = renderSignature;
         programsUiState.initialRenderComplete = true;
+        window.__kiuMarkPortalBootPhase?.('programs-render-start');
         const renderContext = {
             allProgramSubjects,
+            moduleSubjectsById: catalogView.moduleSubjectsById,
             moduleSubjects,
             modules,
             programFaculty,
@@ -606,6 +640,8 @@
     // Standalone programs initially renders before PostgreSQL bootstrap. Refresh
     // after the authoritative catalog arrives so it does not remain empty.
     window.addEventListener('kiu:portal-bootstrap-complete', () => {
+        programsUiState.catalogViewCache = null;
+        programsUiState.lastRenderSignature = '';
         programsUiState.initialRenderFallbackScheduled = false;
         renderStudentEducationalProgramPage({ allowBootstrapFallback: true });
     });

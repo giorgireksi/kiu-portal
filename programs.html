@@ -31,6 +31,55 @@
     </div>
 </aside>
 
+<!-- Static shell chrome: route runtimes hydrate labels, navigation, and utility panels in place. -->
+<div id="lux-topbar" aria-label="Portal controls">
+    <div class="lux-topbar-shell lux-soft-chrome">
+        <div class="lux-topbar-main">
+            <button class="lux-secondary-btn lux-sidebar-toggle-btn" id="lux-sidebar-toggle" type="button" aria-pressed="false" title="Show navigation">
+                <i class="fas fa-sidebar" aria-hidden="true"></i>
+                <span class="lux-sidebar-toggle-label">Hide nav</span>
+            </button>
+            <div class="lux-breadcrumb">KIU <i class="fas fa-chevron-right" aria-hidden="true"></i> <strong id="lux-breadcrumb-page">Programs</strong></div>
+        </div>
+        <div class="lux-topbar-spacer"></div>
+        <div class="lux-topbar-actions">
+            <div class="lux-picker-wrap" data-picker-wrap="faculty">
+                <button class="lux-picker-btn" id="lux-faculty-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="lux-picker-caption">Faculty</span>
+                    <strong id="lux-faculty-picker-value">Faculty</strong>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="lux-picker-wrap" data-picker-wrap="role" hidden style="display:none">
+                <button class="lux-picker-btn" id="lux-role-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="lux-picker-caption">View</span>
+                    <strong id="lux-role-picker-value">Workspace</strong>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+            </div>
+            <button class="lux-secondary-btn lux-topbar-editor-btn" id="lux-dashboard-edit-btn" type="button" hidden style="display:none" title="Customize the home dashboard">
+                <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                <span id="lux-dashboard-edit-label">Customize</span>
+            </button>
+            <button class="lux-icon-btn" id="lux-palette-btn" type="button" title="Open colour and motion studio">
+                <i class="fas fa-palette" aria-hidden="true"></i>
+            </button>
+            <div class="lux-utility-wrap">
+                <button class="lux-icon-btn" id="lux-notification-btn" type="button" title="Notifications">
+                    <i class="far fa-bell" aria-hidden="true"></i>
+                    <span class="lux-icon-badge" id="lux-notification-badge">0</span>
+                </button>
+            </div>
+            <div class="lux-utility-wrap">
+                <button class="lux-icon-btn" id="lux-chat-btn" type="button" title="Messenger">
+                    <i class="fas fa-comments" aria-hidden="true"></i>
+                    <span class="lux-icon-badge" id="lux-chat-badge">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
@@ -111,7 +160,7 @@
 <script defer src="assets/js/app/app.js?v=20260819-fastboot3"></script>
 <script type="application/x-kiu-idle" data-kiu-idle-src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
     <script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
-    <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260816-readonlycatalog1"></script>
+     <script defer src="assets/js/app/api-portal-persist-runtime.js?v=20260816-readonlycatalog1"></script>
 <script defer src="assets/js/app/api.js?v=20260819-fastboot2"></script>
 <script defer src="assets/js/app/auth.js?v=20260818-runtimeglobals1"></script>
     <script defer src="assets/js/data/initial-state.js?v=1776604822079"></script>
@@ -129,10 +178,10 @@
 <script defer src="assets/js/features/luxury-transparency-model-runtime.js?v=20260818-visualqueue1"></script>
 <script defer src="assets/js/features/luxury-index-sync-runtime.js?v=20260818-navneutral1"></script>
 <script defer src="assets/js/features/luxury-shell-motion-runtime.js?v=20260819-sidebarhoverperf1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260819-sidebarclick3"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260820-programsperf1"></script>
 <script defer src="assets/js/features/luxury-shell-studio-runtime.js?v=20260719-luxstudio1"></script>
 <script defer src="assets/js/features/luxury-shell-picker-runtime.js?v=20260811-roleadmin1"></script>
-<script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260811-roleadmin1"></script>
+<script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260820-programsperf1"></script>
 <script defer src="assets/js/features/luxury-shell-chrome.js?v=20260819-sidebarperf3"></script>
     <script type="module" src="assets/js/shared/curriculum-library-model.js?v=20260806-no-general-fallback1"></script>
     <script defer src="assets/js/shared/curriculum-library-model-bridge.js?v=20260720-e5clm1"></script>
@@ -253,7 +302,7 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
     }
 };
 </script>
-<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1"></script>
+<script defer src="assets/js/shared/standalone-mobile-shell-loader.js?v=20260820-programsmobile1" data-kiu-mobile-shell-src="assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1"></script>
 </body>
 </html>
 

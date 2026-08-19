@@ -81,7 +81,10 @@ function syncRolePickerVisibility() {
         wrapper?.remove();
         return false;
     }
-    if (wrapper) wrapper.hidden = false;
+    if (wrapper) {
+        wrapper.hidden = false;
+        wrapper.style.removeProperty('display');
+    }
     return true;
 }
 

@@ -1737,17 +1737,20 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     });
     ready(() => {
         window.renderLuxuryAdminToolsPage = (...args) => renderLuxuryAdminToolsPage(...args);
-        ensureBackgroundGalleryScripts()
-            .then(() => {
-                const token = typeof window.getPortalSessionToken === 'function'
-                    ? window.getPortalSessionToken()
-                    : '';
-                if (token && typeof window.refreshBackgroundGalleryData === 'function') {
-                    return window.refreshBackgroundGalleryData();
-                }
-                return null;
-            })
-            .catch(() => {});
+        const scheduleBackgroundGalleryEnhancement = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 900));
+        scheduleBackgroundGalleryEnhancement(() => {
+            ensureBackgroundGalleryScripts()
+                .then(() => {
+                    const token = typeof window.getPortalSessionToken === 'function'
+                        ? window.getPortalSessionToken()
+                        : '';
+                    if (token && typeof window.refreshBackgroundGalleryData === 'function') {
+                        return window.refreshBackgroundGalleryData();
+                    }
+                    return null;
+                })
+                .catch(() => {});
+        }, { timeout: 2500 });
         ensureShell();
         ensureHomeShell();
         bindUserMenu();
@@ -1822,6 +1825,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                 const onStandaloneLibrary = isStandaloneLibraryRouteActive();
                 const onStandaloneOrders = isStandaloneOrdersRouteActive();
                 const onStandaloneScheduler = isStandaloneSchedulerRouteActive();
+                const onPrograms = document.body?.classList.contains('lux-route-programs');
                 const onAdminTools = document.body?.classList.contains('lux-route-admin-tools');
                 enhanceUniversalPickers(document.querySelector('.page-section.active-page') || document);
                 observeUniversalPickers();
@@ -1845,9 +1849,9 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                         // optional WebGL background competes for the first
                         // post-mount frame.
                         window.setTimeout(scheduleParticleInit, 900);
-                    } else if (onStandaloneLibrary || onStandaloneOrders) {
+                    } else if (onStandaloneLibrary || onStandaloneOrders || onPrograms) {
                         const schedule = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 120));
-                        schedule(scheduleParticleInit);
+                        schedule(scheduleParticleInit, { timeout: onPrograms ? 1800 : 500 });
                     } else {
                         scheduleParticleInit();
                     }
