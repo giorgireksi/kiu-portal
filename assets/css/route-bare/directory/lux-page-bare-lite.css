@@ -75,6 +75,14 @@ body.lux-route-staff #staff-content .staff-hub-shell :is(.home-hover-chip, .lux-
     contain-intrinsic-size: auto !important;
 }
 
+/* Student directory panels and row controls need the same first-layout
+   treatment; the shared intrinsic placeholder makes them jump on hydrate. */
+body.lux-route-students-admin #students-content .students-hub-shell :is(.home-hover-chip, .lux-soft-chrome)
+{
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
+}
+
 
 body.lux-route-staff #staff-content .staff-hub-hero,
 body.lux-route-students-admin #students-content .students-hub-hero
