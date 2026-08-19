@@ -216,6 +216,7 @@ function ensureNewsModalShells() {
         const publisher = document.createElement('div');
         publisher.id = PUBLISHER_OVERLAY_ID;
         publisher.className = 'modal-overlay newsx-modal-overlay';
+        publisher.hidden = true;
         publisher.setAttribute('aria-hidden', 'true');
         publisher.innerHTML = `
             <div id="newsx-publisher-modal" class="modal-content newsx-publisher-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-publisher-title" data-lux-transparency-exempt="1">
@@ -228,6 +229,7 @@ function ensureNewsModalShells() {
         const sections = document.createElement('div');
         sections.id = SECTIONS_OVERLAY_ID;
         sections.className = 'modal-overlay newsx-modal-overlay';
+        sections.hidden = true;
         sections.setAttribute('aria-hidden', 'true');
         sections.innerHTML = `
             <div id="newsx-sections-modal" class="modal-content newsx-sections-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-sections-title" data-lux-transparency-exempt="1">
@@ -240,6 +242,7 @@ function ensureNewsModalShells() {
         const viewer = document.createElement('div');
         viewer.id = ATTACHMENT_VIEWER_OVERLAY_ID;
         viewer.className = 'modal-overlay newsx-modal-overlay';
+        viewer.hidden = true;
         viewer.setAttribute('aria-hidden', 'true');
         viewer.innerHTML = `
             <div id="newsx-attachment-viewer-modal" class="modal-content newsx-attachment-viewer-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-attachment-viewer-title" data-lux-transparency-exempt="1">
@@ -252,6 +255,7 @@ function ensureNewsModalShells() {
         const detail = document.createElement('div');
         detail.id = POST_DETAIL_OVERLAY_ID;
         detail.className = 'modal-overlay newsx-modal-overlay';
+        detail.hidden = true;
         detail.setAttribute('aria-hidden', 'true');
         detail.innerHTML = `
             <div id="newsx-post-detail-modal" class="modal-content newsx-post-detail-modal" role="dialog" aria-modal="true" aria-labelledby="newsx-post-detail-title" data-lux-transparency-exempt="1">
@@ -265,6 +269,7 @@ function ensureNewsModalShells() {
 function setNewsModalOpen(overlayId, open) {
     const overlay = q(overlayId);
     if (!overlay) return;
+    overlay.hidden = !open;
     overlay.classList.toggle('active', open);
     overlay.setAttribute('aria-hidden', open ? 'false' : 'true');
     const anyOpen = Boolean(q(PUBLISHER_OVERLAY_ID)?.classList.contains('active'))

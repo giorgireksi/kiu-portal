@@ -294,6 +294,7 @@
         if (!modal || !cancel || !ok) return;
 
         const resolve = value => {
+            modal.hidden = true;
             modal.classList.remove('is-visible');
             if (runtime.confirmResolve) runtime.confirmResolve(value);
             runtime.confirmResolve = null;
@@ -325,6 +326,7 @@
         copy.textContent = options.copy || 'Confirm before continuing.';
         ok.innerHTML = options.confirmLabel || 'Continue';
         ok.classList.toggle('is-danger', options.danger === true);
+        modal.hidden = false;
         modal.classList.add('is-visible');
 
         return new Promise(resolve => {
