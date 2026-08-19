@@ -999,4 +999,16 @@ body.lux-full-paint {
   body.lux-full-paint.lux-sidebar-transitioning #lux-shell {
     transform: translateZ(0);
   }
+
+  /* A live backdrop-filter plus opacity transition forces a full sidebar
+     backdrop raster on every open/close frame. Keep the resting glass intact,
+     but make the interaction an immediate state change and temporarily use
+     the already-painted shell fill while the compositor settles. */
+  html.lux-sidebar-transitioning #lux-shell {
+    transition: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
 }
