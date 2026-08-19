@@ -54,6 +54,47 @@ body.lux-light-mode {
 }
 body.lux-sidebar-collapsed { --lux-sidebar-offset: 0px; }
 /* Floating glassmorph sidebar — paint wins over FOUC/HT (shell-only, not panel surface) */
+/* Authored shell fallback: before renderNav binds, show a solid glass
+   navigation silhouette instead of exposing an empty/transparent drawer. The
+   :has() condition clears as soon as the runtime stamps its render signature. */
+#lux-shell:has(#lux-nav:not([data-render-signature])) {
+  background-color: rgba(8, 12, 21, 0.94) !important;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 28%),
+    linear-gradient(165deg, rgba(10, 15, 24, 0.96), rgba(8, 12, 21, 0.94) 58%, rgba(6, 9, 16, 0.96)) !important;
+}
+#lux-shell:has(#lux-nav:not([data-render-signature])) .lux-nav {
+  min-height: 300px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 18%),
+    repeating-linear-gradient(180deg,
+      rgba(255, 255, 255, 0.10) 0 12px,
+      transparent 12px 38px);
+  opacity: 0.82;
+}
+#lux-shell:has(#lux-nav:not([data-render-signature])) .lux-nav::before {
+  content: '';
+  display: block;
+  width: 54%;
+  height: 10px;
+  margin: 12px 12px 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+body.lux-light-mode #lux-shell:has(#lux-nav:not([data-render-signature])) {
+  background-color: rgba(248, 244, 237, 0.96) !important;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68), transparent 30%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.96), rgba(247, 241, 232, 0.95)) !important;
+}
+body.lux-light-mode #lux-shell:has(#lux-nav:not([data-render-signature])) .lux-nav {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.56), transparent 18%),
+    repeating-linear-gradient(180deg,
+      rgba(26, 36, 51, 0.10) 0 12px,
+      transparent 12px 38px);
+}
 #lux-shell {
   position: fixed;
   top: var(--lux-sidebar-gutter, 12px);
