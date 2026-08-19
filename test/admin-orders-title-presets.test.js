@@ -49,7 +49,7 @@ describe('admin orders title presets', () => {
     it('cache-busts admin-orders assets for titles presets', () => {
         const html = readSource('admin-orders.html');
         expect(html).toMatch(/lux-modals\.css\?v=20260730-chanfiltercss1/);
-        expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260730-filterbtncss1/);
+        expect(html).toMatch(/lux-page-bare-lite\.css\?v=20260820-cls2/);
         expect(html).toMatch(/orders-workspace\.js\?v=20260820-adminordersperf2/);
     });
 });

@@ -622,6 +622,9 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section {
   min-width: 0;
+  min-height: 522px;
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section.lux-soft-chrome.home-hover-chip {
   padding: 12px 14px;
