@@ -10,6 +10,7 @@
 
     const FLOW_KEY = 'KIU_PENDING_ADMIN_ACCOUNT_FLOW';
     const STORE_KEY = 'staffDirectoryRecords';
+    const STAFF_INITIAL_RENDER_FALLBACK_MS = 1200;
     function cloneDefaultFilters() {
         const base = typeof STAFF_DIRECTORY_DEFAULT_FILTERS !== 'undefined'
             ? STAFF_DIRECTORY_DEFAULT_FILTERS
@@ -1551,7 +1552,8 @@
         if (window.__staffCommandBound) return;
         window.__staffCommandBound = true;
         window.addEventListener('kiu:portal-bootstrap-complete', () => {
-            if (document.getElementById('staff-content')) renderStaffPage();
+            window.__staffInitialRenderFallbackScheduled = false;
+            if (document.getElementById('staff-content')) renderStaffPage({ allowBootstrapFallback: true });
         });
         ensureStaffFormBuilderEventsBound();
 
@@ -1664,16 +1666,63 @@
         return container;
     }
 
-    function renderStaffPage() {
+    function renderStaffPage(options = {}) {
+        const container = ensureStaffContentHost();
+        if (!container) return;
+        const allowBootstrapFallback = options.allowBootstrapFallback === true;
+        if (
+            !container.__commandCenterHasRendered
+            && !allowBootstrapFallback
+            && window.__KIU_PORTAL_BOOTSTRAP_PENDING === true
+        ) {
+            if (!window.__staffInitialRenderFallbackScheduled) {
+                window.__staffInitialRenderFallbackScheduled = true;
+                window.setTimeout(() => {
+                    window.__staffInitialRenderFallbackScheduled = false;
+                    if (!container.__commandCenterHasRendered) {
+                        renderStaffPage({ allowBootstrapFallback: true });
+                    }
+                }, STAFF_INITIAL_RENDER_FALLBACK_MS);
+            }
+            return;
+        }
         if (typeof ensureStaffFormBlueprint === 'function') ensureStaffFormBlueprint();
         const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
         const { records } = buildStaffRecords(facultyCode);
-        const container = ensureStaffContentHost();
-        if (!container) return;
         const isInternalRerender = container.__commandCenterHasRendered === true;
         if (isInternalRerender) container.dataset.commandCenterPainted = '1';
         const state = getStaffState();
         const selected = activeSelection(records);
+        const renderSignature = JSON.stringify({
+            facultyCode,
+            workspace: state.workspace,
+            selectedId: state.selectedId,
+            profileTab: state.profileTab,
+            editingId: state.editingId,
+            modalOpen: state.modalOpen,
+            modalRole: state.modalRole,
+            modalStaffTypeId: state.modalStaffTypeId,
+            modalTouched: state.modalTouched,
+            formSettingsTypeId: state.formSettingsTypeId,
+            builderPanel: state.builderPanel,
+            builderDirty: state.builderDirty,
+            activeSectionId: state.activeSectionId,
+            sectionNameFocusId: state.sectionNameFocusId,
+            filters: state.filters,
+            records: records.map((record) => ({
+                id: record.id,
+                name: record.name,
+                updatedAt: record.updatedAt,
+                status: record.status,
+                accountStatus: record.accountStatus,
+                visibility: record.visibility,
+                facultyCode: record.facultyCode
+            }))
+        });
+        if (container.__commandCenterRenderSignature === renderSignature) {
+            if (typeof markPortalShellReady === 'function') markPortalShellReady();
+            return;
+        }
         if (state.workspace === 'form-settings' && typeof renderStaffFormSettings === 'function') {
             if (typeof window.flushStaffBuilderFieldInputs === 'function') {
                 window.flushStaffBuilderFieldInputs(container, getStaffBuilderCallbacks());
@@ -1714,9 +1763,10 @@
         if (typeof queueLuxuryTransparencyRefresh === 'function' && state.workspace !== 'form-settings') {
             queueLuxuryTransparencyRefresh();
         }
-        // Mark this root after its first paint; the next render is then treated
-        // as an internal update without a visual transition.
+        // Mark this root after its first paint; identical startup callbacks are
+        // ignored instead of destroying and rebuilding the visible directory.
         container.__commandCenterHasRendered = true;
+        container.__commandCenterRenderSignature = renderSignature;
         if (typeof markPortalShellReady === 'function') {
             markPortalShellReady();
         } else if (typeof window.__kiuStartShellReveal === 'function') {

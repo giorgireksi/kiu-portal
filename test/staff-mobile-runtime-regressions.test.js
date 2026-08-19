@@ -76,7 +76,11 @@ describe('staff mobile runtime regressions', () => {
         const classificationModule = readSource('tools/visual-route-classification.js');
         const classificationMarkdown = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
         const shellRuntime = readSource('assets/js/features/index-luxury.js');
+        const staffRuntime = readSource('assets/js/pages/staff-command-center.js');
         expect(shellRuntime).toContain('if (!document.getElementById(\'lux-topbar\')) {');
+        expect(staffRuntime).toContain('STAFF_INITIAL_RENDER_FALLBACK_MS = 1200');
+        expect(staffRuntime).toContain('window.__KIU_PORTAL_BOOTSTRAP_PENDING === true');
+        expect(staffRuntime).toContain('__commandCenterRenderSignature');
 
         expect(html).not.toContain('onclick="closeAllModals(event)"');
         expect(html).not.toContain('modal-overlay" onclick');
@@ -135,7 +139,7 @@ describe('staff mobile runtime regressions', () => {
         expect(html).toContain('assets/js/pages/staff-command-center.js');
         expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260816-lms-mobilefix1');
         expect(html).toContain('assets/js/app/app.js');
-        expect(commandCenter).toContain('function renderStaffPage()');
+        expect(commandCenter).toContain('function renderStaffPage(options = {})');
         expect(commandCenter).toContain('function openProfRegistration(role)');
         expect(commandCenter).toContain('function staffTabSwitch(tab)');
         expect(commandCenter).toContain('staff-hub-shell');
