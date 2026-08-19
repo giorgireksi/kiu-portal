@@ -228,7 +228,6 @@ function renderPostTile(post) {
     const postId = String(post?.id || '');
     const title = stripNewsTitlePlainText(post.title) || 'Announcement';
     const when = formatDateTime(post.publishedAt || post.updatedAt || post.createdAt);
-    const sectionLabel = String(post.sectionLabel || post.sectionKey || 'University News').trim() || 'University News';
     const authorName = String(post.createdByName || 'University').trim() || 'University';
     const priority = String(post.priority || 'standard').trim().toLowerCase();
     const priorityLabel = priority === 'critical' ? 'Critical' : priority === 'important' ? 'Important' : '';
@@ -246,10 +245,7 @@ function renderPostTile(post) {
         <button type="button" class="newsx-post-tile-hit" data-news-open-post="${escapeHtml(postId)}" aria-label="Open ${escapeHtml(title)}">
             ${cover}
             <div class="newsx-post-tile-copy">
-                <div class="newsx-post-tile-kicker-row">
-                    <span class="newsx-post-tile-section">${escapeHtml(sectionLabel)}</span>
-                    ${badges ? `<span class="newsx-post-tile-badges">${badges}</span>` : ''}
-                </div>
+                ${badges ? `<div class="newsx-post-tile-badges newsx-post-tile-badges--top">${badges}</div>` : ''}
                 <h3 class="newsx-post-tile-title">${escapeHtml(title)}</h3>
                 ${excerpt}
                 <div class="newsx-post-tile-meta lux-card-meta">

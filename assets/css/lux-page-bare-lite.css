@@ -21547,32 +21547,19 @@ body.lux-route-news #portal-news-root {
   padding: 16px 18px 17px;
   min-width: 0;
 }
-#portal-news-root .newsx-post-tile-kicker-row,
 #portal-news-root .newsx-post-tile-meta,
 #portal-news-root .newsx-post-tile-badges {
   display: flex;
   align-items: center;
   min-width: 0;
 }
-#portal-news-root .newsx-post-tile-kicker-row {
-  justify-content: space-between;
-  gap: 8px;
-}
-#portal-news-root .newsx-post-tile-section {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--lux-accent);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
 #portal-news-root .newsx-post-tile-badges {
   flex: 0 0 auto;
+  align-self: flex-end;
   gap: 5px;
+}
+#portal-news-root .newsx-post-tile-badges--top {
+  margin-bottom: -2px;
 }
 #portal-news-root .newsx-post-tile-badge {
   display: inline-flex;
