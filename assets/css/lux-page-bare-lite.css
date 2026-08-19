@@ -21388,8 +21388,18 @@ body.lux-route-news #portal-news-root {
 }
 #portal-news-root .newsx-main {
   display: grid;
+  grid-template-rows: max-content max-content;
+  align-content: start;
   gap: 18px;
   min-width: 0;
+}
+#portal-news-root .newsx-feed {
+  align-content: start;
+  min-height: 0;
+}
+#portal-news-root .newsx-feed-list {
+  align-content: start;
+  grid-auto-rows: max-content;
 }
 #portal-news-root .newsx-header-bar,
 #portal-news-root .newsx-feed-card.lux-soft-chrome {

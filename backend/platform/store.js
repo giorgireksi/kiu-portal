@@ -3340,11 +3340,21 @@ class PlatformStore {
                 return courseIds.includes(courseId);
             })
             .sort((left, right) => {
-                if (Boolean(right.pinned) !== Boolean(left.pinned)) return right.pinned ? 1 : -1;
-                const rightPriority = ['critical', 'important', 'standard'].indexOf(String(right.priority || 'standard').toLowerCase());
-                const leftPriority = ['critical', 'important', 'standard'].indexOf(String(left.priority || 'standard').toLowerCase());
-                if (rightPriority !== leftPriority) return rightPriority - leftPriority;
-                return String(right.publishedAt || right.updatedAt || right.createdAt || '').localeCompare(String(left.publishedAt || left.updatedAt || left.createdAt || ''));
+                // News is chronological: the newest published announcement is
+                // always first. Pinned/priority metadata remains filterable and
+                // visible, but must not hide a newer announcement below an old
+                // featured post. Do not use updatedAt here; editing an old post
+                // should not make it look newly published.
+                const rightStamp = String(right.publishedAt || right.createdAt || right.updatedAt || '');
+                const leftStamp = String(left.publishedAt || left.createdAt || left.updatedAt || '');
+                const rightMs = Date.parse(rightStamp);
+                const leftMs = Date.parse(leftStamp);
+                if (Number.isFinite(rightMs) && Number.isFinite(leftMs) && rightMs !== leftMs) {
+                    return rightMs - leftMs;
+                }
+                const byStamp = rightStamp.localeCompare(leftStamp);
+                if (byStamp !== 0) return byStamp;
+                return String(right.id || '').localeCompare(String(left.id || ''));
             });
         if (featuredOnly && limit > 0) {
             const featured = items.filter(post => post.pinned || ['important', 'critical'].includes(String(post.priority || '').toLowerCase()));

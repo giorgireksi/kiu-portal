@@ -139,6 +139,35 @@ describe('news route api split', () => {
         expect(store.canViewNewsPost(futurePublish, 'news-admin')).toBe(true);
     });
 
+    it('returns announcements newest-first without letting pinning or priority override chronology', () => {
+        const store = new PlatformStore({ uploadsDir: makeTempDir(), maxFileUploadBytes: 4096 });
+        seedNewsAccounts(store);
+
+        const oldPinned = store.createNewsPost({
+            title: 'Older pinned announcement',
+            body: 'Older body',
+            status: 'published',
+            publishAt: '2024-01-01T09:00:00.000Z',
+            pinned: true,
+            priority: 'critical'
+        }, 'news-admin');
+        const newest = store.createNewsPost({
+            title: 'Newest announcement',
+            body: 'Newest body',
+            status: 'published',
+            publishAt: '2025-01-01T09:00:00.000Z',
+            pinned: false,
+            priority: 'standard'
+        }, 'news-admin');
+
+        const feed = store.listNewsFeed({ userId: 'news-admin' }).items;
+        expect(feed.findIndex(item => item.id === newest.id)).toBeLessThan(feed.findIndex(item => item.id === oldPinned.id));
+
+        store.updateNewsPost(oldPinned.id, { title: 'Edited older announcement' }, 'news-admin');
+        const afterEdit = store.listNewsFeed({ userId: 'news-admin' }).items;
+        expect(afterEdit.findIndex(item => item.id === newest.id)).toBeLessThan(afterEdit.findIndex(item => item.id === oldPinned.id));
+    });
+
     it('manages news section catalog with counts, rename cascade, and delete guards', () => {
         const store = new PlatformStore({ uploadsDir: makeTempDir(), maxFileUploadBytes: 4096 });
         seedNewsAccounts(store);
