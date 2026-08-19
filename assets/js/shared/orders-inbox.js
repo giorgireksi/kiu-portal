@@ -1,5 +1,11 @@
 /* Recipient orders inbox runtime. Shared primitives live in orders-runtime-core.js. */
 
+const RECIPIENT_ORDERS_INITIAL_RENDER_FALLBACK_MS = 1200;
+const recipientOrdersBootState = window.__KIU_RECIPIENT_ORDERS_BOOT_STATE = window.__KIU_RECIPIENT_ORDERS_BOOT_STATE || {
+    initialRenderComplete: false,
+    fallbackScheduled: false
+};
+
 function ensureRecipientOrdersUiState(userId = getCurrentUserId()) {
     const key = String(userId || 'anonymous');
     if (!recipientOrdersUiByUser[key]) {
@@ -791,15 +797,39 @@ function renderOrdersInboxPage(options = {}) {
         || (getEffectiveUserRole() !== USER_ROLES.ADMIN ? document.getElementById('admin-orders-root') : null);
     if (!container) return;
     bindRecipientOrdersDelegates();
+    const isStandaloneOrdersRoute = document.body?.classList.contains('lux-route-orders');
+    const allowBootstrapFallback = options.allowBootstrapFallback === true;
+    if (
+        isStandaloneOrdersRoute
+        && !recipientOrdersBootState.initialRenderComplete
+        && !allowBootstrapFallback
+        && window.__KIU_PORTAL_BOOTSTRAP_PENDING === true
+    ) {
+        if (!recipientOrdersBootState.fallbackScheduled) {
+            recipientOrdersBootState.fallbackScheduled = true;
+            window.setTimeout(() => {
+                recipientOrdersBootState.fallbackScheduled = false;
+                if (!recipientOrdersBootState.initialRenderComplete) {
+                    renderOrdersInboxPage({ allowBootstrapFallback: true });
+                }
+            }, RECIPIENT_ORDERS_INITIAL_RENDER_FALLBACK_MS);
+        }
+        return;
+    }
+    if (isStandaloneOrdersRoute) {
+        window.__kiuMarkPortalBootPhase?.('orders-render-start');
+    }
 
     const currentUser = getCurrentUser();
     const effectiveRole = getEffectiveUserRole();
     if (!currentUser) {
         renderOrdersInboxAccessState(container, 'Sign in with a student, professor, TA, or student service account to load this inbox.');
+        if (isStandaloneOrdersRoute) recipientOrdersBootState.initialRenderComplete = true;
         return;
     }
     if (effectiveRole === USER_ROLES.ADMIN) {
         renderOrdersInboxAccessState(container, 'Admin orders are managed from the dedicated admin orders route.');
+        if (isStandaloneOrdersRoute) recipientOrdersBootState.initialRenderComplete = true;
         return;
     }
 
@@ -840,6 +870,10 @@ function renderOrdersInboxPage(options = {}) {
     }
     renderRecipientOrdersListPanelRegions(shell.listPanel, uiState, allOrders, orders, selectedOrder, currentUser);
     renderRecipientOrdersDetailRegions(shell.detailPanel, selectedOrder);
+    if (isStandaloneOrdersRoute) {
+        recipientOrdersBootState.initialRenderComplete = true;
+        window.__kiuMarkPortalBootPhase?.('orders-content-ready');
+    }
 
 }
 
@@ -900,4 +934,10 @@ if (shouldAutoBootOrdersInboxOnScriptLoad()) {
         renderOrdersInboxPage();
     }
 }
+
+window.addEventListener('kiu:portal-bootstrap-complete', () => {
+    if (!document.body?.classList.contains('lux-route-orders')) return;
+    recipientOrdersBootState.fallbackScheduled = false;
+    renderOrdersInboxPage({ allowBootstrapFallback: true });
+});
 

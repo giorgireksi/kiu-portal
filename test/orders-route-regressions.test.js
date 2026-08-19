@@ -8,6 +8,15 @@ function readSource(relativePath) {
 }
 
 describe('orders route regressions.test', () => {
+    it('authors stable shell and inbox geometry before the route runtime', () => {
+        const html = readSource('orders.html');
+        expect(html).toContain('id="lux-topbar"');
+        expect(html).toContain('data-orders-content-shell="1"');
+        expect(html).toContain('data-orders-inbox-shell="1"');
+        expect(html).toContain('data-orders-boot-skeleton="1"');
+        expect(html).toContain('standalone-mobile-shell-loader.js');
+    });
+
     it('bare shell: no luxury/surfaces paint sheets; flat bare CSS', () => {
         const html = readSource('orders.html');
         expect(html).toContain('lux-shell.css');
