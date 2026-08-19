@@ -23122,39 +23122,29 @@ body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .or
   content-visibility: visible !important;
   contain-intrinsic-size: auto !important;
 }
-/* Reserve each hydrated region independently so the generic route skeleton
-   does not collapse filter and inbox panels into one CLS cluster. */
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command {
-  min-height: 92px;
-}
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter {
-  min-height: 238px;
-}
+/* Reserve the original workspace geometry until all three regions have
+   hydrated. Smaller per-region guesses allowed filter and inbox content to
+   grow after paint, making CLS worse. */
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command,
+body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter,
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox {
-  min-height: 184px;
+  min-height: 520px;
+  box-sizing: border-box;
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton {
-  min-height: 0;
-  height: 100%;
+  min-height: 490px;
+  height: auto;
   padding: 14px;
   border: 0;
   border-radius: 12px;
   background: transparent;
   box-shadow: none;
-}
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton--command {
-  min-height: 64px;
-}
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton--filter {
-  min-height: 210px;
-}
-body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-boot-skeleton--inbox {
-  min-height: 156px;
+  box-sizing: border-box;
 }
 @media (max-width: 760px) {
-  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command { min-height: 112px; }
-  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter { min-height: 390px; }
-  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox { min-height: 220px; }
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--command,
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--filter,
+  body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section--inbox { min-height: 520px; }
 }
 body:is(.lux-route-admin-orders, .lux-entry-admin-orders) #admin-orders-root .orders-admin-workspace-section.lux-soft-chrome.home-hover-chip {
   padding: 12px 14px;
